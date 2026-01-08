@@ -1,0 +1,28 @@
+server:
+  port: 8880
+
+spring:
+  application:
+    name: gying-movie
+  datasource:
+    url: jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: Root@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+minio:
+  url-prefix: http://localhost:9000/gying/
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
