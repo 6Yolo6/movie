@@ -22,12 +22,12 @@ MINIO_BUCKET = "gying"
 
 # Crawler Configuration
 TARGET_USER = "救星小窝"
-COOKIE_STR = "BT_auth=473ebAnmwow7rlUr4lIlmhKPytdwYUe-HrGi3oYjuKsANDd23TOEh3rtqllX1eGt4YXXbTWe1uIuuOZv3X2SK2hM4DVDWzZXbVdu-eP7zs1YQvQlJSIMQdu7isrQAUzMW-Jf2Rw5X2kzCo3A2y2yGpPn8e8EFIz1Y06aT-_PNmACI3RleqxoGpE; BT_cookietime=f92fV80YIyWgoJhKe-32499c6FjgjgGPx4GamWL3RDOHKsXcEtU0"
+COOKIE_STR = "browser_verified=350f74743e910190b17b7670; PHPSESSID=kbrvkfn0kjcb6k6jqibrid5inr; app_auth=b4440Mz_kweyaQr1CG2jQK4wSSQwFtuoTRd1IFD8PtDSlCXGJ2EkOidWhufq60i39NhK"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Cookie": COOKIE_STR,
-    "Referer": "https://www.gyg.si/"
+    "Referer": "https://www.xn--wcv59z.com/"
 }
 
 # ================= Services =================
@@ -137,11 +137,11 @@ def parse_season(text):
     return text.strip(), 1
 
 def crawl_user_content(db):
-    page = 4
+    page = 1
     processed_movies = set()
     
     while True:
-        url = f"https://www.gyg.si/res/user/content_list?page={page}"
+        url = f"https://www.xn--wcv59z.com/user/content_list?page={page}"
         print(f"📡 Crawling Page {page}...")
         
         try:
@@ -202,7 +202,7 @@ def crawl_user_content(db):
                 # Let's reuse 'process_and_save' concept but pass our ID (id2).
                 
                 # Fetch Meta
-                url_meta = f"https://www.gyg.si/{type_code}/{mid}"
+                url_meta = f"https://www.xn--wcv59z.com/{type_code}/{mid}"
                 print(f"   🎬 Processing {atitle} ({mid})... Season: {season}")
 
                 try:
@@ -275,24 +275,6 @@ def crawl_user_content(db):
                         elif "阿里" in provider_raw: provider = "ALIYUN"
                         elif "UC" in provider_raw: provider = "UC"
                         
-                        # Parse code from URL or text? JSON 'inlist' doesn't show 'code'.
-                        # But wait, original 'link_data' from /res/downurl/{id} had 'p' (password).
-                        # The user content list JSON has 'url' but NO 'code' column in parallel arrays visible in snippet?
-                        # Wait, snippet shows: title, dir, tname, time, id, id2, url, atitle, status.
-                        # It does NOT show password.
-                        # BUT, maybe I should fetch /res/downurl/{type}/{id} using the resource ID?
-                        # Resource ID = res['id'] (e.g. 8D2kE).
-                        # Let's check 'process_and_save' original logic:
-                        # It fetched /res/downurl/{type}/{res_id}.
-                        # Here, `mid` is MovieID. `res['id']` is ResourceID (8D2kE).
-                        # I should fetch detailed link info for `res['id']`?
-                        # Actually, `res['url']` is already the FULL link (e.g. quark.cn/s/...).
-                        # However, password might be inside the page or `res['id']` related API?
-                        # User snippet `url` column: "https://pan.baidu.com/s/...?pwd=f38n".
-                        # The password is IN the URL param `pwd`!
-                        # I can extract it or just store the full URL.
-                        # My `resource_link` table has `code` column.
-                        # I should extract `pwd` or similar.
                         
                         r_url = res["url"]
                         r_code = ""
@@ -303,14 +285,30 @@ def crawl_user_content(db):
                              pass 
                         
                         # Upsert Resource
-                        insert_sql = """
-                            INSERT INTO resource_link (movie_id, type, provider, url, code, uploader_id, audit_status, name)
-                            VALUES (%s, 'DISK', %s, %s, %s, 1, 1, %s)
-                            ON DUPLICATE KEY UPDATE 
-                                url=VALUES(url), code=VALUES(code), provider=VALUES(provider)
-                        """
+                        # Check if resource already exists
+                        check_sql = "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1"
                         with db.cursor() as cursor:
-                            cursor.execute(insert_sql, (mid, provider, r_url, r_code, res["title"]))
+                            cursor.execute(check_sql, (mid, r_url))
+                            existing_row = cursor.fetchone()
+
+                        if existing_row:
+                            # Update existing record
+                            resid = existing_row['id']
+                            update_sql = """
+                                UPDATE resource_link 
+                                SET code=%s, provider=%s, name=%s, uploader_id=1, audit_status=1
+                                WHERE id=%s
+                            """
+                            with db.cursor() as cursor:
+                                cursor.execute(update_sql, (r_code, provider, res["title"], resid))
+                        else:
+                            # Insert new record
+                            insert_sql = """
+                                INSERT INTO resource_link (movie_id, type, provider, url, code, uploader_id, audit_status, name)
+                                VALUES (%s, 'DISK', %s, %s, %s, 1, 1, %s)
+                            """
+                            with db.cursor() as cursor:
+                                cursor.execute(insert_sql, (mid, provider, r_url, r_code, res["title"]))
                             
                     db.commit()
                     print(f"      ✅ Saved.")
@@ -321,8 +319,8 @@ def crawl_user_content(db):
             
             # Pagination Check
             curr = data['page']['curr']
-            # pages = 1
-            pages = data['page']['pages']
+            pages = 5
+            # pages = data['page']['pages']
             if curr >= pages:
                 print("🏁 All pages processed.")
                 break

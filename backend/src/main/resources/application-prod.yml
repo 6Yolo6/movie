@@ -1,0 +1,70 @@
+# ============================================================
+# Gying Movie - Production Configuration
+# ============================================================
+# Usage:
+#   java -jar movie-backend.jar --spring.profiles.active=prod
+#
+# All sensitive values use environment variables.
+# Set them in .env file or system environment before starting.
+# ============================================================
+
+server:
+  port: 8880
+  # Graceful shutdown for zero-downtime deployments
+  shutdown: graceful
+
+spring:
+  application:
+    name: gying-movie
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:gying}?useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=false&characterEncoding=utf8mb4
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5000ms
+
+minio:
+  url-prefix: ${MINIO_URL_PREFIX}
+
+app:
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+logging:
+  level:
+    root: WARN
+    com.gying.movie: INFO
+  file:
+    name: /app/logs/gying-movie.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
