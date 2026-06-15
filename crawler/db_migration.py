@@ -3,7 +3,7 @@ import pymysql
 # Configuration
 DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASS = "Root@123"
+DB_PASS = "***"
 DB_NAME = "gying"
 
 def migrate():
