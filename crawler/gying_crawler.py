@@ -11,7 +11,7 @@ from io import BytesIO
 # MySQL Configuration
 DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASS = "Root@123"
+DB_PASS = "***"
 DB_NAME = "gying"
 
 # MinIO Configuration (Update these credentials)
@@ -22,7 +22,7 @@ MINIO_BUCKET = "gying"
 
 # Crawler Configuration
 TARGET_USER = "救星小窝"
-COOKIE_STR = "browser_verified=350f74743e910190b17b7670; PHPSESSID=kbrvkfn0kjcb6k6jqibrid5inr; app_auth=b4440Mz_kweyaQr1CG2jQK4wSSQwFtuoTRd1IFD8PtDSlCXGJ2EkOidWhufq60i39NhK"
+COOKIE_STR = "***"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
