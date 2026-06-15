@@ -13,7 +13,7 @@ TARGET_USER = "救星小窝"
 
 # ⚠️ 你的 Cookie (必填! 否则无法获取数据)
 # 请定期更新这个字符串
-COOKIE_STR = "BT_cookietime=c820Ys-oTZT215bLxmw6m7FIMHq4KLV9WyQEFwiO2yqLh0z5XxRr; BT_auth=93caizifLDe4E2vhHKfV8-WR8cuW0ZKHlBQllT6701Hvpm4rvulPsm8gCO8PiQplqfAjZWemKhOUgC2VBnuH3hiCwd3YMArW3SqqsG50nBD3m8vT09Ia6kg63nH4DZoo_uT1bVY0zAQnN244HpLL3nB3TSBmySRCHogEbf4uALrnlq2PXDxrfVw"
+COOKIE_STR = "***"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
