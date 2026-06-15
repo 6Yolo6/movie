@@ -116,4 +116,4 @@ cd ../frontend
 npm run build
 ```
 
-当前验证结果：后端 `mvn test` 通过，前端 `npm run build` 通过。
+
