@@ -49,10 +49,14 @@ CREATE TABLE `resource_link` (
   `code` varchar(50) DEFAULT NULL COMMENT 'Access Code',
   `uploader_id` bigint DEFAULT NULL,
   `audit_status` int DEFAULT '0' COMMENT '0:Pending, 1:Approved, 2:Rejected',
+  `status` varchar(20) DEFAULT 'ACTIVE' COMMENT 'ACTIVE, DELETED',
+  `link_status` varchar(20) DEFAULT 'NORMAL' COMMENT 'NORMAL, SUSPECTED_INVALID, INVALID',
+  `report_count` int DEFAULT '0',
   `remark` varchar(255) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_movie_id` (`movie_id`)
+  KEY `idx_movie_id` (`movie_id`),
+  KEY `idx_resource_status` (`status`, `audit_status`, `link_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Resource Links';
 
 -- ----------------------------
@@ -63,8 +67,10 @@ CREATE TABLE `sys_user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
   `password` varchar(100) NOT NULL,
+  `email` varchar(200) DEFAULT NULL,
   `role` varchar(50) DEFAULT 'USER' COMMENT 'ADMIN, USER',
   `score` int DEFAULT '0',
+  `enabled` tinyint(1) DEFAULT '1',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`)
@@ -78,12 +84,31 @@ CREATE TABLE `comment` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `relate_id` varchar(64) NOT NULL COMMENT 'Movie ID',
   `user_id` bigint DEFAULT NULL,
+  `nickname` varchar(100) DEFAULT NULL COMMENT 'User nickname at comment time',
   `content` text NOT NULL,
+  `status` int DEFAULT '1' COMMENT '0:Pending, 1:Published, 2:Hidden',
+  `upvotes` int DEFAULT '0',
+  `parent_id` bigint DEFAULT '0' COMMENT 'Parent comment ID (0=root)',
   `ip_address` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_relate_id` (`relate_id`)
+  KEY `idx_relate_id` (`relate_id`),
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Comments';
+
+-- ----------------------------
+-- Table structure for comment_vote
+-- ----------------------------
+DROP TABLE IF EXISTS `comment_vote`;
+CREATE TABLE `comment_vote` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `comment_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_comment_user` (`comment_id`, `user_id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Comment Votes';
 
 SET FOREIGN_KEY_CHECKS = 1;
 

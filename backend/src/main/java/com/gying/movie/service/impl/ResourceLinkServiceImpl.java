@@ -14,7 +14,11 @@ public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, Res
 
     @Override
     public List<ResourceLink> getResourcesByMovieId(String movieId) {
-        return list(new QueryWrapper<ResourceLink>().eq("movie_id", movieId));
+        return list(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("audit_status", 1)
+                .eq("status", "ACTIVE")
+                .ne("link_status", "INVALID"));
     }
 
     @Override

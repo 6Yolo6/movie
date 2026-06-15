@@ -14,7 +14,9 @@ public class SysUser {
     private Long id;
     private String username;
     private String password;
+    private String email;
     private String role;
     private Integer score;
+    private Boolean enabled;
     private LocalDateTime createdAt;
 }

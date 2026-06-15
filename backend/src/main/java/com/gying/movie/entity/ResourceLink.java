@@ -30,6 +30,12 @@ public class ResourceLink implements Serializable {
 
     private Integer auditStatus;
 
+    private String status;
+
+    private String linkStatus;
+
+    private Integer reportCount;
+
     private String remark;
 
     private LocalDateTime createdAt;

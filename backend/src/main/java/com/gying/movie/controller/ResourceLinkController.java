@@ -2,102 +2,95 @@ package com.gying.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gying.movie.dto.AuthUser;
+import com.gying.movie.dto.ResourceAdminDTO;
 import com.gying.movie.dto.ResourceSubmissionDTO;
+import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.SysUser;
+import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
-import com.gying.movie.utils.JwtUtils;
-import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gying.movie.utils.AuthHelper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/resources")
 public class ResourceLinkController {
 
-    @Autowired
-    private IResourceLinkService resourceLinkService;
+    private final IResourceLinkService resourceLinkService;
+    private final ISysUserService sysUserService;
+    private final ISysConfigService sysConfigService;
+    private final IMovieMetadataService movieService;
+    private final AuthHelper authHelper;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    @Autowired
-    private ISysUserService sysUserService;
-
-    @Autowired
-    private ISysConfigService sysConfigService;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    // Track last submission time for rate limiting
-    private Map<Long, LocalDateTime> lastSubmissionTime = new HashMap<>();
+    public ResourceLinkController(
+            IResourceLinkService resourceLinkService,
+            ISysUserService sysUserService,
+            ISysConfigService sysConfigService,
+            IMovieMetadataService movieService,
+            AuthHelper authHelper,
+            StringRedisTemplate stringRedisTemplate) {
+        this.resourceLinkService = resourceLinkService;
+        this.sysUserService = sysUserService;
+        this.sysConfigService = sysConfigService;
+        this.movieService = movieService;
+        this.authHelper = authHelper;
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     @PostMapping
-    public ResponseEntity<?> submitResource(@RequestBody ResourceSubmissionDTO dto,
+    public ResponseEntity<?> submitResource(
+            @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Unauthorized");
+        AuthUser authUser = authHelper.requirePublisher(token);
+
+        if (dto.getMovieId() == null || dto.getMovieId().isBlank()
+                || dto.getUrl() == null || dto.getUrl().isBlank()
+                || dto.getProvider() == null || dto.getProvider().isBlank()) {
+            return ResponseEntity.badRequest().body("movieId, url and provider are required");
         }
 
-        // Extract user from token
-        Claims claims = jwtUtils.validateToken(token.substring(7));
-        if (claims == null) {
-            return ResponseEntity.status(401).body("Invalid Token");
-        }
-
-        String username = claims.getSubject();
-        String userRole = claims.get("role", String.class);
-        SysUser user = sysUserService.getOne(
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<SysUser>().eq("username", username));
-
-        if (user == null) {
-            return ResponseEntity.status(401).body("User not found");
-        }
-
-        // Check role permission - only ADMIN and PUBLISHER can submit resources
-        if (!"ADMIN".equals(userRole) && !"PUBLISHER".equals(userRole)) {
-            return ResponseEntity.status(403).body("Publisher permission required");
-        }
-
-        // Check if audit is enabled
         String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "false");
-        int auditStatus = "true".equals(auditEnabled) ? 0 : 1; // 0=pending, 1=auto-approved
+        int auditStatus = "true".equals(auditEnabled) ? 0 : 1;
 
-        // Check resource count limit
-        String maxResourcesStr = sysConfigService.getConfigValue("resource.max.per.user", "100");
-        int maxResources = Integer.parseInt(maxResourcesStr);
-
+        int maxResources = Integer.parseInt(sysConfigService.getConfigValue("resource.max.per.user", "100"));
         long userResourceCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("uploader_id", user.getId()));
-
+                new QueryWrapper<ResourceLink>().eq("uploader_id", authUser.getId()).eq("status", "ACTIVE"));
         if (userResourceCount >= maxResources) {
             return ResponseEntity.status(403)
                     .body("Resource limit reached. Maximum " + maxResources + " resources per user.");
         }
 
-        // Check rate limiting (prevent rapid successive submissions)
-        LocalDateTime lastTime = lastSubmissionTime.get(user.getId());
-        if (lastTime != null) {
-            long secondsSinceLastSubmission = java.time.Duration.between(lastTime, LocalDateTime.now()).getSeconds();
-            String minIntervalStr = sysConfigService.getConfigValue("resource.submit.interval.seconds", "60");
-            int minInterval = Integer.parseInt(minIntervalStr);
-
-            if (secondsSinceLastSubmission < minInterval) {
-                return ResponseEntity.status(429).body("Please wait " + (minInterval - secondsSinceLastSubmission)
-                        + " seconds before submitting another resource.");
+        int minInterval = Integer.parseInt(sysConfigService.getConfigValue("resource.submit.interval.seconds", "60"));
+        if (minInterval > 0) {
+            String rateKey = "resource:submit:user:" + authUser.getId();
+            Boolean allowed = stringRedisTemplate.opsForValue()
+                    .setIfAbsent(rateKey, "1", minInterval, TimeUnit.SECONDS);
+            if (!Boolean.TRUE.equals(allowed)) {
+                Long ttl = stringRedisTemplate.getExpire(rateKey, TimeUnit.SECONDS);
+                return ResponseEntity.status(429)
+                        .body("Please wait " + Math.max(ttl == null ? minInterval : ttl, 1)
+                                + " seconds before submitting another resource.");
             }
         }
 
-        // Check for duplicate URL
         long duplicateCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("url", dto.getUrl()));
-
+                new QueryWrapper<ResourceLink>().eq("url", dto.getUrl()).eq("status", "ACTIVE"));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
@@ -108,190 +101,230 @@ public class ResourceLinkController {
         link.setUrl(dto.getUrl());
         link.setCode(dto.getCode());
         link.setProvider(dto.getProvider());
-        link.setType(dto.getType());
-        link.setUploaderId(user.getId());
+        link.setType(dto.getType() == null || dto.getType().isBlank() ? "DISK" : dto.getType());
+        link.setUploaderId(authUser.getId());
         link.setAuditStatus(auditStatus);
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
+        link.setReportCount(0);
         link.setCreatedAt(LocalDateTime.now());
 
         resourceLinkService.addResource(link);
-
-        // Update last submission time
-        lastSubmissionTime.put(user.getId(), LocalDateTime.now());
 
         String message = auditStatus == 1 ? "Resource published successfully!" : "Resource submitted for review";
         return ResponseEntity.ok(message);
     }
 
-    // Get pending resources (admin only)
-    @GetMapping("/pending")
-    public ResponseEntity<?> getPendingResources(
-            @RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Unauthorized");
+    @PostMapping("/{id}/report")
+    public ResponseEntity<?> reportInvalidResource(@PathVariable Long id) {
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || !"ACTIVE".equals(resource.getStatus())) {
+            return ResponseEntity.status(404).body("Resource not found");
         }
-
-        Claims claims = jwtUtils.validateToken(token.substring(7));
-        if (claims == null) {
-            return ResponseEntity.status(401).body("Invalid Token");
+        resource.setReportCount(resource.getReportCount() == null ? 1 : resource.getReportCount() + 1);
+        if ("NORMAL".equals(resource.getLinkStatus())) {
+            resource.setLinkStatus("SUSPECTED_INVALID");
         }
-
-        String role = claims.get("role", String.class);
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Admin access required");
-        }
-
-        // Get all pending resources
-        var pending = resourceLinkService.list(
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>()
-                        .eq("audit_status", 0)
-                        .orderByDesc("created_at"));
-
-        return ResponseEntity.ok(pending);
+        resourceLinkService.updateById(resource);
+        return ResponseEntity.ok(Map.of("linkStatus", resource.getLinkStatus(), "reportCount", resource.getReportCount()));
     }
 
-    // Approve or reject resource (admin only)
     @PutMapping("/{id}/audit")
     public ResponseEntity<?> auditResource(
             @PathVariable Long id,
-            @RequestParam Integer status, // 1=approve, 2=reject
+            @RequestParam Integer status,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-
-        Claims claims = jwtUtils.validateToken(token.substring(7));
-        if (claims == null) {
-            return ResponseEntity.status(401).body("Invalid Token");
-        }
-
-        String role = claims.get("role", String.class);
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body("Admin access required");
-        }
-
+        authHelper.requireAdmin(token);
         if (status != 1 && status != 2) {
             return ResponseEntity.badRequest().body("Status must be 1 (approve) or 2 (reject)");
         }
-
         ResourceLink resource = resourceLinkService.getById(id);
-        if (resource == null) {
+        if (resource == null || "DELETED".equals(resource.getStatus())) {
             return ResponseEntity.status(404).body("Resource not found");
         }
-
         resource.setAuditStatus(status);
         resourceLinkService.updateById(resource);
-
         return ResponseEntity.ok(status == 1 ? "Resource approved" : "Resource rejected");
     }
 
-    // Batch approve/reject resources (admin only)
     @PutMapping("/batch/audit")
     public ResponseEntity<?> batchAuditResources(
             @RequestBody Map<String, Object> request,
             @RequestHeader(value = "Authorization", required = false) String token) {
-
-        if (!isAdmin(token)) {
-            return ResponseEntity.status(403).body("Admin access required");
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Long> ids = (List<Long>) request.get("ids");
+        authHelper.requireAdmin(token);
+        List<Long> ids = toLongIds(request.get("ids"));
         Integer status = (Integer) request.get("status");
-
         if (status != 1 && status != 2) {
             return ResponseEntity.badRequest().body("Status must be 1 (approve) or 2 (reject)");
         }
-
         for (Long id : ids) {
             ResourceLink resource = resourceLinkService.getById(id);
-            if (resource != null) {
+            if (resource != null && !"DELETED".equals(resource.getStatus())) {
                 resource.setAuditStatus(status);
                 resourceLinkService.updateById(resource);
             }
         }
-
         return ResponseEntity.ok(status == 1 ? ids.size() + " resources approved" : ids.size() + " resources rejected");
     }
 
-    // Get all resources with filters (admin only)
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAllResources(
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String movieId,
             @RequestParam(required = false) String provider,
+            @RequestParam(required = false) String linkStatus,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "false") boolean includeDeleted,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
 
-        if (!isAdmin(token)) {
-            return ResponseEntity.status(403).body("Admin access required");
+        QueryWrapper<ResourceLink> query = new QueryWrapper<>();
+        if (!includeDeleted) {
+            query.eq("status", "ACTIVE");
         }
-
-        Page<ResourceLink> resourcePage = new Page<>(page, size);
-        var query = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>();
-
         if (status != null) {
             query.eq("audit_status", status);
         }
-        if (movieId != null && !movieId.isEmpty()) {
+        if (movieId != null && !movieId.isBlank()) {
             query.eq("movie_id", movieId);
         }
-        if (provider != null && !provider.isEmpty()) {
+        if (provider != null && !provider.isBlank()) {
             query.eq("provider", provider);
         }
+        if (linkStatus != null && !linkStatus.isBlank()) {
+            query.eq("link_status", linkStatus);
+        }
+        applyKeywordFilters(query, keyword);
 
         query.orderByDesc("created_at");
-
-        Page<ResourceLink> result = resourceLinkService.page(resourcePage, query);
-        return ResponseEntity.ok(result);
+        Page<ResourceLink> result = resourceLinkService.page(new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)), query);
+        return ResponseEntity.ok(toAdminPage(result));
     }
 
-    // Delete resource (admin only)
+    @PutMapping("/admin/{id}/link-status")
+    public ResponseEntity<?> updateLinkStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        Set<String> allowed = Set.of("NORMAL", "SUSPECTED_INVALID", "INVALID");
+        if (!allowed.contains(status)) {
+            return ResponseEntity.badRequest().body("Invalid link status");
+        }
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || "DELETED".equals(resource.getStatus())) {
+            return ResponseEntity.status(404).body("Resource not found");
+        }
+        resource.setLinkStatus(status);
+        resourceLinkService.updateById(resource);
+        return ResponseEntity.ok(Map.of("linkStatus", status));
+    }
+
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<?> deleteResource(
             @PathVariable Long id,
             @RequestHeader(value = "Authorization", required = false) String token) {
-
-        if (!isAdmin(token)) {
-            return ResponseEntity.status(403).body("Admin access required");
+        authHelper.requireAdmin(token);
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || "DELETED".equals(resource.getStatus())) {
+            return ResponseEntity.status(404).body("Resource not found");
         }
-
-        boolean deleted = resourceLinkService.removeById(id);
-        if (deleted) {
-            return ResponseEntity.ok("Resource deleted");
-        }
-        return ResponseEntity.status(404).body("Resource not found");
+        resource.setStatus("DELETED");
+        resourceLinkService.updateById(resource);
+        return ResponseEntity.ok("Resource deleted");
     }
 
-    // Batch delete resources (admin only)
     @DeleteMapping("/admin/batch")
     public ResponseEntity<?> batchDeleteResources(
             @RequestBody List<Long> ids,
             @RequestHeader(value = "Authorization", required = false) String token) {
-
-        if (!isAdmin(token)) {
-            return ResponseEntity.status(403).body("Admin access required");
+        authHelper.requireAdmin(token);
+        for (Long id : ids) {
+            ResourceLink resource = resourceLinkService.getById(id);
+            if (resource != null && !"DELETED".equals(resource.getStatus())) {
+                resource.setStatus("DELETED");
+                resourceLinkService.updateById(resource);
+            }
         }
-
-        boolean deleted = resourceLinkService.removeByIds(ids);
-        if (deleted) {
-            return ResponseEntity.ok("Resources deleted: " + ids.size());
-        }
-        return ResponseEntity.status(400).body("Failed to delete resources");
+        return ResponseEntity.ok("Resources deleted: " + ids.size());
     }
 
-    // Helper method to check admin role
-    private boolean isAdmin(String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            return false;
+    private void applyKeywordFilters(QueryWrapper<ResourceLink> query, String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return;
         }
+        String kw = keyword.trim();
+        List<String> movieIds = movieService.lambdaQuery()
+                .like(MovieMetadata::getTitleCn, kw)
+                .or()
+                .like(MovieMetadata::getTitleEn, kw)
+                .list()
+                .stream()
+                .map(MovieMetadata::getId)
+                .toList();
+        List<Long> userIds = sysUserService.lambdaQuery()
+                .like(SysUser::getUsername, kw)
+                .list()
+                .stream()
+                .map(SysUser::getId)
+                .toList();
+        query.and(w -> {
+            w.like("movie_id", kw).or().like("provider", kw).or().like("url", kw).or().like("name", kw);
+            if (!movieIds.isEmpty()) {
+                w.or().in("movie_id", movieIds);
+            }
+            if (!userIds.isEmpty()) {
+                w.or().in("uploader_id", userIds);
+            }
+        });
+    }
 
-        Claims claims = jwtUtils.validateToken(token.substring(7));
-        if (claims == null) {
-            return false;
+    private Page<ResourceAdminDTO> toAdminPage(Page<ResourceLink> source) {
+        List<String> movieIds = source.getRecords().stream()
+                .map(ResourceLink::getMovieId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        List<Long> userIds = source.getRecords().stream()
+                .map(ResourceLink::getUploaderId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<String, MovieMetadata> movies = movieIds.isEmpty()
+                ? Collections.emptyMap()
+                : movieService.listByIds(movieIds).stream().collect(Collectors.toMap(MovieMetadata::getId, m -> m));
+        Map<Long, SysUser> users = userIds.isEmpty()
+                ? Collections.emptyMap()
+                : sysUserService.listByIds(userIds).stream().collect(Collectors.toMap(SysUser::getId, u -> u));
+
+        Page<ResourceAdminDTO> page = new Page<>(source.getCurrent(), source.getSize(), source.getTotal());
+        page.setPages(source.getPages());
+        page.setRecords(source.getRecords().stream().map(resource -> {
+            ResourceAdminDTO dto = new ResourceAdminDTO();
+            BeanUtils.copyProperties(resource, dto);
+            MovieMetadata movie = movies.get(resource.getMovieId());
+            if (movie != null) {
+                dto.setMovieTitle(movie.getTitleCn());
+            }
+            SysUser uploader = users.get(resource.getUploaderId());
+            if (uploader != null) {
+                dto.setUploaderName(uploader.getUsername());
+            }
+            return dto;
+        }).toList());
+        return page;
+    }
+
+    private List<Long> toLongIds(Object rawIds) {
+        if (!(rawIds instanceof List<?> ids)) {
+            return List.of();
         }
-
-        String role = claims.get("role", String.class);
-        return "ADMIN".equals(role);
+        return ids.stream()
+                .filter(Objects::nonNull)
+                .map(id -> ((Number) id).longValue())
+                .toList();
     }
 }

@@ -62,6 +62,8 @@ public class MovieMetadata implements Serializable {
 
     private String status;
 
+    private Integer popularity;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
