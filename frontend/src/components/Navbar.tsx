@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Avatar, Button, Drawer, Dropdown, Input, MenuProps, Space, Switch } from 'antd';
+import { Avatar, Badge, Button, Drawer, Dropdown, Input, MenuProps, Space, Switch } from 'antd';
 import {
-    CloudUploadOutlined, CommentOutlined, FireOutlined, HeartOutlined, HomeOutlined,
+    BellOutlined, CloudUploadOutlined, CommentOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
     PlaySquareOutlined, DesktopOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -12,15 +12,46 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from './ThemeProvider';
 import { useAuthStore } from '../store/authStore';
+import { api } from '../lib/api';
 
 export default function Navbar() {
-    const { user, logout } = useAuthStore();
+    const { user, token, logout } = useAuthStore();
     const { theme, toggleTheme } = useTheme();
     const { t, i18n } = useTranslation();
     const router = useRouter();
     const searchParams = useSearchParams();
     const keyword = searchParams.get('keyword') || '';
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [mounted, setMounted] = useState(false);
+
+    const fetchUnreadCount = useCallback(async () => {
+        if (!user || !token) {
+            setUnreadCount(0);
+            return;
+        }
+        try {
+            const res = await api('/api/notifications/unread-count', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUnreadCount(Number(data.count || 0));
+            }
+        } catch {
+            setUnreadCount(0);
+        }
+    }, [token, user]);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        fetchUnreadCount();
+        window.addEventListener('notifications:refresh', fetchUnreadCount);
+        return () => window.removeEventListener('notifications:refresh', fetchUnreadCount);
+    }, [fetchUnreadCount]);
 
     const handleLogout = () => {
         logout();
@@ -29,6 +60,17 @@ export default function Navbar() {
     };
 
     const closeDrawer = () => setDrawerOpen(false);
+
+    if (!mounted) {
+        return (
+            <nav className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/90 text-gray-900 border-b border-gray-200 dark:bg-[#141414]/90 dark:text-white dark:border-[#1f1f1f] sticky top-0 z-50 backdrop-blur-md">
+                <Link href="/" className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">
+                    GYING
+                </Link>
+                <div className="h-8 w-28 rounded bg-gray-100 dark:bg-white/10" />
+            </nav>
+        );
+    }
 
     const navLinks = [
         { href: '/', label: t('home'), icon: <HomeOutlined /> },
@@ -44,6 +86,16 @@ export default function Navbar() {
             key: 'profile',
             label: <Link href="/profile" onClick={closeDrawer}>{t('myProfile')}</Link>,
             icon: <UserOutlined />,
+        },
+        {
+            key: 'notifications',
+            label: (
+                <Link href="/notifications" onClick={closeDrawer} className="flex items-center gap-2">
+                    <span>{t('notifications')}</span>
+                    <Badge count={unreadCount} size="small" />
+                </Link>
+            ),
+            icon: <BellOutlined />,
         },
         {
             key: 'favorites',
@@ -151,12 +203,19 @@ export default function Navbar() {
 
                     {/* User area */}
                     {user ? (
-                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-                            <Space className="cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                                <Avatar size={28} icon={<UserOutlined />} className="bg-gradient-to-r from-blue-600 to-teal-500" />
-                                <span className="text-gray-700 dark:text-gray-300 font-medium hidden sm:block">{user.username}</span>
-                            </Space>
-                        </Dropdown>
+                        <Space size={8}>
+                            <Link href="/notifications" aria-label={t('notifications')}>
+                                <Badge count={unreadCount} size="small">
+                                    <Button type="text" shape="circle" icon={<BellOutlined />} />
+                                </Badge>
+                            </Link>
+                            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
+                                <Space className="cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
+                                    <Avatar size={28} icon={<UserOutlined />} className="bg-gradient-to-r from-blue-600 to-teal-500" />
+                                    <span className="text-gray-700 dark:text-gray-300 font-medium hidden sm:block">{user.username}</span>
+                                </Space>
+                            </Dropdown>
+                        </Space>
                     ) : (
                         <Space size={4}>
                             <Link href="/login">
@@ -212,6 +271,15 @@ export default function Navbar() {
                 {user && (
                     <>
                         <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
+                        <Link
+                            href="/notifications"
+                            onClick={closeDrawer}
+                            className="flex items-center gap-3 px-6 py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-base"
+                        >
+                            <BellOutlined />
+                            <span>{t('notifications')}</span>
+                            <Badge count={unreadCount} size="small" />
+                        </Link>
                         <Link
                             href="/favorites"
                             onClick={closeDrawer}

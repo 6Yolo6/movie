@@ -55,3 +55,15 @@ export interface HotItem {
 export interface FavoriteItem extends HotItem {
     favoritedAt: string;
 }
+
+export interface UserNotification {
+    id: number;
+    userId: number;
+    type: string;
+    title: string;
+    content?: string;
+    targetType?: string;
+    targetId?: string;
+    readFlag: boolean;
+    createdAt?: string;
+}

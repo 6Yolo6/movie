@@ -12,6 +12,7 @@ import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
+import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -35,6 +36,7 @@ public class ResourceLinkController {
     private final ISysUserService sysUserService;
     private final ISysConfigService sysConfigService;
     private final IMovieMetadataService movieService;
+    private final IUserNotificationService notificationService;
     private final AuthHelper authHelper;
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -43,12 +45,14 @@ public class ResourceLinkController {
             ISysUserService sysUserService,
             ISysConfigService sysConfigService,
             IMovieMetadataService movieService,
+            IUserNotificationService notificationService,
             AuthHelper authHelper,
             StringRedisTemplate stringRedisTemplate) {
         this.resourceLinkService = resourceLinkService;
         this.sysUserService = sysUserService;
         this.sysConfigService = sysConfigService;
         this.movieService = movieService;
+        this.notificationService = notificationService;
         this.authHelper = authHelper;
         this.stringRedisTemplate = stringRedisTemplate;
     }
@@ -202,6 +206,7 @@ public class ResourceLinkController {
         }
         resource.setAuditStatus(status);
         resourceLinkService.updateById(resource);
+        notifyResourceAudit(resource, status);
         return ResponseEntity.ok(status == 1 ? "Resource approved" : "Resource rejected");
     }
 
@@ -220,6 +225,7 @@ public class ResourceLinkController {
             if (resource != null && !"DELETED".equals(resource.getStatus())) {
                 resource.setAuditStatus(status);
                 resourceLinkService.updateById(resource);
+                notifyResourceAudit(resource, status);
             }
         }
         return ResponseEntity.ok(status == 1 ? ids.size() + " resources approved" : ids.size() + " resources rejected");
@@ -277,6 +283,7 @@ public class ResourceLinkController {
         }
         resource.setLinkStatus(status);
         resourceLinkService.updateById(resource);
+        notifyResourceLinkStatus(resource, status);
         return ResponseEntity.ok(Map.of("linkStatus", status));
     }
 
@@ -384,5 +391,65 @@ public class ResourceLinkController {
                 .filter(Objects::nonNull)
                 .map(id -> ((Number) id).longValue())
                 .toList();
+    }
+
+    private void notifyResourceAudit(ResourceLink resource, int auditStatus) {
+        if (resource.getUploaderId() == null) {
+            return;
+        }
+        String movieTitle = resolveMovieTitle(resource.getMovieId());
+        String resourceName = resource.getName() == null || resource.getName().isBlank()
+                ? "resource"
+                : resource.getName();
+        String title = auditStatus == 1 ? "Resource approved" : "Resource rejected";
+        String content = auditStatus == 1
+                ? "Your submission \"" + resourceName + "\" for " + movieTitle + " has been approved."
+                : "Your submission \"" + resourceName + "\" for " + movieTitle + " has been rejected.";
+        notificationService.notifyUser(
+                resource.getUploaderId(),
+                "RESOURCE_AUDIT",
+                title,
+                content,
+                "RESOURCE",
+                String.valueOf(resource.getId()));
+    }
+
+    private void notifyResourceLinkStatus(ResourceLink resource, String linkStatus) {
+        if (resource.getUploaderId() == null) {
+            return;
+        }
+        String movieTitle = resolveMovieTitle(resource.getMovieId());
+        String resourceName = resource.getName() == null || resource.getName().isBlank()
+                ? "resource"
+                : resource.getName();
+        String readableStatus = switch (linkStatus) {
+            case "INVALID" -> "invalid";
+            case "SUSPECTED_INVALID" -> "suspected invalid";
+            default -> "normal";
+        };
+        notificationService.notifyUser(
+                resource.getUploaderId(),
+                "RESOURCE_LINK_STATUS",
+                "Resource link status updated",
+                "Your submission \"" + resourceName + "\" for " + movieTitle + " was marked as " + readableStatus + ".",
+                "RESOURCE",
+                String.valueOf(resource.getId()));
+    }
+
+    private String resolveMovieTitle(String movieId) {
+        if (movieId == null || movieId.isBlank()) {
+            return "the movie";
+        }
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null) {
+            return movieId;
+        }
+        if (movie.getTitleCn() != null && !movie.getTitleCn().isBlank()) {
+            return movie.getTitleCn();
+        }
+        if (movie.getTitleEn() != null && !movie.getTitleEn().isBlank()) {
+            return movie.getTitleEn();
+        }
+        return movieId;
     }
 }

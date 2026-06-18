@@ -202,5 +202,16 @@
   "noFavorites": "No favorites yet. Go discover great movies!",
   "loginToViewFavorites": "Please log in to view your favorites",
   "discoverMovies": "Discover Movies",
-  "loadMore": "Load More"
+  "loadMore": "Load More",
+  "notifications": "Notifications",
+  "notificationsHint": "Review resource audit updates and link status changes.",
+  "unreadNotifications": "Unread only",
+  "markAllRead": "Mark all read",
+  "markRead": "Mark read",
+  "noNotifications": "No notifications yet.",
+  "notificationsLoadFailed": "Failed to load notifications",
+  "notificationMarkedRead": "Notification marked as read",
+  "notificationsMarkedRead": "All notifications marked as read",
+  "totalNotifications": "Total {{count}} notifications",
+  "viewMyResources": "View my submissions"
 }

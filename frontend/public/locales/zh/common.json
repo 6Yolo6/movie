@@ -202,5 +202,16 @@
   "noFavorites": "还没有收藏，去发现好片吧！",
   "loginToViewFavorites": "请登录后查看我的收藏",
   "discoverMovies": "发现影片",
-  "loadMore": "加载更多"
+  "loadMore": "加载更多",
+  "notifications": "通知",
+  "notificationsHint": "查看资源审核结果和链接状态变更。",
+  "unreadNotifications": "只看未读",
+  "markAllRead": "全部已读",
+  "markRead": "标为已读",
+  "noNotifications": "暂无通知。",
+  "notificationsLoadFailed": "加载通知失败",
+  "notificationMarkedRead": "已标为已读",
+  "notificationsMarkedRead": "已全部标为已读",
+  "totalNotifications": "共 {{count}} 条通知",
+  "viewMyResources": "查看我的投稿"
 }
