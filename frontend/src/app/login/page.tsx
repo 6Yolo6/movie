@@ -18,6 +18,12 @@ export default function LoginPage() {
     const login = useAuthStore((state) => state.login);
     const { message } = App.useApp();
 
+    const getRedirectPath = () => {
+        if (typeof window === 'undefined') return '/';
+        const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+        return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
+    };
+
     const onFinish = async (values: LoginFormValues) => {
         try {
             const res = await api('/api/auth/login', {
@@ -36,11 +42,10 @@ export default function LoginPage() {
                 if (meRes.ok) {
                     const me = await meRes.json();
                     login(data.token, me);
+                    router.push(getRedirectPath());
                 } else {
                     message.error('Failed to fetch user info');
                 }
-
-                router.push('/');
             } else {
                 message.error(data.error || 'Login failed');
             }
