@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS sys_config (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) COMMENT 'System configuration table';
 
--- Insert default configuration
-INSERT INTO sys_config (config_key, config_value, description) 
-VALUES ('resource.audit.enabled', 'false', 'Enable resource submission audit (true/false)')
+-- Insert default configurations
+INSERT INTO sys_config (config_key, config_value, description) VALUES
+('resource.audit.enabled', 'true', 'Enable resource submission audit (true/false)'),
+('resource.max.per.user', '100', 'Maximum resources per user'),
+('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions')
 ON DUPLICATE KEY UPDATE config_value = config_value;

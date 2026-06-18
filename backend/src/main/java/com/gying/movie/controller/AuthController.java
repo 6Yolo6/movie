@@ -49,17 +49,18 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
 
-        if (captchaId != null && captchaCode != null) {
-            String redisKey = "captcha:" + captchaId;
-            String storedCode = stringRedisTemplate.opsForValue().get(redisKey);
-            if (storedCode == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Captcha expired, please request a new one");
-            }
-            if (!storedCode.equalsIgnoreCase(captchaCode)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification code");
-            }
-            stringRedisTemplate.delete(redisKey);
+        if (captchaId == null || captchaId.isBlank() || captchaCode == null || captchaCode.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Verification code is required");
         }
+        String redisKey = "captcha:" + captchaId;
+        String storedCode = stringRedisTemplate.opsForValue().get(redisKey);
+        if (storedCode == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Captcha expired, please request a new one");
+        }
+        if (!storedCode.equalsIgnoreCase(captchaCode)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification code");
+        }
+        stringRedisTemplate.delete(redisKey);
 
         String rateKey = REGISTER_RATE_LIMIT_KEY + getClientIp(request);
         Long count = stringRedisTemplate.opsForValue().increment(rateKey);

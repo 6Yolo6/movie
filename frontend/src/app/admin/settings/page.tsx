@@ -16,7 +16,7 @@ interface ConfigItem {
 }
 
 const DEFAULTS = {
-    auditEnabled: false,
+    auditEnabled: true,
     maxResources: 100,
     submitInterval: 60,
 };
@@ -155,7 +155,7 @@ export default function SystemSettingsPage() {
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                                 <Title level={5} className="!m-0">{t('resourceAudit')}</Title>
-                                <Tag color="blue">Default: OFF</Tag>
+                                <Tag color="blue">Default: ON</Tag>
                             </div>
                             <Text type="secondary">{t('resourceAuditHelp')}</Text>
                         </div>

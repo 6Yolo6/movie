@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Avatar, Button, Drawer, Dropdown, Input, MenuProps, Space, Switch } from 'antd';
 import {
-    CommentOutlined, FireOutlined, HeartOutlined, HomeOutlined,
+    CloudUploadOutlined, CommentOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
     PlaySquareOutlined, DesktopOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -49,6 +49,11 @@ export default function Navbar() {
             key: 'favorites',
             label: <Link href="/favorites" onClick={closeDrawer}>{t('myFavorites')}</Link>,
             icon: <HeartOutlined />,
+        },
+        {
+            key: 'myResources',
+            label: <Link href="/my-resources" onClick={closeDrawer}>{t('myResources')}</Link>,
+            icon: <CloudUploadOutlined />,
         },
         ...(user?.role === 'ADMIN' ? [
             {
@@ -214,6 +219,14 @@ export default function Navbar() {
                         >
                             <HeartOutlined />
                             <span>{t('myFavorites')}</span>
+                        </Link>
+                        <Link
+                            href="/my-resources"
+                            onClick={closeDrawer}
+                            className="flex items-center gap-3 px-6 py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-base"
+                        >
+                            <CloudUploadOutlined />
+                            <span>{t('myResources')}</span>
                         </Link>
                     </>
                 )}

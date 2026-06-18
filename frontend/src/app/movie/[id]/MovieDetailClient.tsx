@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps } from 'antd';
-import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -28,9 +28,10 @@ interface RenderLinkListProps {
 
 interface ResourceFormValues {
     name: string;
+    type: string;
     url: string;
     code?: string;
-    provider: string;
+    provider?: string;
 }
 
 const RenderLinkList = ({ items, type: _type, limit = 0, labels }: RenderLinkListProps) => {
@@ -75,6 +76,8 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [form] = Form.useForm();
+    const resourceType = Form.useWatch('type', form) || 'DISK';
+    const [resourceItems, setResourceItems] = useState(resources);
 
     // Summary Expanded State
     const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -162,9 +165,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     };
 
     // Group Disk Resources by Provider
-    const diskResources = useMemo(() => resources.filter(r => r.type === 'DISK'), [resources]);
+    const diskResources = useMemo(() => resourceItems.filter(r => r.type === 'DISK'), [resourceItems]);
     const groupedDiskResources = useMemo(() => {
-        const groups: Record<string, typeof resources> = {};
+        const groups: Record<string, ResourceLink[]> = {};
         diskResources.forEach(r => {
             const p = r.provider || 'OTHER';
             if (!groups[p]) groups[p] = [];
@@ -173,7 +176,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         return groups;
     }, [diskResources]);
 
-    const p2pResources = useMemo(() => resources.filter(r => r.type !== 'DISK'), [resources]);
+    const p2pResources = useMemo(() => resourceItems.filter(r => r.type !== 'DISK'), [resourceItems]);
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -194,8 +197,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                 },
                 body: JSON.stringify({
                     movieId: movie.id,
-                    type: values.provider === 'MAGNET' || values.provider === 'TORRENT' ? values.provider : 'DISK',
-                    ...values
+                    ...values,
+                    type: values.type || 'DISK',
+                    provider: values.type === 'DISK' ? values.provider : 'OTHER'
                 })
             });
 
@@ -215,6 +219,33 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         }
     };
 
+    const handleReportInvalid = async (item: ResourceLink) => {
+        try {
+            const res = await api(`/api/resources/${item.id}/report`, { method: 'POST' });
+            if (!res.ok) {
+                const errText = await res.text();
+                message.error(`${t('operationFailed')}: ${errText}`);
+                return;
+            }
+            const data: { linkStatus: string; reportCount: number } = await res.json();
+            setResourceItems(prev => prev.map(resource => (
+                resource.id === item.id
+                    ? { ...resource, linkStatus: data.linkStatus, reportCount: data.reportCount }
+                    : resource
+            )));
+            message.success(t('resourceReported'));
+        } catch {
+            message.error(t('networkError'));
+        }
+    };
+
+    const renderLinkStatusTag = (item: ResourceLink) => {
+        if (!item.linkStatus || item.linkStatus === 'NORMAL') return null;
+        const color = item.linkStatus === 'INVALID' ? 'red' : 'orange';
+        const label = item.linkStatus === 'INVALID' ? t('invalid') : t('suspectedInvalid');
+        return <Tag color={color} className="m-0">{label}{item.reportCount ? ` ${item.reportCount}` : ''}</Tag>;
+    };
+
     // Render Resource Card
     const renderResourceCard = (item: ResourceLink, index: number) => (
         <Card key={index} size="small" className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-gray-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all shadow-sm">
@@ -224,6 +255,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         <Tag color={item.type === 'DISK' ? 'green' : (item.type === 'MAGNET' ? 'purple' : 'blue')} className="m-0 font-bold border-0">
                             {item.type === 'DISK' ? (providers[item.provider as keyof typeof providers]?.[i18n.language as LanguageKey] || item.provider) : item.type}
                         </Tag>
+                        {renderLinkStatusTag(item)}
                         <Text className="text-gray-800 dark:text-gray-200 font-medium truncate text-base">
                             {item.name || t('resource')}
                         </Text>
@@ -242,6 +274,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                     </Space>
                 </div>
                 <Space>
+                    <Tooltip title={t('reportInvalidResource')}>
+                        <Button size="small" type="text" icon={<WarningOutlined />} onClick={() => handleReportInvalid(item)} />
+                    </Tooltip>
                     <Tooltip title={t('copy')}>
                         <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(item.url)} />
                     </Tooltip>
@@ -501,7 +536,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                     <div className="w-1 h-6 bg-blue-500 rounded-full" />
                                     <Title level={3} className="!m-0">{t('downloadResources')}</Title>
                                     <Tag className="rounded-full bg-gray-100 dark:bg-zinc-800 border-0">{resources.length} {t('itemsCount')}</Tag>
-                                    {user && (user.role === 'ADMIN' || user.role === 'PUBLISHER') && (
+                                    {user && (
                                         <Button
                                             type="primary"
                                             icon={<CloudUploadOutlined />}
@@ -572,25 +607,47 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                     footer={null}
                     className="top-20"
                 >
-                    <Form form={form} layout="vertical" onFinish={handleSubmit} requiredMark={false}>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onFinish={handleSubmit}
+                        requiredMark={false}
+                        initialValues={{ type: 'DISK', provider: 'BAIDU' }}
+                    >
                         <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
                             <Input placeholder={i18n.language === 'cn' ? "如：4K重制版" : "e.g. 4K Remastered Version"} className="rounded-md" />
                         </Form.Item>
-                        <Form.Item name="url" label={t('linkUrl')} rules={[{ required: true, type: 'url' }]}>
-                            <Input placeholder="https://..." className="rounded-md" />
+                        <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
+                            <Select className="rounded-md">
+                                <Option value="DISK">{t('cloudDisk')}</Option>
+                                <Option value="MAGNET">{t('magnet')}</Option>
+                                <Option value="TORRENT">{t('torrent')}</Option>
+                                <Option value="ONLINE">{t('onlinePlay')}</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name="url"
+                            label={t('linkUrl')}
+                            rules={resourceType === 'MAGNET' || resourceType === 'TORRENT'
+                                ? [{ required: true }]
+                                : [{ required: true, type: 'url' }]}
+                        >
+                            <Input placeholder={resourceType === 'MAGNET' ? "magnet:?xt=urn:btih:..." : "https://..."} className="rounded-md" />
                         </Form.Item>
                         <Form.Item name="code" label={t('accessCode')}>
                             <Input placeholder={t('optional')} className="rounded-md" />
                         </Form.Item>
-                        <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
-                            <Select className="rounded-md">
-                                <Option value="BAIDU">{providers.BAIDU[i18n.language as LanguageKey]}</Option>
-                                <Option value="QUARK">{providers.QUARK[i18n.language as LanguageKey]}</Option>
-                                <Option value="XUNLEI">{providers.XUNLEI[i18n.language as LanguageKey]}</Option>
-                                <Option value="ALIYUN">{providers.ALIYUN[i18n.language as LanguageKey]}</Option>
-                                <Option value="OTHER">{providers.OTHER[i18n.language as LanguageKey]}</Option>
-                            </Select>
-                        </Form.Item>
+                        {resourceType === 'DISK' && (
+                            <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
+                                <Select className="rounded-md">
+                                    <Option value="BAIDU">{providers.BAIDU[i18n.language as LanguageKey]}</Option>
+                                    <Option value="QUARK">{providers.QUARK[i18n.language as LanguageKey]}</Option>
+                                    <Option value="XUNLEI">{providers.XUNLEI[i18n.language as LanguageKey]}</Option>
+                                    <Option value="ALIYUN">{providers.ALIYUN[i18n.language as LanguageKey]}</Option>
+                                    <Option value="OTHER">{providers.OTHER[i18n.language as LanguageKey]}</Option>
+                                </Select>
+                            </Form.Item>
+                        )}
                         <Divider />
                         <div className="flex justify-end gap-3">
                             <Button onClick={() => setIsModalOpen(false)} className="rounded-md">{t('cancel')}</Button>

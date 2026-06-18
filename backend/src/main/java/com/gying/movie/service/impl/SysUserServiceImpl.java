@@ -53,7 +53,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         SysUser user = new SysUser();
         user.setUsername(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
-        user.setRole("PUBLISHER");
+        user.setRole("USER");
         user.setScore(0);
         user.setEnabled(true);
         this.save(user);

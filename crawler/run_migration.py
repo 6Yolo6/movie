@@ -34,7 +34,7 @@ def run_migration():
         # 插入默认配置
         print("Inserting default configurations...")
         configs = [
-            ('resource.audit.enabled', 'false', 'Enable resource submission audit (true/false)'),
+            ('resource.audit.enabled', 'true', 'Enable resource submission audit (true/false)'),
             ('resource.max.per.user', '100', 'Maximum resources per user'),
             ('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions')
         ]
@@ -49,7 +49,7 @@ def run_migration():
         conn.commit()
         print("✅ Migration completed successfully!")
         print("\nDefault configurations:")
-        print("  - resource.audit.enabled = false (审核默认关闭)")
+        print("  - resource.audit.enabled = true (审核默认开启)")
         print("  - resource.max.per.user = 100 (每用户最大资源数)")
         print("  - resource.submit.interval.seconds = 60 (提交间隔秒数)")
         
