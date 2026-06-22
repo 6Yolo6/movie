@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { App, Button, Card, Empty, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
-import { CloudUploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { App, Button, Card, Divider, Empty, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
+import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
@@ -27,6 +27,10 @@ export default function MyResourcesPage() {
     const [total, setTotal] = useState(0);
     const [statusFilter, setStatusFilter] = useState<number | undefined>();
     const [linkStatusFilter, setLinkStatusFilter] = useState<string | undefined>();
+    const [editingResource, setEditingResource] = useState<MyResource | null>(null);
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [editForm] = Form.useForm();
+    const editResourceType = Form.useWatch('type', editForm) || 'DISK';
 
     const fetchResources = useCallback(async () => {
         if (!token) {
@@ -79,6 +83,84 @@ export default function MyResourcesPage() {
             }
         } catch {
             message.error(t('networkError'));
+        }
+    };
+
+    const openEditModal = (resource: MyResource) => {
+        setEditingResource(resource);
+        editForm.setFieldsValue({
+            name: resource.name,
+            type: resource.type || 'DISK',
+            url: resource.url,
+            code: resource.code,
+            provider: resource.provider || 'BAIDU',
+        });
+    };
+
+    const getUrlRules = () => {
+        if (editResourceType === 'MAGNET') {
+            return [
+                { required: true },
+                {
+                    validator: (_: unknown, value?: string) => {
+                        if (!value || value.toLowerCase().startsWith('magnet:?xt=urn:btih:')) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(new Error(t('magnetLinkRequired')));
+                    },
+                },
+            ];
+        }
+        if (editResourceType === 'TORRENT') {
+            return [
+                { required: true },
+                {
+                    validator: (_: unknown, value?: string) => {
+                        const lowerValue = value?.toLowerCase() || '';
+                        if (!value || ((lowerValue.startsWith('http://') || lowerValue.startsWith('https://')) && lowerValue.includes('.torrent'))) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(new Error(t('torrentLinkRequired')));
+                    },
+                },
+            ];
+        }
+        return [{ required: true, type: 'url' as const }];
+    };
+
+    const handleEditSubmit = async (values: {
+        name: string;
+        type: string;
+        url: string;
+        code?: string;
+        provider?: string;
+    }) => {
+        if (!token || !editingResource) return;
+        setSavingEdit(true);
+        try {
+            const res = await api(`/api/resources/${editingResource.id}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    ...values,
+                    movieId: editingResource.movieId,
+                    provider: values.type === 'DISK' ? (values.provider || 'OTHER') : 'OTHER',
+                    code: values.type === 'DISK' ? (values.code || '') : '',
+                }),
+            });
+            if (res.ok) {
+                message.success(t('resourceUpdated'));
+                setEditingResource(null);
+                editForm.resetFields();
+                fetchResources();
+            } else {
+                const msg = await res.text();
+                message.error(msg || t('resourceUpdateFailed'));
+            }
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setSavingEdit(false);
         }
     };
 
@@ -173,19 +255,22 @@ export default function MyResourcesPage() {
         {
             title: t('actions'),
             key: 'actions',
-            width: 90,
+            width: 130,
             fixed: 'right',
             render: (_: unknown, record) => (
-                <Popconfirm
-                    title={t('deleteResourceTitle')}
-                    description={t('deleteResourceDescription')}
-                    onConfirm={() => handleDelete(record.id)}
-                    okText={t('delete')}
-                    cancelText={t('cancel')}
-                    okType="danger"
-                >
-                    <Button danger icon={<DeleteOutlined />} size="small" />
-                </Popconfirm>
+                <Space>
+                    <Button icon={<EditOutlined />} size="small" onClick={() => openEditModal(record)} />
+                    <Popconfirm
+                        title={t('deleteResourceTitle')}
+                        description={t('deleteResourceDescription')}
+                        onConfirm={() => handleDelete(record.id)}
+                        okText={t('delete')}
+                        cancelText={t('cancel')}
+                        okType="danger"
+                    >
+                        <Button danger icon={<DeleteOutlined />} size="small" />
+                    </Popconfirm>
+                </Space>
             ),
         },
     ];
@@ -273,6 +358,53 @@ export default function MyResourcesPage() {
                     />
                 </Card>
             </div>
+            <Modal
+                title={t('editResource')}
+                open={!!editingResource}
+                onCancel={() => setEditingResource(null)}
+                footer={null}
+                destroyOnHidden
+            >
+                <Form form={editForm} layout="vertical" onFinish={handleEditSubmit} requiredMark={false}>
+                    <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
+                        <Select>
+                            <Option value="DISK">{t('cloudDisk')}</Option>
+                            <Option value="MAGNET">{t('magnet')}</Option>
+                            <Option value="TORRENT">{t('torrent')}</Option>
+                            <Option value="ONLINE">{t('onlinePlay')}</Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="url" label={t('linkUrl')} rules={getUrlRules()}>
+                        <Input placeholder={editResourceType === 'MAGNET' ? 'magnet:?xt=urn:btih:...' : editResourceType === 'TORRENT' ? 'https://example.com/movie.torrent' : 'https://...'} />
+                    </Form.Item>
+                    {editResourceType === 'DISK' && (
+                        <>
+                            <Form.Item name="code" label={t('accessCode')}>
+                                <Input placeholder={t('optional')} />
+                            </Form.Item>
+                            <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
+                                <Select>
+                                    <Option value="BAIDU">{t('baiduNetdisk')}</Option>
+                                    <Option value="QUARK">{t('quarkCloud')}</Option>
+                                    <Option value="XUNLEI">{t('xunleiCloud')}</Option>
+                                    <Option value="ALIYUN">{t('aliyunDrive')}</Option>
+                                    <Option value="OTHER">{t('other')}</Option>
+                                </Select>
+                            </Form.Item>
+                        </>
+                    )}
+                    <Divider />
+                    <div className="flex justify-end gap-3">
+                        <Button onClick={() => setEditingResource(null)}>{t('cancel')}</Button>
+                        <Button type="primary" htmlType="submit" loading={savingEdit}>
+                            {t('submit')}
+                        </Button>
+                    </div>
+                </Form>
+            </Modal>
         </div>
     );
 }

@@ -224,5 +224,9 @@
   "returnedToAdmin": "已返回管理员",
   "p2pUploadHint": "P2P 投稿仅支持磁力链接或 .torrent 种子链接。",
   "magnetLinkRequired": "磁力链接必须以 magnet:?xt=urn:btih: 开头",
-  "torrentLinkRequired": "种子资源必须是 http(s) 的 .torrent 链接"
+  "torrentLinkRequired": "种子资源必须是 http(s) 的 .torrent 链接",
+  "editResource": "编辑资源",
+  "resourceUpdated": "资源已更新",
+  "resourceUpdateFailed": "更新资源失败",
+  "confirmReportInvalid": "确认举报这个资源失效吗？"
 }

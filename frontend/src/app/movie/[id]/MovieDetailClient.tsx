@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps } from 'antd';
-import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined } from '@ant-design/icons';
+import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
+import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -78,6 +78,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const [form] = Form.useForm();
     const resourceType = Form.useWatch('type', form) || 'DISK';
     const [resourceItems, setResourceItems] = useState(resources);
+    const [editingResource, setEditingResource] = useState<ResourceLink | null>(null);
     const isP2PType = resourceType === 'MAGNET' || resourceType === 'TORRENT';
 
     // Summary Expanded State
@@ -86,6 +87,28 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     // Favorite State
     const [isFavorited, setIsFavorited] = useState(false);
     const [favoriteCount, setFavoriteCount] = useState(movie.popularity || 0);
+
+    React.useEffect(() => {
+        setResourceItems(resources);
+    }, [resources]);
+
+    React.useEffect(() => {
+        if (!token || !movie.id) return;
+        api(`/api/resources/mine?movieId=${movie.id}&page=1&size=100`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data?.records) return;
+                setResourceItems(prev => {
+                    const merged = new Map<number, ResourceLink>();
+                    prev.forEach(item => merged.set(item.id, item));
+                    data.records.forEach((item: ResourceLink) => merged.set(item.id, item));
+                    return Array.from(merged.values());
+                });
+            })
+            .catch(() => {});
+    }, [movie.id, token]);
 
     React.useEffect(() => {
         if (token && movie.id) {
@@ -165,8 +188,17 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         "OTHER": { cn: t('其他'), en: t('other') }
     };
 
+    const sortedResourceItems = useMemo(() => {
+        return [...resourceItems].sort((a, b) => {
+            const aOwn = user?.id != null && a.uploaderId === user.id;
+            const bOwn = user?.id != null && b.uploaderId === user.id;
+            if (aOwn !== bOwn) return aOwn ? -1 : 1;
+            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+    }, [resourceItems, user?.id]);
+
     // Group Disk Resources by Provider
-    const diskResources = useMemo(() => resourceItems.filter(r => r.type === 'DISK'), [resourceItems]);
+    const diskResources = useMemo(() => sortedResourceItems.filter(r => r.type === 'DISK'), [sortedResourceItems]);
     const groupedDiskResources = useMemo(() => {
         const groups: Record<string, ResourceLink[]> = {};
         diskResources.forEach(r => {
@@ -177,11 +209,30 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         return groups;
     }, [diskResources]);
 
-    const p2pResources = useMemo(() => resourceItems.filter(r => r.type !== 'DISK'), [resourceItems]);
+    const p2pResources = useMemo(() => sortedResourceItems.filter(r => r.type !== 'DISK'), [sortedResourceItems]);
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
         message.success(t('copy') + " Success");
+    };
+
+    const openCreateResource = () => {
+        setEditingResource(null);
+        form.resetFields();
+        form.setFieldsValue({ type: 'DISK', provider: 'BAIDU' });
+        setIsModalOpen(true);
+    };
+
+    const openEditResource = (resource: ResourceLink) => {
+        setEditingResource(resource);
+        form.setFieldsValue({
+            name: resource.name,
+            type: resource.type || 'DISK',
+            url: resource.url,
+            code: resource.code,
+            provider: resource.provider || 'BAIDU',
+        });
+        setIsModalOpen(true);
     };
 
     const handleSubmit = async (values: ResourceFormValues) => {
@@ -191,22 +242,38 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         }
         setSubmitting(true);
         try {
-            const res = await api('/api/resources', {
-                method: 'POST',
+            const payload = {
+                movieId: movie.id,
+                ...values,
+                type: values.type || 'DISK',
+                provider: values.type === 'DISK' ? (values.provider || 'OTHER') : 'OTHER',
+                code: values.type === 'DISK' ? (values.code || '') : '',
+            };
+            const res = await api(editingResource ? `/api/resources/${editingResource.id}` : '/api/resources', {
+                method: editingResource ? 'PUT' : 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    movieId: movie.id,
-                    ...values,
-                    type: values.type || 'DISK',
-                    provider: values.type === 'DISK' ? values.provider : 'OTHER'
-                })
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                message.success(t('resourceSubmittedSuccessfully'));
+                message.success(editingResource ? t('resourceUpdated') : t('resourceSubmittedSuccessfully'));
+                if (editingResource) {
+                    setResourceItems(prev => prev.map(item => (
+                        item.id === editingResource.id
+                            ? {
+                                ...item,
+                                ...payload,
+                                auditStatus: user?.role === 'ADMIN' ? item.auditStatus : 0,
+                                linkStatus: 'NORMAL',
+                                reportCount: 0,
+                            }
+                            : item
+                    )));
+                }
                 setIsModalOpen(false);
+                setEditingResource(null);
                 form.resetFields();
                 router.refresh();
             } else {
@@ -319,9 +386,22 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                     </Space>
                 </div>
                 <Space>
-                    <Tooltip title={t('reportInvalidResource')}>
-                        <Button size="small" type="text" icon={<WarningOutlined />} onClick={() => handleReportInvalid(item)} />
-                    </Tooltip>
+                    {user?.id === item.uploaderId && (
+                        <Tooltip title={t('editResource')}>
+                            <Button size="small" type="text" icon={<EditOutlined />} onClick={() => openEditResource(item)} />
+                        </Tooltip>
+                    )}
+                    <Popconfirm
+                        title={t('reportInvalidResource')}
+                        description={t('confirmReportInvalid')}
+                        onConfirm={() => handleReportInvalid(item)}
+                        okText={t('submit')}
+                        cancelText={t('cancel')}
+                    >
+                        <Tooltip title={t('reportInvalidResource')}>
+                            <Button size="small" type="text" icon={<WarningOutlined />} />
+                        </Tooltip>
+                    </Popconfirm>
                     <Tooltip title={t('copy')}>
                         <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(item.url)} />
                     </Tooltip>
@@ -580,12 +660,12 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                                     <div className="w-1 h-6 bg-blue-500 rounded-full" />
                                     <Title level={3} className="!m-0">{t('downloadResources')}</Title>
-                                    <Tag className="rounded-full bg-gray-100 dark:bg-zinc-800 border-0">{resources.length} {t('itemsCount')}</Tag>
+                                    <Tag className="rounded-full bg-gray-100 dark:bg-zinc-800 border-0">{sortedResourceItems.length} {t('itemsCount')}</Tag>
                                     {user && (
                                         <Button
                                             type="primary"
                                             icon={<CloudUploadOutlined />}
-                                            onClick={() => setIsModalOpen(true)}
+                                            onClick={openCreateResource}
                                             className="ml-auto bg-blue-600"
                                             size="small"
                                         >
@@ -646,9 +726,12 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
 
                 {/* Upload Modal */}
                 <Modal
-                    title={<span className="text-lg font-bold">{t('shareResource')}</span>}
+                    title={<span className="text-lg font-bold">{editingResource ? t('editResource') : t('shareResource')}</span>}
                     open={isModalOpen}
-                    onCancel={() => setIsModalOpen(false)}
+                    onCancel={() => {
+                        setIsModalOpen(false);
+                        setEditingResource(null);
+                    }}
                     footer={null}
                     className="top-20"
                 >
@@ -700,7 +783,10 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         )}
                         <Divider />
                         <div className="flex justify-end gap-3">
-                            <Button onClick={() => setIsModalOpen(false)} className="rounded-md">{t('cancel')}</Button>
+                            <Button onClick={() => {
+                                setIsModalOpen(false);
+                                setEditingResource(null);
+                            }} className="rounded-md">{t('cancel')}</Button>
                             <Button type="primary" htmlType="submit" loading={submitting} className="rounded-md bg-blue-600">{t('submit')}</Button>
                         </div>
                     </Form>

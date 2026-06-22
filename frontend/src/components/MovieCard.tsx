@@ -7,6 +7,7 @@ import { MovieMetadata } from '@/types';
 interface MovieCardProps {
     movie: MovieMetadata;
     highlightKeyword?: string;
+    offsetPopularityBadge?: boolean;
 }
 
 const HighlightText: React.FC<{ text: string; keyword?: string }> = ({ text, keyword }) => {
@@ -24,7 +25,7 @@ const HighlightText: React.FC<{ text: string; keyword?: string }> = ({ text, key
     );
 };
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPopularityBadge = false }) => {
     const popularity = movie.popularity || 0;
 
     return (
@@ -52,7 +53,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword }) => {
 
                         {/* Top Left: Popularity (if > 0) */}
                         {popularity > 0 && (
-                            <div className="absolute top-2 left-2">
+                            <div className={`absolute top-2 ${offsetPopularityBadge ? 'left-10' : 'left-2'}`}>
                                 <span className="bg-red-500/80 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full border border-white/20 flex items-center gap-1">
                                     <HeartFilled className="text-[10px]" />
                                     {popularity}

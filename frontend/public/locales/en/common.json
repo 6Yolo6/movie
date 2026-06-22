@@ -224,5 +224,9 @@
   "returnedToAdmin": "Returned to admin",
   "p2pUploadHint": "P2P submissions accept magnet links or .torrent URLs only.",
   "magnetLinkRequired": "Magnet links must start with magnet:?xt=urn:btih:",
-  "torrentLinkRequired": "Torrent resources must be an http(s) .torrent URL"
+  "torrentLinkRequired": "Torrent resources must be an http(s) .torrent URL",
+  "editResource": "Edit resource",
+  "resourceUpdated": "Resource updated",
+  "resourceUpdateFailed": "Failed to update resource",
+  "confirmReportInvalid": "Report this resource as invalid?"
 }

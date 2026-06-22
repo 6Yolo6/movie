@@ -155,6 +155,7 @@ public class ResourceLinkController {
     public ResponseEntity<?> getMyResources(
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String linkStatus,
+            @RequestParam(required = false) String movieId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Authorization", required = false) String token) {
@@ -169,12 +170,75 @@ public class ResourceLinkController {
         if (linkStatus != null && !linkStatus.isBlank()) {
             query.eq("link_status", linkStatus);
         }
+        if (movieId != null && !movieId.isBlank()) {
+            query.eq("movie_id", movieId);
+        }
         query.orderByDesc("created_at");
 
         Page<ResourceLink> result = resourceLinkService.page(
                 new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
                 query);
         return ResponseEntity.ok(toAdminPage(result));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateOwnResource(
+            @PathVariable Long id,
+            @RequestBody ResourceSubmissionDTO dto,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser authUser = authHelper.requireUser(token);
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || "DELETED".equals(resource.getStatus())) {
+            return ResponseEntity.status(404).body("Resource not found");
+        }
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(authUser.getRole());
+        boolean isOwner = resource.getUploaderId() != null && resource.getUploaderId().equals(authUser.getId());
+        if (!isAdmin && !isOwner) {
+            return ResponseEntity.status(403).body("Forbidden");
+        }
+        if (dto.getUrl() == null || dto.getUrl().isBlank()) {
+            return ResponseEntity.badRequest().body("url is required");
+        }
+
+        String resourceUrl = dto.getUrl().trim();
+        String type = dto.getType() == null || dto.getType().isBlank()
+                ? resource.getType()
+                : dto.getType().trim().toUpperCase();
+        Set<String> allowedTypes = Set.of("DISK", "MAGNET", "TORRENT", "ONLINE");
+        if (!allowedTypes.contains(type)) {
+            return ResponseEntity.badRequest().body("Invalid resource type");
+        }
+        String urlError = validateResourceUrl(type, resourceUrl);
+        if (urlError != null) {
+            return ResponseEntity.badRequest().body(urlError);
+        }
+        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
+                ? "OTHER"
+                : dto.getProvider().trim().toUpperCase();
+        if ("DISK".equals(type) && "OTHER".equals(provider)) {
+            return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
+        }
+        long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("url", resourceUrl)
+                .eq("status", "ACTIVE")
+                .ne("id", id));
+        if (duplicateCount > 0) {
+            return ResponseEntity.status(409).body("This resource URL has already been submitted.");
+        }
+
+        resource.setName(dto.getName());
+        resource.setUrl(resourceUrl);
+        resource.setCode("DISK".equals(type) ? dto.getCode() : null);
+        resource.setProvider(provider);
+        resource.setType(type);
+        resource.setLinkStatus("NORMAL");
+        resource.setReportCount(0);
+        if (!isAdmin) {
+            String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
+            resource.setAuditStatus("true".equals(auditEnabled) ? 0 : 1);
+        }
+        resourceLinkService.updateById(resource);
+        return ResponseEntity.ok("Resource updated");
     }
 
     @DeleteMapping("/{id}")

@@ -84,7 +84,7 @@ export default function HotPage() {
                                             {idx + 1}
                                         </div>
                                     )}
-                                    <MovieCard movie={item.movie} />
+                                    <MovieCard movie={item.movie} offsetPopularityBadge={idx < 3} />
                                 </div>
                             ))}
                         </div>
