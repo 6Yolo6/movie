@@ -8,6 +8,7 @@ import com.gying.movie.entity.Comment;
 import com.gying.movie.entity.CommentVote;
 import com.gying.movie.mapper.CommentVoteMapper;
 import com.gying.movie.service.ICommentService;
+import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,9 @@ public class CommentController {
     @Autowired
     private AuthHelper authHelper;
 
+    @Autowired
+    private IUserNotificationService notificationService;
+
     @PostMapping
     public Map<String, String> addComment(
             @RequestHeader(value = "Authorization", required = false) String token,
@@ -53,8 +57,9 @@ public class CommentController {
         if (comment.getContent() == null || comment.getContent().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content is required");
         }
+        Comment parent = null;
         if (comment.getParentId() != null && comment.getParentId() > 0) {
-            Comment parent = commentService.getById(comment.getParentId());
+            parent = commentService.getById(comment.getParentId());
             if (parent == null || parent.getStatus() == null || parent.getStatus() != 1) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent comment not found");
             }
@@ -69,6 +74,7 @@ public class CommentController {
         comment.setIpAddress(request.getRemoteAddr());
 
         commentService.save(comment);
+        notifyCommentReply(parent, comment, user);
 
         return Map.of("message", "Comment added successfully");
     }
@@ -128,6 +134,30 @@ public class CommentController {
         comment.setStatus(2);
         commentService.updateById(comment);
         return Map.of("message", "Comment deleted successfully");
+    }
+
+    private void notifyCommentReply(Comment parent, Comment reply, AuthUser replier) {
+        if (parent == null || parent.getUserId() == null || parent.getUserId().equals(replier.getId())) {
+            return;
+        }
+        notificationService.notifyUser(
+                parent.getUserId(),
+                "COMMENT_REPLY",
+                "New comment reply",
+                replier.getUsername() + " replied to your comment: " + shorten(reply.getContent(), 80),
+                "COMMENT",
+                reply.getRelateId());
+    }
+
+    private String shorten(String text, int maxLength) {
+        if (text == null) {
+            return "";
+        }
+        String trimmed = text.trim();
+        if (trimmed.length() <= maxLength) {
+            return trimmed;
+        }
+        return trimmed.substring(0, maxLength) + "...";
     }
 
 }

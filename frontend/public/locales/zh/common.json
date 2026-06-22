@@ -204,7 +204,7 @@
   "discoverMovies": "发现影片",
   "loadMore": "加载更多",
   "notifications": "通知",
-  "notificationsHint": "查看资源审核结果和链接状态变更。",
+  "notificationsHint": "查看资源审核结果、链接状态变更和评论回复。",
   "unreadNotifications": "只看未读",
   "markAllRead": "全部已读",
   "markRead": "标为已读",
@@ -213,5 +213,16 @@
   "notificationMarkedRead": "已标为已读",
   "notificationsMarkedRead": "已全部标为已读",
   "totalNotifications": "共 {{count}} 条通知",
-  "viewMyResources": "查看我的投稿"
+  "viewMyResources": "查看我的投稿",
+  "viewRelatedMovie": "查看相关影片",
+  "switchAccount": "切换账号",
+  "switchTargetUser": "目标用户",
+  "selectUser": "选择用户",
+  "accountSwitched": "账号已切换",
+  "accountSwitchFailed": "切换账号失败",
+  "returnToAdmin": "返回管理员",
+  "returnedToAdmin": "已返回管理员",
+  "p2pUploadHint": "P2P 投稿仅支持磁力链接或 .torrent 种子链接。",
+  "magnetLinkRequired": "磁力链接必须以 magnet:?xt=urn:btih: 开头",
+  "torrentLinkRequired": "种子资源必须是 http(s) 的 .torrent 链接"
 }

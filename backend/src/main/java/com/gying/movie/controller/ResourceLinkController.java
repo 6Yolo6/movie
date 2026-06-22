@@ -68,12 +68,17 @@ public class ResourceLinkController {
             return ResponseEntity.badRequest().body("movieId and url are required");
         }
 
+        String resourceUrl = dto.getUrl().trim();
         String type = dto.getType() == null || dto.getType().isBlank()
                 ? "DISK"
                 : dto.getType().trim().toUpperCase();
         Set<String> allowedTypes = Set.of("DISK", "MAGNET", "TORRENT", "ONLINE");
         if (!allowedTypes.contains(type)) {
             return ResponseEntity.badRequest().body("Invalid resource type");
+        }
+        String urlError = validateResourceUrl(type, resourceUrl);
+        if (urlError != null) {
+            return ResponseEntity.badRequest().body(urlError);
         }
         String provider = dto.getProvider() == null || dto.getProvider().isBlank()
                 ? "OTHER"
@@ -107,7 +112,7 @@ public class ResourceLinkController {
         }
 
         long duplicateCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("url", dto.getUrl()).eq("status", "ACTIVE"));
+                new QueryWrapper<ResourceLink>().eq("url", resourceUrl).eq("status", "ACTIVE"));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
@@ -115,7 +120,7 @@ public class ResourceLinkController {
         ResourceLink link = new ResourceLink();
         link.setMovieId(dto.getMovieId());
         link.setName(dto.getName());
-        link.setUrl(dto.getUrl());
+        link.setUrl(resourceUrl);
         link.setCode(dto.getCode());
         link.setProvider(provider);
         link.setType(type);
@@ -391,6 +396,26 @@ public class ResourceLinkController {
                 .filter(Objects::nonNull)
                 .map(id -> ((Number) id).longValue())
                 .toList();
+    }
+
+    private String validateResourceUrl(String type, String url) {
+        String lowerUrl = url.toLowerCase();
+        return switch (type) {
+            case "MAGNET" -> lowerUrl.startsWith("magnet:?xt=urn:btih:")
+                    ? null
+                    : "Magnet resources must start with magnet:?xt=urn:btih:";
+            case "TORRENT" -> isHttpUrl(lowerUrl) && lowerUrl.contains(".torrent")
+                    ? null
+                    : "Torrent resources must be an http(s) .torrent URL";
+            case "DISK", "ONLINE" -> isHttpUrl(lowerUrl)
+                    ? null
+                    : "Cloud disk and online resources must be http(s) URLs";
+            default -> "Invalid resource type";
+        };
+    }
+
+    private boolean isHttpUrl(String url) {
+        return url.startsWith("http://") || url.startsWith("https://");
     }
 
     private void notifyResourceAudit(ResourceLink resource, int auditStatus) {

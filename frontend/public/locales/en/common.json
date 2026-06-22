@@ -204,7 +204,7 @@
   "discoverMovies": "Discover Movies",
   "loadMore": "Load More",
   "notifications": "Notifications",
-  "notificationsHint": "Review resource audit updates and link status changes.",
+  "notificationsHint": "Review resource audit updates, link status changes, and comment replies.",
   "unreadNotifications": "Unread only",
   "markAllRead": "Mark all read",
   "markRead": "Mark read",
@@ -213,5 +213,16 @@
   "notificationMarkedRead": "Notification marked as read",
   "notificationsMarkedRead": "All notifications marked as read",
   "totalNotifications": "Total {{count}} notifications",
-  "viewMyResources": "View my submissions"
+  "viewMyResources": "View my submissions",
+  "viewRelatedMovie": "View related movie",
+  "switchAccount": "Switch account",
+  "switchTargetUser": "Target user",
+  "selectUser": "Select user",
+  "accountSwitched": "Account switched",
+  "accountSwitchFailed": "Failed to switch account",
+  "returnToAdmin": "Return to admin",
+  "returnedToAdmin": "Returned to admin",
+  "p2pUploadHint": "P2P submissions accept magnet links or .torrent URLs only.",
+  "magnetLinkRequired": "Magnet links must start with magnet:?xt=urn:btih:",
+  "torrentLinkRequired": "Torrent resources must be an http(s) .torrent URL"
 }

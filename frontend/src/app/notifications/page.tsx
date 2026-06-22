@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { App, Badge, Button, Card, Empty, List, Space, Switch, Tag, Typography } from 'antd';
-import { BellOutlined, CheckOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckOutlined, CloudUploadOutlined, CommentOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { UserNotification } from '@/types';
@@ -109,9 +109,21 @@ export default function NotificationsPage() {
                 return <Tag color="blue">{t('resourceAudit')}</Tag>;
             case 'RESOURCE_LINK_STATUS':
                 return <Tag color="orange">{t('linkStatus')}</Tag>;
+            case 'COMMENT_REPLY':
+                return <Tag color="green">{t('reply')}</Tag>;
             default:
                 return <Tag>{type}</Tag>;
         }
+    };
+
+    const getTargetAction = (item: UserNotification) => {
+        if (item.targetType === 'RESOURCE') {
+            return <Link key="target" href="/my-resources">{t('viewMyResources')}</Link>;
+        }
+        if (item.targetType === 'COMMENT' && item.targetId) {
+            return <Link key="target" href={`/movie/${item.targetId}`}>{t('viewRelatedMovie')}</Link>;
+        }
+        return null;
     };
 
     if (!mounted) {
@@ -179,9 +191,7 @@ export default function NotificationsPage() {
                             <List.Item
                                 className={!item.readFlag ? 'bg-blue-50/70 dark:bg-blue-950/20 px-4 rounded-md' : 'px-4'}
                                 actions={[
-                                    item.targetType === 'RESOURCE' ? (
-                                        <Link key="target" href="/my-resources">{t('viewMyResources')}</Link>
-                                    ) : null,
+                                    getTargetAction(item),
                                     !item.readFlag ? (
                                         <Button
                                             key="read"
@@ -196,7 +206,9 @@ export default function NotificationsPage() {
                                 ].filter(Boolean)}
                             >
                                 <List.Item.Meta
-                                    avatar={<CloudUploadOutlined className="text-xl text-blue-500 mt-1" />}
+                                    avatar={item.targetType === 'COMMENT'
+                                        ? <CommentOutlined className="text-xl text-green-500 mt-1" />
+                                        : <CloudUploadOutlined className="text-xl text-blue-500 mt-1" />}
                                     title={
                                         <Space wrap>
                                             {!item.readFlag && <Badge status="processing" />}

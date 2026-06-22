@@ -2,11 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Avatar, Badge, Button, Drawer, Dropdown, Input, MenuProps, Space, Switch } from 'antd';
+import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
 import {
     BellOutlined, CloudUploadOutlined, CommentOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
-    PlaySquareOutlined, DesktopOutlined, UserOutlined, VideoCameraOutlined,
+    PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -14,16 +14,32 @@ import { useTheme } from './ThemeProvider';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../lib/api';
 
+const ADMIN_BACKUP_KEY = 'admin-auth-backup';
+
+interface SwitchableUser {
+    id: number;
+    username: string;
+    role: string;
+    enabled: boolean;
+}
+
 export default function Navbar() {
-    const { user, token, logout } = useAuthStore();
+    const { user, token, login, logout } = useAuthStore();
     const { theme, toggleTheme } = useTheme();
     const { t, i18n } = useTranslation();
+    const { message } = App.useApp();
     const router = useRouter();
     const searchParams = useSearchParams();
     const keyword = searchParams.get('keyword') || '';
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [mounted, setMounted] = useState(false);
+    const [switchModalOpen, setSwitchModalOpen] = useState(false);
+    const [switchingAccount, setSwitchingAccount] = useState(false);
+    const [switchUsers, setSwitchUsers] = useState<SwitchableUser[]>([]);
+    const [loadingSwitchUsers, setLoadingSwitchUsers] = useState(false);
+    const [hasAdminBackup, setHasAdminBackup] = useState(false);
+    const [switchForm] = Form.useForm();
 
     const fetchUnreadCount = useCallback(async () => {
         if (!user || !token) {
@@ -45,6 +61,7 @@ export default function Navbar() {
 
     useEffect(() => {
         setMounted(true);
+        setHasAdminBackup(Boolean(window.localStorage.getItem(ADMIN_BACKUP_KEY)));
     }, []);
 
     useEffect(() => {
@@ -57,6 +74,72 @@ export default function Navbar() {
         logout();
         setDrawerOpen(false);
         router.push('/');
+    };
+
+    const fetchSwitchUsers = async () => {
+        if (!token || user?.role !== 'ADMIN') return;
+        setLoadingSwitchUsers(true);
+        try {
+            const res = await api('/api/admin/users?page=1&size=100', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSwitchUsers((data.records || []).filter((item: SwitchableUser) => item.enabled));
+            } else {
+                message.error(t('usersLoadFailed'));
+            }
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setLoadingSwitchUsers(false);
+        }
+    };
+
+    const openSwitchModal = () => {
+        setSwitchModalOpen(true);
+        fetchSwitchUsers();
+    };
+
+    const handleSwitchAccount = async (values: { userId: number }) => {
+        if (!token || !user || user.role !== 'ADMIN') return;
+        setSwitchingAccount(true);
+        try {
+            const res = await api(`/api/admin/users/${values.userId}/impersonate`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                message.error(data.error || t('accountSwitchFailed'));
+                return;
+            }
+
+            window.localStorage.setItem(ADMIN_BACKUP_KEY, JSON.stringify({ token, user }));
+            setHasAdminBackup(true);
+            login(data.token, data.user);
+            setSwitchModalOpen(false);
+            setDrawerOpen(false);
+            switchForm.resetFields();
+            message.success(t('accountSwitched'));
+            router.refresh();
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setSwitchingAccount(false);
+        }
+    };
+
+    const handleReturnAdmin = () => {
+        const rawBackup = window.localStorage.getItem(ADMIN_BACKUP_KEY);
+        if (!rawBackup) return;
+        const backup = JSON.parse(rawBackup);
+        login(backup.token, backup.user);
+        window.localStorage.removeItem(ADMIN_BACKUP_KEY);
+        setHasAdminBackup(false);
+        setDrawerOpen(false);
+        message.success(t('returnedToAdmin'));
+        router.refresh();
     };
 
     const closeDrawer = () => setDrawerOpen(false);
@@ -107,6 +190,18 @@ export default function Navbar() {
             label: <Link href="/my-resources" onClick={closeDrawer}>{t('myResources')}</Link>,
             icon: <CloudUploadOutlined />,
         },
+        ...(hasAdminBackup ? [{
+            key: 'returnAdmin',
+            label: t('returnToAdmin'),
+            icon: <SwapOutlined />,
+            onClick: handleReturnAdmin,
+        }] : []),
+        ...(user?.role === 'ADMIN' ? [{
+            key: 'switchAccount',
+            label: t('switchAccount'),
+            icon: <SwapOutlined />,
+            onClick: openSwitchModal,
+        }] : []),
         ...(user?.role === 'ADMIN' ? [
             {
                 key: 'settings',
@@ -296,9 +391,74 @@ export default function Navbar() {
                             <CloudUploadOutlined />
                             <span>{t('myResources')}</span>
                         </Link>
+                        {user.role === 'ADMIN' && (
+                            <button
+                                type="button"
+                                onClick={openSwitchModal}
+                                className="flex items-center gap-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-base text-left w-full"
+                            >
+                                <SwapOutlined />
+                                <span>{t('switchAccount')}</span>
+                            </button>
+                        )}
+                        {hasAdminBackup && (
+                            <button
+                                type="button"
+                                onClick={handleReturnAdmin}
+                                className="flex items-center gap-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-base text-left w-full"
+                            >
+                                <SwapOutlined />
+                                <span>{t('returnToAdmin')}</span>
+                            </button>
+                        )}
                     </>
                 )}
             </Drawer>
+
+            <Modal
+                title={t('switchAccount')}
+                open={switchModalOpen}
+                onCancel={() => setSwitchModalOpen(false)}
+                footer={null}
+                destroyOnHidden
+            >
+                <Form
+                    form={switchForm}
+                    layout="vertical"
+                    onFinish={handleSwitchAccount}
+                >
+                    <Form.Item name="userId" label={t('switchTargetUser')} rules={[{ required: true }]}>
+                        <Select
+                            showSearch
+                            loading={loadingSwitchUsers}
+                            placeholder={t('selectUser')}
+                            optionFilterProp="label"
+                        >
+                            {switchUsers.map(item => (
+                                <Select.Option
+                                    key={item.id}
+                                    value={item.id}
+                                    label={item.username}
+                                    disabled={item.id === user?.id}
+                                >
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span>{item.username}</span>
+                                        <Tag color={item.role === 'ADMIN' ? 'red' : item.role === 'PUBLISHER' ? 'blue' : 'default'}>
+                                            {item.role}
+                                        </Tag>
+                                    </div>
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <div className="flex justify-end gap-3">
+                        <Button onClick={() => setSwitchModalOpen(false)}>{t('cancel')}</Button>
+                        <Button type="primary" htmlType="submit" loading={switchingAccount}>
+                            {t('switchAccount')}
+                        </Button>
+                    </div>
+                </Form>
+            </Modal>
         </>
     );
 }

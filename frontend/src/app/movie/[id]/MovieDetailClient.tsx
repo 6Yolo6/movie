@@ -78,6 +78,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const [form] = Form.useForm();
     const resourceType = Form.useWatch('type', form) || 'DISK';
     const [resourceItems, setResourceItems] = useState(resources);
+    const isP2PType = resourceType === 'MAGNET' || resourceType === 'TORRENT';
 
     // Summary Expanded State
     const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -217,6 +218,50 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const getLinkPlaceholder = () => {
+        switch (resourceType) {
+            case 'MAGNET':
+                return 'magnet:?xt=urn:btih:...';
+            case 'TORRENT':
+                return 'https://example.com/movie.torrent';
+            case 'ONLINE':
+                return 'https://example.com/watch';
+            default:
+                return 'https://pan.example.com/s/...';
+        }
+    };
+
+    const getUrlRules = () => {
+        if (resourceType === 'MAGNET') {
+            return [
+                { required: true },
+                {
+                    validator: (_: unknown, value?: string) => {
+                        if (!value || value.toLowerCase().startsWith('magnet:?xt=urn:btih:')) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(new Error(t('magnetLinkRequired')));
+                    },
+                },
+            ];
+        }
+        if (resourceType === 'TORRENT') {
+            return [
+                { required: true },
+                {
+                    validator: (_: unknown, value?: string) => {
+                        const lowerValue = value?.toLowerCase() || '';
+                        if (!value || ((lowerValue.startsWith('http://') || lowerValue.startsWith('https://')) && lowerValue.includes('.torrent'))) {
+                            return Promise.resolve();
+                        }
+                        return Promise.reject(new Error(t('torrentLinkRequired')));
+                    },
+                },
+            ];
+        }
+        return [{ required: true, type: 'url' as const }];
     };
 
     const handleReportInvalid = async (item: ResourceLink) => {
@@ -625,18 +670,23 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                 <Option value="ONLINE">{t('onlinePlay')}</Option>
                             </Select>
                         </Form.Item>
+                        {isP2PType && (
+                            <Text type="secondary" className="block -mt-2 mb-3">
+                                {t('p2pUploadHint')}
+                            </Text>
+                        )}
                         <Form.Item
                             name="url"
                             label={t('linkUrl')}
-                            rules={resourceType === 'MAGNET' || resourceType === 'TORRENT'
-                                ? [{ required: true }]
-                                : [{ required: true, type: 'url' }]}
+                            rules={getUrlRules()}
                         >
-                            <Input placeholder={resourceType === 'MAGNET' ? "magnet:?xt=urn:btih:..." : "https://..."} className="rounded-md" />
+                            <Input placeholder={getLinkPlaceholder()} className="rounded-md" />
                         </Form.Item>
-                        <Form.Item name="code" label={t('accessCode')}>
-                            <Input placeholder={t('optional')} className="rounded-md" />
-                        </Form.Item>
+                        {resourceType === 'DISK' && (
+                            <Form.Item name="code" label={t('accessCode')}>
+                                <Input placeholder={t('optional')} className="rounded-md" />
+                            </Form.Item>
+                        )}
                         {resourceType === 'DISK' && (
                             <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
                                 <Select className="rounded-md">

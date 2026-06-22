@@ -6,6 +6,7 @@ import com.gying.movie.dto.AuthUser;
 import com.gying.movie.entity.SysUser;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.utils.AuthHelper;
+import com.gying.movie.utils.JwtUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +19,12 @@ public class UserManagementController {
 
     private final ISysUserService sysUserService;
     private final AuthHelper authHelper;
+    private final JwtUtils jwtUtils;
 
-    public UserManagementController(ISysUserService sysUserService, AuthHelper authHelper) {
+    public UserManagementController(ISysUserService sysUserService, AuthHelper authHelper, JwtUtils jwtUtils) {
         this.sysUserService = sysUserService;
         this.authHelper = authHelper;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping
@@ -58,11 +61,14 @@ public class UserManagementController {
             @PathVariable Long id,
             @RequestBody Map<String, String> request,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        authHelper.requireAdmin(token);
+        AuthUser admin = authHelper.requireAdmin(token);
 
         String role = request.get("role");
-        if (!"ADMIN".equals(role) && !"PUBLISHER".equals(role) && !"USER".equals(role)) {
-            return ResponseEntity.badRequest().body("Invalid role. Must be ADMIN, PUBLISHER, or USER");
+        if (!"PUBLISHER".equals(role) && !"USER".equals(role)) {
+            return ResponseEntity.badRequest().body("Invalid role. Must be PUBLISHER or USER");
+        }
+        if (admin.getId().equals(id)) {
+            return ResponseEntity.badRequest().body("Cannot change your own role");
         }
 
         SysUser user = sysUserService.getById(id);
@@ -77,6 +83,32 @@ public class UserManagementController {
         response.put("message", "User role updated successfully");
         response.put("userId", id);
         response.put("newRole", role);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/impersonate")
+    public ResponseEntity<?> impersonateUser(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        SysUser target = sysUserService.getById(id);
+        if (target == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+        if (Boolean.FALSE.equals(target.getEnabled())) {
+            return ResponseEntity.status(403).body("Cannot switch to a disabled account");
+        }
+
+        String targetToken = jwtUtils.generateToken(target.getId(), target.getUsername(), target.getRole());
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", target.getId());
+        userInfo.put("username", target.getUsername());
+        userInfo.put("role", target.getRole());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", targetToken);
+        response.put("user", userInfo);
+        response.put("message", "Account switched successfully");
         return ResponseEntity.ok(response);
     }
 

@@ -170,7 +170,6 @@ export default function UserManagementPage() {
                 >
                     <Option value="USER">USER</Option>
                     <Option value="PUBLISHER">PUBLISHER</Option>
-                    <Option value="ADMIN">ADMIN</Option>
                 </Select>
             ),
         },
