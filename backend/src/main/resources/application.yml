@@ -1,35 +1,33 @@
 server:
-  port: 8880
+  port: ${SERVER_PORT:8880}
 
 spring:
   application:
     name: gying-movie
   datasource:
-    url: jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: Root@123
+    url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:Root@123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 minio:
-  url-prefix: http://localhost:9000/gying/
+  url-prefix: ${MINIO_URL_PREFIX:http://localhost:9000/gying/}
 
-# Frontend URL for CORS (should be configured per environment)
 app:
   cors:
-    allowed-origin: http://localhost:3000
+    allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
 
 jwt:
-  # Override in production. Must be at least 32 bytes for HS256.
-  secret: gying-movie-dev-secret-change-me-please-32-bytes
-  expiration-ms: 86400000
+  secret: ${JWT_SECRET:gying-movie-dev-secret-change-me-please-32-bytes}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 mybatis-plus:
   configuration:
-    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # Enable for dev debugging only
     map-underscore-to-camel-case: true
   global-config:
     db-config:

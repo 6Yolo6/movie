@@ -6,7 +6,7 @@ import { App, Button, Card, Divider, Empty, Form, Input, Modal, Popconfirm, Sele
 import { CloudUploadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 import { ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 
@@ -94,6 +94,10 @@ export default function MyResourcesPage() {
             url: resource.url,
             code: resource.code,
             provider: resource.provider || 'BAIDU',
+            quality: resource.quality,
+            subtitle: resource.subtitle,
+            fileSize: resource.fileSize,
+            versionNote: resource.versionNote,
         });
     };
 
@@ -134,6 +138,10 @@ export default function MyResourcesPage() {
         url: string;
         code?: string;
         provider?: string;
+        quality?: string;
+        subtitle?: string;
+        fileSize?: string;
+        versionNote?: string;
     }) => {
         if (!token || !editingResource) return;
         setSavingEdit(true);
@@ -154,7 +162,7 @@ export default function MyResourcesPage() {
                 editForm.resetFields();
                 fetchResources();
             } else {
-                const msg = await res.text();
+                const msg = await readApiError(res, t('resourceUpdateFailed'));
                 message.error(msg || t('resourceUpdateFailed'));
             }
         } catch {
@@ -244,6 +252,21 @@ export default function MyResourcesPage() {
             dataIndex: 'reportCount',
             key: 'reportCount',
             width: 90,
+        },
+        {
+            title: t('quality'),
+            dataIndex: 'quality',
+            key: 'quality',
+            width: 100,
+            render: (value: string) => value || '-',
+        },
+        {
+            title: t('rejectReason'),
+            dataIndex: 'rejectReason',
+            key: 'rejectReason',
+            width: 180,
+            ellipsis: true,
+            render: (value: string, record) => record.auditStatus === 2 ? (value || '-') : '-',
         },
         {
             title: t('submitted'),
@@ -396,6 +419,20 @@ export default function MyResourcesPage() {
                             </Form.Item>
                         </>
                     )}
+                    <Space className="w-full" size="middle">
+                        <Form.Item name="quality" label={t('quality')} className="flex-1">
+                            <Input placeholder="4K / 1080P" />
+                        </Form.Item>
+                        <Form.Item name="subtitle" label={t('subtitle')} className="flex-1">
+                            <Input placeholder={t('optional')} />
+                        </Form.Item>
+                        <Form.Item name="fileSize" label={t('fileSize')} className="flex-1">
+                            <Input placeholder="8.5GB" />
+                        </Form.Item>
+                    </Space>
+                    <Form.Item name="versionNote" label={t('versionNote')}>
+                        <Input placeholder={t('versionNotePlaceholder')} />
+                    </Form.Item>
                     <Divider />
                     <div className="flex justify-end gap-3">
                         <Button onClick={() => setEditingResource(null)}>{t('cancel')}</Button>

@@ -7,9 +7,11 @@ import com.gying.movie.dto.ResourceAdminDTO;
 import com.gying.movie.dto.ResourceSubmissionDTO;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.entity.ResourceReport;
 import com.gying.movie.entity.SysUser;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IResourceReportService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class ResourceLinkController {
 
     private final IResourceLinkService resourceLinkService;
+    private final IResourceReportService resourceReportService;
     private final ISysUserService sysUserService;
     private final ISysConfigService sysConfigService;
     private final IMovieMetadataService movieService;
@@ -42,6 +45,7 @@ public class ResourceLinkController {
 
     public ResourceLinkController(
             IResourceLinkService resourceLinkService,
+            IResourceReportService resourceReportService,
             ISysUserService sysUserService,
             ISysConfigService sysConfigService,
             IMovieMetadataService movieService,
@@ -49,6 +53,7 @@ public class ResourceLinkController {
             AuthHelper authHelper,
             StringRedisTemplate stringRedisTemplate) {
         this.resourceLinkService = resourceLinkService;
+        this.resourceReportService = resourceReportService;
         this.sysUserService = sysUserService;
         this.sysConfigService = sysConfigService;
         this.movieService = movieService;
@@ -119,9 +124,9 @@ public class ResourceLinkController {
 
         ResourceLink link = new ResourceLink();
         link.setMovieId(dto.getMovieId());
-        link.setName(dto.getName());
+        link.setName(cleanOptional(dto.getName(), 255));
         link.setUrl(resourceUrl);
-        link.setCode(dto.getCode());
+        link.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
         link.setProvider(provider);
         link.setType(type);
         link.setUploaderId(authUser.getId());
@@ -129,6 +134,8 @@ public class ResourceLinkController {
         link.setStatus("ACTIVE");
         link.setLinkStatus("NORMAL");
         link.setReportCount(0);
+        applyQualityFields(link, dto);
+        link.setRejectReason(null);
         link.setCreatedAt(LocalDateTime.now());
 
         resourceLinkService.addResource(link);
@@ -138,12 +145,31 @@ public class ResourceLinkController {
     }
 
     @PostMapping("/{id}/report")
-    public ResponseEntity<?> reportInvalidResource(@PathVariable Long id) {
+    public ResponseEntity<?> reportInvalidResource(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser authUser = authHelper.requireUser(token);
         ResourceLink resource = resourceLinkService.getById(id);
         if (resource == null || !"ACTIVE".equals(resource.getStatus())) {
             return ResponseEntity.status(404).body("Resource not found");
         }
-        resource.setReportCount(resource.getReportCount() == null ? 1 : resource.getReportCount() + 1);
+
+        ResourceReport existing = resourceReportService.getOne(new QueryWrapper<ResourceReport>()
+                .eq("resource_id", id)
+                .eq("user_id", authUser.getId())
+                .eq("status", "PENDING")
+                .last("LIMIT 1"));
+        if (existing == null) {
+            ResourceReport report = new ResourceReport();
+            report.setResourceId(id);
+            report.setUserId(authUser.getId());
+            report.setReason(cleanOptional(request == null ? null : request.get("reason"), 255));
+            report.setStatus("PENDING");
+            report.setCreatedAt(LocalDateTime.now());
+            resourceReportService.save(report);
+            resource.setReportCount(resource.getReportCount() == null ? 1 : resource.getReportCount() + 1);
+        }
         if ("NORMAL".equals(resource.getLinkStatus())) {
             resource.setLinkStatus("SUSPECTED_INVALID");
         }
@@ -226,13 +252,15 @@ public class ResourceLinkController {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
 
-        resource.setName(dto.getName());
+        resource.setName(cleanOptional(dto.getName(), 255));
         resource.setUrl(resourceUrl);
-        resource.setCode("DISK".equals(type) ? dto.getCode() : null);
+        resource.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
         resource.setProvider(provider);
         resource.setType(type);
         resource.setLinkStatus("NORMAL");
         resource.setReportCount(0);
+        applyQualityFields(resource, dto);
+        resource.setRejectReason(null);
         if (!isAdmin) {
             String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
             resource.setAuditStatus("true".equals(auditEnabled) ? 0 : 1);
@@ -264,6 +292,7 @@ public class ResourceLinkController {
     public ResponseEntity<?> auditResource(
             @PathVariable Long id,
             @RequestParam Integer status,
+            @RequestParam(required = false) String reason,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         if (status != 1 && status != 2) {
@@ -274,6 +303,7 @@ public class ResourceLinkController {
             return ResponseEntity.status(404).body("Resource not found");
         }
         resource.setAuditStatus(status);
+        resource.setRejectReason(status == 2 ? cleanOptional(reason, 255) : null);
         resourceLinkService.updateById(resource);
         notifyResourceAudit(resource, status);
         return ResponseEntity.ok(status == 1 ? "Resource approved" : "Resource rejected");
@@ -286,6 +316,7 @@ public class ResourceLinkController {
         authHelper.requireAdmin(token);
         List<Long> ids = toLongIds(request.get("ids"));
         Integer status = (Integer) request.get("status");
+        String reason = cleanOptional((String) request.get("reason"), 255);
         if (status != 1 && status != 2) {
             return ResponseEntity.badRequest().body("Status must be 1 (approve) or 2 (reject)");
         }
@@ -293,6 +324,7 @@ public class ResourceLinkController {
             ResourceLink resource = resourceLinkService.getById(id);
             if (resource != null && !"DELETED".equals(resource.getStatus())) {
                 resource.setAuditStatus(status);
+                resource.setRejectReason(status == 2 ? (reason == null ? "Batch rejected" : reason) : null);
                 resourceLinkService.updateById(resource);
                 notifyResourceAudit(resource, status);
             }
@@ -482,6 +514,24 @@ public class ResourceLinkController {
         return url.startsWith("http://") || url.startsWith("https://");
     }
 
+    private void applyQualityFields(ResourceLink resource, ResourceSubmissionDTO dto) {
+        resource.setQuality(cleanOptional(dto.getQuality(), 50));
+        resource.setSubtitle(cleanOptional(dto.getSubtitle(), 50));
+        resource.setFileSize(cleanOptional(dto.getFileSize(), 50));
+        resource.setVersionNote(cleanOptional(dto.getVersionNote(), 255));
+    }
+
+    private String cleanOptional(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
     private void notifyResourceAudit(ResourceLink resource, int auditStatus) {
         if (resource.getUploaderId() == null) {
             return;
@@ -491,9 +541,10 @@ public class ResourceLinkController {
                 ? "resource"
                 : resource.getName();
         String title = auditStatus == 1 ? "Resource approved" : "Resource rejected";
+        String rejectReason = resource.getRejectReason() == null ? "" : " Reason: " + resource.getRejectReason();
         String content = auditStatus == 1
                 ? "Your submission \"" + resourceName + "\" for " + movieTitle + " has been approved."
-                : "Your submission \"" + resourceName + "\" for " + movieTitle + " has been rejected.";
+                : "Your submission \"" + resourceName + "\" for " + movieTitle + " has been rejected." + rejectReason;
         notificationService.notifyUser(
                 resource.getUploaderId(),
                 "RESOURCE_AUDIT",

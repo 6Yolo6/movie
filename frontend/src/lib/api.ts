@@ -26,3 +26,17 @@ export async function api(path: string, options: RequestInit = {}): Promise<Resp
 
     return response;
 }
+
+export async function readApiError(response: Response, fallback = 'Operation failed'): Promise<string> {
+    try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const data = await response.json();
+            return data?.message || data?.error || fallback;
+        }
+        const text = await response.text();
+        return text || fallback;
+    } catch {
+        return fallback;
+    }
+}

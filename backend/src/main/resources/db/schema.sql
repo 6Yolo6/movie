@@ -60,6 +60,11 @@ CREATE TABLE `resource_link` (
   `status` varchar(20) DEFAULT 'ACTIVE' COMMENT 'ACTIVE, DELETED',
   `link_status` varchar(20) DEFAULT 'NORMAL' COMMENT 'NORMAL, SUSPECTED_INVALID, INVALID',
   `report_count` int DEFAULT '0',
+  `quality` varchar(50) DEFAULT NULL COMMENT 'Quality label, e.g. 4K/1080P',
+  `subtitle` varchar(50) DEFAULT NULL COMMENT 'Subtitle information',
+  `file_size` varchar(50) DEFAULT NULL COMMENT 'File size label',
+  `version_note` varchar(255) DEFAULT NULL COMMENT 'Version or release note',
+  `reject_reason` varchar(255) DEFAULT NULL COMMENT 'Audit rejection reason',
   `remark` varchar(255) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -134,6 +139,23 @@ CREATE TABLE `comment_vote` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Comment Votes';
 
 -- ----------------------------
+-- Table structure for resource_report
+-- ----------------------------
+DROP TABLE IF EXISTS `resource_report`;
+CREATE TABLE `resource_report` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `resource_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'PENDING' COMMENT 'PENDING, HANDLED, FALSE_REPORT',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `handled_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_resource_user_pending` (`resource_id`, `user_id`, `status`),
+  KEY `idx_status_created` (`status`, `created_at`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Resource Invalid Reports';
+-- ----------------------------
 -- Table structure for user_favorite
 -- ----------------------------
 DROP TABLE IF EXISTS `user_favorite`;
@@ -175,5 +197,7 @@ INSERT INTO sys_user (username, password, role) VALUES ('admin', '$2a$10$HRsXUOt
 INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.audit.enabled', 'true', 'Enable resource submission audit (true/false)'),
 ('resource.max.per.user', '100', 'Maximum resources per user'),
-('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions')
+('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions'),
+('resource.report.threshold', '3', 'Reports needed before a resource is treated as suspected invalid'),
+('auth.register.enabled', 'true', 'Allow public registration')
 ON DUPLICATE KEY UPDATE config_value = config_value;

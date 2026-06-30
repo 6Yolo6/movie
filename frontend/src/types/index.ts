@@ -38,6 +38,11 @@ export interface ResourceLink {
     status?: string;
     linkStatus?: string;
     reportCount?: number;
+    quality?: string;
+    subtitle?: string;
+    fileSize?: string;
+    versionNote?: string;
+    rejectReason?: string;
     movieTitle?: string;
     uploaderName?: string;
 }
@@ -66,4 +71,22 @@ export interface UserNotification {
     targetId?: string;
     readFlag: boolean;
     createdAt?: string;
+}
+
+export interface ResourceReport {
+    id: number;
+    resourceId: number;
+    userId: number;
+    reason?: string;
+    status: string;
+    createdAt?: string;
+    handledAt?: string;
+    movieId?: string;
+    movieTitle?: string;
+    resourceName?: string;
+    provider?: string;
+    url?: string;
+    linkStatus?: string;
+    uploaderName?: string;
+    reporterName?: string;
 }

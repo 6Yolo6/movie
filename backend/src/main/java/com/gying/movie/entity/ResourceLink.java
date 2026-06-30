@@ -38,5 +38,15 @@ public class ResourceLink implements Serializable {
 
     private String remark;
 
+    private String quality;
+
+    private String subtitle;
+
+    private String fileSize;
+
+    private String versionNote;
+
+    private String rejectReason;
+
     private LocalDateTime createdAt;
 }

@@ -5,7 +5,7 @@ import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal
 import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
@@ -32,6 +32,10 @@ interface ResourceFormValues {
     url: string;
     code?: string;
     provider?: string;
+    quality?: string;
+    subtitle?: string;
+    fileSize?: string;
+    versionNote?: string;
 }
 
 const RenderLinkList = ({ items, type: _type, limit = 0, labels }: RenderLinkListProps) => {
@@ -145,7 +149,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                 setFavoriteCount(d.count);
                 message.success(d.favorited ? t('favoriteAdded') : t('favoriteRemoved'));
             } else {
-                const errText = await res.text();
+                const errText = await readApiError(res, t('operationFailed'));
                 message.error(`${t('operationFailed')}: ${errText}`);
             }
         } catch {
@@ -231,6 +235,10 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
             url: resource.url,
             code: resource.code,
             provider: resource.provider || 'BAIDU',
+            quality: resource.quality,
+            subtitle: resource.subtitle,
+            fileSize: resource.fileSize,
+            versionNote: resource.versionNote,
         });
         setIsModalOpen(true);
     };
@@ -277,11 +285,11 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                 form.resetFields();
                 router.refresh();
             } else {
-                const msg = await res.text();
+                const msg = await readApiError(res, t('submissionFailed'));
                 message.error(`${t('submissionFailed')}: ${msg}`);
             }
         } catch {
-            message.error("Network error");
+            message.error(t('networkError'));
         } finally {
             setSubmitting(false);
         }
@@ -332,10 +340,18 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     };
 
     const handleReportInvalid = async (item: ResourceLink) => {
+        if (!token) {
+            message.error(t('loginRequired'));
+            return;
+        }
         try {
-            const res = await api(`/api/resources/${item.id}/report`, { method: 'POST' });
+            const res = await api(`/api/resources/${item.id}/report`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ reason: t('defaultReportReason') }),
+            });
             if (!res.ok) {
-                const errText = await res.text();
+                const errText = await readApiError(res, t('operationFailed'));
                 message.error(`${t('operationFailed')}: ${errText}`);
                 return;
             }
@@ -378,12 +394,16 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         </Text>
                         {item.code && (
                             <Space className="bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded text-orange-600 dark:text-orange-400">
-                                <span>Code: <span className="font-mono font-bold">{item.code}</span></span>
+                                <span>{t('accessCode')}: <span className="font-mono font-bold">{item.code}</span></span>
                                 <CopyOutlined className="cursor-pointer hover:scale-110 transition-transform" onClick={() => handleCopy(item.code)} />
                             </Space>
                         )}
+                        {[item.quality, item.subtitle, item.fileSize].filter(Boolean).map(meta => (
+                            <Tag key={meta} className="m-0 border-0 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-300">{meta}</Tag>
+                        ))}
                         <span className="text-gray-400">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}</span>
                     </Space>
+                    {item.versionNote && <Text type="secondary" className="text-xs pl-1">{item.versionNote}</Text>}
                 </div>
                 <Space>
                     {user?.id === item.uploaderId && (
@@ -743,7 +763,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         initialValues={{ type: 'DISK', provider: 'BAIDU' }}
                     >
                         <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
-                            <Input placeholder={i18n.language === 'cn' ? "如：4K重制版" : "e.g. 4K Remastered Version"} className="rounded-md" />
+                            <Input placeholder="e.g. 4K Remastered Version" className="rounded-md" />
                         </Form.Item>
                         <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
                             <Select className="rounded-md">
@@ -781,6 +801,20 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                 </Select>
                             </Form.Item>
                         )}
+                        <Space className="w-full" size="middle">
+                            <Form.Item name="quality" label={t('quality')} className="flex-1">
+                                <Input placeholder="4K / 1080P" className="rounded-md" />
+                            </Form.Item>
+                            <Form.Item name="subtitle" label={t('subtitle')} className="flex-1">
+                                <Input placeholder={t('optional')} className="rounded-md" />
+                            </Form.Item>
+                            <Form.Item name="fileSize" label={t('fileSize')} className="flex-1">
+                                <Input placeholder="8.5GB" className="rounded-md" />
+                            </Form.Item>
+                        </Space>
+                        <Form.Item name="versionNote" label={t('versionNote')}>
+                            <Input placeholder={t('versionNotePlaceholder')} className="rounded-md" />
+                        </Form.Item>
                         <Divider />
                         <div className="flex justify-end gap-3">
                             <Button onClick={() => {

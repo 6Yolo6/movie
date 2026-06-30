@@ -10,4 +10,8 @@ public class ResourceSubmissionDTO {
     private String code;
     private String provider;
     private String type; // DISK or MAGNET or TORRENT
+    private String quality;
+    private String subtitle;
+    private String fileSize;
+    private String versionNote;
 }
