@@ -6,6 +6,8 @@ import os
 import pymysql
 from minio import Minio
 from io import BytesIO
+from http.cookies import SimpleCookie
+from urllib.parse import urlparse
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -23,12 +25,19 @@ MINIO_BUCKET = "gying"
 # Crawler Configuration
 TARGET_USER = "救星小窝"
 COOKIE_STR = "***"
+LOGIN_USERNAME = os.getenv("GYING_USERNAME", "")
+LOGIN_PASSWORD = os.getenv("GYING_PASSWORD", "")
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
     "Cookie": COOKIE_STR,
     "Referer": "https://www.xn--wcv59z.com/"
 }
+
+BASE_URL = "https://www.xn--wcv59z.com"
+SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
+POW_MIN_SECONDS = 3
+_SITE_SESSION = None
 
 # ================= Services =================
 
@@ -136,17 +145,429 @@ def parse_season(text):
     # 4. Default: Treat as Season 1 of itself
     return text.strip(), 1
 
+def list_get(values, index, default=""):
+    if not isinstance(values, list) or index >= len(values):
+        return default
+    value = values[index]
+    return default if value is None else value
+
+def detect_provider(raw):
+    raw = raw or ""
+    if "百度" in raw: return "BAIDU"
+    if "迅雷" in raw: return "XUNLEI"
+    if "夸克" in raw: return "QUARK"
+    if "阿里" in raw: return "ALIYUN"
+    if "UC" in raw: return "UC"
+    if "磁" in raw or "BT" in raw.upper(): return "P2P"
+    return "OTHER"
+
+def detect_resource_type(url, provider):
+    lower_url = (url or "").lower()
+    if lower_url.startswith("magnet:"):
+        return "MAGNET"
+    if lower_url.endswith(".torrent") or provider == "P2P":
+        return "TORRENT"
+    return "DISK"
+
+def extract_share_code(url, explicit_code=""):
+    if explicit_code and explicit_code not in ("无", "暂无", "-"):
+        return str(explicit_code).strip()
+
+    if not url:
+        return ""
+
+    match = re.search(r"[?&]pwd=([^&#]+)", url)
+    if match:
+        return match.group(1)
+
+    match = re.search(r"#([A-Za-z0-9]{4})$", url)
+    if match:
+        return match.group(1)
+
+    return ""
+
+def load_cookie_string(session, cookie_str):
+    if not cookie_str or cookie_str == "***":
+        return
+
+    cookies = SimpleCookie()
+    try:
+        cookies.load(cookie_str)
+    except Exception:
+        print("      Ignoring invalid COOKIE_STR; login env vars can still authenticate.")
+        return
+
+    domain = urlparse(BASE_URL).hostname
+    for key, morsel in cookies.items():
+        session.cookies.set(key, morsel.value, domain=domain, path="/")
+
+def get_site_session():
+    global _SITE_SESSION
+    if _SITE_SESSION is None:
+        _SITE_SESSION = requests.Session()
+        _SITE_SESSION.headers.update(SESSION_HEADERS)
+        load_cookie_string(_SITE_SESSION, COOKIE_STR)
+    return _SITE_SESSION
+
+def is_pow_challenge_response(resp):
+    text = resp.text if resp is not None else ""
+    return "powSolve" in text or ("/res/pow" in text and any(flag in text for flag in ("浏览器验证", "浏览器安全验证", "安全验证")))
+
+def is_login_required_response(resp):
+    text = resp.text if resp is not None else ""
+    return (
+        ("未登录" in text and "访问受限" in text)
+        or "会话已过期" in text
+        or ("跳转提示" in text and "/user/login" in text)
+    )
+
+def solve_browser_pow(session, referer_url):
+    try:
+        challenge_resp = session.get(
+            f"{BASE_URL}/res/pow",
+            headers={"Accept": "application/json", "Referer": referer_url},
+            timeout=10,
+        )
+        if challenge_resp.status_code != 200:
+            print(f"      PoW challenge HTTP {challenge_resp.status_code}")
+            return False
+
+        challenge = challenge_resp.json()
+        modulus = int(challenge["N"], 16)
+        value = int(challenge["x"], 16)
+        steps = int(challenge["t"])
+
+        started_at = time.time()
+        for _ in range(steps):
+            value = (value * value) % modulus
+
+        elapsed = time.time() - started_at
+        if elapsed < POW_MIN_SECONDS:
+            time.sleep(POW_MIN_SECONDS - elapsed)
+
+        verify_resp = session.post(
+            f"{BASE_URL}/res/pow",
+            data={"y": format(value, "x")},
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Referer": referer_url,
+            },
+            timeout=10,
+        )
+        verify = verify_resp.json()
+        if verify.get("success"):
+            print("      Browser verification solved.")
+            return True
+
+        print(f"      PoW verification failed: {verify}")
+    except Exception as e:
+        print(f"      PoW verification failed: {e}")
+
+    return False
+
+def login_site_session(session):
+    if not LOGIN_USERNAME or not LOGIN_PASSWORD:
+        print("      Login required. Set GYING_USERNAME and GYING_PASSWORD env vars, or refresh COOKIE_STR with a valid app_auth.")
+        return False
+
+    login_url = f"{BASE_URL}/user/login"
+    try:
+        resp = session.get(login_url, headers={"Referer": f"{BASE_URL}/"}, timeout=10)
+        if is_pow_challenge_response(resp):
+            if not solve_browser_pow(session, login_url):
+                return False
+            session.get(login_url, headers={"Referer": f"{BASE_URL}/"}, timeout=10)
+
+        payload = {
+            "code": "",
+            "siteid": "1",
+            "dosubmit": "1",
+            "cookietime": "10506240",
+            "username": LOGIN_USERNAME,
+            "password": LOGIN_PASSWORD,
+        }
+        login_resp = session.post(
+            login_url,
+            data=payload,
+            headers={"Accept": "application/json", "Referer": login_url},
+            timeout=10,
+        )
+        result = login_resp.json()
+        if result.get("code") == 200:
+            print("      Site login succeeded.")
+            return True
+
+        if result.get("captcha"):
+            print("      Site login requires captcha; complete login in browser and refresh COOKIE_STR.")
+        else:
+            print(f"      Site login failed: {result.get('msg') or result}")
+    except Exception as e:
+        print(f"      Site login failed: {e}")
+
+    return False
+
+def site_get(url, *, timeout=10, headers=None, **kwargs):
+    session = get_site_session()
+    request_headers = headers or {}
+    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+
+    if is_pow_challenge_response(resp):
+        if solve_browser_pow(session, url):
+            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+
+    if is_login_required_response(resp):
+        if login_site_session(session):
+            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+            if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+
+    return resp
+
+def extract_js_assignment_json(text, assignment):
+    marker = re.search(rf"{re.escape(assignment)}\s*=", text)
+    if not marker:
+        return None
+
+    start = text.find("{", marker.end())
+    if start == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escaped = False
+    quote = ""
+
+    for pos in range(start, len(text)):
+        char = text[pos]
+
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                in_string = False
+            continue
+
+        if char in ('"', "'"):
+            in_string = True
+            quote = char
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                snippet = text[start:pos + 1]
+                try:
+                    return json.loads(snippet)
+                except json.JSONDecodeError:
+                    return None
+
+    return None
+
+def fetch_movie_metadata(type_code, mid):
+    url = f"{BASE_URL}/{type_code}/{mid}"
+    try:
+        resp = site_get(url, timeout=10)
+    except Exception as e:
+        print(f"      ⚠️ Metadata request failed: {url} ({e})")
+        return None
+
+    if resp.status_code != 200:
+        print(f"      ⚠️ Metadata HTTP {resp.status_code}: {url}")
+        return None
+
+    try:
+        data = resp.json()
+        if isinstance(data, dict):
+            meta = data.get("d") or data.get("data")
+            if isinstance(meta, dict):
+                return meta
+    except ValueError:
+        pass
+
+    meta = extract_js_assignment_json(resp.text, "_obj.d")
+    if meta:
+        return meta
+
+    if any(flag in resp.text for flag in ("浏览器验证", "浏览器安全验证", "安全验证")) or '"code":419' in resp.text:
+        print("      ⚠️ Browser verification expired; update COOKIE_STR/browser_verified.")
+
+    return None
+
+
+def normalize_download_item(item):
+    if isinstance(item, str):
+        url = item.strip()
+        if not url:
+            return None
+        provider = detect_provider("磁力" if url.lower().startswith("magnet:") else "")
+        link_type = detect_resource_type(url, provider)
+        return {
+            "title": "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url,
+            "url": url,
+            "code": extract_share_code(url),
+            "provider": provider,
+            "type": link_type,
+            "tname": "",
+        }
+
+    if not isinstance(item, dict):
+        return None
+
+    url = str(item.get("url") or item.get("link") or item.get("magnet") or item.get("magnet_url") or "").strip()
+    if not url:
+        return None
+
+    provider_raw = item.get("tname") or item.get("type_name") or item.get("provider") or item.get("type") or ""
+    provider = detect_provider(str(provider_raw))
+    link_type = detect_resource_type(url, provider)
+    name = item.get("name") or item.get("title") or ("Magnet Link" if link_type in ("MAGNET", "TORRENT") else url)
+
+    return {
+        "title": name,
+        "url": url,
+        "code": extract_share_code(url, item.get("p") or item.get("pwd") or item.get("code") or ""),
+        "provider": provider,
+        "type": link_type,
+        "tname": str(provider_raw),
+    }
+
+def normalize_download_section(section, target_user):
+    if isinstance(section, list):
+        normalized = [normalize_download_item(item) for item in section]
+        return [item for item in normalized if item]
+
+    if not isinstance(section, dict):
+        return []
+
+    names = section.get("name", [])
+    urls = section.get("url", [])
+    passwords = section.get("p", section.get("pwd", []))
+    users = section.get("user", [])
+    type_indexes = section.get("type", [])
+    type_names = section.get("tname", [])
+
+    iterable_fields = (names, urls, passwords, users, type_indexes)
+    count = max((len(v) for v in iterable_fields if isinstance(v, list)), default=0)
+    has_target_user = any(user == target_user for user in users) if isinstance(users, list) else False
+    resources = []
+
+    for i in range(count):
+        uploader = list_get(users, i)
+        if has_target_user and uploader != target_user:
+            continue
+
+        url = str(list_get(urls, i)).strip()
+        if not url or url in ("#", "暂无"):
+            continue
+
+        type_index = list_get(type_indexes, i)
+        provider_raw = ""
+        if isinstance(type_index, int):
+            provider_raw = list_get(type_names, type_index)
+        elif isinstance(type_index, str) and type_index.isdigit():
+            provider_raw = list_get(type_names, int(type_index))
+        if not provider_raw:
+            provider_raw = list_get(type_names, i) or str(type_index or "")
+
+        provider = detect_provider(provider_raw)
+        link_type = detect_resource_type(url, provider)
+        name = str(list_get(names, i)).strip()
+        if not name:
+            name = "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url
+
+        resources.append({
+            "title": name,
+            "url": url,
+            "code": extract_share_code(url, list_get(passwords, i)),
+            "provider": provider,
+            "type": link_type,
+            "tname": provider_raw,
+        })
+
+    return resources
+
+def normalize_content_list_resources(resources):
+    normalized = []
+    for res in resources:
+        r_url = (res.get("url") or "").strip()
+        if not r_url:
+            continue
+
+        provider = detect_provider(res.get("tname", ""))
+        normalized.append({
+            "title": res.get("title", ""),
+            "url": r_url,
+            "code": extract_share_code(r_url),
+            "provider": provider,
+            "type": detect_resource_type(r_url, provider),
+            "tname": res.get("tname", ""),
+        })
+    return normalized
+
+def fetch_download_resources(type_code, mid, fallback_resources):
+    url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
+    try:
+        resp = site_get(
+            url,
+            timeout=10,
+            headers={
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Referer": f"{BASE_URL}/{type_code}/{mid}",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        )
+    except Exception as e:
+        print(f"      ⚠️ Downurl request failed: {e}")
+        return normalize_content_list_resources(fallback_resources)
+
+    if resp.status_code != 200:
+        print(f"      ⚠️ Downurl HTTP {resp.status_code}; fallback to content_list resources.")
+        return normalize_content_list_resources(fallback_resources)
+
+    try:
+        data = resp.json()
+    except ValueError as e:
+        print(f"      ⚠️ Downurl JSON decode failed: {e}")
+        return normalize_content_list_resources(fallback_resources)
+
+    resources = []
+    for key in ("panlist", "downlist", "magnetlist", "btlist"):
+        resources.extend(normalize_download_section(data.get(key), TARGET_USER))
+
+    return resources or normalize_content_list_resources(fallback_resources)
+
 def crawl_user_content(db):
     page = 1
     processed_movies = set()
     
     while True:
-        url = f"https://www.xn--wcv59z.com/user/content_list?page={page}"
+        url = f"{BASE_URL}/res/user/content_list?page={page}"
         print(f"📡 Crawling Page {page}...")
         
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=15)
-            data = resp.json()
+            resp = site_get(
+                url,
+                timeout=15,
+                headers={
+                    "Accept": "application/json, text/javascript, */*; q=0.01",
+                    "Referer": f"{BASE_URL}/user/content_list",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            )
+            if resp.status_code != 200:
+                print(f"❌ Request failed: HTTP {resp.status_code}")
+                print(f"   Response preview: {resp.text[:250]!r}")
+                break
+
+            try:
+                data = resp.json()
+            except ValueError as e:
+                print(f"❌ JSON decode failed: {e}")
+                print(f"   Response preview: {resp.text[:500]!r}")
+                break
             
             # Validation
             if "inlist" not in data or "title" not in data["inlist"]:
@@ -194,23 +615,12 @@ def crawl_user_content(db):
                 # Parse Series/Season
                 series_name, season = parse_season(atitle)
                 
-                # Process Movie Metadata (Only if not processed in this run to save time? 
-                # But we might need to update season info if changed. 
-                # existing crawler 'process_and_save' fetches meta properly.)
-                
-                # We need to adapt 'process_and_save' or write new logic.
-                # Let's reuse 'process_and_save' concept but pass our ID (id2).
-                
-                # Fetch Meta
-                url_meta = f"https://www.xn--wcv59z.com/{type_code}/{mid}"
                 print(f"   🎬 Processing {atitle} ({mid})... Season: {season}")
 
                 try:
-                    resp_meta = requests.get(url_meta, headers=HEADERS, timeout=10)
-                    match_meta = re.search(r"_obj\.d\s*=\s*(\{.*?\});", resp_meta.text, re.DOTALL)
+                    meta = fetch_movie_metadata(type_code, mid)
                     
-                    if match_meta:
-                        meta = json.loads(match_meta.group(1))
+                    if meta:
                         
                         # Upload Poster
                         poster_url = ""
@@ -246,7 +656,7 @@ def crawl_user_content(db):
                         val_movie = (
                             mid, # Use id2
                             meta.get("title"),
-                            meta.get("name"),
+                            meta.get("name") or meta.get("ename"),
                             meta.get("year"),
                             meta.get("times"),
                             directors, actors, genres, regions, 
@@ -254,7 +664,7 @@ def crawl_user_content(db):
                             meta.get("stime"),
                             poster_url,
                             db_score, im_score,
-                            meta.get("introduce"),
+                            meta.get("introduce") or meta.get("summary"),
                             type_code,
                             series_name, season
                         )
@@ -265,51 +675,39 @@ def crawl_user_content(db):
                     else:
                         print(f"      ⚠️ No metadata found for {mid}")
 
-                    # Insert Resources (All from the group)
-                    for res in resources:
-                        provider_raw = res["tname"]
-                        provider = "OTHER"
-                        if "百度" in provider_raw: provider = "BAIDU"
-                        elif "迅雷" in provider_raw: provider = "XUNLEI"
-                        elif "夸克" in provider_raw: provider = "QUARK"
-                        elif "阿里" in provider_raw: provider = "ALIYUN"
-                        elif "UC" in provider_raw: provider = "UC"
-                        
-                        
-                        r_url = res["url"]
-                        r_code = ""
-                        # Simple extraction
-                        if "?pwd=" in r_url:
-                            r_code = r_url.split("?pwd=")[1].split("&")[0]
-                        elif "#" in r_url and len(r_url.split("#")[1]) == 4: # Xunlei/Quark sometimes
-                             pass 
-                        
-                        # Upsert Resource
-                        # Check if resource already exists
+                    # Insert resources from the new downurl endpoint. Fall back to content_list if needed.
+                    resources_to_save = fetch_download_resources(type_code, mid, resources)
+                    for res in resources_to_save:
+                        provider = res.get("provider") or detect_provider(res.get("tname", ""))
+                        r_url = (res.get("url") or "").strip()
+                        if not r_url:
+                            continue
+
+                        link_type = res.get("type") or detect_resource_type(r_url, provider)
+                        r_code = res.get("code") or extract_share_code(r_url)
+                        r_name = res.get("title") or ("Magnet Link" if link_type in ("MAGNET", "TORRENT") else r_url)
+
                         check_sql = "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1"
                         with db.cursor() as cursor:
                             cursor.execute(check_sql, (mid, r_url))
                             existing_row = cursor.fetchone()
 
                         if existing_row:
-                            # Update existing record
                             resid = existing_row['id']
                             update_sql = """
                                 UPDATE resource_link 
-                                SET code=%s, provider=%s, name=%s, uploader_id=1, audit_status=1
+                                SET code=%s, provider=%s, name=%s, type=%s, uploader_id=1, audit_status=1
                                 WHERE id=%s
                             """
                             with db.cursor() as cursor:
-                                cursor.execute(update_sql, (r_code, provider, res["title"], resid))
+                                cursor.execute(update_sql, (r_code, provider, r_name, link_type, resid))
                         else:
-                            # Insert new record
                             insert_sql = """
                                 INSERT INTO resource_link (movie_id, type, provider, url, code, uploader_id, audit_status, name)
-                                VALUES (%s, 'DISK', %s, %s, %s, 1, 1, %s)
+                                VALUES (%s, %s, %s, %s, %s, 1, 1, %s)
                             """
                             with db.cursor() as cursor:
-                                cursor.execute(insert_sql, (mid, provider, r_url, r_code, res["title"]))
-                            
+                                cursor.execute(insert_sql, (mid, link_type, provider, r_url, r_code, r_name))
                     db.commit()
                     print(f"      ✅ Saved.")
                     
@@ -319,7 +717,7 @@ def crawl_user_content(db):
             
             # Pagination Check
             curr = data['page']['curr']
-            pages = 5
+            pages = 7
             # pages = data['page']['pages']
             if curr >= pages:
                 print("🏁 All pages processed.")
