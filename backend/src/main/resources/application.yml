@@ -5,7 +5,7 @@ spring:
   application:
     name: gying-movie
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:Root@123}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,8 +19,25 @@ minio:
   url-prefix: ${MINIO_URL_PREFIX:http://localhost:9000/gying/}
 
 app:
+  internal-token: ${APP_INTERNAL_TOKEN:}
   cors:
     allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
+
+resource-hub:
+  enabled: ${RESOURCE_HUB_ENABLED:false}
+  auto-approve: ${RESOURCE_HUB_AUTO_APPROVE:true}
+  tmdb:
+    api-key: ${TMDB_API_KEY:}
+  pansou:
+    base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://localhost:8888}
+    token: ${RESOURCE_HUB_PANSOU_TOKEN:}
+  quark:
+    base-url: ${QUARK_AUTO_SAVE_BASE_URL:http://localhost:5005}
+    token: ${QUARK_AUTO_SAVE_TOKEN:}
+    save-path: ${QUARK_AUTO_SAVE_PATH:/GYing Resource Hub}
+    pattern: ${QUARK_AUTO_SAVE_PATTERN:(.*)\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)}
+    replace: ${QUARK_AUTO_SAVE_REPLACE:}
+    run-immediately: ${QUARK_AUTO_SAVE_RUN_IMMEDIATELY:true}
 
 jwt:
   secret: ${JWT_SECRET:gying-movie-dev-secret-change-me-please-32-bytes}

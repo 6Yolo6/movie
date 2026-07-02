@@ -11,6 +11,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `movie_metadata`;
 CREATE TABLE `movie_metadata` (
   `id` varchar(64) NOT NULL COMMENT 'Movie ID (e.g., 31z0)',
+  `tmdb_id` bigint DEFAULT NULL COMMENT 'TMDB ID',
+  `tmdb_type` varchar(20) DEFAULT NULL COMMENT 'TMDB media type: movie, tv',
   `title_cn` varchar(255) DEFAULT NULL COMMENT 'Chinese Title',
   `title_en` varchar(500) DEFAULT NULL COMMENT 'Original/English Title',
   `series_name` varchar(255) DEFAULT NULL COMMENT 'Series Name',
@@ -28,10 +30,13 @@ CREATE TABLE `movie_metadata` (
   `poster_url` varchar(500) DEFAULT NULL COMMENT 'MinIO URL',
   `douban_score` decimal(3,1) DEFAULT NULL,
   `imdb_score` decimal(3,1) DEFAULT NULL,
+  `tmdb_popularity` decimal(12,4) DEFAULT NULL COMMENT 'TMDB popularity',
+  `tmdb_vote_average` decimal(3,1) DEFAULT NULL COMMENT 'TMDB vote average',
   `rt_score` varchar(50) DEFAULT NULL COMMENT 'Rotten Tomatoes',
   `summary` text COMMENT 'Description',
   `status` varchar(50) DEFAULT 'ACTIVE' COMMENT 'Status',
   `popularity` int DEFAULT '0' COMMENT 'Popularity score',
+  `tmdb_last_sync_at` datetime DEFAULT NULL COMMENT 'Last TMDB sync time',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -40,7 +45,9 @@ CREATE TABLE `movie_metadata` (
   KEY `idx_category_status_year` (`category`, `status`, `year`),
   KEY `idx_status_created_at` (`status`, `created_at`),
   KEY `idx_status_douban_score` (`status`, `douban_score`),
-  KEY `idx_popularity` (`popularity`)
+  KEY `idx_popularity` (`popularity`),
+  KEY `idx_tmdb_type_id` (`tmdb_type`, `tmdb_id`),
+  KEY `idx_tmdb_last_sync_at` (`tmdb_last_sync_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Movie Metadata';
 
 -- ----------------------------
@@ -54,12 +61,19 @@ CREATE TABLE `resource_link` (
   `type` varchar(50) DEFAULT 'DISK' COMMENT 'DISK, MAGNET, ONLINE',
   `provider` varchar(50) DEFAULT NULL COMMENT 'BAIDU, QUARK, XUNLEI, etc.',
   `url` text NOT NULL,
+  `url_hash` char(64) DEFAULT NULL COMMENT 'SHA-256 hash of normalized URL',
   `code` varchar(50) DEFAULT NULL COMMENT 'Access Code',
   `uploader_id` bigint DEFAULT NULL,
   `audit_status` int DEFAULT '0' COMMENT '0:Pending, 1:Approved, 2:Rejected',
   `status` varchar(20) DEFAULT 'ACTIVE' COMMENT 'ACTIVE, DELETED',
   `link_status` varchar(20) DEFAULT 'NORMAL' COMMENT 'NORMAL, SUSPECTED_INVALID, INVALID',
   `report_count` int DEFAULT '0',
+  `source` varchar(50) DEFAULT 'USER' COMMENT 'USER, RESOURCE_HUB, CRAWLER',
+  `source_ref` varchar(100) DEFAULT NULL COMMENT 'External source reference',
+  `source_url` text COMMENT 'Original discovered URL',
+  `auto_collected` tinyint(1) DEFAULT '0' COMMENT 'Created by Resource Hub automation',
+  `validated_at` datetime DEFAULT NULL COMMENT 'Last validation time',
+  `last_check_error` varchar(1000) DEFAULT NULL COMMENT 'Last validation error',
   `quality` varchar(50) DEFAULT NULL COMMENT 'Quality label, e.g. 4K/1080P',
   `subtitle` varchar(50) DEFAULT NULL COMMENT 'Subtitle information',
   `file_size` varchar(50) DEFAULT NULL COMMENT 'File size label',
@@ -69,7 +83,10 @@ CREATE TABLE `resource_link` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_movie_id` (`movie_id`),
-  KEY `idx_resource_status` (`status`, `audit_status`, `link_status`)
+  KEY `idx_resource_status` (`status`, `audit_status`, `link_status`),
+  KEY `idx_resource_url_hash` (`movie_id`, `url_hash`),
+  KEY `idx_resource_source` (`source`, `source_ref`),
+  KEY `idx_resource_validation` (`link_status`, `validated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Resource Links';
 
 -- ----------------------------
@@ -190,6 +207,101 @@ CREATE TABLE `user_notification` (
   KEY `idx_user_created` (`user_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Notifications';
 
+
+-- ----------------------------
+-- Table structure for resource_hub_task
+-- ----------------------------
+DROP TABLE IF EXISTS `resource_hub_task`;
+CREATE TABLE `resource_hub_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `task_type` varchar(50) NOT NULL COMMENT 'METADATA_SYNC, RESOURCE_DISCOVERY, QUARK_TRANSFER, VALIDATION',
+  `movie_id` varchar(64) DEFAULT NULL,
+  `tmdb_id` bigint DEFAULT NULL,
+  `tmdb_type` varchar(20) DEFAULT NULL,
+  `keyword` varchar(255) DEFAULT NULL,
+  `source` varchar(50) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'PENDING' COMMENT 'PENDING, RUNNING, SUCCEEDED, FAILED, CANCELED',
+  `priority` int DEFAULT '0',
+  `attempts` int DEFAULT '0',
+  `max_attempts` int DEFAULT '3',
+  `last_error` varchar(1000) DEFAULT NULL,
+  `payload` json DEFAULT NULL,
+  `scheduled_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `started_at` datetime DEFAULT NULL,
+  `finished_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_hub_task_status_schedule` (`status`, `scheduled_at`, `priority`),
+  KEY `idx_hub_task_movie` (`movie_id`),
+  KEY `idx_hub_task_tmdb` (`tmdb_type`, `tmdb_id`),
+  KEY `idx_hub_task_source_status` (`source`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Resource Hub Tasks';
+
+-- ----------------------------
+-- Table structure for resource_discovery_result
+-- ----------------------------
+DROP TABLE IF EXISTS `resource_discovery_result`;
+CREATE TABLE `resource_discovery_result` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `task_id` bigint DEFAULT NULL,
+  `movie_id` varchar(64) NOT NULL,
+  `source` varchar(50) NOT NULL,
+  `source_ref` varchar(100) DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `provider` varchar(50) DEFAULT NULL,
+  `resource_type` varchar(50) DEFAULT 'DISK',
+  `original_url` text,
+  `original_url_hash` char(64) DEFAULT NULL,
+  `share_url` text,
+  `share_url_hash` char(64) DEFAULT NULL,
+  `code` varchar(50) DEFAULT NULL,
+  `quality` varchar(50) DEFAULT NULL,
+  `subtitle` varchar(50) DEFAULT NULL,
+  `file_size` varchar(50) DEFAULT NULL,
+  `version_note` varchar(255) DEFAULT NULL,
+  `confidence` decimal(5,2) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'DISCOVERED' COMMENT 'DISCOVERED, SAVED, DUPLICATE, IGNORED, FAILED',
+  `failure_reason` varchar(1000) DEFAULT NULL,
+  `resource_link_id` bigint DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_discovery_task` (`task_id`),
+  KEY `idx_discovery_movie_status` (`movie_id`, `status`),
+  KEY `idx_discovery_original_hash` (`movie_id`, `original_url_hash`),
+  KEY `idx_discovery_share_hash` (`movie_id`, `share_url_hash`),
+  KEY `idx_discovery_source_ref` (`source`, `source_ref`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Resource Hub Discovery Results';
+
+-- ----------------------------
+-- Table structure for quark_transfer_task
+-- ----------------------------
+DROP TABLE IF EXISTS `quark_transfer_task`;
+CREATE TABLE `quark_transfer_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `discovery_result_id` bigint DEFAULT NULL,
+  `movie_id` varchar(64) NOT NULL,
+  `original_url` text NOT NULL,
+  `original_url_hash` char(64) DEFAULT NULL,
+  `saved_path` varchar(500) DEFAULT NULL,
+  `share_url` text,
+  `share_url_hash` char(64) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'PENDING' COMMENT 'PENDING, RUNNING, SUCCEEDED, FAILED, CANCELED',
+  `attempts` int DEFAULT '0',
+  `last_error` varchar(1000) DEFAULT NULL,
+  `request_payload` json DEFAULT NULL,
+  `response_payload` json DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `finished_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_quark_discovery` (`discovery_result_id`),
+  KEY `idx_quark_movie_status` (`movie_id`, `status`),
+  KEY `idx_quark_status_created` (`status`, `created_at`),
+  KEY `idx_quark_original_hash` (`movie_id`, `original_url_hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quark Transfer Tasks';
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Initial Data
@@ -199,5 +311,9 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.max.per.user', '100', 'Maximum resources per user'),
 ('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions'),
 ('resource.report.threshold', '3', 'Reports needed before a resource is treated as suspected invalid'),
-('auth.register.enabled', 'true', 'Allow public registration')
+('auth.register.enabled', 'true', 'Allow public registration'),
+('resource.hub.enabled', 'false', 'Enable Resource Hub automation (true/false)'),
+('resource.hub.auto_approve', 'true', 'Auto approve Resource Hub imported resources'),
+('resource.hub.validation.enabled', 'false', 'Enable scheduled Resource Hub link validation'),
+('resource.hub.discovery.max_attempts', '3', 'Maximum discovery attempts per task')
 ON DUPLICATE KEY UPDATE config_value = config_value;

@@ -34,6 +34,10 @@ services:
     volumes:
       - backend-logs:/app/logs
     restart: unless-stopped
+    depends_on:
+      - redis
+      - pansou
+      - quark-auto-save
     networks:
       - gying-net
 
@@ -56,9 +60,34 @@ services:
     networks:
       - gying-net
 
+  pansou:
+    image: ghcr.io/fish2018/pansou:latest
+    environment:
+      - PORT=8888
+      - ENABLED_PLUGINS=quark4k,quarksoo,sousou,pansearch,panwiki,hunhepan,jikepan,panta,qupansou,hdr4k,pan666,susu
+      - CACHE_ENABLED=true
+      - CACHE_PATH=/app/cache
+    volumes:
+      - pansou-data:/app/cache
+    restart: unless-stopped
+    networks:
+      - gying-net
+
+  quark-auto-save:
+    image: cp0204/quark-auto-save:latest
+    ports:
+      - "5005:5005"
+    volumes:
+      - quark-auto-save-data:/app/config
+    restart: unless-stopped
+    networks:
+      - gying-net
+
 volumes:
   redis-data:
   backend-logs:
+  pansou-data:
+  quark-auto-save-data:
 
 networks:
   gying-net:

@@ -1,0 +1,345 @@
+package com.gying.movie.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gying.movie.client.PanSouClient;
+import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.DiscoveredResource;
+import com.gying.movie.dto.ResourceDiscoveryRequest;
+import com.gying.movie.dto.ResourceDiscoveryRunResult;
+import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.ResourceHubTask;
+import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IQuarkTransferTaskService;
+import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceDiscoveryService;
+import com.gying.movie.service.IResourceHubTaskService;
+import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.utils.ResourceHubHashUtils;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
+
+    private static final int DEFAULT_MAX_RESULTS = 10;
+    private static final int MAX_RESULTS_LIMIT = 50;
+
+    private final ResourceHubProperties resourceHubProperties;
+    private final PanSouClient panSouClient;
+    private final IMovieMetadataService movieService;
+    private final IResourceHubTaskService taskService;
+    private final IResourceDiscoveryResultService discoveryResultService;
+    private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IResourceLinkService resourceLinkService;
+    private final ObjectMapper objectMapper;
+
+    public ResourceDiscoveryServiceImpl(
+            ResourceHubProperties resourceHubProperties,
+            PanSouClient panSouClient,
+            IMovieMetadataService movieService,
+            IResourceHubTaskService taskService,
+            IResourceDiscoveryResultService discoveryResultService,
+            IQuarkTransferTaskService quarkTransferTaskService,
+            IResourceLinkService resourceLinkService,
+            ObjectMapper objectMapper) {
+        this.resourceHubProperties = resourceHubProperties;
+        this.panSouClient = panSouClient;
+        this.movieService = movieService;
+        this.taskService = taskService;
+        this.discoveryResultService = discoveryResultService;
+        this.quarkTransferTaskService = quarkTransferTaskService;
+        this.resourceLinkService = resourceLinkService;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public ResourceHubTask enqueue(ResourceDiscoveryRequest request) {
+        ensureEnabled();
+        DiscoveryPayload payload = normalizePayload(request);
+        MovieMetadata movie = movieService.getById(payload.movieId());
+        if (movie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
+        }
+
+        ResourceHubTask task = new ResourceHubTask();
+        task.setTaskType("RESOURCE_DISCOVERY");
+        task.setMovieId(payload.movieId());
+        task.setSource(payload.source());
+        task.setKeyword(payload.keyword());
+        task.setPriority(5);
+        task.setPayload(writePayload(payload));
+        return taskService.enqueue(task);
+    }
+
+    @Override
+    public ResourceDiscoveryRunResult runTask(Long taskId) {
+        ensureEnabled();
+        ResourceHubTask task = taskService.getById(taskId);
+        if (task == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource Hub task not found");
+        }
+        if (!"RESOURCE_DISCOVERY".equalsIgnoreCase(task.getTaskType())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is not a resource discovery task");
+        }
+
+        DiscoveryPayload payload = readPayload(task);
+        MovieMetadata movie = movieService.getById(payload.movieId());
+        if (movie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
+        }
+
+        ResourceDiscoveryRunResult result = new ResourceDiscoveryRunResult();
+        result.setTaskId(task.getId());
+        result.setMovieId(movie.getId());
+        result.setSource(payload.source());
+        result.setKeyword(payload.keyword());
+
+        markRunning(task);
+        try {
+            List<DiscoveredResource> resources = discover(payload, movie);
+            LocalDateTime now = LocalDateTime.now();
+            for (DiscoveredResource resource : resources) {
+                try {
+                    String urlHash = ResourceHubHashUtils.sha256(resource.getUrl());
+                    if (isDuplicate(movie.getId(), urlHash, resource.getUrl())) {
+                        saveDiscovery(task, movie, resource, urlHash, "DUPLICATE", now);
+                        result.setDuplicate(result.getDuplicate() + 1);
+                        continue;
+                    }
+                    ResourceDiscoveryResult discovery = saveDiscovery(task, movie, resource, urlHash, "DISCOVERED", now);
+                    createQuarkTransferTask(discovery, resource, urlHash, now);
+                    result.setDiscovered(result.getDiscovered() + 1);
+                    result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
+                } catch (Exception itemError) {
+                    result.setFailed(result.getFailed() + 1);
+                    addError(result, itemError.getMessage());
+                }
+            }
+            String status = result.getDiscovered() + result.getDuplicate() > 0 ? "SUCCEEDED" : "FAILED";
+            finishTask(task, status, status.equals("FAILED") ? "No resources discovered" : null);
+            result.setStatus(task.getStatus());
+            return result;
+        } catch (Exception e) {
+            finishTask(task, "FAILED", e.getMessage());
+            result.setStatus("FAILED");
+            addError(result, e.getMessage());
+            return result;
+        }
+    }
+
+    private List<DiscoveredResource> discover(DiscoveryPayload payload, MovieMetadata movie) {
+        if (!"PANSOU".equalsIgnoreCase(payload.source())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
+        }
+        return panSouClient.searchQuark(resolveKeyword(payload, movie), payload.maxResults());
+    }
+
+    private ResourceDiscoveryResult saveDiscovery(
+            ResourceHubTask task,
+            MovieMetadata movie,
+            DiscoveredResource resource,
+            String urlHash,
+            String status,
+            LocalDateTime now) {
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setTaskId(task.getId());
+        discovery.setMovieId(movie.getId());
+        discovery.setSource("PANSOU");
+        discovery.setSourceRef(trim(resource.getSourceRef(), 100));
+        discovery.setTitle(trim(firstText(resource.getTitle(), movie.getTitleCn(), movie.getTitleEn()), 255));
+        discovery.setProvider("QUARK");
+        discovery.setResourceType("DISK");
+        discovery.setOriginalUrl(resource.getUrl());
+        discovery.setOriginalUrlHash(urlHash);
+        discovery.setCode(trim(resource.getCode(), 50));
+        discovery.setConfidence(BigDecimal.valueOf(80));
+        discovery.setStatus(status);
+        discovery.setCreatedAt(now);
+        discovery.setUpdatedAt(now);
+        discoveryResultService.save(discovery);
+        return discovery;
+    }
+
+    private void createQuarkTransferTask(
+            ResourceDiscoveryResult discovery,
+            DiscoveredResource resource,
+            String urlHash,
+            LocalDateTime now) {
+        QuarkTransferTask transfer = new QuarkTransferTask();
+        transfer.setDiscoveryResultId(discovery.getId());
+        transfer.setMovieId(discovery.getMovieId());
+        transfer.setOriginalUrl(resource.getUrl());
+        transfer.setOriginalUrlHash(urlHash);
+        transfer.setStatus("PENDING");
+        transfer.setAttempts(0);
+        transfer.setCreatedAt(now);
+        transfer.setUpdatedAt(now);
+        quarkTransferTaskService.save(transfer);
+    }
+
+    private boolean isDuplicate(String movieId, String urlHash, String url) {
+        long existingLinks = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url_hash", urlHash)
+                .eq("status", "ACTIVE"));
+        if (existingLinks > 0) {
+            return true;
+        }
+        long existingDiscoveries = discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("movie_id", movieId)
+                .eq("original_url_hash", urlHash)
+                .in("status", List.of("DISCOVERED", "SAVED", "DUPLICATE")));
+        if (existingDiscoveries > 0) {
+            return true;
+        }
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url", url)
+                .eq("status", "ACTIVE")) > 0;
+    }
+
+    private DiscoveryPayload normalizePayload(ResourceDiscoveryRequest request) {
+        if (request == null || !hasText(request.getMovieId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieId is required");
+        }
+        String source = hasText(request.getSource()) ? request.getSource().trim().toUpperCase() : "PANSOU";
+        if (!"PANSOU".equals(source)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
+        }
+        int maxResults = Math.min(Math.max(request.getMaxResults() == null
+                ? DEFAULT_MAX_RESULTS
+                : request.getMaxResults(), 1), MAX_RESULTS_LIMIT);
+        String keyword = hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
+        return new DiscoveryPayload(request.getMovieId().trim(), keyword, source, maxResults);
+    }
+
+    private DiscoveryPayload readPayload(ResourceHubTask task) {
+        if (!hasText(task.getPayload())) {
+            return new DiscoveryPayload(task.getMovieId(), task.getKeyword(), task.getSource(), DEFAULT_MAX_RESULTS);
+        }
+        try {
+            Map<String, Object> payload = objectMapper.readValue(task.getPayload(),
+                    new TypeReference<Map<String, Object>>() {
+                    });
+            String movieId = (String) payload.get("movieId");
+            String keyword = (String) payload.get("keyword");
+            String source = (String) payload.get("source");
+            int maxResults = payload.get("maxResults") instanceof Number number
+                    ? number.intValue()
+                    : DEFAULT_MAX_RESULTS;
+            ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+            request.setMovieId(movieId);
+            request.setKeyword(keyword);
+            request.setSource(source);
+            request.setMaxResults(maxResults);
+            return normalizePayload(request);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid discovery task payload");
+        }
+    }
+
+    private String writePayload(DiscoveryPayload payload) {
+        try {
+            Map<String, Object> value = new LinkedHashMap<>();
+            value.put("movieId", payload.movieId());
+            value.put("keyword", payload.keyword());
+            value.put("source", payload.source());
+            value.put("maxResults", payload.maxResults());
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialize task payload", e);
+        }
+    }
+
+    private String resolveKeyword(DiscoveryPayload payload, MovieMetadata movie) {
+        if (hasText(payload.keyword())) {
+            return payload.keyword();
+        }
+        Set<String> candidates = new LinkedHashSet<>();
+        addCandidate(candidates, movie.getTitleCn());
+        addCandidate(candidates, movie.getTitleEn());
+        addCandidate(candidates, movie.getSeriesName());
+        if (movie.getYear() != null && !candidates.isEmpty()) {
+            return candidates.iterator().next() + " " + movie.getYear();
+        }
+        return candidates.stream().findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie has no searchable title"));
+    }
+
+    private void addCandidate(Set<String> candidates, String value) {
+        if (hasText(value)) {
+            candidates.add(value.trim());
+        }
+    }
+
+    private void markRunning(ResourceHubTask task) {
+        LocalDateTime now = LocalDateTime.now();
+        task.setStatus("RUNNING");
+        task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1);
+        task.setStartedAt(now);
+        task.setFinishedAt(null);
+        task.setLastError(null);
+        task.setUpdatedAt(now);
+        taskService.updateById(task);
+    }
+
+    private void finishTask(ResourceHubTask task, String status, String error) {
+        task.setStatus(status);
+        task.setLastError(trim(error, 1000));
+        task.setFinishedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskService.updateById(task);
+    }
+
+    private void ensureEnabled() {
+        if (!resourceHubProperties.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Resource Hub is disabled");
+        }
+    }
+
+    private void addError(ResourceDiscoveryRunResult result, String message) {
+        if (result.getErrors().size() < 10 && hasText(message)) {
+            result.getErrors().add(trim(message, 500));
+        }
+    }
+
+    private String firstText(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (hasText(value)) {
+                return value.trim();
+            }
+        }
+        return null;
+    }
+
+    private String trim(String value, int maxLength) {
+        if (!hasText(value)) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private record DiscoveryPayload(String movieId, String keyword, String source, int maxResults) {
+    }
+}

@@ -1,0 +1,463 @@
+package com.gying.movie.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gying.movie.client.TmdbClient;
+import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
+import com.gying.movie.dto.TmdbListItem;
+import com.gying.movie.dto.TmdbSyncResult;
+import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.ResourceHubTask;
+import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IResourceHubTaskService;
+import com.gying.movie.service.ITmdbMetadataSyncService;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
+
+    private static final int DEFAULT_PAGE = 1;
+    private static final int DEFAULT_MAX_ITEMS = 20;
+    private static final int MAX_ITEMS_LIMIT = 20;
+    private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+    private final TmdbClient tmdbClient;
+    private final ResourceHubProperties resourceHubProperties;
+    private final IMovieMetadataService movieService;
+    private final IResourceHubTaskService taskService;
+    private final ObjectMapper objectMapper;
+
+    public TmdbMetadataSyncServiceImpl(
+            TmdbClient tmdbClient,
+            ResourceHubProperties resourceHubProperties,
+            IMovieMetadataService movieService,
+            IResourceHubTaskService taskService,
+            ObjectMapper objectMapper) {
+        this.tmdbClient = tmdbClient;
+        this.resourceHubProperties = resourceHubProperties;
+        this.movieService = movieService;
+        this.taskService = taskService;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request) {
+        ensureEnabled();
+        SyncPayload payload = normalizePayload(request);
+
+        ResourceHubTask task = new ResourceHubTask();
+        task.setTaskType("METADATA_SYNC");
+        task.setSource("TMDB");
+        task.setKeyword(payload.source());
+        task.setPayload(writePayload(payload));
+        task.setPriority(10);
+        return taskService.enqueue(task);
+    }
+
+    @Override
+    public TmdbSyncResult runTask(Long taskId) {
+        ensureEnabled();
+        ResourceHubTask task = taskService.getById(taskId);
+        if (task == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource Hub task not found");
+        }
+        if (!"METADATA_SYNC".equalsIgnoreCase(task.getTaskType()) || !"TMDB".equalsIgnoreCase(task.getSource())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is not a TMDB metadata sync task");
+        }
+
+        SyncPayload payload = readPayload(task);
+        TmdbSyncResult result = new TmdbSyncResult();
+        result.setTaskId(task.getId());
+        result.setSource(payload.source());
+        result.setPage(payload.page());
+        result.setRequested(payload.maxItems());
+
+        markRunning(task);
+        try {
+            List<TmdbListItem> items = tmdbClient.fetchList(payload.source(), payload.page());
+            int limit = Math.min(payload.maxItems(), items.size());
+            for (int i = 0; i < limit; i++) {
+                TmdbListItem item = items.get(i);
+                try {
+                    JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
+                    boolean inserted = upsertMovie(item, details);
+                    result.setProcessed(result.getProcessed() + 1);
+                    if (inserted) {
+                        result.setInserted(result.getInserted() + 1);
+                    } else {
+                        result.setUpdated(result.getUpdated() + 1);
+                    }
+                } catch (Exception itemError) {
+                    result.setFailed(result.getFailed() + 1);
+                    addError(result, item.getMediaType() + "/" + item.getTmdbId() + ": " + itemError.getMessage());
+                }
+            }
+            result.setSkipped(Math.max(items.size() - limit, 0));
+            String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
+            String errorSummary = result.getFailed() > 0
+                    ? result.getFailed() + " TMDB item(s) failed during sync"
+                    : null;
+            finishTask(task, status, errorSummary);
+            result.setStatus(task.getStatus());
+            return result;
+        } catch (Exception e) {
+            finishTask(task, "FAILED", e.getMessage());
+            result.setStatus("FAILED");
+            addError(result, e.getMessage());
+            return result;
+        }
+    }
+
+    private boolean upsertMovie(TmdbListItem item, JsonNode details) {
+        MovieMetadata existing = findExistingMovie(item, details);
+        MovieMetadata target = existing == null ? new MovieMetadata() : existing;
+        boolean inserted = existing == null;
+        LocalDateTime now = LocalDateTime.now();
+
+        if (inserted) {
+            target.setId(buildMovieId(item));
+            target.setStatus("ACTIVE");
+            target.setCategory(categoryFor(item.getMediaType()));
+            target.setCreatedAt(now);
+        }
+
+        target.setTmdbId(item.getTmdbId());
+        target.setTmdbType(item.getMediaType());
+        target.setTitleCn(firstText(target.getTitleCn(), title(details, item.getMediaType()), 255));
+        target.setTitleEn(firstText(target.getTitleEn(), originalTitle(details, item.getMediaType()), 500));
+        target.setYear(firstValue(target.getYear(), parseYear(releaseDate(details, item.getMediaType()))));
+        target.setRuntime(firstText(target.getRuntime(), runtime(details, item.getMediaType()), 100));
+        target.setDirectors(firstList(target.getDirectors(), directors(details, item.getMediaType())));
+        target.setActors(firstList(target.getActors(), names(details.path("credits").path("cast"), "name", 12)));
+        target.setGenres(firstList(target.getGenres(), names(details.path("genres"), "name", 12)));
+        target.setRegions(firstList(target.getRegions(), regions(details)));
+        target.setLanguages(firstList(target.getLanguages(), languages(details)));
+        target.setReleaseDates(firstText(target.getReleaseDates(), releaseDate(details, item.getMediaType()), 500));
+        target.setAliases(firstText(target.getAliases(), aliases(details, item.getMediaType()), 2000));
+        target.setPosterUrl(firstText(target.getPosterUrl(), posterUrl(details.path("poster_path").asText(null)), 500));
+        target.setTmdbPopularity(decimal(details.path("popularity")));
+        target.setTmdbVoteAverage(decimal(details.path("vote_average")));
+        target.setSummary(firstText(target.getSummary(), details.path("overview").asText(null), 4000));
+        target.setPopularity(popularityScore(details.path("popularity")));
+        target.setTmdbLastSyncAt(now);
+        target.setUpdatedAt(now);
+
+        if (inserted) {
+            movieService.save(target);
+        } else {
+            movieService.updateById(target);
+        }
+        return inserted;
+    }
+
+    private MovieMetadata findExistingMovie(TmdbListItem item, JsonNode details) {
+        MovieMetadata byTmdb = movieService.getOne(new QueryWrapper<MovieMetadata>()
+                .eq("tmdb_type", item.getMediaType())
+                .eq("tmdb_id", item.getTmdbId())
+                .last("LIMIT 1"), false);
+        if (byTmdb != null) {
+            return byTmdb;
+        }
+
+        Integer year = parseYear(releaseDate(details, item.getMediaType()));
+        List<String> rawTitles = new ArrayList<>();
+        rawTitles.add(title(details, item.getMediaType()));
+        rawTitles.add(originalTitle(details, item.getMediaType()));
+        List<String> titles = distinct(rawTitles, 2);
+        if (year == null || titles.isEmpty()) {
+            return null;
+        }
+
+        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
+                .eq("category", categoryFor(item.getMediaType()))
+                .eq("year", year)
+                .and(w -> {
+                    for (int i = 0; i < titles.size(); i++) {
+                        if (i > 0) {
+                            w.or();
+                        }
+                        String candidate = titles.get(i);
+                        w.eq("title_cn", candidate).or().eq("title_en", candidate);
+                    }
+                })
+                .last("LIMIT 1");
+        return movieService.getOne(query, false);
+    }
+
+    private void markRunning(ResourceHubTask task) {
+        LocalDateTime now = LocalDateTime.now();
+        task.setStatus("RUNNING");
+        task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1);
+        task.setStartedAt(now);
+        task.setFinishedAt(null);
+        task.setLastError(null);
+        task.setUpdatedAt(now);
+        taskService.updateById(task);
+    }
+
+    private void finishTask(ResourceHubTask task, String status, String error) {
+        task.setStatus(status);
+        task.setLastError(trim(error, 1000));
+        task.setFinishedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskService.updateById(task);
+    }
+
+    private SyncPayload normalizePayload(ResourceHubMetadataSyncRequest request) {
+        ResourceHubMetadataSyncRequest safeRequest = request == null ? new ResourceHubMetadataSyncRequest() : request;
+        String source = tmdbClient.normalizeSource(safeRequest.getSource());
+        int page = clamp(safeRequest.getPage(), DEFAULT_PAGE, 1, 500);
+        int maxItems = clamp(safeRequest.getMaxItems(), DEFAULT_MAX_ITEMS, 1, MAX_ITEMS_LIMIT);
+        return new SyncPayload(source, page, maxItems);
+    }
+
+    private SyncPayload readPayload(ResourceHubTask task) {
+        if (!hasText(task.getPayload())) {
+            return new SyncPayload(tmdbClient.normalizeSource(task.getKeyword()), DEFAULT_PAGE, DEFAULT_MAX_ITEMS);
+        }
+        try {
+            Map<String, Object> payload = objectMapper.readValue(task.getPayload(),
+                    new TypeReference<Map<String, Object>>() {
+                    });
+            String source = tmdbClient.normalizeSource((String) payload.get("source"));
+            int page = number(payload.get("page"), DEFAULT_PAGE);
+            int maxItems = number(payload.get("maxItems"), DEFAULT_MAX_ITEMS);
+            return new SyncPayload(source, clamp(page, DEFAULT_PAGE, 1, 500),
+                    clamp(maxItems, DEFAULT_MAX_ITEMS, 1, MAX_ITEMS_LIMIT));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid metadata sync task payload");
+        }
+    }
+
+    private String writePayload(SyncPayload payload) {
+        try {
+            Map<String, Object> value = new LinkedHashMap<>();
+            value.put("source", payload.source());
+            value.put("page", payload.page());
+            value.put("maxItems", payload.maxItems());
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialize task payload", e);
+        }
+    }
+
+    private void ensureEnabled() {
+        if (!resourceHubProperties.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Resource Hub is disabled");
+        }
+    }
+
+    private String buildMovieId(TmdbListItem item) {
+        return "tmdb_" + item.getMediaType() + "_" + item.getTmdbId();
+    }
+
+    private String categoryFor(String mediaType) {
+        return "tv".equals(mediaType) ? "tv" : "mv";
+    }
+
+    private String title(JsonNode details, String mediaType) {
+        return "tv".equals(mediaType) ? details.path("name").asText(null) : details.path("title").asText(null);
+    }
+
+    private String originalTitle(JsonNode details, String mediaType) {
+        return "tv".equals(mediaType)
+                ? details.path("original_name").asText(null)
+                : details.path("original_title").asText(null);
+    }
+
+    private String releaseDate(JsonNode details, String mediaType) {
+        return "tv".equals(mediaType)
+                ? details.path("first_air_date").asText(null)
+                : details.path("release_date").asText(null);
+    }
+
+    private String runtime(JsonNode details, String mediaType) {
+        if ("tv".equals(mediaType)) {
+            JsonNode runtimes = details.path("episode_run_time");
+            if (runtimes.isArray() && !runtimes.isEmpty()) {
+                int minutes = runtimes.get(0).asInt(0);
+                return minutes > 0 ? minutes + " min" : null;
+            }
+            return null;
+        }
+        int minutes = details.path("runtime").asInt(0);
+        return minutes > 0 ? minutes + " min" : null;
+    }
+
+    private List<String> directors(JsonNode details, String mediaType) {
+        List<String> result = new ArrayList<>();
+        if ("tv".equals(mediaType)) {
+            result.addAll(names(details.path("created_by"), "name", 8));
+        }
+        for (JsonNode crew : details.path("credits").path("crew")) {
+            String job = crew.path("job").asText("");
+            if ("Director".equalsIgnoreCase(job) || ("tv".equals(mediaType) && "Executive Producer".equalsIgnoreCase(job))) {
+                String name = crew.path("name").asText(null);
+                if (hasText(name)) {
+                    result.add(name.trim());
+                }
+            }
+            if (result.size() >= 8) {
+                break;
+            }
+        }
+        return distinct(result, 8);
+    }
+
+    private List<String> regions(JsonNode details) {
+        List<String> regions = names(details.path("production_countries"), "name", 8);
+        if (!regions.isEmpty()) {
+            return regions;
+        }
+        return texts(details.path("origin_country"), 8);
+    }
+
+    private List<String> languages(JsonNode details) {
+        List<String> result = names(details.path("spoken_languages"), "english_name", 8);
+        if (!result.isEmpty()) {
+            return result;
+        }
+        return names(details.path("spoken_languages"), "name", 8);
+    }
+
+    private String aliases(JsonNode details, String mediaType) {
+        JsonNode node = details.path("alternative_titles");
+        JsonNode titles = "tv".equals(mediaType) ? node.path("results") : node.path("titles");
+        return String.join(" / ", names(titles, "title", 20));
+    }
+
+    private List<String> names(JsonNode array, String field, int limit) {
+        List<String> values = new ArrayList<>();
+        if (!array.isArray()) {
+            return values;
+        }
+        for (JsonNode node : array) {
+            String value = node.path(field).asText(null);
+            if (hasText(value)) {
+                values.add(value.trim());
+            }
+            if (values.size() >= limit) {
+                break;
+            }
+        }
+        return distinct(values, limit);
+    }
+
+    private List<String> texts(JsonNode array, int limit) {
+        List<String> values = new ArrayList<>();
+        if (!array.isArray()) {
+            return values;
+        }
+        for (JsonNode node : array) {
+            String value = node.asText(null);
+            if (hasText(value)) {
+                values.add(value.trim());
+            }
+            if (values.size() >= limit) {
+                break;
+            }
+        }
+        return distinct(values, limit);
+    }
+
+    private List<String> distinct(List<String> values, int limit) {
+        Set<String> unique = new LinkedHashSet<>();
+        for (String value : values) {
+            if (hasText(value)) {
+                unique.add(value.trim());
+            }
+            if (unique.size() >= limit) {
+                break;
+            }
+        }
+        return new ArrayList<>(unique);
+    }
+
+    private String posterUrl(String posterPath) {
+        return hasText(posterPath) ? IMAGE_BASE_URL + posterPath : null;
+    }
+
+    private BigDecimal decimal(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return null;
+        }
+        return BigDecimal.valueOf(node.asDouble());
+    }
+
+    private Integer popularityScore(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return null;
+        }
+        return (int) Math.round(node.asDouble());
+    }
+
+    private Integer parseYear(String date) {
+        if (!hasText(date) || date.length() < 4) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(date.substring(0, 4));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String firstText(String current, String incoming, int maxLength) {
+        return hasText(current) ? current : trim(incoming, maxLength);
+    }
+
+    private <T> T firstValue(T current, T incoming) {
+        return current != null ? current : incoming;
+    }
+
+    private List<String> firstList(List<String> current, List<String> incoming) {
+        return current != null && !current.isEmpty() ? current : incoming;
+    }
+
+    private int clamp(Integer value, int defaultValue, int min, int max) {
+        int effective = value == null ? defaultValue : value;
+        return Math.min(Math.max(effective, min), max);
+    }
+
+    private int clamp(int value, int defaultValue, int min, int max) {
+        return clamp(Integer.valueOf(value), defaultValue, min, max);
+    }
+
+    private int number(Object value, int defaultValue) {
+        return value instanceof Number number ? number.intValue() : defaultValue;
+    }
+
+    private void addError(TmdbSyncResult result, String message) {
+        if (result.getErrors().size() < 10 && hasText(message)) {
+            result.getErrors().add(trim(message, 500));
+        }
+    }
+
+    private String trim(String value, int maxLength) {
+        if (!hasText(value)) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private record SyncPayload(String source, int page, int maxItems) {
+    }
+}

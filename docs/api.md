@@ -29,6 +29,17 @@
 - `PUT /api/admin/comments/{id}/status`：隐藏或恢复评论。
 - `GET /api/admin/users`：用户管理列表。
 - `PUT /api/admin/users/{id}/enabled`：启用/禁用用户。
+- `GET /api/admin/resource-hub/overview`：Resource Hub 概览。
+- `GET /api/admin/resource-hub/tasks?page=1&size=20&taskType=&status=`：Resource Hub 任务列表。
+- `POST /api/admin/resource-hub/tmdb/metadata-sync`：创建 TMDB 元数据同步任务，可传 `{ "source": "TRENDING_MOVIE_DAY", "page": 1, "maxItems": 20, "runNow": false }`。
+- `POST /api/admin/resource-hub/tmdb/metadata-sync/{taskId}/run`：运行已创建的 TMDB 元数据同步任务。
+- `POST /api/admin/resource-hub/discover`：创建资源发现任务，可传 `{ "movieId": "xxx", "keyword": "片名 年份", "source": "PANSOU", "maxResults": 10, "runNow": false }`。
+- `POST /api/admin/resource-hub/discover/{taskId}/run`：运行已创建的资源发现任务，当前会写入发现结果并生成夸克转存待办。
+- `GET /api/admin/resource-hub/discoveries?movieId=&status=&source=&page=1&size=20`：分页查看资源发现结果。
+- `POST /api/admin/resource-hub/discoveries/publish?limit=20`：批量发布待入库发现结果到正式资源列表。
+- `POST /api/admin/resource-hub/discoveries/{discoveryResultId}/publish`：发布单条发现结果到正式资源列表。
+- `POST /api/admin/resource-hub/quark/transfers/submit?limit=5`：批量提交待转存任务到 quark-auto-save。
+- `POST /api/admin/resource-hub/quark/transfers/{taskId}/submit`：提交单个待转存任务到 quark-auto-save。
 
 ## 评论、收藏、通知
 

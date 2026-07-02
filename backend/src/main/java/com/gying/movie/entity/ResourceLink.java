@@ -24,6 +24,8 @@ public class ResourceLink implements Serializable {
 
     private String url;
 
+    private String urlHash;
+
     private String code;
 
     private Long uploaderId;
@@ -35,6 +37,18 @@ public class ResourceLink implements Serializable {
     private String linkStatus;
 
     private Integer reportCount;
+
+    private String source;
+
+    private String sourceRef;
+
+    private String sourceUrl;
+
+    private Boolean autoCollected;
+
+    private LocalDateTime validatedAt;
+
+    private String lastCheckError;
 
     private String remark;
 

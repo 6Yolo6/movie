@@ -17,6 +17,10 @@ public class MovieMetadata implements Serializable {
     @TableId
     private String id;
 
+    private Long tmdbId;
+
+    private String tmdbType;
+
     private String titleCn;
 
     private String titleEn;
@@ -56,6 +60,10 @@ public class MovieMetadata implements Serializable {
 
     private BigDecimal imdbScore;
 
+    private BigDecimal tmdbPopularity;
+
+    private BigDecimal tmdbVoteAverage;
+
     private String rtScore;
 
     private String summary;
@@ -63,6 +71,8 @@ public class MovieMetadata implements Serializable {
     private String status;
 
     private Integer popularity;
+
+    private LocalDateTime tmdbLastSyncAt;
 
     private LocalDateTime createdAt;
 
