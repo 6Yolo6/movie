@@ -48,3 +48,20 @@ cd ../frontend
 npm install
 npm run dev
 ```
+
+## Resource Hub
+
+Set these variables in the root `.env` used by Docker Compose or by the backend process:
+
+- `RESOURCE_HUB_ENABLED=true`
+- `TMDB_API_KEY`
+- `RESOURCE_HUB_PANSOU_BASE_URL`
+- `QUARK_AUTO_SAVE_BASE_URL`
+- `QUARK_AUTO_SAVE_TOKEN`
+- `QUARK_AUTO_SAVE_PATH`
+- `QUARK_AUTO_SAVE_RUN_IMMEDIATELY`
+- `QUARK_COOKIE` (optional fallback; prefer configuring the cookie in quark-auto-save WebUI)
+
+`QUARK_AUTO_SAVE_TOKEN` is only the WebUI/API token. quark-auto-save also needs a valid
+pan.quark.cn cookie configured in its WebUI; otherwise transfer tasks can be added but
+cannot actually save files.
