@@ -7,6 +7,7 @@ import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
+import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.QuarkTransferTask;
@@ -16,6 +17,7 @@ import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import com.gying.movie.utils.AuthHelper;
@@ -42,6 +44,7 @@ public class ResourceHubAdminController {
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IResourceHubPublishService resourceHubPublishService;
 
     public ResourceHubAdminController(
             AuthHelper authHelper,
@@ -51,7 +54,8 @@ public class ResourceHubAdminController {
             IQuarkTransferTaskService quarkTransferTaskService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
-            IQuarkTransferRunnerService quarkTransferRunnerService) {
+            IQuarkTransferRunnerService quarkTransferRunnerService,
+            IResourceHubPublishService resourceHubPublishService) {
         this.authHelper = authHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
@@ -60,6 +64,7 @@ public class ResourceHubAdminController {
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.resourceHubPublishService = resourceHubPublishService;
     }
 
     @GetMapping("/overview")
@@ -144,6 +149,48 @@ public class ResourceHubAdminController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         return ApiResponse.ok(resourceDiscoveryService.runTask(taskId));
+    }
+
+    @GetMapping("/discoveries")
+    public ApiResponse<Page<ResourceDiscoveryResult>> discoveries(
+            @RequestParam(required = false) String movieId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String source,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        QueryWrapper<ResourceDiscoveryResult> query = new QueryWrapper<>();
+        if (hasText(movieId)) {
+            query.eq("movie_id", movieId.trim());
+        }
+        if (hasText(status)) {
+            query.eq("status", status.trim().toUpperCase());
+        }
+        if (hasText(source)) {
+            query.eq("source", source.trim().toUpperCase());
+        }
+        query.orderByDesc("created_at");
+        Page<ResourceDiscoveryResult> result = discoveryResultService.page(
+                new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
+                query);
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/discoveries/publish")
+    public ApiResponse<ResourceHubPublishResult> publishDiscoveries(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubPublishService.publishPending(limit));
+    }
+
+    @PostMapping("/discoveries/{discoveryResultId}/publish")
+    public ApiResponse<ResourceHubPublishResult> publishDiscovery(
+            @PathVariable Long discoveryResultId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubPublishService.publishDiscovery(discoveryResultId));
     }
 
     @PostMapping("/quark/transfers/submit")
