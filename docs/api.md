@@ -40,6 +40,8 @@
 - `POST /api/admin/resource-hub/discoveries/{discoveryResultId}/publish`：发布单条发现结果到正式资源列表。
 - `POST /api/admin/resource-hub/quark/transfers/submit?limit=5`：批量提交待转存任务到 quark-auto-save。
 - `POST /api/admin/resource-hub/quark/transfers/{taskId}/submit`：提交单个待转存任务到 quark-auto-save。
+- `GET /api/admin/resource-hub/worker/status`：查看 Resource Hub Worker 开关、运行状态和批量限制。
+- `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
 
 ## 评论、收藏、通知
 

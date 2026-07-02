@@ -38,6 +38,12 @@ resource-hub:
     pattern: ${QUARK_AUTO_SAVE_PATTERN:(.*)\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)}
     replace: ${QUARK_AUTO_SAVE_REPLACE:}
     run-immediately: ${QUARK_AUTO_SAVE_RUN_IMMEDIATELY:true}
+  worker:
+    enabled: ${RESOURCE_HUB_WORKER_ENABLED:false}
+    fixed-delay-ms: ${RESOURCE_HUB_WORKER_FIXED_DELAY_MS:60000}
+    task-limit: ${RESOURCE_HUB_WORKER_TASK_LIMIT:5}
+    quark-limit: ${RESOURCE_HUB_WORKER_QUARK_LIMIT:5}
+    publish-limit: ${RESOURCE_HUB_WORKER_PUBLISH_LIMIT:20}
 
 jwt:
   secret: ${JWT_SECRET:gying-movie-dev-secret-change-me-please-32-bytes}

@@ -11,6 +11,7 @@ public class ResourceHubProperties {
     private Tmdb tmdb = new Tmdb();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
+    private Worker worker = new Worker();
 
     @Data
     public static class Tmdb {
@@ -31,5 +32,14 @@ public class ResourceHubProperties {
         private String pattern = "(.*)\\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)";
         private String replace = "";
         private boolean runImmediately = true;
+    }
+
+    @Data
+    public static class Worker {
+        private boolean enabled = false;
+        private long fixedDelayMs = 60000;
+        private int taskLimit = 5;
+        private int quarkLimit = 5;
+        private int publishLimit = 20;
     }
 }

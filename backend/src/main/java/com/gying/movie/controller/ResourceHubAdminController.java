@@ -9,6 +9,7 @@ import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
+import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
@@ -19,6 +20,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceHubTaskService;
+import com.gying.movie.service.IResourceHubWorkerService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import com.gying.movie.utils.AuthHelper;
 import java.util.LinkedHashMap;
@@ -45,6 +47,7 @@ public class ResourceHubAdminController {
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
+    private final IResourceHubWorkerService resourceHubWorkerService;
 
     public ResourceHubAdminController(
             AuthHelper authHelper,
@@ -55,7 +58,8 @@ public class ResourceHubAdminController {
             ITmdbMetadataSyncService tmdbMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
-            IResourceHubPublishService resourceHubPublishService) {
+            IResourceHubPublishService resourceHubPublishService,
+            IResourceHubWorkerService resourceHubWorkerService) {
         this.authHelper = authHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
@@ -65,6 +69,7 @@ public class ResourceHubAdminController {
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
+        this.resourceHubWorkerService = resourceHubWorkerService;
     }
 
     @GetMapping("/overview")
@@ -77,6 +82,7 @@ public class ResourceHubAdminController {
         result.put("tmdbConfigured", hasText(resourceHubProperties.getTmdb().getApiKey()));
         result.put("pansouBaseUrl", nullToEmpty(resourceHubProperties.getPansou().getBaseUrl()));
         result.put("quarkBaseUrl", nullToEmpty(resourceHubProperties.getQuark().getBaseUrl()));
+        result.put("worker", workerStatusMap());
         result.put("taskStatusCounts", taskService.countByStatus());
         result.put("discoveredCount", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
                 .eq("status", "DISCOVERED")));
@@ -85,6 +91,21 @@ public class ResourceHubAdminController {
         result.put("pendingQuarkTransfers", quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .eq("status", "PENDING")));
         return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/worker/status")
+    public ApiResponse<Map<String, Object>> workerStatus(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(workerStatusMap());
+    }
+
+    @PostMapping("/worker/run-once")
+    public ApiResponse<ResourceHubWorkerResult> runWorkerOnce(
+            @RequestParam(defaultValue = "false") boolean force,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubWorkerService.runOnce(force));
     }
 
     @GetMapping("/tasks")
@@ -215,5 +236,17 @@ public class ResourceHubAdminController {
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private Map<String, Object> workerStatusMap() {
+        ResourceHubProperties.Worker worker = resourceHubProperties.getWorker();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("enabled", resourceHubProperties.isEnabled() && worker.isEnabled());
+        result.put("running", resourceHubWorkerService.isRunning());
+        result.put("fixedDelayMs", worker.getFixedDelayMs());
+        result.put("taskLimit", worker.getTaskLimit());
+        result.put("quarkLimit", worker.getQuarkLimit());
+        result.put("publishLimit", worker.getPublishLimit());
+        return result;
     }
 }
