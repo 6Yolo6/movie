@@ -111,6 +111,15 @@ Configure NapCat HTTP event reporting to:
 http://backend:8880/api/qq-bot/onebot?token=${QQ_BOT_WEBHOOK_TOKEN}
 ```
 
+Also enable a NapCat OneBot HTTP server so the backend can call `send_group_msg`:
+
+- host: `0.0.0.0`
+- port: `3000`
+- token: same value as `QQ_BOT_NAPCAT_ACCESS_TOKEN`
+
+Keep `QQ_BOT_NAPCAT_BASE_URL=http://napcat:3000` when the backend and NapCat run in the same
+Docker Compose network.
+
 When auto transfer is enabled, the bot saves matched Quark resources through quark-auto-save and
 then replies with the generated "my Quark share" link when the Quark share API accepts the saved
 folder. If share creation fails, the bot still returns the original resource links and the transfer
