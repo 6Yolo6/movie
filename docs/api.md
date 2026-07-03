@@ -42,6 +42,8 @@
 - `POST /api/admin/resource-hub/quark/transfers/{taskId}/submit`：提交单个待转存任务到 quark-auto-save。
 - `GET /api/admin/resource-hub/worker/status`：查看 Resource Hub Worker 开关、运行状态和批量限制。
 - `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
+- `GET /api/qq-bot/health`：查看 QQ Bot 开关和 NapCat 配置状态。
+- `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
 
 ## 评论、收藏、通知
 

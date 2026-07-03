@@ -45,6 +45,17 @@ resource-hub:
     quark-limit: ${RESOURCE_HUB_WORKER_QUARK_LIMIT:5}
     publish-limit: ${RESOURCE_HUB_WORKER_PUBLISH_LIMIT:20}
 
+qq-bot:
+  enabled: ${QQ_BOT_ENABLED:false}
+  webhook-token: ${QQ_BOT_WEBHOOK_TOKEN:}
+  allowed-groups: ${QQ_BOT_ALLOWED_GROUPS:}
+  command-prefixes: ${QQ_BOT_COMMAND_PREFIXES:找,搜,/movie,/search}
+  max-results: ${QQ_BOT_MAX_RESULTS:3}
+  auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
+  napcat:
+    base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://localhost:3000}
+    access-token: ${QQ_BOT_NAPCAT_ACCESS_TOKEN:}
+
 jwt:
   secret: ${JWT_SECRET:gying-movie-dev-secret-change-me-please-32-bytes}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}

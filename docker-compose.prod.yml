@@ -38,6 +38,7 @@ services:
       - redis
       - pansou
       - quark-auto-save
+      - napcat
     networks:
       - gying-net
 
@@ -83,11 +84,26 @@ services:
     networks:
       - gying-net
 
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "6099:6099"
+    environment:
+      - ACCOUNT=${NAPCAT_ACCOUNT:-}
+    volumes:
+      - napcat-data:/app/napcat/config
+    restart: unless-stopped
+    networks:
+      - gying-net
+
 volumes:
   redis-data:
   backend-logs:
   pansou-data:
   quark-auto-save-data:
+  napcat-data:
 
 networks:
   gying-net:

@@ -73,3 +73,30 @@ cannot actually save files.
 
 Keep `RESOURCE_HUB_WORKER_ENABLED=false` until TMDB, PanSou and quark-auto-save are verified.
 Use `POST /api/admin/resource-hub/worker/run-once?force=true` for a one-time manual pipeline run.
+
+## QQ Bot / NapCat
+
+The backend can receive OneBot-compatible HTTP events from NapCat and reply to QQ groups through
+NapCat `send_group_msg`.
+
+Set these variables when enabling the group bot:
+
+- `QQ_BOT_ENABLED=true`
+- `QQ_BOT_WEBHOOK_TOKEN`
+- `QQ_BOT_ALLOWED_GROUPS` (comma-separated group IDs; empty allows all groups)
+- `QQ_BOT_COMMAND_PREFIXES` (default `找,搜,/movie,/search`)
+- `QQ_BOT_MAX_RESULTS` (default `3`)
+- `QQ_BOT_AUTO_TRANSFER` (default `true`)
+- `QQ_BOT_NAPCAT_BASE_URL`
+- `QQ_BOT_NAPCAT_ACCESS_TOKEN`
+- `NAPCAT_ACCOUNT` (used by the Docker service)
+
+Configure NapCat HTTP event reporting to:
+
+```text
+http://backend:8880/api/qq-bot/onebot?token=${QQ_BOT_WEBHOOK_TOKEN}
+```
+
+The first implementation saves matched Quark resources through quark-auto-save and replies with
+the available resource links plus the saved path. Generating a brand-new Quark share link from the
+saved files still needs a Quark share adapter.
