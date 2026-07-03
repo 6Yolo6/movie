@@ -88,6 +88,10 @@ public class QuarkAutoSaveClient {
     }
 
     public void requireAccountReady() {
+        getPrimaryCookie();
+    }
+
+    public String getPrimaryCookie() {
         requireConfigured();
         JsonNode data = loadConfigData();
         JsonNode cookies = data.path("cookie");
@@ -99,11 +103,12 @@ public class QuarkAutoSaveClient {
                 cookieArray.add(fallbackCookie);
                 objectData.set("cookie", cookieArray);
                 synchronizeRuntimeConfig(objectData);
-                return;
+                return fallbackCookie;
             }
             throw new IllegalStateException("quark-auto-save cookie is not configured");
         }
         synchronizeRuntimeConfig(data);
+        return cookie.trim();
     }
 
     private JsonNode loadConfigData() {

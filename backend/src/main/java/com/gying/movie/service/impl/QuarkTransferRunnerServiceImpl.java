@@ -11,6 +11,7 @@ import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
 
     private final ResourceHubProperties resourceHubProperties;
     private final QuarkAutoSaveClient quarkAutoSaveClient;
+    private final IQuarkShareService quarkShareService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IMovieMetadataService movieService;
     private final ObjectMapper objectMapper;
@@ -36,11 +38,13 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     public QuarkTransferRunnerServiceImpl(
             ResourceHubProperties resourceHubProperties,
             QuarkAutoSaveClient quarkAutoSaveClient,
+            IQuarkShareService quarkShareService,
             IQuarkTransferTaskService quarkTransferTaskService,
             IMovieMetadataService movieService,
             ObjectMapper objectMapper) {
         this.resourceHubProperties = resourceHubProperties;
         this.quarkAutoSaveClient = quarkAutoSaveClient;
+        this.quarkShareService = quarkShareService;
         this.quarkTransferTaskService = quarkTransferTaskService;
         this.movieService = movieService;
         this.objectMapper = objectMapper;
@@ -121,6 +125,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             task.setFinishedAt(LocalDateTime.now());
             task.setUpdatedAt(LocalDateTime.now());
             quarkTransferTaskService.updateById(task);
+            ensureOwnShareUrl(task, result);
             result.setSubmitted(result.getSubmitted() + 1);
         } catch (Exception e) {
             task.setStatus("FAILED");
@@ -130,6 +135,17 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             quarkTransferTaskService.updateById(task);
             result.setFailed(result.getFailed() + 1);
             addError(result, "task " + task.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private void ensureOwnShareUrl(QuarkTransferTask task, QuarkTransferRunResult result) {
+        try {
+            quarkShareService.ensureShareUrl(task);
+        } catch (Exception e) {
+            task.setLastError(trim("share creation failed: " + e.getMessage(), 1000));
+            task.setUpdatedAt(LocalDateTime.now());
+            quarkTransferTaskService.updateById(task);
+            addError(result, "task " + task.getId() + " share: " + e.getMessage());
         }
     }
 

@@ -45,6 +45,8 @@
 - `GET /api/qq-bot/health`：查看 QQ Bot 开关和 NapCat 配置状态。
 - `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
 
+QQ Bot 自动转存成功后会优先回复后端创建的“我的夸克分享”链接；如果夸克分享接口失败，会降级回复原始资源链接和转存状态。
+
 ## 评论、收藏、通知
 
 - `GET /api/comments/{relateId}`：评论分页，包含回复。

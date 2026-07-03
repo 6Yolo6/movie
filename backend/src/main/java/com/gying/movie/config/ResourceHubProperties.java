@@ -32,6 +32,12 @@ public class ResourceHubProperties {
         private String pattern = "(.*)\\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)";
         private String replace = "";
         private boolean runImmediately = true;
+        private boolean shareEnabled = true;
+        private int shareUrlType = 1;
+        private int shareExpiredType = 1;
+        private String sharePasscode = "";
+        private int sharePollAttempts = 12;
+        private long sharePollIntervalMs = 500;
     }
 
     @Data

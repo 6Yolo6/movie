@@ -67,12 +67,26 @@ Set these variables in the root `.env` used by Docker Compose or by the backend 
 - `RESOURCE_HUB_WORKER_PUBLISH_LIMIT` (default `20`)
 - `QUARK_COOKIE` (optional fallback; prefer configuring the cookie in quark-auto-save WebUI)
 
+`docker-compose.prod.yml` does not start Redis, PanSou or quark-auto-save by default. Point
+`REDIS_HOST`, `RESOURCE_HUB_PANSOU_BASE_URL` and `QUARK_AUTO_SAVE_BASE_URL` at your existing
+services, for example `host.docker.internal` plus the published ports. If you need the compose
+file to create embedded dependency containers, start it with `--profile embedded-deps` and adjust
+ports so they do not conflict with existing services.
+
 `QUARK_AUTO_SAVE_TOKEN` is only the WebUI/API token. quark-auto-save also needs a valid
 pan.quark.cn cookie configured in its WebUI; otherwise transfer tasks can be added but
 cannot actually save files.
 
 Keep `RESOURCE_HUB_WORKER_ENABLED=false` until TMDB, PanSou and quark-auto-save are verified.
 Use `POST /api/admin/resource-hub/worker/run-once?force=true` for a one-time manual pipeline run.
+
+After a Quark transfer succeeds, the backend can use the same Quark cookie to create your own
+share link from the saved folder:
+
+- `QUARK_SHARE_ENABLED=true`
+- `QUARK_SHARE_URL_TYPE=1` for public links, `2` for passcode links
+- `QUARK_SHARE_EXPIRED_TYPE=1` permanent, `2` 1 day, `3` 7 days, `4` 30 days
+- `QUARK_SHARE_PASSCODE=` optional when `QUARK_SHARE_URL_TYPE=2`
 
 ## QQ Bot / NapCat
 
@@ -97,6 +111,7 @@ Configure NapCat HTTP event reporting to:
 http://backend:8880/api/qq-bot/onebot?token=${QQ_BOT_WEBHOOK_TOKEN}
 ```
 
-The first implementation saves matched Quark resources through quark-auto-save and replies with
-the available resource links plus the saved path. Generating a brand-new Quark share link from the
-saved files still needs a Quark share adapter.
+When auto transfer is enabled, the bot saves matched Quark resources through quark-auto-save and
+then replies with the generated "my Quark share" link when the Quark share API accepts the saved
+folder. If share creation fails, the bot still returns the original resource links and the transfer
+status.

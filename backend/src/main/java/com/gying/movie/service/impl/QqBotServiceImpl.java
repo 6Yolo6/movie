@@ -16,6 +16,7 @@ import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQqBotService;
+import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
@@ -45,6 +46,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final IResourceLinkService resourceLinkService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IResourceDiscoveryResultService discoveryResultService;
+    private final IQuarkShareService quarkShareService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
@@ -57,6 +59,7 @@ public class QqBotServiceImpl implements IQqBotService {
             IResourceLinkService resourceLinkService,
             IResourceDiscoveryService resourceDiscoveryService,
             IResourceDiscoveryResultService discoveryResultService,
+            IQuarkShareService quarkShareService,
             IQuarkTransferTaskService quarkTransferTaskService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService) {
@@ -67,6 +70,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.resourceLinkService = resourceLinkService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.discoveryResultService = discoveryResultService;
+        this.quarkShareService = quarkShareService;
         this.quarkTransferTaskService = quarkTransferTaskService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
@@ -113,7 +117,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 ensureTransferred(movie, links, transferNotes);
             }
 
-            trySend(groupId, buildReply(movie, links, transferNotes));
+            trySend(groupId, buildReply(movie, links, transferNotes, loadMyShareTasks(movie.getId())));
         } catch (Exception e) {
             log.warn("QQ bot resource search failed for keyword {}", keyword, e);
             trySend(groupId, "搜索失败：" + safeError(e.getMessage()));
@@ -190,18 +194,34 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void submitTransferTask(QuarkTransferTask task, List<String> transferNotes) {
         if ("SUBMITTED".equalsIgnoreCase(task.getStatus())) {
+            ensureShareUrl(task, transferNotes);
             addSavedPathNote(task, transferNotes);
             return;
         }
         try {
             QuarkTransferRunResult result = quarkTransferRunnerService.submitOne(task.getId());
             QuarkTransferTask refreshed = quarkTransferTaskService.getById(task.getId());
+            ensureShareUrl(refreshed, transferNotes);
             addSavedPathNote(refreshed, transferNotes);
             if (result.getFailed() > 0 && !result.getErrors().isEmpty()) {
                 transferNotes.add(safeError(result.getErrors().get(0)));
             }
         } catch (Exception e) {
             transferNotes.add("转存失败：" + safeError(e.getMessage()));
+        }
+    }
+
+    private void ensureShareUrl(QuarkTransferTask task, List<String> transferNotes) {
+        if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
+            return;
+        }
+        try {
+            String shareUrl = quarkShareService.ensureShareUrl(task);
+            if (hasText(shareUrl)) {
+                transferNotes.add("已生成我的夸克分享");
+            }
+        } catch (Exception e) {
+            transferNotes.add("生成分享链接失败：" + safeError(e.getMessage()));
         }
     }
 
@@ -273,6 +293,15 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
     }
 
+    private List<QuarkTransferTask> loadMyShareTasks(String movieId) {
+        return quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", movieId)
+                .eq("status", "SUBMITTED")
+                .isNotNull("share_url")
+                .orderByDesc("updated_at")
+                .last("LIMIT " + safeMaxResults()));
+    }
+
     private QuarkTransferTask findTransferTask(String movieId, String urlHash) {
         if (!hasText(urlHash)) {
             return null;
@@ -284,7 +313,8 @@ public class QqBotServiceImpl implements IQqBotService {
                 .last("LIMIT 1"), false);
     }
 
-    private String buildReply(MovieMetadata movie, List<ResourceLink> links, List<String> transferNotes) {
+    private String buildReply(MovieMetadata movie, List<ResourceLink> links, List<String> transferNotes,
+            List<QuarkTransferTask> myShareTasks) {
         StringBuilder reply = new StringBuilder();
         reply.append("找到：").append(title(movie));
         if (movie.getYear() != null) {
@@ -297,11 +327,23 @@ public class QqBotServiceImpl implements IQqBotService {
         if (!transferNotes.isEmpty()) {
             reply.append("\n转存：").append(trim(String.join("；", distinct(transferNotes)), 260));
         }
+        List<String> myShareUrls = myShareTasks == null ? List.of()
+                : distinct(myShareTasks.stream()
+                        .map(QuarkTransferTask::getShareUrl)
+                        .filter(this::hasText)
+                        .toList());
+        if (!myShareUrls.isEmpty()) {
+            reply.append("\n\n我的夸克分享：");
+            int shareIndex = 1;
+            for (String shareUrl : myShareUrls) {
+                reply.append("\n").append(shareIndex++).append(". ").append(shareUrl);
+            }
+        }
         if (links.isEmpty()) {
             reply.append("\n\n暂时没有可发布的资源链接。");
             return reply.toString();
         }
-        reply.append("\n\n资源链接：");
+        reply.append("\n\n原始资源链接：");
         int index = 1;
         for (ResourceLink link : links) {
             reply.append("\n").append(index++).append(". ")

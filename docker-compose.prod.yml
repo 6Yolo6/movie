@@ -33,12 +33,9 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
     volumes:
       - backend-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
-    depends_on:
-      - redis
-      - pansou
-      - quark-auto-save
-      - napcat
     networks:
       - gying-net
 
@@ -53,6 +50,8 @@ services:
       - gying-net
 
   redis:
+    profiles:
+      - embedded-deps
     image: redis:7-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD:-gyingredis2024}
     volumes:
@@ -62,6 +61,8 @@ services:
       - gying-net
 
   pansou:
+    profiles:
+      - embedded-deps
     image: ghcr.io/fish2018/pansou:latest
     environment:
       - PORT=8888
@@ -75,6 +76,8 @@ services:
       - gying-net
 
   quark-auto-save:
+    profiles:
+      - embedded-deps
     image: cp0204/quark-auto-save:latest
     ports:
       - "5005:5005"
