@@ -11,20 +11,20 @@ from urllib.parse import urlparse
 
 # ================= Configuration =================
 # MySQL Configuration
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASS = "***"
-DB_NAME = "gying"
+DB_HOST = os.getenv("GYING_DB_HOST", "localhost")
+DB_USER = os.getenv("GYING_DB_USER", "root")
+DB_PASS = os.getenv("GYING_DB_PASSWORD", "")
+DB_NAME = os.getenv("GYING_DB_NAME", "gying")
 
 # MinIO Configuration (Update these credentials)
-MINIO_ENDPOINT = "localhost:9000"
-MINIO_ACCESS_KEY = "admin"
-MINIO_SECRET_KEY = "miniopassword"
-MINIO_BUCKET = "gying"
+MINIO_ENDPOINT = os.getenv("GYING_MINIO_ENDPOINT", "localhost:9000")
+MINIO_ACCESS_KEY = os.getenv("GYING_MINIO_ACCESS_KEY", "admin")
+MINIO_SECRET_KEY = os.getenv("GYING_MINIO_SECRET_KEY", "")
+MINIO_BUCKET = os.getenv("GYING_MINIO_BUCKET", "gying")
 
 # Crawler Configuration
 TARGET_USER = "救星小窝"
-COOKIE_STR = "***"
+COOKIE_STR = os.getenv("GYING_COOKIE", "")
 LOGIN_USERNAME = os.getenv("GYING_USERNAME", "")
 LOGIN_PASSWORD = os.getenv("GYING_PASSWORD", "")
 

@@ -17,6 +17,7 @@ Thumbs.db
 __pycache__/
 *.pyc
 .venv/
+backend/.venv-codex/
 
 # Java
 target/
@@ -29,6 +30,11 @@ node_modules/
 
 # Logs
 *.log
+.agently-auth.*
+
+# Local scratch and generated artifacts
+tmp/
+%SystemDrive%/
 
 # Docker volumes
 data/
