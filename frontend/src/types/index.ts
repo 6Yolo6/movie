@@ -18,6 +18,7 @@ export interface MovieMetadata {
     rtScore: string;
     summary: string;
     status?: string;
+    resourceStatus?: string;
     popularity?: number;
     seriesName?: string;
     season?: number;

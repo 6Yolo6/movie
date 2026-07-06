@@ -6,13 +6,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.TmdbListItem;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
+import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
+import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,24 +38,35 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_MAX_ITEMS = 20;
     private static final int MAX_ITEMS_LIMIT = 20;
-    private static final String IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
     private final TmdbClient tmdbClient;
+    private final PosterStorageService posterStorageService;
     private final ResourceHubProperties resourceHubProperties;
     private final IMovieMetadataService movieService;
     private final IResourceHubTaskService taskService;
+    private final IResourceDiscoveryService resourceDiscoveryService;
+    private final IResourceDiscoveryResultService discoveryResultService;
+    private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
 
     public TmdbMetadataSyncServiceImpl(
             TmdbClient tmdbClient,
+            PosterStorageService posterStorageService,
             ResourceHubProperties resourceHubProperties,
             IMovieMetadataService movieService,
             IResourceHubTaskService taskService,
+            IResourceDiscoveryService resourceDiscoveryService,
+            IResourceDiscoveryResultService discoveryResultService,
+            IResourceLinkService resourceLinkService,
             ObjectMapper objectMapper) {
         this.tmdbClient = tmdbClient;
+        this.posterStorageService = posterStorageService;
         this.resourceHubProperties = resourceHubProperties;
         this.movieService = movieService;
         this.taskService = taskService;
+        this.resourceDiscoveryService = resourceDiscoveryService;
+        this.discoveryResultService = discoveryResultService;
+        this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
     }
 
@@ -93,13 +110,14 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                 TmdbListItem item = items.get(i);
                 try {
                     JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
-                    boolean inserted = upsertMovie(item, details);
+                    MovieUpsertResult movieResult = upsertMovie(item, details);
                     result.setProcessed(result.getProcessed() + 1);
-                    if (inserted) {
+                    if (movieResult.inserted()) {
                         result.setInserted(result.getInserted() + 1);
                     } else {
                         result.setUpdated(result.getUpdated() + 1);
                     }
+                    enqueueDiscoveryTask(movieResult.movie(), result);
                 } catch (Exception itemError) {
                     result.setFailed(result.getFailed() + 1);
                     addError(result, item.getMediaType() + "/" + item.getTmdbId() + ": " + itemError.getMessage());
@@ -121,7 +139,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         }
     }
 
-    private boolean upsertMovie(TmdbListItem item, JsonNode details) {
+    private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details) {
         MovieMetadata existing = findExistingMovie(item, details);
         MovieMetadata target = existing == null ? new MovieMetadata() : existing;
         boolean inserted = existing == null;
@@ -130,8 +148,12 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         if (inserted) {
             target.setId(buildMovieId(item));
             target.setStatus("ACTIVE");
+            target.setResourceStatus("UNKNOWN");
             target.setCategory(categoryFor(item.getMediaType()));
             target.setCreatedAt(now);
+        }
+        if (!hasText(target.getResourceStatus())) {
+            target.setResourceStatus("UNKNOWN");
         }
 
         target.setTmdbId(item.getTmdbId());
@@ -147,7 +169,11 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         target.setLanguages(firstList(target.getLanguages(), languages(details)));
         target.setReleaseDates(firstText(target.getReleaseDates(), releaseDate(details, item.getMediaType()), 500));
         target.setAliases(firstText(target.getAliases(), aliases(details, item.getMediaType()), 2000));
-        target.setPosterUrl(firstText(target.getPosterUrl(), posterUrl(details.path("poster_path").asText(null)), 500));
+        String posterObjectName = posterStorageService.storeTmdbPoster(
+                item.getMediaType(),
+                item.getTmdbId(),
+                details.path("poster_path").asText(null));
+        target.setPosterUrl(preferLocalPoster(target.getPosterUrl(), posterObjectName));
         target.setTmdbPopularity(decimal(details.path("popularity")));
         target.setTmdbVoteAverage(decimal(details.path("vote_average")));
         target.setSummary(firstText(target.getSummary(), details.path("overview").asText(null), 4000));
@@ -160,7 +186,61 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         } else {
             movieService.updateById(target);
         }
-        return inserted;
+        return new MovieUpsertResult(target, inserted);
+    }
+
+    private void enqueueDiscoveryTask(MovieMetadata movie, TmdbSyncResult result) {
+        if (!resourceHubProperties.getTmdb().isAutoDiscoveryEnabled() || movie == null || !hasText(movie.getId())) {
+            return;
+        }
+        if (hasPublishableResource(movie.getId())
+                || hasSavedDiscovery(movie.getId())
+                || hasRecentDiscoveryTask(movie.getId())) {
+            result.setDiscoveryTasksSkipped(result.getDiscoveryTasksSkipped() + 1);
+            return;
+        }
+
+        try {
+            ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+            request.setMovieId(movie.getId());
+            request.setKeyword(buildDiscoveryKeyword(movie));
+            request.setSource("PANSOU");
+            request.setMaxResults(clamp(resourceHubProperties.getTmdb().getDiscoveryMaxResults(), 10, 1, 50));
+            resourceDiscoveryService.enqueue(request);
+            result.setDiscoveryTasksCreated(result.getDiscoveryTasksCreated() + 1);
+        } catch (Exception e) {
+            result.setDiscoveryTasksSkipped(result.getDiscoveryTasksSkipped() + 1);
+            addError(result, "discovery task " + movie.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private boolean hasPublishableResource(String movieId) {
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("status", "ACTIVE")
+                .ne("link_status", "INVALID")) > 0;
+    }
+
+    private boolean hasSavedDiscovery(String movieId) {
+        return discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("movie_id", movieId)
+                .in("status", List.of("DISCOVERED", "SAVED", "DUPLICATE"))) > 0;
+    }
+
+    private boolean hasRecentDiscoveryTask(String movieId) {
+        int cooldownHours = Math.max(resourceHubProperties.getTmdb().getDiscoveryCooldownHours(), 1);
+        return taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "RESOURCE_DISCOVERY")
+                .eq("movie_id", movieId)
+                .ge("created_at", LocalDateTime.now().minusHours(cooldownHours))) > 0;
+    }
+
+    private String buildDiscoveryKeyword(MovieMetadata movie) {
+        String title = firstText(null, movie.getTitleCn(), 255);
+        title = firstText(title, movie.getTitleEn(), 255);
+        title = firstText(title, movie.getSeriesName(), 255);
+        title = firstText(title, movie.getId(), 255);
+        return movie.getYear() == null ? title : title + " " + movie.getYear();
     }
 
     private MovieMetadata findExistingMovie(TmdbListItem item, JsonNode details) {
@@ -386,10 +466,6 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         return new ArrayList<>(unique);
     }
 
-    private String posterUrl(String posterPath) {
-        return hasText(posterPath) ? IMAGE_BASE_URL + posterPath : null;
-    }
-
     private BigDecimal decimal(JsonNode node) {
         if (node == null || node.isMissingNode() || node.isNull()) {
             return null;
@@ -417,6 +493,21 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
 
     private String firstText(String current, String incoming, int maxLength) {
         return hasText(current) ? current : trim(incoming, maxLength);
+    }
+
+    private String preferLocalPoster(String current, String incoming) {
+        if (!hasText(incoming)) {
+            return current;
+        }
+        if (!hasText(current) || isRemoteUrl(current)) {
+            return trim(incoming, 500);
+        }
+        return current;
+    }
+
+    private boolean isRemoteUrl(String value) {
+        String lower = value.trim().toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://");
     }
 
     private <T> T firstValue(T current, T incoming) {
@@ -456,6 +547,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private record MovieUpsertResult(MovieMetadata movie, boolean inserted) {
     }
 
     private record SyncPayload(String source, int page, int maxItems) {

@@ -3,6 +3,7 @@ package com.gying.movie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkTransferRunResult;
+import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
@@ -68,6 +69,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
         result.setStartedAt(LocalDateTime.now());
         try {
+            enqueueTmdbAutoSyncTasks(result);
             runDueTasks(result);
             runQuarkTransfers(result);
             publishResources(result);
@@ -81,6 +83,49 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     @Override
     public boolean isRunning() {
         return running.get();
+    }
+
+    private void enqueueTmdbAutoSyncTasks(ResourceHubWorkerResult result) {
+        ResourceHubProperties.Tmdb tmdb = resourceHubProperties.getTmdb();
+        if (!tmdb.isAutoSyncEnabled() || !hasText(tmdb.getApiKey())) {
+            return;
+        }
+        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(tmdb.getAutoSyncIntervalHours(), 1));
+        for (String source : autoSyncSources(tmdb.getAutoSyncSources())) {
+            try {
+                if (hasRecentMetadataSyncTask(source, since)) {
+                    continue;
+                }
+                ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
+                request.setSource(source);
+                request.setPage(tmdb.getAutoSyncPage());
+                request.setMaxItems(tmdb.getAutoSyncMaxItems());
+                tmdbMetadataSyncService.enqueue(request);
+                result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+            } catch (Exception e) {
+                addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
+            }
+        }
+    }
+
+    private boolean hasRecentMetadataSyncTask(String source, LocalDateTime since) {
+        return taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "TMDB")
+                .eq("keyword", source)
+                .ge("created_at", since)) > 0;
+    }
+
+    private List<String> autoSyncSources(String raw) {
+        if (!hasText(raw)) {
+            return List.of("TRENDING_MOVIE_DAY", "TRENDING_TV_DAY", "POPULAR_MOVIE", "POPULAR_TV");
+        }
+        return List.of(raw.split(",")).stream()
+                .map(String::trim)
+                .filter(this::hasText)
+                .map(String::toUpperCase)
+                .distinct()
+                .toList();
     }
 
     private void runDueTasks(ResourceHubWorkerResult result) {
@@ -228,6 +273,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private int clamp(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private String trim(String value, int maxLength) {

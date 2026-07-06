@@ -53,8 +53,10 @@ CALL gying_add_column_if_missing('movie_metadata', 'tmdb_type', '`tmdb_type` var
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_popularity', '`tmdb_popularity` decimal(12,4) DEFAULT NULL COMMENT ''TMDB popularity'' AFTER `imdb_score`');
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_vote_average', '`tmdb_vote_average` decimal(3,1) DEFAULT NULL COMMENT ''TMDB vote average'' AFTER `tmdb_popularity`');
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_last_sync_at', '`tmdb_last_sync_at` datetime DEFAULT NULL COMMENT ''Last TMDB sync time'' AFTER `popularity`');
+CALL gying_add_column_if_missing('movie_metadata', 'resource_status', '`resource_status` varchar(30) DEFAULT ''UNKNOWN'' COMMENT ''Resource status: UNKNOWN, TRAILER, AVAILABLE'' AFTER `status`');
 CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_type_id', 'INDEX `idx_tmdb_type_id` (`tmdb_type`, `tmdb_id`)');
 CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_last_sync_at', 'INDEX `idx_tmdb_last_sync_at` (`tmdb_last_sync_at`)');
+CALL gying_add_index_if_missing('movie_metadata', 'idx_resource_status', 'INDEX `idx_resource_status` (`resource_status`)');
 
 CALL gying_add_column_if_missing('resource_link', 'url_hash', '`url_hash` char(64) DEFAULT NULL COMMENT ''SHA-256 hash of normalized URL'' AFTER `url`');
 CALL gying_add_column_if_missing('resource_link', 'source', '`source` varchar(50) DEFAULT ''USER'' COMMENT ''USER, RESOURCE_HUB, CRAWLER'' AFTER `report_count`');

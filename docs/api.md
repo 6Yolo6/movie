@@ -33,6 +33,7 @@
 - `GET /api/admin/resource-hub/tasks?page=1&size=20&taskType=&status=`：Resource Hub 任务列表。
 - `POST /api/admin/resource-hub/tmdb/metadata-sync`：创建 TMDB 元数据同步任务，可传 `{ "source": "TRENDING_MOVIE_DAY", "page": 1, "maxItems": 20, "runNow": false }`。
 - `POST /api/admin/resource-hub/tmdb/metadata-sync/{taskId}/run`：运行已创建的 TMDB 元数据同步任务。
+- TMDB 同步成功后会按配置自动生成 PanSou 资源发现任务；返回结果中的 `discoveryTasksCreated` 和 `discoveryTasksSkipped` 可用于观察去重效果。
 - `POST /api/admin/resource-hub/discover`：创建资源发现任务，可传 `{ "movieId": "xxx", "keyword": "片名 年份", "source": "PANSOU", "maxResults": 10, "runNow": false }`。
 - `POST /api/admin/resource-hub/discover/{taskId}/run`：运行已创建的资源发现任务，当前会写入发现结果并生成夸克转存待办。
 - `GET /api/admin/resource-hub/discoveries?movieId=&status=&source=&page=1&size=20`：分页查看资源发现结果。

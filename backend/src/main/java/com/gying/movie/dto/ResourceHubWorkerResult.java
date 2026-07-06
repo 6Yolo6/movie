@@ -19,6 +19,7 @@ public class ResourceHubWorkerResult {
     private int tasksSucceeded;
     private int tasksFailed;
     private int tasksSkipped;
+    private int metadataSyncTasksCreated;
     private List<TaskResult> tasks = new ArrayList<>();
     private QuarkTransferRunResult quarkTransfers;
     private ResourceHubPublishResult publishedResources;

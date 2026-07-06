@@ -16,6 +16,14 @@ public class ResourceHubProperties {
     @Data
     public static class Tmdb {
         private String apiKey;
+        private boolean autoSyncEnabled = false;
+        private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
+        private int autoSyncPage = 1;
+        private int autoSyncMaxItems = 20;
+        private int autoSyncIntervalHours = 24;
+        private boolean autoDiscoveryEnabled = true;
+        private int discoveryMaxResults = 10;
+        private int discoveryCooldownHours = 24;
     }
 
     @Data

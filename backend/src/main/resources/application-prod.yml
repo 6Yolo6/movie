@@ -39,6 +39,11 @@ spring:
       timeout: 5000ms
 
 minio:
+  endpoint: ${MINIO_ENDPOINT:host.docker.internal:9000}
+  access-key: ${MINIO_ACCESS_KEY:admin}
+  secret-key: ${MINIO_SECRET_KEY:miniopassword}
+  bucket: ${MINIO_BUCKET:gying}
+  secure: ${MINIO_SECURE:false}
   url-prefix: ${MINIO_URL_PREFIX}
 
 app:
@@ -51,6 +56,14 @@ resource-hub:
   auto-approve: ${RESOURCE_HUB_AUTO_APPROVE:true}
   tmdb:
     api-key: ${TMDB_API_KEY:}
+    auto-sync-enabled: ${RESOURCE_HUB_TMDB_AUTO_SYNC_ENABLED:false}
+    auto-sync-sources: ${RESOURCE_HUB_TMDB_AUTO_SYNC_SOURCES:TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV}
+    auto-sync-page: ${RESOURCE_HUB_TMDB_AUTO_SYNC_PAGE:1}
+    auto-sync-max-items: ${RESOURCE_HUB_TMDB_AUTO_SYNC_MAX_ITEMS:20}
+    auto-sync-interval-hours: ${RESOURCE_HUB_TMDB_AUTO_SYNC_INTERVAL_HOURS:24}
+    auto-discovery-enabled: ${RESOURCE_HUB_TMDB_AUTO_DISCOVERY_ENABLED:true}
+    discovery-max-results: ${RESOURCE_HUB_TMDB_DISCOVERY_MAX_RESULTS:10}
+    discovery-cooldown-hours: ${RESOURCE_HUB_TMDB_DISCOVERY_COOLDOWN_HOURS:24}
   pansou:
     base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://host.docker.internal:8888}
     token: ${RESOURCE_HUB_PANSOU_TOKEN:}

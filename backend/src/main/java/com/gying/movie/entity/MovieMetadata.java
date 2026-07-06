@@ -70,6 +70,8 @@ public class MovieMetadata implements Serializable {
 
     private String status;
 
+    private String resourceStatus;
+
     private Integer popularity;
 
     private LocalDateTime tmdbLastSyncAt;

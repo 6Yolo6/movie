@@ -21,6 +21,11 @@ Spring Boot 会读取下列环境变量，未设置时使用开发默认值：
 - `REDIS_HOST`
 - `REDIS_PORT`
 - `REDIS_PASSWORD`
+- `MINIO_ENDPOINT`
+- `MINIO_ACCESS_KEY`
+- `MINIO_SECRET_KEY`
+- `MINIO_BUCKET`
+- `MINIO_SECURE`
 - `MINIO_URL_PREFIX`
 - `APP_CORS_ALLOWED_ORIGIN`
 - `JWT_SECRET`
@@ -55,6 +60,14 @@ Set these variables in the root `.env` used by Docker Compose or by the backend 
 
 - `RESOURCE_HUB_ENABLED=true`
 - `TMDB_API_KEY`
+- `RESOURCE_HUB_TMDB_AUTO_SYNC_ENABLED` (default `false`)
+- `RESOURCE_HUB_TMDB_AUTO_SYNC_SOURCES` (default `TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV`)
+- `RESOURCE_HUB_TMDB_AUTO_SYNC_PAGE` (default `1`)
+- `RESOURCE_HUB_TMDB_AUTO_SYNC_MAX_ITEMS` (default `20`)
+- `RESOURCE_HUB_TMDB_AUTO_SYNC_INTERVAL_HOURS` (default `24`)
+- `RESOURCE_HUB_TMDB_AUTO_DISCOVERY_ENABLED` (default `true`)
+- `RESOURCE_HUB_TMDB_DISCOVERY_MAX_RESULTS` (default `10`)
+- `RESOURCE_HUB_TMDB_DISCOVERY_COOLDOWN_HOURS` (default `24`)
 - `RESOURCE_HUB_PANSOU_BASE_URL`
 - `QUARK_AUTO_SAVE_BASE_URL`
 - `QUARK_AUTO_SAVE_TOKEN`
@@ -79,6 +92,12 @@ cannot actually save files.
 
 Keep `RESOURCE_HUB_WORKER_ENABLED=false` until TMDB, PanSou and quark-auto-save are verified.
 Use `POST /api/admin/resource-hub/worker/run-once?force=true` for a one-time manual pipeline run.
+When `RESOURCE_HUB_TMDB_AUTO_SYNC_ENABLED=true`, the worker seeds recent TMDB hot-list sync tasks
+only if the same source has not been queued within the configured interval. TMDB sync then creates
+PanSou discovery tasks for movies that do not already have active resources, saved discoveries, or
+recent discovery tasks.
+When Quark sharing is enabled, Resource Hub waits for quark-auto-save to save the resource and for
+the backend to create your own Quark share before publishing the resource into `resource_link`.
 
 After a Quark transfer succeeds, the backend can use the same Quark cookie to create your own
 share link from the saved folder:

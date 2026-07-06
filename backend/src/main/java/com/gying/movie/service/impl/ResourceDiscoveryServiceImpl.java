@@ -117,19 +117,32 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     if (isDuplicate(movie.getId(), urlHash, resource.getUrl())) {
                         saveDiscovery(task, movie, resource, urlHash, "DUPLICATE", now);
                         result.setDuplicate(result.getDuplicate() + 1);
+                        markResourceStatus(movie, "AVAILABLE", now);
                         continue;
                     }
                     ResourceDiscoveryResult discovery = saveDiscovery(task, movie, resource, urlHash, "DISCOVERED", now);
-                    createQuarkTransferTask(discovery, resource, urlHash, now);
                     result.setDiscovered(result.getDiscovered() + 1);
-                    result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
+                    markResourceStatus(movie, "AVAILABLE", now);
+                    if (createQuarkTransferTask(discovery, resource, urlHash, now)) {
+                        result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
+                    } else {
+                        ignoreDiscovery(discovery, "Movie already has a Quark transfer task", now);
+                    }
                 } catch (Exception itemError) {
                     result.setFailed(result.getFailed() + 1);
                     addError(result, itemError.getMessage());
                 }
             }
-            String status = result.getDiscovered() + result.getDuplicate() > 0 ? "SUCCEEDED" : "FAILED";
-            finishTask(task, status, status.equals("FAILED") ? "No resources discovered" : null);
+            if (result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
+                markResourceStatus(movie, "TRAILER", now);
+            }
+            String status = result.getFailed() > 0 && result.getDiscovered() + result.getDuplicate() == 0
+                    ? "FAILED"
+                    : "SUCCEEDED";
+            String error = "FAILED".equals(status)
+                    ? "Resource discovery failed"
+                    : result.getDiscovered() + result.getDuplicate() == 0 ? "No resources discovered; marked as trailer" : null;
+            finishTask(task, status, error);
             result.setStatus(task.getStatus());
             return result;
         } catch (Exception e) {
@@ -173,11 +186,14 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         return discovery;
     }
 
-    private void createQuarkTransferTask(
+    private boolean createQuarkTransferTask(
             ResourceDiscoveryResult discovery,
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
+        if (hasMovieTransferTask(discovery.getMovieId())) {
+            return false;
+        }
         QuarkTransferTask transfer = new QuarkTransferTask();
         transfer.setDiscoveryResultId(discovery.getId());
         transfer.setMovieId(discovery.getMovieId());
@@ -188,6 +204,20 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         transfer.setCreatedAt(now);
         transfer.setUpdatedAt(now);
         quarkTransferTaskService.save(transfer);
+        return true;
+    }
+
+    private boolean hasMovieTransferTask(String movieId) {
+        return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", movieId)
+                .in("status", List.of("PENDING", "RUNNING", "SUBMITTED"))) > 0;
+    }
+
+    private void ignoreDiscovery(ResourceDiscoveryResult discovery, String reason, LocalDateTime now) {
+        discovery.setStatus("IGNORED");
+        discovery.setFailureReason(trim(reason, 1000));
+        discovery.setUpdatedAt(now);
+        discoveryResultService.updateById(discovery);
     }
 
     private boolean isDuplicate(String movieId, String urlHash, String url) {
@@ -209,6 +239,15 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 .eq("movie_id", movieId)
                 .eq("url", url)
                 .eq("status", "ACTIVE")) > 0;
+    }
+
+    private void markResourceStatus(MovieMetadata movie, String resourceStatus, LocalDateTime now) {
+        if (movie == null || !hasText(resourceStatus) || resourceStatus.equalsIgnoreCase(movie.getResourceStatus())) {
+            return;
+        }
+        movie.setResourceStatus(resourceStatus);
+        movie.setUpdatedAt(now);
+        movieService.updateById(movie);
     }
 
     private DiscoveryPayload normalizePayload(ResourceDiscoveryRequest request) {

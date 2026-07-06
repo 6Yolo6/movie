@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
@@ -28,16 +30,19 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     private final ResourceHubProperties resourceHubProperties;
     private final IResourceDiscoveryResultService discoveryResultService;
     private final IResourceLinkService resourceLinkService;
+    private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IMovieMetadataService movieService;
 
     public ResourceHubPublishServiceImpl(
             ResourceHubProperties resourceHubProperties,
             IResourceDiscoveryResultService discoveryResultService,
             IResourceLinkService resourceLinkService,
+            IQuarkTransferTaskService quarkTransferTaskService,
             IMovieMetadataService movieService) {
         this.resourceHubProperties = resourceHubProperties;
         this.discoveryResultService = discoveryResultService;
         this.resourceLinkService = resourceLinkService;
+        this.quarkTransferTaskService = quarkTransferTaskService;
         this.movieService = movieService;
     }
 
@@ -89,6 +94,10 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 throw new IllegalStateException("Movie not found: " + discovery.getMovieId());
             }
 
+            if (!ensurePublishableShare(discovery, result)) {
+                return;
+            }
+
             String url = firstText(discovery.getShareUrl(), discovery.getOriginalUrl());
             if (!hasText(url)) {
                 throw new IllegalStateException("Discovery result has no publishable URL");
@@ -107,6 +116,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 discovery.setResourceLinkId(existing.getId());
                 discovery.setUpdatedAt(now);
                 discoveryResultService.updateById(discovery);
+                markResourceAvailable(movie, now);
                 result.setDuplicate(result.getDuplicate() + 1);
                 result.getResourceIds().add(existing.getId());
                 return;
@@ -144,6 +154,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             discovery.setFailureReason(null);
             discovery.setUpdatedAt(now);
             discoveryResultService.updateById(discovery);
+            markResourceAvailable(movie, now);
             result.setPublished(result.getPublished() + 1);
             result.getResourceIds().add(link.getId());
         } catch (Exception e) {
@@ -153,6 +164,53 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             result.setFailed(result.getFailed() + 1);
             addError(result, "discovery " + discovery.getId() + ": " + e.getMessage());
         }
+    }
+
+    private boolean ensurePublishableShare(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
+        if (!resourceHubProperties.getQuark().isShareEnabled() || !isQuarkDiscovery(discovery)) {
+            return true;
+        }
+        if (hasText(discovery.getShareUrl())) {
+            return true;
+        }
+        QuarkTransferTask transfer = findTransferTask(discovery);
+        if (transfer != null && hasText(transfer.getShareUrl())) {
+            discovery.setShareUrl(transfer.getShareUrl());
+            discovery.setShareUrlHash(firstText(transfer.getShareUrlHash(), ResourceHubHashUtils.sha256(transfer.getShareUrl())));
+            discovery.setFailureReason(null);
+            discovery.setUpdatedAt(LocalDateTime.now());
+            discoveryResultService.updateById(discovery);
+            return true;
+        }
+        result.setSkipped(result.getSkipped() + 1);
+        return false;
+    }
+
+    private boolean isQuarkDiscovery(ResourceDiscoveryResult discovery) {
+        return discovery != null
+                && ("QUARK".equalsIgnoreCase(discovery.getProvider())
+                        || (hasText(discovery.getOriginalUrl())
+                                && discovery.getOriginalUrl().toLowerCase().contains("pan.quark.cn/s/")));
+    }
+
+    private QuarkTransferTask findTransferTask(ResourceDiscoveryResult discovery) {
+        if (discovery.getId() != null) {
+            QuarkTransferTask byDiscovery = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byDiscovery != null) {
+                return byDiscovery;
+            }
+        }
+        if (!hasText(discovery.getOriginalUrlHash())) {
+            return null;
+        }
+        return quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", discovery.getMovieId())
+                .eq("original_url_hash", discovery.getOriginalUrlHash())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
     }
 
     private ResourceLink findExistingResource(String movieId, String url, String urlHash) {
@@ -169,6 +227,15 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 .eq("url", url)
                 .eq("status", "ACTIVE")
                 .last("LIMIT 1"));
+    }
+
+    private void markResourceAvailable(MovieMetadata movie, LocalDateTime now) {
+        if (movie == null || "AVAILABLE".equalsIgnoreCase(movie.getResourceStatus())) {
+            return;
+        }
+        movie.setResourceStatus("AVAILABLE");
+        movie.setUpdatedAt(now);
+        movieService.updateById(movie);
     }
 
     private String normalizeType(String type) {

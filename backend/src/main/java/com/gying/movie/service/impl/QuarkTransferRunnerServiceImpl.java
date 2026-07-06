@@ -54,10 +54,16 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     public QuarkTransferRunResult submitPending(int limit) {
         ensureEnabled();
         int safeLimit = Math.min(Math.max(limit <= 0 ? DEFAULT_LIMIT : limit, 1), MAX_LIMIT);
-        List<QuarkTransferTask> tasks = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
-                .eq("status", "PENDING")
+        QueryWrapper<QuarkTransferTask> query = new QueryWrapper<QuarkTransferTask>()
                 .orderByAsc("created_at")
-                .last("LIMIT " + safeLimit));
+                .last("LIMIT " + safeLimit);
+        if (resourceHubProperties.getQuark().isShareEnabled()) {
+            query.in("status", List.of("PENDING", "SUBMITTED"))
+                    .and(wrapper -> wrapper.eq("status", "PENDING").or().isNull("share_url"));
+        } else {
+            query.eq("status", "PENDING");
+        }
+        List<QuarkTransferTask> tasks = quarkTransferTaskService.list(query);
         QuarkTransferRunResult result = new QuarkTransferRunResult();
         for (QuarkTransferTask task : tasks) {
             submit(task, result);

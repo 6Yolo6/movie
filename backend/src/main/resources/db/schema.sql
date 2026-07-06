@@ -35,6 +35,7 @@ CREATE TABLE `movie_metadata` (
   `rt_score` varchar(50) DEFAULT NULL COMMENT 'Rotten Tomatoes',
   `summary` text COMMENT 'Description',
   `status` varchar(50) DEFAULT 'ACTIVE' COMMENT 'Status',
+  `resource_status` varchar(30) DEFAULT 'UNKNOWN' COMMENT 'Resource status: UNKNOWN, TRAILER, AVAILABLE',
   `popularity` int DEFAULT '0' COMMENT 'Popularity score',
   `tmdb_last_sync_at` datetime DEFAULT NULL COMMENT 'Last TMDB sync time',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -45,6 +46,7 @@ CREATE TABLE `movie_metadata` (
   KEY `idx_category_status_year` (`category`, `status`, `year`),
   KEY `idx_status_created_at` (`status`, `created_at`),
   KEY `idx_status_douban_score` (`status`, `douban_score`),
+  KEY `idx_resource_status` (`resource_status`),
   KEY `idx_popularity` (`popularity`),
   KEY `idx_tmdb_type_id` (`tmdb_type`, `tmdb_id`),
   KEY `idx_tmdb_last_sync_at` (`tmdb_last_sync_at`)
