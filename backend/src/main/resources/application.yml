@@ -2,6 +2,10 @@ server:
   port: ${SERVER_PORT:8880}
 
 spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
   application:
     name: gying-movie
   datasource:

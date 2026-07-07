@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+    Alert,
     App,
     Button,
     Card,
@@ -23,6 +24,7 @@ import {
     Typography,
 } from 'antd';
 import {
+    ApiOutlined,
     CloudSyncOutlined,
     DatabaseOutlined,
     PlayCircleOutlined,
@@ -32,6 +34,7 @@ import {
     ShareAltOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
@@ -103,7 +106,6 @@ interface ResourceHubTask {
     keyword?: string;
     source?: string;
     status: string;
-    priority?: number;
     attempts?: number;
     lastError?: string;
     scheduledAt?: string;
@@ -112,12 +114,10 @@ interface ResourceHubTask {
 
 interface DiscoveryResult {
     id: number;
-    taskId?: number;
     movieId: string;
     source: string;
     title?: string;
     provider?: string;
-    shareUrl?: string;
     quality?: string;
     fileSize?: string;
     status: string;
@@ -141,21 +141,17 @@ interface DiscoveryFormValues {
     runNow: boolean;
 }
 
-const TMDB_SOURCE_OPTIONS = [
-    { value: 'TRENDING_MOVIE_DAY', label: '电影日趋势' },
-    { value: 'TRENDING_TV_DAY', label: '剧集日趋势' },
-    { value: 'POPULAR_MOVIE', label: '热门电影' },
-    { value: 'POPULAR_TV', label: '热门剧集' },
-    { value: 'TOP_RATED_MOVIE', label: '高分电影' },
-    { value: 'TOP_RATED_TV', label: '高分剧集' },
-    { value: 'UPCOMING_MOVIE', label: '即将上映' },
+const TMDB_SOURCE_KEYS = [
+    'TRENDING_MOVIE_DAY',
+    'TRENDING_TV_DAY',
+    'POPULAR_MOVIE',
+    'POPULAR_TV',
+    'TOP_RATED_MOVIE',
+    'TOP_RATED_TV',
+    'UPCOMING_MOVIE',
 ];
 
-const TASK_TYPE_OPTIONS = [
-    { value: 'METADATA_SYNC', label: '元数据同步' },
-    { value: 'RESOURCE_DISCOVERY', label: '资源搜索' },
-];
-
+const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY'];
 const TASK_STATUS_OPTIONS = ['PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELED'];
 const DISCOVERY_STATUS_OPTIONS = ['DISCOVERED', 'SAVED', 'DUPLICATE', 'IGNORED', 'FAILED'];
 
@@ -166,40 +162,15 @@ function unwrap<T>(payload: ApiEnvelope<T> | T): T {
     return payload as T;
 }
 
-function statusTag(value?: string) {
-    const status = value || 'UNKNOWN';
-    const colorMap: Record<string, string> = {
-        PENDING: 'orange',
-        RUNNING: 'blue',
-        SUCCEEDED: 'green',
-        FAILED: 'red',
-        CANCELED: 'default',
-        DISCOVERED: 'cyan',
-        SAVED: 'green',
-        DUPLICATE: 'default',
-        IGNORED: 'default',
-    };
-    return <Tag color={colorMap[status] || 'default'}>{status}</Tag>;
-}
-
-function boolTag(value: boolean, yes = '开启', no = '关闭') {
-    return <Tag color={value ? 'green' : 'default'}>{value ? yes : no}</Tag>;
-}
-
 function formatDate(value?: string) {
     return value ? new Date(value).toLocaleString() : '-';
-}
-
-function formatDelay(ms?: number) {
-    if (!ms) return '-';
-    if (ms < 60000) return `${Math.round(ms / 1000)} 秒`;
-    return `${Math.round(ms / 60000)} 分钟`;
 }
 
 export default function ResourceHubAdminPage() {
     const { user, token } = useAuthStore();
     const router = useRouter();
     const { message } = App.useApp();
+    const { t } = useTranslation();
     const [configForm] = Form.useForm<ResourceHubConfigFormValues>();
     const [tmdbForm] = Form.useForm<TmdbFormValues>();
     const [discoveryForm] = Form.useForm<DiscoveryFormValues>();
@@ -227,6 +198,11 @@ export default function ResourceHubAdminPage() {
         Authorization: `Bearer ${token}`,
     }), [token]);
 
+    const tmdbSourceOptions = useMemo(() => TMDB_SOURCE_KEYS.map((value) => ({
+        value,
+        label: t(`resourceHubSource.${value}`),
+    })), [t]);
+
     const requestJson = useCallback(async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
         const res = await api(path, {
             ...options,
@@ -236,10 +212,17 @@ export default function ResourceHubAdminPage() {
             },
         });
         if (!res.ok) {
-            throw new Error(await readApiError(res, '操作失败'));
+            throw new Error(await readApiError(res, t('operationFailed')));
         }
         return unwrap<T>(await res.json());
-    }, [authHeaders]);
+    }, [authHeaders, t]);
+
+    const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => ({
+        ...config,
+        tmdbAutoSyncSources: config.tmdbAutoSyncSources
+            ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+            : [],
+    });
 
     const fetchOverview = useCallback(async () => {
         if (!token) {
@@ -250,20 +233,15 @@ export default function ResourceHubAdminPage() {
         try {
             const data = await requestJson<Overview>('/api/admin/resource-hub/overview');
             setOverview(data);
-            configForm.setFieldsValue({
-                ...data.config,
-                tmdbAutoSyncSources: data.config.tmdbAutoSyncSources
-                    ? data.config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-                    : [],
-            });
+            configForm.setFieldsValue(normalizeConfigForm(data.config));
             setPublishLimit(data.worker.publishLimit || 20);
             setQuarkLimit(data.worker.quarkLimit || 5);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '加载 Resource Hub 概览失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubLoadFailed'));
         } finally {
             setLoading(false);
         }
-    }, [configForm, message, requestJson, token]);
+    }, [configForm, message, requestJson, t, token]);
 
     const fetchTasks = useCallback(async () => {
         if (!token) return;
@@ -276,11 +254,11 @@ export default function ResourceHubAdminPage() {
             setTasks(data.records || []);
             setTaskTotal(data.total || 0);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '加载任务失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubTasksLoadFailed'));
         } finally {
             setTasksLoading(false);
         }
-    }, [message, requestJson, taskPage, taskStatus, taskType, token]);
+    }, [message, requestJson, t, taskPage, taskStatus, taskType, token]);
 
     const fetchDiscoveries = useCallback(async () => {
         if (!token) return;
@@ -293,21 +271,21 @@ export default function ResourceHubAdminPage() {
             setDiscoveries(data.records || []);
             setDiscoveryTotal(data.total || 0);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '加载发现结果失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubDiscoveriesLoadFailed'));
         } finally {
             setDiscoveriesLoading(false);
         }
-    }, [discoveryMovieId, discoveryPage, discoveryStatus, message, requestJson, token]);
+    }, [discoveryMovieId, discoveryPage, discoveryStatus, message, requestJson, t, token]);
 
     useEffect(() => {
         if (!user) return;
         if (user.role !== 'ADMIN') {
-            message.error('需要管理员权限');
+            message.error(t('adminAccessRequired'));
             router.push('/');
             return;
         }
         fetchOverview();
-    }, [fetchOverview, message, router, user]);
+    }, [fetchOverview, message, router, t, user]);
 
     useEffect(() => {
         fetchTasks();
@@ -331,16 +309,11 @@ export default function ResourceHubAdminPage() {
                     tmdbAutoSyncSources: values.tmdbAutoSyncSources.join(','),
                 }),
             });
-            configForm.setFieldsValue({
-                ...data,
-                tmdbAutoSyncSources: data.tmdbAutoSyncSources
-                    ? data.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-                    : [],
-            });
-            message.success('Resource Hub 配置已保存');
+            configForm.setFieldsValue(normalizeConfigForm(data));
+            message.success(t('resourceHubConfigSaved'));
             await fetchOverview();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '保存配置失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
         } finally {
             setSavingConfig(false);
         }
@@ -350,10 +323,10 @@ export default function ResourceHubAdminPage() {
         setRunningAction(key);
         try {
             await requestJson(path, { method: 'POST' });
-            message.success('操作已完成');
+            message.success(t('operationCompleted'));
             await refreshAll();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '操作失败');
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
         } finally {
             setRunningAction(null);
         }
@@ -366,10 +339,10 @@ export default function ResourceHubAdminPage() {
                 method: 'POST',
                 body: JSON.stringify(values),
             });
-            message.success(values.runNow ? 'TMDB 采集已执行' : 'TMDB 采集任务已创建');
+            message.success(values.runNow ? t('resourceHubTmdbRunDone') : t('resourceHubTmdbTaskCreated'));
             await refreshAll();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '创建 TMDB 采集任务失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubTmdbTaskFailed'));
         } finally {
             setRunningAction(null);
         }
@@ -380,33 +353,56 @@ export default function ResourceHubAdminPage() {
         try {
             await requestJson('/api/admin/resource-hub/discover', {
                 method: 'POST',
-                body: JSON.stringify({
-                    ...values,
-                    source: 'PANSOU',
-                }),
+                body: JSON.stringify({ ...values, source: 'PANSOU' }),
             });
-            message.success(values.runNow ? '资源搜索已执行' : '资源搜索任务已创建');
+            message.success(values.runNow ? t('resourceHubDiscoveryRunDone') : t('resourceHubDiscoveryTaskCreated'));
             await refreshAll();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : '创建资源搜索任务失败');
+            message.error(error instanceof Error ? error.message : t('resourceHubDiscoveryTaskFailed'));
         } finally {
             setRunningAction(null);
         }
     };
 
+    const statusTag = (value?: string) => {
+        const status = value || 'UNKNOWN';
+        const colorMap: Record<string, string> = {
+            PENDING: 'orange',
+            RUNNING: 'blue',
+            SUCCEEDED: 'green',
+            FAILED: 'red',
+            CANCELED: 'default',
+            DISCOVERED: 'cyan',
+            SAVED: 'green',
+            DUPLICATE: 'default',
+            IGNORED: 'default',
+        };
+        return <Tag color={colorMap[status] || 'default'}>{t(`resourceHubStatus.${status}`, { defaultValue: status })}</Tag>;
+    };
+
+    const boolTag = (value: boolean, yes = t('enabled'), no = t('disabled')) => (
+        <Tag color={value ? 'green' : 'default'}>{value ? yes : no}</Tag>
+    );
+
+    const formatDelay = (ms?: number) => {
+        if (!ms) return '-';
+        if (ms < 60000) return t('resourceHubSeconds', { count: Math.round(ms / 1000) });
+        return t('resourceHubMinutes', { count: Math.round(ms / 60000) });
+    };
+
     const taskColumns: ColumnsType<ResourceHubTask> = [
         { title: 'ID', dataIndex: 'id', width: 90 },
-        { title: '类型', dataIndex: 'taskType', width: 150, render: (value: string) => <Tag>{value}</Tag> },
-        { title: '影片 ID', dataIndex: 'movieId', width: 140, render: (value?: string) => value || '-' },
-        { title: '关键词', dataIndex: 'keyword', ellipsis: true, render: (value?: string) => value || '-' },
-        { title: '来源', dataIndex: 'source', width: 110, render: (value?: string) => value || '-' },
-        { title: '状态', dataIndex: 'status', width: 120, render: statusTag },
-        { title: '尝试', dataIndex: 'attempts', width: 80, render: (value?: number) => value ?? 0 },
-        { title: '计划时间', dataIndex: 'scheduledAt', width: 180, render: formatDate },
-        { title: '创建时间', dataIndex: 'createdAt', width: 180, render: formatDate },
-        { title: '错误', dataIndex: 'lastError', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('type'), dataIndex: 'taskType', width: 160, render: (value: string) => <Tag>{t(`resourceHubTaskType.${value}`, { defaultValue: value })}</Tag> },
+        { title: t('movieId'), dataIndex: 'movieId', width: 140, render: (value?: string) => value || '-' },
+        { title: t('resourceHubKeyword'), dataIndex: 'keyword', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110, render: (value?: string) => value || '-' },
+        { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
+        { title: t('resourceHubAttempts'), dataIndex: 'attempts', width: 90, render: (value?: number) => value ?? 0 },
+        { title: t('resourceHubScheduledAt'), dataIndex: 'scheduledAt', width: 180, render: formatDate },
+        { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
+        { title: t('resourceHubError'), dataIndex: 'lastError', ellipsis: true, render: (value?: string) => value || '-' },
         {
-            title: '操作',
+            title: t('actions'),
             key: 'actions',
             fixed: 'right',
             width: 120,
@@ -417,7 +413,7 @@ export default function ResourceHubAdminPage() {
                     loading={runningAction === `task-${record.id}`}
                     onClick={() => runAction(`task-${record.id}`, `/api/admin/resource-hub/tmdb/metadata-sync/${record.id}/run`)}
                 >
-                    执行
+                    {t('resourceHubRun')}
                 </Button>
             ) : '-',
         },
@@ -425,18 +421,18 @@ export default function ResourceHubAdminPage() {
 
     const discoveryColumns: ColumnsType<DiscoveryResult> = [
         { title: 'ID', dataIndex: 'id', width: 90 },
-        { title: '影片 ID', dataIndex: 'movieId', width: 140 },
-        { title: '标题', dataIndex: 'title', ellipsis: true, render: (value?: string) => value || '-' },
-        { title: '来源', dataIndex: 'source', width: 110 },
-        { title: '网盘', dataIndex: 'provider', width: 100, render: (value?: string) => value || '-' },
-        { title: '清晰度', dataIndex: 'quality', width: 100, render: (value?: string) => value || '-' },
-        { title: '大小', dataIndex: 'fileSize', width: 100, render: (value?: string) => value || '-' },
-        { title: '状态', dataIndex: 'status', width: 120, render: statusTag },
-        { title: '入库资源', dataIndex: 'resourceLinkId', width: 100, render: (value?: number) => value || '-' },
-        { title: '创建时间', dataIndex: 'createdAt', width: 180, render: formatDate },
-        { title: '失败原因', dataIndex: 'failureReason', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('movieId'), dataIndex: 'movieId', width: 140 },
+        { title: t('movieTitle'), dataIndex: 'title', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110 },
+        { title: t('provider'), dataIndex: 'provider', width: 100, render: (value?: string) => value || '-' },
+        { title: t('quality'), dataIndex: 'quality', width: 100, render: (value?: string) => value || '-' },
+        { title: t('fileSize'), dataIndex: 'fileSize', width: 100, render: (value?: string) => value || '-' },
+        { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
+        { title: t('resourceHubPublishedResource'), dataIndex: 'resourceLinkId', width: 130, render: (value?: number) => value || '-' },
+        { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
+        { title: t('resourceHubFailureReason'), dataIndex: 'failureReason', ellipsis: true, render: (value?: string) => value || '-' },
         {
-            title: '操作',
+            title: t('actions'),
             key: 'actions',
             fixed: 'right',
             width: 120,
@@ -447,13 +443,14 @@ export default function ResourceHubAdminPage() {
                     loading={runningAction === `publish-${record.id}`}
                     onClick={() => runAction(`publish-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/publish`)}
                 >
-                    发布
+                    {t('resourceHubPublish')}
                 </Button>
             ) : '-',
         },
     ];
 
     const counts = overview?.taskStatusCounts || {};
+    const workerEffective = Boolean(overview?.enabled && overview?.worker.enabled);
 
     return (
         <div className="min-h-screen bg-[#f5f7fa] dark:bg-black">
@@ -463,33 +460,43 @@ export default function ResourceHubAdminPage() {
                         <CloudSyncOutlined className="text-3xl text-blue-500" />
                         <div>
                             <Title level={2} className="!mb-1">Resource Hub</Title>
-                            <Text type="secondary">监控自动采集、资源搜索、夸克转存和发布入库状态</Text>
+                            <Text type="secondary">{t('resourceHubHint')}</Text>
                         </div>
                     </div>
                     <Button icon={<ReloadOutlined />} onClick={refreshAll} loading={loading}>
-                        刷新
+                        {t('resourceHubRefresh')}
                     </Button>
                 </div>
+
+                {overview && !overview.tmdbConfigured && (
+                    <Alert
+                        className="mb-4"
+                        type="warning"
+                        showIcon
+                        message={t('resourceHubTmdbKeyMissingTitle')}
+                        description={t('resourceHubTmdbKeyMissingDesc')}
+                    />
+                )}
 
                 <Row gutter={[16, 16]} className="mb-6">
                     <Col xs={12} md={6}>
                         <Card loading={loading}>
-                            <Statistic title="待处理任务" value={counts.PENDING || 0} prefix={<DatabaseOutlined />} />
+                            <Statistic title={t('resourceHubPendingTasks')} value={counts.PENDING || 0} prefix={<DatabaseOutlined />} />
                         </Card>
                     </Col>
                     <Col xs={12} md={6}>
                         <Card loading={loading}>
-                            <Statistic title="已发现资源" value={overview?.discoveredCount || 0} />
+                            <Statistic title={t('resourceHubDiscovered')} value={overview?.discoveredCount || 0} />
                         </Card>
                     </Col>
                     <Col xs={12} md={6}>
                         <Card loading={loading}>
-                            <Statistic title="待转存" value={overview?.pendingQuarkTransfers || 0} />
+                            <Statistic title={t('resourceHubPendingTransfers')} value={overview?.pendingQuarkTransfers || 0} />
                         </Card>
                     </Col>
                     <Col xs={12} md={6}>
                         <Card loading={loading}>
-                            <Statistic title="待发布" value={overview?.savedDiscoveryCount || 0} />
+                            <Statistic title={t('resourceHubPendingPublish')} value={overview?.savedDiscoveryCount || 0} />
                         </Card>
                     </Col>
                 </Row>
@@ -498,115 +505,170 @@ export default function ResourceHubAdminPage() {
                     items={[
                         {
                             key: 'dashboard',
-                            label: '监控与控制',
+                            label: t('resourceHubDashboard'),
                             children: (
                                 <Row gutter={[16, 16]}>
-                                    <Col xs={24} xl={12}>
-                                        <Card title="运行状态" loading={loading}>
-                                            <Descriptions column={1} size="small">
-                                                <Descriptions.Item label="Resource Hub">{boolTag(Boolean(overview?.enabled))}</Descriptions.Item>
-                                                <Descriptions.Item label="自动审核">{boolTag(Boolean(overview?.autoApprove), '自动通过', '走审核')}</Descriptions.Item>
-                                                <Descriptions.Item label="TMDB Key">{boolTag(Boolean(overview?.tmdbConfigured), '已配置', '未配置')}</Descriptions.Item>
-                                                <Descriptions.Item label="Worker">{boolTag(Boolean(overview?.worker.enabled))}</Descriptions.Item>
-                                                <Descriptions.Item label="运行中">{boolTag(Boolean(overview?.worker.running), '是', '否')}</Descriptions.Item>
-                                                <Descriptions.Item label="调度间隔">{formatDelay(overview?.worker.fixedDelayMs)}</Descriptions.Item>
-                                                <Descriptions.Item label="PanSou">{overview?.pansouBaseUrl || '-'}</Descriptions.Item>
-                                                <Descriptions.Item label="Quark Auto Save">{overview?.quarkBaseUrl || '-'}</Descriptions.Item>
-                                            </Descriptions>
-                                            <Space className="mt-4" wrap>
+                                    <Col xs={24} xl={10}>
+                                        <Card title={t('resourceHubRuntime')} loading={loading}>
+                                            <Space direction="vertical" size="middle" className="w-full">
+                                                <Descriptions column={1} size="small">
+                                                    <Descriptions.Item label="Resource Hub">
+                                                        {boolTag(Boolean(overview?.enabled))}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubWorkerEffective')}>
+                                                        {boolTag(workerEffective)}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubWorkerRunning')}>
+                                                        {boolTag(Boolean(overview?.worker.running), t('yes'), t('no'))}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubScheduleDelay')}>
+                                                        {formatDelay(overview?.worker.fixedDelayMs)}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubAutoApprove')}>
+                                                        {boolTag(Boolean(overview?.autoApprove), t('resourceHubAutoApproveOn'), t('resourceHubAutoApproveOff'))}
+                                                    </Descriptions.Item>
+                                                </Descriptions>
+                                                <Alert
+                                                    type={workerEffective ? 'success' : 'info'}
+                                                    showIcon
+                                                    message={workerEffective ? t('resourceHubWorkerReady') : t('resourceHubWorkerPaused')}
+                                                    description={workerEffective ? t('resourceHubWorkerReadyDesc') : t('resourceHubWorkerPausedDesc')}
+                                                />
+                                            </Space>
+                                        </Card>
+                                    </Col>
+                                    <Col xs={24} xl={14}>
+                                        <Card title={t('resourceHubConnections')} loading={loading}>
+                                            <Row gutter={[12, 12]}>
+                                                <Col xs={24} md={8}>
+                                                    <div className="rounded border border-gray-200 p-3 dark:border-zinc-700">
+                                                        <Space direction="vertical" size={4}>
+                                                            <Text strong>TMDB</Text>
+                                                            {overview?.tmdbConfigured
+                                                                ? <Tag color="green">{t('resourceHubConfigured')}</Tag>
+                                                                : <Tag color="red">{t('resourceHubNotRead')}</Tag>}
+                                                            <Text type="secondary">{t('resourceHubTmdbKeyHelp')}</Text>
+                                                        </Space>
+                                                    </div>
+                                                </Col>
+                                                <Col xs={24} md={8}>
+                                                    <div className="rounded border border-gray-200 p-3 dark:border-zinc-700">
+                                                        <Space direction="vertical" size={4}>
+                                                            <Text strong>PanSou</Text>
+                                                            <Tag icon={<ApiOutlined />}>{overview?.pansouBaseUrl || '-'}</Tag>
+                                                            <Text type="secondary">{t('resourceHubPanSouHelp')}</Text>
+                                                        </Space>
+                                                    </div>
+                                                </Col>
+                                                <Col xs={24} md={8}>
+                                                    <div className="rounded border border-gray-200 p-3 dark:border-zinc-700">
+                                                        <Space direction="vertical" size={4}>
+                                                            <Text strong>Quark Auto Save</Text>
+                                                            <Tag icon={<ApiOutlined />}>{overview?.quarkBaseUrl || '-'}</Tag>
+                                                            <Text type="secondary">{t('resourceHubQuarkHelp')}</Text>
+                                                        </Space>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    </Col>
+                                    <Col xs={24} xl={10}>
+                                        <Card title={t('resourceHubBatchActions')} loading={loading}>
+                                            <Space direction="vertical" className="w-full">
                                                 <Button
+                                                    block
                                                     type="primary"
                                                     icon={<PlayCircleOutlined />}
                                                     loading={runningAction === 'worker'}
                                                     onClick={() => runAction('worker', '/api/admin/resource-hub/worker/run-once?force=true')}
                                                 >
-                                                    立即跑一轮
+                                                    {t('resourceHubRunWorker')}
                                                 </Button>
-                                                <InputNumber min={1} max={100} value={publishLimit} onChange={(value) => setPublishLimit(value || 20)} />
-                                                <Button
-                                                    icon={<ShareAltOutlined />}
-                                                    loading={runningAction === 'publish'}
-                                                    onClick={() => runAction('publish', `/api/admin/resource-hub/discoveries/publish?limit=${publishLimit}`)}
-                                                >
-                                                    发布待入库
-                                                </Button>
-                                                <InputNumber min={1} max={20} value={quarkLimit} onChange={(value) => setQuarkLimit(value || 5)} />
-                                                <Button
-                                                    icon={<CloudSyncOutlined />}
-                                                    loading={runningAction === 'quark'}
-                                                    onClick={() => runAction('quark', `/api/admin/resource-hub/quark/transfers/submit?limit=${quarkLimit}`)}
-                                                >
-                                                    提交转存
-                                                </Button>
+                                                <Space.Compact block>
+                                                    <InputNumber min={1} max={100} value={publishLimit} onChange={(value) => setPublishLimit(value || 20)} />
+                                                    <Button
+                                                        icon={<ShareAltOutlined />}
+                                                        loading={runningAction === 'publish'}
+                                                        onClick={() => runAction('publish', `/api/admin/resource-hub/discoveries/publish?limit=${publishLimit}`)}
+                                                    >
+                                                        {t('resourceHubPublishPending')}
+                                                    </Button>
+                                                </Space.Compact>
+                                                <Space.Compact block>
+                                                    <InputNumber min={1} max={20} value={quarkLimit} onChange={(value) => setQuarkLimit(value || 5)} />
+                                                    <Button
+                                                        icon={<CloudSyncOutlined />}
+                                                        loading={runningAction === 'quark'}
+                                                        onClick={() => runAction('quark', `/api/admin/resource-hub/quark/transfers/submit?limit=${quarkLimit}`)}
+                                                    >
+                                                        {t('resourceHubSubmitTransfers')}
+                                                    </Button>
+                                                </Space.Compact>
                                             </Space>
                                         </Card>
                                     </Col>
-                                    <Col xs={24} xl={12}>
-                                        <Card title="自动采集设置" loading={loading}>
-                                            <Form
-                                                form={configForm}
-                                                layout="vertical"
-                                                onFinish={saveConfig}
-                                            >
+                                    <Col xs={24} xl={14}>
+                                        <Card title={t('resourceHubAutoSettings')} loading={loading}>
+                                            <Form form={configForm} layout="vertical" onFinish={saveConfig}>
                                                 <Row gutter={12}>
                                                     <Col xs={24} md={12}>
-                                                        <Form.Item name="enabled" label="Resource Hub 总开关" valuePropName="checked">
+                                                        <Form.Item name="enabled" label={t('resourceHubMasterSwitch')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24} md={12}>
-                                                        <Form.Item name="workerEnabled" label="定时 Worker" valuePropName="checked">
+                                                        <Form.Item name="workerEnabled" label={t('resourceHubWorkerSwitch')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24} md={12}>
-                                                        <Form.Item name="tmdbAutoSyncEnabled" label="TMDB 自动采集" valuePropName="checked">
+                                                        <Form.Item name="tmdbAutoSyncEnabled" label={t('resourceHubTmdbAutoSync')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24} md={12}>
-                                                        <Form.Item name="tmdbAutoDiscoveryEnabled" label="采集后自动搜索资源" valuePropName="checked">
+                                                        <Form.Item name="tmdbAutoDiscoveryEnabled" label={t('resourceHubAutoDiscovery')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <Form.Item name="tmdbAutoSyncSources" label="TMDB 来源">
-                                                            <Select mode="multiple" options={TMDB_SOURCE_OPTIONS} />
+                                                        <Form.Item name="tmdbAutoSyncSources" label={t('resourceHubTmdbSources')}>
+                                                            <Select mode="multiple" options={tmdbSourceOptions} />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbAutoSyncIntervalHours" label="采集间隔（小时）">
+                                                        <Form.Item name="tmdbAutoSyncIntervalHours" label={t('resourceHubSyncInterval')}>
                                                             <InputNumber min={1} max={720} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbAutoSyncPage" label="采集页码">
+                                                        <Form.Item name="tmdbAutoSyncPage" label={t('resourceHubSyncPage')}>
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbAutoSyncMaxItems" label="每次条数">
+                                                        <Form.Item name="tmdbAutoSyncMaxItems" label={t('resourceHubSyncItems')}>
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbDiscoveryMaxResults" label="搜索结果上限">
+                                                        <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>
                                                             <InputNumber min={1} max={50} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="workerTaskLimit" label="任务处理上限">
+                                                        <Form.Item name="workerTaskLimit" label={t('resourceHubTaskLimit')}>
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="workerPublishLimit" label="发布上限">
+                                                        <Form.Item name="workerPublishLimit" label={t('resourceHubPublishLimit')}>
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                 </Row>
                                                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
-                                                    保存设置
+                                                    {t('resourceHubSaveSettings')}
                                                 </Button>
                                             </Form>
                                         </Card>
@@ -616,69 +678,69 @@ export default function ResourceHubAdminPage() {
                         },
                         {
                             key: 'manual',
-                            label: '手动采集',
+                            label: t('resourceHubManual'),
                             children: (
                                 <Row gutter={[16, 16]}>
                                     <Col xs={24} lg={12}>
-                                        <Card title="TMDB 热门采集">
+                                        <Card title={t('resourceHubTmdbManualTitle')}>
                                             <Form
                                                 form={tmdbForm}
                                                 layout="vertical"
                                                 initialValues={{ source: 'TRENDING_MOVIE_DAY', page: 1, maxItems: 20, runNow: true }}
                                                 onFinish={submitTmdbSync}
                                             >
-                                                <Form.Item name="source" label="来源" rules={[{ required: true }]}>
-                                                    <Select options={TMDB_SOURCE_OPTIONS} />
+                                                <Form.Item name="source" label={t('resourceHubSourceLabel')} rules={[{ required: true }]}>
+                                                    <Select options={tmdbSourceOptions} />
                                                 </Form.Item>
                                                 <Row gutter={12}>
                                                     <Col span={12}>
-                                                        <Form.Item name="page" label="页码" rules={[{ required: true }]}>
+                                                        <Form.Item name="page" label={t('resourceHubSyncPage')} rules={[{ required: true }]}>
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col span={12}>
-                                                        <Form.Item name="maxItems" label="条数" rules={[{ required: true }]}>
+                                                        <Form.Item name="maxItems" label={t('resourceHubSyncItems')} rules={[{ required: true }]}>
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                 </Row>
-                                                <Form.Item name="runNow" label="立即执行" valuePropName="checked">
+                                                <Form.Item name="runNow" label={t('resourceHubRunNow')} valuePropName="checked">
                                                     <Switch />
                                                 </Form.Item>
                                                 <Button type="primary" htmlType="submit" icon={<CloudSyncOutlined />} loading={runningAction === 'tmdb'}>
-                                                    创建采集
+                                                    {t('resourceHubCreateSync')}
                                                 </Button>
                                             </Form>
                                         </Card>
                                     </Col>
                                     <Col xs={24} lg={12}>
-                                        <Card title="单片资源搜索">
+                                        <Card title={t('resourceHubDiscoveryManualTitle')}>
                                             <Form
                                                 form={discoveryForm}
                                                 layout="vertical"
                                                 initialValues={{ maxResults: 10, refresh: true, runNow: true }}
                                                 onFinish={submitDiscovery}
                                             >
-                                                <Form.Item name="movieId" label="影片 ID" rules={[{ required: true }]}>
-                                                    <Input placeholder="例如 tmdb-movie-12345 或现有 movie_metadata.id" />
+                                                <Form.Item name="movieId" label={t('movieId')} rules={[{ required: true }]}>
+                                                    <Input placeholder={t('resourceHubMovieIdPlaceholder')} />
                                                 </Form.Item>
-                                                <Form.Item name="keyword" label="搜索关键词">
-                                                    <Input placeholder="为空时后端按影片信息生成关键词" />
+                                                <Form.Item name="keyword" label={t('resourceHubKeyword')}>
+                                                    <Input placeholder={t('resourceHubKeywordPlaceholder')} />
                                                 </Form.Item>
-                                                <Form.Item name="maxResults" label="结果上限" rules={[{ required: true }]}>
+                                                <Form.Item name="maxResults" label={t('resourceHubDiscoveryLimit')} rules={[{ required: true }]}>
                                                     <InputNumber min={1} max={50} className="w-full" />
                                                 </Form.Item>
                                                 <Space size="large">
-                                                    <Form.Item name="refresh" label="忽略冷却" valuePropName="checked">
+                                                    <Form.Item name="refresh" label={t('resourceHubIgnoreCooldown')} valuePropName="checked">
                                                         <Switch />
                                                     </Form.Item>
-                                                    <Form.Item name="runNow" label="立即执行" valuePropName="checked">
+                                                    <Form.Item name="runNow" label={t('resourceHubRunNow')} valuePropName="checked">
                                                         <Switch />
                                                     </Form.Item>
                                                 </Space>
                                                 <div>
                                                     <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={runningAction === 'discover'}>
-                                                        创建搜索
+                                                        {t('resourceHubCreateDiscovery')}
                                                     </Button>
                                                 </div>
                                             </Form>
@@ -689,14 +751,14 @@ export default function ResourceHubAdminPage() {
                         },
                         {
                             key: 'tasks',
-                            label: '任务队列',
+                            label: t('resourceHubTasks'),
                             children: (
                                 <Card>
                                     <Space className="mb-4" wrap>
                                         <Select
                                             allowClear
-                                            placeholder="任务类型"
-                                            options={TASK_TYPE_OPTIONS}
+                                            placeholder={t('resourceHubTaskTypeFilter')}
+                                            options={TASK_TYPE_OPTIONS.map((value) => ({ value, label: t(`resourceHubTaskType.${value}`) }))}
                                             value={taskType}
                                             style={{ width: 180 }}
                                             onChange={(value) => {
@@ -706,8 +768,8 @@ export default function ResourceHubAdminPage() {
                                         />
                                         <Select
                                             allowClear
-                                            placeholder="状态"
-                                            options={TASK_STATUS_OPTIONS.map((value) => ({ value, label: value }))}
+                                            placeholder={t('filterByStatus')}
+                                            options={TASK_STATUS_OPTIONS.map((value) => ({ value, label: t(`resourceHubStatus.${value}`) }))}
                                             value={taskStatus}
                                             style={{ width: 160 }}
                                             onChange={(value) => {
@@ -715,7 +777,7 @@ export default function ResourceHubAdminPage() {
                                                 setTaskPage(1);
                                             }}
                                         />
-                                        <Button icon={<ReloadOutlined />} onClick={fetchTasks}>刷新任务</Button>
+                                        <Button icon={<ReloadOutlined />} onClick={fetchTasks}>{t('resourceHubRefreshTasks')}</Button>
                                     </Space>
                                     <Table
                                         columns={taskColumns}
@@ -723,13 +785,13 @@ export default function ResourceHubAdminPage() {
                                         rowKey="id"
                                         loading={tasksLoading}
                                         scroll={{ x: 1300 }}
-                                        locale={{ emptyText: <Empty description="暂无任务" /> }}
+                                        locale={{ emptyText: <Empty description={t('resourceHubNoTasks')} /> }}
                                         pagination={{
                                             current: taskPage,
                                             pageSize: 20,
                                             total: taskTotal,
                                             onChange: setTaskPage,
-                                            showTotal: (total) => `共 ${total} 条任务`,
+                                            showTotal: (total) => t('resourceHubTotalTasks', { count: total }),
                                         }}
                                     />
                                 </Card>
@@ -737,12 +799,12 @@ export default function ResourceHubAdminPage() {
                         },
                         {
                             key: 'discoveries',
-                            label: '发现结果',
+                            label: t('resourceHubDiscoveries'),
                             children: (
                                 <Card>
                                     <Space className="mb-4" wrap>
                                         <Input.Search
-                                            placeholder="影片 ID"
+                                            placeholder={t('movieId')}
                                             allowClear
                                             style={{ width: 240 }}
                                             onSearch={(value) => {
@@ -752,8 +814,8 @@ export default function ResourceHubAdminPage() {
                                         />
                                         <Select
                                             allowClear
-                                            placeholder="状态"
-                                            options={DISCOVERY_STATUS_OPTIONS.map((value) => ({ value, label: value }))}
+                                            placeholder={t('filterByStatus')}
+                                            options={DISCOVERY_STATUS_OPTIONS.map((value) => ({ value, label: t(`resourceHubStatus.${value}`) }))}
                                             value={discoveryStatus}
                                             style={{ width: 160 }}
                                             onChange={(value) => {
@@ -761,7 +823,7 @@ export default function ResourceHubAdminPage() {
                                                 setDiscoveryPage(1);
                                             }}
                                         />
-                                        <Button icon={<ReloadOutlined />} onClick={fetchDiscoveries}>刷新结果</Button>
+                                        <Button icon={<ReloadOutlined />} onClick={fetchDiscoveries}>{t('resourceHubRefreshResults')}</Button>
                                     </Space>
                                     <Table
                                         columns={discoveryColumns}
@@ -769,13 +831,13 @@ export default function ResourceHubAdminPage() {
                                         rowKey="id"
                                         loading={discoveriesLoading}
                                         scroll={{ x: 1300 }}
-                                        locale={{ emptyText: <Empty description="暂无发现结果" /> }}
+                                        locale={{ emptyText: <Empty description={t('resourceHubNoDiscoveries')} /> }}
                                         pagination={{
                                             current: discoveryPage,
                                             pageSize: 20,
                                             total: discoveryTotal,
                                             onChange: setDiscoveryPage,
-                                            showTotal: (total) => `共 ${total} 条结果`,
+                                            showTotal: (total) => t('resourceHubTotalDiscoveries', { count: total }),
                                         }}
                                     />
                                 </Card>

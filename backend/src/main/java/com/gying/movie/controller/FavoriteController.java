@@ -199,6 +199,33 @@ public class FavoriteController {
     }
 
     /**
+     * Get TMDB trending movies imported by Resource Hub.
+     * GET /api/favorites/tmdb-hot?limit=30
+     */
+    @GetMapping("/tmdb-hot")
+    public List<Map<String, Object>> tmdbHot(@RequestParam(defaultValue = "30") int limit) {
+        int maxLimit = Math.min(Math.max(limit, 1), 60);
+        List<MovieMetadata> movies = movieService.list(new LambdaQueryWrapper<MovieMetadata>()
+                .isNotNull(MovieMetadata::getTmdbPopularity)
+                .orderByDesc(MovieMetadata::getTmdbPopularity)
+                .orderByDesc(MovieMetadata::getTmdbLastSyncAt)
+                .last("LIMIT " + maxLimit));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (MovieMetadata movie : movies) {
+            if (movie.getPosterUrl() != null && !movie.getPosterUrl().startsWith("http")) {
+                movie.setPosterUrl(minioUrlPrefix + movie.getPosterUrl());
+            }
+            Map<String, Object> item = new HashMap<>();
+            item.put("movie", movie);
+            item.put("favoriteCount", movie.getTmdbPopularity());
+            item.put("rankSource", "TMDB");
+            result.add(item);
+        }
+        return result;
+    }
+
+    /**
      * Get current user's favorites.
      * GET /api/favorites/mine?page=1&size=20
      */

@@ -18,6 +18,7 @@ Spring Boot 会读取下列环境变量，未设置时使用开发默认值：
 - `DB_URL`
 - `DB_USERNAME`
 - `DB_PASSWORD`
+- `GYING_DB_PASSWORD` (for local MCP MySQL tooling; usually same as `DB_PASSWORD`)
 - `REDIS_HOST`
 - `REDIS_PORT`
 - `REDIS_PASSWORD`

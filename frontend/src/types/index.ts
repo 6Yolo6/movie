@@ -56,6 +56,7 @@ export interface MovieDetailDTO {
 export interface HotItem {
     movie: MovieMetadata;
     favoriteCount: number;
+    rankSource?: string;
 }
 
 export interface FavoriteItem extends HotItem {

@@ -177,7 +177,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         target.setTmdbPopularity(decimal(details.path("popularity")));
         target.setTmdbVoteAverage(decimal(details.path("vote_average")));
         target.setSummary(firstText(target.getSummary(), details.path("overview").asText(null), 4000));
-        target.setPopularity(popularityScore(details.path("popularity")));
+        if (target.getPopularity() == null) {
+            target.setPopularity(0);
+        }
         target.setTmdbLastSyncAt(now);
         target.setUpdatedAt(now);
 
@@ -471,13 +473,6 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             return null;
         }
         return BigDecimal.valueOf(node.asDouble());
-    }
-
-    private Integer popularityScore(JsonNode node) {
-        if (node == null || node.isMissingNode() || node.isNull()) {
-            return null;
-        }
-        return (int) Math.round(node.asDouble());
     }
 
     private Integer parseYear(String date) {

@@ -58,6 +58,17 @@ CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_type_id', 'INDEX `id
 CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_last_sync_at', 'INDEX `idx_tmdb_last_sync_at` (`tmdb_last_sync_at`)');
 CALL gying_add_index_if_missing('movie_metadata', 'idx_resource_status', 'INDEX `idx_resource_status` (`resource_status`)');
 
+-- Keep movie_metadata.popularity as the local favorite count.
+-- TMDB ranking data is stored separately in movie_metadata.tmdb_popularity.
+UPDATE movie_metadata m
+LEFT JOIN (
+  SELECT movie_id, COUNT(*) AS favorite_count
+  FROM user_favorite
+  GROUP BY movie_id
+) f ON f.movie_id = m.id
+SET m.popularity = COALESCE(f.favorite_count, 0)
+WHERE m.tmdb_id IS NOT NULL;
+
 CALL gying_add_column_if_missing('resource_link', 'url_hash', '`url_hash` char(64) DEFAULT NULL COMMENT ''SHA-256 hash of normalized URL'' AFTER `url`');
 CALL gying_add_column_if_missing('resource_link', 'source', '`source` varchar(50) DEFAULT ''USER'' COMMENT ''USER, RESOURCE_HUB, CRAWLER'' AFTER `report_count`');
 CALL gying_add_column_if_missing('resource_link', 'source_ref', '`source_ref` varchar(100) DEFAULT NULL COMMENT ''External source reference'' AFTER `source`');

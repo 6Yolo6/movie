@@ -57,6 +57,7 @@ QQ Bot 自动转存成功后会优先回复后端创建的“我的夸克分享�
 - `POST /api/comments/{id}/upvote`：点赞/取消点赞。
 - `DELETE /api/comments/{id}`：作者或管理员删除评论。
 - `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
-- `GET /api/favorites/hot?range=day|week|month|all`：热门榜。
+- `GET /api/favorites/hot?period=day|week|month|all`：站内收藏热门榜，按 `user_favorite` 聚合计数。
+- `GET /api/favorites/tmdb-hot?limit=30`：Resource Hub 导入的 TMDB 热门榜，按 `movie_metadata.tmdb_popularity` 排序。
 - `GET /api/notifications`：站内通知。
 - `PUT /api/notifications/read-all`：全部标为已读。
