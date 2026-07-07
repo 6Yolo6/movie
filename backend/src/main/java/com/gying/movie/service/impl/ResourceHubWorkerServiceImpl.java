@@ -11,6 +11,7 @@ import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IResourceDiscoveryService;
+import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceHubWorkerService;
@@ -34,6 +35,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
+    private final IResourceHubConfigService resourceHubConfigService;
 
     public ResourceHubWorkerServiceImpl(
             ResourceHubProperties resourceHubProperties,
@@ -41,13 +43,15 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             ITmdbMetadataSyncService tmdbMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
-            IResourceHubPublishService resourceHubPublishService) {
+            IResourceHubPublishService resourceHubPublishService,
+            IResourceHubConfigService resourceHubConfigService) {
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
+        this.resourceHubConfigService = resourceHubConfigService;
     }
 
     @Override
@@ -57,6 +61,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     @Override
     public ResourceHubWorkerResult runOnce(boolean force) {
+        resourceHubConfigService.reload();
         ResourceHubWorkerResult result = baseResult(force);
         if (!resourceHubProperties.isEnabled()) {
             return skip(result, "Resource Hub is disabled");

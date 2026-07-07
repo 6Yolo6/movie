@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
 import {
-    BellOutlined, CloudUploadOutlined, CommentOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
+    BellOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
     PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -222,6 +222,11 @@ export default function Navbar() {
                 key: 'reports',
                 label: <Link href="/admin/reports" onClick={closeDrawer}>{t('resourceReports')}</Link>,
                 icon: <ExclamationCircleOutlined />,
+            },
+            {
+                key: 'resourceHub',
+                label: <Link href="/admin/resource-hub" onClick={closeDrawer}>Resource Hub</Link>,
+                icon: <CloudSyncOutlined />,
             },
             {
                 key: 'comments',

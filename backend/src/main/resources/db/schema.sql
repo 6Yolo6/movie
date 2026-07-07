@@ -317,5 +317,17 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.hub.enabled', 'false', 'Enable Resource Hub automation (true/false)'),
 ('resource.hub.auto_approve', 'true', 'Auto approve Resource Hub imported resources'),
 ('resource.hub.validation.enabled', 'false', 'Enable scheduled Resource Hub link validation'),
-('resource.hub.discovery.max_attempts', '3', 'Maximum discovery attempts per task')
+('resource.hub.discovery.max_attempts', '3', 'Maximum discovery attempts per task'),
+('resource.hub.tmdb.auto_sync_enabled', 'false', 'Enable TMDB scheduled metadata sync'),
+('resource.hub.tmdb.auto_sync_sources', 'TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV', 'TMDB scheduled sync sources'),
+('resource.hub.tmdb.auto_sync_page', '1', 'TMDB scheduled sync page'),
+('resource.hub.tmdb.auto_sync_max_items', '20', 'TMDB scheduled sync item limit'),
+('resource.hub.tmdb.auto_sync_interval_hours', '24', 'TMDB scheduled sync interval in hours'),
+('resource.hub.tmdb.auto_discovery_enabled', 'true', 'Create discovery tasks after TMDB sync'),
+('resource.hub.tmdb.discovery_max_results', '10', 'PanSou discovery result limit'),
+('resource.hub.tmdb.discovery_cooldown_hours', '24', 'Discovery retry cooldown in hours'),
+('resource.hub.worker.enabled', 'false', 'Enable Resource Hub worker'),
+('resource.hub.worker.task_limit', '5', 'Tasks processed per worker run'),
+('resource.hub.worker.quark_limit', '5', 'Quark transfers submitted per worker run'),
+('resource.hub.worker.publish_limit', '20', 'Discoveries published per worker run')
 ON DUPLICATE KEY UPDATE config_value = config_value;

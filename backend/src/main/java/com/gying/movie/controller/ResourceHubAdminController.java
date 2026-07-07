@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.QuarkTransferRunResult;
+import com.gying.movie.dto.ResourceHubConfigRequest;
+import com.gying.movie.dto.ResourceHubConfigResponse;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
@@ -16,6 +18,7 @@ import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -28,6 +31,7 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +52,7 @@ public class ResourceHubAdminController {
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubWorkerService resourceHubWorkerService;
+    private final IResourceHubConfigService resourceHubConfigService;
 
     public ResourceHubAdminController(
             AuthHelper authHelper,
@@ -59,7 +64,8 @@ public class ResourceHubAdminController {
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
-            IResourceHubWorkerService resourceHubWorkerService) {
+            IResourceHubWorkerService resourceHubWorkerService,
+            IResourceHubConfigService resourceHubConfigService) {
         this.authHelper = authHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
@@ -70,18 +76,21 @@ public class ResourceHubAdminController {
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.resourceHubWorkerService = resourceHubWorkerService;
+        this.resourceHubConfigService = resourceHubConfigService;
     }
 
     @GetMapping("/overview")
     public ApiResponse<Map<String, Object>> overview(
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        ResourceHubConfigResponse config = resourceHubConfigService.getConfig();
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("enabled", resourceHubProperties.isEnabled());
-        result.put("autoApprove", resourceHubProperties.isAutoApprove());
-        result.put("tmdbConfigured", hasText(resourceHubProperties.getTmdb().getApiKey()));
+        result.put("enabled", config.isEnabled());
+        result.put("autoApprove", config.isAutoApprove());
+        result.put("tmdbConfigured", config.isTmdbConfigured());
         result.put("pansouBaseUrl", nullToEmpty(resourceHubProperties.getPansou().getBaseUrl()));
         result.put("quarkBaseUrl", nullToEmpty(resourceHubProperties.getQuark().getBaseUrl()));
+        result.put("config", config);
         result.put("worker", workerStatusMap());
         result.put("taskStatusCounts", taskService.countByStatus());
         result.put("discoveredCount", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
@@ -91,6 +100,21 @@ public class ResourceHubAdminController {
         result.put("pendingQuarkTransfers", quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .eq("status", "PENDING")));
         return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/config")
+    public ApiResponse<ResourceHubConfigResponse> config(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubConfigService.getConfig());
+    }
+
+    @PutMapping("/config")
+    public ApiResponse<ResourceHubConfigResponse> updateConfig(
+            @RequestBody(required = false) ResourceHubConfigRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubConfigService.updateConfig(request));
     }
 
     @GetMapping("/worker/status")
@@ -239,14 +263,15 @@ public class ResourceHubAdminController {
     }
 
     private Map<String, Object> workerStatusMap() {
+        ResourceHubConfigResponse config = resourceHubConfigService.getConfig();
         ResourceHubProperties.Worker worker = resourceHubProperties.getWorker();
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("enabled", resourceHubProperties.isEnabled() && worker.isEnabled());
+        result.put("enabled", config.isEnabled() && config.isWorkerEnabled());
         result.put("running", resourceHubWorkerService.isRunning());
-        result.put("fixedDelayMs", worker.getFixedDelayMs());
-        result.put("taskLimit", worker.getTaskLimit());
-        result.put("quarkLimit", worker.getQuarkLimit());
-        result.put("publishLimit", worker.getPublishLimit());
+        result.put("fixedDelayMs", config.getWorkerFixedDelayMs());
+        result.put("taskLimit", config.getWorkerTaskLimit());
+        result.put("quarkLimit", config.getWorkerQuarkLimit());
+        result.put("publishLimit", config.getWorkerPublishLimit());
         return result;
     }
 }

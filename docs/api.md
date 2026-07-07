@@ -30,6 +30,8 @@
 - `GET /api/admin/users`：用户管理列表。
 - `PUT /api/admin/users/{id}/enabled`：启用/禁用用户。
 - `GET /api/admin/resource-hub/overview`：Resource Hub 概览。
+- `GET /api/admin/resource-hub/config`：查看 Resource Hub 运行时配置。
+- `PUT /api/admin/resource-hub/config`：更新 Resource Hub 运行时配置，例如 TMDB 自动采集间隔、条数、Worker 批量限制等。
 - `GET /api/admin/resource-hub/tasks?page=1&size=20&taskType=&status=`：Resource Hub 任务列表。
 - `POST /api/admin/resource-hub/tmdb/metadata-sync`：创建 TMDB 元数据同步任务，可传 `{ "source": "TRENDING_MOVIE_DAY", "page": 1, "maxItems": 20, "runNow": false }`。
 - `POST /api/admin/resource-hub/tmdb/metadata-sync/{taskId}/run`：运行已创建的 TMDB 元数据同步任务。
