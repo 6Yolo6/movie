@@ -117,13 +117,13 @@ Set these variables when enabling the group bot:
 
 - `QQ_BOT_ENABLED=true`
 - `QQ_BOT_WEBHOOK_TOKEN`
-- `QQ_BOT_ALLOWED_GROUPS` (comma-separated group IDs; empty allows all groups)
+- `QQ_BOT_ALLOWED_GROUPS` (comma-separated group IDs; use `2166070253` for the current group)
 - `QQ_BOT_COMMAND_PREFIXES` (default `找,搜,/movie,/search`)
 - `QQ_BOT_MAX_RESULTS` (default `3`)
 - `QQ_BOT_AUTO_TRANSFER` (default `true`)
 - `QQ_BOT_NAPCAT_BASE_URL`
 - `QQ_BOT_NAPCAT_ACCESS_TOKEN`
-- `NAPCAT_ACCOUNT` (used by the Docker service)
+- `NAPCAT_ACCOUNT` (used by the Docker service; current bot account is `3929013344`)
 
 Configure NapCat HTTP event reporting to:
 
@@ -144,3 +144,28 @@ When auto transfer is enabled, the bot saves matched Quark resources through qua
 then replies with the generated "my Quark share" link when the Quark share API accepts the saved
 folder. If share creation fails, the bot still returns the original resource links and the transfer
 status.
+
+## QQ Channel Posting
+
+Install and log in with `tencent-channel-cli`, then publish a three-part movie resource post:
+
+```powershell
+tools/publish-qq-channel-feed.ps1 `
+  -Title "Movie Title" `
+  -Link "https://pan.quark.cn/s/xxxx" `
+  -Intro "Short intro"
+```
+
+The script defaults to the configured channel `pd54387067` and the default board discovered by the
+Tencent channel CLI. Override with `QQ_CHANNEL_GUILD_ID` and `QQ_CHANNEL_ID` when needed.
+
+To publish the latest unposted resource from the database and remember posted resource IDs locally:
+
+```powershell
+tools/publish-latest-resource-to-qq-channel.ps1
+```
+
+Use Windows Task Scheduler or another scheduler to run this script periodically.
+
+OpenClaw is still an external prerequisite. The npm package named `openclaw` is only a placeholder
+package and does not provide the `openclaw` CLI.

@@ -95,7 +95,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         String safeKeyword = trim(keyword, 80);
-        trySend(groupId, "收到，正在搜索：" + safeKeyword);
+        trySend(groupId, "????????" + safeKeyword);
         CompletableFuture.runAsync(() -> searchAndReply(groupId, safeKeyword));
         return true;
     }
@@ -104,7 +104,7 @@ public class QqBotServiceImpl implements IQqBotService {
         try {
             MovieMetadata movie = findBestMovie(keyword);
             if (movie == null) {
-                trySend(groupId, "没在影视库里找到：" + keyword + "\n可以先在后台同步 TMDB 元数据后再试。");
+                trySend(groupId, "?????????" + keyword + "\n???????? TMDB ???????");
                 return;
             }
 
@@ -120,13 +120,13 @@ public class QqBotServiceImpl implements IQqBotService {
             trySend(groupId, buildReply(movie, links, transferNotes, loadMyShareTasks(movie.getId())));
         } catch (Exception e) {
             log.warn("QQ bot resource search failed for keyword {}", keyword, e);
-            trySend(groupId, "搜索失败：" + safeError(e.getMessage()));
+            trySend(groupId, "?????" + safeError(e.getMessage()));
         }
     }
 
     private void runDiscoveryPipeline(MovieMetadata movie, String keyword, List<String> transferNotes) {
         if (!resourceHubProperties.isEnabled()) {
-            transferNotes.add("Resource Hub 未启用，无法自动发现新资源。");
+            transferNotes.add("Resource Hub ??????????????");
             return;
         }
         LocalDateTime startedAt = LocalDateTime.now();
@@ -139,7 +139,7 @@ public class QqBotServiceImpl implements IQqBotService {
         ResourceHubTask task = resourceDiscoveryService.enqueue(request);
         ResourceDiscoveryRunResult discoveryRun = resourceDiscoveryService.runTask(task.getId());
         if (discoveryRun.getDiscovered() == 0 && discoveryRun.getDuplicate() == 0) {
-            transferNotes.add("未发现新的夸克资源。");
+            transferNotes.add("??????????");
             if (!discoveryRun.getErrors().isEmpty()) {
                 transferNotes.add(safeError(discoveryRun.getErrors().get(0)));
             }
@@ -207,7 +207,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 transferNotes.add(safeError(result.getErrors().get(0)));
             }
         } catch (Exception e) {
-            transferNotes.add("转存失败：" + safeError(e.getMessage()));
+            transferNotes.add("?????" + safeError(e.getMessage()));
         }
     }
 
@@ -218,10 +218,10 @@ public class QqBotServiceImpl implements IQqBotService {
         try {
             String shareUrl = quarkShareService.ensureShareUrl(task);
             if (hasText(shareUrl)) {
-                transferNotes.add("已生成我的夸克分享");
+                transferNotes.add("?????????");
             }
         } catch (Exception e) {
-            transferNotes.add("生成分享链接失败：" + safeError(e.getMessage()));
+            transferNotes.add("?????????" + safeError(e.getMessage()));
         }
     }
 
@@ -239,7 +239,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     transferNotes.add(safeError(publishResult.getErrors().get(0)));
                 }
             } catch (Exception e) {
-                transferNotes.add("发布资源失败：" + safeError(e.getMessage()));
+                transferNotes.add("???????" + safeError(e.getMessage()));
             }
         }
     }
@@ -316,16 +316,16 @@ public class QqBotServiceImpl implements IQqBotService {
     private String buildReply(MovieMetadata movie, List<ResourceLink> links, List<String> transferNotes,
             List<QuarkTransferTask> myShareTasks) {
         StringBuilder reply = new StringBuilder();
-        reply.append("找到：").append(title(movie));
+        reply.append("???").append(title(movie));
         if (movie.getYear() != null) {
             reply.append(" (").append(movie.getYear()).append(")");
         }
-        appendLine(reply, "类型", join(movie.getGenres()));
-        appendLine(reply, "地区", join(movie.getRegions()));
-        appendLine(reply, "评分", rating(movie));
-        appendLine(reply, "简介", trim(movie.getSummary(), 180));
+        appendLine(reply, "??", join(movie.getGenres()));
+        appendLine(reply, "??", join(movie.getRegions()));
+        appendLine(reply, "??", rating(movie));
+        appendLine(reply, "??", trim(movie.getSummary(), 180));
         if (!transferNotes.isEmpty()) {
-            reply.append("\n转存：").append(trim(String.join("；", distinct(transferNotes)), 260));
+            reply.append("\n???").append(trim(String.join("?", distinct(transferNotes)), 260));
         }
         List<String> myShareUrls = myShareTasks == null ? List.of()
                 : distinct(myShareTasks.stream()
@@ -333,17 +333,17 @@ public class QqBotServiceImpl implements IQqBotService {
                         .filter(this::hasText)
                         .toList());
         if (!myShareUrls.isEmpty()) {
-            reply.append("\n\n我的夸克分享：");
+            reply.append("\n\n???????");
             int shareIndex = 1;
             for (String shareUrl : myShareUrls) {
                 reply.append("\n").append(shareIndex++).append(". ").append(shareUrl);
             }
         }
         if (links.isEmpty()) {
-            reply.append("\n\n暂时没有可发布的资源链接。");
+            reply.append("\n\n?????????????");
             return reply.toString();
         }
-        reply.append("\n\n原始资源链接：");
+        reply.append("\n\n???????");
         int index = 1;
         for (ResourceLink link : links) {
             reply.append("\n").append(index++).append(". ")
@@ -351,7 +351,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     .append(" - ").append(trim(firstText(link.getName(), title(movie)), 60))
                     .append("\n").append(link.getUrl());
             if (hasText(link.getCode())) {
-                reply.append("\n提取码：").append(link.getCode());
+                reply.append("\n????").append(link.getCode());
             }
         }
         return reply.toString();
@@ -359,7 +359,7 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void addSavedPathNote(QuarkTransferTask task, List<String> transferNotes) {
         if (task != null && hasText(task.getSavedPath())) {
-            transferNotes.add("已转存到 " + task.getSavedPath());
+            transferNotes.add("???? " + task.getSavedPath());
         }
     }
 
@@ -440,7 +440,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private String rating(MovieMetadata movie) {
         List<String> values = new ArrayList<>();
         if (movie.getDoubanScore() != null) {
-            values.add("豆瓣 " + movie.getDoubanScore());
+            values.add("?? " + movie.getDoubanScore());
         }
         if (movie.getTmdbVoteAverage() != null) {
             values.add("TMDB " + movie.getTmdbVoteAverage());
@@ -487,7 +487,7 @@ public class QqBotServiceImpl implements IQqBotService {
         List<String> result = new ArrayList<>();
         String raw = qqBotProperties.getCommandPrefixes();
         if (!hasText(raw)) {
-            return List.of("找", "搜", "/movie", "/search");
+            return List.of("?", "?", "/movie", "/search");
         }
         for (String item : raw.split(",")) {
             String value = item.trim();
@@ -519,7 +519,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private String safeError(String message) {
-        return firstText(trim(message, 120), "未知错误");
+        return firstText(trim(message, 120), "????");
     }
 
     private void trySend(Long groupId, String message) {
