@@ -91,6 +91,11 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     // Favorite State
     const [isFavorited, setIsFavorited] = useState(false);
     const [favoriteCount, setFavoriteCount] = useState(movie.popularity || 0);
+    const externalRating = movie.imdbScore && movie.imdbScore > 0
+        ? { value: movie.imdbScore, label: 'IMDb' }
+        : movie.tmdbVoteAverage && movie.tmdbVoteAverage > 0
+            ? { value: movie.tmdbVoteAverage, label: 'TMDB' }
+            : null;
 
     React.useEffect(() => {
         setResourceItems(resources);
@@ -489,14 +494,14 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                     <div className="text-2xl font-bold font-serif text-gray-800 dark:text-white flex items-center justify-center gap-1">
                                         {movie.doubanScore || '-'} <StarFilled className="text-yellow-400 text-sm" />
                                     </div>
-                                    <div className="text-xs text-gray-500">豆瓣</div>
+                                    <div className="text-xs text-gray-500">{t('douban')}</div>
                                 </div>
                                 <div className="w-px h-8 bg-gray-200 dark:bg-zinc-700" />
                                 <div className="text-center">
                                     <div className="text-2xl font-bold font-serif text-gray-800 dark:text-white flex items-center justify-center gap-1">
-                                        {movie.imdbScore || '-'} <span className="text-yellow-500 text-xs font-sans">IMDb</span>
+                                        {externalRating?.value || '-'} <span className="text-yellow-500 text-xs font-sans">{externalRating?.label || 'IMDb'}</span>
                                     </div>
-                                    <div className="text-xs text-gray-500">{t('score')}</div>
+                                    <div className="text-xs text-gray-500">{externalRating?.label || t('score')}</div>
                                 </div>
                                 {movie.rtScore && (
                                     <>

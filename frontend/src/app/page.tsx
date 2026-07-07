@@ -7,19 +7,20 @@ import MovieCard from '@/components/MovieCard';
 import { MovieMetadata } from '@/types';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 const { Title } = Typography;
 
 const categories = [
-  { key: 'all', label: 'Home', value: null },
-  { key: 'mv', label: 'Movies', value: 'mv' },
-  { key: 'tv', label: 'TV Shows', value: 'tv' },
-  { key: 'ac', label: 'Anime', value: 'ac' },
+  { key: 'all', labelKey: 'home', value: null },
+  { key: 'mv', labelKey: 'movies', value: 'mv' },
+  { key: 'tv', labelKey: 'tvShows', value: 'tv' },
+  { key: 'ac', labelKey: 'anime', value: 'ac' },
 ];
 
 const sorts = [
-  { label: 'Latest', value: 'time' },
-  { label: 'Rating', value: 'rating' },
+  { labelKey: 'latest', value: 'time' },
+  { labelKey: 'rating', value: 'rating' },
 ];
 
 interface FilterOptions {
@@ -36,7 +37,7 @@ const FilterRow = ({
   onChange,
 }: {
   label: string;
-  options: string[];
+  options: { label: string; value: string | null }[];
   value: string | null;
   onChange: (val: string | null) => void;
 }) => (
@@ -44,14 +45,14 @@ const FilterRow = ({
     <span className="text-gray-500 font-medium min-w-[48px] sm:min-w-[64px] shrink-0 pt-0.5">{label}</span>
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
-        const isSelected = (!value && opt === 'All') || value === opt;
+        const isSelected = (!value && opt.value === null) || value === opt.value;
         return (
           <span
-            key={opt}
-            onClick={() => onChange(opt === 'All' ? null : opt)}
+            key={opt.value || '__all__'}
+            onClick={() => onChange(opt.value)}
             className={`px-3 py-1 rounded cursor-pointer transition-colors ${isSelected ? 'bg-zinc-800 text-white font-bold dark:bg-white dark:text-zinc-900' : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'}`}
           >
-            {opt}
+            {opt.label}
           </span>
         );
       })}
@@ -68,6 +69,7 @@ interface PaginatedResult<T> {
 }
 
 const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; highlightKeyword?: string }) => {
+  const { t } = useTranslation();
   const [movies, setMovies] = useState<MovieMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -107,8 +109,8 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
       <Empty
         description={
           highlightKeyword
-            ? <span>No results for &quot;<strong>{highlightKeyword}</strong>&quot;</span>
-            : 'No movies found'
+            ? <span>{t('noResultsFor')} &quot;<strong>{highlightKeyword}</strong>&quot;</span>
+            : t('noMoviesFound')
         }
       />
     </div>
@@ -119,8 +121,8 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
       {paramString && total > 0 && (
         <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           {highlightKeyword
-            ? <>Found <strong className="text-blue-600 dark:text-blue-400">{total}</strong> results for &quot;<strong>{highlightKeyword}</strong>&quot;</>
-            : <><strong className="text-blue-600 dark:text-blue-400">{total}</strong> results</>
+            ? <>{t('found')} <strong className="text-blue-600 dark:text-blue-400">{total}</strong> {t('resultsFor')} &quot;<strong>{highlightKeyword}</strong>&quot;</>
+            : <><strong className="text-blue-600 dark:text-blue-400">{total}</strong> {t('results')}</>
           }
         </div>
       )}
@@ -134,7 +136,7 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
       {hasMore && (
         <div className="text-center mt-8">
           <Button loading={loading} onClick={() => loadMovies(page + 1)}>
-            Load more
+            {t('loadMore')}
           </Button>
         </div>
       )}
@@ -143,6 +145,7 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
 };
 
 const HomePageContent = () => {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -175,7 +178,10 @@ const HomePageContent = () => {
 
   if (!filterOptions) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
 
-  const buildOptions = (key: keyof FilterOptions) => ['All', ...(filterOptions[key] || [])];
+  const buildOptions = (key: keyof FilterOptions) => [
+    { label: t('all'), value: null },
+    ...(filterOptions[key] || []).map((item) => ({ label: item, value: item })),
+  ];
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
@@ -190,7 +196,7 @@ const HomePageContent = () => {
                 : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'
                 }`}
             >
-              {cat.label}
+              {t(cat.labelKey)}
             </Link>
           ))}
         </div>
@@ -198,19 +204,19 @@ const HomePageContent = () => {
 
       {keyword && (
         <div className="mb-6 text-center">
-          <Title level={3}>Search: &quot;{keyword}&quot;</Title>
+          <Title level={3}>{t('searchTitle')}: &quot;{keyword}&quot;</Title>
         </div>
       )}
 
       {(showFilters || category) && (
         <div className="mb-8 bg-white p-4 rounded-xl border border-gray-200 shadow-sm dark:bg-[#141414] dark:border-zinc-800">
-          <FilterRow label="Genre" options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
-          <FilterRow label="Region" options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
-          <FilterRow label="Language" options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
-          <FilterRow label="Year" options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
+          <FilterRow label={t('genre')} options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
+          <FilterRow label={t('region')} options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
+          <FilterRow label={t('language')} options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
+          <FilterRow label={t('year')} options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
 
           <div className="flex gap-2 items-center text-sm border-t border-gray-200 dark:border-zinc-800 pt-3 mt-1">
-            <span className="text-gray-500 font-medium min-w-[64px]">Sort</span>
+            <span className="text-gray-500 font-medium min-w-[64px]">{t('sort')}</span>
             <div className="flex gap-4">
               {sorts.map(s => (
                 <span
@@ -218,7 +224,7 @@ const HomePageContent = () => {
                   onClick={() => updateParam('sort', s.value)}
                   className={`cursor-pointer ${sort === s.value ? 'text-blue-500 font-bold' : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'}`}
                 >
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
               ))}
             </div>
@@ -231,8 +237,8 @@ const HomePageContent = () => {
           {categories.slice(1).map(cat => (
             <section key={cat.key}>
               <div className="flex items-center justify-between mb-6">
-                <Title level={3} className="m-0 border-l-4 border-blue-500 pl-3">{cat.label}</Title>
-                <Link href={`/?category=${cat.value}`} className="text-gray-400 hover:text-blue-400 text-sm">View All &gt;</Link>
+                <Title level={3} className="m-0 border-l-4 border-blue-500 pl-3">{t(cat.labelKey)}</Title>
+                <Link href={`/?category=${cat.value}`} className="text-gray-400 hover:text-blue-400 text-sm">{t('viewAll')} &gt;</Link>
               </div>
               <MovieGrid params={new URLSearchParams({ category: cat.value || '' })} />
             </section>

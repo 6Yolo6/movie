@@ -15,6 +15,8 @@ export interface MovieMetadata {
     posterUrl: string;
     doubanScore: number;
     imdbScore: number;
+    tmdbPopularity?: number;
+    tmdbVoteAverage?: number;
     rtScore: string;
     summary: string;
     status?: string;

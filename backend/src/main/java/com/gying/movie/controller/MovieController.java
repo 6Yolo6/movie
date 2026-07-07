@@ -6,6 +6,7 @@ import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.utils.PosterUrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,8 @@ public class MovieController {
     private String minioUrlPrefix;
 
     private void processMovieUrl(MovieMetadata movie) {
-        if (movie != null && movie.getPosterUrl() != null && !movie.getPosterUrl().startsWith("http")) {
-            movie.setPosterUrl(minioUrlPrefix + movie.getPosterUrl());
+        if (movie != null && movie.getPosterUrl() != null) {
+            movie.setPosterUrl(PosterUrlUtils.toPublicUrl(movie.getPosterUrl(), minioUrlPrefix));
         }
     }
 
@@ -75,7 +76,8 @@ public class MovieController {
                 .eq(year != null, MovieMetadata::getYear, year);
 
         if ("rating".equals(sort)) {
-            query.orderByDesc(MovieMetadata::getDoubanScore);
+            query.orderByDesc(MovieMetadata::getDoubanScore)
+                    .orderByDesc(MovieMetadata::getTmdbVoteAverage);
         } else if ("popular".equals(sort)) {
             query.orderByDesc(MovieMetadata::getPopularity);
         } else {
