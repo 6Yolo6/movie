@@ -327,6 +327,8 @@
   "resourceHubCreateSync": "Create sync",
   "resourceHubCreateDiscovery": "Create discovery",
   "resourceHubMovieIdPlaceholder": "e.g. tmdb-movie-12345 or an existing movie_metadata.id",
+  "resourceHubMovieLookup": "Movie title or ID",
+  "resourceHubMovieLookupPlaceholder": "e.g. Yellowstone, Dutton Ranch, tmdb-tv-12345, or an existing movie_metadata.id",
   "resourceHubKeyword": "Keyword",
   "resourceHubKeywordPlaceholder": "Leave empty to let the backend build a keyword from movie metadata",
   "resourceHubIgnoreCooldown": "Ignore cooldown",

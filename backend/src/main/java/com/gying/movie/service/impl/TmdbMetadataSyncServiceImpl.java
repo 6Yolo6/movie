@@ -259,7 +259,18 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         rawTitles.add(title(details, item.getMediaType()));
         rawTitles.add(originalTitle(details, item.getMediaType()));
         List<String> titles = distinct(rawTitles, 2);
-        if (year == null || titles.isEmpty()) {
+        if (titles.isEmpty()) {
+            return null;
+        }
+
+        if ("tv".equals(item.getMediaType())) {
+            MovieMetadata bySeries = findExistingSeries(titles, year, item.getMediaType());
+            if (bySeries != null) {
+                return bySeries;
+            }
+        }
+
+        if (year == null) {
             return null;
         }
 
@@ -275,6 +286,27 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                         w.eq("title_cn", candidate).or().eq("title_en", candidate);
                     }
                 })
+                .last("LIMIT 1");
+        return movieService.getOne(query, false);
+    }
+
+    private MovieMetadata findExistingSeries(List<String> titles, Integer year, String mediaType) {
+        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
+                .eq("category", categoryFor(mediaType))
+                .and(w -> {
+                    for (int i = 0; i < titles.size(); i++) {
+                        if (i > 0) {
+                            w.or();
+                        }
+                        String candidate = titles.get(i);
+                        w.eq("series_name", candidate)
+                                .or().eq("title_cn", candidate)
+                                .or().eq("title_en", candidate)
+                                .or().like("aliases", candidate);
+                    }
+                })
+                .orderByAsc("season")
+                .orderByDesc("popularity")
                 .last("LIMIT 1");
         return movieService.getOne(query, false);
     }

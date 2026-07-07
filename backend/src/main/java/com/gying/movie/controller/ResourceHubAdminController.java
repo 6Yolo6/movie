@@ -183,7 +183,11 @@ public class ResourceHubAdminController {
         ResourceHubTask task = resourceDiscoveryService.enqueue(request);
         if (request != null && Boolean.TRUE.equals(request.getRunNow())) {
             ResourceDiscoveryRunResult result = resourceDiscoveryService.runTask(task.getId());
-            return ApiResponse.ok(result);
+            Map<String, Object> pipeline = new LinkedHashMap<>();
+            pipeline.put("discovery", result);
+            pipeline.put("transfers", quarkTransferRunnerService.submitPending(resourceHubConfigService.getConfig().getWorkerQuarkLimit()));
+            pipeline.put("published", resourceHubPublishService.publishPending(resourceHubConfigService.getConfig().getWorkerPublishLimit()));
+            return ApiResponse.ok(pipeline);
         }
         return ApiResponse.ok(task);
     }

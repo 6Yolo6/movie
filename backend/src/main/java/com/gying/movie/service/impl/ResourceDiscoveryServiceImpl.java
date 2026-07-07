@@ -251,9 +251,10 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     }
 
     private DiscoveryPayload normalizePayload(ResourceDiscoveryRequest request) {
-        if (request == null || !hasText(request.getMovieId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieId is required");
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieId or movieTitle is required");
         }
+        String movieId = resolveMovieId(request);
         String source = hasText(request.getSource()) ? request.getSource().trim().toUpperCase() : "PANSOU";
         if (!"PANSOU".equals(source)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
@@ -262,7 +263,59 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 ? DEFAULT_MAX_RESULTS
                 : request.getMaxResults(), 1), MAX_RESULTS_LIMIT);
         String keyword = hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
-        return new DiscoveryPayload(request.getMovieId().trim(), keyword, source, maxResults);
+        return new DiscoveryPayload(movieId, keyword, source, maxResults);
+    }
+
+    private String resolveMovieId(ResourceDiscoveryRequest request) {
+        if (hasText(request.getMovieId())) {
+            String movieId = request.getMovieId().trim();
+            if (movieService.getById(movieId) != null) {
+                return movieId;
+            }
+            MovieMetadata byText = findMovieByText(movieId);
+            if (byText != null) {
+                return byText.getId();
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found: " + movieId);
+        }
+
+        String text = firstText(request.getMovieTitle(), request.getKeyword());
+        if (!hasText(text)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieId or movieTitle is required");
+        }
+        MovieMetadata movie = findMovieByText(text);
+        if (movie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found: " + text);
+        }
+        return movie.getId();
+    }
+
+    private MovieMetadata findMovieByText(String value) {
+        String text = value == null ? null : value.trim();
+        if (!hasText(text)) {
+            return null;
+        }
+        MovieMetadata exact = movieService.getOne(new QueryWrapper<MovieMetadata>()
+                .eq("status", "ACTIVE")
+                .and(w -> w.eq("id", text)
+                        .or().eq("title_cn", text)
+                        .or().eq("title_en", text)
+                        .or().eq("series_name", text))
+                .orderByDesc("popularity")
+                .orderByAsc("season")
+                .last("LIMIT 1"), false);
+        if (exact != null) {
+            return exact;
+        }
+        return movieService.getOne(new QueryWrapper<MovieMetadata>()
+                .eq("status", "ACTIVE")
+                .and(w -> w.like("title_cn", text)
+                        .or().like("title_en", text)
+                        .or().like("series_name", text)
+                        .or().like("aliases", text))
+                .orderByDesc("popularity")
+                .orderByAsc("season")
+                .last("LIMIT 1"), false);
     }
 
     private DiscoveryPayload readPayload(ResourceHubTask task) {
@@ -274,6 +327,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     new TypeReference<Map<String, Object>>() {
                     });
             String movieId = (String) payload.get("movieId");
+            String movieTitle = (String) payload.get("movieTitle");
             String keyword = (String) payload.get("keyword");
             String source = (String) payload.get("source");
             int maxResults = payload.get("maxResults") instanceof Number number
@@ -281,6 +335,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     : DEFAULT_MAX_RESULTS;
             ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
             request.setMovieId(movieId);
+            request.setMovieTitle(movieTitle);
             request.setKeyword(keyword);
             request.setSource(source);
             request.setMaxResults(maxResults);

@@ -134,7 +134,7 @@ interface TmdbFormValues {
 }
 
 interface DiscoveryFormValues {
-    movieId: string;
+    movieTitle: string;
     keyword?: string;
     maxResults: number;
     refresh: boolean;
@@ -721,8 +721,8 @@ export default function ResourceHubAdminPage() {
                                                 initialValues={{ maxResults: 10, refresh: true, runNow: true }}
                                                 onFinish={submitDiscovery}
                                             >
-                                                <Form.Item name="movieId" label={t('movieId')} rules={[{ required: true }]}>
-                                                    <Input placeholder={t('resourceHubMovieIdPlaceholder')} />
+                                                <Form.Item name="movieTitle" label={t('resourceHubMovieLookup')} rules={[{ required: true }]}>
+                                                    <Input placeholder={t('resourceHubMovieLookupPlaceholder')} />
                                                 </Form.Item>
                                                 <Form.Item name="keyword" label={t('resourceHubKeyword')}>
                                                     <Input placeholder={t('resourceHubKeywordPlaceholder')} />

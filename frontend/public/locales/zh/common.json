@@ -327,6 +327,8 @@
   "resourceHubCreateSync": "创建采集",
   "resourceHubCreateDiscovery": "创建搜索",
   "resourceHubMovieIdPlaceholder": "例如 tmdb-movie-12345 或现有 movie_metadata.id",
+  "resourceHubMovieLookup": "影片名称或 ID",
+  "resourceHubMovieLookupPlaceholder": "例如 达顿牧场、达顿牧场第一季、tmdb-tv-12345 或现有 movie_metadata.id",
   "resourceHubKeyword": "关键词",
   "resourceHubKeywordPlaceholder": "为空时后端按影片信息生成关键词",
   "resourceHubIgnoreCooldown": "忽略冷却",
