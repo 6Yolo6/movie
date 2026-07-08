@@ -33,6 +33,8 @@
 - 腾讯频道 CLI 已安装并完成授权。
 - 腾讯频道已创建“电影”和“电视剧”两个版块。
 - 腾讯频道发帖脚本已存在，后续资源帖格式为三段：标题、链接、简介。
+- 本机 Docker 已安装并运行 OpenClaw Gateway，端口为 `18789` / `18790` / `3978`，`/healthz` 返回 200。
+- OpenClaw 已安装 `@tencent-connect/openclaw-qqbot` 插件并绑定 QQ Bot，当前插件可连接腾讯 QQ Bot WebSocket，日志显示具备“群聊+私信+频道+交互” intents。
 
 ## 未结束任务
 
@@ -45,7 +47,11 @@
   - 按影片类型选择“电影”或“电视剧”版块。
   - 从最新已发布资源中取未发过的链接。
   - 成功发帖后记录已发布 `resource_link.id`，避免重复发。
-  - 后续如 OpenClaw CLI 可用，再评估是否替换或补充当前 `tencent-channel-cli` 路径。
+  - 当前仍以 `tencent-channel-cli` / 腾讯频道 community skill 作为“版块帖子”发布路径；OpenClaw QQBot 先用于对话和主动消息，后续若确认可稳定发布频道版块帖，再评估替换。
+- OpenClaw QQBot 还需要做真实群聊验证：
+  - 在 QQ 群里 @机器人发送 `/bot-ping` 或搜索指令，确认平台回调和 OpenClaw 消息链路。
+  - 捕获 QQ Bot 使用的 `GROUP_OPENID`，因为 OpenClaw 主动消息 target 使用 openid，不直接使用普通 QQ 群号。
+  - 评估是否让 OpenClaw 直接接业务 Agent，或仅作为官方 QQ Bot 消息入口，把资源查询转发到后端接口。
 - 历史数据还需要持续清理：
   - 合并 TMDB 采集生成的重复影视条目。
   - 迁移或归并重复条目的资源、任务和发现结果。
@@ -64,7 +70,8 @@
   - TMDB 热度只用于外部热门采集和 TMDB 热门展示。
 - Docker 不默认新建 Redis、PanSou、quark-auto-save 等依赖容器；优先连接用户已有容器，避免端口冲突。
 - 敏感信息不提交进仓库。TMDB Key、Quark cookie、QQ/OpenClaw token、NapCat token 只放环境变量或本机配置。
-- 腾讯频道当前优先使用 `tencent-channel-cli`，因为本机没有可用 OpenClaw CLI；npm 上的 `openclaw` 包是占位包。
+- QQ 群聊搜索优先走机器人身份，因为机器人身份更适合自动化、审计和长期运行；NapCat 路径仍可作为已有 QQ 号群聊接入方式。
+- 腾讯频道“版块帖子”当前优先使用 `tencent-channel-cli` / 腾讯频道 community skill，因为该路径已验证可创建频道帖子并选择“电影”“电视剧”版块；OpenClaw QQBot 更适合频道消息或群聊消息，暂不把它视为版块帖子发布的唯一通道。
 
 ## 已踩坑清单
 
@@ -80,4 +87,7 @@
 - PowerShell 通过 stdin JSON 调用 `tencent-channel-cli` 发送中文会出现乱码；后续发帖脚本应走命令参数或确保 UTF-8 输入，不再用普通 PowerShell 管道传中文 JSON。
 - 已经出现乱码的帖子不会因为脚本修复自动恢复，需要重新发布或手动删除旧帖。
 - 文档和脚本如果出现连续异常汉字或问号乱码，说明文件内容可能已经 mojibake，需要按原意重写为 UTF-8。
-- 在脏工作区提交时，只 stage 当前任务相关文件；`crawler/gying_crawler.py` 目前是已有未提交修改，不要顺手带入无关提交。
+- OpenClaw Docker 首次启动可能因为 `openclaw.json` 缺 `gateway.mode` 进入重启循环；修复方式是在 `C:\Users\Administrator\.openclaw\openclaw.json` 设置 `gateway.mode=local`、`gateway.bind=lan`，然后强制重建网关容器。
+- OpenClaw QQBot 插件会提示 `channelConfigs` manifest 警告和 `contracts.tools` 警告，目前不阻止 QQ Bot WebSocket 连接和消息通道启动；后续若要依赖其 agent tools，需要复查插件版本。
+- OpenClaw QQBot 主动发送 target 使用 `qqbot:c2c:OPENID`、`qqbot:group:GROUP_OPENID`、`qqbot:channel:CHANNEL_ID`，不要把普通 QQ 号、普通 QQ 群号或频道短号直接当 target。
+- 在脏工作区提交时，只 stage 当前任务相关文件；不要顺手带入无关提交。
