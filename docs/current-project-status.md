@@ -35,12 +35,20 @@
 - 腾讯频道发帖脚本已存在，后续资源帖格式为三段：标题、链接、简介。
 - 本机 Docker 已安装并运行 OpenClaw Gateway，端口为 `18789` / `18790` / `3978`，`/healthz` 返回 200。
 - OpenClaw 已安装 `@tencent-connect/openclaw-qqbot` 插件并绑定 QQ Bot，当前插件可连接腾讯 QQ Bot WebSocket，日志显示具备“群聊+私信+频道+交互” intents。
+- NapCat 已切换到新 QQ `3929013344`，并为该账号补齐 OneBot11 HTTP server 与 HTTP client 配置：
+  - HTTP server 监听 `0.0.0.0:3000`，供后端调用 `send_group_msg`。
+  - HTTP client 上报到 `http://backend:8880/api/qq-bot/onebot`，token 从 `.env` 注入，不提交到仓库。
+- NapCat 扫码登录已完成，`get_login_info` 返回当前账号 `3929013344`。
+- NapCat 直连发群已验证，可向 QQ 群 `2166070253` 发送消息。
+- 后端 `/api/qq-bot/onebot` 模拟 OneBot 群消息已验证：
+  - `/movie test` 可触发“正在搜索”和最终结果回复。
+  - `搜 达顿牧场` 可命中“达顿牧场 第一季”并回复影片信息。
 
 ## 未结束任务
 
 - QQ 群机器人还需要做真实群聊端到端联调：
-  - NapCat 事件上报到后端。
-  - 群里 @机器人或命令搜索影片。
+  - 群里由非机器人账号发送 `搜 达顿牧场` 或 `找 达顿牧场`，确认 NapCat HTTP client 能把真实群消息上报到后端。
+  - 群里 @机器人形式是否会被当前命令解析接受还未验证，优先先验证纯命令。
   - 本地命中资源时直接回复。
   - 未命中时触发搜索、转存、分享，并在完成后回发结果。
 - 腾讯频道自动资源帖还需要接入业务自动化：
@@ -90,4 +98,7 @@
 - OpenClaw Docker 首次启动可能因为 `openclaw.json` 缺 `gateway.mode` 进入重启循环；修复方式是在 `C:\Users\Administrator\.openclaw\openclaw.json` 设置 `gateway.mode=local`、`gateway.bind=lan`，然后强制重建网关容器。
 - OpenClaw QQBot 插件会提示 `channelConfigs` manifest 警告和 `contracts.tools` 警告，目前不阻止 QQ Bot WebSocket 连接和消息通道启动；后续若要依赖其 agent tools，需要复查插件版本。
 - OpenClaw QQBot 主动发送 target 使用 `qqbot:c2c:OPENID`、`qqbot:group:GROUP_OPENID`、`qqbot:channel:CHANNEL_ID`，不要把普通 QQ 号、普通 QQ 群号或频道短号直接当 target。
+- NapCat 每个 QQ 账号有独立配置文件，例如 `onebot11_3929013344.json`；切换账号后旧号的 OneBot11 配置不会自动复用。
+- 修改 NapCat OneBot11 配置后需要重启 NapCat，但重启可能触发 QQ 重新手Q验证或扫码，操作前要预期这一步。
+- PowerShell 管道向 Linux 容器传中文 JSON 时可能出现编码偏差；测试 OneBot 中文命令时优先使用真实 NapCat 上报，或在手工 payload 中使用 `\u` 转义。
 - 在脏工作区提交时，只 stage 当前任务相关文件；不要顺手带入无关提交。
