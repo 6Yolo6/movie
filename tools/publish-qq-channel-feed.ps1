@@ -17,7 +17,8 @@ if (-not $GuildId) {
 }
 
 if (-not $ChannelId) {
-    $ChannelId = "736090076"
+    # Default to the movie board. Pass QQ_CHANNEL_ID or -ChannelId for TV shows.
+    $ChannelId = "736142774"
 }
 
 $cli = Get-Command tencent-channel-cli -ErrorAction SilentlyContinue
@@ -25,7 +26,10 @@ if (-not $cli) {
     throw "tencent-channel-cli is not installed. Run: npm install -g tencent-channel-cli"
 }
 
-$content = "标题：$Title`n链接：$Link`n简介：$Intro"
+$titleLabel = -join ([char[]](0x6807, 0x9898, 0xff1a))
+$linkLabel = -join ([char[]](0x94fe, 0x63a5, 0xff1a))
+$introLabel = -join ([char[]](0x7b80, 0x4ecb, 0xff1a))
+$content = "$titleLabel$Title`n$linkLabel[$Link]($Link)`n$introLabel$Intro"
 
 & $cli.Source feed publish-feed `
     --guild-id $GuildId `

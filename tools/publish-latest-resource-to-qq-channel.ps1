@@ -41,14 +41,15 @@ if (-not $hostName -or $hostName -eq "host.docker.internal") {
 $port = if ($envMap["DB_PORT"]) { $envMap["DB_PORT"] } else { "3306" }
 $user = if ($envMap["DB_USER"]) { $envMap["DB_USER"] } else { "root" }
 $db = if ($envMap["DB_NAME"]) { $envMap["DB_NAME"] } else { "gying" }
-$env:MYSQL_PWD = $envMap["DB_PASSWORD"]
+$env:MYSQL_PWD = if ($envMap["GYING_DB_PASSWORD"]) { $envMap["GYING_DB_PASSWORD"] } else { $envMap["DB_PASSWORD"] }
+$defaultIntro = -join ([char[]](0x6682, 0x65e0, 0x7b80, 0x4ecb))
 
 $sql = @"
 SELECT
   rl.id,
   COALESCE(NULLIF(m.title_cn, ''), NULLIF(m.title_en, ''), m.id) AS title,
   rl.url,
-  LEFT(COALESCE(NULLIF(m.summary, ''), '暂无简介'), 180) AS intro
+  LEFT(COALESCE(NULLIF(m.summary, ''), '$defaultIntro'), 180) AS intro
 FROM resource_link rl
 JOIN movie_metadata m ON m.id = rl.movie_id
 WHERE rl.status = 'ACTIVE'
@@ -65,6 +66,7 @@ try {
         -P $port `
         -u $user `
         $db `
+        --default-character-set=utf8mb4 `
         --batch `
         --raw `
         --skip-column-names `

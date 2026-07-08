@@ -717,8 +717,8 @@ def crawl_user_content(db):
             
             # Pagination Check
             curr = data['page']['curr']
-            pages = 7
-            # pages = data['page']['pages']
+            # pages = 7
+            pages = data['page']['pages']
             if curr >= pages:
                 print("🏁 All pages processed.")
                 break
