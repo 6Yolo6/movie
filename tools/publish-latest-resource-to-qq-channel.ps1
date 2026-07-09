@@ -3,6 +3,8 @@ param(
     [string]$StateFile = "$env:USERPROFILE\.gying\qq-channel-posted.txt"
 )
 
+$ErrorActionPreference = "Stop"
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $envFile = Join-Path $repoRoot ".env"
 if (-not (Test-Path $envFile)) {
@@ -20,6 +22,7 @@ $mysql = Get-Command mysql -ErrorAction SilentlyContinue
 if (-not $mysql) {
     throw "mysql client is not installed or not in PATH"
 }
+$mysqlPath = $mysql.Source
 
 $stateDir = Split-Path -Parent $StateFile
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
@@ -49,7 +52,8 @@ SELECT
   rl.id,
   COALESCE(NULLIF(m.title_cn, ''), NULLIF(m.title_en, ''), m.id) AS title,
   rl.url,
-  LEFT(COALESCE(NULLIF(m.summary, ''), '$defaultIntro'), 180) AS intro
+  LEFT(COALESCE(NULLIF(m.summary, ''), '$defaultIntro'), 180) AS intro,
+  LOWER(COALESCE(NULLIF(m.tmdb_type, ''), NULLIF(m.category, ''), 'movie')) AS media_type
 FROM resource_link rl
 JOIN movie_metadata m ON m.id = rl.movie_id
 WHERE rl.status = 'ACTIVE'
@@ -61,7 +65,7 @@ LIMIT $Limit;
 "@
 
 try {
-    $rows = & $mysql.Source `
+    $rows = & $mysqlPath `
         -h $hostName `
         -P $port `
         -u $user `
@@ -71,13 +75,26 @@ try {
         --raw `
         --skip-column-names `
         -e $sql
+    if ($LASTEXITCODE -ne 0) {
+        throw "mysql query failed with exit code $LASTEXITCODE"
+    }
 } finally {
     Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
 }
 
+function Resolve-ChannelType {
+    param([string]$MediaType)
+
+    $normalized = if ($MediaType) { $MediaType.Trim().ToLowerInvariant() } else { "" }
+    if ($normalized -in @("tv", "series", "show", "drama")) {
+        return "tv"
+    }
+    return "movie"
+}
+
 foreach ($row in $rows) {
-    $parts = $row -split "`t", 4
-    if ($parts.Count -lt 4) {
+    $parts = $row -split "`t", 5
+    if ($parts.Count -lt 5) {
         continue
     }
     $resourceId = $parts[0]
@@ -87,11 +104,13 @@ foreach ($row in $rows) {
     $title = $parts[1]
     $link = $parts[2]
     $intro = $parts[3]
+    $channelType = Resolve-ChannelType $parts[4]
 
     & (Join-Path $PSScriptRoot "publish-qq-channel-feed.ps1") `
         -Title $title `
         -Link $link `
-        -Intro $intro
+        -Intro $intro `
+        -ChannelType $channelType
 
     Add-Content -Path $StateFile -Value $resourceId
     break

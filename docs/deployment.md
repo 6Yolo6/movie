@@ -172,17 +172,23 @@ Install and log in with `tencent-channel-cli`, then publish a three-part movie r
 tools/publish-qq-channel-feed.ps1 `
   -Title "Movie Title" `
   -Link "https://pan.quark.cn/s/xxxx" `
-  -Intro "Short intro"
+  -Intro "Short intro" `
+  -ChannelType movie
 ```
 
-The script defaults to the configured channel `pd54387067` and the default board discovered by the
-Tencent channel CLI. Override with `QQ_CHANNEL_GUILD_ID` and `QQ_CHANNEL_ID` when needed.
+The script defaults to the configured channel `pd54387067`. Set `QQ_CHANNEL_GUILD_ID`,
+`QQ_CHANNEL_MOVIE_ID`, and `QQ_CHANNEL_TV_ID` so movie and TV posts go to the correct boards.
+`QQ_CHANNEL_ID` remains a legacy fallback for one-board setups.
 
 To publish the latest unposted resource from the database and remember posted resource IDs locally:
 
 ```powershell
 tools/publish-latest-resource-to-qq-channel.ps1
 ```
+
+The latest-resource script reads `movie_metadata.tmdb_type` / `movie_metadata.category` and passes
+`movie` or `tv` to the post script. If a TV resource is selected but `QQ_CHANNEL_TV_ID` is missing,
+the script fails instead of posting it to the movie board.
 
 Use Windows Task Scheduler or another scheduler to run this script periodically.
 

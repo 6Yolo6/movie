@@ -33,6 +33,7 @@
 - 腾讯频道 CLI 已安装并完成授权。
 - 腾讯频道已创建“电影”和“电视剧”两个版块。
 - 腾讯频道发帖脚本已存在，后续资源帖格式为三段：标题、链接、简介。
+- 腾讯频道最新资源发帖脚本已支持从数据库取最新未发资源、按电影/电视剧选择版块，并用本地 state 文件记录已发布 `resource_link.id` 避免重复发帖。
 - 本机 Docker 已安装并运行 OpenClaw Gateway，端口为 `18789` / `18790` / `3978`，`/healthz` 返回 200。
 - OpenClaw 已安装 `@tencent-connect/openclaw-qqbot` 插件并绑定 QQ Bot，当前插件可连接腾讯 QQ Bot WebSocket，日志显示具备“群聊+私信+频道+交互” intents。
 - NapCat 已切换到新 QQ `3929013344`，并为该账号补齐 OneBot11 HTTP server 与 HTTP client 配置：
@@ -60,9 +61,8 @@
   - 后续可把当前脚本补丁升级为私有 OpenClaw 插件或上游配置，减少对 `node_modules` 补丁的依赖。
   - 用真实未入库影片再测一次“未命中本地资源 -> PanSou 搜索 -> 转存 -> 分享 -> 入库 -> 回发”的完整异步链路。
 - 腾讯频道自动资源帖还需要接入业务自动化：
-  - 按影片类型选择“电影”或“电视剧”版块。
-  - 从最新已发布资源中取未发过的链接。
-  - 成功发帖后记录已发布 `resource_link.id`，避免重复发。
+  - 重新登录 `tencent-channel-cli` 后，配置真实 `QQ_CHANNEL_TV_ID` 并跑一次真实发布验证。
+  - 把 `tools/publish-latest-resource-to-qq-channel.ps1` 接入 Windows Task Scheduler 或其他调度器。
   - 当前仍以 `tencent-channel-cli` / 腾讯频道 community skill 作为“版块帖子”发布路径；OpenClaw QQBot 先用于对话和主动消息，后续若确认可稳定发布频道版块帖，再评估替换。
 - OpenClaw QQBot 还需要补充真实群聊验证记录：
   - 用户已验证 `/bot-ping` 可回复，下一步重点验证搜索指令的被动回复。
@@ -104,6 +104,7 @@
 - PanSou 搜不到资源通常说明流媒体资源还未出现，此时影片应标记为预告状态，而不是反复无限重试。
 - PowerShell 通过 stdin JSON 调用 `tencent-channel-cli` 发送中文会出现乱码；后续发帖脚本应走命令参数或确保 UTF-8 输入，不再用普通 PowerShell 管道传中文 JSON。
 - 已经出现乱码的帖子不会因为脚本修复自动恢复，需要重新发布或手动删除旧帖。
+- `tencent-channel-cli` 登录凭证会过期；自动发帖真实验证前先跑 `tencent-channel-cli login status --json`，过期则重新扫码授权。
 - 文档和脚本如果出现连续异常汉字或问号乱码，说明文件内容可能已经 mojibake，需要按原意重写为 UTF-8。
 - OpenClaw Docker 首次启动可能因为 `openclaw.json` 缺 `gateway.mode` 进入重启循环；修复方式是在 `C:\Users\Administrator\.openclaw\openclaw.json` 设置 `gateway.mode=local`、`gateway.bind=lan`，然后强制重建网关容器。
 - OpenClaw QQBot 插件会提示 `channelConfigs` manifest 警告和 `contracts.tools` 警告，目前不阻止 QQ Bot WebSocket 连接和消息通道启动；后续若要依赖其 agent tools，需要复查插件版本。
