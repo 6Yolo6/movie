@@ -31,6 +31,8 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+    ports:
+      - "${BACKEND_PORT:-8880}:8880"
     volumes:
       - backend-logs:/app/logs
     extra_hosts:

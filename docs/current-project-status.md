@@ -47,11 +47,15 @@
 - QQ 群回复已调整为只展示影片信息和正式资源链接，不再展示“状态”和“我的夸克分享”内部字段。
 - 后端已支持可配置回复通道：默认 `napcat`，也可通过 `QQ_BOT_REPLY_PROVIDER=qqbot` 切到官方 QQBot API 回包。
 - 本机已配置官方 QQBot 出站并完成后端重启；API 鉴权和 `GROUP_OPENID` 映射已通过，但平台返回 `40034105 主动消息失败, 无权限`，需要在 QQ 开放平台开启/授权群主动消息，或改为官方 QQBot 入站事件携带 `msg_id` 后做被动回复。
+- 后端已新增 `/api/qq-bot/search-reply`，只返回搜索回复文本，不主动发消息，供 OpenClaw QQBot 被动回复调用。
+- 本机 OpenClaw QQBot 插件已临时补丁：`/movie`、`/search`、`搜`、`找` 会调用后端 `search-reply` 接口，再由 OpenClaw 使用官方 `msg_id` 被动回复。
+- 后端 compose 已暴露 `BACKEND_PORT`，当前用于 OpenClaw 容器通过 `host.docker.internal:8880` 调用后端。
 
 ## 未结束任务
 
 - QQ 群机器人还需要做真实群聊端到端联调：
-  - 处理官方 QQBot 群主动消息权限；当前 NapCat 入站 + QQBot 主动出站会被平台拒绝。
+  - 在 QQ 群用官方机器人发送 `/movie 影片`、`搜 影片` 验证 OpenClaw 被动回复桥接。
+  - 将当前 OpenClaw QQBot 本机补丁固化为可重复应用的脚本、私有插件或上游配置，避免插件更新后丢失。
   - 未命中本地资源时触发搜索、转存、分享，并在完成后回发结果；本地已有资源时不能重复转存。
 - 腾讯频道自动资源帖还需要接入业务自动化：
   - 按影片类型选择“电影”或“电视剧”版块。
@@ -105,4 +109,5 @@
 - NapCat 每个 QQ 账号有独立配置文件，例如 `onebot11_3929013344.json`；切换账号后旧号的 OneBot11 配置不会自动复用。
 - 修改 NapCat OneBot11 配置后需要重启 NapCat，但重启可能触发 QQ 重新手Q验证或扫码，操作前要预期这一步。
 - PowerShell 管道向 Linux 容器传中文 JSON 时可能出现编码偏差；测试 OneBot 中文命令时优先使用真实 NapCat 上报，或在手工 payload 中使用 `\u` 转义。
+- 当前 OpenClaw QQBot 资源搜索处理器是本机 `node_modules` 补丁，OpenClaw/插件升级可能覆盖；升级后要重新应用或改造成正式插件。
 - 在脏工作区提交时，只 stage 当前任务相关文件；不要顺手带入无关提交。

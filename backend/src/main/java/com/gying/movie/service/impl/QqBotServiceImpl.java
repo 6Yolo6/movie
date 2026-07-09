@@ -105,24 +105,31 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void searchAndReply(Long groupId, String keyword) {
         try {
-            MovieMetadata movie = findBestMovie(keyword);
-            if (movie == null) {
-                trySend(groupId, "没有找到影片：" + keyword + "\n可以先在后台用 TMDB 采集补充元数据。");
-                return;
-            }
-
-            List<ResourceLink> links = loadResources(movie.getId());
-            List<String> transferNotes = new ArrayList<>();
-            if (links.isEmpty()) {
-                runDiscoveryPipeline(movie, keyword, transferNotes);
-                links = loadResources(movie.getId());
-            }
-
-            trySend(groupId, buildReply(movie, links));
+            trySend(groupId, buildSearchReply(keyword));
         } catch (Exception e) {
             log.warn("QQ bot resource search failed for keyword {}", keyword, e);
             trySend(groupId, "搜索失败：" + safeError(e.getMessage()));
         }
+    }
+
+    @Override
+    public String buildSearchReply(String keyword) {
+        String safeKeyword = trim(keyword, 80);
+        if (!hasText(safeKeyword)) {
+            return "请输入要搜索的影片名称。";
+        }
+        MovieMetadata movie = findBestMovie(safeKeyword);
+        if (movie == null) {
+            return "没有找到影片：" + safeKeyword + "\n可以先在后台用 TMDB 采集补充元数据。";
+        }
+
+        List<ResourceLink> links = loadResources(movie.getId());
+        List<String> transferNotes = new ArrayList<>();
+        if (links.isEmpty()) {
+            runDiscoveryPipeline(movie, safeKeyword, transferNotes);
+            links = loadResources(movie.getId());
+        }
+        return buildReply(movie, links);
     }
 
     private void runDiscoveryPipeline(MovieMetadata movie, String keyword, List<String> transferNotes) {

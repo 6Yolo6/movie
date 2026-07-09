@@ -149,6 +149,16 @@ To keep NapCat as the inbound listener but send replies from the official QQ Bot
 openid mapping. The ordinary QQ group number is not enough for official QQBot outgoing messages;
 use the `qqbot:group:GROUP_OPENID` value captured by OpenClaw.
 
+QQ Open Platform may reject group proactive messages with `40034105`. For that case, use OpenClaw
+as the official QQBot inbound transport and reply passively:
+
+- expose the backend on `BACKEND_PORT` (default `8880`) for local OpenClaw access;
+- configure `channels.qqbot.gyingSearchUrl` to
+  `http://host.docker.internal:8880/api/qq-bot/search-reply`;
+- configure `channels.qqbot.gyingSearchToken` with the backend QQ bot webhook token;
+- patch or package the OpenClaw QQBot command handler so `/movie`, `/search`, `搜`, and `找`
+  call the backend search-reply endpoint and return the result as the slash-command reply.
+
 When auto transfer is enabled, the bot only submits quark-auto-save tasks after the local
 `resource_link` table has no usable links for the matched movie. Existing published links are
 treated as already-owned resources and are returned directly. Group replies show movie information
