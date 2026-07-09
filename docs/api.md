@@ -45,10 +45,10 @@
 - `POST /api/admin/resource-hub/quark/transfers/{taskId}/submit`：提交单个待转存任务到 quark-auto-save。
 - `GET /api/admin/resource-hub/worker/status`：查看 Resource Hub Worker 开关、运行状态和批量限制。
 - `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
-- `GET /api/qq-bot/health`：查看 QQ Bot 开关和 NapCat 配置状态。
+- `GET /api/qq-bot/health`：查看 QQ Bot 开关、回复通道、NapCat 和官方 QQBot 配置状态。
 - `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
 
-QQ Bot 自动转存成功后会优先回复后端创建的“我的夸克分享”链接；如果夸克分享接口失败，会降级回复原始资源链接和转存状态。
+QQ Bot 查询会先读取 `resource_link` 已发布资源；只有库内没有可用链接时才触发外部搜索、转存和发布。群回复只展示影片信息和正式资源链接，不展示转存状态或内部分享任务信息。
 
 ## 评论、收藏、通知
 

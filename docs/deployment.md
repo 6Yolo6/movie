@@ -121,8 +121,12 @@ Set these variables when enabling the group bot:
 - `QQ_BOT_COMMAND_PREFIXES` (default `找,搜,/movie,/search`)
 - `QQ_BOT_MAX_RESULTS` (default `3`)
 - `QQ_BOT_AUTO_TRANSFER` (default `true`)
+- `QQ_BOT_REPLY_PROVIDER` (`napcat` or `qqbot`; default `napcat`)
 - `QQ_BOT_NAPCAT_BASE_URL`
 - `QQ_BOT_NAPCAT_ACCESS_TOKEN`
+- `QQ_BOT_QQBOT_APP_ID`
+- `QQ_BOT_QQBOT_CLIENT_SECRET`
+- `QQ_BOT_QQBOT_GROUP_OPENIDS` (mapping format: `2166070253:GROUP_OPENID`)
 - `NAPCAT_ACCOUNT` (used by the Docker service; current bot account is `3929013344`)
 
 Configure NapCat HTTP event reporting to:
@@ -140,10 +144,15 @@ Also enable a NapCat OneBot HTTP server so the backend can call `send_group_msg`
 Keep `QQ_BOT_NAPCAT_BASE_URL=http://napcat:3000` when the backend and NapCat run in the same
 Docker Compose network.
 
-When auto transfer is enabled, the bot saves matched Quark resources through quark-auto-save and
-then replies with the generated "my Quark share" link when the Quark share API accepts the saved
-folder. If share creation fails, the bot still returns the original resource links and the transfer
-status.
+To keep NapCat as the inbound listener but send replies from the official QQ Bot identity, set
+`QQ_BOT_REPLY_PROVIDER=qqbot` and configure the QQBot `AppID:AppSecret` values plus the group
+openid mapping. The ordinary QQ group number is not enough for official QQBot outgoing messages;
+use the `qqbot:group:GROUP_OPENID` value captured by OpenClaw.
+
+When auto transfer is enabled, the bot only submits quark-auto-save tasks after the local
+`resource_link` table has no usable links for the matched movie. Existing published links are
+treated as already-owned resources and are returned directly. Group replies show movie information
+and published resource links only, without transfer status or internal share-task details.
 
 ## QQ Channel Posting
 

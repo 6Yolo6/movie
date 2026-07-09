@@ -32,6 +32,10 @@ public class QqBotController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("enabled", qqBotProperties.isEnabled());
         result.put("napcatConfigured", hasText(qqBotProperties.getNapcat().getBaseUrl()));
+        result.put("replyProvider", qqBotProperties.getReplyProvider());
+        result.put("qqbotConfigured", hasText(qqBotProperties.getQqbot().getAppId())
+                && hasText(qqBotProperties.getQqbot().getClientSecret())
+                && hasText(qqBotProperties.getQqbot().getGroupOpenids()));
         result.put("allowedGroups", qqBotProperties.getAllowedGroups());
         result.put("commandPrefixes", qqBotProperties.getCommandPrefixes());
         return result;
