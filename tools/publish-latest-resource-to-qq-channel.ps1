@@ -44,6 +44,9 @@ if (-not $hostName -or $hostName -eq "host.docker.internal") {
 $port = if ($envMap["DB_PORT"]) { $envMap["DB_PORT"] } else { "3306" }
 $user = if ($envMap["DB_USER"]) { $envMap["DB_USER"] } else { "root" }
 $db = if ($envMap["DB_NAME"]) { $envMap["DB_NAME"] } else { "gying" }
+$guildId = if ($envMap["QQ_CHANNEL_GUILD_ID"]) { $envMap["QQ_CHANNEL_GUILD_ID"] } else { $env:QQ_CHANNEL_GUILD_ID }
+$movieChannelId = if ($envMap["QQ_CHANNEL_MOVIE_ID"]) { $envMap["QQ_CHANNEL_MOVIE_ID"] } else { $env:QQ_CHANNEL_MOVIE_ID }
+$tvChannelId = if ($envMap["QQ_CHANNEL_TV_ID"]) { $envMap["QQ_CHANNEL_TV_ID"] } else { $env:QQ_CHANNEL_TV_ID }
 $env:MYSQL_PWD = if ($envMap["GYING_DB_PASSWORD"]) { $envMap["GYING_DB_PASSWORD"] } else { $envMap["DB_PASSWORD"] }
 $defaultIntro = -join ([char[]](0x6682, 0x65e0, 0x7b80, 0x4ecb))
 
@@ -110,7 +113,10 @@ foreach ($row in $rows) {
         -Title $title `
         -Link $link `
         -Intro $intro `
-        -ChannelType $channelType
+        -ChannelType $channelType `
+        -GuildId $guildId `
+        -MovieChannelId $movieChannelId `
+        -TvChannelId $tvChannelId
 
     Add-Content -Path $StateFile -Value $resourceId
     break

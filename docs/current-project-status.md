@@ -53,23 +53,31 @@
 - 后端 compose 已暴露 `BACKEND_PORT`，当前用于 OpenClaw 容器通过 `host.docker.internal:8880` 调用后端。
 - 已新增 `tools/patch-openclaw-qqbot-gying.ps1`，可在 OpenClaw QQBot 插件升级后重新应用资源搜索补丁。
 - 已在 OpenClaw 容器内直接验证插件命令处理器：`/movie 人生切割术` 和 `搜 人生切割术` 都能拿到后端中文资源回复。
+- OpenClaw QQBot 补丁已扩展到 `gateway.js`，让群聊里 @机器人后的 `搜 影片`、`找 影片` 也进入插件级直接回复路径，不再落入内置 Agent。
+- 用户已在真实 QQ 群验证官方机器人 `@机器人 搜 影片` 可以搜索并回复。
+- QQ 群机器人回复里的评分前缀已改为纯文本 `豆瓣`，避免星标/emoji 编码异常显示成 `??`。
+- QQ 群搜索库内无元数据的影片时，会先创建 `qq_<hash>` 最小占位元数据，再继续触发 PanSou 搜索、转存、分享和发布流程。
+- 已用 `复仇者联盟5` 验证 QQ 搜索接口不再直接返回“没有找到影片”，会进入外部搜索并返回候选资源。
+- 腾讯频道 CLI 已重新扫码授权，`login status` 显示凭证有效且服务连通正常。
+- 腾讯频道版块 ID 已确认：电影 `736142774`，电视剧 `736142775`，全部 `736090076`。
 
 ## 未结束任务
 
 - QQ 群机器人还需要做官方机器人真实群聊端到端联调：
-  - 在 QQ 群用官方机器人发送 `/movie 影片`、`搜 影片` 验证 OpenClaw 被动回复桥接是否能把后端结果发回群内。
   - 后续可把当前脚本补丁升级为私有 OpenClaw 插件或上游配置，减少对 `node_modules` 补丁的依赖。
-  - 用真实未入库影片再测一次“未命中本地资源 -> PanSou 搜索 -> 转存 -> 分享 -> 入库 -> 回发”的完整异步链路。
+- 用真实未入库影片再测一次“未命中本地资源 -> PanSou 搜索 -> 转存 -> 分享 -> 入库 -> 回发”的完整异步链路。
+  - 后续需要继续优化 PanSou 结果置信度，避免片名相近但不准确的资源被直接回发。
 - 腾讯频道自动资源帖还需要接入业务自动化：
-  - 重新登录 `tencent-channel-cli` 后，配置真实 `QQ_CHANNEL_TV_ID` 并跑一次真实发布验证。
+  - 跑一次真实自动发布验证。
   - 把 `tools/publish-latest-resource-to-qq-channel.ps1` 接入 Windows Task Scheduler 或其他调度器。
   - 当前仍以 `tencent-channel-cli` / 腾讯频道 community skill 作为“版块帖子”发布路径；OpenClaw QQBot 先用于对话和主动消息，后续若确认可稳定发布频道版块帖，再评估替换。
 - OpenClaw QQBot 还需要补充真实群聊验证记录：
-  - 用户已验证 `/bot-ping` 可回复，下一步重点验证搜索指令的被动回复。
+  - 用户已验证 `/bot-ping` 和 `搜 影片` 都可回复。
   - 如后续仍要做主动消息，需要捕获 QQ Bot 使用的 `GROUP_OPENID`，因为 OpenClaw 主动消息 target 使用 openid，不直接使用普通 QQ 群号。
   - 评估是否让 OpenClaw 直接接业务 Agent，或仅作为官方 QQ Bot 消息入口，把资源查询转发到后端接口。
 - 历史数据还需要持续清理：
   - 合并 TMDB 采集生成的重复影视条目。
+  - 合并 QQ 群搜索临时创建的 `qq_<hash>` 占位影片和后续 TMDB 正式影片。
   - 迁移或归并重复条目的资源、任务和发现结果。
   - 不直接删除历史数据，优先软停用或迁移到 canonical 影片。
 - 豆瓣评分暂未接入，当前没有可靠公开官方 API；不要依赖非官方接口作为稳定生产能力。
@@ -113,4 +121,7 @@
 - 修改 NapCat OneBot11 配置后需要重启 NapCat，但重启可能触发 QQ 重新手Q验证或扫码，操作前要预期这一步。
 - PowerShell 管道向 Linux 容器传中文 JSON 时可能出现编码偏差；测试 OneBot 中文命令时优先使用真实 NapCat 上报，或在手工 payload 中使用 `\u` 转义。
 - 当前 OpenClaw QQBot 资源搜索处理器是本机 `node_modules` 补丁，OpenClaw/插件升级可能覆盖；升级后要重新应用或改造成正式插件。
+- OpenClaw QQBot 插件原本只把 `/` 开头内容送进 `matchSlashCommand`；`搜 影片` 这类中文文本会进入内置 Agent。当前内置 Agent 配置的 `openai/gpt-5.5` 在本机不可用，会导致无回复，所以资源搜索必须走插件级直接回复快路径。
+- PowerShell 脚本向 JS 文件写入中文正则可能 mojibake；补丁脚本里插入 JS 的中文逻辑要用 `\u` 转义，避免插件启动时报 `Invalid regular expression`。
+- QQ Bot markdown 对部分 emoji/特殊符号不稳定；机器人业务回复尽量使用纯文本标签，例如评分用 `豆瓣 9.1`，不要用星标符号。
 - 在脏工作区提交时，只 stage 当前任务相关文件；不要顺手带入无关提交。

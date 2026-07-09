@@ -179,6 +179,8 @@ tools/publish-qq-channel-feed.ps1 `
 The script defaults to the configured channel `pd54387067`. Set `QQ_CHANNEL_GUILD_ID`,
 `QQ_CHANNEL_MOVIE_ID`, and `QQ_CHANNEL_TV_ID` so movie and TV posts go to the correct boards.
 `QQ_CHANNEL_ID` remains a legacy fallback for one-board setups.
+For the current channel, the movie board is `736142774`, the TV board is `736142775`, and the
+legacy "all" board is `736090076`.
 
 To publish the latest unposted resource from the database and remember posted resource IDs locally:
 

@@ -24,6 +24,7 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.utils.ResourceHubHashUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -120,7 +121,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         MovieMetadata movie = findBestMovie(safeKeyword);
         if (movie == null) {
-            return "没有找到影片：" + safeKeyword + "\n可以先在后台用 TMDB 采集补充元数据。";
+            movie = createPlaceholderMovie(safeKeyword);
         }
 
         List<ResourceLink> links = loadResources(movie.getId());
@@ -239,6 +240,23 @@ public class QqBotServiceImpl implements IQqBotService {
         return candidates.stream()
                 .max(Comparator.comparingInt(movie -> scoreMovie(movie, keyword)))
                 .orElse(null);
+    }
+
+    private MovieMetadata createPlaceholderMovie(String keyword) {
+        String id = "qq_" + ResourceHubHashUtils.sha256(keyword).substring(0, 20);
+        MovieMetadata existing = movieService.getById(id);
+        if (existing != null) {
+            return existing;
+        }
+        MovieMetadata movie = new MovieMetadata();
+        movie.setId(id);
+        movie.setTitleCn(keyword);
+        movie.setCategory("mv");
+        movie.setStatus("ACTIVE");
+        movie.setResourceStatus("UNKNOWN");
+        movie.setPopularity(0);
+        movieService.save(movie);
+        return movie;
     }
 
     private int scoreMovie(MovieMetadata movie, String keyword) {
@@ -379,7 +397,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private String rating(MovieMetadata movie) {
         List<String> values = new ArrayList<>();
         if (movie.getDoubanScore() != null) {
-            values.add("?? " + movie.getDoubanScore());
+            values.add("豆瓣 " + movie.getDoubanScore());
         }
         if (movie.getTmdbVoteAverage() != null) {
             values.add("TMDB " + movie.getTmdbVoteAverage());

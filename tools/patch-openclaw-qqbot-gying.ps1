@@ -5,12 +5,22 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$pluginFile = Get-ChildItem -Path (Join-Path $OpenClawHome "npm\projects") -Recurse -File -Filter "slash-commands.js" |
+$pluginRoot = Join-Path $OpenClawHome "npm\projects"
+
+$pluginFile = Get-ChildItem -Path $pluginRoot -Recurse -File -Filter "slash-commands.js" |
     Where-Object { $_.FullName -like "*@tencent-connect*openclaw-qqbot*dist*src*slash-commands.js" } |
     Select-Object -First 1
 
 if (-not $pluginFile) {
     throw "OpenClaw QQBot slash-commands.js not found under $OpenClawHome"
+}
+
+$gatewayFile = Get-ChildItem -Path $pluginRoot -Recurse -File -Filter "gateway.js" |
+    Where-Object { $_.FullName -like "*@tencent-connect*openclaw-qqbot*dist*src*gateway.js" } |
+    Select-Object -First 1
+
+if (-not $gatewayFile) {
+    throw "OpenClaw QQBot gateway.js not found under $OpenClawHome"
 }
 
 $path = $pluginFile.FullName
@@ -21,12 +31,12 @@ if ($content -notmatch "function runGyingMovieSearch") {
 function runGyingMovieSearch(ctx, keyword) {
     const safeKeyword = String(keyword ?? "").trim();
     if (!safeKeyword) {
-        return Promise.resolve("请输入要搜索的影片名称。");
+        return Promise.resolve("\u8bf7\u8f93\u5165\u8981\u641c\u7d22\u7684\u5f71\u7247\u540d\u79f0\u3002");
     }
     const searchUrl = ctx.accountConfig?.gyingSearchUrl ?? process.env.GYING_QQBOT_SEARCH_URL;
     const searchToken = ctx.accountConfig?.gyingSearchToken ?? process.env.GYING_QQBOT_SEARCH_TOKEN;
     if (!searchUrl) {
-        return Promise.resolve("资源搜索接口未配置。");
+        return Promise.resolve("\u8d44\u6e90\u641c\u7d22\u63a5\u53e3\u672a\u914d\u7f6e\u3002");
     }
     const url = new URL(searchUrl);
     url.searchParams.set("keyword", safeKeyword);
@@ -44,15 +54,15 @@ function runGyingMovieSearch(ctx, keyword) {
                 body = {};
             }
             if (!response.ok) {
-                return `资源搜索失败：HTTP ${response.status}`;
+                return `\u8d44\u6e90\u641c\u7d22\u5931\u8d25\uff1aHTTP ${response.status}`;
             }
-            return body.reply || "暂时没有可用回复。";
+            return body.reply || "\u6682\u65f6\u6ca1\u6709\u53ef\u7528\u56de\u590d\u3002";
         })
-        .catch((err) => `资源搜索失败：${err instanceof Error ? err.message : String(err)}`);
+        .catch((err) => `\u8d44\u6e90\u641c\u7d22\u5931\u8d25\uff1a${err instanceof Error ? err.message : String(err)}`);
 }
 function extractGyingTextCommand(content) {
     const normalized = String(content ?? "").replace(/\u3000/g, " ").trim();
-    for (const prefix of ["搜", "找"]) {
+    for (const prefix of ["\u641c", "\u627e"]) {
         if (normalized === prefix) {
             return "";
         }
@@ -70,20 +80,20 @@ if ($content -notmatch 'name: "movie"') {
     $movieCommand = @'
 registerCommand({
     name: "movie",
-    description: "搜索影视资源",
+    description: "\u641c\u7d22\u5f71\u89c6\u8d44\u6e90",
     usage: [
-        `/movie 人生切割术`,
-        `/search 人生切割术`,
-        `搜 人生切割术`,
+        `/movie \u4eba\u751f\u5207\u5272\u672f`,
+        `/search \u4eba\u751f\u5207\u5272\u672f`,
+        `\u641c \u4eba\u751f\u5207\u5272\u672f`,
         ``,
-        `搜索站内影视信息和资源链接。`,
+        `\u641c\u7d22\u7ad9\u5185\u5f71\u89c6\u4fe1\u606f\u548c\u8d44\u6e90\u94fe\u63a5\u3002`,
     ].join("\n"),
     handler: (ctx) => runGyingMovieSearch(ctx, ctx.args),
 });
 registerCommand({
     name: "search",
-    description: "搜索影视资源",
-    usage: `/search 人生切割术`,
+    description: "\u641c\u7d22\u5f71\u89c6\u8d44\u6e90",
+    usage: `/search \u4eba\u751f\u5207\u5272\u672f`,
     handler: (ctx) => runGyingMovieSearch(ctx, ctx.args),
 });
 '@
@@ -95,6 +105,18 @@ if ($content -match 'if \(!content\.startsWith\("/"\)\)\r?\n        return null;
 }
 
 Set-Content -Encoding UTF8 $path $content
+
+$gatewayPath = $gatewayFile.FullName
+$gatewayContent = Get-Content -Raw -Encoding UTF8 $gatewayPath
+$gatewayContent = $gatewayContent -replace 'const isGyingMovieSearchCommand = \(text\) => .*?;\r?\n', ""
+if ($gatewayContent -notmatch "const isGyingMovieSearchCommand") {
+    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(\u641c|\u627e)(\s|$)/u.test(String(text ?? `"`").trim());"
+}
+
+if ($gatewayContent -match 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}') {
+    $gatewayContent = $gatewayContent -replace 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}', "if (!content.startsWith(`"/`") && !isGyingMovieSearchCommand(content)) {`n            msgQueue.enqueue(msg);`n            return;`n        }"
+}
+Set-Content -Encoding UTF8 $gatewayPath $gatewayContent
 
 $configPath = Join-Path $OpenClawHome "openclaw.json"
 if (Test-Path $configPath) {
@@ -110,3 +132,4 @@ if (Test-Path $configPath) {
 }
 
 Write-Output "Patched $path"
+Write-Output "Patched $gatewayPath"
