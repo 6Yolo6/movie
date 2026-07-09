@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-07-08
+更新时间：2026-07-09
 
 ## 当前项目目标
 
@@ -50,21 +50,23 @@
 - 后端已新增 `/api/qq-bot/search-reply`，只返回搜索回复文本，不主动发消息，供 OpenClaw QQBot 被动回复调用。
 - 本机 OpenClaw QQBot 插件已临时补丁：`/movie`、`/search`、`搜`、`找` 会调用后端 `search-reply` 接口，再由 OpenClaw 使用官方 `msg_id` 被动回复。
 - 后端 compose 已暴露 `BACKEND_PORT`，当前用于 OpenClaw 容器通过 `host.docker.internal:8880` 调用后端。
+- 已新增 `tools/patch-openclaw-qqbot-gying.ps1`，可在 OpenClaw QQBot 插件升级后重新应用资源搜索补丁。
+- 已在 OpenClaw 容器内直接验证插件命令处理器：`/movie 人生切割术` 和 `搜 人生切割术` 都能拿到后端中文资源回复。
 
 ## 未结束任务
 
-- QQ 群机器人还需要做真实群聊端到端联调：
-  - 在 QQ 群用官方机器人发送 `/movie 影片`、`搜 影片` 验证 OpenClaw 被动回复桥接。
-  - 将当前 OpenClaw QQBot 本机补丁固化为可重复应用的脚本、私有插件或上游配置，避免插件更新后丢失。
-  - 未命中本地资源时触发搜索、转存、分享，并在完成后回发结果；本地已有资源时不能重复转存。
+- QQ 群机器人还需要做官方机器人真实群聊端到端联调：
+  - 在 QQ 群用官方机器人发送 `/movie 影片`、`搜 影片` 验证 OpenClaw 被动回复桥接是否能把后端结果发回群内。
+  - 后续可把当前脚本补丁升级为私有 OpenClaw 插件或上游配置，减少对 `node_modules` 补丁的依赖。
+  - 用真实未入库影片再测一次“未命中本地资源 -> PanSou 搜索 -> 转存 -> 分享 -> 入库 -> 回发”的完整异步链路。
 - 腾讯频道自动资源帖还需要接入业务自动化：
   - 按影片类型选择“电影”或“电视剧”版块。
   - 从最新已发布资源中取未发过的链接。
   - 成功发帖后记录已发布 `resource_link.id`，避免重复发。
   - 当前仍以 `tencent-channel-cli` / 腾讯频道 community skill 作为“版块帖子”发布路径；OpenClaw QQBot 先用于对话和主动消息，后续若确认可稳定发布频道版块帖，再评估替换。
-- OpenClaw QQBot 还需要做真实群聊验证：
-  - 在 QQ 群里 @机器人发送 `/bot-ping` 或搜索指令，确认平台回调和 OpenClaw 消息链路。
-  - 捕获 QQ Bot 使用的 `GROUP_OPENID`，因为 OpenClaw 主动消息 target 使用 openid，不直接使用普通 QQ 群号。
+- OpenClaw QQBot 还需要补充真实群聊验证记录：
+  - 用户已验证 `/bot-ping` 可回复，下一步重点验证搜索指令的被动回复。
+  - 如后续仍要做主动消息，需要捕获 QQ Bot 使用的 `GROUP_OPENID`，因为 OpenClaw 主动消息 target 使用 openid，不直接使用普通 QQ 群号。
   - 评估是否让 OpenClaw 直接接业务 Agent，或仅作为官方 QQ Bot 消息入口，把资源查询转发到后端接口。
 - 历史数据还需要持续清理：
   - 合并 TMDB 采集生成的重复影视条目。
