@@ -3,6 +3,8 @@ package com.gying.movie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gying.movie.client.NapCatClient;
+import com.gying.movie.client.PanSouClient;
+import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QqOfficialBotClient;
 import com.gying.movie.config.QqBotProperties;
 import com.gying.movie.config.ResourceHubProperties;
@@ -46,10 +48,12 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private static final Logger log = LoggerFactory.getLogger(QqBotServiceImpl.class);
     private static final int MAX_REPLY_RESOURCES = 5;
+    private static final String PERMANENT_LINK_INVALID_REASON = "Re-shared link is still invalid; possible policy violation";
 
     private final QqBotProperties qqBotProperties;
     private final ResourceHubProperties resourceHubProperties;
     private final NapCatClient napCatClient;
+    private final PanSouClient panSouClient;
     private final QqOfficialBotClient qqOfficialBotClient;
     private final IMovieMetadataService movieService;
     private final IResourceLinkService resourceLinkService;
@@ -66,6 +70,7 @@ public class QqBotServiceImpl implements IQqBotService {
             QqBotProperties qqBotProperties,
             ResourceHubProperties resourceHubProperties,
             NapCatClient napCatClient,
+            PanSouClient panSouClient,
             QqOfficialBotClient qqOfficialBotClient,
             IMovieMetadataService movieService,
             IResourceLinkService resourceLinkService,
@@ -79,6 +84,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
+        this.panSouClient = panSouClient;
         this.qqOfficialBotClient = qqOfficialBotClient;
         this.movieService = movieService;
         this.resourceLinkService = resourceLinkService;
@@ -137,6 +143,11 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (safeKeyword.length() < Math.max(qqBotProperties.getMinKeywordLength(), 1)) {
             return "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。";
+        }
+        String blockedWord = firstBlockedKeyword(safeKeyword);
+        if (hasText(blockedWord)) {
+            log.info("QQ bot search blocked by sensitive keyword: {}", blockedWord);
+            return "搜索词包含不支持的内容，请更换关键词。";
         }
         if (!allowSearch(userKey)) {
             return "搜索太频繁，请稍后再试。";
@@ -391,10 +402,185 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private List<ResourceLink> loadResources(String movieId) {
-        return resourceLinkService.getResourcesByMovieId(movieId).stream()
-                .filter(link -> !"INVALID".equalsIgnoreCase(link.getLinkStatus()))
-                .limit(MAX_REPLY_RESOURCES)
-                .toList();
+        List<ResourceLink> candidates = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("audit_status", 1)
+                .eq("status", "ACTIVE")
+                .orderByDesc("created_at")
+                .last("LIMIT 20"));
+        List<ResourceLink> resources = new ArrayList<>();
+        for (ResourceLink link : candidates) {
+            ResourceLink ready = prepareResourceForReply(link);
+            if (ready != null) {
+                resources.add(ready);
+            }
+            if (resources.size() >= MAX_REPLY_RESOURCES) {
+                break;
+            }
+        }
+        return resources;
+    }
+
+    private ResourceLink prepareResourceForReply(ResourceLink link) {
+        if (link == null || !hasText(link.getUrl())) {
+            return null;
+        }
+        if (isNormalLink(link)) {
+            return link;
+        }
+        if (isPermanentInvalid(link)) {
+            return null;
+        }
+        LinkCheckResult currentCheck = checkLink(link.getUrl());
+        if (currentCheck.checked() && currentCheck.valid()) {
+            markLinkNormal(link);
+            return link;
+        }
+        if (!currentCheck.checked()) {
+            markLinkSuspected(link, "Unable to verify invalid share link: " + safeError(currentCheck.message()));
+            return null;
+        }
+        if (!canRefreshShare(link)) {
+            markLinkInvalid(link, firstText(currentCheck.message(), "Link is invalid and cannot be refreshed"));
+            return null;
+        }
+        ResourceLink refreshed;
+        try {
+            refreshed = refreshShareLink(link);
+        } catch (Exception e) {
+            log.warn("Failed to refresh invalid resource link {}", link.getId(), e);
+            markLinkSuspected(link, "Share refresh failed: " + safeError(e.getMessage()));
+            return null;
+        }
+        if (refreshed == null || !hasText(refreshed.getUrl())) {
+            markLinkInvalid(link, "Unable to refresh invalid share link");
+            return null;
+        }
+        LinkCheckResult refreshedCheck = checkLink(refreshed.getUrl());
+        if (refreshedCheck.checked() && refreshedCheck.valid()) {
+            markLinkNormal(refreshed);
+            return refreshed;
+        }
+        if (!refreshedCheck.checked()) {
+            markLinkSuspected(refreshed, "Unable to verify refreshed share link: " + safeError(refreshedCheck.message()));
+            return null;
+        }
+        markLinkInvalid(refreshed, PERMANENT_LINK_INVALID_REASON);
+        return null;
+    }
+
+    private LinkCheckResult checkLink(String url) {
+        try {
+            return panSouClient.checkLink(url);
+        } catch (Exception e) {
+            log.warn("PanSou link check failed for {}", url, e);
+            return new LinkCheckResult(url, false, false, safeError(e.getMessage()));
+        }
+    }
+
+    private ResourceLink refreshShareLink(ResourceLink link) {
+        QuarkTransferTask task = findTransferTask(link);
+        if (task == null || !"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
+            return null;
+        }
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        LocalDateTime now = LocalDateTime.now();
+        task.setShareUrl(null);
+        task.setShareUrlHash(null);
+        task.setUpdatedAt(now);
+        quarkTransferTaskService.updateById(task);
+        if (discovery != null) {
+            discovery.setShareUrl(null);
+            discovery.setShareUrlHash(null);
+            discovery.setUpdatedAt(now);
+            discoveryResultService.updateById(discovery);
+        }
+        String shareUrl = quarkShareService.ensureShareUrl(task);
+        if (!hasText(shareUrl)) {
+            return null;
+        }
+        return resourceLinkService.getById(link.getId());
+    }
+
+    private ResourceDiscoveryResult findDiscovery(ResourceLink link) {
+        if (link == null || link.getId() == null) {
+            return null;
+        }
+        return discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("resource_link_id", link.getId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+    }
+
+    private QuarkTransferTask findTransferTask(ResourceLink link) {
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        if (discovery != null && discovery.getId() != null) {
+            QuarkTransferTask byDiscovery = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byDiscovery != null) {
+                return byDiscovery;
+            }
+        }
+        if (!hasText(link.getUrlHash())) {
+            return null;
+        }
+        return quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", link.getMovieId())
+                .eq("share_url_hash", link.getUrlHash())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+    }
+
+    private boolean isNormalLink(ResourceLink link) {
+        return !hasText(link.getLinkStatus()) || "NORMAL".equalsIgnoreCase(link.getLinkStatus());
+    }
+
+    private boolean isPermanentInvalid(ResourceLink link) {
+        return "INVALID".equalsIgnoreCase(link.getLinkStatus())
+                && PERMANENT_LINK_INVALID_REASON.equals(link.getLastCheckError());
+    }
+
+    private boolean canRefreshShare(ResourceLink link) {
+        return "QUARK".equalsIgnoreCase(link.getProvider())
+                && "RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                && resourceHubProperties.getQuark().isShareEnabled();
+    }
+
+    private void markLinkNormal(ResourceLink link) {
+        link.setLinkStatus("NORMAL");
+        link.setValidatedAt(LocalDateTime.now());
+        link.setLastCheckError(null);
+        resourceLinkService.updateById(link);
+    }
+
+    private void markLinkInvalid(ResourceLink link, String reason) {
+        link.setLinkStatus("INVALID");
+        link.setValidatedAt(LocalDateTime.now());
+        link.setLastCheckError(trim(reason, 1000));
+        resourceLinkService.updateById(link);
+    }
+
+    private void markLinkSuspected(ResourceLink link, String reason) {
+        link.setLinkStatus("SUSPECTED_INVALID");
+        link.setValidatedAt(LocalDateTime.now());
+        link.setLastCheckError(trim(reason, 1000));
+        resourceLinkService.updateById(link);
+    }
+
+    private String firstBlockedKeyword(String keyword) {
+        if (!hasText(qqBotProperties.getBlockedKeywords())) {
+            return null;
+        }
+        String normalized = keyword.trim().toLowerCase();
+        for (String item : qqBotProperties.getBlockedKeywords().split("[,，|;；\\n\\r]+")) {
+            String blocked = item.trim();
+            if (hasText(blocked) && normalized.contains(blocked.toLowerCase())) {
+                return blocked;
+            }
+        }
+        return null;
     }
 
     private String buildReply(MovieMetadata movie, List<ResourceLink> links) {

@@ -13,6 +13,7 @@ public class QqBotProperties {
     private int maxResults = 3;
     private int minKeywordLength = 2;
     private int rateLimitPerMinute = 5;
+    private String blockedKeywords;
     private boolean autoTransfer = true;
     private String replyProvider = "napcat";
     private Napcat napcat = new Napcat();
