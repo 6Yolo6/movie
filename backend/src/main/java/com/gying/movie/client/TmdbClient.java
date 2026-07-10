@@ -76,6 +76,34 @@ public class TmdbClient {
                 .queryParam("append_to_response", "credits,alternative_titles"));
     }
 
+    public List<TmdbListItem> searchMulti(String query, int maxResults) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        JsonNode root = getJson("/search/multi", builder -> builder
+                .queryParam("language", LANGUAGE)
+                .queryParam("query", query.trim())
+                .queryParam("page", 1)
+                .queryParam("include_adult", false));
+        List<TmdbListItem> items = new ArrayList<>();
+        int safeMax = Math.min(Math.max(maxResults <= 0 ? 5 : maxResults, 1), 20);
+        for (JsonNode node : root.path("results")) {
+            if (items.size() >= safeMax) {
+                break;
+            }
+            String mediaType = node.path("media_type").asText(null);
+            long tmdbId = node.path("id").asLong(0L);
+            if (tmdbId <= 0 || (!"movie".equals(mediaType) && !"tv".equals(mediaType))) {
+                continue;
+            }
+            TmdbListItem item = new TmdbListItem();
+            item.setTmdbId(tmdbId);
+            item.setMediaType(mediaType);
+            items.add(item);
+        }
+        return items;
+    }
+
     public String normalizeSource(String source) {
         String normalized = source == null || source.isBlank()
                 ? "TRENDING_MOVIE_DAY"

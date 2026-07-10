@@ -38,6 +38,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_MAX_ITEMS = 20;
     private static final int MAX_ITEMS_LIMIT = 20;
+    private static final int MIN_KEYWORD_MATCH_SCORE = 80;
 
     private final TmdbClient tmdbClient;
     private final PosterStorageService posterStorageService;
@@ -137,6 +138,28 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             addError(result, e.getMessage());
             return result;
         }
+    }
+
+    @Override
+    public MovieMetadata syncBestByKeyword(String keyword) {
+        ensureEnabled();
+        if (!hasText(keyword)) {
+            return null;
+        }
+        List<TmdbListItem> items = tmdbClient.searchMulti(keyword, 5);
+        MovieCandidate best = null;
+        for (TmdbListItem item : items) {
+            try {
+                JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
+                int score = scoreKeywordMatch(keyword, item, details);
+                if (score >= MIN_KEYWORD_MATCH_SCORE && (best == null || score > best.score())) {
+                    best = new MovieCandidate(item, details, score);
+                }
+            } catch (Exception ignored) {
+                // Try the next TMDB search result.
+            }
+        }
+        return best == null ? null : upsertMovie(best.item(), best.details()).movie();
     }
 
     private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details) {
@@ -453,6 +476,93 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         return String.join(" / ", names(titles, "title", 20));
     }
 
+    private int scoreKeywordMatch(String keyword, TmdbListItem item, JsonNode details) {
+        String normalizedKeyword = normalizeTitle(keyword);
+        if (!hasText(normalizedKeyword)) {
+            return 0;
+        }
+        String sequelNumber = trailingNumber(normalizedKeyword);
+        List<String> titles = new ArrayList<>();
+        titles.add(title(details, item.getMediaType()));
+        titles.add(originalTitle(details, item.getMediaType()));
+        titles.addAll(names(alternativeTitleNodes(details, item.getMediaType()), "title", 20));
+
+        int best = 0;
+        boolean hasSequelNumber = !hasText(sequelNumber);
+        for (String rawTitle : titles) {
+            String normalizedTitle = normalizeTitle(rawTitle);
+            if (!hasText(normalizedTitle)) {
+                continue;
+            }
+            if (hasText(sequelNumber) && normalizedTitle.contains(sequelNumber)) {
+                hasSequelNumber = true;
+            }
+            if (normalizedTitle.equals(normalizedKeyword)) {
+                best = Math.max(best, 160);
+            } else if (normalizedTitle.contains(normalizedKeyword)) {
+                best = Math.max(best, 130);
+            } else if (normalizedKeyword.contains(normalizedTitle) && normalizedTitle.length() >= 4) {
+                best = Math.max(best, 75);
+            } else {
+                best = Math.max(best, overlapScore(normalizedKeyword, normalizedTitle));
+            }
+            if (normalizedTitle.contains("乐高") && !normalizedKeyword.contains("乐高")) {
+                best -= 60;
+            }
+        }
+        if (hasText(sequelNumber) && !hasSequelNumber && !containsExactKeyword(titles, normalizedKeyword)) {
+            best -= 80;
+        }
+        Integer year = parseYear(releaseDate(details, item.getMediaType()));
+        if (year != null && normalizedKeyword.contains(String.valueOf(year))) {
+            best += 20;
+        }
+        return Math.max(best, 0);
+    }
+
+    private JsonNode alternativeTitleNodes(JsonNode details, String mediaType) {
+        JsonNode node = details.path("alternative_titles");
+        return "tv".equals(mediaType) ? node.path("results") : node.path("titles");
+    }
+
+    private boolean containsExactKeyword(List<String> titles, String normalizedKeyword) {
+        for (String title : titles) {
+            if (normalizeTitle(title).contains(normalizedKeyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int overlapScore(String keyword, String title) {
+        int longest = 0;
+        for (int start = 0; start < keyword.length(); start++) {
+            for (int end = start + 2; end <= keyword.length(); end++) {
+                String part = keyword.substring(start, end);
+                if (title.contains(part)) {
+                    longest = Math.max(longest, part.length());
+                }
+            }
+        }
+        return longest >= 4 ? Math.min(longest * 12, 72) : 0;
+    }
+
+    private String normalizeTitle(String value) {
+        if (!hasText(value)) {
+            return "";
+        }
+        return value.toLowerCase()
+                .replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "");
+    }
+
+    private String trailingNumber(String normalizedValue) {
+        if (!hasText(normalizedValue)) {
+            return null;
+        }
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("([0-9]+)$").matcher(normalizedValue);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
     private List<String> names(JsonNode array, String field, int limit) {
         List<String> values = new ArrayList<>();
         if (!array.isArray()) {
@@ -577,6 +687,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     }
 
     private record MovieUpsertResult(MovieMetadata movie, boolean inserted) {
+    }
+
+    private record MovieCandidate(TmdbListItem item, JsonNode details, int score) {
     }
 
     private record SyncPayload(String source, int page, int maxItems) {

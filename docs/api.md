@@ -47,9 +47,9 @@
 - `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
 - `GET /api/qq-bot/health`：查看 QQ Bot 开关、回复通道、NapCat 和官方 QQBot 配置状态。
 - `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
-- `GET /api/qq-bot/search-reply?keyword=&token=`：返回 QQ 群影视搜索回复文本，不主动发送消息；用于 OpenClaw QQBot 被动回复桥接。
+- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：返回 QQ 群影视搜索回复文本，不主动发送消息；用于 OpenClaw QQBot 被动回复桥接。`userKey` 用于后端频率限制。
 
-QQ Bot 查询会先读取 `resource_link` 已发布资源；只有库内没有可用链接时才触发外部搜索、转存和发布。群回复只展示影片信息和正式资源链接，不展示转存状态或内部分享任务信息。
+QQ Bot 查询会先读取 `resource_link` 已发布资源；只有库内没有可用链接时才触发外部搜索、转存和发布。库内没有影视元数据时会先通过 TMDB 补全，未上映/无可信元数据时不会触发 PanSou。群回复只展示影片信息和正式资源链接，不展示转存状态或内部分享任务信息。
 
 ## 评论、收藏、通知
 

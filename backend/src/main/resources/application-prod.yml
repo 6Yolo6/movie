@@ -97,6 +97,8 @@ qq-bot:
   allowed-groups: ${QQ_BOT_ALLOWED_GROUPS:}
   command-prefixes: ${QQ_BOT_COMMAND_PREFIXES:找,搜,/movie,/search}
   max-results: ${QQ_BOT_MAX_RESULTS:3}
+  min-keyword-length: ${QQ_BOT_MIN_KEYWORD_LENGTH:2}
+  rate-limit-per-minute: ${QQ_BOT_RATE_LIMIT_PER_MINUTE:5}
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
   napcat:

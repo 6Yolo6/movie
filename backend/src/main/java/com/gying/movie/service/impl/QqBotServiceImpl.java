@@ -24,12 +24,19 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
-import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.service.ITmdbMetadataSyncService;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -52,6 +59,8 @@ public class QqBotServiceImpl implements IQqBotService {
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
+    private final ITmdbMetadataSyncService tmdbMetadataSyncService;
+    private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
 
     public QqBotServiceImpl(
             QqBotProperties qqBotProperties,
@@ -65,7 +74,8 @@ public class QqBotServiceImpl implements IQqBotService {
             IQuarkShareService quarkShareService,
             IQuarkTransferTaskService quarkTransferTaskService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
-            IResourceHubPublishService resourceHubPublishService) {
+            IResourceHubPublishService resourceHubPublishService,
+            ITmdbMetadataSyncService tmdbMetadataSyncService) {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
@@ -78,6 +88,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.quarkTransferTaskService = quarkTransferTaskService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
+        this.tmdbMetadataSyncService = tmdbMetadataSyncService;
     }
 
     @Override
@@ -100,13 +111,13 @@ public class QqBotServiceImpl implements IQqBotService {
 
         String safeKeyword = trim(keyword, 80);
         trySend(groupId, "正在搜索：" + safeKeyword);
-        CompletableFuture.runAsync(() -> searchAndReply(groupId, safeKeyword));
+        CompletableFuture.runAsync(() -> searchAndReply(groupId, safeKeyword, String.valueOf(userId)));
         return true;
     }
 
-    private void searchAndReply(Long groupId, String keyword) {
+    private void searchAndReply(Long groupId, String keyword, String userKey) {
         try {
-            trySend(groupId, buildSearchReply(keyword));
+            trySend(groupId, buildSearchReply(keyword, userKey));
         } catch (Exception e) {
             log.warn("QQ bot resource search failed for keyword {}", keyword, e);
             trySend(groupId, "搜索失败：" + safeError(e.getMessage()));
@@ -115,13 +126,33 @@ public class QqBotServiceImpl implements IQqBotService {
 
     @Override
     public String buildSearchReply(String keyword) {
+        return buildSearchReply(keyword, null);
+    }
+
+    @Override
+    public String buildSearchReply(String keyword, String userKey) {
         String safeKeyword = trim(keyword, 80);
         if (!hasText(safeKeyword)) {
             return "请输入要搜索的影片名称。";
         }
+        if (safeKeyword.length() < Math.max(qqBotProperties.getMinKeywordLength(), 1)) {
+            return "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。";
+        }
+        if (!allowSearch(userKey)) {
+            return "搜索太频繁，请稍后再试。";
+        }
         MovieMetadata movie = findBestMovie(safeKeyword);
-        if (movie == null) {
-            movie = createPlaceholderMovie(safeKeyword);
+        if (movie == null || needsMetadataSync(movie)) {
+            MovieMetadata syncedMovie = syncMovieMetadata(safeKeyword);
+            if (syncedMovie != null) {
+                movie = syncedMovie;
+            } else if (movie == null || needsMetadataSync(movie)) {
+                return "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。";
+            }
+        }
+        if (isUpcoming(movie)) {
+            markTrailer(movie);
+            return buildUpcomingReply(movie);
         }
 
         List<ResourceLink> links = loadResources(movie.getId());
@@ -138,7 +169,6 @@ public class QqBotServiceImpl implements IQqBotService {
             transferNotes.add("Resource Hub 未启用，无法自动搜索资源");
             return;
         }
-        LocalDateTime startedAt = LocalDateTime.now();
         ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
         request.setMovieId(movie.getId());
         request.setKeyword(buildSearchKeyword(movie, keyword));
@@ -155,19 +185,18 @@ public class QqBotServiceImpl implements IQqBotService {
             return;
         }
 
-        submitTransferTasks(movie.getId(), startedAt, transferNotes);
-        publishDiscoveries(task.getId(), transferNotes);
+        submitTransferTasks(movie.getId(), transferNotes);
+        publishMovieDiscoveries(movie.getId(), transferNotes);
     }
 
-    private void submitTransferTasks(String movieId, LocalDateTime startedAt, List<String> transferNotes) {
+    private void submitTransferTasks(String movieId, List<String> transferNotes) {
         if (!qqBotProperties.isAutoTransfer()) {
             return;
         }
         List<QuarkTransferTask> tasks = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
                 .eq("movie_id", movieId)
-                .ge("created_at", startedAt)
-                .in("status", List.of("PENDING", "FAILED"))
-                .orderByAsc("created_at")
+                .in("status", List.of("PENDING", "FAILED", "SUBMITTED"))
+                .orderByDesc("created_at")
                 .last("LIMIT " + safeMaxResults()));
         for (QuarkTransferTask task : tasks) {
             submitTransferTask(task, transferNotes);
@@ -207,9 +236,9 @@ public class QqBotServiceImpl implements IQqBotService {
         }
     }
 
-    private void publishDiscoveries(Long taskId, List<String> transferNotes) {
+    private void publishMovieDiscoveries(String movieId, List<String> transferNotes) {
         List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
-                .eq("task_id", taskId)
+                .eq("movie_id", movieId)
                 .eq("status", "DISCOVERED")
                 .orderByDesc("confidence")
                 .orderByAsc("created_at")
@@ -242,21 +271,97 @@ public class QqBotServiceImpl implements IQqBotService {
                 .orElse(null);
     }
 
-    private MovieMetadata createPlaceholderMovie(String keyword) {
-        String id = "qq_" + ResourceHubHashUtils.sha256(keyword).substring(0, 20);
-        MovieMetadata existing = movieService.getById(id);
-        if (existing != null) {
-            return existing;
+    private MovieMetadata syncMovieMetadata(String keyword) {
+        try {
+            return tmdbMetadataSyncService.syncBestByKeyword(keyword);
+        } catch (Exception e) {
+            log.warn("TMDB metadata sync failed for QQ keyword {}", keyword, e);
+            return null;
         }
-        MovieMetadata movie = new MovieMetadata();
-        movie.setId(id);
-        movie.setTitleCn(keyword);
-        movie.setCategory("mv");
-        movie.setStatus("ACTIVE");
-        movie.setResourceStatus("UNKNOWN");
-        movie.setPopularity(0);
-        movieService.save(movie);
-        return movie;
+    }
+
+    private boolean needsMetadataSync(MovieMetadata movie) {
+        if (movie == null) {
+            return true;
+        }
+        if (hasText(movie.getId()) && movie.getId().startsWith("qq_")) {
+            return true;
+        }
+        return movie.getTmdbId() == null
+                && !hasText(movie.getSummary())
+                && (movie.getGenres() == null || movie.getGenres().isEmpty())
+                && (movie.getRegions() == null || movie.getRegions().isEmpty());
+    }
+
+    private boolean isUpcoming(MovieMetadata movie) {
+        if (movie == null) {
+            return false;
+        }
+        LocalDate releaseDate = firstReleaseDate(movie.getReleaseDates());
+        if (releaseDate != null) {
+            return releaseDate.isAfter(LocalDate.now());
+        }
+        return movie.getYear() != null && movie.getYear() > LocalDate.now().getYear();
+    }
+
+    private LocalDate firstReleaseDate(String releaseDates) {
+        if (!hasText(releaseDates)) {
+            return null;
+        }
+        for (String part : releaseDates.split("[,/;|\\s]+")) {
+            String value = part.trim();
+            if (value.length() >= 10) {
+                try {
+                    return LocalDate.parse(value.substring(0, 10));
+                } catch (DateTimeParseException ignored) {
+                    // Try the next date token.
+                }
+            }
+        }
+        return null;
+    }
+
+    private void markTrailer(MovieMetadata movie) {
+        if (movie != null && !"TRAILER".equalsIgnoreCase(movie.getResourceStatus())) {
+            movie.setResourceStatus("TRAILER");
+            movie.setUpdatedAt(LocalDateTime.now());
+            movieService.updateById(movie);
+        }
+    }
+
+    private String buildUpcomingReply(MovieMetadata movie) {
+        StringBuilder reply = new StringBuilder();
+        reply.append("片名：").append(title(movie));
+        if (movie.getYear() != null) {
+            reply.append(" (").append(movie.getYear()).append(")");
+        }
+        appendLine(reply, "类型", join(movie.getGenres()));
+        appendLine(reply, "地区", join(movie.getRegions()));
+        appendLine(reply, "评分", rating(movie));
+        appendLine(reply, "简介", trim(movie.getSummary(), 180));
+        reply.append("\n\n影片尚未上映或流媒体资源未发布，暂不进行网盘搜索。");
+        return reply.toString();
+    }
+
+    private boolean allowSearch(String userKey) {
+        int limit = qqBotProperties.getRateLimitPerMinute();
+        if (limit <= 0) {
+            return true;
+        }
+        String key = hasText(userKey) ? userKey.trim() : "anonymous";
+        Instant now = Instant.now();
+        Instant windowStart = now.minusSeconds(60);
+        Deque<Instant> hits = searchRateLimits.computeIfAbsent(key, ignored -> new ArrayDeque<>());
+        synchronized (hits) {
+            while (!hits.isEmpty() && hits.peekFirst().isBefore(windowStart)) {
+                hits.removeFirst();
+            }
+            if (hits.size() >= limit) {
+                return false;
+            }
+            hits.addLast(now);
+            return true;
+        }
     }
 
     private int scoreMovie(MovieMetadata movie, String keyword) {

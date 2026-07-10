@@ -120,6 +120,8 @@ Set these variables when enabling the group bot:
 - `QQ_BOT_ALLOWED_GROUPS` (comma-separated group IDs; use `2166070253` for the current group)
 - `QQ_BOT_COMMAND_PREFIXES` (default `找,搜,/movie,/search`)
 - `QQ_BOT_MAX_RESULTS` (default `3`)
+- `QQ_BOT_MIN_KEYWORD_LENGTH` (default `2`)
+- `QQ_BOT_RATE_LIMIT_PER_MINUTE` (default `5`; set `0` to disable backend rate limiting)
 - `QQ_BOT_AUTO_TRANSFER` (default `true`)
 - `QQ_BOT_REPLY_PROVIDER` (`napcat` or `qqbot`; default `napcat`)
 - `QQ_BOT_NAPCAT_BASE_URL`

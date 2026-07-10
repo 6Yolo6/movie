@@ -44,13 +44,14 @@ public class QqBotController {
     @GetMapping("/search-reply")
     public Map<String, Object> searchReply(
             @RequestParam("keyword") String keyword,
+            @RequestParam(value = "userKey", required = false) String userKey,
             @RequestHeader(value = "Authorization", required = false) String authorization,
             @RequestHeader(value = "X-QQ-Bot-Token", required = false) String headerToken,
             @RequestParam(value = "token", required = false) String queryToken) {
         requireWebhookToken(authorization, headerToken, queryToken);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
-        result.put("reply", qqBotService.buildSearchReply(keyword));
+        result.put("reply", qqBotService.buildSearchReply(keyword, userKey));
         return result;
     }
 

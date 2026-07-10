@@ -40,6 +40,9 @@ function runGyingMovieSearch(ctx, keyword) {
     }
     const url = new URL(searchUrl);
     url.searchParams.set("keyword", safeKeyword);
+    if (ctx.senderId) {
+        url.searchParams.set("userKey", String(ctx.senderId));
+    }
     const headers = {};
     if (searchToken) {
         headers.Authorization = `Bearer ${searchToken}`;
@@ -74,6 +77,11 @@ function extractGyingTextCommand(content) {
 }
 '@
     $content = $content -replace "function registerCommand\(cmd\) \{\r?\n    commands\.set\(cmd\.name\.toLowerCase\(\), cmd\);\r?\n\}", "function registerCommand(cmd) {`n    commands.set(cmd.name.toLowerCase(), cmd);`n}`n$helper"
+}
+
+if ($content -notmatch 'url\.searchParams\.set\("userKey", String\(ctx\.senderId\)\);') {
+    $content = $content -replace 'url\.searchParams\.set\("keyword", safeKeyword\);',
+            "url.searchParams.set(`"keyword`", safeKeyword);`n    if (ctx.senderId) {`n        url.searchParams.set(`"userKey`", String(ctx.senderId));`n    }"
 }
 
 if ($content -notmatch 'name: "movie"') {

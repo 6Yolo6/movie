@@ -11,6 +11,8 @@ public class QqBotProperties {
     private String allowedGroups;
     private String commandPrefixes = "找,搜,/movie,/search";
     private int maxResults = 3;
+    private int minKeywordLength = 2;
+    private int rateLimitPerMinute = 5;
     private boolean autoTransfer = true;
     private String replyProvider = "napcat";
     private Napcat napcat = new Napcat();
