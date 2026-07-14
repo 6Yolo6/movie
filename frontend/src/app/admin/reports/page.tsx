@@ -118,6 +118,17 @@ export default function ResourceReportsPage() {
             ) : '-',
         },
         {
+            title: t('resourceURL'),
+            dataIndex: 'url',
+            key: 'url',
+            ellipsis: true,
+            render: (value: string) => value ? (
+                <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    {value}
+                </a>
+            ) : '-',
+        },
+        {
             title: t('resourceNameColumn'),
             dataIndex: 'resourceName',
             key: 'resourceName',
