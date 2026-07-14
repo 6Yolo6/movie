@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-07-10
+更新时间：2026-07-14
 
 ## 当前项目目标
 
@@ -60,30 +60,66 @@
 - QQ 群搜索已加入后端兜底限制：默认每个用户每分钟 5 次，默认搜索词至少 2 个字。
 - QQ 群搜索已支持敏感词拦截，可通过 `QQ_BOT_BLOCKED_KEYWORDS` 配置。
 - PanSou 发现结果已增加标题相关性过滤，避免“复仇者联盟5”命中“乐高复仇者联盟：红色代码”这类弱匹配资源。
-- QQ 群返回资源前会处理疑似/已失效链接：通过 PanSou `/api/check/links` 检测；确认为失效的 Resource Hub 夸克分享会尝试重新创建分享；重新分享后仍失效则标记为 `INVALID` 并记录为疑似违规，后续不再重复重分享。
+- QQ 群返回资源前会处理疑似/已失效链接：通过 PanSou `/api/check/links` 检测；确认为失效的 Resource Hub 夸克分享会先检查夸克保存目录，再尝试重新创建分享；空目录、重分享失败或重分享后仍失效时会触发重新搜索该影片、重新转存并重新发布。
+- QQ 机器人现在不会再因为数据库 `link_status=NORMAL` 就直接回复：Resource Hub 夸克链接每次回复前都会调用 PanSou 实时验链；有转存目录时还会通过夸克 API 确认目录非空。
+- 链接首次无法确认会标记 `SUSPECTED_INVALID`；疑似链接再次无法确认时会改为 `INACTIVE/INVALID`，关联转存任务和发现结果改为 `FAILED`，释放“已有任务/重复发现”拦截并立即重新搜索。
+- `QuarkShareService` 已统一增加空目录保护；空目录、分享任务无 `share_id` 等分享失败会把任务/发现置为 `FAILED`，后续成功重试会恢复发现为 `DISCOVERED` 再发布。
+- 重新搜索发布时会优先按同影片同源 URL 更新原 resource_link；源 URL 变化时也会优先复活该影片的失效 Resource Hub 夸克行，避免新增重复链接。
+- 2026-07-14 真实验证“穿普拉达的女王2”：原资源 `1581` 从 `ACTIVE/SUSPECTED_INVALID` 变为 `INACTIVE/INVALID`，转存任务 `28` 与发现 `53` 变为 `FAILED`，自动新建搜索任务；PanSou 本次无可用结果，因此机器人没有继续回复旧失效链接。后台同时确认该保存目录为 `EMPTY`。
+- 2026-07-14 真实验证正常资源“炒翻天”：经过 PanSou 实时验链和保存目录检查后仍正常返回夸克链接。
+- 后台 Resource Hub 已新增失效资源检测列表，可查看待修复资源、关联影片、转存任务、夸克保存目录是否为空、上次检测错误和下一步动作。
+- “检测失效资源”按钮现在会主动调用 PanSou `/api/check/links` 批量检测当前 Resource Hub 夸克链接，而不是只看数据库里的 `link_status`；检测结果会写回 `link_status`、`validated_at` 和 `last_check_error`。
+- 后台“检测并重新分享失效资源”已改成后台 job：点击后立即返回 `jobId`，前端轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`，避免 nginx 504；任务结果包含 checked/restored/reshared/rediscovered/invalid/skipped/errors。
+- 后台“手动搜索资源”已改成后台 job：`runNow=true` 时 `/api/admin/resource-hub/discover` 立即返回 `jobId`，前端轮询 `/api/admin/resource-hub/discover/jobs/{jobId}`，避免 PanSou/转存/发布流水线执行时间超过 nginx 读超时。
+- 详情页服务端取数已区分浏览器 API 和容器内 API：Next.js 服务端使用 `INTERNAL_API_URL=http://backend:8880`，浏览器继续经 nginx `/api`，修复 `/movie/{id}?_rsc=...` 返回 Service Unavailable 的问题。
+- 后台已新增 `/admin/automation` 页面：
+  - 可监控 QQ 群机器人搜索记录、状态、命中影片和资源数。
+  - 可配置 QQ 群机器人最小搜索词、限流、回复资源数和敏感词。
+  - 可配置腾讯频道自动发帖开关、发帖间隔、每次条数、候选数量和频道版块 ID。
+  - 可查看腾讯频道发帖记录、发帖状态和失败原因。
+- `/admin/automation` 已改为按每日定时发布时间、每日发布总条数、每条间隔秒数和发布模板来配置腾讯频道自动发帖；频道号、电影版块 ID 和电视剧版块 ID 默认从环境变量或当前已知 ID 回填。
+- 腾讯频道发布模板历史 mojibake 配置已清洗；当前默认模板为“标题/链接/简介”，后端读取到旧乱码值时会自动修正。
+- Resource Hub 发现结果列表已新增“发到QQ频道”手动发帖入口：后端会先确保发现结果已发布为 `resource_link`，再写入 `qq_channel_post_log.status=PENDING`；主机轮询脚本优先处理 PENDING 手动请求。
+- 旧的隐藏 PowerShell 轮询进程已停止，避免与 Windows 计划任务并发调用 CLI；发帖脚本新增全局互斥锁，即使计划任务重叠或手动执行也只允许一个实例运行。
+- 腾讯频道自动发帖失败的根因已定位为 `QQ_CHANNEL_GUILD_ID` / `qq.channel.guild_id` 误填了“全部”版块 ID `736090076`，真实频道 ID 是 `86486581783412489`；`.env` 和 live `sys_config` 已修正，脚本也会对旧误填值自动兜底。
+- 腾讯频道发帖脚本已改为优先调用 `tencent-channel-cli.cmd`，并把 CLI stdout/stderr 写入失败信息；后续如果再失败，`qq_channel_post_log.error_message` 会保留真实 CLI 错误，而不是只有 exit code。
+- 腾讯频道正文改为 UTF-8 临时 `content-file`，避开 Windows `.cmd` 对多行参数的截断；标题、链接、简介之间固定保留空行，资源链接以内联可点击语法写入正文。
+- 腾讯频道发帖已支持影片海报：从 `movie_metadata.poster_url` 读取 MinIO 对象键，按 `MINIO_URL_PREFIX` 下载临时图片并通过 CLI `--image` 上传；图片下载失败时降级为无图帖子。
+- 发帖配置改用 `HEX(config_value)` 读取并按 UTF-8 解码，避免多行模板被 mysql batch 输出拆行。参数捕获测试已确认正文含链接和段落空行，并传入海报图片。
+- Resource Hub 批量按钮已明确语义：待入库发布只统计 `DISCOVERED` 且已有 `share_url`、尚未绑定 `resource_link` 的发现结果；发布接口会写入或更新 `resource_link`，同影片同链接不再重复新增资源。
+- Resource Hub 前端流水线按钮会显示实际结果数量：Worker 处理任务数、转存提交数、发布新增/更新数、跳过和失败数，避免只显示“操作成功”但看不出为什么统计未变化。
+- 2026-07-14 已重建 `backend`、`frontend` 和 `nginx` 并用真实管理员接口验证：待入库发布从错误的 41 条修正为 3 条；发布 1 条后新增 `resource_link.id=1625`，`DISCOVERED` 从 25 降到 24，待入库从 3 降到 2。
+- 转存按钮已改为优先处理真正的 `PENDING`，再补做旧 `SUBMITTED` 分享重试；真实处理 1 条后待转存从 11 降到 10、提交 1、失败 0，并新增一条待入库分享结果。
+- 已新增 `qq_bot_search_log` 与 `qq_channel_post_log` 两张记录表，字段和表注释已补为中文；核心历史表字段注释也已通过数据库 MCP 改为中文。
 - 已用后端真实接口验证：
   - `人` 会被最小搜索词长度拦截。
   - `复仇者联盟5` 会补全 TMDB 元数据并标记未上映/未发布，不触发网盘搜索。
   - `气体人第一号` 可复用历史 pending 转存任务，创建自己的夸克分享并发布到 `resource_link` 后返回资源链接。
   - 同一 `userKey` 第 6 次/分钟搜索会被后端限流。
 - 腾讯频道 CLI 已重新扫码授权，`login status` 显示凭证有效且服务连通正常。
-- 腾讯频道版块 ID 已确认：电影 `736142774`，电视剧 `736142775`，全部 `736090076`。
+- 腾讯频道 ID 已确认：频道 `86486581783412489`，电影版块 `736142774`，电视剧版块 `736142775`，全部版块 `736090076`。
+- 2026-07-14 已用管理员权限真实执行自动发帖脚本，`qq_channel_post_log.id=15` 从 PENDING 变为 POSTED，`posted_at=2026-07-14 10:45:11`，CLI 返回成功；候选查询现只发送 `link_status=NORMAL` 的资源。
+- 2026-07-14 已通过腾讯频道 CLI 回读最新帖子：14:16 发布的“你会心碎”正文为完整中文，标题、链接、简介分段正常，并带有海报图片，确认 UTF-8 `content-file` 和图片上传链路已经生效。
+- Resource Hub 标题相关性判断已抽成统一规则，发现、发布入库和手动排队发频道都会校验资源标题与影片标题/原名/剧集名/别名，简介里的偶然同词不再算作标题命中。
+- 后台 Resource Hub 已新增“扫描标题污染资源 / 执行污染软清理”入口，对不匹配记录使用 `resource_link.status=DELETED`、`deleted_at`、`link_status=INVALID`，并将关联发现置为 `IGNORED`、转存置为 `CANCELED`，不物理删除历史。
+- 2026-07-14 真实 dry-run 识别出 28 条历史污染资源，包含“痴迷→冬去春来”“鬼上车→南部档案/香港探秘地图”“航海王→007/短剧合辑”“深水→瑞克和莫蒂”“你会心碎→日期合辑”等；复核后已全部软清理，正常的别名和季名资源未受影响。
+- QQ 群影片查询已改成“精确命中才进入资源链路”：本地模糊结果只作为候选提示，TMDB 同步结果也必须与中文名、原名、剧集名或单个别名完全匹配。真实验证“福尔摩斯”返回 `AMBIGUOUS` 和“福尔摩斯小姐3”候选、资源数为 0；完整搜索“福尔摩斯小姐3”仍正常返回 4 条资源。
 
 ## 未结束任务
 
 - QQ 群机器人后续可把当前脚本补丁升级为私有 OpenClaw 插件或上游配置，减少对 `node_modules` 补丁的依赖。
 - 用真实未入库且已上映影片再测一次“TMDB 补元数据 -> PanSou 搜索 -> 转存 -> 分享 -> 入库 -> 回发”的完整链路。
-- 腾讯频道自动资源帖还需要接入业务自动化：
-  - 跑一次真实自动发布验证。
-  - 把 `tools/publish-latest-resource-to-qq-channel.ps1` 接入 Windows Task Scheduler 或其他调度器。
-  - 当前仍以 `tencent-channel-cli` / 腾讯频道 community skill 作为“版块帖子”发布路径；OpenClaw QQBot 先用于对话和主动消息，后续若确认可稳定发布频道版块帖，再评估替换。
+- 腾讯频道自动资源帖还需要管理员重新启用计划任务：
+  - 当前 Windows 任务 `GYing QQ Channel Auto Post` 已注册但状态为 `Disabled`，普通权限无法启用。
+  - 用管理员 PowerShell 重新运行 `tools/register-qq-channel-auto-post-task.ps1`；脚本现会在创建后显式执行 `/ENABLE`，失败会直接报错。
+  - 启用后观察下一次定时是否继续写入 `qq_channel_post_log.status=POSTED`；失败时直接查看记录中的 CLI 原始错误。
 - OpenClaw QQBot 还需要补充真实群聊验证记录：
   - 用户已验证 `/bot-ping` 和 `搜 影片` 都可回复。
   - 如后续仍要做主动消息，需要捕获 QQ Bot 使用的 `GROUP_OPENID`，因为 OpenClaw 主动消息 target 使用 openid，不直接使用普通 QQ 群号。
   - 评估是否让 OpenClaw 直接接业务 Agent，或仅作为官方 QQ Bot 消息入口，把资源查询转发到后端接口。
 - 历史数据还需要持续清理：
   - 合并 TMDB 采集生成的重复影视条目。
-  - 清理早期 QQ 群搜索临时创建的 `qq_<hash>` 占位影片及误转存资源，例如未上映影片被弱匹配资源污染的记录。
+  - 继续清理早期 QQ 群搜索临时创建的 `qq_<hash>` 占位影片；本轮已清理 28 条“资源名与影片标题不匹配”的误转存链，但占位影片自身标题被错误元数据覆盖的情况仍需按原搜索词单独核验。
   - 迁移或归并重复条目的资源、任务和发现结果。
   - 不直接删除历史数据，优先软停用或迁移到 canonical 影片。
 - 豆瓣评分暂未接入，当前没有可靠公开官方 API；不要依赖非官方接口作为稳定生产能力。
@@ -96,9 +132,12 @@
 - 自动采集资源必须创建“我的夸克分享链接”后再发布，避免把第三方原始链接直接暴露为本站资源。
 - QQ 群查询优先读取 `resource_link`；库内已有可用链接时直接回复，不再对已有链接重复转存。只有库内无可用链接时才调用 PanSou 外部搜索并进入转存、分享、发布流程。
 - QQ 群库外搜索必须先有可信影视元数据：优先 TMDB 补全，不再只用用户输入创建空字段占位影片。
+- QQ 群本地模糊匹配只能用于候选提示，不能直接选片；只有片名、原名、剧集名或独立别名与用户关键词完全匹配时，才允许验链、外部搜索、转存和回复资源。
 - QQ 群后端要保留独立限流，即使 QQ 群本身已做发言限制，也不能把外部搜索、转存、分享入口完全暴露给高频请求。
 - QQ 群敏感词由环境变量配置，不写死在代码里；命中后不进入 TMDB、PanSou 或转存链路。
-- 失效链接处理优先复用已有转存任务和保存路径重新分享，不重新转存已有资源；重新分享后仍被 PanSou 检测为失效时视为可能违规，停止重复尝试。
+- 失效链接处理优先复用已有转存任务和保存路径重新分享；如果保存目录为空、无法创建分享、Quark share task 没有返回 `share_id`，或重新分享后仍被 PanSou 检测为失效，则触发重新搜索该影片并创建新的转存/分享链路。
+- 失效资源重新搜索成功发布出新 Resource Hub 夸克链接时，会把新链接回写到原失效 `resource_link`，再软删除新产生的重复资源行，避免影片详情页继续引用旧失效链接。
+- 后端容器和 JVM 必须固定北京时间：compose 里设置 `TZ=Asia/Shanghai`，`JAVA_OPTS` 里设置 `-Duser.timezone=Asia/Shanghai`；`application.yml` 和 `application-prod.yml` 的 JDBC 默认时区也统一为 `Asia/Shanghai`。live MySQL `NOW()` 与 `UTC_TIMESTAMP()` 当前相差 8 小时，说明数据库侧是北京时间，历史数据时间偏差主要来自旧后端容器/JVM 默认 UTC。
 - QQ 群入站仍可继续用 NapCat/OneBot 监听，出站回复可配置为 NapCat 或官方 QQBot；官方 QQBot 出站必须使用 `GROUP_OPENID`，不能使用普通 QQ 群号。
 - `movie_metadata.id` 仍兼容原爬虫片库 ID；TMDB 新数据使用合成 ID。后续如要引入自增主键，需要单独设计迁移，不能直接改现有主键。
 - 热度语义拆分：
