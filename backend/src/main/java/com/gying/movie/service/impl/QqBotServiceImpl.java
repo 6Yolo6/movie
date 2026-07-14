@@ -14,11 +14,13 @@ import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.QqBotSearchLog;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQqBotService;
+import com.gying.movie.service.IQqBotSearchLogService;
 import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
@@ -27,6 +29,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
+import com.gying.movie.utils.MovieTitleMatcher;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,6 +67,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
+    private final IQqBotSearchLogService qqBotSearchLogService;
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
 
     public QqBotServiceImpl(
@@ -80,7 +84,8 @@ public class QqBotServiceImpl implements IQqBotService {
             IQuarkTransferTaskService quarkTransferTaskService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
-            ITmdbMetadataSyncService tmdbMetadataSyncService) {
+            ITmdbMetadataSyncService tmdbMetadataSyncService,
+            IQqBotSearchLogService qqBotSearchLogService) {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
@@ -95,6 +100,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
+        this.qqBotSearchLogService = qqBotSearchLogService;
     }
 
     @Override
@@ -139,31 +145,45 @@ public class QqBotServiceImpl implements IQqBotService {
     public String buildSearchReply(String keyword, String userKey) {
         String safeKeyword = trim(keyword, 80);
         if (!hasText(safeKeyword)) {
-            return "请输入要搜索的影片名称。";
+            return finishSearch(userKey, safeKeyword, "REJECTED", null, 0, "请输入要搜索的影片名称。", "empty keyword");
         }
         if (safeKeyword.length() < Math.max(qqBotProperties.getMinKeywordLength(), 1)) {
-            return "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。";
+            return finishSearch(userKey, safeKeyword, "REJECTED", null, 0,
+                    "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。",
+                    "keyword too short");
         }
         String blockedWord = firstBlockedKeyword(safeKeyword);
         if (hasText(blockedWord)) {
             log.info("QQ bot search blocked by sensitive keyword: {}", blockedWord);
-            return "搜索词包含不支持的内容，请更换关键词。";
+            return finishSearch(userKey, safeKeyword, "BLOCKED", null, 0,
+                    "搜索词包含不支持的内容，请更换关键词。", "blocked keyword: " + blockedWord);
         }
         if (!allowSearch(userKey)) {
-            return "搜索太频繁，请稍后再试。";
+            return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
+                    "搜索太频繁，请稍后再试。", "rate limited");
         }
-        MovieMetadata movie = findBestMovie(safeKeyword);
+        List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
+        MovieMetadata movie = localCandidates.stream()
+                .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
+                .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
+                .orElse(null);
         if (movie == null || needsMetadataSync(movie)) {
             MovieMetadata syncedMovie = syncMovieMetadata(safeKeyword);
-            if (syncedMovie != null) {
+            if (MovieTitleMatcher.isExactMatch(syncedMovie, safeKeyword)) {
                 movie = syncedMovie;
             } else if (movie == null || needsMetadataSync(movie)) {
-                return "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。";
+                if (!localCandidates.isEmpty()) {
+                    return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                            buildCandidateReply(safeKeyword, localCandidates), "fuzzy candidates require confirmation");
+                }
+                return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                        "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。",
+                        "no credible metadata");
             }
         }
         if (isUpcoming(movie)) {
             markTrailer(movie);
-            return buildUpcomingReply(movie);
+            return finishSearch(userKey, safeKeyword, "TRAILER", movie.getId(), 0, buildUpcomingReply(movie), null);
         }
 
         List<ResourceLink> links = loadResources(movie.getId());
@@ -172,7 +192,33 @@ public class QqBotServiceImpl implements IQqBotService {
             runDiscoveryPipeline(movie, safeKeyword, transferNotes);
             links = loadResources(movie.getId());
         }
-        return buildReply(movie, links);
+        return finishSearch(userKey, safeKeyword, links.isEmpty() ? "NO_RESOURCE" : "SUCCEEDED",
+                movie.getId(), links.size(), buildReply(movie, links), links.isEmpty() ? "no resource link" : null);
+    }
+
+    private String finishSearch(
+            String userKey,
+            String keyword,
+            String status,
+            String movieId,
+            int resourceCount,
+            String reply,
+            String failureReason) {
+        try {
+            QqBotSearchLog item = new QqBotSearchLog();
+            item.setUserKey(trim(firstText(userKey, "anonymous"), 100));
+            item.setKeyword(trim(keyword, 255));
+            item.setStatus(trim(status, 40));
+            item.setMovieId(trim(movieId, 100));
+            item.setResourceCount(resourceCount);
+            item.setReplyPreview(trim(reply, 1000));
+            item.setFailureReason(trim(failureReason, 1000));
+            item.setCreatedAt(LocalDateTime.now());
+            qqBotSearchLogService.save(item);
+        } catch (Exception e) {
+            log.warn("Failed to save QQ bot search log for keyword {}", keyword, e);
+        }
+        return reply;
     }
 
     private void runDiscoveryPipeline(MovieMetadata movie, String keyword, List<String> transferNotes) {
@@ -266,7 +312,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
     }
 
-    private MovieMetadata findBestMovie(String keyword) {
+    private List<MovieMetadata> findMovieCandidates(String keyword) {
         List<MovieMetadata> candidates = movieService.list(new QueryWrapper<MovieMetadata>()
                 .eq("status", "ACTIVE")
                 .and(query -> query.like("title_cn", keyword)
@@ -278,8 +324,8 @@ public class QqBotServiceImpl implements IQqBotService {
                 .orderByDesc("created_at")
                 .last("LIMIT 8"));
         return candidates.stream()
-                .max(Comparator.comparingInt(movie -> scoreMovie(movie, keyword)))
-                .orElse(null);
+                .sorted(Comparator.comparingInt((MovieMetadata movie) -> scoreMovie(movie, keyword)).reversed())
+                .toList();
     }
 
     private MovieMetadata syncMovieMetadata(String keyword) {
@@ -354,6 +400,24 @@ public class QqBotServiceImpl implements IQqBotService {
         return reply.toString();
     }
 
+    private String buildCandidateReply(String keyword, List<MovieMetadata> candidates) {
+        StringBuilder reply = new StringBuilder();
+        reply.append("没有找到与“").append(keyword).append("”完全匹配的影片。");
+        reply.append("\n数据库中有这些相近片名：");
+        int count = 0;
+        for (MovieMetadata candidate : candidates) {
+            if (count >= 5) {
+                break;
+            }
+            reply.append("\n").append(++count).append(". ").append(title(candidate));
+            if (candidate.getYear() != null) {
+                reply.append(" (").append(candidate.getYear()).append(")");
+            }
+        }
+        reply.append("\n\n请发送完整片名后再搜索。");
+        return reply.toString();
+    }
+
     private boolean allowSearch(String userKey) {
         int limit = qqBotProperties.getRateLimitPerMinute();
         if (limit <= 0) {
@@ -425,50 +489,110 @@ public class QqBotServiceImpl implements IQqBotService {
         if (link == null || !hasText(link.getUrl())) {
             return null;
         }
-        if (isNormalLink(link)) {
-            return link;
-        }
         if (isPermanentInvalid(link)) {
             return null;
         }
+        if (!requiresLiveValidation(link)) {
+            return isNormalLink(link) ? link : null;
+        }
+
         LinkCheckResult currentCheck = checkLink(link.getUrl());
         if (currentCheck.checked() && currentCheck.valid()) {
-            markLinkNormal(link);
-            return link;
+            try {
+                verifySavedFolder(link);
+                markLinkNormal(link);
+                return link;
+            } catch (Exception e) {
+                String reason = "Saved Quark folder is unusable: " + safeError(e.getMessage());
+                markLinkInvalid(link, reason);
+                retireTransferForRediscovery(link, reason);
+                return null;
+            }
         }
         if (!currentCheck.checked()) {
-            markLinkSuspected(link, "Unable to verify invalid share link: " + safeError(currentCheck.message()));
+            String reason = "Unable to verify share link: " + safeError(currentCheck.message());
+            if ("SUSPECTED_INVALID".equalsIgnoreCase(link.getLinkStatus())) {
+                markLinkInvalid(link, "Repeated link verification failure: " + safeError(currentCheck.message()));
+                retireTransferForRediscovery(link, reason);
+            } else {
+                markLinkSuspected(link, reason);
+            }
             return null;
         }
         if (!canRefreshShare(link)) {
             markLinkInvalid(link, firstText(currentCheck.message(), "Link is invalid and cannot be refreshed"));
             return null;
         }
+
         ResourceLink refreshed;
         try {
             refreshed = refreshShareLink(link);
         } catch (Exception e) {
             log.warn("Failed to refresh invalid resource link {}", link.getId(), e);
-            markLinkSuspected(link, "Share refresh failed: " + safeError(e.getMessage()));
+            String reason = "Share refresh failed: " + safeError(e.getMessage());
+            markLinkInvalid(link, reason);
+            retireTransferForRediscovery(link, reason);
             return null;
         }
         if (refreshed == null || !hasText(refreshed.getUrl())) {
-            markLinkInvalid(link, "Unable to refresh invalid share link");
+            String reason = "Unable to refresh invalid share link";
+            markLinkInvalid(link, reason);
+            retireTransferForRediscovery(link, reason);
             return null;
         }
         LinkCheckResult refreshedCheck = checkLink(refreshed.getUrl());
         if (refreshedCheck.checked() && refreshedCheck.valid()) {
-            markLinkNormal(refreshed);
-            return refreshed;
+            try {
+                verifySavedFolder(refreshed);
+                markLinkNormal(refreshed);
+                return refreshed;
+            } catch (Exception e) {
+                String reason = "Refreshed saved folder is unusable: " + safeError(e.getMessage());
+                markLinkInvalid(refreshed, reason);
+                retireTransferForRediscovery(refreshed, reason);
+                return null;
+            }
         }
         if (!refreshedCheck.checked()) {
             markLinkSuspected(refreshed, "Unable to verify refreshed share link: " + safeError(refreshedCheck.message()));
             return null;
         }
         markLinkInvalid(refreshed, PERMANENT_LINK_INVALID_REASON);
+        retireTransferForRediscovery(refreshed, PERMANENT_LINK_INVALID_REASON);
         return null;
     }
 
+    private boolean requiresLiveValidation(ResourceLink link) {
+        return "QUARK".equalsIgnoreCase(link.getProvider())
+                || link.getUrl().toLowerCase().contains("pan.quark.cn/s/");
+    }
+
+    private void verifySavedFolder(ResourceLink link) {
+        QuarkTransferTask task = findTransferTask(link);
+        if (task == null || !"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
+            return;
+        }
+        quarkShareService.ensureShareUrl(task);
+    }
+
+    private void retireTransferForRediscovery(ResourceLink link, String reason) {
+        LocalDateTime now = LocalDateTime.now();
+        QuarkTransferTask task = findTransferTask(link);
+        if (task != null) {
+            task.setStatus("FAILED");
+            task.setLastError(trim(reason, 1000));
+            task.setFinishedAt(now);
+            task.setUpdatedAt(now);
+            quarkTransferTaskService.updateById(task);
+        }
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        if (discovery != null) {
+            discovery.setStatus("FAILED");
+            discovery.setFailureReason(trim(reason, 1000));
+            discovery.setUpdatedAt(now);
+            discoveryResultService.updateById(discovery);
+        }
+    }
     private LinkCheckResult checkLink(String url) {
         try {
             return panSouClient.checkLink(url);
@@ -556,6 +680,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void markLinkInvalid(ResourceLink link, String reason) {
+        link.setStatus("INACTIVE");
         link.setLinkStatus("INVALID");
         link.setValidatedAt(LocalDateTime.now());
         link.setLastCheckError(trim(reason, 1000));

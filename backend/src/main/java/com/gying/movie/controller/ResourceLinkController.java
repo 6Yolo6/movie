@@ -4,30 +4,51 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gying.movie.dto.AuthUser;
 import com.gying.movie.dto.ResourceAdminDTO;
+import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceSubmissionDTO;
+import com.gying.movie.client.PanSouClient;
+import com.gying.movie.client.PanSouClient.LinkCheckResult;
+import com.gying.movie.client.QuarkShareClient;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.ResourceReport;
 import com.gying.movie.entity.SysUser;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IQuarkShareService;
+import com.gying.movie.service.IQuarkTransferTaskService;
+import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IResourceDiscoveryService;
+import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.IResourceReportService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,6 +56,14 @@ import java.util.stream.Collectors;
 public class ResourceLinkController {
 
     private final IResourceLinkService resourceLinkService;
+    private final IResourceDiscoveryResultService discoveryResultService;
+    private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IQuarkShareService quarkShareService;
+    private final IResourceDiscoveryService resourceDiscoveryService;
+    private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IResourceHubPublishService resourceHubPublishService;
+    private final QuarkShareClient quarkShareClient;
+    private final PanSouClient panSouClient;
     private final IResourceReportService resourceReportService;
     private final ISysUserService sysUserService;
     private final ISysConfigService sysConfigService;
@@ -42,9 +71,24 @@ public class ResourceLinkController {
     private final IUserNotificationService notificationService;
     private final AuthHelper authHelper;
     private final StringRedisTemplate stringRedisTemplate;
+    private final ExecutorService repairInvalidExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "resource-invalid-repair");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private final Map<String, RepairInvalidJob> repairInvalidJobs = new ConcurrentHashMap<>();
+    private final AtomicBoolean repairInvalidRunning = new AtomicBoolean(false);
 
     public ResourceLinkController(
             IResourceLinkService resourceLinkService,
+            IResourceDiscoveryResultService discoveryResultService,
+            IQuarkTransferTaskService quarkTransferTaskService,
+            IQuarkShareService quarkShareService,
+            IResourceDiscoveryService resourceDiscoveryService,
+            IQuarkTransferRunnerService quarkTransferRunnerService,
+            IResourceHubPublishService resourceHubPublishService,
+            QuarkShareClient quarkShareClient,
+            PanSouClient panSouClient,
             IResourceReportService resourceReportService,
             ISysUserService sysUserService,
             ISysConfigService sysConfigService,
@@ -53,6 +97,14 @@ public class ResourceLinkController {
             AuthHelper authHelper,
             StringRedisTemplate stringRedisTemplate) {
         this.resourceLinkService = resourceLinkService;
+        this.discoveryResultService = discoveryResultService;
+        this.quarkTransferTaskService = quarkTransferTaskService;
+        this.quarkShareService = quarkShareService;
+        this.resourceDiscoveryService = resourceDiscoveryService;
+        this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.resourceHubPublishService = resourceHubPublishService;
+        this.quarkShareClient = quarkShareClient;
+        this.panSouClient = panSouClient;
         this.resourceReportService = resourceReportService;
         this.sysUserService = sysUserService;
         this.sysConfigService = sysConfigService;
@@ -60,6 +112,11 @@ public class ResourceLinkController {
         this.notificationService = notificationService;
         this.authHelper = authHelper;
         this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    @PreDestroy
+    public void shutdownRepairInvalidExecutor() {
+        repairInvalidExecutor.shutdownNow();
     }
 
     @PostMapping
@@ -284,6 +341,7 @@ public class ResourceLinkController {
             return ResponseEntity.status(403).body("Forbidden");
         }
         resource.setStatus("DELETED");
+        resource.setDeletedAt(LocalDateTime.now());
         resourceLinkService.updateById(resource);
         return ResponseEntity.ok("Resource deleted");
     }
@@ -398,6 +456,7 @@ public class ResourceLinkController {
             return ResponseEntity.status(404).body("Resource not found");
         }
         resource.setStatus("DELETED");
+        resource.setDeletedAt(LocalDateTime.now());
         resourceLinkService.updateById(resource);
         return ResponseEntity.ok("Resource deleted");
     }
@@ -411,10 +470,398 @@ public class ResourceLinkController {
             ResourceLink resource = resourceLinkService.getById(id);
             if (resource != null && !"DELETED".equals(resource.getStatus())) {
                 resource.setStatus("DELETED");
+                resource.setDeletedAt(LocalDateTime.now());
                 resourceLinkService.updateById(resource);
             }
         }
         return ResponseEntity.ok("Resources deleted: " + ids.size());
+    }
+
+    @PostMapping("/admin/repair-invalid")
+    public ResponseEntity<?> repairInvalidResources(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        RepairInvalidJob runningJob = findRunningRepairInvalidJob();
+        if (!repairInvalidRunning.compareAndSet(false, true)) {
+            return ResponseEntity.accepted().body(runningJob == null
+                    ? Map.of("status", "RUNNING")
+                    : runningJob.toResponse());
+        }
+        RepairInvalidJob job = new RepairInvalidJob(UUID.randomUUID().toString(), safeLimit);
+        repairInvalidJobs.put(job.jobId, job);
+        trimRepairInvalidJobs();
+        repairInvalidExecutor.submit(() -> runRepairInvalidJob(job));
+        return ResponseEntity.accepted().body(job.toResponse());
+    }
+
+    @GetMapping("/admin/repair-invalid/jobs/{jobId}")
+    public ResponseEntity<?> getRepairInvalidJob(
+            @PathVariable String jobId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        RepairInvalidJob job = repairInvalidJobs.get(jobId);
+        if (job == null) {
+            return ResponseEntity.status(404).body("Repair job not found");
+        }
+        return ResponseEntity.ok(job.toResponse());
+    }
+
+    private void runRepairInvalidJob(RepairInvalidJob job) {
+        try {
+            doRepairInvalidResources(job);
+            job.status = "SUCCEEDED";
+        } catch (Exception e) {
+            job.status = "FAILED";
+            job.errors.add("job: " + safeText(e.getMessage()));
+        } finally {
+            job.finishedAt = LocalDateTime.now();
+            repairInvalidRunning.set(false);
+        }
+    }
+
+    private void doRepairInvalidResources(RepairInvalidJob job) {
+        int safeLimit = job.limit;
+        List<ResourceLink> links = resourceLinkService.list(invalidRepairQuery(safeLimit));
+        for (ResourceLink link : links) {
+            job.checked++;
+            try {
+                if (!shouldForceRefresh(link)) {
+                    LinkCheckResult current = panSouClient.checkLink(link.getUrl());
+                    if (current.checked() && current.valid()) {
+                        markLinkNormal(link);
+                        job.restored++;
+                        continue;
+                    }
+                    if (!current.checked()) {
+                        markLinkSuspected(link, "Link check did not return a clear result: " + safeText(current.message()));
+                        job.skipped++;
+                        continue;
+                    }
+                }
+                ResourceLink refreshed = refreshShareLink(link);
+                if (refreshed == null || refreshed.getUrl() == null || refreshed.getUrl().isBlank()) {
+                    if (rediscoverResource(link, "Unable to recreate share link", job.errors)) {
+                        job.rediscovered++;
+                    } else {
+                        markLinkInvalid(link, "Unable to recreate share link");
+                        job.invalid++;
+                    }
+                    continue;
+                }
+                LinkCheckResult refreshedCheck = panSouClient.checkLink(refreshed.getUrl());
+                if (refreshedCheck.checked() && refreshedCheck.valid()) {
+                    markLinkNormal(refreshed);
+                    job.reshared++;
+                } else if (refreshedCheck.checked()) {
+                    if (rediscoverResource(refreshed, "Refreshed link is still invalid", job.errors)) {
+                        job.rediscovered++;
+                    } else {
+                        markLinkInvalid(refreshed, "Refreshed link is still invalid");
+                        job.invalid++;
+                    }
+                } else {
+                    markLinkSuspected(refreshed, "Unable to confirm refreshed link status: " + safeText(refreshedCheck.message()));
+                    job.skipped++;
+                }
+            } catch (Exception e) {
+                if (rediscoverResource(link, safeText(e.getMessage()), job.errors)) {
+                    job.rediscovered++;
+                } else {
+                    markLinkSuspected(link, "Repair failed: " + safeText(e.getMessage()));
+                    job.errors.add("resource " + link.getId() + ": " + safeText(e.getMessage()));
+                }
+            }
+        }
+    }
+
+    private RepairInvalidJob findRunningRepairInvalidJob() {
+        return repairInvalidJobs.values().stream()
+                .filter(job -> "RUNNING".equals(job.status))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void trimRepairInvalidJobs() {
+        if (repairInvalidJobs.size() <= 20) {
+            return;
+        }
+        repairInvalidJobs.values().stream()
+                .filter(job -> !"RUNNING".equals(job.status))
+                .sorted((left, right) -> right.startedAt.compareTo(left.startedAt))
+                .skip(20)
+                .map(job -> job.jobId)
+                .toList()
+                .forEach(repairInvalidJobs::remove);
+    }
+
+    private static class RepairInvalidJob {
+        private final String jobId;
+        private final int limit;
+        private final LocalDateTime startedAt = LocalDateTime.now();
+        private volatile LocalDateTime finishedAt;
+        private volatile String status = "RUNNING";
+        private volatile int checked;
+        private volatile int restored;
+        private volatile int reshared;
+        private volatile int rediscovered;
+        private volatile int invalid;
+        private volatile int skipped;
+        private final List<String> errors = Collections.synchronizedList(new ArrayList<>());
+
+        private RepairInvalidJob(String jobId, int limit) {
+            this.jobId = jobId;
+            this.limit = limit;
+        }
+
+        private Map<String, Object> toResponse() {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("jobId", jobId);
+            response.put("status", status);
+            response.put("limit", limit);
+            response.put("checked", checked);
+            response.put("restored", restored);
+            response.put("reshared", reshared);
+            response.put("rediscovered", rediscovered);
+            response.put("invalid", invalid);
+            response.put("skipped", skipped);
+            response.put("startedAt", startedAt);
+            response.put("finishedAt", finishedAt);
+            response.put("errors", new ArrayList<>(errors));
+            return response;
+        }
+    }
+
+    @GetMapping("/admin/invalid-checks")
+    public ResponseEntity<?> listInvalidResourceChecks(
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        List<Map<String, Object>> rows = resourceLinkService.list(invalidRepairQuery(safeLimit)).stream()
+                .map(this::toInvalidCheckRow)
+                .toList();
+        return ResponseEntity.ok(Map.of("records", rows, "total", rows.size()));
+    }
+
+    @PostMapping("/admin/invalid-checks/scan")
+    public ResponseEntity<?> scanInvalidResourceChecks(
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        int safeLimit = Math.min(Math.max(limit, 1), 200);
+        List<ResourceLink> links = resourceLinkService.list(invalidScanQuery(safeLimit));
+        Map<String, LinkCheckResult> checks = panSouClient.checkLinks(links.stream()
+                .map(ResourceLink::getUrl)
+                .filter(Objects::nonNull)
+                .toList());
+        int checked = 0;
+        int normal = 0;
+        int suspected = 0;
+        int unclear = 0;
+        for (ResourceLink link : links) {
+            LinkCheckResult check = checks.get(link.getUrl() == null ? null : link.getUrl().trim());
+            if (check == null) {
+                unclear++;
+                markLinkSuspected(link, "PanSou check did not return this link");
+                continue;
+            }
+            checked++;
+            if (check.checked() && check.valid()) {
+                markLinkNormal(link);
+                normal++;
+            } else if (check.checked()) {
+                markLinkSuspected(link, "PanSou detected invalid link: " + safeText(check.message()));
+                suspected++;
+            } else {
+                markLinkSuspected(link, "PanSou check unclear: " + safeText(check.message()));
+                unclear++;
+            }
+        }
+        List<Map<String, Object>> rows = resourceLinkService.list(invalidRepairQuery(safeLimit)).stream()
+                .map(this::toInvalidCheckRow)
+                .toList();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("checked", checked);
+        result.put("normal", normal);
+        result.put("suspected", suspected);
+        result.put("unclear", unclear);
+        result.put("records", rows);
+        result.put("total", rows.size());
+        return ResponseEntity.ok(result);
+    }
+
+    private QueryWrapper<ResourceLink> invalidRepairQuery(int limit) {
+        return new QueryWrapper<ResourceLink>()
+                .ne("status", "DELETED")
+                .isNull("deleted_at")
+                .eq("source", "RESOURCE_HUB")
+                .eq("provider", "QUARK")
+                .in("link_status", List.of("SUSPECTED_INVALID", "INVALID"))
+                .orderByDesc("validated_at")
+                .orderByDesc("created_at")
+                .last("LIMIT " + limit);
+    }
+
+    private QueryWrapper<ResourceLink> invalidScanQuery(int limit) {
+        return new QueryWrapper<ResourceLink>()
+                .ne("status", "DELETED")
+                .isNull("deleted_at")
+                .eq("source", "RESOURCE_HUB")
+                .eq("provider", "QUARK")
+                .isNotNull("url")
+                .orderByDesc("validated_at")
+                .orderByDesc("created_at")
+                .last("LIMIT " + limit);
+    }
+
+    private boolean shouldForceRefresh(ResourceLink link) {
+        return "INVALID".equalsIgnoreCase(link.getLinkStatus())
+                || "INACTIVE".equalsIgnoreCase(link.getStatus());
+    }
+
+    private Map<String, Object> toInvalidCheckRow(ResourceLink link) {
+        Map<String, Object> row = new java.util.LinkedHashMap<>();
+        MovieMetadata movie = movieService.getById(link.getMovieId());
+        QuarkTransferTask task = findTransferTask(link);
+        row.put("id", link.getId());
+        row.put("movieId", link.getMovieId());
+        row.put("movieTitle", firstText(movie == null ? null : movie.getTitleCn(),
+                movie == null ? null : movie.getTitleEn(), link.getName()));
+        row.put("status", link.getStatus());
+        row.put("linkStatus", link.getLinkStatus());
+        row.put("url", link.getUrl());
+        row.put("lastCheckError", link.getLastCheckError());
+        row.put("validatedAt", link.getValidatedAt());
+        row.put("transferStatus", task == null ? null : task.getStatus());
+        row.put("savedPath", task == null ? null : task.getSavedPath());
+        if (task == null || task.getSavedPath() == null || task.getSavedPath().isBlank()) {
+            row.put("folderState", "NO_SAVED_PATH");
+        } else {
+            try {
+                QuarkShareClient.FolderContentCheck check = quarkShareClient.checkFolderContent(task.getSavedPath());
+                row.put("folderState", check.hasContent() ? "HAS_CONTENT" : "EMPTY");
+                row.put("folderItemCount", check.itemCount());
+            } catch (Exception e) {
+                row.put("folderState", "CHECK_FAILED");
+                row.put("folderError", safeText(e.getMessage()));
+            }
+        }
+        row.put("nextAction", shouldForceRefresh(link) ? "RESHARE_OR_REDISCOVER" : "VERIFY_THEN_REPAIR");
+        return row;
+    }
+
+    private boolean rediscoverResource(ResourceLink link, String reason, List<String> errors) {
+        try {
+            LocalDateTime startedAt = LocalDateTime.now();
+            MovieMetadata movie = movieService.getById(link.getMovieId());
+            ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+            request.setMovieId(link.getMovieId());
+            request.setMovieTitle(firstText(movie == null ? null : movie.getTitleCn(),
+                    movie == null ? null : movie.getTitleEn(), link.getName(), link.getMovieId()));
+            request.setKeyword(request.getMovieTitle());
+            request.setSource("PANSOU");
+            request.setMaxResults(5);
+            request.setRefresh(true);
+            request.setRunNow(true);
+            ResourceHubTask task = resourceDiscoveryService.enqueue(request);
+            resourceDiscoveryService.runTask(task.getId());
+            List<QuarkTransferTask> transfers = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
+                    .eq("movie_id", link.getMovieId())
+                    .eq("status", "PENDING")
+                    .orderByDesc("created_at")
+                    .last("LIMIT 3"));
+            for (QuarkTransferTask transfer : transfers) {
+                quarkTransferRunnerService.submitOne(transfer.getId());
+            }
+            List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                    .eq("movie_id", link.getMovieId())
+                    .eq("status", "DISCOVERED")
+                    .isNotNull("share_url")
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 3"));
+            for (ResourceDiscoveryResult discovery : discoveries) {
+                resourceHubPublishService.publishDiscovery(discovery.getId());
+            }
+            if (!replaceInvalidLinkWithRediscoveredResource(link, startedAt)) {
+                markLinkSuspected(link, "Re-discovery triggered: " + safeText(reason));
+            }
+            return true;
+        } catch (Exception e) {
+            errors.add("resource " + link.getId() + " rediscover: " + safeText(e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean replaceInvalidLinkWithRediscoveredResource(ResourceLink original, LocalDateTime startedAt) {
+        if (original == null || original.getId() == null) {
+            return false;
+        }
+        ResourceLink replacement = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", original.getMovieId())
+                .eq("source", "RESOURCE_HUB")
+                .eq("provider", "QUARK")
+                .eq("status", "ACTIVE")
+                .eq("link_status", "NORMAL")
+                .ne("id", original.getId())
+                .and(w -> w.ge("created_at", startedAt).or().ge("updated_at", startedAt))
+                .orderByDesc("updated_at")
+                .orderByDesc("created_at")
+                .last("LIMIT 1"), false);
+        if (replacement == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        original.setName(firstText(replacement.getName(), original.getName()));
+        original.setType(replacement.getType());
+        original.setProvider(replacement.getProvider());
+        original.setUrl(replacement.getUrl());
+        original.setUrlHash(replacement.getUrlHash());
+        original.setCode(replacement.getCode());
+        original.setAuditStatus(replacement.getAuditStatus());
+        original.setStatus("ACTIVE");
+        original.setLinkStatus("NORMAL");
+        original.setSource(replacement.getSource());
+        original.setSourceRef(replacement.getSourceRef());
+        original.setSourceUrl(replacement.getSourceUrl());
+        original.setAutoCollected(replacement.getAutoCollected());
+        original.setValidatedAt(now);
+        original.setLastCheckError(null);
+        original.setQuality(replacement.getQuality());
+        original.setSubtitle(replacement.getSubtitle());
+        original.setFileSize(replacement.getFileSize());
+        original.setVersionNote(replacement.getVersionNote());
+        original.setRejectReason(null);
+        original.setDeletedAt(null);
+        original.setUpdatedAt(now);
+        resourceLinkService.updateById(original);
+
+        List<ResourceDiscoveryResult> replacementDiscoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("resource_link_id", replacement.getId()));
+        for (ResourceDiscoveryResult discovery : replacementDiscoveries) {
+            discovery.setResourceLinkId(original.getId());
+            discovery.setUpdatedAt(now);
+            discoveryResultService.updateById(discovery);
+        }
+        replacement.setStatus("DELETED");
+        replacement.setDeletedAt(now);
+        replacement.setUpdatedAt(now);
+        replacement.setLastCheckError("Merged into repaired resource link " + original.getId());
+        resourceLinkService.updateById(replacement);
+        return true;
+    }
+
+    private String firstText(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return null;
     }
 
     private void applyKeywordFilters(QueryWrapper<ResourceLink> query, String keyword) {
@@ -445,6 +892,96 @@ public class ResourceLinkController {
                 w.or().in("uploader_id", userIds);
             }
         });
+    }
+
+    private ResourceLink refreshShareLink(ResourceLink link) {
+        QuarkTransferTask task = findTransferTask(link);
+        if (task == null || task.getSavedPath() == null || task.getSavedPath().isBlank()) {
+            return null;
+        }
+        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
+        if (!contentCheck.hasContent()) {
+            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+        }
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        LocalDateTime now = LocalDateTime.now();
+        task.setStatus("SUBMITTED");
+        task.setShareUrl(null);
+        task.setShareUrlHash(null);
+        task.setLastError(null);
+        task.setUpdatedAt(now);
+        quarkTransferTaskService.updateById(task);
+        if (discovery != null) {
+            discovery.setShareUrl(null);
+            discovery.setShareUrlHash(null);
+            discovery.setUpdatedAt(now);
+            discoveryResultService.updateById(discovery);
+        }
+        String shareUrl = quarkShareService.ensureShareUrl(task);
+        if (shareUrl == null || shareUrl.isBlank()) {
+            return null;
+        }
+        return resourceLinkService.getById(link.getId());
+    }
+
+    private ResourceDiscoveryResult findDiscovery(ResourceLink link) {
+        if (link == null || link.getId() == null) {
+            return null;
+        }
+        return discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("resource_link_id", link.getId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+    }
+
+    private QuarkTransferTask findTransferTask(ResourceLink link) {
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        if (discovery != null && discovery.getId() != null) {
+            QuarkTransferTask byDiscovery = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byDiscovery != null) {
+                return byDiscovery;
+            }
+        }
+        if (link == null || link.getUrlHash() == null || link.getUrlHash().isBlank()) {
+            return null;
+        }
+        return quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", link.getMovieId())
+                .eq("share_url_hash", link.getUrlHash())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+    }
+
+    private void markLinkNormal(ResourceLink link) {
+        LocalDateTime now = LocalDateTime.now();
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
+        link.setValidatedAt(now);
+        link.setLastCheckError(null);
+        link.setUpdatedAt(now);
+        resourceLinkService.updateById(link);
+    }
+
+    private void markLinkInvalid(ResourceLink link, String reason) {
+        LocalDateTime now = LocalDateTime.now();
+        link.setStatus("INACTIVE");
+        link.setLinkStatus("INVALID");
+        link.setValidatedAt(now);
+        link.setLastCheckError(cleanOptional(reason, 1000));
+        link.setUpdatedAt(now);
+        resourceLinkService.updateById(link);
+    }
+
+    private void markLinkSuspected(ResourceLink link, String reason) {
+        LocalDateTime now = LocalDateTime.now();
+        link.setLinkStatus("SUSPECTED_INVALID");
+        link.setValidatedAt(now);
+        link.setLastCheckError(cleanOptional(reason, 1000));
+        link.setUpdatedAt(now);
+        resourceLinkService.updateById(link);
     }
 
     private Page<ResourceAdminDTO> toAdminPage(Page<ResourceLink> source) {
@@ -530,6 +1067,11 @@ public class ResourceLinkController {
             return null;
         }
         return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
+    private String safeText(String value) {
+        String cleaned = cleanOptional(value, 200);
+        return cleaned == null ? "未知错误" : cleaned;
     }
 
     private void notifyResourceAudit(ResourceLink resource, int auditStatus) {

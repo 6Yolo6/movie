@@ -79,4 +79,6 @@ public class MovieMetadata implements Serializable {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 }

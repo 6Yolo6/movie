@@ -6,7 +6,7 @@ import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, M
 import {
     BellOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
-    PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
+    NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -227,6 +227,11 @@ export default function Navbar() {
                 key: 'resourceHub',
                 label: <Link href="/admin/resource-hub" onClick={closeDrawer}>Resource Hub</Link>,
                 icon: <CloudSyncOutlined />,
+            },
+            {
+                key: 'automation',
+                label: <Link href="/admin/automation" onClick={closeDrawer}>{t('qqAutomationMenu')}</Link>,
+                icon: <NotificationOutlined />,
             },
             {
                 key: 'comments',

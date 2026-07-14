@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
@@ -13,6 +14,7 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.ResourceTitleMatcher;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -66,8 +68,10 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(
                 new QueryWrapper<ResourceDiscoveryResult>()
                         .eq("status", "DISCOVERED")
+                        .isNotNull("share_url")
+                        .isNull("resource_link_id")
                         .orderByDesc("confidence")
-                        .orderByAsc("created_at")
+                        .orderByAsc("updated_at")
                         .last("LIMIT " + safeLimit));
         ResourceHubPublishResult result = new ResourceHubPublishResult();
         for (ResourceDiscoveryResult discovery : discoveries) {
@@ -78,20 +82,22 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
     private void publishOne(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
         try {
-            if (discovery.getResourceLinkId() != null
-                    && ("SAVED".equalsIgnoreCase(discovery.getStatus())
-                            || "DUPLICATE".equalsIgnoreCase(discovery.getStatus()))) {
-                result.setDuplicate(result.getDuplicate() + 1);
-                result.getResourceIds().add(discovery.getResourceLinkId());
-                return;
-            }
-            if (!"DISCOVERED".equalsIgnoreCase(discovery.getStatus())) {
+            if (!"DISCOVERED".equalsIgnoreCase(discovery.getStatus())
+                    && discovery.getResourceLinkId() == null) {
                 throw new IllegalStateException("Discovery result is not publishable: " + discovery.getStatus());
             }
 
             MovieMetadata movie = movieService.getById(discovery.getMovieId());
             if (movie == null) {
                 throw new IllegalStateException("Movie not found: " + discovery.getMovieId());
+            }
+            if (!ResourceTitleMatcher.isRelevant(movie, discovery.getTitle(), null)) {
+                discovery.setStatus("IGNORED");
+                discovery.setFailureReason("Resource title does not match movie title");
+                discovery.setUpdatedAt(LocalDateTime.now());
+                discoveryResultService.updateById(discovery);
+                result.setSkipped(result.getSkipped() + 1);
+                return;
             }
 
             if (!ensurePublishableShare(discovery, result)) {
@@ -109,15 +115,31 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             String type = normalizeType(discovery.getResourceType());
             validateUrl(type, url);
             String provider = normalizeProvider(type, discovery.getProvider());
-            ResourceLink existing = findExistingResource(discovery.getMovieId(), url, urlHash);
+            ResourceLink existing = findExistingResource(discovery.getMovieId(), url, urlHash, discovery.getOriginalUrl());
             LocalDateTime now = LocalDateTime.now();
+            if (discovery.getResourceLinkId() != null) {
+                ResourceLink linked = resourceLinkService.getById(discovery.getResourceLinkId());
+                if (linked != null) {
+                    updateResourceLink(linked, discovery, movie, type, provider, url, urlHash, now);
+                    discovery.setStatus("SAVED");
+                    discovery.setFailureReason(null);
+                    discovery.setUpdatedAt(now);
+                    discoveryResultService.updateById(discovery);
+                    markResourceAvailable(movie, now);
+                    result.setUpdated(result.getUpdated() + 1);
+                    result.getResourceIds().add(linked.getId());
+                    return;
+                }
+            }
             if (existing != null) {
-                discovery.setStatus("DUPLICATE");
+                updateResourceLink(existing, discovery, movie, type, provider, url, urlHash, now);
+                discovery.setStatus("SAVED");
                 discovery.setResourceLinkId(existing.getId());
+                discovery.setFailureReason(null);
                 discovery.setUpdatedAt(now);
                 discoveryResultService.updateById(discovery);
                 markResourceAvailable(movie, now);
-                result.setDuplicate(result.getDuplicate() + 1);
+                result.setUpdated(result.getUpdated() + 1);
                 result.getResourceIds().add(existing.getId());
                 return;
             }
@@ -147,6 +169,8 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             link.setVersionNote(trim(discovery.getVersionNote(), 255));
             link.setRejectReason(null);
             link.setCreatedAt(now);
+            link.setUpdatedAt(now);
+            link.setDeletedAt(null);
             resourceLinkService.save(link);
 
             discovery.setStatus("SAVED");
@@ -213,11 +237,47 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 .last("LIMIT 1"), false);
     }
 
-    private ResourceLink findExistingResource(String movieId, String url, String urlHash) {
+    private ResourceLink findExistingResource(String movieId, String url, String urlHash, String sourceUrl) {
         ResourceLink existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
-                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .last("LIMIT 1"));
+        if (existing != null) {
+            return existing;
+        }
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url", url)
+                .isNull("deleted_at")
+                .last("LIMIT 1"));
+        if (existing != null) {
+            return existing;
+        }
+        if (hasText(sourceUrl)) {
+            existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .eq("movie_id", movieId)
+                    .eq("source_url", sourceUrl)
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (existing != null) {
+                return existing;
+            }
+        }
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("source", "RESOURCE_HUB")
+                .eq("provider", "QUARK")
+                .and(w -> w.ne("status", "ACTIVE")
+                        .or().in("link_status", List.of("INVALID", "SUSPECTED_INVALID")))
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+        if (existing != null) {
+            return existing;
+        }
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url_hash", urlHash)
                 .last("LIMIT 1"));
         if (existing != null) {
             return existing;
@@ -225,8 +285,47 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url", url)
-                .eq("status", "ACTIVE")
                 .last("LIMIT 1"));
+    }
+    private void updateResourceLink(ResourceLink link,
+            ResourceDiscoveryResult discovery,
+            MovieMetadata movie,
+            String type,
+            String provider,
+            String url,
+            String urlHash,
+            LocalDateTime now) {
+        link.setMovieId(discovery.getMovieId());
+        link.setName(firstText(discovery.getTitle(), link.getName(), movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
+        link.setType(type);
+        link.setProvider(provider);
+        link.setUrl(url);
+        link.setUrlHash(urlHash);
+        link.setCode("DISK".equals(type) ? trim(discovery.getCode(), 50) : null);
+        link.setAuditStatus(resourceHubProperties.isAutoApprove() ? 1 : link.getAuditStatus());
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
+        link.setSource("RESOURCE_HUB");
+        link.setSourceRef(trim(discovery.getSourceRef(), 100));
+        link.setSourceUrl(firstText(discovery.getOriginalUrl(), link.getSourceUrl(), url));
+        link.setAutoCollected(true);
+        link.setValidatedAt(now);
+        link.setLastCheckError(null);
+        link.setQuality(trim(discovery.getQuality(), 50));
+        link.setSubtitle(trim(discovery.getSubtitle(), 50));
+        link.setFileSize(trim(discovery.getFileSize(), 50));
+        link.setVersionNote(trim(discovery.getVersionNote(), 255));
+        link.setRejectReason(null);
+        link.setUpdatedAt(now);
+        link.setDeletedAt(null);
+        resourceLinkService.updateById(link);
+        resourceLinkService.update(new UpdateWrapper<ResourceLink>()
+                .eq("id", link.getId())
+                .set("code", link.getCode())
+                .set("deleted_at", null)
+                .set("last_check_error", null)
+                .set("reject_reason", null)
+                .set("updated_at", now));
     }
 
     private void markResourceAvailable(MovieMetadata movie, LocalDateTime now) {

@@ -54,6 +54,25 @@ public class QuarkShareClient {
         return result;
     }
 
+    public FolderContentCheck checkFolderContent(String savePath) {
+        String cookie = quarkAutoSaveClient.getPrimaryCookie();
+        PathInfo pathInfo = resolvePath(cookie, savePath);
+        JsonNode body = get(cookie, "/1/clouddrive/file/sort", Map.of(
+                "pdir_fid", pathInfo.fid(),
+                "_page", "1",
+                "_size", "1",
+                "_fetch_total", "1",
+                "_fetch_sub_dirs", "0",
+                "sort", "file_type:asc,updated_at:desc"));
+        ensureOk(body, "list Quark folder failed");
+        JsonNode data = body.path("data");
+        JsonNode list = firstArray(data.path("list"), data.path("items"), data.path("files"));
+        int itemCount = list == null ? 0 : list.size();
+        int total = firstInt(data.path("total"), data.path("_total"), data.path("count"));
+        boolean hasContent = itemCount > 0 || total > 0;
+        return new FolderContentCheck(pathInfo.fid(), pathInfo.name(), hasContent, Math.max(total, itemCount));
+    }
+
     private PathInfo resolvePath(String cookie, String savePath) {
         String normalizedPath = normalizePath(savePath);
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -228,6 +247,27 @@ public class QuarkShareClient {
         return value != null && !value.isBlank();
     }
 
+    private JsonNode firstArray(JsonNode... values) {
+        for (JsonNode value : values) {
+            if (value != null && value.isArray()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private int firstInt(JsonNode... values) {
+        for (JsonNode value : values) {
+            if (value != null && value.isNumber()) {
+                return value.asInt();
+            }
+        }
+        return 0;
+    }
+
     private record PathInfo(String fid, String name) {
+    }
+
+    public record FolderContentCheck(String fid, String name, boolean hasContent, int itemCount) {
     }
 }

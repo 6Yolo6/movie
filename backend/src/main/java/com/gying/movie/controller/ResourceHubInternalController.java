@@ -1,6 +1,7 @@
 package com.gying.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.ResourceHubIngestRequest;
@@ -110,13 +111,14 @@ public class ResourceHubInternalController {
 
         ResourceHubIngestResponse response = new ResourceHubIngestResponse();
         if (existing != null) {
-            discovery.setStatus("DUPLICATE");
+            updateResourceLink(existing, request, movie, type, provider, url, urlHash, sourceUrl, now);
+            discovery.setStatus("SAVED");
             discovery.setResourceLinkId(existing.getId());
             discoveryResultService.save(discovery);
             response.setResourceId(existing.getId());
             response.setDiscoveryResultId(discovery.getId());
-            response.setDuplicate(true);
-            response.setStatus("DUPLICATE");
+            response.setDuplicate(false);
+            response.setStatus("SAVED");
             return ApiResponse.ok(response);
         }
 
@@ -143,6 +145,8 @@ public class ResourceHubInternalController {
         link.setSourceUrl(sourceUrl);
         link.setAutoCollected(true);
         link.setCreatedAt(now);
+        link.setUpdatedAt(now);
+        link.setDeletedAt(null);
         resourceLinkService.save(link);
 
         discovery.setStatus("SAVED");
@@ -180,7 +184,22 @@ public class ResourceHubInternalController {
         ResourceLink existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
-                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .last("LIMIT 1"));
+        if (existing != null) {
+            return existing;
+        }
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url", url)
+                .isNull("deleted_at")
+                .last("LIMIT 1"));
+        if (existing != null) {
+            return existing;
+        }
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("url_hash", urlHash)
                 .last("LIMIT 1"));
         if (existing != null) {
             return existing;
@@ -188,8 +207,49 @@ public class ResourceHubInternalController {
         return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url", url)
-                .eq("status", "ACTIVE")
                 .last("LIMIT 1"));
+    }
+
+    private void updateResourceLink(ResourceLink link,
+            ResourceHubIngestRequest request,
+            MovieMetadata movie,
+            String type,
+            String provider,
+            String url,
+            String urlHash,
+            String sourceUrl,
+            LocalDateTime now) {
+        link.setMovieId(request.getMovieId());
+        link.setName(cleanOptional(firstNonBlank(request.getName(), link.getName(), movie.getTitleCn(), movie.getTitleEn()), 255));
+        link.setType(type);
+        link.setProvider(provider);
+        link.setUrl(url);
+        link.setUrlHash(urlHash);
+        link.setCode("DISK".equals(type) ? cleanOptional(request.getCode(), 50) : null);
+        link.setAuditStatus(shouldAutoApprove(request) ? 1 : link.getAuditStatus());
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
+        link.setQuality(cleanOptional(request.getQuality(), 50));
+        link.setSubtitle(cleanOptional(request.getSubtitle(), 50));
+        link.setFileSize(cleanOptional(request.getFileSize(), 50));
+        link.setVersionNote(cleanOptional(request.getVersionNote(), 255));
+        link.setRejectReason(null);
+        link.setSource("RESOURCE_HUB");
+        link.setSourceRef(cleanOptional(request.getSourceRef(), 100));
+        link.setSourceUrl(sourceUrl);
+        link.setAutoCollected(true);
+        link.setValidatedAt(now);
+        link.setLastCheckError(null);
+        link.setUpdatedAt(now);
+        link.setDeletedAt(null);
+        resourceLinkService.updateById(link);
+        resourceLinkService.update(new UpdateWrapper<ResourceLink>()
+                .eq("id", link.getId())
+                .set("code", link.getCode())
+                .set("deleted_at", null)
+                .set("last_check_error", null)
+                .set("reject_reason", null)
+                .set("updated_at", now));
     }
 
     private boolean shouldAutoApprove(ResourceHubIngestRequest request) {

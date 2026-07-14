@@ -74,16 +74,36 @@ public class PanSouClient {
         if (!hasText(link)) {
             return new LinkCheckResult(link, false, false, "empty link");
         }
+        return checkLinks(List.of(link)).getOrDefault(link, new LinkCheckResult(link, false, false,
+                "PanSou check response did not include link status"));
+    }
+
+    public Map<String, LinkCheckResult> checkLinks(List<String> links) {
+        if (links == null || links.isEmpty()) {
+            return Map.of();
+        }
         String baseUrl = properties.getPansou().getBaseUrl();
         if (!hasText(baseUrl)) {
             throw new IllegalStateException("PanSou base URL is not configured");
         }
 
-        Map<String, Object> item = new LinkedHashMap<>();
-        item.put("disk_type", "quark");
-        item.put("url", link.trim());
+        List<String> normalizedLinks = links.stream()
+                .filter(this::hasText)
+                .map(String::trim)
+                .distinct()
+                .toList();
+        if (normalizedLinks.isEmpty()) {
+            return Map.of();
+        }
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (String normalizedLink : normalizedLinks) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("disk_type", "quark");
+            item.put("url", normalizedLink);
+            items.add(item);
+        }
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("items", List.of(item));
+        body.put("items", items);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -100,7 +120,11 @@ public class PanSouClient {
                     new HttpEntity<>(body, headers),
                     String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
-            return parseLinkCheckResult(root, link.trim());
+            Map<String, LinkCheckResult> results = new LinkedHashMap<>();
+            for (String normalizedLink : normalizedLinks) {
+                results.put(normalizedLink, parseLinkCheckResult(root, normalizedLink));
+            }
+            return results;
         } catch (RestClientException e) {
             throw new IllegalStateException("PanSou link check request failed", e);
         } catch (Exception e) {

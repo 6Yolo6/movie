@@ -63,4 +63,8 @@ public class ResourceLink implements Serializable {
     private String rejectReason;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 }

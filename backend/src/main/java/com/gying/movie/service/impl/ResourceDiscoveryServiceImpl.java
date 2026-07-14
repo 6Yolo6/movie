@@ -20,6 +20,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.ResourceTitleMatcher;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -113,7 +114,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             LocalDateTime now = LocalDateTime.now();
             for (DiscoveredResource resource : resources) {
                 try {
-                    if (!isRelevantResource(movie, resource, payload.keyword())) {
+                    if (!ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), payload.keyword())) {
                         ResourceDiscoveryResult ignored = saveDiscovery(
                                 task, movie, resource, ResourceHubHashUtils.sha256(resource.getUrl()), "IGNORED", now);
                         ignored.setFailureReason("Resource title does not match movie title");
@@ -191,72 +192,6 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         discovery.setUpdatedAt(now);
         discoveryResultService.save(discovery);
         return discovery;
-    }
-
-    private boolean isRelevantResource(MovieMetadata movie, DiscoveredResource resource, String keyword) {
-        String resourceTitle = normalizeTitle(resource.getTitle());
-        if (!hasText(resourceTitle)) {
-            return false;
-        }
-        String normalizedKeyword = normalizeTitle(keyword);
-        String sequelNumber = trailingNumber(normalizedKeyword);
-        if (hasText(sequelNumber)
-                && !containsSequencedTitle(resourceTitle, normalizedKeyword, sequelNumber)) {
-            return false;
-        }
-        Set<String> expectedTitles = new LinkedHashSet<>();
-        addCandidate(expectedTitles, normalizedKeyword);
-        addCandidate(expectedTitles, normalizeTitle(movie.getTitleCn()));
-        addCandidate(expectedTitles, normalizeTitle(movie.getTitleEn()));
-        addCandidate(expectedTitles, normalizeTitle(movie.getSeriesName()));
-        for (String alias : splitAliases(movie.getAliases())) {
-            addCandidate(expectedTitles, normalizeTitle(alias));
-        }
-        for (String expected : expectedTitles) {
-            if (expected.length() >= 2 && (resourceTitle.contains(expected) || expected.contains(resourceTitle))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String normalizeTitle(String value) {
-        if (!hasText(value)) {
-            return "";
-        }
-        return value.toLowerCase()
-                .replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "");
-    }
-
-    private String trailingNumber(String normalizedValue) {
-        if (!hasText(normalizedValue)) {
-            return null;
-        }
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("([0-9]+)$").matcher(normalizedValue);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private boolean containsSequencedTitle(String resourceTitle, String normalizedKeyword, String sequelNumber) {
-        if (resourceTitle.contains(normalizedKeyword)) {
-            return true;
-        }
-        String baseTitle = normalizedKeyword.substring(0, normalizedKeyword.length() - sequelNumber.length());
-        if (!hasText(baseTitle) || !resourceTitle.contains(baseTitle)) {
-            return false;
-        }
-        int start = resourceTitle.indexOf(baseTitle) + baseTitle.length();
-        int end = Math.min(resourceTitle.length(), start + 6);
-        return resourceTitle.substring(start, end).contains(sequelNumber);
-    }
-
-    private List<String> splitAliases(String aliases) {
-        if (!hasText(aliases)) {
-            return List.of();
-        }
-        return java.util.Arrays.stream(aliases.split("[/|,，;；]+"))
-                .map(String::trim)
-                .filter(this::hasText)
-                .toList();
     }
 
     private boolean createQuarkTransferTask(

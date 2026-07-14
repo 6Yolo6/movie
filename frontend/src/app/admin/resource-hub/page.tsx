@@ -126,6 +126,39 @@ interface DiscoveryResult {
     createdAt?: string;
 }
 
+interface InvalidResourceCheck {
+    id: number;
+    movieId?: string;
+    movieTitle?: string;
+    status?: string;
+    linkStatus?: string;
+    transferStatus?: string;
+    folderState?: string;
+    folderItemCount?: number;
+    savedPath?: string;
+    lastCheckError?: string;
+    nextAction?: string;
+    validatedAt?: string;
+}
+
+interface RepairInvalidJob {
+    jobId?: string;
+    status?: string;
+    checked?: number;
+    restored?: number;
+    reshared?: number;
+    rediscovered?: number;
+    invalid?: number;
+    skipped?: number;
+}
+
+interface DiscoveryPipelineJob {
+    jobId?: string;
+    status?: string;
+    taskId?: number;
+    result?: Record<string, unknown>;
+}
+
 interface TmdbFormValues {
     source: string;
     page: number;
@@ -193,6 +226,8 @@ export default function ResourceHubAdminPage() {
     const [discoveryStatus, setDiscoveryStatus] = useState<string | undefined>();
     const [publishLimit, setPublishLimit] = useState(20);
     const [quarkLimit, setQuarkLimit] = useState(5);
+    const [invalidChecks, setInvalidChecks] = useState<InvalidResourceCheck[]>([]);
+    const [invalidChecksLoading, setInvalidChecksLoading] = useState(false);
 
     const authHeaders = useMemo(() => ({
         Authorization: `Bearer ${token}`,
@@ -322,13 +357,122 @@ export default function ResourceHubAdminPage() {
     const runAction = async (key: string, path: string) => {
         setRunningAction(key);
         try {
-            await requestJson(path, { method: 'POST' });
-            message.success(t('operationCompleted'));
+            const data = await requestJson<Record<string, unknown>>(path, { method: 'POST' });
+            message.success(formatActionResult(key, data));
             await refreshAll();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('operationFailed'));
         } finally {
             setRunningAction(null);
+        }
+    };
+
+    const runResultAction = async (key: string, path: string, successText: (data: Record<string, unknown>) => string) => {
+        setRunningAction(key);
+        try {
+            const data = await requestJson<Record<string, unknown>>(path, { method: 'POST' });
+            message.success(successText(data));
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const countValue = (data: Record<string, unknown> | undefined, key: string) => {
+        const value = data?.[key];
+        return typeof value === 'number' ? value : 0;
+    };
+
+    const nestedRecord = (data: Record<string, unknown> | undefined, key: string) => {
+        const value = data?.[key];
+        return value && typeof value === 'object' ? value as Record<string, unknown> : {};
+    };
+
+    const formatActionResult = (key: string, data: Record<string, unknown>) => {
+        if (key === 'publish' || key.startsWith('publish-')) {
+            return t('resourceHubPublishRunDone', {
+                published: countValue(data, 'published'),
+                updated: countValue(data, 'updated'),
+                duplicate: countValue(data, 'duplicate'),
+                skipped: countValue(data, 'skipped'),
+                failed: countValue(data, 'failed'),
+            });
+        }
+        if (key === 'quark') {
+            return t('resourceHubTransferRunDone', {
+                submitted: countValue(data, 'submitted'),
+                skipped: countValue(data, 'skipped'),
+                failed: countValue(data, 'failed'),
+            });
+        }
+        if (key === 'worker') {
+            const transfers = nestedRecord(data, 'quarkTransfers');
+            const published = nestedRecord(data, 'publishedResources');
+            return t('resourceHubWorkerRunDone', {
+                tasks: countValue(data, 'tasksProcessed'),
+                submitted: countValue(transfers, 'submitted'),
+                published: countValue(published, 'published'),
+                updated: countValue(published, 'updated'),
+                failed: countValue(data, 'tasksFailed') + countValue(transfers, 'failed') + countValue(published, 'failed'),
+            });
+        }
+        return t('operationCompleted');
+    };
+
+    const repairInvalidResources = async () => {
+        setRunningAction('repair-invalid');
+        try {
+            let job = await requestJson<RepairInvalidJob>('/api/resources/admin/repair-invalid?limit=50', { method: 'POST' });
+            if (!job.jobId) {
+                throw new Error(t('operationFailed'));
+            }
+            message.info(t('resourceHubRepairInvalidStarted'));
+            for (let attempt = 0; attempt < 240 && job.status === 'RUNNING'; attempt++) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                job = await requestJson<RepairInvalidJob>(`/api/resources/admin/repair-invalid/jobs/${job.jobId}`);
+            }
+            if (job.status === 'FAILED') {
+                throw new Error(t('resourceHubRepairInvalidFailed'));
+            }
+            message.success(t('resourceHubRepairInvalidDone', {
+                checked: job.checked || 0,
+                reshared: job.reshared || 0,
+                restored: job.restored || 0,
+                rediscovered: job.rediscovered || 0,
+                invalid: job.invalid || 0,
+            }));
+            await Promise.all([refreshAll(), fetchInvalidChecks()]);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const fetchInvalidChecks = async () => {
+        setInvalidChecksLoading(true);
+        try {
+            const data = await requestJson<{
+                records: InvalidResourceCheck[];
+                checked?: number;
+                normal?: number;
+                suspected?: number;
+                unclear?: number;
+            }>('/api/resources/admin/invalid-checks/scan?limit=100', { method: 'POST' });
+            setInvalidChecks(data.records || []);
+            message.success(t('resourceHubInvalidChecksLoaded', {
+                count: data.records?.length || 0,
+                checked: data.checked || 0,
+                normal: data.normal || 0,
+                suspected: data.suspected || 0,
+                unclear: data.unclear || 0,
+            }));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setInvalidChecksLoading(false);
         }
     };
 
@@ -351,11 +495,35 @@ export default function ResourceHubAdminPage() {
     const submitDiscovery = async (values: DiscoveryFormValues) => {
         setRunningAction('discover');
         try {
-            await requestJson('/api/admin/resource-hub/discover', {
+            const data = await requestJson<DiscoveryPipelineJob>('/api/admin/resource-hub/discover', {
                 method: 'POST',
                 body: JSON.stringify({ ...values, source: 'PANSOU' }),
             });
-            message.success(values.runNow ? t('resourceHubDiscoveryRunDone') : t('resourceHubDiscoveryTaskCreated'));
+            if (values.runNow) {
+                if (!data.jobId) {
+                    throw new Error(t('operationFailed'));
+                }
+                message.info(t('resourceHubDiscoveryStarted'));
+                let job = data;
+                for (let attempt = 0; attempt < 240 && job.status === 'RUNNING'; attempt++) {
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+                    job = await requestJson<DiscoveryPipelineJob>(`/api/admin/resource-hub/discover/jobs/${data.jobId}`);
+                }
+                if (job.status === 'FAILED') {
+                    throw new Error(t('resourceHubDiscoveryFailed'));
+                }
+                const discovery = (job.result?.discovery || {}) as Record<string, number>;
+                const published = (job.result?.published || {}) as Record<string, number>;
+                message.success(t('resourceHubDiscoveryRunDoneWithCounts', {
+                    discovered: discovery.discovered || 0,
+                    duplicate: discovery.duplicate || 0,
+                    transfers: discovery.transferTasksCreated || 0,
+                    published: published.published || 0,
+                    skipped: published.skipped || 0,
+                }));
+            } else {
+                message.success(t('resourceHubDiscoveryTaskCreated'));
+            }
             await refreshAll();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubDiscoveryTaskFailed'));
@@ -435,18 +603,45 @@ export default function ResourceHubAdminPage() {
             title: t('actions'),
             key: 'actions',
             fixed: 'right',
-            width: 120,
-            render: (_: unknown, record) => record.status === 'SAVED' ? (
-                <Button
-                    size="small"
-                    icon={<ShareAltOutlined />}
-                    loading={runningAction === `publish-${record.id}`}
-                    onClick={() => runAction(`publish-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/publish`)}
-                >
-                    {t('resourceHubPublish')}
-                </Button>
-            ) : '-',
+            width: 220,
+            render: (_: unknown, record) => (
+                <Space size={6}>
+                    {record.status === 'DISCOVERED' && (
+                        <Button
+                            size="small"
+                            icon={<ShareAltOutlined />}
+                            loading={runningAction === `publish-${record.id}`}
+                            onClick={() => runAction(`publish-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/publish`)}
+                        >
+                            {t('resourceHubPublish')}
+                        </Button>
+                    )}
+                    {(record.resourceLinkId || record.status === 'DISCOVERED' || record.status === 'SAVED') && (
+                        <Button
+                            size="small"
+                            icon={<ShareAltOutlined />}
+                            loading={runningAction === `qq-post-${record.id}`}
+                            onClick={() => runAction(`qq-post-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/qq-channel-post`)}
+                        >
+                            {t('resourceHubQqChannelPost')}
+                        </Button>
+                    )}
+                </Space>
+            ),
         },
+    ];
+
+    const invalidCheckColumns: ColumnsType<InvalidResourceCheck> = [
+        { title: 'ID', dataIndex: 'id', width: 90 },
+        { title: t('movieTitle'), dataIndex: 'movieTitle', width: 180, ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('movieId'), dataIndex: 'movieId', width: 140, ellipsis: true },
+        { title: t('status'), dataIndex: 'status', width: 110, render: (value?: string) => <Tag>{value || '-'}</Tag> },
+        { title: t('resourceHubLinkStatus'), dataIndex: 'linkStatus', width: 140, render: (value?: string) => <Tag>{value || '-'}</Tag> },
+        { title: t('resourceHubTransferStatus'), dataIndex: 'transferStatus', width: 140, render: (value?: string) => value || '-' },
+        { title: t('resourceHubFolderState'), dataIndex: 'folderState', width: 140, render: (value?: string) => <Tag color={value === 'HAS_CONTENT' ? 'green' : value === 'EMPTY' ? 'red' : 'orange'}>{value || '-'}</Tag> },
+        { title: t('resourceHubFolderItems'), dataIndex: 'folderItemCount', width: 100, render: (value?: number) => value ?? '-' },
+        { title: t('resourceHubNextAction'), dataIndex: 'nextAction', width: 180, render: (value?: string) => value || '-' },
+        { title: t('resourceHubError'), dataIndex: 'lastCheckError', ellipsis: true, render: (value?: string) => value || '-' },
     ];
 
     const counts = overview?.taskStatusCounts || {};
@@ -584,6 +779,7 @@ export default function ResourceHubAdminPage() {
                                                 >
                                                     {t('resourceHubRunWorker')}
                                                 </Button>
+                                                <Text type="secondary">{t('resourceHubRunWorkerHelp')}</Text>
                                                 <Space.Compact block>
                                                     <InputNumber min={1} max={100} value={publishLimit} onChange={(value) => setPublishLimit(value || 20)} />
                                                     <Button
@@ -594,6 +790,7 @@ export default function ResourceHubAdminPage() {
                                                         {t('resourceHubPublishPending')}
                                                     </Button>
                                                 </Space.Compact>
+                                                <Text type="secondary">{t('resourceHubPublishPendingHelp')}</Text>
                                                 <Space.Compact block>
                                                     <InputNumber min={1} max={20} value={quarkLimit} onChange={(value) => setQuarkLimit(value || 5)} />
                                                     <Button
@@ -602,6 +799,86 @@ export default function ResourceHubAdminPage() {
                                                         onClick={() => runAction('quark', `/api/admin/resource-hub/quark/transfers/submit?limit=${quarkLimit}`)}
                                                     >
                                                         {t('resourceHubSubmitTransfers')}
+                                                    </Button>
+                                                </Space.Compact>
+                                                <Text type="secondary">{t('resourceHubSubmitTransfersHelp')}</Text>
+                                                <Button
+                                                    block
+                                                    icon={<SearchOutlined />}
+                                                    loading={invalidChecksLoading}
+                                                    onClick={fetchInvalidChecks}
+                                                >
+                                                    {t('resourceHubDetectInvalid')}
+                                                </Button>
+                                                <Text type="secondary">{t('resourceHubDetectInvalidHelp')}</Text>
+                                                <Button
+                                                    block
+                                                    icon={<CloudSyncOutlined />}
+                                                    loading={runningAction === 'repair-invalid'}
+                                                    onClick={repairInvalidResources}
+                                                >
+                                                    {t('resourceHubRepairInvalid')}
+                                                </Button>
+                                                <Text type="secondary">{t('resourceHubRepairInvalidHelp')}</Text>
+                                                {invalidChecks.length > 0 && (
+                                                    <Table
+                                                        size="small"
+                                                        columns={invalidCheckColumns}
+                                                        dataSource={invalidChecks}
+                                                        rowKey="id"
+                                                        pagination={{ pageSize: 5 }}
+                                                        scroll={{ x: 1200 }}
+                                                    />
+                                                )}
+                                                <Space.Compact block>
+                                                    <Button
+                                                        icon={<SearchOutlined />}
+                                                        loading={runningAction === 'cleanup-dry'}
+                                                        onClick={() => runResultAction(
+                                                            'cleanup-dry',
+                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=true&limit=100',
+                                                            (data) => t('resourceHubCleanupDryRunDone', { count: data.candidates || 0 }),
+                                                        )}
+                                                    >
+                                                        {t('resourceHubCleanupDryRun')}
+                                                    </Button>
+                                                    <Button
+                                                        danger
+                                                        loading={runningAction === 'cleanup-execute'}
+                                                        onClick={() => runResultAction(
+                                                            'cleanup-execute',
+                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=false&limit=100',
+                                                            (data) => t('resourceHubCleanupDone', {
+                                                                merged: data.merged || 0,
+                                                                resources: data.movedResources || 0,
+                                                            }),
+                                                        )}
+                                                    >
+                                                        {t('resourceHubCleanupExecute')}
+                                                    </Button>
+                                                </Space.Compact>
+                                                <Space.Compact block>
+                                                    <Button
+                                                        icon={<SearchOutlined />}
+                                                        loading={runningAction === 'pollution-dry'}
+                                                        onClick={() => runResultAction(
+                                                            'pollution-dry',
+                                                            '/api/admin/resource-hub/cleanup/mismatched-resources?dryRun=true&limit=500',
+                                                            (data) => t('resourceHubPollutionDryRunDone', { count: data.candidates || 0 }),
+                                                        )}
+                                                    >
+                                                        {t('resourceHubPollutionDryRun')}
+                                                    </Button>
+                                                    <Button
+                                                        danger
+                                                        loading={runningAction === 'pollution-execute'}
+                                                        onClick={() => runResultAction(
+                                                            'pollution-execute',
+                                                            '/api/admin/resource-hub/cleanup/mismatched-resources?dryRun=false&limit=500',
+                                                            (data) => t('resourceHubPollutionDone', { cleaned: data.cleaned || 0 }),
+                                                        )}
+                                                    >
+                                                        {t('resourceHubPollutionExecute')}
                                                     </Button>
                                                 </Space.Compact>
                                             </Space>

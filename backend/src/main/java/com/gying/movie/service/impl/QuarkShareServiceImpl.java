@@ -45,11 +45,15 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
             return null;
         }
-        if (hasText(task.getShareUrl())) {
-            return task.getShareUrl();
-        }
         if (!"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
             return null;
+        }
+        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
+        if (!contentCheck.hasContent()) {
+            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+        }
+        if (hasText(task.getShareUrl())) {
+            return task.getShareUrl();
         }
         MovieMetadata movie = movieService.getById(task.getMovieId());
         QuarkShareResult result = quarkShareClient.createShareForPath(task.getSavedPath(), buildShareTitle(movie, task));
@@ -72,6 +76,9 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         discovery.setShareUrl(task.getShareUrl());
         discovery.setShareUrlHash(task.getShareUrlHash());
         discovery.setFailureReason(null);
+        if ("FAILED".equalsIgnoreCase(discovery.getStatus()) || "IGNORED".equalsIgnoreCase(discovery.getStatus())) {
+            discovery.setStatus("DISCOVERED");
+        }
         discovery.setUpdatedAt(LocalDateTime.now());
         discoveryResultService.updateById(discovery);
         updateResourceLink(discovery, task);
@@ -90,8 +97,11 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         link.setProvider("QUARK");
         link.setCode(null);
         link.setSourceUrl(firstText(discovery.getOriginalUrl(), link.getSourceUrl()));
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
         link.setValidatedAt(LocalDateTime.now());
         link.setLastCheckError(null);
+        link.setUpdatedAt(LocalDateTime.now());
         resourceLinkService.updateById(link);
     }
 

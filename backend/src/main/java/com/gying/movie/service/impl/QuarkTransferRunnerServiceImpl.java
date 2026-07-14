@@ -10,10 +10,12 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
+import com.gying.movie.service.IResourceDiscoveryResultService;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +34,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     private final QuarkAutoSaveClient quarkAutoSaveClient;
     private final IQuarkShareService quarkShareService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IResourceDiscoveryResultService discoveryResultService;
     private final IMovieMetadataService movieService;
     private final ObjectMapper objectMapper;
 
@@ -40,12 +43,14 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             QuarkAutoSaveClient quarkAutoSaveClient,
             IQuarkShareService quarkShareService,
             IQuarkTransferTaskService quarkTransferTaskService,
+            IResourceDiscoveryResultService discoveryResultService,
             IMovieMetadataService movieService,
             ObjectMapper objectMapper) {
         this.resourceHubProperties = resourceHubProperties;
         this.quarkAutoSaveClient = quarkAutoSaveClient;
         this.quarkShareService = quarkShareService;
         this.quarkTransferTaskService = quarkTransferTaskService;
+        this.discoveryResultService = discoveryResultService;
         this.movieService = movieService;
         this.objectMapper = objectMapper;
     }
@@ -54,16 +59,18 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     public QuarkTransferRunResult submitPending(int limit) {
         ensureEnabled();
         int safeLimit = Math.min(Math.max(limit <= 0 ? DEFAULT_LIMIT : limit, 1), MAX_LIMIT);
-        QueryWrapper<QuarkTransferTask> query = new QueryWrapper<QuarkTransferTask>()
+        List<QuarkTransferTask> tasks = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
+                .eq("status", "PENDING")
                 .orderByAsc("created_at")
-                .last("LIMIT " + safeLimit);
-        if (resourceHubProperties.getQuark().isShareEnabled()) {
-            query.in("status", List.of("PENDING", "SUBMITTED"))
-                    .and(wrapper -> wrapper.eq("status", "PENDING").or().isNull("share_url"));
-        } else {
-            query.eq("status", "PENDING");
+                .last("LIMIT " + safeLimit));
+        if (resourceHubProperties.getQuark().isShareEnabled() && tasks.size() < safeLimit) {
+            int remaining = safeLimit - tasks.size();
+            tasks.addAll(quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
+                    .eq("status", "SUBMITTED")
+                    .isNull("share_url")
+                    .orderByAsc("updated_at")
+                    .last("LIMIT " + remaining)));
         }
-        List<QuarkTransferTask> tasks = quarkTransferTaskService.list(query);
         QuarkTransferRunResult result = new QuarkTransferRunResult();
         for (QuarkTransferTask task : tasks) {
             submit(task, result);
@@ -148,11 +155,31 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
         try {
             quarkShareService.ensureShareUrl(task);
         } catch (Exception e) {
-            task.setLastError(trim("share creation failed: " + e.getMessage(), 1000));
-            task.setUpdatedAt(LocalDateTime.now());
+            LocalDateTime now = LocalDateTime.now();
+            String error = trim("share creation failed: " + e.getMessage(), 1000);
+            task.setStatus("FAILED");
+            task.setLastError(error);
+            task.setFinishedAt(now);
+            task.setUpdatedAt(now);
             quarkTransferTaskService.updateById(task);
+            markDiscoveryFailed(task, error, now);
+            result.setFailed(result.getFailed() + 1);
             addError(result, "task " + task.getId() + " share: " + e.getMessage());
         }
+    }
+
+    private void markDiscoveryFailed(QuarkTransferTask task, String error, LocalDateTime now) {
+        if (task.getDiscoveryResultId() == null) {
+            return;
+        }
+        ResourceDiscoveryResult discovery = discoveryResultService.getById(task.getDiscoveryResultId());
+        if (discovery == null) {
+            return;
+        }
+        discovery.setStatus("FAILED");
+        discovery.setFailureReason(error);
+        discovery.setUpdatedAt(now);
+        discoveryResultService.updateById(discovery);
     }
 
     private Map<String, Object> resolveRequestPayload(
