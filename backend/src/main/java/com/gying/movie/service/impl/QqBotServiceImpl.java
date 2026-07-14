@@ -8,6 +8,7 @@ import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QqOfficialBotClient;
 import com.gying.movie.config.QqBotProperties;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
@@ -29,6 +30,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
+import com.gying.movie.utils.MovieSearchCandidateUtils;
 import com.gying.movie.utils.MovieTitleMatcher;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -51,6 +53,8 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private static final Logger log = LoggerFactory.getLogger(QqBotServiceImpl.class);
     private static final int MAX_REPLY_RESOURCES = 5;
+    private static final int MAX_CANDIDATE_SUGGESTIONS = 10;
+    private static final long CANDIDATE_TTL_SECONDS = 600;
     private static final String PERMANENT_LINK_INVALID_REASON = "Re-shared link is still invalid; possible policy violation";
 
     private final QqBotProperties qqBotProperties;
@@ -69,6 +73,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IQqBotSearchLogService qqBotSearchLogService;
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
+    private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
 
     public QqBotServiceImpl(
             QqBotProperties qqBotProperties,
@@ -167,15 +172,27 @@ public class QqBotServiceImpl implements IQqBotService {
                 .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
                 .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
                 .orElse(null);
-        if (movie == null || needsMetadataSync(movie)) {
-            MovieMetadata syncedMovie = syncMovieMetadata(safeKeyword);
+        if (movie == null) {
+            if (wasSuggestedCandidate(userKey, safeKeyword)) {
+                movie = syncExactMovieMetadata(safeKeyword);
+            }
+            if (movie == null) {
+                List<MovieSearchCandidate> candidates = findSearchCandidates(safeKeyword, localCandidates);
+                if (!candidates.isEmpty()) {
+                    rememberSuggestedCandidates(userKey, candidates);
+                    return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                            MovieSearchCandidateUtils.formatReply(safeKeyword, candidates),
+                            "candidate selection required");
+                }
+                return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                        "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。",
+                        "no credible metadata");
+            }
+        } else if (needsMetadataSync(movie)) {
+            MovieMetadata syncedMovie = syncExactMovieMetadata(safeKeyword);
             if (MovieTitleMatcher.isExactMatch(syncedMovie, safeKeyword)) {
                 movie = syncedMovie;
-            } else if (movie == null || needsMetadataSync(movie)) {
-                if (!localCandidates.isEmpty()) {
-                    return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
-                            buildCandidateReply(safeKeyword, localCandidates), "fuzzy candidates require confirmation");
-                }
+            } else {
                 return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
                         "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。",
                         "no credible metadata");
@@ -328,13 +345,66 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
     }
 
-    private MovieMetadata syncMovieMetadata(String keyword) {
+    private MovieMetadata syncExactMovieMetadata(String keyword) {
         try {
-            return tmdbMetadataSyncService.syncBestByKeyword(keyword);
+            return tmdbMetadataSyncService.syncExactByKeyword(keyword);
         } catch (Exception e) {
             log.warn("TMDB metadata sync failed for QQ keyword {}", keyword, e);
             return null;
         }
+    }
+
+    private List<MovieSearchCandidate> findSearchCandidates(
+            String keyword,
+            List<MovieMetadata> localCandidates) {
+        List<MovieSearchCandidate> local = localCandidates.stream()
+                .map(movie -> new MovieSearchCandidate(
+                        movie.getTmdbId(),
+                        resolveCandidateMediaType(movie),
+                        title(movie),
+                        movie.getTitleEn(),
+                        movie.getYear(),
+                        scoreMovie(movie, keyword)))
+                .toList();
+        List<MovieSearchCandidate> tmdb;
+        try {
+            tmdb = tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS);
+        } catch (Exception e) {
+            log.warn("TMDB candidate search failed for QQ keyword {}", keyword, e);
+            tmdb = List.of();
+        }
+        return MovieSearchCandidateUtils.merge(local, tmdb, MAX_CANDIDATE_SUGGESTIONS);
+    }
+
+    private String resolveCandidateMediaType(MovieMetadata movie) {
+        String type = firstText(movie.getTmdbType(), movie.getCategory());
+        return hasText(type) && List.of("tv", "series", "show", "drama", "ac").contains(type.toLowerCase())
+                ? "tv"
+                : "movie";
+    }
+
+    private void rememberSuggestedCandidates(String userKey, List<MovieSearchCandidate> candidates) {
+        suggestedCandidates.put(candidateUserKey(userKey), new SuggestedCandidates(
+                Instant.now().plusSeconds(CANDIDATE_TTL_SECONDS),
+                MovieSearchCandidateUtils.searchableTitles(candidates)));
+    }
+
+    private boolean wasSuggestedCandidate(String userKey, String keyword) {
+        String key = candidateUserKey(userKey);
+        SuggestedCandidates suggestions = suggestedCandidates.get(key);
+        if (suggestions == null) {
+            return false;
+        }
+        if (suggestions.expiresAt().isBefore(Instant.now())) {
+            suggestedCandidates.remove(key);
+            return false;
+        }
+        return suggestions.titles().stream()
+                .anyMatch(title -> MovieTitleMatcher.normalizedEquals(title, keyword));
+    }
+
+    private String candidateUserKey(String userKey) {
+        return hasText(userKey) ? userKey.trim() : "anonymous";
     }
 
     private boolean needsMetadataSync(MovieMetadata movie) {
@@ -397,24 +467,6 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
         reply.append("\n\n影片尚未上映或流媒体资源未发布，暂不进行网盘搜索。");
-        return reply.toString();
-    }
-
-    private String buildCandidateReply(String keyword, List<MovieMetadata> candidates) {
-        StringBuilder reply = new StringBuilder();
-        reply.append("没有找到与“").append(keyword).append("”完全匹配的影片。");
-        reply.append("\n数据库中有这些相近片名：");
-        int count = 0;
-        for (MovieMetadata candidate : candidates) {
-            if (count >= 5) {
-                break;
-            }
-            reply.append("\n").append(++count).append(". ").append(title(candidate));
-            if (candidate.getYear() != null) {
-                reply.append(" (").append(candidate.getYear()).append(")");
-            }
-        }
-        reply.append("\n\n请发送完整片名后再搜索。");
         return reply.toString();
     }
 
@@ -917,5 +969,8 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private record SuggestedCandidates(Instant expiresAt, List<String> titles) {
     }
 }

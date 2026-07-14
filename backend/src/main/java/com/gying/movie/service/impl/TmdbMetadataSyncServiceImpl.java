@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.TmdbListItem;
@@ -160,6 +161,53 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             }
         }
         return best == null ? null : upsertMovie(best.item(), best.details()).movie();
+    }
+
+    @Override
+    public MovieMetadata syncExactByKeyword(String keyword) {
+        ensureEnabled();
+        if (!hasText(keyword)) {
+            return null;
+        }
+        List<TmdbListItem> items = tmdbClient.searchMulti(keyword, 10);
+        MovieCandidate best = null;
+        for (TmdbListItem item : items) {
+            try {
+                JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
+                if (!isExactKeywordMatch(keyword, item, details)) {
+                    continue;
+                }
+                int score = scoreKeywordMatch(keyword, item, details);
+                if (best == null || score > best.score()) {
+                    best = new MovieCandidate(item, details, score);
+                }
+            } catch (Exception ignored) {
+                // Try the next exact TMDB candidate.
+            }
+        }
+        return best == null ? null : upsertMovie(best.item(), best.details()).movie();
+    }
+
+    @Override
+    public List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit) {
+        ensureEnabled();
+        if (!hasText(keyword)) {
+            return List.of();
+        }
+        int safeLimit = Math.min(Math.max(limit, 1), 10);
+        String normalizedKeyword = normalizeTitle(keyword);
+        return tmdbClient.searchMulti(keyword, 20).stream()
+                .map(item -> new MovieSearchCandidate(
+                        item.getTmdbId(),
+                        item.getMediaType(),
+                        item.getTitle(),
+                        item.getOriginalTitle(),
+                        parseYear(item.getReleaseDate()),
+                        scoreListCandidate(normalizedKeyword, item)))
+                .filter(candidate -> candidate.getScore() >= 60)
+                .sorted((left, right) -> Integer.compare(right.getScore(), left.getScore()))
+                .limit(safeLimit)
+                .toList();
     }
 
     private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details) {
@@ -518,6 +566,42 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             best += 20;
         }
         return Math.max(best, 0);
+    }
+
+    private boolean isExactKeywordMatch(String keyword, TmdbListItem item, JsonNode details) {
+        String normalizedKeyword = normalizeTitle(keyword);
+        if (!hasText(normalizedKeyword)) {
+            return false;
+        }
+        List<String> titles = new ArrayList<>();
+        titles.add(title(details, item.getMediaType()));
+        titles.add(originalTitle(details, item.getMediaType()));
+        titles.addAll(names(alternativeTitleNodes(details, item.getMediaType()), "title", 20));
+        return titles.stream().anyMatch(value -> normalizedKeyword.equals(normalizeTitle(value)));
+    }
+
+    private int scoreListCandidate(String normalizedKeyword, TmdbListItem item) {
+        int best = 0;
+        String[] values = {item.getTitle(), item.getOriginalTitle()};
+        for (String value : values) {
+            String normalizedTitle = normalizeTitle(value);
+            if (!hasText(normalizedTitle)) {
+                continue;
+            }
+            if (normalizedTitle.equals(normalizedKeyword)) {
+                best = Math.max(best, 160);
+            } else if (normalizedTitle.contains(normalizedKeyword)) {
+                best = Math.max(best, 130);
+            } else if (normalizedKeyword.contains(normalizedTitle) && normalizedTitle.length() >= 4) {
+                best = Math.max(best, 75);
+            } else {
+                best = Math.max(best, overlapScore(normalizedKeyword, normalizedTitle));
+            }
+        }
+        int popularityBoost = item.getPopularity() == null
+                ? 0
+                : Math.min((int) Math.round(item.getPopularity() / 20.0), 15);
+        return best + popularityBoost;
     }
 
     private JsonNode alternativeTitleNodes(JsonNode details, String mediaType) {

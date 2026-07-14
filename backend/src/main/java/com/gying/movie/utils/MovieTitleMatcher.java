@@ -25,6 +25,10 @@ public final class MovieTitleMatcher {
                 .anyMatch(alias -> matches(expected, alias));
     }
 
+    public static boolean normalizedEquals(String left, String right) {
+        return hasText(left) && hasText(right) && normalize(left).equals(normalize(right));
+    }
+
     private static boolean matches(String expected, String candidate) {
         return hasText(candidate) && expected.equals(normalize(candidate));
     }

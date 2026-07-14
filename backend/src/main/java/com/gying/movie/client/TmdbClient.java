@@ -62,6 +62,7 @@ public class TmdbClient {
             TmdbListItem item = new TmdbListItem();
             item.setTmdbId(tmdbId);
             item.setMediaType(mediaType);
+            populateListFields(item, node, mediaType);
             items.add(item);
         }
         return items;
@@ -99,6 +100,7 @@ public class TmdbClient {
             TmdbListItem item = new TmdbListItem();
             item.setTmdbId(tmdbId);
             item.setMediaType(mediaType);
+            populateListFields(item, node, mediaType);
             items.add(item);
         }
         return items;
@@ -144,6 +146,21 @@ public class TmdbClient {
             return "tv";
         }
         return fallback;
+    }
+
+    private void populateListFields(TmdbListItem item, JsonNode node, String mediaType) {
+        item.setTitle("tv".equals(mediaType)
+                ? node.path("name").asText(null)
+                : node.path("title").asText(null));
+        item.setOriginalTitle("tv".equals(mediaType)
+                ? node.path("original_name").asText(null)
+                : node.path("original_title").asText(null));
+        item.setReleaseDate("tv".equals(mediaType)
+                ? node.path("first_air_date").asText(null)
+                : node.path("release_date").asText(null));
+        item.setPopularity(node.path("popularity").isNumber()
+                ? node.path("popularity").asDouble()
+                : null);
     }
 
     @FunctionalInterface
