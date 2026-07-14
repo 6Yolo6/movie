@@ -8,8 +8,10 @@ spring:
       - optional:file:../.env[.properties]
   application:
     name: gying-movie
+  jackson:
+    time-zone: Asia/Shanghai
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:Root@123}
     driver-class-name: com.mysql.cj.jdbc.Driver

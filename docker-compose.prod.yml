@@ -31,6 +31,8 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Duser.timezone=Asia/Shanghai -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
     ports:
       - "${BACKEND_PORT:-8880}:8880"
     volumes:
@@ -47,6 +49,9 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ""  # Empty = use relative URLs via nginx proxy
+    environment:
+      - INTERNAL_API_URL=http://backend:8880
+      - TZ=Asia/Shanghai
     restart: unless-stopped
     networks:
       - gying-net

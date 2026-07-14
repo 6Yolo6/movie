@@ -20,6 +20,8 @@ spring:
       - optional:file:../.env[.properties]
   application:
     name: gying-movie
+  jackson:
+    time-zone: Asia/Shanghai
   lifecycle:
     timeout-per-shutdown-phase: 30s
 

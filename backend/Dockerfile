@@ -18,6 +18,7 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8880
 
 # JVM tuning for container environments
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+ENV TZ="Asia/Shanghai"
+ENV JAVA_OPTS="-Duser.timezone=Asia/Shanghai -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar --spring.profiles.active=prod"]
