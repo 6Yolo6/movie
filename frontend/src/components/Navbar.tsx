@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
 import {
-    BellOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
+    BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
     NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -232,6 +232,11 @@ export default function Navbar() {
                 key: 'resourceHub',
                 label: <Link href="/admin/resource-hub" onClick={closeDrawer}>{t('resourceHubTitle')}</Link>,
                 icon: <CloudSyncOutlined />,
+            },
+            {
+                key: 'gyingSource',
+                label: <Link href="/admin/gying-source" onClick={closeDrawer}>{t('gyingSourceTitle')}</Link>,
+                icon: <CloudDownloadOutlined />,
             },
             {
                 key: 'automation',

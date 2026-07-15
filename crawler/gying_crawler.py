@@ -3,10 +3,12 @@ import re
 import json
 import time
 import os
+import argparse
 import pymysql
 from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 # ================= Configuration =================
@@ -34,10 +36,13 @@ HEADERS = {
     "Referer": "https://www.xn--wcv59z.com/"
 }
 
-BASE_URL = "https://www.xn--wcv59z.com"
+BASE_URL = os.getenv("GYING_BASE_URL", "https://www.xn--wcv59z.com").rstrip("/")
 SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
 POW_MIN_SECONDS = 3
 _SITE_SESSION = None
+API_TOKEN = os.getenv("GYING_SOURCE_API_TOKEN", "")
+API_HOST = os.getenv("GYING_SOURCE_API_HOST", "0.0.0.0")
+API_PORT = int(os.getenv("GYING_SOURCE_API_PORT", "8091"))
 
 # ================= Services =================
 
@@ -55,7 +60,7 @@ def upload_image_to_minio(url, movie_id):
         # User mentioned: https://s.tutu.pm/img/mv/31z0/384.avif
         # But url provided in _obj.d might be different?
         # Actually _obj.d doesn't seem to have the full image URL.
-        # User said: "请求都是384.avif... https://s.tutu.pm/img/mv/{id}/384.avif"
+        # https://s.tutu.pm/img/mv/{id}/384.avif"
         
         # We construct the URL if it's not present, or if we know the pattern.
         # Let's assume the pattern based on user input:
@@ -324,6 +329,39 @@ def site_get(url, *, timeout=10, headers=None, **kwargs):
 
     return resp
 
+def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
+    session = get_site_session()
+    request_headers = headers or {}
+    referer = request_headers.get("Referer", BASE_URL + "/")
+
+    warmup = session.get(referer, timeout=timeout)
+    if is_pow_challenge_response(warmup) and solve_browser_pow(session, referer):
+        warmup = session.get(referer, timeout=timeout)
+    if is_login_required_response(warmup) and not login_site_session(session):
+        raise RuntimeError("Gying login is required")
+
+    resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+    if is_pow_challenge_response(resp) and solve_browser_pow(session, referer):
+        resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+    if is_login_required_response(resp) and login_site_session(session):
+        resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+    return resp
+
+def parse_site_action_response(resp):
+    try:
+        data = resp.json()
+    except ValueError:
+        raise RuntimeError(f"Gying returned non-JSON response (HTTP {resp.status_code})")
+
+    success = resp.ok and (
+        data.get("success") is True
+        or data.get("code") in (0, 1, 200)
+        or data.get("status") in ("success", "ok")
+    )
+    if not success:
+        raise RuntimeError(str(data.get("msg") or data.get("message") or data))
+    return data
+
 def extract_js_assignment_json(text, assignment):
     marker = re.search(rf"{re.escape(assignment)}\s*=", text)
     if not marker:
@@ -446,6 +484,7 @@ def normalize_download_section(section, target_user):
     urls = section.get("url", [])
     passwords = section.get("p", section.get("pwd", []))
     users = section.get("user", [])
+    ids = section.get("id", [])
     type_indexes = section.get("type", [])
     type_names = section.get("tname", [])
 
@@ -479,6 +518,7 @@ def normalize_download_section(section, target_user):
             name = "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url
 
         resources.append({
+            "source_id": str(list_get(ids, i)).strip(),
             "title": name,
             "url": url,
             "code": extract_share_code(url, list_get(passwords, i)),
@@ -488,6 +528,45 @@ def normalize_download_section(section, target_user):
         })
 
     return resources
+
+def publish_pan_resource(type_code, mid, title, panurl, panpw="", login_visible=0):
+    endpoint = f"{BASE_URL}/res/pan/add/{type_code}/{mid}"
+    payload = {
+        "title": title,
+        "panurl": panurl,
+        "panpw": panpw or "",
+        "is": str(int(login_visible)),
+    }
+    resp = site_post(
+        endpoint,
+        data=payload,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": f"{BASE_URL}/{type_code}/{mid}",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    return parse_site_action_response(resp)
+
+def update_pan_resource(source_id, title, panurl, panpw="", login_visible=0, type_code=None, mid=None):
+    endpoint = f"{BASE_URL}/res/pan/edit/{source_id}"
+    referer = f"{BASE_URL}/{type_code}/{mid}" if type_code and mid else f"{BASE_URL}/user/content_list"
+    payload = {
+        "title": title,
+        "panurl": panurl,
+        "panpw": panpw or "",
+        "is": str(int(login_visible)),
+    }
+    resp = site_post(
+        endpoint,
+        data=payload,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": referer,
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    return parse_site_action_response(resp)
 
 def normalize_content_list_resources(resources):
     normalized = []
@@ -538,6 +617,267 @@ def fetch_download_resources(type_code, mid, fallback_resources):
         resources.extend(normalize_download_section(data.get(key), TARGET_USER))
 
     return resources or normalize_content_list_resources(fallback_resources)
+
+def ingest_movie(db, type_code, mid, upload_poster=True):
+    global _SITE_SESSION
+    meta = None
+    for attempt in range(3):
+        meta = fetch_movie_metadata(type_code, mid)
+        if meta:
+            break
+        _SITE_SESSION = None
+        if attempt < 2:
+            time.sleep(1)
+    if not meta:
+        raise RuntimeError(f"No metadata found for {type_code}/{mid}")
+
+    title = meta.get("title") or meta.get("name") or meta.get("ename")
+    series_name, season = parse_season(title)
+    poster_url = upload_image_by_pattern(type_code, mid) if upload_poster else None
+    pf = meta.get("pf") or {}
+    db_score = (pf.get("db") or {}).get("s") or 0
+    im_score = (pf.get("im") or {}).get("s") or 0
+
+    sql_movie = """
+        INSERT INTO movie_metadata (
+            id, title_cn, title_en, year, runtime, directors, actors, genres,
+            regions, languages, release_dates, aliases, poster_url,
+            douban_score, imdb_score, summary, category, series_name, season,
+            status, resource_status, created_at, updated_at
+        ) VALUES (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, 'ACTIVE', 'AVAILABLE', NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            title_cn=VALUES(title_cn), title_en=VALUES(title_en), year=VALUES(year),
+            runtime=VALUES(runtime), directors=VALUES(directors), actors=VALUES(actors),
+            genres=VALUES(genres), regions=VALUES(regions), languages=VALUES(languages),
+            release_dates=VALUES(release_dates), aliases=VALUES(aliases),
+            poster_url=COALESCE(VALUES(poster_url), poster_url),
+            douban_score=VALUES(douban_score), imdb_score=VALUES(imdb_score),
+            summary=VALUES(summary), category=VALUES(category),
+            series_name=VALUES(series_name), season=VALUES(season),
+            status='ACTIVE', resource_status='AVAILABLE', deleted_at=NULL, updated_at=NOW()
+    """
+    values = (
+        mid,
+        title,
+        meta.get("name") or meta.get("ename"),
+        meta.get("year"),
+        meta.get("times"),
+        json.dumps(meta.get("daoyan", []), ensure_ascii=False),
+        json.dumps(meta.get("zhuyan", []), ensure_ascii=False),
+        json.dumps(meta.get("leixing", []), ensure_ascii=False),
+        json.dumps(meta.get("diqu", []), ensure_ascii=False),
+        json.dumps(meta.get("yuyan", []), ensure_ascii=False),
+        meta.get("stime"),
+        meta.get("aliases") or meta.get("aka"),
+        poster_url,
+        db_score,
+        im_score,
+        meta.get("introduce") or meta.get("summary"),
+        type_code,
+        series_name,
+        season,
+    )
+    resources = fetch_download_resources(type_code, mid, [])
+    inserted = 0
+    updated = 0
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(sql_movie, values)
+        for resource in resources:
+            resource_url = (resource.get("url") or "").strip()
+            if not resource_url:
+                continue
+            provider = resource.get("provider") or detect_provider(resource.get("tname", ""))
+            link_type = resource.get("type") or detect_resource_type(resource_url, provider)
+            source_id = resource.get("source_id") or None
+            with db.cursor() as cursor:
+                cursor.execute(
+                    "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1",
+                    (mid, resource_url),
+                )
+                existing = cursor.fetchone()
+                if existing:
+                    cursor.execute(
+                        """
+                        UPDATE resource_link
+                        SET name=%s, type=%s, provider=%s, code=%s, audit_status=1,
+                            status='ACTIVE', link_status='NORMAL', source='GYING',
+                            source_ref=%s, source_url=%s, auto_collected=1,
+                            deleted_at=NULL, updated_at=NOW()
+                        WHERE id=%s
+                        """,
+                        (
+                            resource.get("title"),
+                            link_type,
+                            provider,
+                            resource.get("code") or "",
+                            source_id,
+                            f"{BASE_URL}/{type_code}/{mid}",
+                            existing["id"],
+                        ),
+                    )
+                    updated += 1
+                else:
+                    cursor.execute(
+                        """
+                        INSERT INTO resource_link (
+                            movie_id, name, type, provider, url, code, uploader_id,
+                            audit_status, status, link_status, report_count, source,
+                            source_ref, source_url, auto_collected, created_at, updated_at
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, 1, 1, 'ACTIVE', 'NORMAL', 0,
+                            'GYING', %s, %s, 1, NOW(), NOW()
+                        )
+                        """,
+                        (
+                            mid,
+                            resource.get("title"),
+                            link_type,
+                            provider,
+                            resource_url,
+                            resource.get("code") or "",
+                            source_id,
+                            f"{BASE_URL}/{type_code}/{mid}",
+                        ),
+                    )
+                    inserted += 1
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return {
+        "movieId": mid,
+        "typeCode": type_code,
+        "title": title,
+        "resourcesFound": len(resources),
+        "resourcesInserted": inserted,
+        "resourcesUpdated": updated,
+    }
+
+def find_pan_resource(type_code, mid, panurl):
+    resources = fetch_download_resources(type_code, mid, [])
+    return next((item for item in resources if item.get("url") == panurl), None)
+
+def mark_resource_published(db, resource_id, source_id, type_code, mid):
+    if not resource_id:
+        return
+    with db.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE resource_link
+            SET source='GYING_PUBLISHED', source_ref=%s, source_url=%s, updated_at=NOW()
+            WHERE id=%s
+            """,
+            (source_id, f"{BASE_URL}/{type_code}/{mid}", resource_id),
+        )
+    db.commit()
+
+class GyingSourceApiHandler(BaseHTTPRequestHandler):
+    server_version = "GyingSource/1.0"
+
+    def log_message(self, fmt, *args):
+        print("[gying-source] " + fmt % args)
+
+    def send_json(self, status, payload):
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def authorized(self):
+        return not API_TOKEN or self.headers.get("X-Internal-Token") == API_TOKEN
+
+    def read_json(self):
+        if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
+            chunks = []
+            while True:
+                size_line = self.rfile.readline().strip()
+                size = int(size_line.split(b";", 1)[0], 16)
+                if size == 0:
+                    self.rfile.readline()
+                    break
+                chunks.append(self.rfile.read(size))
+                self.rfile.read(2)
+            raw = b"".join(chunks)
+        else:
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length) if length else b""
+        return json.loads(raw.decode("utf-8")) if raw else {}
+
+    def do_GET(self):
+        if self.path == "/health":
+            self.send_json(200, {"ok": True})
+        else:
+            self.send_json(404, {"error": "Not found"})
+
+    def do_POST(self):
+        if not self.authorized():
+            self.send_json(401, {"error": "Unauthorized"})
+            return
+        try:
+            payload = self.read_json()
+            print(f"[gying-source] {self.path} payload keys: {sorted(payload.keys())}", flush=True)
+            if self.path == "/ingest":
+                db = get_db_connection()
+                try:
+                    result = ingest_movie(
+                        db,
+                        payload["typeCode"],
+                        payload["mid"],
+                        bool(payload.get("uploadPoster", True)),
+                    )
+                finally:
+                    db.close()
+            elif self.path == "/publish":
+                result = publish_pan_resource(
+                    payload["typeCode"],
+                    payload["mid"],
+                    payload["title"],
+                    payload["panurl"],
+                    payload.get("panpw", ""),
+                    payload.get("is", 0),
+                )
+                item = find_pan_resource(payload["typeCode"], payload["mid"], payload["panurl"])
+                source_id = (item or {}).get("source_id") or result.get("id")
+                if payload.get("resourceId"):
+                    db = get_db_connection()
+                    try:
+                        mark_resource_published(
+                            db,
+                            payload["resourceId"],
+                            source_id,
+                            payload["typeCode"],
+                            payload["mid"],
+                        )
+                    finally:
+                        db.close()
+                result = {"action": "published", "sourceId": source_id, "site": result}
+            elif self.path == "/update":
+                result = update_pan_resource(
+                    payload["sourceId"],
+                    payload["title"],
+                    payload["panurl"],
+                    payload.get("panpw", ""),
+                    payload.get("is", 0),
+                    payload.get("typeCode"),
+                    payload.get("mid"),
+                )
+                result = {"action": "updated", "sourceId": payload["sourceId"], "site": result}
+            else:
+                self.send_json(404, {"error": "Not found"})
+                return
+            self.send_json(200, result)
+        except (KeyError, ValueError) as error:
+            self.send_json(400, {"error": f"Invalid request: {error}"})
+        except Exception as error:
+            self.send_json(502, {"error": str(error)})
 
 def crawl_user_content(db):
     page = 1
@@ -729,13 +1069,64 @@ def crawl_user_content(db):
             print(f"❌ Page Error: {e}")
             break
 
-if __name__ == "__main__":
-    print("=== Enhanced User Content Crawler ===")
+def build_cli():
+    parser = argparse.ArgumentParser(description="Gying source crawler and publisher")
+    sub = parser.add_subparsers(dest="command")
+
+    sub.add_parser("crawl-user", help="Crawl the configured user's content list")
+    ingest = sub.add_parser("ingest", help="Ingest one Gying movie and its resources")
+    ingest.add_argument("type_code", choices=("mv", "tv", "ac"))
+    ingest.add_argument("mid")
+    ingest.add_argument("--no-poster", action="store_true")
+
+    publish = sub.add_parser("publish", help="Publish one pan resource to Gying")
+    publish.add_argument("type_code", choices=("mv", "tv", "ac"))
+    publish.add_argument("mid")
+    publish.add_argument("title")
+    publish.add_argument("panurl")
+    publish.add_argument("--panpw", default="")
+    publish.add_argument("--login-visible", type=int, choices=(0, 1), default=0)
+
+    update = sub.add_parser("update", help="Update one Gying pan resource")
+    update.add_argument("source_id")
+    update.add_argument("title")
+    update.add_argument("panurl")
+    update.add_argument("--panpw", default="")
+    update.add_argument("--login-visible", type=int, choices=(0, 1), default=0)
+
+    serve = sub.add_parser("serve", help="Start the internal project integration API")
+    serve.add_argument("--host", default=API_HOST)
+    serve.add_argument("--port", type=int, default=API_PORT)
+    return parser
+
+def main():
+    args = build_cli().parse_args()
+    command = args.command or "crawl-user"
+    if command == "serve":
+        server = ThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
+        print(f"Gying source API listening on {args.host}:{args.port}")
+        server.serve_forever()
+        return
+    if command == "publish":
+        print(json.dumps(publish_pan_resource(
+            args.type_code, args.mid, args.title, args.panurl, args.panpw, args.login_visible
+        ), ensure_ascii=False))
+        return
+    if command == "update":
+        print(json.dumps(update_pan_resource(
+            args.source_id, args.title, args.panurl, args.panpw, args.login_visible
+        ), ensure_ascii=False))
+        return
+
+    db = get_db_connection()
     try:
-        db = get_db_connection()
-        print("✅ DB Connected.")
-        crawl_user_content(db)
+        if command == "ingest":
+            result = ingest_movie(db, args.type_code, args.mid, not args.no_poster)
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            crawl_user_content(db)
+    finally:
         db.close()
-    except Exception as e:
-        print(f"❌ Fatal: {e}")
-    print("=== Finished ===")
+
+if __name__ == "__main__":
+    main()

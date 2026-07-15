@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-07-14
+更新时间：2026-07-15
 
 ## 当前项目目标
 
@@ -110,6 +110,16 @@
 - QQ 群搜索成功后会保留用户最近影片 5 分钟，支持继续回复“百度 3”“夸克 2”“资源 8”等选择网盘与 1-10 条结果；首轮命中库内资源后，指定库里缺失的网盘仍会继续补搜，夸克选择只返回转存到自有网盘后重新创建并发布的分享。`密室大逃脱第七季` 等季数查询会直接匹配主节目，并按原词、`第7季`、紧凑数字和 `S07` 变体搜索；外部 Panso API 请求固定携带 `res=all`，避免只得到 `data.total` 而漏掉真实资源。
 - 后台 Resource Hub 页面已命名为“影视资源中心”，统计口径显示为“已发现（含未分享）”和“已分享待入库”；未生成分享的记录使用“重试分享并发布”，不再显示会被无条件跳过的普通发布按钮。
 - 夸克转存完成后的目录检查已改成短轮询，并支持从“转存成功但分享阶段误判空目录”的 `FAILED` 任务恢复。真实修复“尼古喵喵”：目录含 `01.mp4`、`02.mp4`，发现 `585` 与转存 `220` 已恢复，创建本站分享并发布为 `resource_link.id=1634`，状态为 `ACTIVE/NORMAL`。
+
+## GYING 数据源集成
+
+- 已将 `crawler/gying_crawler.py` 扩展为可复用的数据源工具，支持 `ingest`、`crawl-user`、`publish`、`update` 和内部 `serve` 模式；站点账号、密码、Cookie、数据库和 MinIO 配置继续只从环境变量读取。
+- 已新增 `gying-source` Compose 服务、后台 `/api/admin/gying-source` 接口和 `/admin/gying-source` 管理页面，可按 GYING 影片 ID 一键抓取入库，也可按本站 `resource_link.id` 发布或更新 GYING 网盘资源。
+- 站点资源读取使用 `/res/downurl/{type_code}/{mid}`，并从 `panlist.id` 保存稳定的站点资源 ID 到 `resource_link.source_ref`；发布使用 `/res/pan/add/{type_code}/{mid}`，更新使用 `/res/pan/edit/{panlist_id}`，默认 `is=0`。
+- 已创建并校验本机 skill：`C:\Users\Administrator\.codex\skills\gying-source-sync`，包含操作流程和 API reference，`quick_validate.py` 已通过。
+- 2026-07-15 真实抓取验证 `mv/EGER`：影片“后室”、海报和本人网盘资源成功写入数据库，抓取结果为 `resourcesFound=1`，重复执行通过后台页面返回 `resourcesUpdated=1`。
+- 2026-07-15 真实发布/更新验证本站资源 `resource_link.id=1606`：发布到 GYING 返回 `panlist.id=3vM8N` 和“发布成功”，同值更新返回“修改成功”；浏览器在 GYING `/user/content_list` 回读到“火遮眼”资源，项目后台更新按钮也返回 `sourceId=3vM8N`。
+- 已重建并运行 `backend`、`frontend`、`gying-source` 和 `nginx`；浏览器管理员端确认数据源页面、抓取结果和更新结果均正常显示。
 
 ## 未结束任务
 

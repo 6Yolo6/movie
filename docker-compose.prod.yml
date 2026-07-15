@@ -56,6 +56,33 @@ services:
     networks:
       - gying-net
 
+  gying-source:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - GYING_DB_HOST=${DB_HOST:-host.docker.internal}
+      - GYING_DB_USER=${DB_USER:-root}
+      - GYING_DB_PASSWORD=${DB_PASSWORD:-}
+      - GYING_DB_NAME=${DB_NAME:-gying}
+      - GYING_MINIO_ENDPOINT=${MINIO_ENDPOINT:-host.docker.internal:9000}
+      - GYING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-admin}
+      - GYING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
+      - GYING_MINIO_BUCKET=${MINIO_BUCKET:-gying}
+      - GYING_BASE_URL=${GYING_BASE_URL:-https://www.xn--wcv59z.com}
+      - GYING_USERNAME=${GYING_USERNAME:-}
+      - GYING_PASSWORD=${GYING_PASSWORD:-}
+      - GYING_COOKIE=${GYING_COOKIE:-}
+      - GYING_SOURCE_API_TOKEN=${GYING_SOURCE_API_TOKEN:-}
+      - TZ=Asia/Shanghai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - gying-net
+
   redis:
     profiles:
       - embedded-deps

@@ -61,6 +61,10 @@ app:
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN}
 
+gying-source:
+  base-url: ${GYING_SOURCE_BASE_URL:http://gying-source:8091}
+  token: ${GYING_SOURCE_API_TOKEN:}
+
 resource-hub:
   enabled: ${RESOURCE_HUB_ENABLED:false}
   auto-approve: ${RESOURCE_HUB_AUTO_APPROVE:true}
