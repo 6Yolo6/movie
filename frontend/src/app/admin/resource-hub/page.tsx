@@ -21,6 +21,7 @@ import {
     Table,
     Tabs,
     Tag,
+    Tooltip,
     Typography,
 } from 'antd';
 import {
@@ -32,6 +33,7 @@ import {
     SaveOutlined,
     SearchOutlined,
     ShareAltOutlined,
+    QuestionCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
@@ -122,6 +124,7 @@ interface DiscoveryResult {
     fileSize?: string;
     status: string;
     failureReason?: string;
+    shareUrl?: string;
     resourceLinkId?: number;
     createdAt?: string;
 }
@@ -604,19 +607,23 @@ export default function ResourceHubAdminPage() {
             key: 'actions',
             fixed: 'right',
             width: 220,
-            render: (_: unknown, record) => (
-                <Space size={6}>
-                    {record.status === 'DISCOVERED' && (
+            render: (_: unknown, record) => {
+                const canRetryShare = record.status === 'FAILED'
+                    && record.failureReason?.includes('share creation failed');
+                const canPublish = record.status === 'DISCOVERED' || canRetryShare;
+                return (
+                    <Space size={6}>
+                    {canPublish && (
                         <Button
                             size="small"
-                            icon={<ShareAltOutlined />}
+                            icon={record.shareUrl ? <ShareAltOutlined /> : <CloudSyncOutlined />}
                             loading={runningAction === `publish-${record.id}`}
                             onClick={() => runAction(`publish-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/publish`)}
                         >
-                            {t('resourceHubPublish')}
+                            {record.shareUrl ? t('resourceHubPublish') : t('resourceHubRetrySharePublish')}
                         </Button>
                     )}
-                    {(record.resourceLinkId || record.status === 'DISCOVERED' || record.status === 'SAVED') && (
+                    {(record.resourceLinkId || record.shareUrl || record.status === 'SAVED') && (
                         <Button
                             size="small"
                             icon={<ShareAltOutlined />}
@@ -627,7 +634,8 @@ export default function ResourceHubAdminPage() {
                         </Button>
                     )}
                 </Space>
-            ),
+                );
+            },
         },
     ];
 
@@ -654,7 +662,7 @@ export default function ResourceHubAdminPage() {
                     <div className="flex items-center gap-3">
                         <CloudSyncOutlined className="text-3xl text-blue-500" />
                         <div>
-                            <Title level={2} className="!mb-1">Resource Hub</Title>
+                            <Title level={2} className="!mb-1">{t('resourceHubTitle')}</Title>
                             <Text type="secondary">{t('resourceHubHint')}</Text>
                         </div>
                     </div>
@@ -676,7 +684,15 @@ export default function ResourceHubAdminPage() {
                 <Row gutter={[16, 16]} className="mb-6">
                     <Col xs={12} md={6}>
                         <Card loading={loading}>
-                            <Statistic title={t('resourceHubPendingTasks')} value={counts.PENDING || 0} prefix={<DatabaseOutlined />} />
+                            <Statistic
+                                title={(
+                                    <Tooltip title={t('resourceHubPendingTasksHelp')}>
+                                        <span>{t('resourceHubPendingTasks')} <QuestionCircleOutlined /></span>
+                                    </Tooltip>
+                                )}
+                                value={counts.PENDING || 0}
+                                prefix={<DatabaseOutlined />}
+                            />
                         </Card>
                     </Col>
                     <Col xs={12} md={6}>
@@ -707,7 +723,7 @@ export default function ResourceHubAdminPage() {
                                         <Card title={t('resourceHubRuntime')} loading={loading}>
                                             <Space direction="vertical" size="middle" className="w-full">
                                                 <Descriptions column={1} size="small">
-                                                    <Descriptions.Item label="Resource Hub">
+                                                    <Descriptions.Item label={t('resourceHubTitle')}>
                                                         {boolTag(Boolean(overview?.enabled))}
                                                     </Descriptions.Item>
                                                     <Descriptions.Item label={t('resourceHubWorkerEffective')}>

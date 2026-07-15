@@ -225,7 +225,7 @@ export default function Navbar() {
             },
             {
                 key: 'resourceHub',
-                label: <Link href="/admin/resource-hub" onClick={closeDrawer}>Resource Hub</Link>,
+                label: <Link href="/admin/resource-hub" onClick={closeDrawer}>{t('resourceHubTitle')}</Link>,
                 icon: <CloudSyncOutlined />,
             },
             {

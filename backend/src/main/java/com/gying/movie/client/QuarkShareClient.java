@@ -68,9 +68,30 @@ public class QuarkShareClient {
         JsonNode data = body.path("data");
         JsonNode list = firstArray(data.path("list"), data.path("items"), data.path("files"));
         int itemCount = list == null ? 0 : list.size();
-        int total = firstInt(data.path("total"), data.path("_total"), data.path("count"));
+        JsonNode metadata = body.path("metadata");
+        int total = firstInt(
+                data.path("total"),
+                data.path("_total"),
+                data.path("count"),
+                metadata.path("_total"),
+                metadata.path("total"));
         boolean hasContent = itemCount > 0 || total > 0;
         return new FolderContentCheck(pathInfo.fid(), pathInfo.name(), hasContent, Math.max(total, itemCount));
+    }
+
+    public FolderContentCheck waitForFolderContent(String savePath, int attempts, long intervalMs) {
+        int safeAttempts = Math.max(attempts, 1);
+        FolderContentCheck lastCheck = null;
+        for (int index = 0; index < safeAttempts; index++) {
+            lastCheck = checkFolderContent(savePath);
+            if (lastCheck.hasContent()) {
+                return lastCheck;
+            }
+            if (index + 1 < safeAttempts) {
+                sleep(Math.max(intervalMs, 100));
+            }
+        }
+        return lastCheck;
     }
 
     private PathInfo resolvePath(String cookie, String savePath) {

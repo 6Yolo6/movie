@@ -27,7 +27,7 @@ public final class MovieSearchCandidateUtils {
     }
 
     public static String formatReply(String keyword, List<MovieSearchCandidate> candidates) {
-        StringBuilder reply = new StringBuilder("请从下面选择完整片名后重新搜索：");
+        StringBuilder reply = new StringBuilder("请选择要搜索的影片：");
         int index = 0;
         for (MovieSearchCandidate candidate : candidates) {
             String title = firstText(candidate.getTitle(), candidate.getOriginalTitle());
@@ -41,8 +41,16 @@ public final class MovieSearchCandidateUtils {
                 reply.append(" (").append(candidate.getYear()).append(")");
             }
         }
-        reply.append("\n\n例如：搜 ").append(firstCandidateTitle(candidates, keyword));
+        reply.append("\n\n直接回复序号即可，例如：1");
         return reply.toString();
+    }
+
+    public static String selectionTitle(List<MovieSearchCandidate> candidates, int oneBasedIndex) {
+        if (candidates == null || oneBasedIndex < 1 || oneBasedIndex > candidates.size()) {
+            return null;
+        }
+        MovieSearchCandidate candidate = candidates.get(oneBasedIndex - 1);
+        return candidate == null ? null : firstText(candidate.getTitle(), candidate.getOriginalTitle());
     }
 
     public static List<String> searchableTitles(List<MovieSearchCandidate> candidates) {
@@ -72,25 +80,6 @@ public final class MovieSearchCandidateUtils {
                 unique.put(key, candidate);
             }
         }
-    }
-
-    private static String firstCandidateTitle(List<MovieSearchCandidate> candidates, String fallback) {
-        if (candidates != null) {
-            String normalizedFallback = normalize(fallback);
-            for (MovieSearchCandidate candidate : candidates) {
-                String title = firstText(candidate.getTitle(), candidate.getOriginalTitle());
-                if (hasText(title) && !normalize(title).equals(normalizedFallback)) {
-                    return title;
-                }
-            }
-            for (MovieSearchCandidate candidate : candidates) {
-                String title = firstText(candidate.getTitle(), candidate.getOriginalTitle());
-                if (hasText(title)) {
-                    return title;
-                }
-            }
-        }
-        return fallback;
     }
 
     private static void addTitle(List<String> titles, String value) {

@@ -9,6 +9,7 @@ import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -33,6 +34,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     private final IResourceDiscoveryResultService discoveryResultService;
     private final IResourceLinkService resourceLinkService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IQuarkShareService quarkShareService;
     private final IMovieMetadataService movieService;
 
     public ResourceHubPublishServiceImpl(
@@ -40,11 +42,13 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             IResourceDiscoveryResultService discoveryResultService,
             IResourceLinkService resourceLinkService,
             IQuarkTransferTaskService quarkTransferTaskService,
+            IQuarkShareService quarkShareService,
             IMovieMetadataService movieService) {
         this.resourceHubProperties = resourceHubProperties;
         this.discoveryResultService = discoveryResultService;
         this.resourceLinkService = resourceLinkService;
         this.quarkTransferTaskService = quarkTransferTaskService;
+        this.quarkShareService = quarkShareService;
         this.movieService = movieService;
     }
 
@@ -82,8 +86,11 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
     private void publishOne(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
         try {
+            boolean shareRecovery = "FAILED".equalsIgnoreCase(discovery.getStatus())
+                    && isQuarkDiscovery(discovery);
             if (!"DISCOVERED".equalsIgnoreCase(discovery.getStatus())
-                    && discovery.getResourceLinkId() == null) {
+                    && discovery.getResourceLinkId() == null
+                    && !shareRecovery) {
                 throw new IllegalStateException("Discovery result is not publishable: " + discovery.getStatus());
             }
 
@@ -124,7 +131,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                     discovery.setStatus("SAVED");
                     discovery.setFailureReason(null);
                     discovery.setUpdatedAt(now);
-                    discoveryResultService.updateById(discovery);
+                    saveSuccessfulDiscovery(discovery);
                     markResourceAvailable(movie, now);
                     result.setUpdated(result.getUpdated() + 1);
                     result.getResourceIds().add(linked.getId());
@@ -137,7 +144,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 discovery.setResourceLinkId(existing.getId());
                 discovery.setFailureReason(null);
                 discovery.setUpdatedAt(now);
-                discoveryResultService.updateById(discovery);
+                saveSuccessfulDiscovery(discovery);
                 markResourceAvailable(movie, now);
                 result.setUpdated(result.getUpdated() + 1);
                 result.getResourceIds().add(existing.getId());
@@ -177,7 +184,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             discovery.setResourceLinkId(link.getId());
             discovery.setFailureReason(null);
             discovery.setUpdatedAt(now);
-            discoveryResultService.updateById(discovery);
+            saveSuccessfulDiscovery(discovery);
             markResourceAvailable(movie, now);
             result.setPublished(result.getPublished() + 1);
             result.getResourceIds().add(link.getId());
@@ -190,6 +197,18 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         }
     }
 
+    private void saveSuccessfulDiscovery(ResourceDiscoveryResult discovery) {
+        discoveryResultService.updateById(discovery);
+        discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                .eq("id", discovery.getId())
+                .set("status", discovery.getStatus())
+                .set("resource_link_id", discovery.getResourceLinkId())
+                .set("share_url", discovery.getShareUrl())
+                .set("share_url_hash", discovery.getShareUrlHash())
+                .set("failure_reason", null)
+                .set("updated_at", discovery.getUpdatedAt()));
+    }
+
     private boolean ensurePublishableShare(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
         if (!resourceHubProperties.getQuark().isShareEnabled() || !isQuarkDiscovery(discovery)) {
             return true;
@@ -199,15 +218,38 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         }
         QuarkTransferTask transfer = findTransferTask(discovery);
         if (transfer != null && hasText(transfer.getShareUrl())) {
-            discovery.setShareUrl(transfer.getShareUrl());
-            discovery.setShareUrlHash(firstText(transfer.getShareUrlHash(), ResourceHubHashUtils.sha256(transfer.getShareUrl())));
-            discovery.setFailureReason(null);
-            discovery.setUpdatedAt(LocalDateTime.now());
-            discoveryResultService.updateById(discovery);
-            return true;
+            return applyTransferShare(discovery, transfer.getShareUrl(), transfer.getShareUrlHash());
+        }
+        if (transfer != null) {
+            try {
+                String shareUrl = quarkShareService.ensureShareUrl(transfer);
+                if (hasText(shareUrl)) {
+                    return applyTransferShare(discovery, shareUrl, transfer.getShareUrlHash());
+                }
+            } catch (Exception e) {
+                discovery.setFailureReason(trim(e.getMessage(), 1000));
+                discovery.setUpdatedAt(LocalDateTime.now());
+                discoveryResultService.updateById(discovery);
+                result.setFailed(result.getFailed() + 1);
+                addError(result, "discovery " + discovery.getId() + ": " + e.getMessage());
+                return false;
+            }
         }
         result.setSkipped(result.getSkipped() + 1);
         return false;
+    }
+
+    private boolean applyTransferShare(
+            ResourceDiscoveryResult discovery,
+            String shareUrl,
+            String shareUrlHash) {
+        discovery.setShareUrl(shareUrl);
+        discovery.setShareUrlHash(firstText(shareUrlHash, ResourceHubHashUtils.sha256(shareUrl)));
+        discovery.setStatus("DISCOVERED");
+        discovery.setFailureReason(null);
+        discovery.setUpdatedAt(LocalDateTime.now());
+        discoveryResultService.updateById(discovery);
+        return true;
     }
 
     private boolean isQuarkDiscovery(ResourceDiscoveryResult discovery) {

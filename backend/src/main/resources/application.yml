@@ -50,6 +50,8 @@ resource-hub:
   pansou:
     base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://localhost:8888}
     token: ${RESOURCE_HUB_PANSOU_TOKEN:}
+    api-base-url: ${PANSOU_API_BASE_URL:https://www.panso.best}
+    api-key: ${PANSOU_API_KEY:${PANSO_API_KEY:}}
   quark:
     base-url: ${QUARK_AUTO_SAVE_BASE_URL:http://localhost:5005}
     token: ${QUARK_AUTO_SAVE_TOKEN:}

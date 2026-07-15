@@ -47,9 +47,27 @@
 - `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
 - `GET /api/qq-bot/health`：查看 QQ Bot 开关、回复通道、NapCat 和官方 QQBot 配置状态。
 - `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
-- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：返回 QQ 群影视搜索回复文本，不主动发送消息；用于 OpenClaw QQBot 被动回复桥接。`userKey` 用于后端频率限制。
+- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：返回 QQ 群影视搜索回复文本，不主动发送消息；用于 OpenClaw QQBot 被动回复桥接。`userKey` 同时用于频率限制、影片候选序号和最近一次影片的资源偏好上下文。
+
+### PanSou 外部搜索 API 最小调用示例
+
+后端会将该 API 与本地 PanSou 结果去重合并。密钥只通过后端环境变量 `PANSOU_API_KEY` 配置：
+
+```powershell
+$headers = @{ "X-API-Key" = $env:PANSOU_API_KEY }
+$body = @{ kw = "福尔摩斯" } | ConvertTo-Json -Compress
+Invoke-RestMethod -Method Post `
+  -Uri "https://www.panso.best/api/search" `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+本机历史配置名 `PANSO_API_KEY` 也可被后端读取，但新环境统一使用 `PANSOU_API_KEY`。
 
 QQ Bot 查询会先读取 `resource_link` 已发布资源；只有库内没有可用链接时才触发外部搜索、转存和发布。库内没有影视元数据时会先通过 TMDB 补全，未上映/无可信元数据时不会触发 PanSou。搜索词会受 `QQ_BOT_BLOCKED_KEYWORDS` 敏感词限制。群回复只展示影片信息和正式资源链接，不展示转存状态或内部分享任务信息。
+
+搜索成功后，机器人保留该用户最近影片 5 分钟；可继续回复 `百度 3`、`阿里 5`、`夸克 2`、`网盘 天翼 3` 或 `资源 8` 选择网盘和返回数量，单次最多 10 条。首轮即使已经命中库内资源，后续指定库里缺失的网盘仍会继续补搜。夸克始终优先走源链接验活、转存到自有网盘、创建新分享并正式发布，不直接把外部夸克源链接作为偏好回复；夸克失效或无法转存时，默认/全部网盘查询再返回标题匹配且未被明确判定失效的其他网盘链接。季数关键词会保留原词，并补充 `第7季`、紧凑数字和 `S07` 搜索变体。
 
 ## 评论、收藏、通知
 

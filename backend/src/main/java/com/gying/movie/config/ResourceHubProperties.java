@@ -30,6 +30,8 @@ public class ResourceHubProperties {
     public static class Pansou {
         private String baseUrl = "http://localhost:8888";
         private String token;
+        private String apiBaseUrl = "https://www.panso.best";
+        private String apiKey;
     }
 
     @Data

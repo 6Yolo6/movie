@@ -13,13 +13,25 @@ public final class ResourceTitleMatcher {
             "(?:\\r?\\n|📜\\s*介绍|[【\\[]?简介[】\\]]?\\s*[：:]|[【\\[]?介绍[】\\]]?\\s*[：:])",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern TRAILING_NUMBER = Pattern.compile("([0-9]+)$");
+    private static final Pattern RESOURCE_METADATA_MARKER = Pattern.compile(
+            "\\s*(?:[\\[【]|(?=\\d+\\s*[~\\-至到]\\s*\\d+\\s*季))",
+            Pattern.CASE_INSENSITIVE);
 
     private ResourceTitleMatcher() {
     }
 
     public static boolean isRelevant(MovieMetadata movie, String resourceTitle, String keyword) {
         String normalizedResourceTitle = normalizeTitle(extractHeadline(resourceTitle));
+        String normalizedResourceCoreTitle = normalizeTitle(extractResourceCoreTitle(resourceTitle));
         if (!hasText(normalizedResourceTitle) || movie == null) {
+            return false;
+        }
+
+        SeasonSearchUtils.SeasonQuery requestedSeason = SeasonSearchUtils.parse(keyword);
+        SeasonSearchUtils.SeasonQuery movieSeason = SeasonSearchUtils.parse(movie.getTitleCn());
+        if (requestedSeason != null
+                && (movieSeason == null || movieSeason.season() != requestedSeason.season())
+                && !SeasonSearchUtils.matchesRequestedSeason(resourceTitle, keyword)) {
             return false;
         }
 
@@ -45,8 +57,20 @@ public final class ResourceTitleMatcher {
             if (normalizedResourceTitle.length() >= 4 && expected.contains(normalizedResourceTitle)) {
                 return true;
             }
+            if (normalizedResourceCoreTitle.length() >= 4 && expected.contains(normalizedResourceCoreTitle)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    private static String extractResourceCoreTitle(String value) {
+        String headline = extractHeadline(value);
+        Matcher matcher = RESOURCE_METADATA_MARKER.matcher(headline);
+        if (matcher.find() && matcher.start() > 0) {
+            return headline.substring(0, matcher.start()).trim();
+        }
+        return headline;
     }
 
     static String extractHeadline(String value) {
@@ -74,7 +98,11 @@ public final class ResourceTitleMatcher {
             return null;
         }
         Matcher matcher = TRAILING_NUMBER.matcher(value);
-        return matcher.find() ? matcher.group(1) : null;
+        if (!matcher.find()) {
+            return null;
+        }
+        String number = matcher.group(1);
+        return number.length() <= 2 ? number : null;
     }
 
     private static boolean containsSequencedTitle(String resourceTitle, String keyword, String sequelNumber) {

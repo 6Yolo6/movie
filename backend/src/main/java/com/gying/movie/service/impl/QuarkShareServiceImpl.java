@@ -1,5 +1,6 @@
 package com.gying.movie.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.client.QuarkShareClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkShareResult;
@@ -45,24 +46,44 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
             return null;
         }
-        if (!"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
+        if (!hasText(task.getSavedPath())
+                || (!"SUBMITTED".equalsIgnoreCase(task.getStatus())
+                        && !"FAILED".equalsIgnoreCase(task.getStatus()))) {
             return null;
         }
-        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
+        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.waitForFolderContent(
+                task.getSavedPath(),
+                resourceHubProperties.getQuark().getSharePollAttempts(),
+                resourceHubProperties.getQuark().getSharePollIntervalMs());
         if (!contentCheck.hasContent()) {
             throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
         }
         if (hasText(task.getShareUrl())) {
+            markShareReady(task);
+            updateDiscoveryShare(task);
             return task.getShareUrl();
         }
         MovieMetadata movie = movieService.getById(task.getMovieId());
         QuarkShareResult result = quarkShareClient.createShareForPath(task.getSavedPath(), buildShareTitle(movie, task));
         task.setShareUrl(result.getShareUrl());
         task.setShareUrlHash(ResourceHubHashUtils.sha256(result.getShareUrl()));
-        task.setUpdatedAt(LocalDateTime.now());
-        quarkTransferTaskService.updateById(task);
+        markShareReady(task);
         updateDiscoveryShare(task);
         return task.getShareUrl();
+    }
+
+    private void markShareReady(QuarkTransferTask task) {
+        task.setStatus("SUBMITTED");
+        task.setLastError(null);
+        task.setUpdatedAt(LocalDateTime.now());
+        quarkTransferTaskService.updateById(task);
+        quarkTransferTaskService.update(new UpdateWrapper<QuarkTransferTask>()
+                .eq("id", task.getId())
+                .set("status", "SUBMITTED")
+                .set("last_error", null)
+                .set("share_url", task.getShareUrl())
+                .set("share_url_hash", task.getShareUrlHash())
+                .set("updated_at", task.getUpdatedAt()));
     }
 
     private void updateDiscoveryShare(QuarkTransferTask task) {
@@ -81,6 +102,13 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         }
         discovery.setUpdatedAt(LocalDateTime.now());
         discoveryResultService.updateById(discovery);
+        discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                .eq("id", discovery.getId())
+                .set("status", discovery.getStatus())
+                .set("share_url", discovery.getShareUrl())
+                .set("share_url_hash", discovery.getShareUrlHash())
+                .set("failure_reason", null)
+                .set("updated_at", discovery.getUpdatedAt()));
         updateResourceLink(discovery, task);
     }
 

@@ -65,6 +65,13 @@ function runGyingMovieSearch(ctx, keyword) {
 }
 function extractGyingTextCommand(content) {
     const normalized = String(content ?? "").replace(/\u3000/g, " ").trim();
+    if (/^(?:[1-9]|10)$/.test(normalized)) {
+        return normalized;
+    }
+    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;
+    if (resourcePreferencePattern.test(normalized)) {
+        return normalized;
+    }
     for (const prefix of ["\u641c", "\u627e"]) {
         if (normalized === prefix) {
             return "";
@@ -83,6 +90,24 @@ if ($content -notmatch 'url\.searchParams\.set\("userKey", String\(ctx\.senderId
     $content = $content -replace 'url\.searchParams\.set\("keyword", safeKeyword\);',
             "url.searchParams.set(`"keyword`", safeKeyword);`n    if (ctx.senderId) {`n        url.searchParams.set(`"userKey`", String(ctx.senderId));`n    }"
 }
+
+if ($content -notmatch '\^\(\?:\[1-9\]\|10\)\$') {
+    $content = $content -replace 'function extractGyingTextCommand\(content\) \{\r?\n    const normalized = String\(content \?\? ""\)\.replace\(/\\u3000/g, " "\)\.trim\(\);',
+            "function extractGyingTextCommand(content) {`n    const normalized = String(content ?? `"`").replace(/\u3000/g, `" `").trim();`n    if (/^(?:[1-9]|10)$/.test(normalized)) {`n        return normalized;`n    }"
+}
+
+if ($content -notmatch "resourcePreferencePattern") {
+    $resourcePreferenceHandler = @'
+    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;
+    if (resourcePreferencePattern.test(normalized)) {
+        return normalized;
+    }
+'@
+    $content = $content -replace '(if \(/\^\(\?:\[1-9\]\|10\)\$/\.test\(normalized\)\) \{\r?\n        return normalized;\r?\n    \})', "`$1`n$resourcePreferenceHandler"
+}
+
+$resourcePreferencePatternLine = '    const resourcePreferencePattern = /^(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)$/iu;'
+$content = $content -replace '(?m)^\s*const resourcePreferencePattern = .*;$', $resourcePreferencePatternLine
 
 if ($content -notmatch 'name: "movie"') {
     $movieCommand = @'
@@ -118,7 +143,7 @@ $gatewayPath = $gatewayFile.FullName
 $gatewayContent = Get-Content -Raw -Encoding UTF8 $gatewayPath
 $gatewayContent = $gatewayContent -replace 'const isGyingMovieSearchCommand = \(text\) => .*?;\r?\n', ""
 if ($gatewayContent -notmatch "const isGyingMovieSearchCommand") {
-    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(\u641c|\u627e)(\s|$)/u.test(String(text ?? `"`").trim());"
+    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s|$)|(?:[1-9]|10)$|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?))$/iu.test(String(text ?? `"`").trim());"
 }
 
 if ($gatewayContent -match 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}') {

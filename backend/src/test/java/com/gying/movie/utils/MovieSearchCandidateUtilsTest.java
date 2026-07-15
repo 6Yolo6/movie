@@ -1,6 +1,7 @@
 package com.gying.movie.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.gying.movie.dto.MovieSearchCandidate;
@@ -27,8 +28,9 @@ class MovieSearchCandidateUtilsTest {
         assertTrue(reply.contains("电影 福尔摩斯先生 (2015)"));
         assertTrue(reply.contains("电影 福尔摩斯 (1992)"));
         assertTrue(reply.contains("剧集 福尔摩斯：基本演绎法 (2012)"));
-        assertTrue(reply.contains("例如：搜 "));
-        assertTrue(!reply.endsWith("例如：搜 福尔摩斯"));
+        assertTrue(reply.contains("直接回复序号即可，例如：1"));
+        assertEquals("福尔摩斯先生", MovieSearchCandidateUtils.selectionTitle(merged, 2));
+        assertNull(MovieSearchCandidateUtils.selectionTitle(merged, 5));
     }
 
     private MovieSearchCandidate candidate(Long id, String type, String title, Integer year, int score) {

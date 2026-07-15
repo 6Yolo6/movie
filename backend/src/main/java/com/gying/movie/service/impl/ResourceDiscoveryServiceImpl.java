@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.PanSouClient;
+import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
@@ -122,6 +123,15 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                         continue;
                     }
                     String urlHash = ResourceHubHashUtils.sha256(resource.getUrl());
+                    LinkCheckResult sourceCheck = checkSourceLink(resource.getUrl());
+                    if (sourceCheck.checked() && !sourceCheck.valid()) {
+                        ResourceDiscoveryResult ignored = saveDiscovery(
+                                task, movie, resource, urlHash, "IGNORED", now);
+                        ignored.setFailureReason("PanSou detected invalid source link: "
+                                + trim(sourceCheck.message(), 900));
+                        discoveryResultService.updateById(ignored);
+                        continue;
+                    }
                     if (isDuplicate(movie.getId(), urlHash, resource.getUrl())) {
                         saveDiscovery(task, movie, resource, urlHash, "DUPLICATE", now);
                         result.setDuplicate(result.getDuplicate() + 1);
@@ -166,6 +176,14 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
         }
         return panSouClient.searchQuark(resolveKeyword(payload, movie), payload.maxResults());
+    }
+
+    private LinkCheckResult checkSourceLink(String url) {
+        try {
+            return panSouClient.checkLink(url);
+        } catch (Exception ignored) {
+            return new LinkCheckResult(url, false, false, "Source link validation unavailable");
+        }
     }
 
     private ResourceDiscoveryResult saveDiscovery(

@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.DiscoveredResource;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,21 +24,67 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class PanSouClient {
 
+    private static final Logger log = LoggerFactory.getLogger(PanSouClient.class);
+
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ResourceHubProperties properties;
+    private final PanSouApiClient panSouApiClient;
 
     public PanSouClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
-            ResourceHubProperties properties) {
+            ResourceHubProperties properties, PanSouApiClient panSouApiClient) {
         this.restTemplate = restTemplateBuilder.build();
         this.objectMapper = objectMapper;
         this.properties = properties;
+        this.panSouApiClient = panSouApiClient;
     }
 
     public List<DiscoveredResource> searchQuark(String keyword, int maxResults) {
+        return searchClouds(keyword, Set.of("QUARK"), maxResults);
+    }
+
+    public List<DiscoveredResource> searchOtherClouds(String keyword, int maxResults) {
+        return searchClouds(keyword, PanSouSearchResultParser.otherCloudProviders(), maxResults);
+    }
+
+    public List<DiscoveredResource> searchClouds(
+            String keyword,
+            Set<String> providers,
+            int maxResults) {
         if (!hasText(keyword)) {
             return List.of();
         }
+        Set<String> acceptedProviders = providers == null ? Set.of() : providers;
+        RuntimeException localError = null;
+        List<DiscoveredResource> localResults;
+        try {
+            localResults = searchLocal(keyword, acceptedProviders, maxResults);
+        } catch (RuntimeException e) {
+            localResults = List.of();
+            localError = e;
+        }
+
+        List<DiscoveredResource> apiResults = List.of();
+        if (panSouApiClient.isConfigured()) {
+            try {
+                apiResults = panSouApiClient.searchClouds(keyword, acceptedProviders, maxResults);
+            } catch (RuntimeException e) {
+                log.warn("External PanSou API search failed: {}", e.getMessage());
+                if (localError != null) {
+                    localError.addSuppressed(e);
+                }
+            }
+        }
+        if (localError != null && localResults.isEmpty() && apiResults.isEmpty()) {
+            throw localError;
+        }
+        return mergeResults(localResults, apiResults, maxResults);
+    }
+
+    private List<DiscoveredResource> searchLocal(
+            String keyword,
+            Set<String> providers,
+            int maxResults) {
         String baseUrl = properties.getPansou().getBaseUrl();
         if (!hasText(baseUrl)) {
             throw new IllegalStateException("PanSou base URL is not configured");
@@ -44,8 +92,10 @@ public class PanSouClient {
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("kw", keyword.trim());
-        body.put("cloud_types", List.of("quark"));
         body.put("res", "all");
+        if (providers != null && !providers.isEmpty()) {
+            body.put("cloud_types", providers.stream().map(this::diskType).toList());
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -62,11 +112,40 @@ public class PanSouClient {
                     new HttpEntity<>(body, headers),
                     String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
-            return parseResults(root, maxResults);
+            return PanSouSearchResultParser.parseProviders(root, maxResults, providers);
         } catch (RestClientException e) {
             throw new IllegalStateException("PanSou search request failed", e);
         } catch (Exception e) {
             throw new IllegalStateException("PanSou search response parse failed", e);
+        }
+    }
+
+    private List<DiscoveredResource> mergeResults(
+            List<DiscoveredResource> localResults,
+            List<DiscoveredResource> apiResults,
+            int maxResults) {
+        int limit = Math.max(maxResults, 1);
+        Map<String, DiscoveredResource> unique = new LinkedHashMap<>();
+        int maxSize = Math.max(localResults.size(), apiResults.size());
+        for (int index = 0; index < maxSize && unique.size() < limit; index++) {
+            addResult(unique, apiResults, index);
+            if (unique.size() < limit) {
+                addResult(unique, localResults, index);
+            }
+        }
+        return unique.values().stream().limit(limit).toList();
+    }
+
+    private void addResult(
+            Map<String, DiscoveredResource> unique,
+            List<DiscoveredResource> results,
+            int index) {
+        if (index >= results.size()) {
+            return;
+        }
+        DiscoveredResource resource = results.get(index);
+        if (resource != null && hasText(resource.getUrl())) {
+            unique.putIfAbsent(resource.getUrl().trim().toLowerCase(), resource);
         }
     }
 
@@ -78,8 +157,32 @@ public class PanSouClient {
                 "PanSou check response did not include link status"));
     }
 
+    public LinkCheckResult checkLink(DiscoveredResource resource) {
+        if (resource == null || !hasText(resource.getUrl())) {
+            return new LinkCheckResult(null, false, false, "empty link");
+        }
+        String provider = hasText(resource.getProvider()) ? resource.getProvider() : "QUARK";
+        return checkLinks(Map.of(resource.getUrl(), diskType(provider))).getOrDefault(
+                resource.getUrl(),
+                new LinkCheckResult(resource.getUrl(), false, false,
+                        "PanSou check response did not include link status"));
+    }
+
     public Map<String, LinkCheckResult> checkLinks(List<String> links) {
         if (links == null || links.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, String> typedLinks = new LinkedHashMap<>();
+        links.stream()
+                .filter(this::hasText)
+                .map(String::trim)
+                .distinct()
+                .forEach(link -> typedLinks.put(link, "quark"));
+        return checkLinks(typedLinks);
+    }
+
+    private Map<String, LinkCheckResult> checkLinks(Map<String, String> typedLinks) {
+        if (typedLinks == null || typedLinks.isEmpty()) {
             return Map.of();
         }
         String baseUrl = properties.getPansou().getBaseUrl();
@@ -87,19 +190,11 @@ public class PanSouClient {
             throw new IllegalStateException("PanSou base URL is not configured");
         }
 
-        List<String> normalizedLinks = links.stream()
-                .filter(this::hasText)
-                .map(String::trim)
-                .distinct()
-                .toList();
-        if (normalizedLinks.isEmpty()) {
-            return Map.of();
-        }
         List<Map<String, Object>> items = new ArrayList<>();
-        for (String normalizedLink : normalizedLinks) {
+        for (Map.Entry<String, String> entry : typedLinks.entrySet()) {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("disk_type", "quark");
-            item.put("url", normalizedLink);
+            item.put("disk_type", entry.getValue());
+            item.put("url", entry.getKey());
             items.add(item);
         }
         Map<String, Object> body = new LinkedHashMap<>();
@@ -121,7 +216,7 @@ public class PanSouClient {
                     String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
             Map<String, LinkCheckResult> results = new LinkedHashMap<>();
-            for (String normalizedLink : normalizedLinks) {
+            for (String normalizedLink : typedLinks.keySet()) {
                 results.put(normalizedLink, parseLinkCheckResult(root, normalizedLink));
             }
             return results;
@@ -132,21 +227,13 @@ public class PanSouClient {
         }
     }
 
-    private List<DiscoveredResource> parseResults(JsonNode root, int maxResults) {
-        List<DiscoveredResource> results = new ArrayList<>();
-        collectResources(root.path("data").path("list"), results, maxResults, null, null);
-        collectResources(root.path("data").path("results"), results, maxResults, null, null);
-        collectResources(root.path("list"), results, maxResults, null, null);
-        collectResources(root.path("results"), results, maxResults, null, null);
-
-        JsonNode merged = root.path("data").path("merged_by_type");
-        if (merged.isObject()) {
-            Iterator<JsonNode> values = merged.elements();
-            while (values.hasNext() && results.size() < maxResults) {
-                collectResources(values.next(), results, maxResults, null, null);
-            }
-        }
-        return results;
+    private String diskType(String provider) {
+        return switch (provider.trim().toUpperCase()) {
+            case "123PAN" -> "123";
+            case "TIANYI" -> "tianyi";
+            case "MOBILE" -> "mobile";
+            default -> provider.trim().toLowerCase();
+        };
     }
 
     private LinkCheckResult parseLinkCheckResult(JsonNode root, String link) {
@@ -238,7 +325,9 @@ public class PanSouClient {
             return new CheckDecision(false, false, null);
         }
         String lower = value.trim().toLowerCase();
-        if (lower.contains("invalid")
+        if ("bad".equals(lower)
+                || "dead".equals(lower)
+                || lower.contains("invalid")
                 || lower.contains("expired")
                 || lower.contains("deleted")
                 || lower.contains("banned")
@@ -253,7 +342,8 @@ public class PanSouClient {
                 || lower.contains("过期")) {
             return new CheckDecision(true, false, value);
         }
-        if (lower.contains("valid")
+        if ("good".equals(lower)
+                || lower.contains("valid")
                 || lower.contains("available")
                 || lower.contains("alive")
                 || lower.contains("normal")
@@ -264,71 +354,6 @@ public class PanSouClient {
             return new CheckDecision(true, true, value);
         }
         return new CheckDecision(false, false, value);
-    }
-
-    private void collectResources(JsonNode node, List<DiscoveredResource> results, int maxResults,
-            String parentTitle, String parentRef) {
-        if (node == null || node.isMissingNode() || node.isNull() || results.size() >= maxResults) {
-            return;
-        }
-        if (node.isArray()) {
-            for (JsonNode item : node) {
-                collectResources(item, results, maxResults, parentTitle, parentRef);
-                if (results.size() >= maxResults) {
-                    break;
-                }
-            }
-            return;
-        }
-        if (!node.isObject()) {
-            return;
-        }
-        String currentTitle = firstText(
-                node.path("work_title").asText(null),
-                node.path("title").asText(null),
-                node.path("name").asText(null),
-                node.path("filename").asText(null),
-                parentTitle);
-        String currentRef = firstText(
-                node.path("unique_id").asText(null),
-                node.path("message_id").asText(null),
-                node.path("id").asText(null),
-                node.path("source_id").asText(null),
-                node.path("channel").asText(null),
-                node.path("datetime").asText(null),
-                parentRef);
-        String url = firstText(
-                node.path("url").asText(null),
-                node.path("link").asText(null),
-                node.path("share_url").asText(null),
-                node.path("shareUrl").asText(null));
-        if (isQuarkUrl(url)) {
-            DiscoveredResource resource = new DiscoveredResource();
-            resource.setTitle(firstText(currentTitle, url));
-            resource.setProvider("QUARK");
-            resource.setUrl(url.trim());
-            resource.setCode(firstText(
-                    node.path("password").asText(null),
-                    node.path("pwd").asText(null),
-                    node.path("code").asText(null)));
-            resource.setSource("PANSOU");
-            resource.setSourceRef(currentRef);
-            results.add(resource);
-        }
-
-        collectResources(node.path("links"), results, maxResults, currentTitle, currentRef);
-        collectResources(node.path("items"), results, maxResults, currentTitle, currentRef);
-        collectResources(node.path("resources"), results, maxResults, currentTitle, currentRef);
-    }
-
-    private boolean isQuarkUrl(String value) {
-        if (!hasText(value)) {
-            return false;
-        }
-        String lower = value.trim().toLowerCase();
-        return lower.startsWith("http://") || lower.startsWith("https://")
-                ? lower.contains("pan.quark.cn/s/")
-                : false;
     }
 
     private boolean sameLink(String left, String right) {
