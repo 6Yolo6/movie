@@ -20,6 +20,10 @@ spring:
       - optional:file:../.env[.properties]
   application:
     name: gying-movie
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 9MB
   jackson:
     time-zone: Asia/Shanghai
   lifecycle:

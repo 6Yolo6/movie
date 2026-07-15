@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
 import {
-    BellOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
+    BellOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
     NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -216,7 +216,12 @@ export default function Navbar() {
             {
                 key: 'resources',
                 label: <Link href="/admin/audit" onClick={closeDrawer}>{t('resourceManagement')}</Link>,
-                icon: <UserOutlined />,
+                icon: <CloudUploadOutlined />,
+            },
+            {
+                key: 'movies',
+                label: <Link href="/admin/movies" onClick={closeDrawer}>{t('movieMetadataManagement')}</Link>,
+                icon: <DatabaseOutlined />,
             },
             {
                 key: 'reports',
@@ -283,38 +288,43 @@ export default function Navbar() {
 
                 <div className="flex items-center gap-3 sm:gap-6">
                     {/* Desktop search */}
-                    <Input.Search
-                        key={keyword}
-                        placeholder={t('searchMovies')}
-                        defaultValue={keyword}
-                        onSearch={onSearch}
-                        style={{ width: 250 }}
-                        className="hidden md:block"
-                        allowClear
-                    />
+                    <div className="hidden md:block">
+                        <Input.Search
+                            key={keyword}
+                            placeholder={t('searchMovies')}
+                            defaultValue={keyword}
+                            onSearch={onSearch}
+                            style={{ width: 250 }}
+                            allowClear
+                        />
+                    </div>
 
                     {/* Theme toggle */}
-                    <Switch
-                        checkedChildren={t('darkMode')}
-                        unCheckedChildren={t('lightMode')}
-                        checked={theme === 'dark'}
-                        onChange={toggleTheme}
-                        size="small"
-                    />
+                    <span className="hidden sm:inline-flex">
+                        <Switch
+                            checkedChildren={t('darkMode')}
+                            unCheckedChildren={t('lightMode')}
+                            checked={theme === 'dark'}
+                            onChange={toggleTheme}
+                            size="small"
+                        />
+                    </span>
 
                     {/* Language toggle */}
-                    <Switch
-                        checkedChildren="中"
-                        unCheckedChildren="En"
-                        checked={i18n.language === 'zh'}
-                        onChange={(checked) => i18n.changeLanguage(checked ? 'zh' : 'en')}
-                        size="small"
-                    />
+                    <span className="hidden sm:inline-flex">
+                        <Switch
+                            checkedChildren="中"
+                            unCheckedChildren="En"
+                            checked={i18n.language === 'zh'}
+                            onChange={(checked) => i18n.changeLanguage(checked ? 'zh' : 'en')}
+                            size="small"
+                        />
+                    </span>
 
                     {/* User area */}
                     {user ? (
                         <Space size={8}>
-                            <Link href="/notifications" aria-label={t('notifications')}>
+                            <Link href="/notifications" aria-label={t('notifications')} className="hidden sm:inline-block">
                                 <Badge count={unreadCount} size="small">
                                     <Button type="text" shape="circle" icon={<BellOutlined />} />
                                 </Badge>
