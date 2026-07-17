@@ -61,7 +61,7 @@
 
 - `GET /api/qq-bot/health`：机器人配置状态。
 - `POST /api/qq-bot/onebot?token=`：NapCat/OneBot 上报。
-- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本。
+- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本；`userKey` 维持 5 分钟影片/网盘上下文。资源结果必须包含已验证的自有夸克分享，OpenClaw 补丁据此生成二维码。
 - `/api/admin/qq-automation/*`：配置、群搜索日志和频道发帖日志。
 
 查询先读取本地正式资源；缺失时才进入 TMDB、PanSou/Panso API、转存和发布。模糊影片结果只返回候选，用户选择或精确匹配后才能触发资源链路。

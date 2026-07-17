@@ -21,6 +21,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
+import com.gying.movie.utils.SeasonSearchUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -231,6 +232,10 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         target.setTmdbType(item.getMediaType());
         target.setTitleCn(firstText(target.getTitleCn(), title(details, item.getMediaType()), 255));
         target.setTitleEn(firstText(target.getTitleEn(), originalTitle(details, item.getMediaType()), 500));
+        if ("tv".equals(item.getMediaType())) {
+            target.setSeriesName(firstText(target.getSeriesName(), title(details, item.getMediaType()), 255));
+            target.setSeason(firstValue(target.getSeason(), 1));
+        }
         target.setYear(firstValue(target.getYear(), parseYear(releaseDate(details, item.getMediaType()))));
         target.setRuntime(firstText(target.getRuntime(), runtime(details, item.getMediaType()), 100));
         target.setDirectors(firstList(target.getDirectors(), directors(details, item.getMediaType())));
@@ -313,6 +318,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         title = firstText(title, movie.getTitleEn(), 255);
         title = firstText(title, movie.getSeriesName(), 255);
         title = firstText(title, movie.getId(), 255);
+        if (movie.getSeason() != null && movie.getSeason() > 0) {
+            return SeasonSearchUtils.seasonQualifiedTitle(title, movie.getSeason());
+        }
         return movie.getYear() == null ? title : title + " " + movie.getYear();
     }
 

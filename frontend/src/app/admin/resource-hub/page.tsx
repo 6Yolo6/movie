@@ -182,6 +182,7 @@ interface DiscoveryPipelineJob {
     status?: string;
     taskId?: number;
     result?: Record<string, unknown>;
+    errors?: string[];
 }
 
 interface TmdbFormValues {
@@ -626,9 +627,12 @@ export default function ResourceHubAdminPage() {
                 job = await requestJson<DiscoveryPipelineJob>(`/api/admin/resource-hub/discover/jobs/${started.jobId}`);
             }
             if (job.status !== 'SUCCEEDED') {
-                throw new Error(t('resourceHubMissingResolveFailed'));
+                throw new Error(job.errors?.[0] || t('resourceHubMissingResolveFailed'));
             }
-            message.success(t('resourceHubMissingResolved', { source }));
+            const resolvedSource = typeof job.result?.fallbackSource === 'string'
+                ? `${source} -> ${job.result.fallbackSource}`
+                : source;
+            message.success(t('resourceHubMissingResolved', { source: resolvedSource }));
             await refreshAll();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubMissingResolveFailed'));

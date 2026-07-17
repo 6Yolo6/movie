@@ -35,6 +35,16 @@ class ResourceTitleMatcherTest {
                 seasonSeven,
                 "密室大逃脱 第6季 2024 1080P",
                 "密室大逃脱第七季"));
+
+        MovieMetadata firstSeason = movie("权力的游戏 第一季", "Game of Thrones Season 1", null);
+        assertTrue(ResourceTitleMatcher.isRelevant(
+                firstSeason,
+                "权力的游戏 全8季 4K",
+                "权力的游戏 第一季"));
+        assertFalse(ResourceTitleMatcher.isRelevant(
+                firstSeason,
+                "权力的游戏 第二季 4K",
+                "权力的游戏 第一季"));
     }
 
     @Test
@@ -59,6 +69,20 @@ class ResourceTitleMatcherTest {
                 "复仇者联盟5"));
     }
 
+    @Test
+    void enforcesMovieSeasonWhenPublishingWithoutSearchKeyword() {
+        MovieMetadata firstSeason = movie("\u83dc\u9e1f\u8001\u8b66", "The Rookie", null);
+        firstSeason.setSeason(1);
+
+        assertTrue(ResourceTitleMatcher.isRelevant(
+                firstSeason,
+                "\u83dc\u9e1f\u8001\u8b66 \u51681-7\u5b63 1080P",
+                null));
+        assertFalse(ResourceTitleMatcher.isRelevant(
+                firstSeason,
+                "\u83dc\u9e1f\u8001\u8b66 \u7b2c\u4e03\u5b63 1080P",
+                null));
+    }
     private MovieMetadata movie(String titleCn, String titleEn, String aliases) {
         MovieMetadata movie = new MovieMetadata();
         movie.setTitleCn(titleCn);

@@ -1,6 +1,5 @@
 package com.gying.movie.utils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +62,82 @@ public final class SeasonSearchUtils {
         return List.copyOf(variants);
     }
 
+    public static String seasonQualifiedTitle(String title, int season) {
+        if (!hasText(title) || season < 1 || season > 99) {
+            return title;
+        }
+        SeasonQuery parsed = parse(title);
+        String base = parsed == null ? title.trim() : parsed.baseTitle();
+        return base + " " + seasonLabel(season);
+    }
+
+    public static String seasonLabel(int season) {
+        return season < 1 || season > 99 ? "" : "\u7b2c" + season + "\u5b63";
+    }
+
+    public static boolean explicitlyMatchesSeason(String value, int season) {
+        if (!hasText(value) || season < 1 || season > 99) {
+            return false;
+        }
+        Matcher matcher = EXPLICIT_SEASON.matcher(value);
+        while (matcher.find()) {
+            Integer candidate = parseNumber(firstText(matcher.group(1), matcher.group(2)));
+            if (candidate != null && candidate == season) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasSeasonCollection(String value) {
+        return hasText(value)
+                && (SEASON_RANGE.matcher(value).find() || COMPLETE_SEASONS.matcher(value).find());
+    }
+
+    public static String subdirectoryPattern(int season) {
+        if (season < 1 || season > 99) {
+            return "";
+        }
+        String number = String.valueOf(season);
+        String chinese = chineseNumber(season);
+        return "(?i)(?:^|[^0-9])(?:s(?:eason)?\\s*0*" + number
+                + "|\u7b2c\\s*(?:" + number + "|" + chinese + ")\\s*\u5b63)(?:[^0-9]|$)";
+    }
+
+    public static boolean coversSeason(String resourceTitle, int season) {
+        if (!hasText(resourceTitle) || season < 1 || season > 99) {
+            return false;
+        }
+
+        Matcher rangeMatcher = SEASON_RANGE.matcher(resourceTitle);
+        while (rangeMatcher.find()) {
+            Integer start = parseNumber(rangeMatcher.group(1));
+            Integer end = parseNumber(rangeMatcher.group(2));
+            if (start != null && end != null
+                    && season >= Math.min(start, end)
+                    && season <= Math.max(start, end)) {
+                return true;
+            }
+        }
+
+        Matcher completeMatcher = COMPLETE_SEASONS.matcher(resourceTitle);
+        while (completeMatcher.find()) {
+            Integer end = parseNumber(completeMatcher.group(1));
+            if (end != null && season <= end) {
+                return true;
+            }
+        }
+
+        Matcher seasonMatcher = EXPLICIT_SEASON.matcher(resourceTitle);
+        while (seasonMatcher.find()) {
+            Integer candidate = parseNumber(firstText(seasonMatcher.group(1), seasonMatcher.group(2)));
+            if (candidate != null && candidate == season) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean matchesRequestedSeason(String resourceTitle, String requestedKeyword) {
         SeasonQuery requested = parse(requestedKeyword);
         if (requested == null) {
@@ -72,40 +147,33 @@ public final class SeasonSearchUtils {
             return false;
         }
 
-        Matcher rangeMatcher = SEASON_RANGE.matcher(resourceTitle);
-        while (rangeMatcher.find()) {
-            Integer start = parseNumber(rangeMatcher.group(1));
-            Integer end = parseNumber(rangeMatcher.group(2));
-            if (start != null && end != null
-                    && requested.season() >= Math.min(start, end)
-                    && requested.season() <= Math.max(start, end)) {
-                return true;
-            }
-        }
-
-        Matcher completeMatcher = COMPLETE_SEASONS.matcher(resourceTitle);
-        while (completeMatcher.find()) {
-            Integer end = parseNumber(completeMatcher.group(1));
-            if (end != null && requested.season() <= end) {
-                return true;
-            }
-        }
-
-        List<Integer> explicitSeasons = new ArrayList<>();
-        Matcher seasonMatcher = EXPLICIT_SEASON.matcher(resourceTitle);
-        while (seasonMatcher.find()) {
-            Integer season = parseNumber(firstText(seasonMatcher.group(1), seasonMatcher.group(2)));
-            if (season != null) {
-                explicitSeasons.add(season);
-            }
-        }
-        if (!explicitSeasons.isEmpty()) {
-            return explicitSeasons.contains(requested.season());
+        if (hasSeasonMarker(resourceTitle)) {
+            return coversSeason(resourceTitle, requested.season());
         }
 
         String compactTitle = compact(resourceTitle);
         String compactBase = compact(requested.baseTitle());
         return hasText(compactBase) && compactTitle.contains(compactBase + requested.season());
+    }
+
+    public static boolean hasSeasonMarker(String value) {
+        if (!hasText(value)) {
+            return false;
+        }
+        return SEASON_RANGE.matcher(value).find()
+                || COMPLETE_SEASONS.matcher(value).find()
+                || EXPLICIT_SEASON.matcher(value).find();
+    }
+
+    private static String chineseNumber(int value) {
+        String[] digits = {"\u96f6", "\u4e00", "\u4e8c", "\u4e09", "\u56db", "\u4e94", "\u516d", "\u4e03", "\u516b", "\u4e5d"};
+        if (value < 10) {
+            return digits[value];
+        }
+        int tens = value / 10;
+        int units = value % 10;
+        String prefix = tens == 1 ? "" : digits[tens];
+        return prefix + "\u5341" + (units == 0 ? "" : digits[units]);
     }
 
     private static Integer parseNumber(String value) {

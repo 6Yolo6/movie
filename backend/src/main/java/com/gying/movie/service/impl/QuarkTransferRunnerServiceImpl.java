@@ -16,6 +16,7 @@ import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -109,12 +110,25 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             quarkTransferTaskService.updateById(task);
 
             MovieMetadata movie = movieService.getById(task.getMovieId());
+            ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                    ? null
+                    : discoveryResultService.getById(task.getDiscoveryResultId());
+            String transferShareUrl = task.getOriginalUrl();
+            if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+                transferShareUrl = quarkAutoSaveClient.resolveSeasonShareUrl(
+                        transferShareUrl,
+                        movie.getSeason(),
+                        discovery == null ? null : discovery.getTitle());
+            }
             String taskName = buildTaskName(movie, task);
             String savePath = buildSavePath(movie, task);
+            String updateSubdir = movie != null && movie.getSeason() != null ? ".*" : null;
+
             Map<String, Object> requestPayload = resolveRequestPayload(task,
                     taskName,
-                    task.getOriginalUrl(),
-                    savePath);
+                    transferShareUrl,
+                    savePath,
+                    updateSubdir);
             task.setRequestPayload(writePayload(requestPayload));
             if (resourceHubProperties.getQuark().isRunImmediately()) {
                 quarkAutoSaveClient.requireAccountReady();
@@ -186,7 +200,8 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             QuarkTransferTask task,
             String taskName,
             String shareUrl,
-            String savePath) {
+            String savePath,
+            String updateSubdir) {
         if (task.getRequestPayload() != null && !task.getRequestPayload().isBlank()) {
             try {
                 Map<String, Object> payload = objectMapper.readValue(task.getRequestPayload(),
@@ -195,13 +210,19 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                 if (hasPayloadText(payload, "taskname")
                         && hasPayloadText(payload, "shareurl")
                         && hasPayloadText(payload, "savepath")) {
+                    payload.put("taskname", taskName);
+                    payload.put("shareurl", shareUrl);
+                    payload.put("savepath", savePath);
+                    if (updateSubdir != null && !updateSubdir.isBlank()) {
+                        payload.put("update_subdir", updateSubdir);
+                    }
                     removeEmptyRunWeek(payload);
                     return payload;
                 }
             } catch (Exception ignored) {
             }
         }
-        return quarkAutoSaveClient.buildTaskPayload(taskName, shareUrl, savePath);
+        return quarkAutoSaveClient.buildTaskPayload(taskName, shareUrl, savePath, updateSubdir);
     }
 
     private void removeEmptyRunWeek(Map<String, Object> payload) {
@@ -217,6 +238,12 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildTaskName(MovieMetadata movie, QuarkTransferTask task) {
+        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            String title = SeasonSearchUtils.seasonQualifiedTitle(
+                    firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
+                    movie.getSeason());
+            return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+        }
         ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
                 ? null
                 : discoveryResultService.getById(task.getDiscoveryResultId());
@@ -239,9 +266,14 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             basePath = "/GYing Resource Hub";
         }
         String category = movie == null ? "unknown" : categoryDir(movie.getCategory());
-        String title = sanitizePathSegment(movie == null ? task.getMovieId()
-                : firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
-        return trimTrailingSlash(basePath) + "/" + category + "/" + title;
+        String rawTitle = movie == null ? task.getMovieId()
+                : firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId());
+        String path = trimTrailingSlash(basePath) + "/" + category + "/"
+                + sanitizePathSegment(SeasonSearchUtils.baseTitle(rawTitle));
+        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            return path + "/" + sanitizePathSegment(SeasonSearchUtils.seasonLabel(movie.getSeason()));
+        }
+        return path;
     }
 
     private String categoryDir(String category) {

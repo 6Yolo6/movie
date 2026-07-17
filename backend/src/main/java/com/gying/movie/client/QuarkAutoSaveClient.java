@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.utils.SeasonSearchUtils;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,15 +36,114 @@ public class QuarkAutoSaveClient {
     }
 
     public Map<String, Object> buildTaskPayload(String taskName, String shareUrl, String savePath) {
+        return buildTaskPayload(taskName, shareUrl, savePath, null);
+    }
+
+    public Map<String, Object> buildTaskPayload(
+            String taskName,
+            String shareUrl,
+            String savePath,
+            String updateSubdir) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("taskname", taskName);
         payload.put("shareurl", shareUrl);
         payload.put("savepath", savePath);
         payload.put("pattern", properties.getQuark().getPattern());
         payload.put("replace", properties.getQuark().getReplace());
-        payload.put("update_subdir", "");
+        payload.put("update_subdir", updateSubdir == null ? "" : updateSubdir.trim());
         payload.put("ignore_extension", false);
         return payload;
+    }
+
+    public String resolveSeasonShareUrl(String shareUrl, int season, String sourceTitle) {
+        if (season < 1 || season > 99) {
+            return shareUrl;
+        }
+        requireConfigured();
+        String baseShareUrl = stripDirectoryFragment(shareUrl);
+        String resolved = findSeasonDirectory(baseShareUrl, shareUrl, season, 0, new HashSet<>());
+        if (resolved != null) {
+            return resolved;
+        }
+        if (SeasonSearchUtils.explicitlyMatchesSeason(sourceTitle, season)
+                && !SeasonSearchUtils.hasSeasonCollection(sourceTitle)) {
+            return shareUrl;
+        }
+        throw new IllegalStateException("Quark source has no explicit season " + season + " directory");
+    }
+
+    private String findSeasonDirectory(
+            String baseShareUrl,
+            String currentShareUrl,
+            int season,
+            int depth,
+            Set<String> visited) {
+        JsonNode list = getShareDetailData(currentShareUrl).path("list");
+        if (!list.isArray()) {
+            return null;
+        }
+        for (JsonNode item : list) {
+            String fid = item.path("fid").asText(null);
+            String name = item.path("file_name").asText(null);
+            if (item.path("dir").asBoolean(false)
+                    && fid != null
+                    && SeasonSearchUtils.explicitlyMatchesSeason(name, season)) {
+                return baseShareUrl + "#/list/share/" + fid;
+            }
+        }
+        if (depth >= 3) {
+            return null;
+        }
+        for (JsonNode item : list) {
+            String fid = item.path("fid").asText(null);
+            if (!item.path("dir").asBoolean(false) || fid == null || !visited.add(fid)) {
+                continue;
+            }
+            String resolved = findSeasonDirectory(
+                    baseShareUrl,
+                    baseShareUrl + "#/list/share/" + fid,
+                    season,
+                    depth + 1,
+                    visited);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return null;
+    }
+
+    private JsonNode getShareDetailData(String shareUrl) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String url = UriComponentsBuilder.fromUriString(properties.getQuark().getBaseUrl())
+                .path("/get_share_detail")
+                .queryParam("token", properties.getQuark().getToken())
+                .toUriString();
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    url,
+                    new HttpEntity<>(Map.of("shareurl", shareUrl), headers),
+                    String.class);
+            JsonNode body = objectMapper.readTree(response.getBody());
+            if (!body.path("success").asBoolean(false)) {
+                throw new IllegalStateException(body.path("message").asText("read Quark share directory failed"));
+            }
+            return body.path("data");
+        } catch (RestClientException e) {
+            throw new IllegalStateException("quark-auto-save share detail request failed", e);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException("quark-auto-save share detail response parse failed", e);
+        }
+    }
+
+    private String stripDirectoryFragment(String shareUrl) {
+        if (shareUrl == null) {
+            return null;
+        }
+        int fragment = shareUrl.indexOf("#/list/share/");
+        return fragment < 0 ? shareUrl : shareUrl.substring(0, fragment);
     }
 
     public JsonNode addTask(Map<String, Object> payload) {

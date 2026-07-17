@@ -62,7 +62,9 @@ docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
 - `QQ_BOT_*` 配置命令、限流、敏感词、回复通道和自动转存。
 - NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
 - 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。
-- OpenClaw 被动回复可调用 `/api/qq-bot/search-reply`；当前本机命令补丁升级后可能被覆盖，应迁移为正式插件。
+- OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/网盘选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。
+- Docker 部署会把 Windows 可维护源同步到 `/home/node/.openclaw-runtime-plugins` 的非 world-writable Linux 运行副本，并自动重启 Gateway，以满足 OpenClaw 插件安全检查。
+- 每个资源回复都先验证自有夸克分享；用户指定其他网盘时会在自有夸克之后追加指定数量。群回复会 @ 对应用户，上下文有效期为 5 分钟。
 
 ## 腾讯频道
 

@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.NapCatClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
@@ -50,6 +53,7 @@ class QqBotServiceImplTest {
     private IResourceDiscoveryService resourceDiscoveryService;
     private ITmdbMetadataSyncService tmdbMetadataSyncService;
     private PanSouClient panSouClient;
+    private NapCatClient napCatClient;
     private QqBotServiceImpl service;
 
     @BeforeEach
@@ -62,10 +66,11 @@ class QqBotServiceImplTest {
         resourceDiscoveryService = mock(IResourceDiscoveryService.class);
         tmdbMetadataSyncService = mock(ITmdbMetadataSyncService.class);
         panSouClient = mock(PanSouClient.class);
+        napCatClient = mock(NapCatClient.class);
         service = new QqBotServiceImpl(
                 qqBotProperties,
                 resourceHubProperties,
-                mock(NapCatClient.class),
+                napCatClient,
                 panSouClient,
                 mock(QqOfficialBotClient.class),
                 movieService,
@@ -120,9 +125,19 @@ class QqBotServiceImplTest {
     }
 
     @Test
-    void repliesWithOtherCloudDriveLinksWhenQuarkCannotBeSaved() {
+    void includesOwnedQuarkWhenUserRequestsAnotherProvider() {
         MovieMetadata movie = movie("tv_112732", "哈哈哈哈哈", 2020);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        ResourceLink ownedQuark = link(
+                "QUARK",
+                "哈哈哈哈哈 自有分享",
+                "https://pan.quark.cn/s/owned-share");
+        ownedQuark.setSource("RESOURCE_HUB");
+        when(resourceLinkService.list(any(QueryWrapper.class)))
+                .thenReturn(List.of(ownedQuark), List.of(ownedQuark), List.of());
+        when(panSouClient.checkLink(ownedQuark.getUrl()))
+                .thenReturn(new LinkCheckResult(ownedQuark.getUrl(), true, true, "ok"));
         DiscoveredResource baidu = new DiscoveredResource();
         baidu.setTitle("哈哈哈哈哈 第二季 (2021) 1080P");
         baidu.setProvider("BAIDU");
@@ -130,14 +145,16 @@ class QqBotServiceImplTest {
         baidu.setCode("7d32");
         when(panSouClient.searchClouds(
                 "哈哈哈哈哈 2020",
-                com.gying.movie.utils.QqResourcePreferenceParser.fallbackProviders(),
-                40)).thenReturn(List.of(baidu));
+                Set.of("BAIDU"),
+                30)).thenReturn(List.of(baidu));
         when(panSouClient.checkLink(baidu))
                 .thenReturn(new LinkCheckResult(baidu.getUrl(), true, true, "ok"));
 
-        String reply = service.buildSearchReply("哈哈哈哈哈", "user-3");
+        service.buildSearchReply("哈哈哈哈哈", "user-3");
+        String reply = service.buildSearchReply("百度 1", "user-3");
 
-        assertTrue(reply.contains("备选网盘链接："));
+        assertTrue(reply.contains("已附带 1 条自有夸克分享，并按百度返回 1 条"));
+        assertTrue(reply.contains("https://pan.quark.cn/s/owned-share"));
         assertTrue(reply.contains("BAIDU - 哈哈哈哈哈 第二季"));
         assertTrue(reply.contains("https://pan.baidu.com/s/fallback?pwd=7d32"));
         assertTrue(reply.contains("提取码：7d32"));
@@ -170,6 +187,15 @@ class QqBotServiceImplTest {
         MovieMetadata movie = movie("tv_112732", "哈哈哈哈哈", 2020);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
         when(movieService.getById(movie.getId())).thenReturn(movie);
+        ResourceLink ownedQuark = link(
+                "QUARK",
+                "哈哈哈哈哈 自有分享",
+                "https://pan.quark.cn/s/context-share");
+        ownedQuark.setSource("RESOURCE_HUB");
+        when(resourceLinkService.list(any(QueryWrapper.class)))
+                .thenReturn(List.of(ownedQuark), List.of(ownedQuark), List.of());
+        when(panSouClient.checkLink(ownedQuark.getUrl()))
+                .thenReturn(new LinkCheckResult(ownedQuark.getUrl(), true, true, "ok"));
         when(panSouClient.searchClouds(anyString(), anySet(), anyInt())).thenReturn(List.of());
         service.buildSearchReply("哈哈哈哈哈", "preference-user");
 
@@ -183,7 +209,8 @@ class QqBotServiceImplTest {
 
         String reply = service.buildSearchReply("百度 2", "preference-user");
 
-        assertTrue(reply.contains("已按百度返回 2 条"));
+        assertTrue(reply.contains("已附带 1 条自有夸克分享，并按百度返回 2 条"));
+        assertTrue(reply.contains("https://pan.quark.cn/s/context-share"));
         assertTrue(reply.contains("https://pan.baidu.com/s/one"));
         assertTrue(reply.contains("https://pan.baidu.com/s/two"));
         assertTrue(!reply.contains("https://pan.baidu.com/s/three"));
@@ -205,7 +232,7 @@ class QqBotServiceImplTest {
                 "https://pan.quark.cn/s/owned-share");
         ownedQuark.setSource("RESOURCE_HUB");
         when(resourceLinkService.list(any(QueryWrapper.class)))
-                .thenReturn(List.of(libraryBaidu), List.of(), List.of(ownedQuark));
+                .thenReturn(List.of(libraryBaidu, ownedQuark));
         when(panSouClient.checkLink(ownedQuark.getUrl()))
                 .thenReturn(new LinkCheckResult(ownedQuark.getUrl(), true, true, "ok"));
         when(resourceDiscoveryService.enqueue(any())).thenReturn(task(21L));
@@ -216,13 +243,132 @@ class QqBotServiceImplTest {
         String initialReply = service.buildSearchReply("权力的游戏", "library-user");
         String quarkReply = service.buildSearchReply("夸克 2", "library-user");
 
-        assertTrue(initialReply.contains("https://pan.baidu.com/s/library"));
+        assertTrue(initialReply.contains("https://pan.quark.cn/s/owned-share"));
+        assertFalse(initialReply.contains("https://pan.baidu.com/s/library"));
         assertTrue(quarkReply.contains("已按夸克返回 1 条"));
         assertTrue(quarkReply.contains("https://pan.quark.cn/s/owned-share"));
         ArgumentCaptor<ResourceDiscoveryRequest> request = ArgumentCaptor.forClass(ResourceDiscoveryRequest.class);
         verify(resourceDiscoveryService).enqueue(request.capture());
         assertEquals("权力的游戏 2011", request.getValue().getKeyword());
     }
+
+    @Test
+    void repliesWithHelpAndMentionsUserForUnknownAtMessage() throws Exception {
+        qqBotProperties.setEnabled(true);
+        JsonNode event = new ObjectMapper().readTree("""
+                {
+                  "post_type": "message",
+                  "message_type": "group",
+                  "group_id": 123,
+                  "user_id": 456,
+                  "self_id": 789,
+                  "message": [
+                    {"type": "at", "data": {"qq": "789"}},
+                    {"type": "text", "data": {"text": " 不认识的指令"}}
+                  ]
+                }
+                """);
+
+        assertTrue(service.handleOneBotEvent(event));
+        verify(napCatClient).sendGroupMessage(
+                123L,
+                456L,
+                qqBotProperties.getDefaultReply());
+    }
+
+    @Test
+    void ignoresUnknownGroupMessageThatDoesNotMentionBot() throws Exception {
+        qqBotProperties.setEnabled(true);
+        JsonNode event = new ObjectMapper().readTree("""
+                {
+                  "post_type": "message",
+                  "message_type": "group",
+                  "group_id": 123,
+                  "user_id": 456,
+                  "self_id": 789,
+                  "message": "普通聊天"
+                }
+                """);
+
+        assertFalse(service.handleOneBotEvent(event));
+    }
+
+    @Test
+    void doesNotReturnOtherProvidersWithoutAValidOwnedQuarkShare() {
+        MovieMetadata movie = movie("movie_404", "没有夸克的影片", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        DiscoveredResource baidu = cloud(
+                "BAIDU",
+                "没有夸克的影片 1080P",
+                "https://pan.baidu.com/s/should-not-send");
+        when(panSouClient.searchClouds(anyString(), anySet(), anyInt())).thenReturn(List.of(baidu));
+
+        String initial = service.buildSearchReply("没有夸克的影片", "no-quark-user");
+        String requested = service.buildSearchReply("百度 1", "no-quark-user");
+
+        assertTrue(initial.contains("本次未返回第三方网盘"));
+        assertTrue(requested.contains("本次未返回第三方网盘"));
+        assertFalse(initial.contains(baidu.getUrl()));
+        assertFalse(requested.contains(baidu.getUrl()));
+        verify(panSouClient, org.mockito.Mockito.never())
+                .searchClouds(anyString(), anySet(), anyInt());
+    }
+
+    @Test
+    void prefersUserConfirmedCompleteShareOverAutomaticShareWithSameTitle() {
+        MovieMetadata eighthSeason = movie("season_8", "\u6743\u529b\u7684\u6e38\u620f \u7b2c\u516b\u5b63", 2019);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(eighthSeason));
+        ResourceLink singleEpisode = link(
+                "QUARK",
+                "\u6743\u529b\u7684\u6e38\u620f \u51688\u5b63 4K 1TB",
+                "https://pan.quark.cn/s/single-episode");
+        singleEpisode.setSource("RESOURCE_HUB");
+        ResourceLink completeSeries = link(
+                "QUARK",
+                "\u6743\u529b\u7684\u6e38\u620f \u51688\u5b63 4K 1TB",
+                "https://pan.quark.cn/s/complete-user-share");
+        completeSeries.setSource("USER");
+        completeSeries.setUploaderId(1L);
+        when(resourceLinkService.list(any(QueryWrapper.class)))
+                .thenReturn(List.of(singleEpisode, completeSeries));
+        when(panSouClient.checkLink(completeSeries.getUrl()))
+                .thenReturn(new LinkCheckResult(completeSeries.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("\u6743\u529b\u7684\u6e38\u620f \u7b2c\u516b\u5b63", "season-eight-user");
+
+        assertTrue(reply.contains(completeSeries.getUrl()));
+        assertFalse(reply.contains(singleEpisode.getUrl()));
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
+    @Test
+    void reusesOwnedCompleteSeriesShareFromAnotherSeason() {
+        MovieMetadata firstSeason = movie("season_1", "权力的游戏 第一季", 2011);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(firstSeason));
+        ResourceLink completeSeries = link(
+                "QUARK",
+                "权力的游戏 全8季 4K",
+                "https://pan.quark.cn/s/complete-series");
+        completeSeries.setSource("RESOURCE_HUB");
+        ResourceLink prequel = link(
+                "QUARK",
+                "权力的游戏前传：龙族 4K",
+                "https://pan.quark.cn/s/unrelated-prequel");
+        prequel.setSource("RESOURCE_HUB");
+        when(resourceLinkService.list(any(QueryWrapper.class)))
+                .thenReturn(List.of(), List.of(prequel, completeSeries));
+        when(panSouClient.checkLink(completeSeries.getUrl()))
+                .thenReturn(new LinkCheckResult(completeSeries.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("权力的游戏 第一季", "series-user");
+
+        assertTrue(reply.contains("https://pan.quark.cn/s/complete-series"));
+        assertFalse(reply.contains("https://pan.quark.cn/s/unrelated-prequel"));
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
     private MovieSearchCandidate candidate(Long tmdbId, String title, int year, int score) {
         return new MovieSearchCandidate(tmdbId, "tv", title, null, year, score);
     }

@@ -18,7 +18,16 @@ public final class MovieTitleMatcher {
                 || matches(expected, movie.getSeriesName())) {
             return true;
         }
-        String baseTitle = SeasonSearchUtils.baseTitle(keyword);
+        SeasonSearchUtils.SeasonQuery requestedSeason = SeasonSearchUtils.parse(keyword);
+        SeasonSearchUtils.SeasonQuery titleSeason = SeasonSearchUtils.parse(movie.getTitleCn());
+        Integer candidateSeason = movie.getSeason() != null
+                ? movie.getSeason()
+                : titleSeason == null ? null : titleSeason.season();
+        if (requestedSeason != null
+                && candidateSeason != null
+                && candidateSeason != requestedSeason.season()) {
+            return false;
+        }        String baseTitle = SeasonSearchUtils.baseTitle(keyword);
         if (!normalizedEquals(baseTitle, keyword)
                 && (matches(normalize(baseTitle), movie.getTitleCn())
                         || matches(normalize(baseTitle), movie.getTitleEn())
