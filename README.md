@@ -25,7 +25,7 @@ Gying Movie 是一个面向电影、剧集、动漫的片库资源管理项目�
 
 1. 准备 MySQL 8、Redis 6、JDK 17、Maven 3.9、Node.js 20。
 2. 创建数据库并导入 `backend/src/main/resources/db/schema.sql`。
-3. 复制并调整环境变量示例：`backend/.env.example`、`frontend/.env.example`。
+3. 本地开发复制对应子项目环境变量示例；Docker 部署复制根目录 `.env.example`。
 4. 启动后端：
 
 ```bash
@@ -51,6 +51,8 @@ npm run dev
 - [接口文档](docs/api.md)
 - [数据库迁移](docs/database.md)
 - [开发文档](docs/development.md)
+- [Resource Hub 架构](docs/resource-hub.md)
+- [当前项目状态](docs/current-project-status.md)
 
 ## 验收命令
 

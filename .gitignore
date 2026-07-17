@@ -41,3 +41,6 @@ data/
 
 # Qoder
 .qoder/
+
+# Local agent permissions
+.claude/

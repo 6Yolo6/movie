@@ -12,9 +12,11 @@ public class ResourceHubProperties {
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
     private Worker worker = new Worker();
+    private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
 
     @Data
     public static class Tmdb {
+        private String baseUrl = "https://api.themoviedb.org/3";
         private String apiKey;
         private boolean autoSyncEnabled = false;
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
@@ -57,5 +59,11 @@ public class ResourceHubProperties {
         private int taskLimit = 5;
         private int quarkLimit = 5;
         private int publishLimit = 20;
+    }
+
+    @Data
+    public static class QqChannelPublisher {
+        private String baseUrl = "http://localhost:8092";
+        private String token;
     }
 }

@@ -217,6 +217,12 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildTaskName(MovieMetadata movie, QuarkTransferTask task) {
+        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                ? null
+                : discoveryResultService.getById(task.getDiscoveryResultId());
+        if (discovery != null && discovery.getTitle() != null && !discovery.getTitle().isBlank()) {
+            return discovery.getTitle().trim();
+        }
         if (movie == null) {
             return "GYing-" + task.getMovieId();
         }

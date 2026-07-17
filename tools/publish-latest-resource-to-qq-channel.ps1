@@ -1,5 +1,6 @@
 param(
     [int]$Limit = 0,
+    [long]$PostLogId = 0,
     [string]$StateFile = "$env:USERPROFILE\.gying\qq-channel-posted.txt",
     [string]$RunLogFile = ""
 )
@@ -20,7 +21,7 @@ function Write-RunLog {
     Add-Content -LiteralPath $RunLogFile -Value "[$timestamp] $Message" -Encoding UTF8
 }
 
-Write-RunLog "START pid=$PID user=$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) limit=$Limit"
+Write-RunLog "START pid=$PID user=$([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) limit=$Limit postLogId=$PostLogId"
 
 $scriptMutex = [System.Threading.Mutex]::new($false, "Global\GYingQqChannelAutoPost")
 $mutexAcquired = $false
@@ -169,6 +170,7 @@ function Resolve-PosterUrl {
     return $minioUrlPrefix + $Poster.TrimStart("/")
 }
 
+$pendingIdFilter = if ($PostLogId -gt 0) { "  AND qcp.id = $PostLogId" } else { "" }
 $pendingSql = @"
 SELECT
   rl.id,
@@ -182,6 +184,7 @@ FROM qq_channel_post_log qcp
 JOIN resource_link rl ON rl.id = qcp.resource_link_id
 JOIN movie_metadata m ON m.id = rl.movie_id
 WHERE qcp.status = 'PENDING'
+$pendingIdFilter
   AND rl.status = 'ACTIVE'
   AND COALESCE(rl.link_status, 'NORMAL') = 'NORMAL'
   AND COALESCE(rl.url, '') <> ''
@@ -235,7 +238,7 @@ if ($autoAllowed -and $dailyTime -match '^\d{1,2}:\d{2}$') {
     }
 }
 
-if ($autoAllowed) {
+if ($autoAllowed -and $PostLogId -le 0) {
     $sql = @"
 SELECT
   rl.id,

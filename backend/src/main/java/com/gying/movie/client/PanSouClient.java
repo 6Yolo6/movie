@@ -162,7 +162,7 @@ public class PanSouClient {
             return new LinkCheckResult(null, false, false, "empty link");
         }
         String provider = hasText(resource.getProvider()) ? resource.getProvider() : "QUARK";
-        return checkLinks(Map.of(resource.getUrl(), diskType(provider))).getOrDefault(
+        return checkTypedLinks(Map.of(resource.getUrl(), diskType(provider))).getOrDefault(
                 resource.getUrl(),
                 new LinkCheckResult(resource.getUrl(), false, false,
                         "PanSou check response did not include link status"));
@@ -178,10 +178,23 @@ public class PanSouClient {
                 .map(String::trim)
                 .distinct()
                 .forEach(link -> typedLinks.put(link, "quark"));
-        return checkLinks(typedLinks);
+        return checkTypedLinks(typedLinks);
     }
 
-    private Map<String, LinkCheckResult> checkLinks(Map<String, String> typedLinks) {
+    public Map<String, LinkCheckResult> checkLinksByProvider(Map<String, String> linksByProvider) {
+        if (linksByProvider == null || linksByProvider.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, String> typedLinks = new LinkedHashMap<>();
+        linksByProvider.forEach((link, provider) -> {
+            if (hasText(link)) {
+                typedLinks.put(link.trim(), diskType(hasText(provider) ? provider : "QUARK"));
+            }
+        });
+        return checkTypedLinks(typedLinks);
+    }
+
+    private Map<String, LinkCheckResult> checkTypedLinks(Map<String, String> typedLinks) {
         if (typedLinks == null || typedLinks.isEmpty()) {
             return Map.of();
         }

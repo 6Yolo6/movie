@@ -85,6 +85,8 @@ interface Overview {
     autoApprove: boolean;
     tmdbConfigured: boolean;
     pansouBaseUrl: string;
+    pansouApiBaseUrl: string;
+    pansouApiConfigured: boolean;
     quarkBaseUrl: string;
     config: ResourceHubConfig;
     worker: WorkerStatus;
@@ -124,9 +126,29 @@ interface DiscoveryResult {
     fileSize?: string;
     status: string;
     failureReason?: string;
+    originalUrl?: string;
     shareUrl?: string;
     resourceLinkId?: number;
     createdAt?: string;
+}
+
+interface TmdbSyncResult {
+    status: string;
+    requested: number;
+    processed: number;
+    inserted: number;
+    updated: number;
+    failed: number;
+    errors?: string[];
+}
+
+interface MissingResourceMovie {
+    id: string;
+    title: string;
+    category?: string;
+    year?: number;
+    resourceStatus?: string;
+    updatedAt?: string;
 }
 
 interface InvalidResourceCheck {
@@ -226,7 +248,16 @@ export default function ResourceHubAdminPage() {
     const [discoveryPage, setDiscoveryPage] = useState(1);
     const [discoveryTotal, setDiscoveryTotal] = useState(0);
     const [discoveryMovieId, setDiscoveryMovieId] = useState('');
+    const [discoveryKeyword, setDiscoveryKeyword] = useState('');
     const [discoveryStatus, setDiscoveryStatus] = useState<string | undefined>();
+    const [discoverySortOrder, setDiscoverySortOrder] = useState<'asc' | 'desc'>('desc');
+    const [selectedDiscoveryIds, setSelectedDiscoveryIds] = useState<React.Key[]>([]);
+    const [missingResources, setMissingResources] = useState<MissingResourceMovie[]>([]);
+    const [missingLoading, setMissingLoading] = useState(false);
+    const [missingPage, setMissingPage] = useState(1);
+    const [missingTotal, setMissingTotal] = useState(0);
+    const [missingKeyword, setMissingKeyword] = useState('');
+    const [missingSortOrder, setMissingSortOrder] = useState<'asc' | 'desc'>('desc');
     const [publishLimit, setPublishLimit] = useState(20);
     const [quarkLimit, setQuarkLimit] = useState(5);
     const [invalidChecks, setInvalidChecks] = useState<InvalidResourceCheck[]>([]);
@@ -304,7 +335,9 @@ export default function ResourceHubAdminPage() {
         try {
             const query = new URLSearchParams({ page: String(discoveryPage), size: '20' });
             if (discoveryMovieId.trim()) query.set('movieId', discoveryMovieId.trim());
+            if (discoveryKeyword.trim()) query.set('keyword', discoveryKeyword.trim());
             if (discoveryStatus) query.set('status', discoveryStatus);
+            query.set('sortOrder', discoverySortOrder);
             const data = await requestJson<PageResult<DiscoveryResult>>(`/api/admin/resource-hub/discoveries?${query.toString()}`);
             setDiscoveries(data.records || []);
             setDiscoveryTotal(data.total || 0);
@@ -313,7 +346,29 @@ export default function ResourceHubAdminPage() {
         } finally {
             setDiscoveriesLoading(false);
         }
-    }, [discoveryMovieId, discoveryPage, discoveryStatus, message, requestJson, t, token]);
+    }, [discoveryKeyword, discoveryMovieId, discoveryPage, discoverySortOrder, discoveryStatus, message, requestJson, t, token]);
+
+    const fetchMissingResources = useCallback(async () => {
+        if (!token) return;
+        setMissingLoading(true);
+        try {
+            const query = new URLSearchParams({
+                page: String(missingPage),
+                size: '20',
+                sortOrder: missingSortOrder,
+            });
+            if (missingKeyword.trim()) query.set('keyword', missingKeyword.trim());
+            const data = await requestJson<PageResult<MissingResourceMovie>>(
+                `/api/admin/resource-hub/missing-resources?${query.toString()}`,
+            );
+            setMissingResources(data.records || []);
+            setMissingTotal(data.total || 0);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setMissingLoading(false);
+        }
+    }, [message, missingKeyword, missingPage, missingSortOrder, requestJson, t, token]);
 
     useEffect(() => {
         if (!user) return;
@@ -333,8 +388,12 @@ export default function ResourceHubAdminPage() {
         fetchDiscoveries();
     }, [fetchDiscoveries]);
 
+    useEffect(() => {
+        fetchMissingResources();
+    }, [fetchMissingResources]);
+
     const refreshAll = async () => {
-        await Promise.all([fetchOverview(), fetchTasks(), fetchDiscoveries()]);
+        await Promise.all([fetchOverview(), fetchTasks(), fetchDiscoveries(), fetchMissingResources()]);
     };
 
     const saveConfig = async (values: ResourceHubConfigFormValues) => {
@@ -482,14 +541,97 @@ export default function ResourceHubAdminPage() {
     const submitTmdbSync = async (values: TmdbFormValues) => {
         setRunningAction('tmdb');
         try {
-            await requestJson('/api/admin/resource-hub/tmdb/metadata-sync', {
+            const data = await requestJson<TmdbSyncResult | ResourceHubTask>('/api/admin/resource-hub/tmdb/metadata-sync', {
                 method: 'POST',
                 body: JSON.stringify(values),
             });
-            message.success(values.runNow ? t('resourceHubTmdbRunDone') : t('resourceHubTmdbTaskCreated'));
+            if (values.runNow && 'processed' in data) {
+                if (data.status === 'FAILED' || data.processed === 0 && data.failed > 0) {
+                    throw new Error(data.errors?.join('; ') || t('resourceHubTmdbTaskFailed'));
+                }
+                message.success(t('resourceHubTmdbRunDoneWithCounts', {
+                    processed: data.processed,
+                    inserted: data.inserted,
+                    updated: data.updated,
+                    failed: data.failed,
+                }));
+            } else {
+                message.success(t('resourceHubTmdbTaskCreated'));
+            }
             await refreshAll();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubTmdbTaskFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const runDiscoveryBatch = async (key: string, path: string) => {
+        if (selectedDiscoveryIds.length === 0) {
+            message.warning(t('resourceHubSelectDiscoveries'));
+            return;
+        }
+        setRunningAction(key);
+        try {
+            const data = await requestJson<{ selected: number; succeeded: number; failed: number }>(path, {
+                method: 'POST',
+                body: JSON.stringify(selectedDiscoveryIds),
+            });
+            if (data.failed > 0) {
+                message.warning(t('resourceHubBatchPartialDone', data));
+            } else {
+                message.success(t('resourceHubBatchDone', data));
+            }
+            setSelectedDiscoveryIds([]);
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const postDiscoveryToQq = async (discoveryResultId: number) => {
+        setRunningAction(`qq-post-${discoveryResultId}`);
+        try {
+            const data = await requestJson<{ status?: string; immediate?: boolean; error?: string }>(
+                `/api/admin/resource-hub/discoveries/${discoveryResultId}/qq-channel-post?runNow=true`,
+                { method: 'POST' },
+            );
+            if (data.immediate) {
+                message.success(t('resourceHubQqPostedNow'));
+            } else {
+                message.warning(data.error || t('resourceHubQqQueuedFallback'));
+            }
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const resolveMissingResource = async (movieId: string, source: 'GYING' | 'PANSOU') => {
+        const key = `missing-${source}-${movieId}`;
+        setRunningAction(key);
+        try {
+            const started = await requestJson<DiscoveryPipelineJob>(
+                `/api/admin/resource-hub/missing-resources/${encodeURIComponent(movieId)}/resolve?source=${source}`,
+                { method: 'POST' },
+            );
+            if (!started.jobId) throw new Error(t('operationFailed'));
+            let job = started;
+            for (let attempt = 0; attempt < 240 && job.status === 'RUNNING'; attempt += 1) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                job = await requestJson<DiscoveryPipelineJob>(`/api/admin/resource-hub/discover/jobs/${started.jobId}`);
+            }
+            if (job.status !== 'SUCCEEDED') {
+                throw new Error(t('resourceHubMissingResolveFailed'));
+            }
+            message.success(t('resourceHubMissingResolved', { source }));
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceHubMissingResolveFailed'));
         } finally {
             setRunningAction(null);
         }
@@ -564,14 +706,14 @@ export default function ResourceHubAdminPage() {
     const taskColumns: ColumnsType<ResourceHubTask> = [
         { title: 'ID', dataIndex: 'id', width: 90 },
         { title: t('type'), dataIndex: 'taskType', width: 160, render: (value: string) => <Tag>{t(`resourceHubTaskType.${value}`, { defaultValue: value })}</Tag> },
-        { title: t('movieId'), dataIndex: 'movieId', width: 140, render: (value?: string) => value || '-' },
-        { title: t('resourceHubKeyword'), dataIndex: 'keyword', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('movieId'), dataIndex: 'movieId', width: 190, render: (value?: string) => value || '-' },
+        { title: t('resourceHubKeyword'), dataIndex: 'keyword', width: 240, ellipsis: true, render: (value?: string) => value || '-' },
         { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110, render: (value?: string) => value || '-' },
         { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
         { title: t('resourceHubAttempts'), dataIndex: 'attempts', width: 90, render: (value?: number) => value ?? 0 },
         { title: t('resourceHubScheduledAt'), dataIndex: 'scheduledAt', width: 180, render: formatDate },
         { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
-        { title: t('resourceHubError'), dataIndex: 'lastError', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('resourceHubError'), dataIndex: 'lastError', width: 300, ellipsis: true, render: (value?: string) => value || '-' },
         {
             title: t('actions'),
             key: 'actions',
@@ -592,21 +734,35 @@ export default function ResourceHubAdminPage() {
 
     const discoveryColumns: ColumnsType<DiscoveryResult> = [
         { title: 'ID', dataIndex: 'id', width: 90 },
-        { title: t('movieId'), dataIndex: 'movieId', width: 140 },
-        { title: t('movieTitle'), dataIndex: 'title', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('movieId'), dataIndex: 'movieId', width: 190 },
+        { title: t('movieTitle'), dataIndex: 'title', width: 280, ellipsis: true, render: (value?: string) => value || '-' },
         { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110 },
         { title: t('provider'), dataIndex: 'provider', width: 100, render: (value?: string) => value || '-' },
         { title: t('quality'), dataIndex: 'quality', width: 100, render: (value?: string) => value || '-' },
         { title: t('fileSize'), dataIndex: 'fileSize', width: 100, render: (value?: string) => value || '-' },
         { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
+        {
+            title: t('resourceHubResourceLink'),
+            key: 'resourceUrl',
+            width: 260,
+            ellipsis: true,
+            render: (_: unknown, record) => {
+                const url = record.shareUrl || record.originalUrl;
+                return url ? (
+                    <a href={url} target="_blank" rel="noreferrer" title={url}>
+                        {record.shareUrl ? t('resourceHubOwnShareLink') : t('resourceHubSourceLink')}
+                    </a>
+                ) : '-';
+            },
+        },
         { title: t('resourceHubPublishedResource'), dataIndex: 'resourceLinkId', width: 130, render: (value?: number) => value || '-' },
         { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
-        { title: t('resourceHubFailureReason'), dataIndex: 'failureReason', ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('resourceHubFailureReason'), dataIndex: 'failureReason', width: 320, ellipsis: true, render: (value?: string) => value || '-' },
         {
             title: t('actions'),
             key: 'actions',
             fixed: 'right',
-            width: 220,
+            width: 260,
             render: (_: unknown, record) => {
                 const canRetryShare = record.status === 'FAILED'
                     && record.failureReason?.includes('share creation failed');
@@ -618,7 +774,12 @@ export default function ResourceHubAdminPage() {
                             size="small"
                             icon={record.shareUrl ? <ShareAltOutlined /> : <CloudSyncOutlined />}
                             loading={runningAction === `publish-${record.id}`}
-                            onClick={() => runAction(`publish-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/publish`)}
+                            onClick={() => runAction(
+                                `publish-${record.id}`,
+                                canRetryShare
+                                    ? `/api/admin/resource-hub/discoveries/${record.id}/retry-share-publish`
+                                    : `/api/admin/resource-hub/discoveries/${record.id}/publish`,
+                            )}
                         >
                             {record.shareUrl ? t('resourceHubPublish') : t('resourceHubRetrySharePublish')}
                         </Button>
@@ -628,7 +789,7 @@ export default function ResourceHubAdminPage() {
                             size="small"
                             icon={<ShareAltOutlined />}
                             loading={runningAction === `qq-post-${record.id}`}
-                            onClick={() => runAction(`qq-post-${record.id}`, `/api/admin/resource-hub/discoveries/${record.id}/qq-channel-post`)}
+                            onClick={() => postDiscoveryToQq(record.id)}
                         >
                             {t('resourceHubQqChannelPost')}
                         </Button>
@@ -636,6 +797,44 @@ export default function ResourceHubAdminPage() {
                 </Space>
                 );
             },
+        },
+    ];
+
+    const missingResourceColumns: ColumnsType<MissingResourceMovie> = [
+        { title: t('movieId'), dataIndex: 'id', width: 200 },
+        { title: t('movieTitle'), dataIndex: 'title', width: 300, ellipsis: true },
+        { title: t('category'), dataIndex: 'category', width: 100, render: (value?: string) => <Tag>{value || '-'}</Tag> },
+        { title: t('year'), dataIndex: 'year', width: 90, render: (value?: number) => value || '-' },
+        { title: t('resourceStatus'), dataIndex: 'resourceStatus', width: 140, render: (value?: string) => <Tag>{value || '-'}</Tag> },
+        { title: t('updatedAt'), dataIndex: 'updatedAt', width: 180, render: formatDate },
+        {
+            title: t('actions'),
+            key: 'actions',
+            fixed: 'right',
+            width: 290,
+            render: (_: unknown, record) => (
+                <Space size={6}>
+                    <Button
+                        size="small"
+                        icon={<CloudSyncOutlined />}
+                        loading={runningAction === `missing-GYING-${record.id}`}
+                        disabled={Boolean(runningAction && runningAction !== `missing-GYING-${record.id}`)}
+                        onClick={() => resolveMissingResource(record.id, 'GYING')}
+                    >
+                        {t('resourceHubResolveFromGying')}
+                    </Button>
+                    <Button
+                        type="primary"
+                        size="small"
+                        icon={<SearchOutlined />}
+                        loading={runningAction === `missing-PANSOU-${record.id}`}
+                        disabled={Boolean(runningAction && runningAction !== `missing-PANSOU-${record.id}`)}
+                        onClick={() => resolveMissingResource(record.id, 'PANSOU')}
+                    >
+                        {t('resourceHubResolveFromPanSou')}
+                    </Button>
+                </Space>
+            ),
         },
     ];
 
@@ -767,6 +966,9 @@ export default function ResourceHubAdminPage() {
                                                         <Space direction="vertical" size={4}>
                                                             <Text strong>PanSou</Text>
                                                             <Tag icon={<ApiOutlined />}>{overview?.pansouBaseUrl || '-'}</Tag>
+                                                            <Tag color={overview?.pansouApiConfigured ? 'green' : 'default'}>
+                                                                {overview?.pansouApiBaseUrl || 'panso.best'}
+                                                            </Tag>
                                                             <Text type="secondary">{t('resourceHubPanSouHelp')}</Text>
                                                         </Space>
                                                     </div>
@@ -1077,7 +1279,7 @@ export default function ResourceHubAdminPage() {
                                         dataSource={tasks}
                                         rowKey="id"
                                         loading={tasksLoading}
-                                        scroll={{ x: 1300 }}
+                                        scroll={{ x: 1680 }}
                                         locale={{ emptyText: <Empty description={t('resourceHubNoTasks')} /> }}
                                         pagination={{
                                             current: taskPage,
@@ -1096,6 +1298,15 @@ export default function ResourceHubAdminPage() {
                             children: (
                                 <Card>
                                     <Space className="mb-4" wrap>
+                                        <Input.Search
+                                            placeholder={t('resourceHubTitleSearch')}
+                                            allowClear
+                                            style={{ width: 300 }}
+                                            onSearch={(value) => {
+                                                setDiscoveryKeyword(value);
+                                                setDiscoveryPage(1);
+                                            }}
+                                        />
                                         <Input.Search
                                             placeholder={t('movieId')}
                                             allowClear
@@ -1116,14 +1327,70 @@ export default function ResourceHubAdminPage() {
                                                 setDiscoveryPage(1);
                                             }}
                                         />
+                                        <Select
+                                            value={discoverySortOrder}
+                                            style={{ width: 160 }}
+                                            options={[
+                                                { value: 'desc', label: t('resourceHubNewestFirst') },
+                                                { value: 'asc', label: t('resourceHubOldestFirst') },
+                                            ]}
+                                            onChange={(value) => {
+                                                setDiscoverySortOrder(value);
+                                                setDiscoveryPage(1);
+                                            }}
+                                        />
                                         <Button icon={<ReloadOutlined />} onClick={fetchDiscoveries}>{t('resourceHubRefreshResults')}</Button>
+                                    </Space>
+                                    <Space className="mb-4" wrap>
+                                        <Text type="secondary">
+                                            {t('resourceHubSelectedCount', { count: selectedDiscoveryIds.length })}
+                                        </Text>
+                                        <Button
+                                            icon={<ShareAltOutlined />}
+                                            disabled={selectedDiscoveryIds.length === 0}
+                                            loading={runningAction === 'batch-publish'}
+                                            onClick={() => runDiscoveryBatch(
+                                                'batch-publish',
+                                                '/api/admin/resource-hub/discoveries/batch/publish',
+                                            )}
+                                        >
+                                            {t('resourceHubBatchPublish')}
+                                        </Button>
+                                        <Button
+                                            icon={<CloudSyncOutlined />}
+                                            disabled={selectedDiscoveryIds.length === 0}
+                                            loading={runningAction === 'batch-retry'}
+                                            onClick={() => runDiscoveryBatch(
+                                                'batch-retry',
+                                                '/api/admin/resource-hub/discoveries/batch/retry-share-publish',
+                                            )}
+                                        >
+                                            {t('resourceHubBatchRetryShare')}
+                                        </Button>
+                                        <Button
+                                            type="primary"
+                                            icon={<ShareAltOutlined />}
+                                            disabled={selectedDiscoveryIds.length === 0}
+                                            loading={runningAction === 'batch-qq'}
+                                            onClick={() => runDiscoveryBatch(
+                                                'batch-qq',
+                                                '/api/admin/resource-hub/discoveries/batch/qq-channel-post?runNow=true',
+                                            )}
+                                        >
+                                            {t('resourceHubBatchQqPost')}
+                                        </Button>
                                     </Space>
                                     <Table
                                         columns={discoveryColumns}
                                         dataSource={discoveries}
                                         rowKey="id"
                                         loading={discoveriesLoading}
-                                        scroll={{ x: 1300 }}
+                                        rowSelection={{
+                                            selectedRowKeys: selectedDiscoveryIds,
+                                            preserveSelectedRowKeys: true,
+                                            onChange: setSelectedDiscoveryIds,
+                                        }}
+                                        scroll={{ x: 2260 }}
                                         locale={{ emptyText: <Empty description={t('resourceHubNoDiscoveries')} /> }}
                                         pagination={{
                                             current: discoveryPage,
@@ -1131,6 +1398,55 @@ export default function ResourceHubAdminPage() {
                                             total: discoveryTotal,
                                             onChange: setDiscoveryPage,
                                             showTotal: (total) => t('resourceHubTotalDiscoveries', { count: total }),
+                                        }}
+                                    />
+                                </Card>
+                            ),
+                        },
+                        {
+                            key: 'missing-resources',
+                            label: t('resourceHubMissingResources'),
+                            children: (
+                                <Card>
+                                    <Space className="mb-4" wrap>
+                                        <Input.Search
+                                            placeholder={t('resourceHubMissingSearchPlaceholder')}
+                                            allowClear
+                                            style={{ width: 320 }}
+                                            onSearch={(value) => {
+                                                setMissingKeyword(value);
+                                                setMissingPage(1);
+                                            }}
+                                        />
+                                        <Select
+                                            value={missingSortOrder}
+                                            style={{ width: 160 }}
+                                            options={[
+                                                { value: 'desc', label: t('resourceHubNewestFirst') },
+                                                { value: 'asc', label: t('resourceHubOldestFirst') },
+                                            ]}
+                                            onChange={(value) => {
+                                                setMissingSortOrder(value);
+                                                setMissingPage(1);
+                                            }}
+                                        />
+                                        <Button icon={<ReloadOutlined />} onClick={fetchMissingResources}>
+                                            {t('refresh')}
+                                        </Button>
+                                    </Space>
+                                    <Table
+                                        columns={missingResourceColumns}
+                                        dataSource={missingResources}
+                                        rowKey="id"
+                                        loading={missingLoading}
+                                        scroll={{ x: 1300 }}
+                                        locale={{ emptyText: <Empty description={t('resourceHubNoMissingResources')} /> }}
+                                        pagination={{
+                                            current: missingPage,
+                                            pageSize: 20,
+                                            total: missingTotal,
+                                            onChange: setMissingPage,
+                                            showTotal: (total) => t('resourceHubTotalMissingResources', { count: total }),
                                         }}
                                     />
                                 </Card>

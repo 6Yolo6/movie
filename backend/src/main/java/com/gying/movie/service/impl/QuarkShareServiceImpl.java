@@ -134,6 +134,12 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
     }
 
     private String buildShareTitle(MovieMetadata movie, QuarkTransferTask task) {
+        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                ? null
+                : discoveryResultService.getById(task.getDiscoveryResultId());
+        if (discovery != null && hasText(discovery.getTitle())) {
+            return discovery.getTitle().trim();
+        }
         if (movie == null) {
             return "GYing-" + task.getMovieId();
         }

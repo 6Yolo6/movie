@@ -29,4 +29,14 @@ public class GyingSourceClient {
         Map<String, Object> result = request.body(payload).retrieve().body(Map.class);
         return result == null ? Map.of() : result;
     }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> get(String path) {
+        RestClient.RequestHeadersSpec<?> request = restClient.get().uri(path);
+        if (internalToken != null && !internalToken.isBlank()) {
+            request.header("X-Internal-Token", internalToken);
+        }
+        Map<String, Object> result = request.retrieve().body(Map.class);
+        return result == null ? Map.of() : result;
+    }
 }

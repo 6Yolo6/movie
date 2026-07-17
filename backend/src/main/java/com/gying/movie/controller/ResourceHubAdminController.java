@@ -2,6 +2,7 @@ package com.gying.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gying.movie.client.QqChannelPublisherClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.QuarkTransferRunResult;
@@ -36,6 +37,7 @@ import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IUserFavoriteService;
 import com.gying.movie.service.ICommentService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
+import com.gying.movie.service.impl.GyingSourceWorkflowService;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import jakarta.annotation.PreDestroy;
@@ -49,6 +51,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -80,6 +83,8 @@ public class ResourceHubAdminController {
     private final IMovieMetadataService movieService;
     private final IUserFavoriteService favoriteService;
     private final ICommentService commentService;
+    private final QqChannelPublisherClient qqChannelPublisherClient;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final ExecutorService discoveryPipelineExecutor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "resource-discovery-pipeline");
         thread.setDaemon(true);
@@ -104,7 +109,9 @@ public class ResourceHubAdminController {
             IQqChannelPostLogService qqChannelPostLogService,
             IMovieMetadataService movieService,
             IUserFavoriteService favoriteService,
-            ICommentService commentService) {
+            ICommentService commentService,
+            QqChannelPublisherClient qqChannelPublisherClient,
+            GyingSourceWorkflowService gyingSourceWorkflowService) {
         this.authHelper = authHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
@@ -122,6 +129,8 @@ public class ResourceHubAdminController {
         this.movieService = movieService;
         this.favoriteService = favoriteService;
         this.commentService = commentService;
+        this.qqChannelPublisherClient = qqChannelPublisherClient;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
     }
 
     @PreDestroy
@@ -139,6 +148,8 @@ public class ResourceHubAdminController {
         result.put("autoApprove", config.isAutoApprove());
         result.put("tmdbConfigured", config.isTmdbConfigured());
         result.put("pansouBaseUrl", nullToEmpty(resourceHubProperties.getPansou().getBaseUrl()));
+        result.put("pansouApiBaseUrl", nullToEmpty(resourceHubProperties.getPansou().getApiBaseUrl()));
+        result.put("pansouApiConfigured", hasText(resourceHubProperties.getPansou().getApiKey()));
         result.put("quarkBaseUrl", nullToEmpty(resourceHubProperties.getQuark().getBaseUrl()));
         result.put("config", config);
         result.put("worker", workerStatusMap());
@@ -214,6 +225,11 @@ public class ResourceHubAdminController {
         ResourceHubTask task = tmdbMetadataSyncService.enqueue(request);
         if (request != null && Boolean.TRUE.equals(request.getRunNow())) {
             TmdbSyncResult result = tmdbMetadataSyncService.runTask(task.getId());
+            if ("FAILED".equalsIgnoreCase(result.getStatus())) {
+                throw new IllegalStateException(result.getErrors().isEmpty()
+                        ? "TMDB metadata sync failed"
+                        : result.getErrors().get(0));
+            }
             return ApiResponse.ok(result);
         }
         return ApiResponse.ok(task);
@@ -268,6 +284,8 @@ public class ResourceHubAdminController {
             @RequestParam(required = false) String movieId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String source,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Authorization", required = false) String token) {
@@ -282,7 +300,18 @@ public class ResourceHubAdminController {
         if (hasText(source)) {
             query.eq("source", source.trim().toUpperCase());
         }
-        query.orderByDesc("created_at");
+        if (hasText(keyword)) {
+            String text = keyword.trim();
+            query.and(w -> w.like("title", text)
+                    .or().like("movie_id", text)
+                    .or().like("original_url", text)
+                    .or().like("share_url", text));
+        }
+        if ("asc".equalsIgnoreCase(sortOrder)) {
+            query.orderByAsc("created_at");
+        } else {
+            query.orderByDesc("created_at");
+        }
         Page<ResourceDiscoveryResult> result = discoveryResultService.page(
                 new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
                 query);
@@ -305,11 +334,69 @@ public class ResourceHubAdminController {
         return ApiResponse.ok(resourceHubPublishService.publishDiscovery(discoveryResultId));
     }
 
-    @PostMapping("/discoveries/{discoveryResultId}/qq-channel-post")
-    public ApiResponse<Map<String, Object>> queueDiscoveryForQqChannel(
+    @PostMapping("/discoveries/{discoveryResultId}/retry-share-publish")
+    public ApiResponse<Map<String, Object>> retryShareAndPublish(
             @PathVariable Long discoveryResultId,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        return ApiResponse.ok(retryShareAndPublishOne(discoveryResultId));
+    }
+
+    @PostMapping("/discoveries/batch/retry-share-publish")
+    public ApiResponse<Map<String, Object>> batchRetryShareAndPublish(
+            @RequestBody(required = false) List<Long> discoveryResultIds,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(runDiscoveryBatch(discoveryResultIds, this::retryShareAndPublishOne));
+    }
+
+    @PostMapping("/discoveries/batch/publish")
+    public ApiResponse<Map<String, Object>> batchPublishDiscoveries(
+            @RequestBody(required = false) List<Long> discoveryResultIds,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(runDiscoveryBatch(discoveryResultIds, id -> {
+            ResourceHubPublishResult published = resourceHubPublishService.publishDiscovery(id);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("discoveryResultId", id);
+            item.put("published", published.getPublished());
+            item.put("updated", published.getUpdated());
+            item.put("failed", published.getFailed());
+            item.put("errors", published.getErrors());
+            return item;
+        }));
+    }
+
+    @PostMapping("/discoveries/{discoveryResultId}/qq-channel-post")
+    public ApiResponse<Map<String, Object>> queueDiscoveryForQqChannel(
+            @PathVariable Long discoveryResultId,
+            @RequestParam(defaultValue = "true") boolean runNow,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(queueDiscoveryForQqChannel(discoveryResultId, runNow));
+    }
+
+    @PostMapping("/discoveries/batch/qq-channel-post")
+    public ApiResponse<Map<String, Object>> batchPostDiscoveriesToQqChannel(
+            @RequestBody(required = false) List<Long> discoveryResultIds,
+            @RequestParam(defaultValue = "true") boolean runNow,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(runDiscoveryBatch(
+                discoveryResultIds,
+                id -> {
+                    Map<String, Object> item = queueDiscoveryForQqChannel(id, runNow);
+                    if (runNow && !Boolean.TRUE.equals(item.get("immediate"))) {
+                        Object error = item.get("error");
+                        throw new IllegalStateException(error == null
+                                ? "QQ channel post was queued but not posted immediately"
+                                : String.valueOf(error));
+                    }
+                    return item;
+                }));
+    }
+
+    private Map<String, Object> queueDiscoveryForQqChannel(Long discoveryResultId, boolean runNow) {
         ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryResultId);
         if (discovery == null) {
             throw new IllegalArgumentException("Discovery result not found");
@@ -360,7 +447,19 @@ public class ResourceHubAdminController {
         result.put("postLogId", log.getId());
         result.put("resourceLinkId", resource.getId());
         result.put("status", log.getStatus());
-        return ApiResponse.ok(result);
+        result.put("immediate", false);
+        if (runNow) {
+            try {
+                result.put("publisher", qqChannelPublisherClient.publish(log.getId()));
+                QqChannelPostLog refreshed = qqChannelPostLogService.getById(log.getId());
+                result.put("status", refreshed == null ? log.getStatus() : refreshed.getStatus());
+                result.put("immediate", refreshed != null && "POSTED".equalsIgnoreCase(refreshed.getStatus()));
+                result.put("error", refreshed == null ? null : refreshed.getErrorMessage());
+            } catch (Exception error) {
+                result.put("error", safeText(error.getMessage()));
+            }
+        }
+        return result;
     }
 
     @PostMapping("/quark/transfers/submit")
@@ -377,6 +476,78 @@ public class ResourceHubAdminController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         return ApiResponse.ok(quarkTransferRunnerService.submitOne(taskId));
+    }
+
+    @GetMapping("/missing-resources")
+    public ApiResponse<Map<String, Object>> missingResources(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "desc") String sortOrder,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
+                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .apply("""
+                        NOT EXISTS (
+                          SELECT 1 FROM resource_link rl
+                          WHERE rl.movie_id = movie_metadata.id
+                            AND rl.status = 'ACTIVE'
+                            AND rl.deleted_at IS NULL
+                            AND rl.type = 'DISK'
+                            AND COALESCE(rl.link_status, 'NORMAL') <> 'INVALID'
+                        )
+                        """);
+        if (hasText(keyword)) {
+            String text = keyword.trim();
+            query.and(w -> w.like("title_cn", text)
+                    .or().like("title_en", text)
+                    .or().like("series_name", text)
+                    .or().like("aliases", text)
+                    .or().eq("id", text));
+        }
+        if ("asc".equalsIgnoreCase(sortOrder)) {
+            query.orderByAsc("updated_at");
+        } else {
+            query.orderByDesc("updated_at");
+        }
+        Page<MovieMetadata> movies = movieService.page(
+                new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
+                query);
+        List<Map<String, Object>> records = movies.getRecords().stream().map(movie -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", movie.getId());
+            item.put("title", firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()));
+            item.put("category", movie.getCategory());
+            item.put("year", movie.getYear());
+            item.put("resourceStatus", movie.getResourceStatus());
+            item.put("updatedAt", movie.getUpdatedAt());
+            return item;
+        }).toList();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("records", records);
+        result.put("total", movies.getTotal());
+        result.put("current", movies.getCurrent());
+        result.put("size", movies.getSize());
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/missing-resources/{movieId}/resolve")
+    public ApiResponse<Map<String, Object>> resolveMissingResource(
+            @PathVariable String movieId,
+            @RequestParam(defaultValue = "PANSOU") String source,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+            throw new IllegalArgumentException("Movie not found: " + movieId);
+        }
+        DiscoveryPipelineJob job = new DiscoveryPipelineJob(UUID.randomUUID().toString(), null);
+        discoveryPipelineJobs.put(job.jobId, job);
+        trimDiscoveryPipelineJobs();
+        discoveryPipelineExecutor.submit(() -> runMissingResourceJob(job, movie, source));
+        return ApiResponse.ok(job.toResponse());
     }
 
     private void runDiscoveryPipelineJob(DiscoveryPipelineJob job) {
@@ -396,6 +567,188 @@ public class ResourceHubAdminController {
         } finally {
             job.finishedAt = LocalDateTime.now();
         }
+    }
+
+    private void runMissingResourceJob(DiscoveryPipelineJob job, MovieMetadata movie, String source) {
+        try {
+            String normalizedSource = hasText(source) ? source.trim().toUpperCase() : "PANSOU";
+            job.result.put("source", normalizedSource);
+            job.result.put("movieId", movie.getId());
+            if ("GYING".equals(normalizedSource)) {
+                job.result.put("gying", gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId()));
+            } else if ("PANSOU".equals(normalizedSource)) {
+                ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+                request.setMovieId(movie.getId());
+                request.setSource("PANSOU");
+                request.setMaxResults(resourceHubConfigService.getConfig().getTmdbDiscoveryMaxResults());
+                ResourceHubTask task = resourceDiscoveryService.enqueue(request);
+                ResourceDiscoveryRunResult discovery = resourceDiscoveryService.runTask(task.getId());
+                job.result.put("discovery", discovery);
+
+                List<ResourceDiscoveryResult> rows = discoveryResultService.list(
+                        new QueryWrapper<ResourceDiscoveryResult>().eq("task_id", task.getId()));
+                int transfers = 0;
+                int published = 0;
+                int failed = 0;
+                List<String> errors = new ArrayList<>();
+                for (ResourceDiscoveryResult row : rows) {
+                    QuarkTransferTask transfer = quarkTransferTaskService.getOne(
+                            new QueryWrapper<QuarkTransferTask>()
+                                    .eq("discovery_result_id", row.getId())
+                                    .orderByDesc("updated_at")
+                                    .last("LIMIT 1"),
+                            false);
+                    if (transfer != null) {
+                        QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(transfer.getId());
+                        transfers += transferResult.getSubmitted();
+                        failed += transferResult.getFailed();
+                        errors.addAll(transferResult.getErrors());
+                    }
+                    ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(row.getId());
+                    published += publishResult.getPublished() + publishResult.getUpdated();
+                    failed += publishResult.getFailed();
+                    errors.addAll(publishResult.getErrors());
+                }
+                job.result.put("transfers", transfers);
+                job.result.put("published", published);
+                job.result.put("failed", failed);
+                job.result.put("errors", errors.stream().limit(10).toList());
+            } else {
+                throw new IllegalArgumentException("Unsupported missing-resource source: " + source);
+            }
+            job.status = "SUCCEEDED";
+        } catch (Exception error) {
+            job.status = "FAILED";
+            job.errors.add(safeText(error.getMessage()));
+        } finally {
+            job.finishedAt = LocalDateTime.now();
+        }
+    }
+
+    private Map<String, Object> retryShareAndPublishOne(Long discoveryResultId) {
+        ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryResultId);
+        if (discovery == null) {
+            throw new IllegalArgumentException("Discovery result not found: " + discoveryResultId);
+        }
+        QuarkTransferTask transfer = quarkTransferTaskService.getOne(
+                new QueryWrapper<QuarkTransferTask>()
+                        .eq("discovery_result_id", discoveryResultId)
+                        .orderByDesc("updated_at")
+                        .last("LIMIT 1"),
+                false);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("discoveryResultId", discoveryResultId);
+        if (transfer != null && !hasText(transfer.getShareUrl())) {
+            QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(transfer.getId());
+            result.put("transferTaskId", transfer.getId());
+            result.put("transferSubmitted", transferResult.getSubmitted());
+            result.put("transferFailed", transferResult.getFailed());
+            result.put("transferErrors", transferResult.getErrors());
+            if (transferResult.getFailed() > 0) {
+                if (recoverFailedDiscoveryWithPanSou(discovery, result)) {
+                    return result;
+                }
+                throw new IllegalStateException(transferResult.getErrors().isEmpty()
+                        ? "Quark transfer retry and PanSou rediscovery failed"
+                        : transferResult.getErrors().get(0));
+            }
+        }
+        ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryResultId);
+        result.put("published", publishResult.getPublished());
+        result.put("updated", publishResult.getUpdated());
+        result.put("failed", publishResult.getFailed());
+        result.put("errors", publishResult.getErrors());
+        if (publishResult.getFailed() > 0) {
+            throw new IllegalStateException(publishResult.getErrors().isEmpty()
+                    ? "Discovery publish failed"
+                    : publishResult.getErrors().get(0));
+        }
+        return result;
+    }
+
+    private boolean recoverFailedDiscoveryWithPanSou(
+            ResourceDiscoveryResult failedDiscovery,
+            Map<String, Object> result) {
+        ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+        request.setMovieId(failedDiscovery.getMovieId());
+        request.setSource("PANSOU");
+        request.setRefresh(true);
+        request.setMaxResults(resourceHubConfigService.getConfig().getTmdbDiscoveryMaxResults());
+        ResourceHubTask task = resourceDiscoveryService.enqueue(request);
+        ResourceDiscoveryRunResult discoveryRun = resourceDiscoveryService.runTask(task.getId());
+        result.put("rediscoveryTaskId", task.getId());
+        result.put("rediscovered", discoveryRun.getDiscovered());
+
+        List<ResourceDiscoveryResult> rediscovered = discoveryResultService.list(
+                new QueryWrapper<ResourceDiscoveryResult>()
+                        .eq("task_id", task.getId())
+                        .eq("status", "DISCOVERED")
+                        .orderByDesc("confidence"));
+        for (ResourceDiscoveryResult candidate : rediscovered) {
+            QuarkTransferTask candidateTransfer = quarkTransferTaskService.getOne(
+                    new QueryWrapper<QuarkTransferTask>()
+                            .eq("discovery_result_id", candidate.getId())
+                            .orderByDesc("updated_at")
+                            .last("LIMIT 1"),
+                    false);
+            if (candidateTransfer != null) {
+                QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(candidateTransfer.getId());
+                if (transferResult.getFailed() > 0) {
+                    continue;
+                }
+            }
+            ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(candidate.getId());
+            if (publishResult.getPublished() + publishResult.getUpdated() <= 0) {
+                continue;
+            }
+            failedDiscovery.setStatus("IGNORED");
+            failedDiscovery.setFailureReason("Recovered by PanSou discovery " + candidate.getId());
+            failedDiscovery.setUpdatedAt(LocalDateTime.now());
+            discoveryResultService.updateById(failedDiscovery);
+            result.put("replacementDiscoveryResultId", candidate.getId());
+            result.put("published", publishResult.getPublished());
+            result.put("updated", publishResult.getUpdated());
+            result.put("failed", 0);
+            result.put("errors", List.of());
+            return true;
+        }
+        return false;
+    }
+
+    private Map<String, Object> runDiscoveryBatch(
+            List<Long> discoveryResultIds,
+            Function<Long, Map<String, Object>> action) {
+        List<Long> ids = discoveryResultIds == null
+                ? List.of()
+                : discoveryResultIds.stream().filter(java.util.Objects::nonNull).distinct().limit(100).toList();
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one discovery result");
+        }
+        int succeeded = 0;
+        int failed = 0;
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (Long id : ids) {
+            try {
+                Map<String, Object> item = new LinkedHashMap<>(action.apply(id));
+                item.putIfAbsent("discoveryResultId", id);
+                item.put("status", "SUCCEEDED");
+                items.add(item);
+                succeeded++;
+            } catch (Exception error) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("discoveryResultId", id);
+                item.put("status", "FAILED");
+                item.put("error", safeText(error.getMessage()));
+                items.add(item);
+                failed++;
+            }
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("selected", ids.size());
+        result.put("succeeded", succeeded);
+        result.put("failed", failed);
+        result.put("items", items);
+        return result;
     }
 
     private void trimDiscoveryPipelineJobs() {

@@ -4,12 +4,14 @@ import json
 import time
 import os
 import argparse
+import html as html_lib
+import threading
 import pymysql
 from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -25,7 +27,7 @@ MINIO_SECRET_KEY = os.getenv("GYING_MINIO_SECRET_KEY", "")
 MINIO_BUCKET = os.getenv("GYING_MINIO_BUCKET", "gying")
 
 # Crawler Configuration
-TARGET_USER = "救星小窝"
+TARGET_USER = os.getenv("GYING_TARGET_USER", "救星小窝")
 COOKIE_STR = os.getenv("GYING_COOKIE", "")
 LOGIN_USERNAME = os.getenv("GYING_USERNAME", "")
 LOGIN_PASSWORD = os.getenv("GYING_PASSWORD", "")
@@ -40,6 +42,9 @@ BASE_URL = os.getenv("GYING_BASE_URL", "https://www.xn--wcv59z.com").rstrip("/")
 SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
 POW_MIN_SECONDS = 3
 _SITE_SESSION = None
+_SITE_SESSION_LOCK = threading.RLock()
+_ACCOUNT_SOURCE = "ENV"
+_ACCOUNT_UPDATED_AT = None
 API_TOKEN = os.getenv("GYING_SOURCE_API_TOKEN", "")
 API_HOST = os.getenv("GYING_SOURCE_API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("GYING_SOURCE_API_PORT", "8091"))
@@ -214,6 +219,50 @@ def get_site_session():
         load_cookie_string(_SITE_SESSION, COOKIE_STR)
     return _SITE_SESSION
 
+def account_status():
+    return {
+        "username": LOGIN_USERNAME,
+        "targetUser": TARGET_USER,
+        "passwordConfigured": bool(LOGIN_PASSWORD),
+        "cookieConfigured": bool(COOKIE_STR),
+        "source": _ACCOUNT_SOURCE,
+        "updatedAt": _ACCOUNT_UPDATED_AT,
+    }
+
+def configure_site_account(payload):
+    global TARGET_USER, COOKIE_STR, LOGIN_USERNAME, LOGIN_PASSWORD
+    global HEADERS, SESSION_HEADERS, _SITE_SESSION, _ACCOUNT_SOURCE, _ACCOUNT_UPDATED_AT
+
+    username = str(payload.get("username") or "").strip()
+    target_user = str(payload.get("targetUser") or "").strip()
+    if not username:
+        raise ValueError("username is required")
+    if not target_user:
+        raise ValueError("targetUser is required")
+
+    with _SITE_SESSION_LOCK:
+        LOGIN_USERNAME = username
+        TARGET_USER = target_user
+        if "password" in payload and payload.get("password") is not None:
+            password = str(payload.get("password") or "")
+            if password:
+                LOGIN_PASSWORD = password
+        if payload.get("clearCookie"):
+            COOKIE_STR = ""
+        elif "cookie" in payload and payload.get("cookie") is not None:
+            COOKIE_STR = str(payload.get("cookie") or "").strip()
+        HEADERS = {
+            **HEADERS,
+            "Cookie": COOKIE_STR,
+        }
+        SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
+        if _SITE_SESSION is not None:
+            _SITE_SESSION.close()
+        _SITE_SESSION = None
+        _ACCOUNT_SOURCE = "RUNTIME"
+        _ACCOUNT_UPDATED_AT = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    return account_status()
+
 def is_pow_challenge_response(resp):
     text = resp.text if resp is not None else ""
     return "powSolve" in text or ("/res/pow" in text and any(flag in text for flag in ("浏览器验证", "浏览器安全验证", "安全验证")))
@@ -313,39 +362,41 @@ def login_site_session(session):
     return False
 
 def site_get(url, *, timeout=10, headers=None, **kwargs):
-    session = get_site_session()
-    request_headers = headers or {}
-    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+    with _SITE_SESSION_LOCK:
+        session = get_site_session()
+        request_headers = headers or {}
+        resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
-    if is_pow_challenge_response(resp):
-        if solve_browser_pow(session, url):
-            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-
-    if is_login_required_response(resp):
-        if login_site_session(session):
-            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-            if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+        if is_pow_challenge_response(resp):
+            if solve_browser_pow(session, url):
                 resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
-    return resp
+        if is_login_required_response(resp):
+            if login_site_session(session):
+                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+                if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+
+        return resp
 
 def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
-    session = get_site_session()
-    request_headers = headers or {}
-    referer = request_headers.get("Referer", BASE_URL + "/")
+    with _SITE_SESSION_LOCK:
+        session = get_site_session()
+        request_headers = headers or {}
+        referer = request_headers.get("Referer", BASE_URL + "/")
 
-    warmup = session.get(referer, timeout=timeout)
-    if is_pow_challenge_response(warmup) and solve_browser_pow(session, referer):
         warmup = session.get(referer, timeout=timeout)
-    if is_login_required_response(warmup) and not login_site_session(session):
-        raise RuntimeError("Gying login is required")
+        if is_pow_challenge_response(warmup) and solve_browser_pow(session, referer):
+            warmup = session.get(referer, timeout=timeout)
+        if is_login_required_response(warmup) and not login_site_session(session):
+            raise RuntimeError("Gying login is required")
 
-    resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
-    if is_pow_challenge_response(resp) and solve_browser_pow(session, referer):
         resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
-    if is_login_required_response(resp) and login_site_session(session):
-        resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
-    return resp
+        if is_pow_challenge_response(resp) and solve_browser_pow(session, referer):
+            resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+        if is_login_required_response(resp) and login_site_session(session):
+            resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+        return resp
 
 def parse_site_action_response(resp):
     try:
@@ -472,7 +523,7 @@ def normalize_download_item(item):
         "tname": str(provider_raw),
     }
 
-def normalize_download_section(section, target_user):
+def normalize_download_section(section, target_user=None):
     if isinstance(section, list):
         normalized = [normalize_download_item(item) for item in section]
         return [item for item in normalized if item]
@@ -490,12 +541,11 @@ def normalize_download_section(section, target_user):
 
     iterable_fields = (names, urls, passwords, users, type_indexes)
     count = max((len(v) for v in iterable_fields if isinstance(v, list)), default=0)
-    has_target_user = any(user == target_user for user in users) if isinstance(users, list) else False
     resources = []
 
     for i in range(count):
         uploader = list_get(users, i)
-        if has_target_user and uploader != target_user:
+        if target_user and uploader != target_user:
             continue
 
         url = str(list_get(urls, i)).strip()
@@ -525,6 +575,8 @@ def normalize_download_section(section, target_user):
             "provider": provider,
             "type": link_type,
             "tname": provider_raw,
+            "uploader": uploader,
+            "is_own": bool(target_user and uploader == target_user),
         })
 
     return resources
@@ -586,7 +638,8 @@ def normalize_content_list_resources(resources):
         })
     return normalized
 
-def fetch_download_resources(type_code, mid, fallback_resources):
+def fetch_download_resources(type_code, mid, fallback_resources, target_user=None):
+    resolved_target_user = TARGET_USER if target_user is None else target_user
     url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
     try:
         resp = site_get(
@@ -614,18 +667,138 @@ def fetch_download_resources(type_code, mid, fallback_resources):
 
     resources = []
     for key in ("panlist", "downlist", "magnetlist", "btlist"):
-        resources.extend(normalize_download_section(data.get(key), TARGET_USER))
+        resources.extend(normalize_download_section(data.get(key), resolved_target_user))
 
     return resources or normalize_content_list_resources(fallback_resources)
 
-def ingest_movie(db, type_code, mid, upload_poster=True):
+def fetch_movie_resource_snapshot(type_code, mid):
+    metadata = fetch_movie_metadata(type_code, mid)
+    resources = fetch_download_resources(type_code, mid, [], target_user="")
+    for resource in resources:
+        resource["is_own"] = resource.get("uploader") == TARGET_USER
+    return {
+        "typeCode": type_code,
+        "mid": mid,
+        "title": (metadata or {}).get("title") or (metadata or {}).get("name") or (metadata or {}).get("ename"),
+        "year": (metadata or {}).get("year"),
+        "resources": resources,
+        "ownResources": [item for item in resources if item.get("is_own")],
+    }
+
+def fetch_user_content_page(page=1):
+    url = f"{BASE_URL}/res/user/content_list?page={page}"
+    resp = site_get(
+        url,
+        timeout=15,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": f"{BASE_URL}/user/content_list",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying user content HTTP {resp.status_code}")
+    try:
+        data = resp.json()
+    except ValueError as error:
+        raise RuntimeError("Gying user content returned non-JSON response") from error
+
+    inlist = data.get("inlist") or {}
+    titles = inlist.get("title") or []
+    passwords = inlist.get("p") or inlist.get("pwd") or []
+    visibilities = inlist.get("is") or []
+    resources = []
+    for index in range(len(titles)):
+        raw_provider = str(list_get(inlist.get("tname") or [], index))
+        resource_url = str(list_get(inlist.get("url") or [], index)).strip()
+        if not resource_url:
+            continue
+        provider = detect_provider(raw_provider)
+        resources.append({
+            "source_id": str(list_get(inlist.get("id") or [], index)).strip(),
+            "mid": str(list_get(inlist.get("id2") or [], index)).strip(),
+            "type_code": str(list_get(inlist.get("dir") or [], index)).strip(),
+            "title": str(list_get(titles, index)).strip(),
+            "movie_title": str(list_get(inlist.get("atitle") or [], index)).strip(),
+            "url": resource_url,
+            "code": extract_share_code(resource_url, list_get(passwords, index)),
+            "login_visible": 1 if str(list_get(visibilities, index)).strip() == "1" else 0,
+            "provider": provider,
+            "type": detect_resource_type(resource_url, provider),
+            "tname": raw_provider,
+            "uploader": TARGET_USER,
+            "is_own": True,
+        })
+    return {"resources": resources, "page": data.get("page") or {}}
+
+def list_my_pan_resources(limit=200, max_pages=50):
+    safe_limit = min(max(int(limit), 1), 1000)
+    resources = []
+    for page in range(1, max_pages + 1):
+        result = fetch_user_content_page(page)
+        page_resources = result["resources"]
+        resources.extend(page_resources)
+        if len(resources) >= safe_limit or not page_resources:
+            break
+        page_info = result.get("page") or {}
+        current = int(page_info.get("curr") or page)
+        pages = int(page_info.get("pages") or current)
+        if current >= pages:
+            break
+    return resources[:safe_limit]
+
+def fetch_recent_movies(limit=30):
+    safe_limit = min(max(int(limit), 1), 100)
+    resp = site_get(BASE_URL + "/", timeout=15)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying home page HTTP {resp.status_code}")
+    marker = "_obj.inlist="
+    start = resp.text.find(marker)
+    end = resp.text.find(";_obj.footer", start + len(marker))
+    if start < 0 or end < 0:
+        return []
+    groups = json.loads(resp.text[start + len(marker):end])
+    items = []
+    seen = set()
+    for group in groups if isinstance(groups, list) else []:
+        type_code = str(group.get("ty") or "").lower()
+        if type_code not in ("mv", "tv", "ac"):
+            continue
+        titles = group.get("t") or []
+        ids = group.get("i") or []
+        attributes = group.get("a") or []
+        qualities = group.get("q") or []
+        for index, mid in enumerate(ids):
+            key = f"{type_code}:{mid}"
+            if key in seen:
+                continue
+            seen.add(key)
+            raw_attributes = list_get(attributes, index)
+            year = list_get(raw_attributes, 0) if isinstance(raw_attributes, list) else None
+            items.append({
+                "typeCode": type_code,
+                "mid": str(mid),
+                "title": html_lib.unescape(str(list_get(titles, index))).strip(),
+                "year": year if isinstance(year, int) and year > 1800 else None,
+                "qualities": list_get(qualities, index) if isinstance(list_get(qualities, index), list) else [],
+                "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+            })
+            if len(items) >= safe_limit:
+                return items
+    return items
+
+def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
     global _SITE_SESSION
+    movie_id = str(target_movie_id or mid).strip()
+    if not movie_id:
+        raise ValueError("target movie id is required")
     meta = None
     for attempt in range(3):
         meta = fetch_movie_metadata(type_code, mid)
         if meta:
             break
-        _SITE_SESSION = None
+        with _SITE_SESSION_LOCK:
+            _SITE_SESSION = None
         if attempt < 2:
             time.sleep(1)
     if not meta:
@@ -646,7 +819,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True):
             status, resource_status, created_at, updated_at
         ) VALUES (
             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, 'ACTIVE', 'AVAILABLE', NOW(), NOW()
+            %s, %s, %s, %s, %s, %s, 'ACTIVE', 'UNKNOWN', NOW(), NOW()
         )
         ON DUPLICATE KEY UPDATE
             title_cn=VALUES(title_cn), title_en=VALUES(title_en), year=VALUES(year),
@@ -657,10 +830,10 @@ def ingest_movie(db, type_code, mid, upload_poster=True):
             douban_score=VALUES(douban_score), imdb_score=VALUES(imdb_score),
             summary=VALUES(summary), category=VALUES(category),
             series_name=VALUES(series_name), season=VALUES(season),
-            status='ACTIVE', resource_status='AVAILABLE', deleted_at=NULL, updated_at=NOW()
+            status='ACTIVE', deleted_at=NULL, updated_at=NOW()
     """
     values = (
-        mid,
+        movie_id,
         title,
         meta.get("name") or meta.get("ename"),
         meta.get("year"),
@@ -697,7 +870,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True):
             with db.cursor() as cursor:
                 cursor.execute(
                     "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1",
-                    (mid, resource_url),
+                    (movie_id, resource_url),
                 )
                 existing = cursor.fetchone()
                 if existing:
@@ -734,7 +907,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True):
                         )
                         """,
                         (
-                            mid,
+                            movie_id,
                             resource.get("title"),
                             link_type,
                             provider,
@@ -745,13 +918,19 @@ def ingest_movie(db, type_code, mid, upload_poster=True):
                         ),
                     )
                     inserted += 1
+        with db.cursor() as cursor:
+            cursor.execute(
+                "UPDATE movie_metadata SET resource_status=%s, updated_at=NOW() WHERE id=%s",
+                ("AVAILABLE" if resources else "TRAILER", movie_id),
+            )
         db.commit()
     except Exception:
         db.rollback()
         raise
 
     return {
-        "movieId": mid,
+        "movieId": movie_id,
+        "siteMovieId": mid,
         "typeCode": type_code,
         "title": title,
         "resourcesFound": len(resources),
@@ -812,10 +991,36 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
         return json.loads(raw.decode("utf-8")) if raw else {}
 
     def do_GET(self):
-        if self.path == "/health":
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        query = parse_qs(parsed.query)
+        if path == "/health":
             self.send_json(200, {"ok": True})
-        else:
+            return
+        if not self.authorized():
+            self.send_json(401, {"error": "Unauthorized"})
+            return
+        try:
+            if path == "/recent":
+                limit = int((query.get("limit") or ["30"])[0])
+                self.send_json(200, {"items": fetch_recent_movies(limit)})
+                return
+            if path == "/my-resources":
+                limit = int((query.get("limit") or ["200"])[0])
+                self.send_json(200, {"items": list_my_pan_resources(limit)})
+                return
+            if path == "/account":
+                self.send_json(200, account_status())
+                return
+            match = re.fullmatch(r"/movie/(mv|tv|ac)/([A-Za-z0-9]+)", path)
+            if match:
+                self.send_json(200, fetch_movie_resource_snapshot(match.group(1), match.group(2)))
+                return
             self.send_json(404, {"error": "Not found"})
+        except ValueError as error:
+            self.send_json(400, {"error": f"Invalid request: {error}"})
+        except Exception as error:
+            self.send_json(502, {"error": str(error)})
 
     def do_POST(self):
         if not self.authorized():
@@ -824,7 +1029,9 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
         try:
             payload = self.read_json()
             print(f"[gying-source] {self.path} payload keys: {sorted(payload.keys())}", flush=True)
-            if self.path == "/ingest":
+            if self.path == "/account":
+                result = configure_site_account(payload)
+            elif self.path == "/ingest":
                 db = get_db_connection()
                 try:
                     result = ingest_movie(
@@ -832,6 +1039,7 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                         payload["typeCode"],
                         payload["mid"],
                         bool(payload.get("uploadPoster", True)),
+                        payload.get("targetMovieId"),
                     )
                 finally:
                     db.close()

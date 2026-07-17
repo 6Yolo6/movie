@@ -18,7 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class TmdbClient {
 
-    private static final String BASE_URL = "https://api.themoviedb.org/3";
     private static final String LANGUAGE = "zh-CN";
     private static final Map<String, String> LIST_ENDPOINTS = Map.of(
             "TRENDING_MOVIE_DAY", "/trending/movie/day",
@@ -118,8 +117,12 @@ public class TmdbClient {
 
     private JsonNode getJson(String endpoint, QueryCustomizer customizer) {
         requireApiKey();
+        String baseUrl = properties.getTmdb().getBaseUrl();
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new IllegalStateException("TMDB API base URL is not configured");
+        }
         UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString(BASE_URL + endpoint)
+                .fromUriString(baseUrl.replaceAll("/+$", "") + endpoint)
                 .queryParam("api_key", properties.getTmdb().getApiKey());
         customizer.customize(builder);
         try {
