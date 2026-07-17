@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { MovieDetailDTO } from '@/types';
 import MovieDetailClient from './MovieDetailClient';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.INTERNAL_API_URL
+    || process.env.NEXT_PUBLIC_API_URL
+    || (process.env.NODE_ENV === 'production' ? 'http://backend:8880' : 'http://localhost:8880');
 
 async function getMovie(id: string): Promise<{ data: MovieDetailDTO | null; status: number }> {
     try {

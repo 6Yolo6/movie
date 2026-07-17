@@ -31,13 +31,15 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Duser.timezone=Asia/Shanghai -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    ports:
+      - "${BACKEND_PORT:-8880}:8880"
     volumes:
       - backend-logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
-    depends_on:
-      - redis
-      - pansou
-      - quark-auto-save
     networks:
       - gying-net
 
@@ -47,11 +49,44 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ""  # Empty = use relative URLs via nginx proxy
+    environment:
+      - INTERNAL_API_URL=http://backend:8880
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    networks:
+      - gying-net
+
+  gying-source:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - GYING_DB_HOST=${DB_HOST:-host.docker.internal}
+      - GYING_DB_USER=${DB_USER:-root}
+      - GYING_DB_PASSWORD=${DB_PASSWORD:-}
+      - GYING_DB_NAME=${DB_NAME:-gying}
+      - GYING_MINIO_ENDPOINT=${MINIO_ENDPOINT:-host.docker.internal:9000}
+      - GYING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-admin}
+      - GYING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
+      - GYING_MINIO_BUCKET=${MINIO_BUCKET:-gying}
+      - GYING_BASE_URL=${GYING_BASE_URL:-https://www.xn--wcv59z.com}
+      - GYING_TARGET_USER=${GYING_TARGET_USER:-救星小窝}
+      - GYING_USERNAME=${GYING_USERNAME:-}
+      - GYING_PASSWORD=${GYING_PASSWORD:-}
+      - GYING_COOKIE=${GYING_COOKIE:-}
+      - GYING_SOURCE_API_TOKEN=${GYING_SOURCE_API_TOKEN:-}
+      - TZ=Asia/Shanghai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - gying-net
 
   redis:
+    profiles:
+      - embedded-deps
     image: redis:7-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD:-gyingredis2024}
     volumes:
@@ -61,6 +96,8 @@ services:
       - gying-net
 
   pansou:
+    profiles:
+      - embedded-deps
     image: ghcr.io/fish2018/pansou:latest
     environment:
       - PORT=8888
@@ -74,6 +111,8 @@ services:
       - gying-net
 
   quark-auto-save:
+    profiles:
+      - embedded-deps
     image: cp0204/quark-auto-save:latest
     ports:
       - "5005:5005"
@@ -83,11 +122,26 @@ services:
     networks:
       - gying-net
 
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "6099:6099"
+    environment:
+      - ACCOUNT=${NAPCAT_ACCOUNT:-}
+    volumes:
+      - napcat-data:/app/napcat/config
+    restart: unless-stopped
+    networks:
+      - gying-net
+
 volumes:
   redis-data:
   backend-logs:
   pansou-data:
   quark-auto-save-data:
+  napcat-data:
 
 networks:
   gying-net:

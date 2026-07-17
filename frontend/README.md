@@ -1,39 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend
 
-## Getting Started
+Next.js 16 App Router 前端，使用 React 19、Ant Design、Zustand 和 i18next。
 
-First, run the development server:
+## 本地运行
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
- - 开发环境：复制 .env.local.example 为 .env.local，保持 http://localhost:8880
-  - 生产环境：空 NEXT_PUBLIC_API_URL，通过 nginx 等反向代理将 /api 转发到后端
+开发环境在 `frontend/.env.local` 设置：
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```text
+NEXT_PUBLIC_API_URL=http://localhost:8880
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+生产构建通过 nginx 同域转发 `/api`，`NEXT_PUBLIC_API_URL` 留空。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 验收
 
-## Learn More
+```bash
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+主要页面和开发约定见 [开发文档](../docs/development.md)。

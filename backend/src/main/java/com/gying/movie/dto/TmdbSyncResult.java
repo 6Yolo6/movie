@@ -15,6 +15,8 @@ public class TmdbSyncResult {
     private int updated;
     private int skipped;
     private int failed;
+    private int discoveryTasksCreated;
+    private int discoveryTasksSkipped;
     private String status;
     private List<String> errors = new ArrayList<>();
 }

@@ -27,6 +27,11 @@ const HighlightText: React.FC<{ text: string; keyword?: string }> = ({ text, key
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPopularityBadge = false }) => {
     const popularity = movie.popularity || 0;
+    const rating = movie.doubanScore > 0
+        ? { value: movie.doubanScore, label: '豆瓣' }
+        : movie.tmdbVoteAverage && movie.tmdbVoteAverage > 0
+            ? { value: movie.tmdbVoteAverage, label: 'TMDB' }
+            : null;
 
     return (
         <Link href={`/movie/${movie.id}`}>
@@ -47,7 +52,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPo
                         {/* Top Right: Douban Score */}
                         <div className="absolute top-2 right-2">
                             <span className="bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded border border-white/20">
-                                {movie.doubanScore > 0 ? `${movie.doubanScore}` : 'N/A'}
+                                {rating ? `${rating.label} ${rating.value}` : 'N/A'}
                             </span>
                         </div>
 

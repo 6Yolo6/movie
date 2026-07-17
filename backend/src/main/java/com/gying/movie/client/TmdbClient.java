@@ -18,7 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class TmdbClient {
 
-    private static final String BASE_URL = "https://api.themoviedb.org/3";
     private static final String LANGUAGE = "zh-CN";
     private static final Map<String, String> LIST_ENDPOINTS = Map.of(
             "TRENDING_MOVIE_DAY", "/trending/movie/day",
@@ -62,6 +61,7 @@ public class TmdbClient {
             TmdbListItem item = new TmdbListItem();
             item.setTmdbId(tmdbId);
             item.setMediaType(mediaType);
+            populateListFields(item, node, mediaType);
             items.add(item);
         }
         return items;
@@ -76,6 +76,35 @@ public class TmdbClient {
                 .queryParam("append_to_response", "credits,alternative_titles"));
     }
 
+    public List<TmdbListItem> searchMulti(String query, int maxResults) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        JsonNode root = getJson("/search/multi", builder -> builder
+                .queryParam("language", LANGUAGE)
+                .queryParam("query", query.trim())
+                .queryParam("page", 1)
+                .queryParam("include_adult", false));
+        List<TmdbListItem> items = new ArrayList<>();
+        int safeMax = Math.min(Math.max(maxResults <= 0 ? 5 : maxResults, 1), 20);
+        for (JsonNode node : root.path("results")) {
+            if (items.size() >= safeMax) {
+                break;
+            }
+            String mediaType = node.path("media_type").asText(null);
+            long tmdbId = node.path("id").asLong(0L);
+            if (tmdbId <= 0 || (!"movie".equals(mediaType) && !"tv".equals(mediaType))) {
+                continue;
+            }
+            TmdbListItem item = new TmdbListItem();
+            item.setTmdbId(tmdbId);
+            item.setMediaType(mediaType);
+            populateListFields(item, node, mediaType);
+            items.add(item);
+        }
+        return items;
+    }
+
     public String normalizeSource(String source) {
         String normalized = source == null || source.isBlank()
                 ? "TRENDING_MOVIE_DAY"
@@ -88,8 +117,12 @@ public class TmdbClient {
 
     private JsonNode getJson(String endpoint, QueryCustomizer customizer) {
         requireApiKey();
+        String baseUrl = properties.getTmdb().getBaseUrl();
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new IllegalStateException("TMDB API base URL is not configured");
+        }
         UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString(BASE_URL + endpoint)
+                .fromUriString(baseUrl.replaceAll("/+$", "") + endpoint)
                 .queryParam("api_key", properties.getTmdb().getApiKey());
         customizer.customize(builder);
         try {
@@ -116,6 +149,21 @@ public class TmdbClient {
             return "tv";
         }
         return fallback;
+    }
+
+    private void populateListFields(TmdbListItem item, JsonNode node, String mediaType) {
+        item.setTitle("tv".equals(mediaType)
+                ? node.path("name").asText(null)
+                : node.path("title").asText(null));
+        item.setOriginalTitle("tv".equals(mediaType)
+                ? node.path("original_name").asText(null)
+                : node.path("original_title").asText(null));
+        item.setReleaseDate("tv".equals(mediaType)
+                ? node.path("first_air_date").asText(null)
+                : node.path("release_date").asText(null));
+        item.setPopularity(node.path("popularity").isNumber()
+                ? node.path("popularity").asDouble()
+                : null);
     }
 
     @FunctionalInterface

@@ -6,9 +6,10 @@ const AUTH_STORAGE_KEY = 'auth-storage';
 
 export async function api(path: string, options: RequestInit = {}): Promise<Response> {
     const { headers: customHeaders, ...rest } = options;
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const response = await fetch(`${API_BASE}${path}`, {
         headers: {
-            'Content-Type': 'application/json',
+            ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
             ...(customHeaders as Record<string, string>),
         },
         ...rest,

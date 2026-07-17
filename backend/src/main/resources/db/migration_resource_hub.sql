@@ -53,8 +53,21 @@ CALL gying_add_column_if_missing('movie_metadata', 'tmdb_type', '`tmdb_type` var
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_popularity', '`tmdb_popularity` decimal(12,4) DEFAULT NULL COMMENT ''TMDB popularity'' AFTER `imdb_score`');
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_vote_average', '`tmdb_vote_average` decimal(3,1) DEFAULT NULL COMMENT ''TMDB vote average'' AFTER `tmdb_popularity`');
 CALL gying_add_column_if_missing('movie_metadata', 'tmdb_last_sync_at', '`tmdb_last_sync_at` datetime DEFAULT NULL COMMENT ''Last TMDB sync time'' AFTER `popularity`');
+CALL gying_add_column_if_missing('movie_metadata', 'resource_status', '`resource_status` varchar(30) DEFAULT ''UNKNOWN'' COMMENT ''Resource status: UNKNOWN, TRAILER, AVAILABLE'' AFTER `status`');
 CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_type_id', 'INDEX `idx_tmdb_type_id` (`tmdb_type`, `tmdb_id`)');
 CALL gying_add_index_if_missing('movie_metadata', 'idx_tmdb_last_sync_at', 'INDEX `idx_tmdb_last_sync_at` (`tmdb_last_sync_at`)');
+CALL gying_add_index_if_missing('movie_metadata', 'idx_resource_status', 'INDEX `idx_resource_status` (`resource_status`)');
+
+-- Keep movie_metadata.popularity as the local favorite count.
+-- TMDB ranking data is stored separately in movie_metadata.tmdb_popularity.
+UPDATE movie_metadata m
+LEFT JOIN (
+  SELECT movie_id, COUNT(*) AS favorite_count
+  FROM user_favorite
+  GROUP BY movie_id
+) f ON f.movie_id = m.id
+SET m.popularity = COALESCE(f.favorite_count, 0)
+WHERE m.tmdb_id IS NOT NULL;
 
 CALL gying_add_column_if_missing('resource_link', 'url_hash', '`url_hash` char(64) DEFAULT NULL COMMENT ''SHA-256 hash of normalized URL'' AFTER `url`');
 CALL gying_add_column_if_missing('resource_link', 'source', '`source` varchar(50) DEFAULT ''USER'' COMMENT ''USER, RESOURCE_HUB, CRAWLER'' AFTER `report_count`');
@@ -154,7 +167,19 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.hub.enabled', 'false', 'Enable Resource Hub automation (true/false)'),
 ('resource.hub.auto_approve', 'true', 'Auto approve Resource Hub imported resources'),
 ('resource.hub.validation.enabled', 'false', 'Enable scheduled Resource Hub link validation'),
-('resource.hub.discovery.max_attempts', '3', 'Maximum discovery attempts per task')
+('resource.hub.discovery.max_attempts', '3', 'Maximum discovery attempts per task'),
+('resource.hub.tmdb.auto_sync_enabled', 'false', 'Enable TMDB scheduled metadata sync'),
+('resource.hub.tmdb.auto_sync_sources', 'TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV', 'TMDB scheduled sync sources'),
+('resource.hub.tmdb.auto_sync_page', '1', 'TMDB scheduled sync page'),
+('resource.hub.tmdb.auto_sync_max_items', '20', 'TMDB scheduled sync item limit'),
+('resource.hub.tmdb.auto_sync_interval_hours', '24', 'TMDB scheduled sync interval in hours'),
+('resource.hub.tmdb.auto_discovery_enabled', 'true', 'Create discovery tasks after TMDB sync'),
+('resource.hub.tmdb.discovery_max_results', '10', 'PanSou discovery result limit'),
+('resource.hub.tmdb.discovery_cooldown_hours', '24', 'Discovery retry cooldown in hours'),
+('resource.hub.worker.enabled', 'false', 'Enable Resource Hub worker'),
+('resource.hub.worker.task_limit', '5', 'Tasks processed per worker run'),
+('resource.hub.worker.quark_limit', '5', 'Quark transfers submitted per worker run'),
+('resource.hub.worker.publish_limit', '20', 'Discoveries published per worker run')
 ON DUPLICATE KEY UPDATE config_value = config_value;
 
 DROP PROCEDURE IF EXISTS gying_add_column_if_missing;

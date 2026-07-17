@@ -1,6 +1,8 @@
 export interface MovieMetadata {
     category: string;
     id: string;
+    tmdbId?: number;
+    tmdbType?: string;
     titleCn: string;
     titleEn: string;
     year: number;
@@ -15,12 +17,19 @@ export interface MovieMetadata {
     posterUrl: string;
     doubanScore: number;
     imdbScore: number;
+    tmdbPopularity?: number;
+    tmdbVoteAverage?: number;
     rtScore: string;
     summary: string;
     status?: string;
+    resourceStatus?: string;
     popularity?: number;
     seriesName?: string;
     season?: number;
+    tmdbLastSyncAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
 }
 
 export interface ResourceLink {
@@ -35,6 +44,8 @@ export interface ResourceLink {
     remark: string;
     auditStatus: number;
     createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
     status?: string;
     linkStatus?: string;
     reportCount?: number;
@@ -55,6 +66,7 @@ export interface MovieDetailDTO {
 export interface HotItem {
     movie: MovieMetadata;
     favoriteCount: number;
+    rankSource?: string;
 }
 
 export interface FavoriteItem extends HotItem {

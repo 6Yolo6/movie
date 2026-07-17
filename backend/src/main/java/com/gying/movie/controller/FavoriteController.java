@@ -9,6 +9,7 @@ import com.gying.movie.mapper.UserFavoriteMapper;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IUserFavoriteService;
 import com.gying.movie.utils.AuthHelper;
+import com.gying.movie.utils.PosterUrlUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -184,9 +185,8 @@ public class FavoriteController {
             MovieMetadata movie = movieMap.get(movieId);
             if (movie == null) continue;
 
-            // Process poster URL
-            if (movie.getPosterUrl() != null && !movie.getPosterUrl().startsWith("http")) {
-                movie.setPosterUrl(minioUrlPrefix + movie.getPosterUrl());
+            if (movie.getPosterUrl() != null) {
+                movie.setPosterUrl(PosterUrlUtils.toPublicUrl(movie.getPosterUrl(), minioUrlPrefix));
             }
 
             Map<String, Object> item = new HashMap<>();
@@ -195,6 +195,33 @@ public class FavoriteController {
             result.add(item);
         }
 
+        return result;
+    }
+
+    /**
+     * Get TMDB trending movies imported by Resource Hub.
+     * GET /api/favorites/tmdb-hot?limit=30
+     */
+    @GetMapping("/tmdb-hot")
+    public List<Map<String, Object>> tmdbHot(@RequestParam(defaultValue = "30") int limit) {
+        int maxLimit = Math.min(Math.max(limit, 1), 60);
+        List<MovieMetadata> movies = movieService.list(new LambdaQueryWrapper<MovieMetadata>()
+                .isNotNull(MovieMetadata::getTmdbPopularity)
+                .orderByDesc(MovieMetadata::getTmdbPopularity)
+                .orderByDesc(MovieMetadata::getTmdbLastSyncAt)
+                .last("LIMIT " + maxLimit));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (MovieMetadata movie : movies) {
+            if (movie.getPosterUrl() != null) {
+                movie.setPosterUrl(PosterUrlUtils.toPublicUrl(movie.getPosterUrl(), minioUrlPrefix));
+            }
+            Map<String, Object> item = new HashMap<>();
+            item.put("movie", movie);
+            item.put("favoriteCount", movie.getTmdbPopularity());
+            item.put("rankSource", "TMDB");
+            result.add(item);
+        }
         return result;
     }
 
@@ -247,8 +274,8 @@ public class FavoriteController {
             MovieMetadata movie = movieMap.get(fav.getMovieId());
             if (movie == null) continue;
 
-            if (movie.getPosterUrl() != null && !movie.getPosterUrl().startsWith("http")) {
-                movie.setPosterUrl(minioUrlPrefix + movie.getPosterUrl());
+            if (movie.getPosterUrl() != null) {
+                movie.setPosterUrl(PosterUrlUtils.toPublicUrl(movie.getPosterUrl(), minioUrlPrefix));
             }
 
             Map<String, Object> item = new HashMap<>();
