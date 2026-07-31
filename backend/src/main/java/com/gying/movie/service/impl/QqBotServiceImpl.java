@@ -835,6 +835,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return link != null
                 && "QUARK".equalsIgnoreCase(link.getProvider())
                 && ("RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                        || "GYING_PUBLISHED".equalsIgnoreCase(link.getSource())
                         || link.getUploaderId() != null);
     }
 
@@ -950,11 +951,9 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (!currentCheck.checked()) {
             String reason = "Unable to verify share link: " + safeError(currentCheck.message());
-            if ("SUSPECTED_INVALID".equalsIgnoreCase(link.getLinkStatus())) {
-                markLinkInvalid(link, "Repeated link verification failure: " + safeError(currentCheck.message()));
-                retireTransferForRediscovery(link, reason);
-            } else {
-                markLinkSuspected(link, reason);
+            recordLinkValidationUnavailable(link, reason);
+            if (isNormalLink(link)) {
+                return link;
             }
             return null;
         }
@@ -1130,6 +1129,12 @@ public class QqBotServiceImpl implements IQqBotService {
         link.setLinkStatus("SUSPECTED_INVALID");
         link.setValidatedAt(LocalDateTime.now());
         link.setLastCheckError(trim(reason, 1000));
+        resourceLinkService.updateById(link);
+    }
+
+    private void recordLinkValidationUnavailable(ResourceLink link, String reason) {
+        link.setLastCheckError(trim(reason, 1000));
+        link.setUpdatedAt(LocalDateTime.now());
         resourceLinkService.updateById(link);
     }
 

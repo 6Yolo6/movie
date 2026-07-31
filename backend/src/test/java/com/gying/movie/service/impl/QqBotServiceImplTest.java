@@ -161,6 +161,47 @@ class QqBotServiceImplTest {
     }
 
     @Test
+    void returnsGyingPublishedQuarkWithoutUploader() {
+        MovieMetadata movie = movie("tmdb_movie_1081003", "超级少女", 2026);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        ResourceLink published = link(
+                "QUARK",
+                "超级少女 2026",
+                "https://pan.quark.cn/s/d89781f22043");
+        published.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(published));
+        when(panSouClient.checkLink(published.getUrl()))
+                .thenReturn(new LinkCheckResult(published.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("超级少女", "gying-published-user");
+
+        assertTrue(reply.contains(published.getUrl()));
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
+    @Test
+    void keepsKnownNormalQuarkWhenLiveValidationIsUnavailable() {
+        MovieMetadata movie = movie("tmdb_movie_1081003", "超级少女", 2026);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        ResourceLink published = link(
+                "QUARK",
+                "超级少女 2026",
+                "https://pan.quark.cn/s/d89781f22043");
+        published.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(published));
+        when(panSouClient.checkLink(published.getUrl()))
+                .thenReturn(new LinkCheckResult(published.getUrl(), false, false, "service timeout"));
+
+        String reply = service.buildSearchReply("超级少女", "validation-timeout-user");
+
+        assertTrue(reply.contains(published.getUrl()));
+        assertEquals("NORMAL", published.getLinkStatus());
+        assertTrue(published.getLastCheckError().contains("service timeout"));
+        verify(resourceLinkService).updateById(published);
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
+    @Test
     void treatsSeasonQualifiedKeywordAsTheBaseShowAndKeepsSeasonInDiscovery() {
         resourceHubProperties.setEnabled(true);
         MovieMetadata movie = movie("tv_271408", "密室大逃脱", 2019);
