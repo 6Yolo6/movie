@@ -41,9 +41,11 @@
 - `POST /discoveries/{id}/publish`、`POST /discoveries/publish`：单条/待发布批量入库。
 - `POST /discoveries/{id}/retry-share-publish`：重跑转存，必要时重新搜索后发布。
 - `POST /discoveries/batch/publish`、`POST /discoveries/batch/retry-share-publish`：处理请求体中的发现 ID 数组。
+- `POST /discoveries/reconcile?dryRun=true&limit=2000`：重评历史标题误判/任务冲突并同步失败任务状态。
 - `POST /discoveries/{id}/qq-channel-post?runNow=true`、`POST /discoveries/batch/qq-channel-post?runNow=true`：立即或排队发 QQ。
 - `POST /quark/transfers/submit`、`POST /quark/transfers/{taskId}/submit`：转存。
 - `GET /missing-resources`、`POST /missing-resources/{movieId}/resolve?source=GYING|PANSOU`：缺网盘资源检查和补全。
+- `POST /missing-resources/batch/resolve?source=GYING|PANSOU`：按请求体中的影片 ID 数组批量补全，最多 20 部。
 - `GET /worker/status`、`POST /worker/run-once?force=true`：Worker。
 - `POST /cleanup/duplicate-tmdb?dryRun=true`、`POST /cleanup/mismatched-resources?dryRun=true`：清理预览/执行。
 
@@ -56,6 +58,10 @@
 - `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
 - `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
 - `GET /jobs/{jobId}`：后台任务状态。
+
+内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
+GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
+没有可靠结果时才回退到片库目录扫描。
 
 ## QQ 自动化
 
