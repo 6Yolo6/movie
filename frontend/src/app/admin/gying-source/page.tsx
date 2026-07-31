@@ -21,6 +21,7 @@ import {
 import {
     CloudDownloadOutlined,
     CloudSyncOutlined,
+    DatabaseOutlined,
     ReloadOutlined,
     SafetyCertificateOutlined,
     ToolOutlined,
@@ -41,6 +42,9 @@ type Candidate = {
     localMovieId?: string;
     resourceStatus?: string;
     activeResourceCount?: number;
+    score?: number;
+    seriesName?: string;
+    season?: number;
 };
 
 type PublishedResource = {
@@ -106,6 +110,9 @@ export default function GyingSourcePage() {
     const { t } = useTranslation();
     const [accountForm] = Form.useForm<AccountFormValues>();
     const [recent, setRecent] = useState<Candidate[]>([]);
+    const [catalog, setCatalog] = useState<Candidate[]>([]);
+    const [catalogType, setCatalogType] = useState('mv');
+    const [catalogPage, setCatalogPage] = useState(1);
     const [trailers, setTrailers] = useState<Candidate[]>([]);
     const [health, setHealth] = useState<HealthResult | null>(null);
     const [loadingLists, setLoadingLists] = useState(false);
@@ -148,6 +155,20 @@ export default function GyingSourcePage() {
         }
     }, [message, requestJson, t, token]);
 
+    const loadCatalog = useCallback(async (typeCode = catalogType, page = catalogPage) => {
+        if (!token) return;
+        setLoadingLists(true);
+        try {
+            const rows = await requestJson<Candidate[]>(
+                `/api/admin/gying-source/candidates/catalog?typeCode=${typeCode}&sort=score&page=${page}&limit=30`,
+            );
+            setCatalog(rows);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setLoadingLists(false);
+        }
+    }, [catalogPage, catalogType, message, requestJson, t, token]);
     const loadAccount = useCallback(async () => {
         if (!token) return;
         try {
@@ -173,8 +194,9 @@ export default function GyingSourcePage() {
             return;
         }
         loadCandidates();
+        loadCatalog();
         loadAccount();
-    }, [loadAccount, loadCandidates, message, router, t, user]);
+    }, [loadAccount, loadCandidates, loadCatalog, message, router, t, user]);
 
     const saveAccount = async (values: AccountFormValues) => {
         setAccountLoading(true);
@@ -234,6 +256,11 @@ export default function GyingSourcePage() {
     const ensureMovie = (candidate: Pick<Candidate, 'typeCode' | 'mid'>) => startJob(
         `ensure-${candidate.typeCode}-${candidate.mid}`,
         `/api/admin/gying-source/movies/${candidate.typeCode}/${candidate.mid}/ensure`,
+    );
+
+    const ensureSeasons = (movieId: string) => startJob(
+        `seasons-${movieId}`,
+        `/api/admin/gying-source/movies/${movieId}/seasons/ensure?maxPages=20`,
     );
 
     const checkPublished = async () => {
@@ -309,17 +336,31 @@ export default function GyingSourcePage() {
             width: 150,
             render: (_: unknown, record) => {
                 const key = `ensure-${record.typeCode}-${record.mid}`;
+                const seasonKey = `seasons-${record.localMovieId}`;
                 return (
-                    <Button
-                        type="primary"
-                        size="small"
-                        icon={<CloudSyncOutlined />}
-                        loading={running === key}
-                        disabled={Boolean(running && running !== key)}
-                        onClick={() => ensureMovie(record)}
-                    >
-                        {t('gyingSourceEnsureAction')}
-                    </Button>
+                    <Space size={4}>
+                        <Button
+                            type="primary"
+                            size="small"
+                            icon={<CloudSyncOutlined />}
+                            loading={running === key}
+                            disabled={Boolean(running && running !== key)}
+                            onClick={() => ensureMovie(record)}
+                        >
+                            {t('gyingSourceEnsureAction')}
+                        </Button>
+                        {record.localMovieId && ['tv', 'ac'].includes(record.typeCode) && (
+                            <Button
+                                size="small"
+                                icon={<DatabaseOutlined />}
+                                loading={running === seasonKey}
+                                disabled={Boolean(running && running !== seasonKey)}
+                                onClick={() => ensureSeasons(record.localMovieId!)}
+                            >
+                                {t('gyingSourceEnsureSeasons')}
+                            </Button>
+                        )}
+                    </Space>
                 );
             },
         },
@@ -408,6 +449,56 @@ export default function GyingSourcePage() {
                 loading={loadingLists}
                 pagination={{ pageSize: 12 }}
                 scroll={{ x: 760 }}
+            />
+        </div>
+    );
+
+    const catalogTab = (
+        <div>
+            <Space className="mb-5" wrap>
+                <Select
+                    value={catalogType}
+                    style={{ width: 130 }}
+                    options={[
+                        { value: 'mv', label: t('movies') },
+                        { value: 'tv', label: t('tvShows') },
+                        { value: 'ac', label: t('anime') },
+                    ]}
+                    onChange={(value) => {
+                        setCatalogType(value);
+                        setCatalogPage(1);
+                        loadCatalog(value, 1);
+                    }}
+                />
+                <InputNumber
+                    min={1}
+                    max={500}
+                    value={catalogPage}
+                    onChange={(value) => setCatalogPage(value || 1)}
+                />
+                <Button icon={<ReloadOutlined />} loading={loadingLists} onClick={() => loadCatalog()}>
+                    {t('refresh')}
+                </Button>
+                <Button
+                    type="primary"
+                    icon={<DatabaseOutlined />}
+                    loading={running === 'ensure-catalog'}
+                    disabled={Boolean(running && running !== 'ensure-catalog')}
+                    onClick={() => startJob(
+                        'ensure-catalog',
+                        `/api/admin/gying-source/catalog/ensure?typeCode=${catalogType}&sort=score&page=${catalogPage}&limit=30`,
+                    )}
+                >
+                    {t('gyingSourceIngestCatalogPage')}
+                </Button>
+            </Space>
+            <Table
+                rowKey={(record) => `${record.typeCode}-${record.mid}`}
+                columns={candidateColumns}
+                dataSource={catalog}
+                loading={loadingLists}
+                pagination={false}
+                scroll={{ x: 900 }}
             />
         </div>
     );
@@ -531,6 +622,7 @@ export default function GyingSourcePage() {
                     <Tabs
                         items={[
                             { key: 'recent', label: t('gyingSourceRecentTab'), children: recentTab },
+                            { key: 'catalog', label: t('gyingSourceCatalogTab'), children: catalogTab },
                             { key: 'trailers', label: t('gyingSourceTrailerTab'), children: trailerTab },
                             { key: 'health', label: t('gyingSourceHealthTab'), children: healthTab },
                             { key: 'account', label: t('gyingSourceAccountTab'), children: accountTab },

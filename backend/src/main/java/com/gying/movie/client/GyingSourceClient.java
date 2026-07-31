@@ -33,6 +33,26 @@ public class GyingSourceClient {
     @SuppressWarnings("unchecked")
     public Map<String, Object> get(String path) {
         RestClient.RequestHeadersSpec<?> request = restClient.get().uri(path);
+        return retrieve(request);
+    }
+
+    public Map<String, Object> get(String path, Map<String, ?> query) {
+        RestClient.RequestHeadersSpec<?> request = restClient.get().uri(uriBuilder -> {
+            var builder = uriBuilder.path(path);
+            if (query != null) {
+                query.forEach((name, value) -> {
+                    if (value != null) {
+                        builder.queryParam(name, value);
+                    }
+                });
+            }
+            return builder.build();
+        });
+        return retrieve(request);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> retrieve(RestClient.RequestHeadersSpec<?> request) {
         if (internalToken != null && !internalToken.isBlank()) {
             request.header("X-Internal-Token", internalToken);
         }

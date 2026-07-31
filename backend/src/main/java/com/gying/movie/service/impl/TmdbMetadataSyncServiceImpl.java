@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +13,12 @@ import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.TmdbListItem;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.MovieSourceIdentity;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
+import com.gying.movie.service.IMovieSourceIdentityService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
@@ -46,6 +49,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private final PosterStorageService posterStorageService;
     private final ResourceHubProperties resourceHubProperties;
     private final IMovieMetadataService movieService;
+    private final IMovieSourceIdentityService sourceIdentityService;
     private final IResourceHubTaskService taskService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IResourceDiscoveryResultService discoveryResultService;
@@ -57,6 +61,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             PosterStorageService posterStorageService,
             ResourceHubProperties resourceHubProperties,
             IMovieMetadataService movieService,
+            IMovieSourceIdentityService sourceIdentityService,
             IResourceHubTaskService taskService,
             IResourceDiscoveryService resourceDiscoveryService,
             IResourceDiscoveryResultService discoveryResultService,
@@ -66,6 +71,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         this.posterStorageService = posterStorageService;
         this.resourceHubProperties = resourceHubProperties;
         this.movieService = movieService;
+        this.sourceIdentityService = sourceIdentityService;
         this.taskService = taskService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.discoveryResultService = discoveryResultService;
@@ -217,11 +223,11 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         boolean inserted = existing == null;
         LocalDateTime now = LocalDateTime.now();
 
+        target.setCategory(categoryFor(item.getMediaType()));
         if (inserted) {
             target.setId(buildMovieId(item));
             target.setStatus("ACTIVE");
             target.setResourceStatus("UNKNOWN");
-            target.setCategory(categoryFor(item.getMediaType()));
             target.setCreatedAt(now);
         }
         if (!hasText(target.getResourceStatus())) {
@@ -235,6 +241,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         if ("tv".equals(item.getMediaType())) {
             target.setSeriesName(firstText(target.getSeriesName(), title(details, item.getMediaType()), 255));
             target.setSeason(firstValue(target.getSeason(), 1));
+        } else {
+            target.setSeriesName(null);
+            target.setSeason(null);
         }
         target.setYear(firstValue(target.getYear(), parseYear(releaseDate(details, item.getMediaType()))));
         target.setRuntime(firstText(target.getRuntime(), runtime(details, item.getMediaType()), 100));
@@ -263,10 +272,46 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             movieService.save(target);
         } else {
             movieService.updateById(target);
+            if ("movie".equalsIgnoreCase(item.getMediaType())) {
+                movieService.update(new UpdateWrapper<MovieMetadata>()
+                        .eq("id", target.getId())
+                        .set("series_name", null)
+                        .set("season", null));
+            }
         }
+        bindTmdbIdentity(target);
         return new MovieUpsertResult(target, inserted);
     }
 
+    private void bindTmdbIdentity(MovieMetadata movie) {
+        if (movie == null || movie.getTmdbId() == null || !hasText(movie.getTmdbType())) {
+            return;
+        }
+        int season = "movie".equalsIgnoreCase(movie.getTmdbType())
+                || movie.getSeason() == null ? 0 : movie.getSeason();
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "TMDB")
+                .eq("source_type", movie.getTmdbType())
+                .eq("external_id", String.valueOf(movie.getTmdbId()))
+                .eq("season", season)
+                .last("LIMIT 1"), false);
+        LocalDateTime now = LocalDateTime.now();
+        if (identity == null) {
+            identity = new MovieSourceIdentity();
+            identity.setCreatedAt(now);
+        }
+        identity.setMovieId(movie.getId());
+        identity.setSource("TMDB");
+        identity.setSourceType(movie.getTmdbType());
+        identity.setExternalId(String.valueOf(movie.getTmdbId()));
+        identity.setSeason(season);
+        identity.setConfidence(BigDecimal.valueOf(100));
+        identity.setMatchMethod("TMDB_API");
+        identity.setMatchStatus("CONFIRMED");
+        identity.setEvidenceJson("{\"tmdbId\":" + movie.getTmdbId() + "}");
+        identity.setUpdatedAt(now);
+        if (identity.getId() == null) sourceIdentityService.save(identity); else sourceIdentityService.updateById(identity);
+    }
     private void enqueueDiscoveryTask(MovieMetadata movie, TmdbSyncResult result) {
         if (!resourceHubProperties.getTmdb().isAutoDiscoveryEnabled() || movie == null || !hasText(movie.getId())) {
             return;
