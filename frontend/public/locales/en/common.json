@@ -391,8 +391,16 @@
   "resourceHubMissingSearchPlaceholder": "Search movie title or ID",
   "resourceHubResolveFromGying": "Resolve with GYING",
   "resourceHubResolveFromPanSou": "Resolve with PanSou",
+  "resourceHubBatchResolveFromGying": "Batch resolve with GYING",
+  "resourceHubBatchResolveFromPanSou": "Batch resolve with PanSou",
+  "resourceHubSelectMissingResources": "Select missing-resource movies first",
+  "resourceHubMissingBatchLimit": "Select at most {{limit}} missing-resource movies per batch",
+  "resourceHubMissingBatchDone": "Batch resolution complete: {{succeeded}} succeeded, {{failed}} failed",
+  "resourceHubMissingBatchPartialDone": "Batch resolution partially complete: {{succeeded}} succeeded, {{failed}} failed",
   "resourceHubMissingResolveFailed": "Missing-resource resolution failed",
   "resourceHubMissingResolved": "Resource resolved through {{source}}",
+  "resourceHubReconcileDiscoveries": "Reconcile discovery states",
+  "resourceHubReconcileDone": "Reconciliation complete: {{titleRestored}} title matches and {{taskConflictRestored}} task conflicts restored, {{failedSynced}} transfer failures synced, {{staleReasonCleared}} stale reasons cleared",
   "resourceHubNoMissingResources": "No movies are missing cloud-drive resources",
   "resourceHubTotalMissingResources": "{{count}} movies missing resources",
   "resourceHubSeconds": "{{count}} seconds",
@@ -552,7 +560,6 @@
   "movieRatings": "Ratings and Popularity",
   "posterAndSummary": "Poster and Summary",
   "resourceStatus": "Resource Status",
-  "resourceId": "Resource ID",
   "gyingSourceTitle": "Gying Data Source",
   "gyingSourceHint": "Ingest Gying metadata and resources, or publish and update local cloud links on Gying.",
   "gyingSourceIngest": "Ingest from Gying",
@@ -595,5 +602,10 @@
     "UNKNOWN": "Unknown",
     "TRAILER": "Trailer",
     "AVAILABLE": "Available"
-  }
+  },
+  "gyingSourceCatalogTab": "GYING Top Rated",
+  "gyingSourceIngestCatalogPage": "Ingest and publish this page",
+  "gyingSourceEnsureSeasons": "Complete remaining seasons",
+  "movieRepairPoster": "Repair poster",
+  "movieRepairMissingPosters": "Repair missing posters"
 }

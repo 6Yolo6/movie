@@ -965,7 +965,8 @@ public class ResourceLinkController {
         }
         QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         ResourceDiscoveryResult discovery = findDiscovery(link);
         LocalDateTime now = LocalDateTime.now();

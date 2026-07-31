@@ -57,7 +57,8 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
                 resourceHubProperties.getQuark().getSharePollAttempts(),
                 resourceHubProperties.getQuark().getSharePollIntervalMs());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         if (hasText(task.getShareUrl())) {
             markShareReady(task);

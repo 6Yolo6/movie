@@ -114,15 +114,26 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                     ? null
                     : discoveryResultService.getById(task.getDiscoveryResultId());
             String transferShareUrl = task.getOriginalUrl();
-            if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            boolean seasonTransfer = isSeasonTransfer(movie);
+            boolean recursiveTransfer = seasonTransfer;
+            if (seasonTransfer) {
                 transferShareUrl = quarkAutoSaveClient.resolveSeasonShareUrl(
                         transferShareUrl,
                         movie.getSeason(),
                         discovery == null ? null : discovery.getTitle());
+            } else if (movie != null) {
+                QuarkAutoSaveClient.MovieShareSelection selection = quarkAutoSaveClient.resolveMovieShareUrl(
+                        transferShareUrl,
+                        movie.getTitleCn(),
+                        movie.getTitleEn(),
+                        movie.getAliases(),
+                        movie.getYear());
+                transferShareUrl = selection.shareUrl();
+                recursiveTransfer = selection.recursive();
             }
             String taskName = buildTaskName(movie, task);
             String savePath = buildSavePath(movie, task);
-            String updateSubdir = movie != null && movie.getSeason() != null ? ".*" : null;
+            String updateSubdir = recursiveTransfer ? ".*" : null;
 
             Map<String, Object> requestPayload = resolveRequestPayload(task,
                     taskName,
@@ -160,6 +171,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             task.setFinishedAt(LocalDateTime.now());
             task.setUpdatedAt(LocalDateTime.now());
             quarkTransferTaskService.updateById(task);
+            markDiscoveryFailed(task, task.getLastError(), task.getUpdatedAt());
             result.setFailed(result.getFailed() + 1);
             addError(result, "task " + task.getId() + ": " + e.getMessage());
         }
@@ -213,9 +225,8 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                     payload.put("taskname", taskName);
                     payload.put("shareurl", shareUrl);
                     payload.put("savepath", savePath);
-                    if (updateSubdir != null && !updateSubdir.isBlank()) {
-                        payload.put("update_subdir", updateSubdir);
-                    }
+                    payload.put("update_subdir",
+                            updateSubdir == null ? "" : updateSubdir.trim());
                     removeEmptyRunWeek(payload);
                     return payload;
                 }
@@ -238,7 +249,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildTaskName(MovieMetadata movie, QuarkTransferTask task) {
-        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+        if (isSeasonTransfer(movie)) {
             String title = SeasonSearchUtils.seasonQualifiedTitle(
                     firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
                     movie.getSeason());
@@ -270,10 +281,18 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                 : firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId());
         String path = trimTrailingSlash(basePath) + "/" + category + "/"
                 + sanitizePathSegment(SeasonSearchUtils.baseTitle(rawTitle));
-        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+        if (isSeasonTransfer(movie)) {
             return path + "/" + sanitizePathSegment(SeasonSearchUtils.seasonLabel(movie.getSeason()));
         }
         return path;
+    }
+
+    private boolean isSeasonTransfer(MovieMetadata movie) {
+        if (movie == null || movie.getSeason() == null || movie.getSeason() <= 0) {
+            return false;
+        }
+        return "tv".equalsIgnoreCase(movie.getCategory())
+                || "ac".equalsIgnoreCase(movie.getCategory());
     }
 
     private String categoryDir(String category) {

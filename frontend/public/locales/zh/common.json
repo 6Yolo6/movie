@@ -391,8 +391,16 @@
   "resourceHubMissingSearchPlaceholder": "搜索影片标题或 ID",
   "resourceHubResolveFromGying": "从 GYING 补全",
   "resourceHubResolveFromPanSou": "从 PanSou 补全",
+  "resourceHubBatchResolveFromGying": "批量从 GYING 补全",
+  "resourceHubBatchResolveFromPanSou": "批量从 PanSou 补全",
+  "resourceHubSelectMissingResources": "请先选择缺资源影片",
+  "resourceHubMissingBatchLimit": "每批最多选择 {{limit}} 部缺资源影片",
+  "resourceHubMissingBatchDone": "批量补全完成：成功 {{succeeded}} 部，失败 {{failed}} 部",
+  "resourceHubMissingBatchPartialDone": "批量补全部分完成：成功 {{succeeded}} 部，失败 {{failed}} 部",
   "resourceHubMissingResolveFailed": "缺资源影片补全失败",
   "resourceHubMissingResolved": "已通过 {{source}} 完成资源补全",
+  "resourceHubReconcileDiscoveries": "校准发现状态",
+  "resourceHubReconcileDone": "状态校准完成：恢复标题误判 {{titleRestored}} 条、任务冲突 {{taskConflictRestored}} 条，同步转存失败 {{failedSynced}} 条，清理旧原因 {{staleReasonCleared}} 条",
   "resourceHubNoMissingResources": "没有缺少网盘资源的影片",
   "resourceHubTotalMissingResources": "共 {{count}} 部缺资源影片",
   "resourceHubSeconds": "{{count}} 秒",
@@ -552,7 +560,6 @@
   "movieRatings": "评分与热度",
   "posterAndSummary": "海报与简介",
   "resourceStatus": "资源状态",
-  "resourceId": "资源 ID",
   "gyingSourceTitle": "GYING 数据源",
   "gyingSourceHint": "从 GYING 抓取影视元数据和资源，或将本站网盘资源发布、更新到 GYING。",
   "gyingSourceIngest": "从 GYING 抓取",
@@ -595,5 +602,10 @@
     "UNKNOWN": "未知",
     "TRAILER": "预告",
     "AVAILABLE": "有资源"
-  }
+  },
+  "gyingSourceCatalogTab": "片库高分",
+  "gyingSourceIngestCatalogPage": "采集本页并确保发布",
+  "gyingSourceEnsureSeasons": "补齐剩余季",
+  "movieRepairPoster": "自动补图",
+  "movieRepairMissingPosters": "批量补全缺失海报"
 }

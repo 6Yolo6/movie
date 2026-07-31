@@ -27,10 +27,15 @@ public final class ResourceTitleMatcher {
             return false;
         }
 
-        SeasonSearchUtils.SeasonQuery requestedSeason = SeasonSearchUtils.parse(keyword);
-        SeasonSearchUtils.SeasonQuery titleSeason = SeasonSearchUtils.parse(movie.getTitleCn());
+        boolean seasonAware = isSeasonAware(movie);
+        SeasonSearchUtils.SeasonQuery requestedSeason = seasonAware
+                ? SeasonSearchUtils.parse(keyword)
+                : null;
+        SeasonSearchUtils.SeasonQuery titleSeason = seasonAware
+                ? SeasonSearchUtils.parse(movie.getTitleCn())
+                : null;
         Integer movieSeason = movie.getSeason() != null
-                ? movie.getSeason()
+                && seasonAware ? movie.getSeason()
                 : titleSeason == null ? null : titleSeason.season();
         if (requestedSeason != null && movieSeason != null
                 && movieSeason != requestedSeason.season()) {
@@ -74,6 +79,11 @@ public final class ResourceTitleMatcher {
             }
         }
         return false;
+    }
+
+    private static boolean isSeasonAware(MovieMetadata movie) {
+        return movie != null && ("tv".equalsIgnoreCase(movie.getCategory())
+                || "ac".equalsIgnoreCase(movie.getCategory()));
     }
 
     private static String extractResourceCoreTitle(String value) {

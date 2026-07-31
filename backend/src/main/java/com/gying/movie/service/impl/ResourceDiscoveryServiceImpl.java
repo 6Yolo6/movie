@@ -149,7 +149,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 }
             }
             if (result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
-                markResourceStatus(movie, "TRAILER", now);
+                refreshResourceStatus(movie, now);
             }
             String status = result.getFailed() > 0 && result.getDiscovered() + result.getDuplicate() == 0
                     ? "FAILED"
@@ -260,6 +260,16 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         movie.setResourceStatus(resourceStatus);
         movie.setUpdatedAt(now);
         movieService.updateById(movie);
+    }
+
+    private void refreshResourceStatus(MovieMetadata movie, LocalDateTime now) {
+        long activeResources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movie.getId())
+                .eq("status", "ACTIVE")
+                .eq("type", "DISK")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")));
+        markResourceStatus(movie, activeResources > 0 ? "AVAILABLE" : "TRAILER", now);
     }
 
     private DiscoveryPayload normalizePayload(ResourceDiscoveryRequest request) {

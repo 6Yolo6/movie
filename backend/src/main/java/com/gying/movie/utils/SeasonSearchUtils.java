@@ -21,6 +21,10 @@ public final class SeasonSearchUtils {
     private static final Pattern COMPLETE_SEASONS = Pattern.compile(
             "全\\s*(" + NUMBER_TOKEN + ")\\s*季",
             Pattern.CASE_INSENSITIVE);
+    private static final Pattern EPISODE_COLLECTION = Pattern.compile(
+            "(?:更(?:新)?至\\s*[0-9]+\\s*集|全\\s*[0-9]+\\s*集|[0-9]+\\s*集\\s*全"
+                    + "|第?\\s*[0-9]+\\s*(?:[-~～至到])\\s*[0-9]+\\s*集)",
+            Pattern.CASE_INSENSITIVE);
 
     private SeasonSearchUtils() {
     }
@@ -92,6 +96,17 @@ public final class SeasonSearchUtils {
     public static boolean hasSeasonCollection(String value) {
         return hasText(value)
                 && (SEASON_RANGE.matcher(value).find() || COMPLETE_SEASONS.matcher(value).find());
+    }
+
+    public static boolean canUseRootForFirstSeason(String value) {
+        return hasText(value)
+                && !hasSeasonMarker(value)
+                && EPISODE_COLLECTION.matcher(value).find()
+                && (value.contains("合集")
+                        || value.contains("全集")
+                        || value.contains("更至")
+                        || value.contains("更新至")
+                        || value.contains("集全"));
     }
 
     public static String subdirectoryPattern(int season) {

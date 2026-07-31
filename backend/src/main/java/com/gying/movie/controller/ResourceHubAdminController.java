@@ -1,6 +1,7 @@
 package com.gying.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gying.movie.client.QqChannelPublisherClient;
 import com.gying.movie.config.ResourceHubProperties;
@@ -67,6 +68,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/resource-hub")
 public class ResourceHubAdminController {
+    private static final int MISSING_RESOURCE_BATCH_LIMIT = 20;
 
     private final AuthHelper authHelper;
     private final ResourceHubProperties resourceHubProperties;
@@ -352,6 +354,15 @@ public class ResourceHubAdminController {
         return ApiResponse.ok(runDiscoveryBatch(discoveryResultIds, this::retryShareAndPublishOne));
     }
 
+    @PostMapping("/discoveries/reconcile")
+    public ApiResponse<Map<String, Object>> reconcileDiscoveries(
+            @RequestParam(defaultValue = "true") boolean dryRun,
+            @RequestParam(defaultValue = "2000") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(reconcileDiscoveryStates(dryRun, limit));
+    }
+
     @PostMapping("/discoveries/batch/publish")
     public ApiResponse<Map<String, Object>> batchPublishDiscoveries(
             @RequestBody(required = false) List<Long> discoveryResultIds,
@@ -552,6 +563,30 @@ public class ResourceHubAdminController {
         return ApiResponse.ok(job.toResponse());
     }
 
+    @PostMapping("/missing-resources/batch/resolve")
+    public ApiResponse<Map<String, Object>> resolveMissingResources(
+            @RequestBody(required = false) List<String> movieIds,
+            @RequestParam(defaultValue = "PANSOU") String source,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        List<String> ids = movieIds == null
+                ? List.of()
+                : movieIds.stream().filter(this::hasText).map(String::trim).distinct().toList();
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException("Select at least one missing-resource movie");
+        }
+        if (ids.size() > MISSING_RESOURCE_BATCH_LIMIT) {
+            throw new IllegalArgumentException(
+                    "Select at most " + MISSING_RESOURCE_BATCH_LIMIT
+                            + " missing-resource movies per batch");
+        }
+        DiscoveryPipelineJob job = new DiscoveryPipelineJob(UUID.randomUUID().toString(), null);
+        discoveryPipelineJobs.put(job.jobId, job);
+        trimDiscoveryPipelineJobs();
+        discoveryPipelineExecutor.submit(() -> runMissingResourceBatchJob(job, ids, source));
+        return ApiResponse.ok(job.toResponse());
+    }
+
     private void runDiscoveryPipelineJob(DiscoveryPipelineJob job) {
         try {
             ResourceDiscoveryRunResult discovery = resourceDiscoveryService.runTask(job.taskId);
@@ -597,6 +632,45 @@ public class ResourceHubAdminController {
         } finally {
             job.finishedAt = LocalDateTime.now();
         }
+    }
+
+    private void runMissingResourceBatchJob(
+            DiscoveryPipelineJob batchJob,
+            List<String> movieIds,
+            String source) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        int succeeded = 0;
+        int failed = 0;
+        for (String movieId : movieIds) {
+            MovieMetadata movie = movieService.getById(movieId);
+            if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+                items.add(Map.of(
+                        "movieId", movieId,
+                        "status", "FAILED",
+                        "error", "Movie not found"));
+                failed++;
+                continue;
+            }
+            DiscoveryPipelineJob itemJob = new DiscoveryPipelineJob(UUID.randomUUID().toString(), null);
+            runMissingResourceJob(itemJob, movie, source);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("movieId", movieId);
+            item.put("status", itemJob.status);
+            item.put("result", itemJob.result);
+            item.put("errors", new ArrayList<>(itemJob.errors));
+            items.add(item);
+            if ("SUCCEEDED".equals(itemJob.status)) {
+                succeeded++;
+            } else {
+                failed++;
+            }
+        }
+        batchJob.result.put("selected", movieIds.size());
+        batchJob.result.put("succeeded", succeeded);
+        batchJob.result.put("failed", failed);
+        batchJob.result.put("items", items);
+        batchJob.status = "SUCCEEDED";
+        batchJob.finishedAt = LocalDateTime.now();
     }
 
     private void runPanSouMissingResourceJob(DiscoveryPipelineJob job, MovieMetadata movie) {
@@ -689,8 +763,11 @@ public class ResourceHubAdminController {
                         .orderByDesc("updated_at")
                         .last("LIMIT 1"),
                 false);
-        if (transfer != null) {
+        if (transfer != null && !"CANCELED".equalsIgnoreCase(transfer.getStatus())) {
             return transfer;
+        }
+        if (!hasText(discovery.getOriginalUrl())) {
+            throw new IllegalStateException("Discovery result has no source URL to transfer");
         }
         LocalDateTime now = LocalDateTime.now();
         transfer = new QuarkTransferTask();
@@ -734,26 +811,47 @@ public class ResourceHubAdminController {
         if (discovery == null) {
             throw new IllegalArgumentException("Discovery result not found: " + discoveryResultId);
         }
-        QuarkTransferTask transfer = quarkTransferTaskService.getOne(
-                new QueryWrapper<QuarkTransferTask>()
-                        .eq("discovery_result_id", discoveryResultId)
-                        .orderByDesc("updated_at")
-                        .last("LIMIT 1"),
-                false);
+        MovieMetadata movie = movieService.getById(discovery.getMovieId());
+        if (movie == null) {
+            throw new IllegalStateException("Movie not found: " + discovery.getMovieId());
+        }
+        if (!ResourceTitleMatcher.isRelevant(movie, discovery.getTitle(), null)) {
+            throw new IllegalStateException("Resource title still does not match movie title");
+        }
+        if ("IGNORED".equalsIgnoreCase(discovery.getStatus())
+                && "Resource title does not match movie title".equals(discovery.getFailureReason())) {
+            discovery.setStatus("DISCOVERED");
+            discovery.setFailureReason(null);
+            discovery.setUpdatedAt(LocalDateTime.now());
+            discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                    .eq("id", discovery.getId())
+                    .set("status", "DISCOVERED")
+                    .set("failure_reason", null)
+                    .set("updated_at", discovery.getUpdatedAt()));
+        }
+        boolean retryable = "DISCOVERED".equalsIgnoreCase(discovery.getStatus())
+                || "FAILED".equalsIgnoreCase(discovery.getStatus());
+        if (!retryable
+                && discovery.getResourceLinkId() == null) {
+            throw new IllegalStateException("Discovery result is not retryable: " + discovery.getStatus());
+        }
+
+        QuarkTransferTask transfer = findOrCreateTransfer(discovery);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("discoveryResultId", discoveryResultId);
-        if (transfer != null && !hasText(transfer.getShareUrl())) {
+        if (!hasText(transfer.getShareUrl())) {
             QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(transfer.getId());
             result.put("transferTaskId", transfer.getId());
             result.put("transferSubmitted", transferResult.getSubmitted());
             result.put("transferFailed", transferResult.getFailed());
             result.put("transferErrors", transferResult.getErrors());
-            if (transferResult.getFailed() > 0) {
+            transfer = quarkTransferTaskService.getById(transfer.getId());
+            if (transferResult.getFailed() > 0 || transfer == null || !hasText(transfer.getShareUrl())) {
                 if (recoverFailedDiscoveryWithPanSou(discovery, result)) {
                     return result;
                 }
                 throw new IllegalStateException(transferResult.getErrors().isEmpty()
-                        ? "Quark transfer retry and PanSou rediscovery failed"
+                        ? "Quark transfer did not create an own share and PanSou rediscovery failed"
                         : transferResult.getErrors().get(0));
             }
         }
@@ -761,12 +859,14 @@ public class ResourceHubAdminController {
         result.put("published", publishResult.getPublished());
         result.put("updated", publishResult.getUpdated());
         result.put("failed", publishResult.getFailed());
+        result.put("skipped", publishResult.getSkipped());
         result.put("errors", publishResult.getErrors());
         if (publishResult.getFailed() > 0) {
             throw new IllegalStateException(publishResult.getErrors().isEmpty()
                     ? "Discovery publish failed"
                     : publishResult.getErrors().get(0));
         }
+        requirePublishedResource(discovery.getMovieId());
         return result;
     }
 
@@ -789,15 +889,14 @@ public class ResourceHubAdminController {
                         .eq("status", "DISCOVERED")
                         .orderByDesc("confidence"));
         for (ResourceDiscoveryResult candidate : rediscovered) {
-            QuarkTransferTask candidateTransfer = quarkTransferTaskService.getOne(
-                    new QueryWrapper<QuarkTransferTask>()
-                            .eq("discovery_result_id", candidate.getId())
-                            .orderByDesc("updated_at")
-                            .last("LIMIT 1"),
-                    false);
-            if (candidateTransfer != null) {
+            QuarkTransferTask candidateTransfer = findOrCreateTransfer(candidate);
+            if (!hasText(candidateTransfer.getShareUrl())) {
                 QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(candidateTransfer.getId());
                 if (transferResult.getFailed() > 0) {
+                    continue;
+                }
+                candidateTransfer = quarkTransferTaskService.getById(candidateTransfer.getId());
+                if (candidateTransfer == null || !hasText(candidateTransfer.getShareUrl())) {
                     continue;
                 }
             }
@@ -805,6 +904,7 @@ public class ResourceHubAdminController {
             if (publishResult.getPublished() + publishResult.getUpdated() <= 0) {
                 continue;
             }
+            requirePublishedResource(candidate.getMovieId());
             failedDiscovery.setStatus("IGNORED");
             failedDiscovery.setFailureReason("Recovered by PanSou discovery " + candidate.getId());
             failedDiscovery.setUpdatedAt(LocalDateTime.now());
@@ -817,6 +917,89 @@ public class ResourceHubAdminController {
             return true;
         }
         return false;
+    }
+
+    private Map<String, Object> reconcileDiscoveryStates(boolean dryRun, int limit) {
+        int safeLimit = Math.min(Math.max(limit, 1), 5000);
+        List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(
+                new QueryWrapper<ResourceDiscoveryResult>()
+                        .in("status", List.of("IGNORED", "DISCOVERED"))
+                        .orderByDesc("updated_at")
+                        .last("LIMIT " + safeLimit));
+        int titleRestored = 0;
+        int taskConflictRestored = 0;
+        int failedSynced = 0;
+        int staleReasonCleared = 0;
+        int unchanged = 0;
+        LocalDateTime now = LocalDateTime.now();
+        for (ResourceDiscoveryResult discovery : discoveries) {
+            boolean titleMismatch = "Resource title does not match movie title".equals(discovery.getFailureReason());
+            boolean taskConflict = "Movie already has a Quark transfer task".equals(discovery.getFailureReason());
+            if ("IGNORED".equalsIgnoreCase(discovery.getStatus()) && (titleMismatch || taskConflict)) {
+                MovieMetadata movie = movieService.getById(discovery.getMovieId());
+                if (movie != null && ResourceTitleMatcher.isRelevant(movie, discovery.getTitle(), null)) {
+                    if (titleMismatch) {
+                        titleRestored++;
+                    } else {
+                        taskConflictRestored++;
+                    }
+                    if (!dryRun) {
+                        discovery.setStatus("DISCOVERED");
+                        discovery.setFailureReason(null);
+                        discovery.setUpdatedAt(now);
+                        discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                                .eq("id", discovery.getId())
+                                .set("status", "DISCOVERED")
+                                .set("failure_reason", null)
+                                .set("updated_at", now));
+                    }
+                    continue;
+                }
+            }
+            if ("DISCOVERED".equalsIgnoreCase(discovery.getStatus())) {
+                QuarkTransferTask transfer = quarkTransferTaskService.getOne(
+                        new QueryWrapper<QuarkTransferTask>()
+                                .eq("discovery_result_id", discovery.getId())
+                                .orderByDesc("updated_at")
+                                .orderByDesc("id")
+                                .last("LIMIT 1"),
+                        false);
+                if (transfer != null && "FAILED".equalsIgnoreCase(transfer.getStatus())) {
+                    failedSynced++;
+                    if (!dryRun) {
+                        discovery.setStatus("FAILED");
+                        discovery.setFailureReason(firstText(
+                                transfer.getLastError(),
+                                "Quark transfer failed"));
+                        discovery.setUpdatedAt(now);
+                        discoveryResultService.updateById(discovery);
+                    }
+                    continue;
+                }
+                if (titleMismatch || taskConflict) {
+                    staleReasonCleared++;
+                    if (!dryRun) {
+                        discovery.setFailureReason(null);
+                        discovery.setUpdatedAt(now);
+                        discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                                .eq("id", discovery.getId())
+                                .set("failure_reason", null)
+                                .set("updated_at", now));
+                    }
+                    continue;
+                }
+            }
+            unchanged++;
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("dryRun", dryRun);
+        result.put("checked", discoveries.size());
+        result.put("titleRestored", titleRestored);
+        result.put("taskConflictRestored", taskConflictRestored);
+        result.put("failedSynced", failedSynced);
+        result.put("staleReasonCleared", staleReasonCleared);
+        result.put("unchanged", unchanged);
+        return result;
     }
 
     private Map<String, Object> runDiscoveryBatch(
@@ -1125,7 +1308,9 @@ public class ResourceHubAdminController {
         long activeResources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movie.getId())
                 .eq("status", "ACTIVE")
-                .isNull("deleted_at"));
+                .eq("type", "DISK")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")));
         movie.setResourceStatus(activeResources > 0 ? "AVAILABLE" : "TRAILER");
         movie.setUpdatedAt(now);
         movieService.updateById(movie);

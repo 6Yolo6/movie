@@ -2,6 +2,8 @@ package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -73,5 +75,35 @@ class QuarkShareServiceImplTest {
         assertEquals(shareUrl, discovery.getShareUrl());
         verify(transferService).updateById(task);
         verify(discoveryService).updateById(discovery);
+    }
+
+    @Test
+    void rejectsFolderWithoutTransferredMediaFiles() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setShareEnabled(true);
+        QuarkShareClient shareClient = mock(QuarkShareClient.class);
+        QuarkShareServiceImpl service = new QuarkShareServiceImpl(
+                properties,
+                shareClient,
+                mock(IQuarkTransferTaskService.class),
+                mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class),
+                mock(IMovieMetadataService.class));
+        QuarkTransferTask task = new QuarkTransferTask();
+        task.setId(601L);
+        task.setMovieId("tmdb_movie_378064");
+        task.setStatus("FAILED");
+        task.setSavedPath("/GYing Resource Hub/movie/电影");
+        when(shareClient.waitForFolderContent(
+                eq(task.getSavedPath()),
+                eq(properties.getQuark().getSharePollAttempts()),
+                eq(properties.getQuark().getSharePollIntervalMs())))
+                .thenReturn(new QuarkShareClient.FolderContentCheck("folder-id", "电影", false, 0));
+
+        IllegalStateException error = assertThrows(
+                IllegalStateException.class,
+                () -> service.ensureShareUrl(task));
+
+        assertTrue(error.getMessage().contains("has no transferred media files"));
     }
 }

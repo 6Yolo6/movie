@@ -48,6 +48,8 @@ class SeasonSearchUtilsTest {
         assertTrue(SeasonSearchUtils.explicitlyMatchesSeason("S01\u30102018\u3011", 1));
         assertFalse(SeasonSearchUtils.explicitlyMatchesSeason("S08\u30102026\u3011", 1));
         assertTrue(SeasonSearchUtils.hasSeasonCollection("\u7b2c\u516b\u5b63 \u96441-7\u5b63"));
+        assertTrue(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 更至63集 4K合集 最新"));
+        assertFalse(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 第二季 全11集"));
 
         Pattern pattern = Pattern.compile(SeasonSearchUtils.subdirectoryPattern(1));
         assertTrue(pattern.matcher("S01\u30102018\u3011").find());

@@ -9,8 +9,11 @@ import com.gying.movie.utils.SeasonSearchUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +26,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class QuarkAutoSaveClient {
+
+    private static final int CONFIG_CHECK_ATTEMPTS = 3;
+    private static final long CONFIG_CHECK_RETRY_INTERVAL_MS = 200;
+    private static final int MOVIE_DIRECTORY_MAX_DEPTH = 3;
+    private static final int MOVIE_DIRECTORY_MIN_SCORE = 200;
+    private static final Pattern DIRECTORY_YEAR_PATTERN = Pattern.compile("(?<!\\d)(?:18|19|20)\\d{2}(?!\\d)");
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -69,7 +78,44 @@ public class QuarkAutoSaveClient {
                 && !SeasonSearchUtils.hasSeasonCollection(sourceTitle)) {
             return shareUrl;
         }
+        if (season == 1 && SeasonSearchUtils.canUseRootForFirstSeason(sourceTitle)) {
+            return shareUrl;
+        }
         throw new IllegalStateException("Quark source has no explicit season " + season + " directory");
+    }
+
+    public MovieShareSelection resolveMovieShareUrl(
+            String shareUrl,
+            String titleCn,
+            String titleEn,
+            String aliases,
+            Integer year) {
+        if (shareUrl == null || shareUrl.isBlank()) {
+            return new MovieShareSelection(shareUrl, false);
+        }
+        if (shareUrl.contains("#/list/share/")) {
+            return new MovieShareSelection(shareUrl, true);
+        }
+        Set<String> expectedTitles = movieDirectoryTitles(titleCn, titleEn, aliases);
+        if (expectedTitles.isEmpty()) {
+            return new MovieShareSelection(shareUrl, false);
+        }
+        try {
+            requireConfigured();
+            String baseShareUrl = stripDirectoryFragment(shareUrl);
+            String resolved = findMovieDirectory(
+                    baseShareUrl,
+                    shareUrl,
+                    expectedTitles,
+                    year,
+                    0,
+                    new HashSet<>());
+            return resolved == null
+                    ? new MovieShareSelection(shareUrl, false)
+                    : new MovieShareSelection(resolved, true);
+        } catch (IllegalStateException ignored) {
+            return new MovieShareSelection(shareUrl, false);
+        }
     }
 
     private String findSeasonDirectory(
@@ -110,6 +156,115 @@ public class QuarkAutoSaveClient {
             }
         }
         return null;
+    }
+
+    private String findMovieDirectory(
+            String baseShareUrl,
+            String currentShareUrl,
+            Set<String> expectedTitles,
+            Integer year,
+            int depth,
+            Set<String> visited) {
+        JsonNode list = getShareDetailData(currentShareUrl).path("list");
+        if (!list.isArray()) {
+            return null;
+        }
+        String bestFid = null;
+        int bestScore = -1;
+        for (JsonNode item : list) {
+            String fid = item.path("fid").asText(null);
+            if (!item.path("dir").asBoolean(false) || fid == null || fid.isBlank()) {
+                continue;
+            }
+            int score = scoreMovieDirectory(item.path("file_name").asText(""), expectedTitles, year);
+            if (score > bestScore) {
+                bestScore = score;
+                bestFid = fid;
+            }
+        }
+        if (bestFid != null && bestScore >= MOVIE_DIRECTORY_MIN_SCORE) {
+            return baseShareUrl + "#/list/share/" + bestFid;
+        }
+        if (depth >= MOVIE_DIRECTORY_MAX_DEPTH) {
+            return null;
+        }
+        for (JsonNode item : list) {
+            String fid = item.path("fid").asText(null);
+            if (!item.path("dir").asBoolean(false) || fid == null || fid.isBlank() || !visited.add(fid)) {
+                continue;
+            }
+            String resolved = findMovieDirectory(
+                    baseShareUrl,
+                    baseShareUrl + "#/list/share/" + fid,
+                    expectedTitles,
+                    year,
+                    depth + 1,
+                    visited);
+            if (resolved != null) {
+                return resolved;
+            }
+        }
+        return null;
+    }
+
+    private Set<String> movieDirectoryTitles(String titleCn, String titleEn, String aliases) {
+        Set<String> titles = new LinkedHashSet<>();
+        addNormalizedTitle(titles, titleCn);
+        addNormalizedTitle(titles, titleEn);
+        if (aliases != null && !aliases.isBlank()) {
+            for (String alias : aliases.split("[/|,，、]+")) {
+                addNormalizedTitle(titles, alias);
+            }
+        }
+        return titles;
+    }
+
+    private int scoreMovieDirectory(String directoryName, Set<String> expectedTitles, Integer expectedYear) {
+        String normalizedName = normalizeDirectoryTitle(directoryName);
+        if (normalizedName.isBlank()) {
+            return -1;
+        }
+        Integer directoryYear = extractDirectoryYear(directoryName);
+        if (expectedYear != null && directoryYear != null && !expectedYear.equals(directoryYear)) {
+            return -1;
+        }
+        int score = -1;
+        for (String expectedTitle : expectedTitles) {
+            if (normalizedName.equals(expectedTitle)) {
+                score = Math.max(score, 400 + expectedTitle.length());
+            } else if (expectedTitle.length() >= 2 && normalizedName.contains(expectedTitle)) {
+                score = Math.max(score, 250 + expectedTitle.length());
+            } else if (normalizedName.length() >= 4 && expectedTitle.contains(normalizedName)) {
+                score = Math.max(score, 100 + normalizedName.length());
+            }
+        }
+        if (score >= 0 && expectedYear != null && expectedYear.equals(directoryYear)) {
+            score += 50;
+        }
+        return score;
+    }
+
+    private void addNormalizedTitle(Set<String> titles, String value) {
+        String normalized = normalizeDirectoryTitle(value);
+        if (normalized.length() >= 2) {
+            titles.add(normalized);
+        }
+    }
+
+    private String normalizeDirectoryTitle(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        return value.toLowerCase()
+                .replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』]+", "");
+    }
+
+    private Integer extractDirectoryYear(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        Matcher matcher = DIRECTORY_YEAR_PATTERN.matcher(value);
+        return matcher.find() ? Integer.valueOf(matcher.group()) : null;
     }
 
     private JsonNode getShareDetailData(String shareUrl) {
@@ -164,6 +319,8 @@ public class QuarkAutoSaveClient {
             return body;
         } catch (RestClientException e) {
             throw new IllegalStateException("quark-auto-save add task request failed", e);
+        } catch (IllegalStateException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("quark-auto-save add task response parse failed: " + e.getMessage(), e);
         }
@@ -190,7 +347,13 @@ public class QuarkAutoSaveClient {
     }
 
     public void requireAccountReady() {
-        getPrimaryCookie();
+        try {
+            getPrimaryCookie();
+        } catch (IllegalStateException e) {
+            if (!isTransientConfigRequestFailure(e)) {
+                throw e;
+            }
+        }
     }
 
     public String getPrimaryCookie() {
@@ -218,20 +381,27 @@ public class QuarkAutoSaveClient {
                 .path("/data")
                 .queryParam("token", properties.getQuark().getToken())
                 .toUriString();
-        try {
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            JsonNode body = objectMapper.readTree(response.getBody());
-            if (!body.path("success").asBoolean(false)) {
-                throw new IllegalStateException(body.path("message").asText("quark-auto-save is not logged in"));
+        RestClientException lastRequestError = null;
+        for (int attempt = 1; attempt <= CONFIG_CHECK_ATTEMPTS; attempt++) {
+            try {
+                ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+                JsonNode body = objectMapper.readTree(response.getBody());
+                if (!body.path("success").asBoolean(false)) {
+                    throw new IllegalStateException(body.path("message").asText("quark-auto-save is not logged in"));
+                }
+                return body.path("data");
+            } catch (RestClientException e) {
+                lastRequestError = e;
+                if (attempt < CONFIG_CHECK_ATTEMPTS) {
+                    sleep(CONFIG_CHECK_RETRY_INTERVAL_MS);
+                }
+            } catch (IllegalStateException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new IllegalStateException("quark-auto-save config check response parse failed", e);
             }
-            return body.path("data");
-        } catch (RestClientException e) {
-            throw new IllegalStateException("quark-auto-save config check request failed", e);
-        } catch (IllegalStateException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IllegalStateException("quark-auto-save config check response parse failed", e);
         }
+        throw new IllegalStateException("quark-auto-save config check request failed", lastRequestError);
     }
 
     private void synchronizeRuntimeConfig(JsonNode data) {
@@ -277,6 +447,21 @@ public class QuarkAutoSaveClient {
         return null;
     }
 
+    private boolean isTransientConfigRequestFailure(IllegalStateException error) {
+        return error.getMessage() != null
+                && (error.getMessage().startsWith("quark-auto-save config check request failed")
+                        || error.getMessage().startsWith("quark-auto-save config sync request failed"));
+    }
+
+    private void sleep(long intervalMs) {
+        try {
+            Thread.sleep(intervalMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("interrupted while checking quark-auto-save configuration", e);
+        }
+    }
+
     private void requireConfigured() {
         if (properties.getQuark().getBaseUrl() == null || properties.getQuark().getBaseUrl().isBlank()) {
             throw new IllegalStateException("quark-auto-save base URL is not configured");
@@ -284,5 +469,8 @@ public class QuarkAutoSaveClient {
         if (properties.getQuark().getToken() == null || properties.getQuark().getToken().isBlank()) {
             throw new IllegalStateException("quark-auto-save API token is not configured");
         }
+    }
+
+    public record MovieShareSelection(String shareUrl, boolean recursive) {
     }
 }
