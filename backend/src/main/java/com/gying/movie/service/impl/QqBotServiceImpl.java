@@ -1,5 +1,6 @@
 package com.gying.movie.service.impl;
 
+import jakarta.annotation.PreDestroy;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gying.movie.client.NapCatClient;
@@ -48,10 +49,13 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -82,9 +86,15 @@ public class QqBotServiceImpl implements IQqBotService {
     private final IResourceHubPublishService resourceHubPublishService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IQqBotSearchLogService qqBotSearchLogService;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
     private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
     private final Map<String, ResourceSearchContext> resourceSearchContexts = new ConcurrentHashMap<>();
+    private final ExecutorService searchExecutor = Executors.newFixedThreadPool(4, runnable -> {
+        Thread thread = new Thread(runnable, "qq-bot-search");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public QqBotServiceImpl(
             QqBotProperties qqBotProperties,
@@ -101,7 +111,8 @@ public class QqBotServiceImpl implements IQqBotService {
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
-            IQqBotSearchLogService qqBotSearchLogService) {
+            IQqBotSearchLogService qqBotSearchLogService,
+            GyingSourceWorkflowService gyingSourceWorkflowService) {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
@@ -117,6 +128,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.resourceHubPublishService = resourceHubPublishService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.qqBotSearchLogService = qqBotSearchLogService;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
     }
 
     @Override
@@ -151,9 +163,26 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         String safeKeyword = trim(keyword, 80);
-        trySend(groupId, userId, "正在搜索：" + safeKeyword);
-        CompletableFuture.runAsync(() -> searchAndReply(groupId, userId, safeKeyword, String.valueOf(userId)));
+        trySend(groupId, userId, "\u8bf7\u7a0d\u540e..");
+        try {
+            searchExecutor.execute(() -> {
+                try {
+                    searchAndReply(groupId, userId, safeKeyword, String.valueOf(userId));
+                } catch (Throwable error) {
+                    log.error("QQ bot async search crashed for keyword {}", safeKeyword, error);
+                    trySend(groupId, userId, "\u641c\u7d22\u5931\u8d25\uff1a" + safeError(error.getMessage()));
+                }
+            });
+        } catch (RejectedExecutionException error) {
+            log.warn("QQ bot search executor is unavailable for keyword {}", safeKeyword, error);
+            trySend(groupId, userId, "\u641c\u7d22\u4efb\u52a1\u8f83\u591a\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5");
+        }
         return true;
+    }
+
+    @PreDestroy
+    void shutdownSearchExecutor() {
+        searchExecutor.shutdownNow();
     }
 
     private void searchAndReply(Long groupId, Long userId, String keyword, String userKey) {
@@ -217,7 +246,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     movie = syncedSeasonMovie;
                 }
             }
-            if (movie == null && (hasText(selectedKeyword) || wasSuggestedCandidate(userKey, safeKeyword))) {
+            if (movie == null) {
                 movie = syncExactMovieMetadata(safeKeyword);
             }
             if (movie == null) {
@@ -368,8 +397,30 @@ public class QqBotServiceImpl implements IQqBotService {
         if (links.size() >= safeCount) {
             return links;
         }
+        tryGyingResourceWorkflow(movie, transferNotes);
+        links = loadOwnedQuarkResourcesForReply(movie, safeCount);
+        if (links.size() >= safeCount) {
+            return links;
+        }
         runDiscoveryPipeline(movie, keyword, transferNotes, safeCount);
         return loadOwnedQuarkResourcesForReply(movie, safeCount);
+    }
+
+    private void tryGyingResourceWorkflow(MovieMetadata movie, List<String> transferNotes) {
+        if (movie == null || !hasText(movie.getId())) {
+            return;
+        }
+        try {
+            Map<String, Object> result = gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId());
+            String status = result == null ? null : String.valueOf(result.get("status"));
+            if ("PUBLISHED".equalsIgnoreCase(status)
+                    || "ALREADY_PUBLISHED".equalsIgnoreCase(status)) {
+                transferNotes.add("GYING 资源已完成转存和发布");
+            }
+        } catch (Exception error) {
+            log.info("GYING resource search/transfer failed for movie {}, falling back to PanSou",
+                    movie.getId(), error);
+        }
     }
 
     private void runDiscoveryPipeline(
@@ -471,13 +522,22 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private List<MovieMetadata> findMovieCandidates(String keyword) {
-        String lookupKeyword = firstText(SeasonSearchUtils.baseTitle(keyword), keyword);
+        List<String> lookupKeywords = buildLookupKeywords(keyword);
         List<MovieMetadata> candidates = movieService.list(new QueryWrapper<MovieMetadata>()
                 .eq("status", "ACTIVE")
-                .and(query -> query.like("title_cn", lookupKeyword)
-                        .or().like("title_en", lookupKeyword)
-                        .or().like("series_name", lookupKeyword)
-                        .or().like("aliases", lookupKeyword))
+                .and(query -> {
+                    boolean first = true;
+                    for (String lookupKeyword : lookupKeywords) {
+                        if (!first) {
+                            query.or();
+                        }
+                        query.like("title_cn", lookupKeyword)
+                                .or().like("title_en", lookupKeyword)
+                                .or().like("series_name", lookupKeyword)
+                                .or().like("aliases", lookupKeyword);
+                        first = false;
+                    }
+                })
                 .orderByDesc("popularity")
                 .orderByDesc("tmdb_popularity")
                 .orderByDesc("created_at")
@@ -488,12 +548,56 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private MovieMetadata syncExactMovieMetadata(String keyword) {
-        try {
-            return tmdbMetadataSyncService.syncExactByKeyword(keyword);
-        } catch (Exception e) {
-            log.warn("TMDB metadata sync failed for QQ keyword {}", keyword, e);
-            return null;
+        for (String searchKeyword : buildMetadataSearchKeywords(keyword)) {
+            try {
+                MovieMetadata movie = tmdbMetadataSyncService.syncExactByKeyword(searchKeyword);
+                if (MovieTitleMatcher.isExactMatch(movie, keyword)) {
+                    return movie;
+                }
+            } catch (Exception e) {
+                log.warn("TMDB metadata sync failed for QQ keyword {}", searchKeyword, e);
+            }
         }
+        return null;
+    }
+
+    private List<String> buildLookupKeywords(String keyword) {
+        LinkedHashSet<String> values = new LinkedHashSet<>();
+        String baseTitle = SeasonSearchUtils.baseTitle(keyword);
+        addSearchKeyword(values, baseTitle);
+        addSearchKeyword(values, keyword);
+        addSearchKeyword(values, compactTitle(keyword));
+        String compact = compactTitle(baseTitle);
+        if (compact.length() >= 3) {
+            addSearchKeyword(values, compact.substring(0, Math.min(3, compact.length())));
+        }
+        return List.copyOf(values);
+    }
+
+    private List<String> buildMetadataSearchKeywords(String keyword) {
+        LinkedHashSet<String> values = new LinkedHashSet<>();
+        addSearchKeyword(values, keyword);
+        addSearchKeyword(values, SeasonSearchUtils.baseTitle(keyword));
+        addSearchKeyword(values, compactTitle(keyword));
+        return List.copyOf(values);
+    }
+
+    private void addSearchKeyword(Set<String> values, String value) {
+        if (hasText(value) && compactTitle(value).length() >= 2) {
+            values.add(value.trim());
+        }
+    }
+
+    private String compactTitle(String value) {
+        if (!hasText(value)) {
+            return "";
+        }
+        StringBuilder compact = new StringBuilder();
+        value.trim().toLowerCase(Locale.ROOT)
+                .codePoints()
+                .filter(Character::isLetterOrDigit)
+                .forEach(compact::appendCodePoint);
+        return compact.toString();
     }
 
     private List<MovieSearchCandidate> findSearchCandidates(
@@ -529,12 +633,6 @@ public class QqBotServiceImpl implements IQqBotService {
         suggestedCandidates.put(candidateUserKey(userKey), new SuggestedCandidates(
                 Instant.now().plusSeconds(CANDIDATE_TTL_SECONDS),
                 List.copyOf(candidates)));
-    }
-
-    private boolean wasSuggestedCandidate(String userKey, String keyword) {
-        SuggestedCandidates suggestions = activeSuggestedCandidates(userKey);
-        return suggestions != null && MovieSearchCandidateUtils.searchableTitles(suggestions.candidates()).stream()
-                .anyMatch(title -> MovieTitleMatcher.normalizedEquals(title, keyword));
     }
 
     private SuggestedCandidates activeSuggestedCandidates(String userKey) {
@@ -676,7 +774,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private int scoreMovie(MovieMetadata movie, String keyword) {
-        String normalized = firstText(SeasonSearchUtils.baseTitle(keyword), keyword).toLowerCase();
+        String normalized = compactTitle(firstText(SeasonSearchUtils.baseTitle(keyword), keyword));
         int score = 0;
         score += exactScore(movie.getTitleCn(), normalized, 100);
         score += exactScore(movie.getTitleEn(), normalized, 90);
@@ -690,7 +788,7 @@ public class QqBotServiceImpl implements IQqBotService {
         if (!hasText(value)) {
             return 0;
         }
-        String normalized = value.trim().toLowerCase();
+        String normalized = compactTitle(value);
         if (normalized.equals(keyword)) {
             return exactScore;
         }
@@ -698,7 +796,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private int containsScore(String value, String keyword, int score) {
-        return hasText(value) && value.toLowerCase().contains(keyword) ? score : 0;
+        return hasText(value) && compactTitle(value).contains(keyword) ? score : 0;
     }
 
     private List<ResourceLink> loadResources(String movieId) {
@@ -1426,7 +1524,7 @@ public class QqBotServiceImpl implements IQqBotService {
         List<String> result = new ArrayList<>();
         String raw = qqBotProperties.getCommandPrefixes();
         if (!hasText(raw)) {
-            return List.of("找", "搜", "/movie", "/search");
+            return List.of("\u641c\u7d22", "\u641c", "\u627e", "/movie", "/search");
         }
         for (String item : raw.split(",")) {
             String value = item.trim();
@@ -1434,6 +1532,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 result.add(value);
             }
         }
+        result.sort(Comparator.comparingInt(String::length).reversed());
         return result;
     }
 

@@ -9,7 +9,7 @@ public class QqBotProperties {
     private boolean enabled = false;
     private String webhookToken;
     private String allowedGroups;
-    private String commandPrefixes = "找,搜,/movie,/search";
+    private String commandPrefixes = "\u641c\u7d22,\u641c,\u627e,/movie,/search";
     private int maxResults = 3;
     private int minKeywordLength = 2;
     private int rateLimitPerMinute = 5;

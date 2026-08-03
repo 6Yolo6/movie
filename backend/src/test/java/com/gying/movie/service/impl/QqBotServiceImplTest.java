@@ -52,6 +52,7 @@ class QqBotServiceImplTest {
     private IResourceLinkService resourceLinkService;
     private IResourceDiscoveryService resourceDiscoveryService;
     private ITmdbMetadataSyncService tmdbMetadataSyncService;
+    private GyingSourceWorkflowService gyingSourceWorkflowService;
     private PanSouClient panSouClient;
     private NapCatClient napCatClient;
     private QqBotServiceImpl service;
@@ -65,6 +66,7 @@ class QqBotServiceImplTest {
         resourceLinkService = mock(IResourceLinkService.class);
         resourceDiscoveryService = mock(IResourceDiscoveryService.class);
         tmdbMetadataSyncService = mock(ITmdbMetadataSyncService.class);
+        gyingSourceWorkflowService = mock(GyingSourceWorkflowService.class);
         panSouClient = mock(PanSouClient.class);
         napCatClient = mock(NapCatClient.class);
         service = new QqBotServiceImpl(
@@ -82,7 +84,8 @@ class QqBotServiceImplTest {
                 mock(IQuarkTransferRunnerService.class),
                 mock(IResourceHubPublishService.class),
                 tmdbMetadataSyncService,
-                mock(IQqBotSearchLogService.class));
+                mock(IQqBotSearchLogService.class),
+                gyingSourceWorkflowService);
         when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of());
     }
 
@@ -122,6 +125,58 @@ class QqBotServiceImplTest {
         assertEquals(
                 List.of("福尔摩斯：基本演绎法 2012", "福尔摩斯：基本演绎法"),
                 requests.getAllValues().stream().map(ResourceDiscoveryRequest::getKeyword).toList());
+    }
+
+    @Test
+    void prefersGyingWorkflowBeforePanSouDiscovery() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata movie = movie("tmdb_movie_1275779", "蜘蛛侠：英雄无归", 2021);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId()))
+                .thenReturn(java.util.Map.of("status", "PUBLISHED"));
+        ResourceLink published = link(
+                "QUARK",
+                "蜘蛛侠：英雄无归 GYING",
+                "https://pan.quark.cn/s/gying-share");
+        published.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class)))
+                .thenReturn(List.of(), List.of(), List.of(published));
+        when(panSouClient.checkLink(published.getUrl()))
+                .thenReturn(new LinkCheckResult(published.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("蜘蛛侠英雄无归", "gying-first-user");
+
+        assertTrue(reply.contains("https://pan.quark.cn/s/gying-share"));
+        verify(gyingSourceWorkflowService).ensureLocalMovieResource(movie.getId());
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
+    @Test
+    void fallsBackToPanSouWhenGyingTransferFails() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata movie = movie("tmdb_movie_1275779", "蜘蛛侠：英雄无归", 2021);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId()))
+                .thenThrow(new IllegalStateException("GYING transfer failed"));
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(101L));
+        when(resourceDiscoveryService.runTask(101L)).thenReturn(emptyDiscovery(101L));
+
+        service.buildSearchReply("蜘蛛侠英雄无归", "gying-fallback-user");
+
+        verify(gyingSourceWorkflowService).ensureLocalMovieResource(movie.getId());
+        verify(resourceDiscoveryService, org.mockito.Mockito.times(3)).enqueue(any());
+    }
+
+    @Test
+    void syncsMetadataWhenCompactKeywordOmitsChinesePunctuation() {
+        MovieMetadata movie = movie("tmdb_movie_1275779", "蜘蛛侠：英雄无归", 2021);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        when(tmdbMetadataSyncService.syncExactByKeyword("蜘蛛侠英雄无归")).thenReturn(movie);
+
+        String reply = service.buildSearchReply("蜘蛛侠英雄无归", "compact-title-user");
+
+        assertTrue(reply.contains("蜘蛛侠：英雄无归"));
+        verify(tmdbMetadataSyncService).syncExactByKeyword("蜘蛛侠英雄无归");
     }
 
     @Test
@@ -315,6 +370,29 @@ class QqBotServiceImplTest {
                 123L,
                 456L,
                 qqBotProperties.getDefaultReply());
+    }
+
+    @Test
+    void sendsImmediatePleaseWaitMessageForMentionedSearch() throws Exception {
+        qqBotProperties.setEnabled(true);
+        when(movieService.list(any(QueryWrapper.class))).thenThrow(new IllegalStateException("test failure"));
+        JsonNode event = new ObjectMapper().readTree("""
+                {
+                  "post_type": "message",
+                  "message_type": "group",
+                  "group_id": 123,
+                  "user_id": 456,
+                  "self_id": 789,
+                  "message": [
+                    {"type": "at", "data": {"qq": "789"}},
+                    {"type": "text", "data": {"text": " 搜索蜘蛛侠英雄无归"}}
+                  ]
+                }
+                """);
+
+        assertTrue(service.handleOneBotEvent(event));
+        verify(napCatClient, org.mockito.Mockito.timeout(1000))
+                .sendGroupMessage(123L, 456L, "\u8bf7\u7a0d\u540e..");
     }
 
     @Test
