@@ -166,6 +166,7 @@ public class ResourceHubAdminController {
                 .isNull("resource_link_id")));
         result.put("pendingQuarkTransfers", quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .eq("status", "PENDING")));
+        result.put("collectionStats", collectionStats());
         return ApiResponse.ok(result);
     }
 
@@ -1350,6 +1351,60 @@ public class ResourceHubAdminController {
         result.put("taskLimit", config.getWorkerTaskLimit());
         result.put("quarkLimit", config.getWorkerQuarkLimit());
         result.put("publishLimit", config.getWorkerPublishLimit());
+        return result;
+    }
+
+    private Map<String, Object> collectionStats() {
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        ResourceHubTask latestTmdbTask = taskService.getOne(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "TMDB")
+                .orderByDesc("created_at")
+                .orderByDesc("id")
+                .last("LIMIT 1"), false);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("tmdbMovies", movieService.count(new QueryWrapper<MovieMetadata>()
+                .isNotNull("tmdb_id")
+                .ne("status", "DELETED")
+                .isNull("deleted_at")));
+        result.put("tmdbSyncedLast24Hours", movieService.count(new QueryWrapper<MovieMetadata>()
+                .isNotNull("tmdb_id")
+                .ge("tmdb_last_sync_at", since)
+                .ne("status", "DELETED")
+                .isNull("deleted_at")));
+        result.put("tmdbCreatedLast24Hours", movieService.count(new QueryWrapper<MovieMetadata>()
+                .isNotNull("tmdb_id")
+                .ge("created_at", since)
+                .ne("status", "DELETED")
+                .isNull("deleted_at")));
+        result.put("tmdbTasksLast24Hours", taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .ge("created_at", since)));
+        result.put("tmdbSucceededLast24Hours", taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("status", "SUCCEEDED")
+                .ge("created_at", since)));
+        result.put("tmdbFailedLast24Hours", taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("status", "FAILED")
+                .ge("created_at", since)));
+        result.put("discoveriesLast24Hours", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .ge("created_at", since)));
+        result.put("savedDiscoveriesLast24Hours", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("status", "SAVED")
+                .ge("updated_at", since)));
+        result.put("resourcesSavedLast24Hours", resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("source", "RESOURCE_HUB")
+                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .ge("created_at", since)));
+        result.put("latestTmdbTaskAt", latestTmdbTask == null ? null : latestTmdbTask.getCreatedAt());
+        result.put("latestTmdbTaskSource", latestTmdbTask == null ? null : latestTmdbTask.getKeyword());
+        result.put("latestTmdbTaskStatus", latestTmdbTask == null ? null : latestTmdbTask.getStatus());
+        result.put("nextTmdbRunAt", latestTmdbTask == null || latestTmdbTask.getCreatedAt() == null
+                ? LocalDateTime.now()
+                : latestTmdbTask.getCreatedAt().plusHours(
+                        Math.max(resourceHubProperties.getTmdb().getAutoSyncIntervalHours(), 1)));
         return result;
     }
 }

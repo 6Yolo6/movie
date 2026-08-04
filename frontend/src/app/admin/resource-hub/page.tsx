@@ -95,6 +95,21 @@ interface Overview {
     discoveredCount: number;
     savedDiscoveryCount: number;
     pendingQuarkTransfers: number;
+    collectionStats: {
+        tmdbMovies: number;
+        tmdbSyncedLast24Hours: number;
+        tmdbCreatedLast24Hours: number;
+        tmdbTasksLast24Hours: number;
+        tmdbSucceededLast24Hours: number;
+        tmdbFailedLast24Hours: number;
+        discoveriesLast24Hours: number;
+        savedDiscoveriesLast24Hours: number;
+        resourcesSavedLast24Hours: number;
+        latestTmdbTaskAt?: string;
+        latestTmdbTaskSource?: string;
+        latestTmdbTaskStatus?: string;
+        nextTmdbRunAt?: string;
+    };
 }
 
 interface PageResult<T> {
@@ -939,6 +954,7 @@ export default function ResourceHubAdminPage() {
     ];
 
     const counts = overview?.taskStatusCounts || {};
+    const collectionStats = overview?.collectionStats;
     const workerEffective = Boolean(overview?.enabled && overview?.worker.enabled);
 
     return (
@@ -1005,6 +1021,34 @@ export default function ResourceHubAdminPage() {
                             label: t('resourceHubDashboard'),
                             children: (
                                 <Row gutter={[16, 16]}>
+                                    <Col xs={24}>
+                                        <Card title={t('resourceHubCollectionStats')} loading={loading}>
+                                            <Row gutter={[16, 16]}>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbMovies')} value={collectionStats?.tmdbMovies || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbSynced24h')} value={collectionStats?.tmdbSyncedLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbCreated24h')} value={collectionStats?.tmdbCreatedLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic
+                                                        title={t('resourceHubTmdbTasks24h')}
+                                                        value={collectionStats?.tmdbTasksLast24Hours || 0}
+                                                        suffix={`/ ${collectionStats?.tmdbFailedLast24Hours || 0} ${t('resourceHubFailedShort')}`}
+                                                    />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubDiscoveries24h')} value={collectionStats?.discoveriesLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubResourcesSaved24h')} value={collectionStats?.resourcesSavedLast24Hours || 0} />
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    </Col>
                                     <Col xs={24} xl={10}>
                                         <Card title={t('resourceHubRuntime')} loading={loading}>
                                             <Space direction="vertical" size="middle" className="w-full">
@@ -1020,6 +1064,14 @@ export default function ResourceHubAdminPage() {
                                                     </Descriptions.Item>
                                                     <Descriptions.Item label={t('resourceHubScheduleDelay')}>
                                                         {formatDelay(overview?.worker.fixedDelayMs)}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubLatestTmdbTask')}>
+                                                        {collectionStats?.latestTmdbTaskAt
+                                                            ? `${t(`resourceHubSource.${collectionStats.latestTmdbTaskSource}`, { defaultValue: collectionStats.latestTmdbTaskSource })} / ${t(`resourceHubStatus.${collectionStats.latestTmdbTaskStatus}`, { defaultValue: collectionStats.latestTmdbTaskStatus })} / ${formatDate(collectionStats.latestTmdbTaskAt)}`
+                                                            : '-'}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubNextTmdbRun')}>
+                                                        {formatDate(collectionStats?.nextTmdbRunAt)}
                                                     </Descriptions.Item>
                                                     <Descriptions.Item label={t('resourceHubAutoApprove')}>
                                                         {boolTag(Boolean(overview?.autoApprove), t('resourceHubAutoApproveOn'), t('resourceHubAutoApproveOff'))}
@@ -1232,6 +1284,9 @@ export default function ResourceHubAdminPage() {
                                                         <Form.Item name="tmdbAutoSyncMaxItems" label={t('resourceHubSyncItems')}>
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Text type="secondary">{t('resourceHubSyncIntervalHelp')}</Text>
                                                     </Col>
                                                     <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>

@@ -62,7 +62,19 @@ interface AutomationConfig {
 interface AutomationOverview {
     config: AutomationConfig;
     botStatusCounts: Record<string, number>;
+    botRecentStatusCounts: Record<string, number>;
+    botSummary: {
+        total: number;
+        last24Hours: number;
+        succeeded: number;
+        successRate: number;
+        noResult: number;
+        ambiguous: number;
+        blocked: number;
+        failed: number;
+    };
     channelStatusCounts: Record<string, number>;
+    channelRecentStatusCounts: Record<string, number>;
 }
 
 interface BotSearchLog {
@@ -91,7 +103,7 @@ interface ChannelPostLog {
     createdAt?: string;
 }
 
-const BOT_STATUSES = ['SUCCEEDED', 'NO_RESOURCE', 'NO_METADATA', 'TRAILER', 'BLOCKED', 'RATE_LIMITED', 'REJECTED'];
+const BOT_STATUSES = ['SUCCEEDED', 'NO_RESOURCE', 'NO_METADATA', 'TRAILER', 'AMBIGUOUS', 'BLOCKED', 'RATE_LIMITED', 'REJECTED', 'FAILED'];
 const CHANNEL_STATUSES = ['POSTED', 'FAILED', 'SKIPPED'];
 
 function unwrap<T>(payload: ApiEnvelope<T> | T): T {
@@ -279,7 +291,7 @@ export default function QqAutomationAdminPage() {
         { title: t('resourceLink'), dataIndex: 'linkUrl', ellipsis: true, render: (value?: string) => value || '-' },
     ];
 
-    const botCounts = overview?.botStatusCounts || {};
+    const botSummary = overview?.botSummary;
     const channelCounts = overview?.channelStatusCounts || {};
 
     return (
@@ -299,24 +311,34 @@ export default function QqAutomationAdminPage() {
                 </div>
 
                 <Row gutter={[16, 16]} className="mb-6">
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationSearchSuccess')} value={botCounts.SUCCEEDED || 0} prefix={<MessageOutlined />} />
+                            <Statistic title={t('qqAutomationSearchTotal')} value={botSummary?.total || 0} prefix={<MessageOutlined />} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationSearchBlocked')} value={(botCounts.BLOCKED || 0) + (botCounts.RATE_LIMITED || 0)} />
+                            <Statistic title={t('qqAutomationSearch24h')} value={botSummary?.last24Hours || 0} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
+                        <Card loading={loading}>
+                            <Statistic title={t('qqAutomationSearchSuccessRate')} value={botSummary?.successRate || 0} suffix="%" precision={1} />
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={8} xl={4}>
+                        <Card loading={loading}>
+                            <Statistic title={t('qqAutomationSearchNoResult')} value={botSummary?.noResult || 0} />
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
                             <Statistic title={t('qqAutomationPostsDone')} value={channelCounts.POSTED || 0} prefix={<NotificationOutlined />} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationPostsFailed')} value={channelCounts.FAILED || 0} />
+                            <Statistic title={t('qqAutomationSearchFailed')} value={(botSummary?.failed || 0) + (botSummary?.ambiguous || 0)} />
                         </Card>
                     </Col>
                 </Row>
@@ -414,6 +436,7 @@ export default function QqAutomationAdminPage() {
                                                             <Form.Item name="channelPostTemplate" label={t('qqAutomationPostTemplate')}>
                                                                 <Input.TextArea rows={5} />
                                                             </Form.Item>
+                                                            <Text type="secondary">{t('qqAutomationPostTemplateHelp')}</Text>
                                                         </Col>
                                                     </Row>
                                                     <Text type="secondary">{t('qqAutomationChannelIdHelp')}</Text>
