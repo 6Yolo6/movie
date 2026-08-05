@@ -84,6 +84,29 @@ services:
     networks:
       - gying-net
 
+  social-publisher:
+    build:
+      context: ./social-publisher
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - SOCIAL_PUBLISHER_PORT=8093
+      - SOCIAL_PUBLISHER_TOKEN=${SOCIAL_PUBLISHER_TOKEN:-}
+      - QQ_CHANNEL_SECONDARY_TOKEN=${QQ_CHANNEL_SECONDARY_TOKEN:-}
+      - QQ_CHANNEL_SECONDARY_HOME=/root
+      - WEIBO_CLI_TOKEN=${WEIBO_CLI_TOKEN:-}
+      - WEIBO_CLI_REFRESH_TOKEN=${WEIBO_CLI_REFRESH_TOKEN:-}
+      - TZ=Asia/Shanghai
+    volumes:
+      - social-publisher-qqcli:/root/.qqcli
+      - social-publisher-weibo:/root/.weibo-cli
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - gying-net
+
   redis:
     profiles:
       - embedded-deps
@@ -142,6 +165,8 @@ volumes:
   pansou-data:
   quark-auto-save-data:
   napcat-data:
+  social-publisher-qqcli:
+  social-publisher-weibo:
 
 networks:
   gying-net:

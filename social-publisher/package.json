@@ -1,0 +1,9 @@
+{
+  "name": "gying-social-publisher",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "mysql2": "^3.14.3"
+  }
+}
