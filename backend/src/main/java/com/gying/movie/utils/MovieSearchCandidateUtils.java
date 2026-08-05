@@ -20,7 +20,8 @@ public final class MovieSearchCandidateUtils {
         addAll(unique, localCandidates);
         addAll(unique, tmdbCandidates);
         return unique.values().stream()
-                .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed()
+                .sorted(Comparator.comparingInt(MovieSearchCandidateUtils::sourcePriority).reversed()
+                        .thenComparing(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())
                         .thenComparing(candidate -> firstText(candidate.getTitle(), candidate.getOriginalTitle(), "")))
                 .limit(Math.max(limit, 1))
                 .toList();
@@ -39,6 +40,9 @@ public final class MovieSearchCandidateUtils {
                     .append(title);
             if (candidate.getYear() != null) {
                 reply.append(" (").append(candidate.getYear()).append(")");
+            }
+            if ("GYING".equalsIgnoreCase(candidate.getSource())) {
+                reply.append(" [GYING]");
             }
         }
         reply.append("\n\n直接回复序号即可，例如：1");
@@ -76,10 +80,25 @@ public final class MovieSearchCandidateUtils {
             }
             String key = normalize(title) + "|" + candidate.getYear() + "|" + candidate.getMediaType();
             MovieSearchCandidate existing = unique.get(key);
-            if (existing == null || candidate.getScore() > existing.getScore()) {
+            if (existing == null
+                    || sourcePriority(candidate) > sourcePriority(existing)
+                    || (sourcePriority(candidate) == sourcePriority(existing)
+                    && candidate.getScore() > existing.getScore())) {
                 unique.put(key, candidate);
             }
         }
+    }
+
+    private static int sourcePriority(MovieSearchCandidate candidate) {
+        if (candidate == null || !hasText(candidate.getSource())) {
+            return 0;
+        }
+        return switch (candidate.getSource().trim().toUpperCase()) {
+            case "GYING" -> 3;
+            case "LOCAL" -> 2;
+            case "TMDB" -> 1;
+            default -> 0;
+        };
     }
 
     private static void addTitle(List<String> titles, String value) {

@@ -211,8 +211,9 @@ public class QqBotServiceImpl implements IQqBotService {
             return buildResourcePreferenceReply(requestedKeyword, userKey, resourcePreference);
         }
         SuggestedCandidates activeSuggestions = activeSuggestedCandidates(userKey);
-        String selectedKeyword = resolveSuggestedCandidate(activeSuggestions, requestedKeyword);
-        if (isCandidateSelection(requestedKeyword) && activeSuggestions != null && !hasText(selectedKeyword)) {
+        MovieSearchCandidate selectedCandidate = resolveSuggestedCandidate(activeSuggestions, requestedKeyword);
+        String selectedKeyword = candidateTitle(selectedCandidate);
+        if (isCandidateSelection(requestedKeyword) && activeSuggestions != null && selectedCandidate == null) {
             return finishSearch(userKey, requestedKeyword, "AMBIGUOUS", null, 0,
                     "序号无效，请回复 1-" + activeSuggestions.candidates().size() + " 之间的序号。",
                     "invalid candidate selection");
@@ -233,11 +234,30 @@ public class QqBotServiceImpl implements IQqBotService {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
+        MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
-        MovieMetadata movie = localCandidates.stream()
-                .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
-                .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
-                .orElse(null);
+        if (selectedCandidate != null && movie == null) {
+            return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                    "所选候选无法建立可信影片元数据：" + safeKeyword
+                            + "\n已跳过外部资源搜索，请重新回复其他候选序号。",
+                    "selected candidate metadata unavailable");
+        }
+        if (selectedCandidate == null) {
+            MovieMetadata exactLocalMovie = localCandidates.stream()
+                    .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
+                    .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
+                    .orElse(null);
+            if (exactLocalMovie != null) {
+                List<MovieSearchCandidate> candidates = findSearchCandidates(safeKeyword, localCandidates);
+                if (hasDistinctCandidate(exactLocalMovie, candidates)) {
+                    rememberSuggestedCandidates(userKey, candidates);
+                    return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                            MovieSearchCandidateUtils.formatReply(safeKeyword, candidates),
+                            "candidate selection required");
+                }
+            }
+            movie = exactLocalMovie;
+        }
         if (movie == null) {
             SeasonSearchUtils.SeasonQuery seasonQuery = SeasonSearchUtils.parse(safeKeyword);
             if (seasonQuery != null) {
@@ -610,16 +630,40 @@ public class QqBotServiceImpl implements IQqBotService {
                         title(movie),
                         movie.getTitleEn(),
                         movie.getYear(),
-                        scoreMovie(movie, keyword)))
+                        scoreMovie(movie, keyword),
+                        "LOCAL",
+                        resolveCandidateMediaType(movie),
+                        movie.getTmdbId() == null ? movie.getId() : String.valueOf(movie.getTmdbId()),
+                        movie.getId()))
                 .toList();
+        List<MovieSearchCandidate> gying;
+        try {
+            gying = gyingSourceWorkflowService.searchCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS);
+        } catch (Exception e) {
+            log.warn("GYING candidate search failed for QQ keyword {}", keyword, e);
+            gying = List.of();
+        }
         List<MovieSearchCandidate> tmdb;
         try {
             tmdb = tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            tmdb.forEach(candidate -> {
+                if (!hasText(candidate.getSource())) {
+                    candidate.setSource("TMDB");
+                }
+                if (!hasText(candidate.getSourceType())) {
+                    candidate.setSourceType(candidate.getMediaType());
+                }
+                if (!hasText(candidate.getSourceId()) && candidate.getTmdbId() != null) {
+                    candidate.setSourceId(String.valueOf(candidate.getTmdbId()));
+                }
+            });
         } catch (Exception e) {
             log.warn("TMDB candidate search failed for QQ keyword {}", keyword, e);
             tmdb = List.of();
         }
-        return MovieSearchCandidateUtils.merge(local, tmdb, MAX_CANDIDATE_SUGGESTIONS);
+        List<MovieSearchCandidate> preferred = MovieSearchCandidateUtils.merge(
+                gying, local, MAX_CANDIDATE_SUGGESTIONS);
+        return MovieSearchCandidateUtils.merge(preferred, tmdb, MAX_CANDIDATE_SUGGESTIONS);
     }
 
     private String resolveCandidateMediaType(MovieMetadata movie) {
@@ -645,13 +689,91 @@ public class QqBotServiceImpl implements IQqBotService {
         return suggestions;
     }
 
-    private String resolveSuggestedCandidate(SuggestedCandidates suggestions, String keyword) {
+    private MovieSearchCandidate resolveSuggestedCandidate(
+            SuggestedCandidates suggestions,
+            String keyword) {
         if (suggestions == null || !isCandidateSelection(keyword)) {
             return null;
         }
-        return MovieSearchCandidateUtils.selectionTitle(
-                suggestions.candidates(),
-                Integer.parseInt(keyword.trim()));
+        int index = Integer.parseInt(keyword.trim()) - 1;
+        return index < 0 || index >= suggestions.candidates().size()
+                ? null
+                : suggestions.candidates().get(index);
+    }
+
+    private String candidateTitle(MovieSearchCandidate candidate) {
+        return candidate == null
+                ? null
+                : firstText(candidate.getTitle(), candidate.getOriginalTitle());
+    }
+
+    private MovieMetadata resolveSelectedCandidateMovie(MovieSearchCandidate candidate) {
+        if (candidate == null) {
+            return null;
+        }
+        if ("GYING".equalsIgnoreCase(candidate.getSource())
+                && hasText(candidate.getSourceType())
+                && hasText(candidate.getSourceId())) {
+            try {
+                Map<String, Object> result = gyingSourceWorkflowService.ensureMovieResource(
+                        candidate.getSourceType(),
+                        candidate.getSourceId());
+                String localMovieId = result == null ? null : String.valueOf(result.get("localMovieId"));
+                if (hasText(localMovieId) && !"null".equalsIgnoreCase(localMovieId)) {
+                    MovieMetadata local = movieService.getById(localMovieId);
+                    if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
+                        return local;
+                    }
+                }
+            } catch (Exception error) {
+                log.info("Selected GYING candidate {}/{} could not complete directly; "
+                                + "continuing with local metadata and PanSou fallback",
+                        candidate.getSourceType(), candidate.getSourceId(), error);
+            }
+            return findMovieCandidates(candidateTitle(candidate)).stream()
+                    .filter(movie -> matchesCandidate(movie, candidate))
+                    .max(Comparator.comparingInt(movie -> scoreMovie(movie, candidateTitle(candidate))))
+                    .orElse(null);
+        }
+        if (hasText(candidate.getLocalMovieId())) {
+            MovieMetadata local = movieService.getById(candidate.getLocalMovieId());
+            if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
+                return local;
+            }
+        }
+        return syncExactMovieMetadata(candidateTitle(candidate));
+    }
+
+    private boolean hasDistinctCandidate(
+            MovieMetadata exactLocalMovie,
+            List<MovieSearchCandidate> candidates) {
+        if (exactLocalMovie == null || candidates == null || candidates.size() < 2) {
+            return false;
+        }
+        return candidates.stream().anyMatch(candidate -> !matchesCandidate(exactLocalMovie, candidate));
+    }
+
+    private boolean matchesCandidate(MovieMetadata movie, MovieSearchCandidate candidate) {
+        if (movie == null || candidate == null || !MovieTitleMatcher.isExactMatch(
+                movie,
+                candidateTitle(candidate))) {
+            return false;
+        }
+        String candidateType = normalizeCandidateMediaType(candidate.getMediaType());
+        String movieType = resolveCandidateMediaType(movie);
+        if (hasText(candidateType) && hasText(movieType) && !candidateType.equals(movieType)) {
+            return false;
+        }
+        return candidate.getYear() == null
+                || movie.getYear() == null
+                || candidate.getYear().equals(movie.getYear());
+    }
+
+    private String normalizeCandidateMediaType(String mediaType) {
+        return hasText(mediaType)
+                && List.of("tv", "series", "show", "drama", "ac").contains(mediaType.toLowerCase(Locale.ROOT))
+                ? "tv"
+                : hasText(mediaType) ? "movie" : "";
     }
 
     private boolean isCandidateSelection(String value) {
@@ -930,11 +1052,37 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private boolean isOwnedQuarkShare(ResourceLink link) {
-        return link != null
-                && "QUARK".equalsIgnoreCase(link.getProvider())
-                && ("RESOURCE_HUB".equalsIgnoreCase(link.getSource())
-                        || "GYING_PUBLISHED".equalsIgnoreCase(link.getSource())
-                        || link.getUploaderId() != null);
+        if (link == null || !"QUARK".equalsIgnoreCase(link.getProvider())) {
+            return false;
+        }
+        if ("RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                || "GYING_PUBLISHED".equalsIgnoreCase(link.getSource())
+                || link.getUploaderId() != null) {
+            return true;
+        }
+        if (!"GYING".equalsIgnoreCase(link.getSource())
+                || link.getId() == null
+                || !hasText(link.getUrl())) {
+            return false;
+        }
+        try {
+            ResourceDiscoveryResult discovery = discoveryResultService.getOne(
+                    new QueryWrapper<ResourceDiscoveryResult>()
+                    .eq("resource_link_id", link.getId())
+                    .eq("share_url", link.getUrl())
+                    .eq("status", "SAVED")
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"),
+                    false);
+            return discovery != null
+                    && quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .eq("share_url", link.getUrl())
+                    .isNotNull("saved_path")) > 0;
+        } catch (Exception error) {
+            log.warn("Failed to verify legacy GYING owned share {}", link.getId(), error);
+            return false;
+        }
     }
 
     private int ownedResourcePriority(ResourceLink link, MovieMetadata movie) {

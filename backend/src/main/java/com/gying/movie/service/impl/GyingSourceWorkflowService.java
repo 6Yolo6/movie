@@ -6,6 +6,7 @@ import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
+import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
@@ -93,6 +94,42 @@ public class GyingSourceWorkflowService {
             enrichCandidate(item);
         }
         return items;
+    }
+
+    public List<MovieSearchCandidate> searchCandidates(String keyword, int limit) {
+        String safeKeyword = required(keyword, "search keyword");
+        int safeLimit = Math.min(Math.max(limit, 1), 30);
+        List<Map<String, Object>> items = mapList(gyingSourceClient.get("/search", Map.of(
+                "q", safeKeyword,
+                "limit", safeLimit)).get("items"));
+        return items.stream()
+                .map(item -> {
+                    String typeCode = stringValue(item.get("typeCode"));
+                    String mid = stringValue(item.get("mid"));
+                    String title = stringValue(item.get("title"));
+                    String originalTitle = firstText(
+                            stringValue(item.get("titleEn")),
+                            stringValue(item.get("aliases")));
+                    Integer year = integerValue(item.get("year"));
+                    MovieMetadata localMovie = resolveLocalMovie(typeCode, mid, title, year);
+                    return new MovieSearchCandidate(
+                            localMovie == null ? null : localMovie.getTmdbId(),
+                            "mv".equalsIgnoreCase(typeCode) ? "movie" : "tv",
+                            title,
+                            originalTitle,
+                            year,
+                            scoreSearchCandidate(safeKeyword, title, originalTitle),
+                            "GYING",
+                            typeCode,
+                            mid,
+                            localMovie == null ? null : localMovie.getId());
+                })
+                .filter(candidate -> hasText(candidate.getTitle())
+                        && hasText(candidate.getSourceType())
+                        && hasText(candidate.getSourceId()))
+                .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())
+                .limit(safeLimit)
+                .toList();
     }
 
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
@@ -1324,6 +1361,34 @@ public class GyingSourceWorkflowService {
         if (upper.contains("1080P")) return 3;
         if (upper.contains("720P")) return 2;
         return 1;
+    }
+
+    private int scoreSearchCandidate(String keyword, String title, String originalTitle) {
+        String normalizedKeyword = normalizeSearchTitle(keyword);
+        int score = scoreSearchTitle(normalizedKeyword, title, 180);
+        score = Math.max(score, scoreSearchTitle(normalizedKeyword, originalTitle, 160));
+        return score;
+    }
+
+    private int scoreSearchTitle(String normalizedKeyword, String value, int exactScore) {
+        if (!hasText(value)) {
+            return 0;
+        }
+        String normalizedValue = normalizeSearchTitle(value);
+        if (normalizedValue.equals(normalizedKeyword)) {
+            return exactScore;
+        }
+        if (normalizedValue.contains(normalizedKeyword) || normalizedKeyword.contains(normalizedValue)) {
+            return exactScore / 2;
+        }
+        return 0;
+    }
+
+    private String normalizeSearchTitle(String value) {
+        return hasText(value)
+                ? value.trim().toLowerCase(Locale.ROOT)
+                        .replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "")
+                : "";
     }
 
     @SuppressWarnings("unchecked")

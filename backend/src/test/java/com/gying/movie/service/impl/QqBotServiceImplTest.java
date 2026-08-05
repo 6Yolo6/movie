@@ -26,6 +26,7 @@ import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
@@ -51,6 +52,8 @@ class QqBotServiceImplTest {
     private IMovieMetadataService movieService;
     private IResourceLinkService resourceLinkService;
     private IResourceDiscoveryService resourceDiscoveryService;
+    private IResourceDiscoveryResultService discoveryResultService;
+    private IQuarkTransferTaskService quarkTransferTaskService;
     private ITmdbMetadataSyncService tmdbMetadataSyncService;
     private GyingSourceWorkflowService gyingSourceWorkflowService;
     private PanSouClient panSouClient;
@@ -65,6 +68,8 @@ class QqBotServiceImplTest {
         movieService = mock(IMovieMetadataService.class);
         resourceLinkService = mock(IResourceLinkService.class);
         resourceDiscoveryService = mock(IResourceDiscoveryService.class);
+        discoveryResultService = mock(IResourceDiscoveryResultService.class);
+        quarkTransferTaskService = mock(IQuarkTransferTaskService.class);
         tmdbMetadataSyncService = mock(ITmdbMetadataSyncService.class);
         gyingSourceWorkflowService = mock(GyingSourceWorkflowService.class);
         panSouClient = mock(PanSouClient.class);
@@ -78,9 +83,9 @@ class QqBotServiceImplTest {
                 movieService,
                 resourceLinkService,
                 resourceDiscoveryService,
-                mock(IResourceDiscoveryResultService.class),
+                discoveryResultService,
                 mock(IQuarkShareService.class),
-                mock(IQuarkTransferTaskService.class),
+                quarkTransferTaskService,
                 mock(IQuarkTransferRunnerService.class),
                 mock(IResourceHubPublishService.class),
                 tmdbMetadataSyncService,
@@ -107,6 +112,92 @@ class QqBotServiceImplTest {
         assertTrue(candidates.contains("直接回复序号即可，例如：1"));
         assertTrue(selected.contains("片名：福尔摩斯：基本演绎法"));
         verify(tmdbMetadataSyncService).syncExactByKeyword("福尔摩斯：基本演绎法");
+    }
+
+    @Test
+    void showsGyingCandidatesBeforeTransferAndUsesSelectedSourceIdentity() {
+        MovieSearchCandidate gyingCandidate = new MovieSearchCandidate(
+                null,
+                "tv",
+                "伦敦生活",
+                "Fleabag",
+                2016,
+                180,
+                "GYING",
+                "tv",
+                "test-mid",
+                null);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+                .thenReturn(List.of(gyingCandidate));
+        MovieMetadata selectedMovie = movie("gying_london_life", "伦敦生活", 2016);
+        when(gyingSourceWorkflowService.ensureMovieResource("tv", "test-mid"))
+                .thenReturn(java.util.Map.of(
+                        "status", "PUBLISHED",
+                        "localMovieId", selectedMovie.getId()));
+        when(movieService.getById(selectedMovie.getId())).thenReturn(selectedMovie);
+        ResourceLink published = link(
+                "QUARK",
+                "伦敦生活 GYING",
+                "https://pan.quark.cn/s/gying-london-life");
+        published.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(published));
+        when(panSouClient.checkLink(published.getUrl()))
+                .thenReturn(new LinkCheckResult(published.getUrl(), true, true, "ok"));
+
+        String candidates = service.buildSearchReply("伦敦生活", "gying-candidate-user");
+
+        assertTrue(candidates.contains("1. 剧集 伦敦生活 (2016) [GYING]"));
+        verify(gyingSourceWorkflowService, org.mockito.Mockito.never())
+                .ensureMovieResource(anyString(), anyString());
+
+        String selected = service.buildSearchReply("1", "gying-candidate-user");
+
+        assertTrue(selected.contains("片名：伦敦生活"));
+        assertTrue(selected.contains(published.getUrl()));
+        verify(gyingSourceWorkflowService).ensureMovieResource("tv", "test-mid");
+    }
+
+    @Test
+    void showsCandidatesWhenExactLocalTitleHasSameNamedGyingMovie() {
+        MovieMetadata localSeries = movie("tv_london-life", "伦敦生活", 2016);
+        localSeries.setTmdbType("tv");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(localSeries));
+        MovieSearchCandidate gyingMovie = new MovieSearchCandidate(
+                null,
+                "movie",
+                "伦敦生活",
+                "National Theatre Live: Fleabag",
+                2019,
+                220,
+                "GYING",
+                "mv",
+                "739Y",
+                null);
+        MovieSearchCandidate gyingSeries = new MovieSearchCandidate(
+                null,
+                "tv",
+                "伦敦生活 第一季",
+                "Fleabag Season 1",
+                2016,
+                210,
+                "GYING",
+                "tv",
+                "wxLe",
+                null);
+        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+                .thenReturn(List.of(gyingMovie, gyingSeries));
+        when(tmdbMetadataSyncService.searchCandidatesByKeyword("伦敦生活", 10))
+                .thenReturn(List.of());
+
+        String reply = service.buildSearchReply("伦敦生活", "ambiguous-london-user");
+
+        assertTrue(reply.contains("请选择要搜索的影片"));
+        assertTrue(reply.contains("电影 伦敦生活 (2019) [GYING]"));
+        assertTrue(reply.contains("剧集 伦敦生活 第一季 (2016) [GYING]"));
+        verify(gyingSourceWorkflowService, org.mockito.Mockito.never())
+                .ensureMovieResource(anyString(), anyString());
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
     }
 
     @Test
@@ -229,6 +320,32 @@ class QqBotServiceImplTest {
                 .thenReturn(new LinkCheckResult(published.getUrl(), true, true, "ok"));
 
         String reply = service.buildSearchReply("超级少女", "gying-published-user");
+
+        assertTrue(reply.contains(published.getUrl()));
+        verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
+    }
+
+    @Test
+    void returnsTransferredGyingShareAfterLegacySourceOverwrite() {
+        MovieMetadata movie = movie("tmdb_tv_67070", "伦敦生活 第一季", 2016);
+        movie.setTmdbType("tv");
+        movie.setSeason(1);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        ResourceLink published = link(
+                "QUARK",
+                "伦敦生活 第1季 (2016)",
+                "https://pan.quark.cn/s/92d2370ddc08");
+        published.setId(1959L);
+        published.setSource("GYING");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(published));
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(3599L);
+        when(discoveryResultService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(discovery);
+        when(quarkTransferTaskService.count(any(QueryWrapper.class))).thenReturn(1L);
+        when(panSouClient.checkLink(published.getUrl()))
+                .thenReturn(new LinkCheckResult(published.getUrl(), true, true, "ok"));
+
+        String reply = service.buildSearchReply("伦敦生活 第一季", "legacy-gying-owned-user");
 
         assertTrue(reply.contains(published.getUrl()));
         verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());

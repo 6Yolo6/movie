@@ -1,6 +1,6 @@
 import unittest
 
-from crawler.gying_crawler import normalize_search_items
+from crawler.gying_crawler import normalize_search_items, preserve_existing_resource_source
 
 
 class GyingSearchParserTest(unittest.TestCase):
@@ -44,6 +44,17 @@ class GyingSearchParserTest(unittest.TestCase):
         )
         self.assertIsNone(items[0]["seriesName"])
         self.assertIsNone(items[0]["season"])
+
+    def test_preserves_existing_owned_resource_source(self):
+        self.assertEqual(
+            "RESOURCE_HUB",
+            preserve_existing_resource_source("RESOURCE_HUB"),
+        )
+        self.assertEqual(
+            "GYING_PUBLISHED",
+            preserve_existing_resource_source("GYING_PUBLISHED"),
+        )
+        self.assertEqual("GYING", preserve_existing_resource_source(None))
 
 
 if __name__ == "__main__":

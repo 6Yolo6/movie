@@ -1083,6 +1083,12 @@ def save_source_identity(db, movie_id, source, source_type, external_id, season=
             return
         raise
 
+
+def preserve_existing_resource_source(source):
+    value = str(source or "").strip()
+    return value or "GYING"
+
+
 def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
     global _SITE_SESSION
     movie_id = str(target_movie_id or mid).strip()
@@ -1165,7 +1171,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
             source_id = resource.get("source_id") or None
             with db.cursor() as cursor:
                 cursor.execute(
-                    "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1",
+                    "SELECT id, source FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1",
                     (movie_id, resource_url),
                 )
                 existing = cursor.fetchone()
@@ -1174,7 +1180,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
                         """
                         UPDATE resource_link
                         SET name=%s, type=%s, provider=%s, code=%s, audit_status=1,
-                            status='ACTIVE', link_status='NORMAL', source='GYING',
+                            status='ACTIVE', link_status='NORMAL', source=%s,
                             source_ref=%s, source_url=%s, auto_collected=1,
                             deleted_at=NULL, updated_at=NOW()
                         WHERE id=%s
@@ -1184,6 +1190,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
                             link_type,
                             provider,
                             resource.get("code") or "",
+                            preserve_existing_resource_source(existing.get("source")),
                             source_id,
                             f"{BASE_URL}/{type_code}/{mid}",
                             existing["id"],
