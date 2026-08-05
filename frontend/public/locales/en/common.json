@@ -545,6 +545,7 @@
   "socialPublishingAuthHelp": "Secondary QQ: {{qq}}; Sina Weibo: {{weibo}}. Platforms awaiting authorization do not affect the original QQ bot or channel schedule.",
   "socialPublishingReady": "Ready",
   "socialPublishingNeedsAuth": "Authorization required",
+  "socialPublishingNoWriteAccess": "Authorized, but the {{plan}} plan has no publishing quota",
   "socialPublishingTargets": "Publishing Targets",
   "socialPublishingTargetCreated": "Publishing account target added",
   "socialPublishingAddAccount": "Add Publishing Account",

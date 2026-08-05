@@ -139,7 +139,15 @@ interface SocialPublishingOverview {
     publisher?: {
         ok?: boolean;
         qq?: { configured?: boolean; ready?: boolean; tokenSource?: string; error?: string };
-        weibo?: { ready?: boolean; error?: string };
+        weibo?: {
+            ready?: boolean;
+            authenticated?: boolean;
+            developerVerified?: boolean;
+            plan?: string;
+            writeRemaining?: number;
+            tokenExpiresAt?: string;
+            error?: string;
+        };
         error?: string;
     };
 }
@@ -1001,7 +1009,13 @@ export default function QqAutomationAdminPage() {
                                         message={t('socialPublishingAuthStatus')}
                                         description={t('socialPublishingAuthHelp', {
                                             qq: socialOverview?.publisher?.qq?.ready ? t('socialPublishingReady') : t('socialPublishingNeedsAuth'),
-                                            weibo: socialOverview?.publisher?.weibo?.ready ? t('socialPublishingReady') : t('socialPublishingNeedsAuth'),
+                                            weibo: socialOverview?.publisher?.weibo?.ready
+                                                ? t('socialPublishingReady')
+                                                : socialOverview?.publisher?.weibo?.authenticated
+                                                    ? t('socialPublishingNoWriteAccess', {
+                                                        plan: socialOverview.publisher.weibo.plan || '-',
+                                                    })
+                                                    : t('socialPublishingNeedsAuth'),
                                         })}
                                     />
                                     <Card

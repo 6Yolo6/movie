@@ -545,6 +545,7 @@
   "socialPublishingAuthHelp": "第二 QQ：{{qq}}；新浪微博：{{weibo}}。未授权的平台不会影响原 QQ 机器人和原频道定时任务。",
   "socialPublishingReady": "可用",
   "socialPublishingNeedsAuth": "需要授权",
+  "socialPublishingNoWriteAccess": "已授权，但 {{plan}} 套餐无可用发布额度",
   "socialPublishingTargets": "发布目标",
   "socialPublishingTargetCreated": "发布账号目标已添加",
   "socialPublishingAddAccount": "添加发布账号",

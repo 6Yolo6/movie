@@ -80,6 +80,18 @@ function truncate(value, limit) {
   return chars.length > limit ? `${chars.slice(0, limit - 1).join('')}…` : chars.join('');
 }
 
+function truncateWeiboContent(content, resourceUrl, limit = 140) {
+  const text = String(content || '').trim();
+  const chars = Array.from(text);
+  if (chars.length <= limit) return text;
+  const hasResourceUrl = resourceUrl && text.includes(resourceUrl);
+  const suffix = hasResourceUrl ? `\n${resourceUrl}` : '';
+  const base = hasResourceUrl ? text.replace(resourceUrl, '').trim() : text;
+  const suffixLength = Array.from(suffix).length;
+  const budget = Math.max(limit - suffixLength - 1, 1);
+  return `${Array.from(base).slice(0, budget).join('')}…${suffix}`;
+}
+
 function render(template, row) {
   const type = ['tv', 'series', 'show', 'drama'].includes(String(row.media_type || '').toLowerCase())
     ? '剧集'
@@ -194,24 +206,27 @@ async function publishQq(row, content, posterPath) {
   }
 }
 
-async function discoverWeiboCommand() {
+async function discoverWeiboCommand(hasPoster) {
   const catalog = parseJsonOutput(await run(
     'weibo',
     ['commands', 'list', '--group', 'statuses', '--available', '--output', 'json'],
   ));
   const commands = catalog.commands || catalog.data?.commands || [];
-  const priorities = ['share', 'upload_url_text', 'upload', 'update', 'publish', 'create'];
+  const writable = commands.filter(command => String(command.method || '').toUpperCase() === 'POST');
+  const priorities = hasPoster
+    ? ['upload', 'update', 'share', 'publish', 'create']
+    : ['update', 'share', 'publish', 'create'];
   for (const name of priorities) {
-    const command = commands.find(item => String(item.action || item.name || '').toLowerCase() === name);
+    const command = writable.find(item => String(item.action || item.name || '').toLowerCase() === name);
     if (command) return command.action || command.name;
   }
-  const command = commands.find(item => /(share|publish|create|update|upload)/i.test(item.action || item.name || ''));
+  const command = writable.find(item => /(share|publish|create|update|upload)/i.test(item.action || item.name || ''));
   if (!command) throw new Error('Current Weibo account has no available status publishing command');
   return command.action || command.name;
 }
 
 async function publishWeibo(row, content, posterPath) {
-  const action = process.env.WEIBO_PUBLISH_ACTION || await discoverWeiboCommand();
+  const action = process.env.WEIBO_PUBLISH_ACTION || await discoverWeiboCommand(Boolean(posterPath));
   const details = parseJsonOutput(await run(
     'weibo',
     ['commands', 'show', 'statuses', action, '--output', 'json'],
@@ -219,17 +234,25 @@ async function publishWeibo(row, content, posterPath) {
   const flags = details.command?.flags || details.data?.command?.flags || [];
   const names = new Set(flags.map(flag => flag.name));
   const args = ['statuses', action];
-  if (names.has('status')) args.push('--status', content);
-  else if (names.has('text')) args.push('--text', content);
-  else if (names.has('content')) args.push('--content', content);
+  const finalContent = truncateWeiboContent(content, row.resource_url);
+  if (names.has('status')) args.push('--status', finalContent);
+  else if (names.has('text')) args.push('--text', finalContent);
+  else if (names.has('content')) args.push('--content', finalContent);
   else throw new Error(`Weibo command statuses ${action} has no supported text flag`);
+  if (names.has('mblog_statement')) args.push('--mblog_statement', '1');
   if (names.has('url')) args.push('--url', row.resource_url);
   if (posterPath && names.has('pic')) args.push('--pic', posterPath);
   if (posterPath && names.has('image')) args.push('--image', posterPath);
   args.push('--output', 'json');
   const result = parseJsonOutput(await run('weibo', args));
+  const payload = result.data || result;
+  const uid = payload.user?.idstr || payload.user?.id || payload.uid;
+  const mid = payload.mblogid || payload.mid;
   return {
-    externalUrl: result.share_url || result.url || result.data?.share_url || null,
+    externalUrl: result.share_url
+      || result.url
+      || result.data?.share_url
+      || (uid && mid ? `https://weibo.com/${uid}/${mid}` : null),
     result,
   };
 }
@@ -284,9 +307,33 @@ async function health() {
     result.qq.error = compact(error.message);
   }
   try {
-    await run('weibo', ['auth', 'whoami', '--output', 'json'], { timeoutMs: 30000 });
-    result.weibo.ready = true;
+    const account = parseJsonOutput(await run(
+      'weibo',
+      ['auth', 'whoami', '--output', 'json'],
+      { timeoutMs: 30000 },
+    ));
+    const subscription = account.subscription || account.data?.subscription || {};
+    const user = account.user || account.data?.user || {};
+    const usage = subscription.usage || {};
+    const write = usage.write || {};
+    const writeLimit = Number(write.limit ?? subscription.plan?.rateLimitConfig?.write?.limit ?? 0);
+    const writeRemaining = Number(write.remaining ?? usage.writeRemaining ?? writeLimit);
+    result.weibo.authenticated = true;
+    result.weibo.developerVerified = Boolean(user.developerIdentity?.isVerified);
+    result.weibo.plan = subscription.plan?.name || null;
+    result.weibo.writeLimit = writeLimit;
+    result.weibo.writeRemaining = writeRemaining;
+    result.weibo.tokenExpiresAt = account.token?.expiresAt || account.data?.token?.expiresAt || null;
+    result.weibo.ready = result.weibo.developerVerified && writeLimit > 0 && writeRemaining > 0;
+    if (!result.weibo.developerVerified) {
+      result.weibo.error = 'Weibo developer verification is required';
+    } else if (writeLimit <= 0) {
+      result.weibo.error = `Weibo plan ${result.weibo.plan || 'unknown'} has no publishing quota`;
+    } else if (writeRemaining <= 0) {
+      result.weibo.error = 'Weibo publishing quota is exhausted';
+    }
   } catch (error) {
+    result.weibo.authenticated = false;
     result.weibo.ready = false;
     result.weibo.error = compact(error.message);
   }
