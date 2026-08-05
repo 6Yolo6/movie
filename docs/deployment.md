@@ -87,6 +87,34 @@ Invoke-RestMethod http://127.0.0.1:8092/health
 
 后端使用 `QQ_CHANNEL_PUBLISHER_BASE_URL` 和 `QQ_CHANNEL_PUBLISHER_TOKEN`。桥接只处理指定 `PENDING` 日志；不可用时记录留给 `publish-latest-resource-to-qq-channel.ps1` 定时处理。
 
+## 多平台发布
+
+`social-publisher` 是独立容器，只负责第二 QQ 频道账号和新浪微博，不复用或覆盖原宿主机 `tencent-channel-cli` 登录状态。
+
+关键配置：
+
+- `SOCIAL_PUBLISHER_BASE_URL`、`SOCIAL_PUBLISHER_TOKEN`：后端访问独立发布容器。
+- `QQ_CHANNEL_SECONDARY_ACCOUNT`、`QQ_CHANNEL_SECONDARY_TOKEN`：第二 QQ 账号标识和可选环境凭据；实际 CLI 鉴权失败时仍必须扫码授权。
+- `WEIBO_CLI_TOKEN`、`WEIBO_CLI_REFRESH_TOKEN`：新浪微博无人值守令牌；未提供时使用设备码完成一次授权。
+- `WEIBO_PUBLISH_ACTION`：可选，固定当前账号允许的微博发布动作；留空时从官方 CLI 动态命令目录选择。
+
+首次部署：
+
+```powershell
+docker compose -f docker-compose.prod.yml up -d --build social-publisher
+docker compose -f docker-compose.prod.yml exec social-publisher tencent-channel-cli login --json
+# 扫码确认后
+docker compose -f docker-compose.prod.yml exec social-publisher tencent-channel-cli login poll-token --json
+
+docker compose -f docker-compose.prod.yml exec social-publisher weibo auth login --device
+```
+
+QQ 登录信息保存在 `social-publisher-qqcli` 卷，微博登录信息保存在 `social-publisher-weibo` 卷。后台 `/admin/automation` 的“多平台发布”页签可添加已授权账号下的新目标，维护频道、每日时间、每次条数、间隔和模板，并可对单个目标或全部目标手动发布下一条。页面同时提供分页发布记录、平台/状态筛选、外部帖子地址、失败原因和重试操作。候选按站内热度、TMDB 热度和资源录入时间排序；同一目标不会重复发布同一影片。自动发布初始为关闭，完成对应账号授权与单条手动验证后再逐目标开启。
+
+当前发布器凭据档案固定为 QQ `secondary` 和微博 `default`。添加目标不会创建新的第三方登录凭据；新增真正独立的外部账号时，需要先为发布器增加独立凭据目录和授权流程。
+
+新浪微博集成使用微博开放平台官方 CLI，命令目录和账号套餐权限由平台动态返回。官方入口：`https://open.weibo.com/cli/index`。
+
 ## 上线检查
 
 - 数据库和对象存储有可恢复备份。

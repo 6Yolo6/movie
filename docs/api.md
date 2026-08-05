@@ -70,7 +70,21 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 - `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本；`userKey` 维持 5 分钟影片/网盘上下文。资源结果必须包含已验证的自有夸克分享，OpenClaw 补丁据此生成二维码。
 - `/api/admin/qq-automation/*`：配置、群搜索日志和频道发帖日志。
 
-查询先读取本地正式资源；缺失时才进入 TMDB、PanSou/Panso API、转存和发布。模糊影片结果只返回候选，用户选择或精确匹配后才能触发资源链路。
+查询先读取本地正式资源。无法精确命中时优先请求 GYING 搜索并返回带来源的影片候选，用户回复序号后才按选中的 GYING 类型和影片 ID 采集、转存；GYING 无可用资源时再进入本地 PanSou、外部 Panso API、转存和发布。模糊影片结果只返回候选，未选择前不触发资源链路。
+
+## 多平台发布
+
+基础路径：`/api/admin/social-publishing`。
+
+- `GET /overview`：目标列表、发布统计和独立发布容器的 QQ/微博授权状态。
+- `POST /targets`：添加已授权发布账号下的频道或平台目标；当前 QQ 使用 `secondary` 凭据档案，微博使用 `default`。
+- `PUT /targets/{id}`：更新目标名称、频道号、版块、启用状态、每日时间、每次条数、间隔和模板。
+- `POST /targets/{id}/publish-next?runNow=true`：对单个目标发布下一条热度候选。
+- `POST /publish-next?runNow=true`：对请求体中的目标 ID 批量发布；空数组表示全部启用目标。
+- `GET /logs?status=&platform=&page=&size=`：发布审计日志。
+- `POST /logs/{id}/retry`：重试失败日志。
+
+独立发布容器内部提供 `GET /health` 和受 `X-Internal-Token` 保护的 `POST /posts/{logId}`。原 QQ 机器人、原频道账号和原频道定时任务保持独立。
 
 ## 其他管理接口
 
