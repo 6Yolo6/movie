@@ -258,18 +258,6 @@ function truncate(value, limit) {
   return chars.length > limit ? `${chars.slice(0, limit - 1).join('')}…` : chars.join('');
 }
 
-function truncateWeiboContent(content, resourceUrl, limit = 140) {
-  const text = String(content || '').trim();
-  const chars = Array.from(text);
-  if (chars.length <= limit) return text;
-  const hasResourceUrl = resourceUrl && text.includes(resourceUrl);
-  const suffix = hasResourceUrl ? `\n${resourceUrl}` : '';
-  const base = hasResourceUrl ? text.replace(resourceUrl, '').trim() : text;
-  const suffixLength = Array.from(suffix).length;
-  const budget = Math.max(limit - suffixLength - 1, 1);
-  return `${Array.from(base).slice(0, budget).join('')}…${suffix}`;
-}
-
 function render(template, row) {
   const type = ['tv', 'series', 'show', 'drama'].includes(String(row.media_type || '').toLowerCase())
     ? '剧集'
@@ -277,7 +265,8 @@ function render(template, row) {
   const link = row.platform === 'QQ_CHANNEL'
     ? `[查看资源](${row.resource_url})`
     : row.resource_url;
-  const intro = truncate(row.summary || '暂无简介', row.platform === 'WEIBO' ? 120 : 600);
+  const summary = String(row.summary || '').trim() || '暂无简介';
+  const intro = row.platform === 'WEIBO' ? summary : truncate(summary, 600);
   return String(template || '{{title}}\n{{link}}')
     .replaceAll('{{title}}', row.title || row.movie_id)
     .replaceAll('{{year}}', row.release_year || '')
@@ -378,8 +367,7 @@ async function publishQq(row, content, posterPath) {
 }
 
 async function publishWeibo(row, content) {
-  const finalContent = truncateWeiboContent(content, row.resource_url);
-  return publishWeiboWeb(finalContent);
+  return publishWeiboWeb(content);
 }
 
 async function publish(logId) {
