@@ -95,30 +95,55 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (!tmdb.isAutoSyncEnabled() || !hasText(tmdb.getApiKey())) {
             return;
         }
+        List<String> sources = autoSyncSources(tmdb.getAutoSyncSources());
+        if (sources.isEmpty() || hasActiveMetadataSyncTask(sources)) {
+            return;
+        }
+        ResourceHubTask latestTask = latestMetadataSyncTask(sources);
         LocalDateTime since = LocalDateTime.now().minusHours(Math.max(tmdb.getAutoSyncIntervalHours(), 1));
-        for (String source : autoSyncSources(tmdb.getAutoSyncSources())) {
-            try {
-                if (hasRecentMetadataSyncTask(source, since)) {
-                    continue;
-                }
-                ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
-                request.setSource(source);
-                request.setPage(tmdb.getAutoSyncPage());
-                request.setMaxItems(tmdb.getAutoSyncMaxItems());
-                tmdbMetadataSyncService.enqueue(request);
-                result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
-            } catch (Exception e) {
-                addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
-            }
+        if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
+            return;
+        }
+        String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
+        try {
+            ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
+            request.setSource(source);
+            request.setPage(tmdb.getAutoSyncPage());
+            request.setMaxItems(tmdb.getAutoSyncMaxItems());
+            tmdbMetadataSyncService.enqueue(request);
+            result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+        } catch (Exception e) {
+            addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
         }
     }
 
-    private boolean hasRecentMetadataSyncTask(String source, LocalDateTime since) {
+    private boolean hasActiveMetadataSyncTask(List<String> sources) {
         return taskService.count(new QueryWrapper<ResourceHubTask>()
                 .eq("task_type", "METADATA_SYNC")
                 .eq("source", "TMDB")
-                .eq("keyword", source)
-                .ge("created_at", since)) > 0;
+                .in("keyword", sources)
+                .in("status", List.of("PENDING", "RUNNING"))) > 0;
+    }
+
+    private ResourceHubTask latestMetadataSyncTask(List<String> sources) {
+        return taskService.getOne(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "TMDB")
+                .in("keyword", sources)
+                .orderByDesc("created_at")
+                .orderByDesc("id")
+                .last("LIMIT 1"), false);
+    }
+
+    static String nextAutoSyncSource(List<String> sources, String latestSource) {
+        if (sources == null || sources.isEmpty()) {
+            throw new IllegalArgumentException("At least one TMDB source is required");
+        }
+        if (latestSource == null || latestSource.isBlank()) {
+            return sources.get(0);
+        }
+        int currentIndex = sources.indexOf(latestSource.trim().toUpperCase());
+        return sources.get(currentIndex < 0 ? 0 : (currentIndex + 1) % sources.size());
     }
 
     private List<String> autoSyncSources(String raw) {

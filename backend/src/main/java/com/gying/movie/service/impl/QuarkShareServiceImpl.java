@@ -14,6 +14,7 @@ import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +57,8 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
                 resourceHubProperties.getQuark().getSharePollAttempts(),
                 resourceHubProperties.getQuark().getSharePollIntervalMs());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         if (hasText(task.getShareUrl())) {
             markShareReady(task);
@@ -134,6 +136,12 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
     }
 
     private String buildShareTitle(MovieMetadata movie, QuarkTransferTask task) {
+        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            String title = SeasonSearchUtils.seasonQualifiedTitle(
+                    firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
+                    movie.getSeason());
+            return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+        }
         ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
                 ? null
                 : discoveryResultService.getById(task.getDiscoveryResultId());

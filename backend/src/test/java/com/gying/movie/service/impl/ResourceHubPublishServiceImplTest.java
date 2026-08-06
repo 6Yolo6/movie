@@ -19,6 +19,7 @@ import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 class ResourceHubPublishServiceImplTest {
@@ -54,6 +55,8 @@ class ResourceHubPublishServiceImplTest {
         MovieMetadata movie = new MovieMetadata();
         movie.setId(discovery.getMovieId());
         movie.setTitleCn("尼古喵喵");
+        movie.setSeason(1);
+        movie.setYear(2026);
         movie.setStatus("ACTIVE");
         QuarkTransferTask transfer = new QuarkTransferTask();
         transfer.setId(220L);
@@ -66,9 +69,11 @@ class ResourceHubPublishServiceImplTest {
         when(movieService.getById(discovery.getMovieId())).thenReturn(movie);
         when(transferService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(transfer);
         when(shareService.ensureShareUrl(transfer)).thenReturn("https://pan.quark.cn/s/own-share");
+        AtomicReference<ResourceLink> savedLink = new AtomicReference<>();
         doAnswer(invocation -> {
             ResourceLink link = invocation.getArgument(0);
             link.setId(1700L);
+            savedLink.set(link);
             return true;
         }).when(resourceService).save(any(ResourceLink.class));
 
@@ -79,5 +84,6 @@ class ResourceHubPublishServiceImplTest {
         assertEquals(0, result.getFailed());
         assertEquals("SAVED", discovery.getStatus());
         assertEquals(1700L, discovery.getResourceLinkId());
+        assertEquals("\u5c3c\u53e4\u55b5\u55b5 \u7b2c1\u5b63 (2026)", savedLink.get().getName());
     }
 }

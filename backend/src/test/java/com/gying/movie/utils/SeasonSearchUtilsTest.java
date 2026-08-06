@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class SeasonSearchUtilsTest {
@@ -31,5 +32,29 @@ class SeasonSearchUtilsTest {
         assertFalse(SeasonSearchUtils.matchesRequestedSeason(
                 "密室大逃脱 第6季 2024",
                 "密室大逃脱第七季"));
+        assertTrue(SeasonSearchUtils.hasSeasonMarker("密室大逃脱 全7季"));
+        assertTrue(SeasonSearchUtils.hasSeasonMarker("密室大逃脱 第二季"));
+        assertFalse(SeasonSearchUtils.hasSeasonMarker("达顿牧场 9集全"));
+    }
+
+    @Test
+    void detectsCoverageAndBuildsNestedSeasonDirectoryPattern() {
+        assertEquals(
+                "\u83dc\u9e1f\u8001\u8b66 \u7b2c1\u5b63",
+                SeasonSearchUtils.seasonQualifiedTitle("\u83dc\u9e1f\u8001\u8b66", 1));
+        assertTrue(SeasonSearchUtils.coversSeason("\u83dc\u9e1f\u8001\u8b66 \u51681-7\u5b63", 1));
+        assertTrue(SeasonSearchUtils.coversSeason("The Rookie Season 1", 1));
+        assertFalse(SeasonSearchUtils.coversSeason("\u83dc\u9e1f\u8001\u8b66 \u7b2c\u4e03\u5b63", 1));
+        assertTrue(SeasonSearchUtils.explicitlyMatchesSeason("S01\u30102018\u3011", 1));
+        assertFalse(SeasonSearchUtils.explicitlyMatchesSeason("S08\u30102026\u3011", 1));
+        assertTrue(SeasonSearchUtils.hasSeasonCollection("\u7b2c\u516b\u5b63 \u96441-7\u5b63"));
+        assertTrue(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 更至63集 4K合集 最新"));
+        assertFalse(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 第二季 全11集"));
+
+        Pattern pattern = Pattern.compile(SeasonSearchUtils.subdirectoryPattern(1));
+        assertTrue(pattern.matcher("S01\u30102018\u3011").find());
+        assertTrue(pattern.matcher("Season 1").find());
+        assertTrue(pattern.matcher("\u7b2c\u4e00\u5b63").find());
+        assertFalse(pattern.matcher("S07\u30102025\u3011").find());
     }
 }

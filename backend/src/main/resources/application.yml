@@ -84,16 +84,22 @@ resource-hub:
     base-url: ${QQ_CHANNEL_PUBLISHER_BASE_URL:http://localhost:8092}
     token: ${QQ_CHANNEL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}
 
+social-publisher:
+  base-url: ${SOCIAL_PUBLISHER_BASE_URL:http://localhost:8093}
+  token: ${SOCIAL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}
+  scheduler-delay-ms: ${SOCIAL_PUBLISHER_SCHEDULER_DELAY_MS:60000}
+
 qq-bot:
   enabled: ${QQ_BOT_ENABLED:false}
   webhook-token: ${QQ_BOT_WEBHOOK_TOKEN:}
   allowed-groups: ${QQ_BOT_ALLOWED_GROUPS:}
-  command-prefixes: ${QQ_BOT_COMMAND_PREFIXES:找,搜,/movie,/search}
+  command-prefixes: "${QQ_BOT_COMMAND_PREFIXES:搜索,搜,找,/movie,/search}"
   max-results: ${QQ_BOT_MAX_RESULTS:3}
   min-keyword-length: ${QQ_BOT_MIN_KEYWORD_LENGTH:2}
   rate-limit-per-minute: ${QQ_BOT_RATE_LIMIT_PER_MINUTE:5}
   blocked-keywords: ${QQ_BOT_BLOCKED_KEYWORDS:}
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
+  default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟，可回复指定网盘及数量，例如“百度 3”“夸克 2”或“资源 8”。}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
   napcat:
     base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://localhost:3000}

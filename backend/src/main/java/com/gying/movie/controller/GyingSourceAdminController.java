@@ -123,6 +123,58 @@ public class GyingSourceAdminController {
         return ResponseEntity.ok(workflowService.trailerCandidates(limit));
     }
 
+    @GetMapping("/candidates/catalog")
+    public ResponseEntity<?> catalogCandidates(
+            @RequestParam(defaultValue = "mv") String typeCode,
+            @RequestParam(defaultValue = "score") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "30") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(workflowService.catalogCandidates(typeCode, sort, page, limit));
+    }
+
+    @PostMapping("/catalog/ensure")
+    public ResponseEntity<?> ensureCatalogPage(
+            @RequestParam(defaultValue = "mv") String typeCode,
+            @RequestParam(defaultValue = "score") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob(
+                "ENSURE_CATALOG",
+                () -> workflowService.ensureCatalogPage(typeCode, sort, page, Math.min(Math.max(limit, 1), 30))));
+    }
+
+    @PostMapping("/movies/{movieId}/seasons/ensure")
+    public ResponseEntity<?> ensureRemainingSeasons(
+            @PathVariable String movieId,
+            @RequestParam(defaultValue = "20") int maxPages,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob(
+                "ENSURE_SEASONS",
+                () -> workflowService.ensureRemainingSeasons(movieId, maxPages)));
+    }
+
+    @PostMapping("/movies/{movieId}/poster/repair")
+    public ResponseEntity<?> repairMoviePoster(
+            @PathVariable String movieId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob("REPAIR_POSTER", () -> workflowService.repairMoviePoster(movieId)));
+    }
+
+    @PostMapping("/posters/repair")
+    public ResponseEntity<?> repairMissingPosters(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob(
+                "REPAIR_POSTERS",
+                () -> workflowService.repairMissingPosters(Math.min(Math.max(limit, 1), 100))));
+    }
     @GetMapping("/account")
     public ResponseEntity<?> account(
             @RequestHeader(value = "Authorization", required = false) String token) {

@@ -146,7 +146,7 @@ $dailyTime = if ($config["qq.channel.auto_post.daily_time"]) { $config["qq.chann
 $intervalMinutes = if ($config["qq.channel.auto_post.interval_minutes"]) { [int]$config["qq.channel.auto_post.interval_minutes"] } else { 60 }
 $maxPostsPerRun = if ($Limit -gt 0) { $Limit } elseif ($config["qq.channel.auto_post.post_total"]) { [int]$config["qq.channel.auto_post.post_total"] } elseif ($config["qq.channel.auto_post.max_posts_per_run"]) { [int]$config["qq.channel.auto_post.max_posts_per_run"] } else { 1 }
 $postIntervalSeconds = if ($config["qq.channel.auto_post.post_interval_seconds"]) { [int]$config["qq.channel.auto_post.post_interval_seconds"] } else { 60 }
-$defaultPostTemplate = (-join ([char[]](0x6807, 0x9898, 0xff1a))) + "{{title}}`n" + (-join ([char[]](0x94fe, 0x63a5, 0xff1a))) + "{{link}}`n" + (-join ([char[]](0x7b80, 0x4ecb, 0xff1a))) + "{{intro}}"
+$defaultPostTemplate = (-join ([char[]](0x6807, 0x9898, 0xff1a))) + "{{title}}`n" + (-join ([char[]](0x5e74, 0x4efd, 0xff1a))) + "{{year}}`n" + (-join ([char[]](0x7c7b, 0x578b, 0xff1a))) + "{{type}}`n" + (-join ([char[]](0x94fe, 0x63a5, 0xff1a))) + "{{link}}`n" + (-join ([char[]](0x7b80, 0x4ecb, 0xff1a))) + "{{intro}}"
 $postTemplate = if ($config["qq.channel.auto_post.template"]) { $config["qq.channel.auto_post.template"] } else { $defaultPostTemplate }
 $candidateLimit = if ($config["qq.channel.auto_post.candidate_limit"]) { [int]$config["qq.channel.auto_post.candidate_limit"] } else { 10 }
 $guildId = if ($envMap["QQ_CHANNEL_GUILD_ID"]) { $envMap["QQ_CHANNEL_GUILD_ID"] } elseif ($config["qq.channel.guild_id"]) { $config["qq.channel.guild_id"] } else { $env:QQ_CHANNEL_GUILD_ID }
@@ -179,7 +179,8 @@ SELECT
   COALESCE(NULLIF(qcp.link_url, ''), rl.url) AS url,
   HEX(LEFT(COALESCE(NULLIF(m.summary, ''), '$defaultIntro'), 180)) AS intro_hex,
   LOWER(COALESCE(NULLIF(qcp.channel_type, ''), NULLIF(m.tmdb_type, ''), NULLIF(m.category, ''), 'movie')) AS media_type,
-  COALESCE(m.poster_url, '') AS poster_url
+  COALESCE(m.poster_url, '') AS poster_url,
+  COALESCE(m.year, '') AS release_year
 FROM qq_channel_post_log qcp
 JOIN resource_link rl ON rl.id = qcp.resource_link_id
 JOIN movie_metadata m ON m.id = rl.movie_id
@@ -240,23 +241,51 @@ if ($autoAllowed -and $dailyTime -match '^\d{1,2}:\d{2}$') {
 
 if ($autoAllowed -and $PostLogId -le 0) {
     $sql = @"
+WITH ranked_resources AS (
 SELECT
   rl.id,
   rl.movie_id,
-  HEX(COALESCE(NULLIF(m.title_cn, ''), NULLIF(m.title_en, ''), m.id)) AS title_hex,
   rl.url,
-  HEX(LEFT(COALESCE(NULLIF(m.summary, ''), '$defaultIntro'), 180)) AS intro_hex,
-  LOWER(COALESCE(NULLIF(m.tmdb_type, ''), NULLIF(m.category, ''), 'movie')) AS media_type,
-  COALESCE(m.poster_url, '') AS poster_url
+  rl.created_at,
+  m.title_cn,
+  m.title_en,
+  m.id AS metadata_id,
+  m.summary,
+  m.tmdb_type,
+  m.category,
+  m.poster_url,
+  m.year,
+  COALESCE(m.popularity, 0) AS site_popularity,
+  COALESCE(m.tmdb_popularity, 0) AS tmdb_popularity,
+  ROW_NUMBER() OVER (
+    PARTITION BY rl.movie_id
+    ORDER BY rl.created_at DESC, rl.id DESC
+  ) AS resource_rank
 FROM resource_link rl
 JOIN movie_metadata m ON m.id = rl.movie_id
-LEFT JOIN qq_channel_post_log qcp ON qcp.resource_link_id = rl.id AND qcp.status = 'POSTED'
 WHERE rl.status = 'ACTIVE'
   AND COALESCE(rl.link_status, 'NORMAL') = 'NORMAL'
   AND rl.source = 'RESOURCE_HUB'
   AND COALESCE(rl.url, '') <> ''
-  AND qcp.id IS NULL
-ORDER BY rl.created_at DESC
+  AND NOT EXISTS (
+    SELECT 1
+    FROM qq_channel_post_log posted
+    WHERE posted.movie_id = rl.movie_id
+      AND posted.status = 'POSTED'
+  )
+)
+SELECT
+  id,
+  movie_id,
+  HEX(COALESCE(NULLIF(title_cn, ''), NULLIF(title_en, ''), metadata_id)) AS title_hex,
+  url,
+  HEX(LEFT(COALESCE(NULLIF(summary, ''), '$defaultIntro'), 180)) AS intro_hex,
+  LOWER(COALESCE(NULLIF(tmdb_type, ''), NULLIF(category, ''), 'movie')) AS media_type,
+  COALESCE(poster_url, '') AS poster_url,
+  COALESCE(year, '') AS release_year
+FROM ranked_resources
+WHERE resource_rank = 1
+ORDER BY site_popularity DESC, tmdb_popularity DESC, created_at DESC, id DESC
 LIMIT $candidateLimit;
 "@
 
@@ -286,6 +315,15 @@ function Resolve-ChannelType {
     return "movie"
 }
 
+function Resolve-MediaTypeLabel {
+    param([string]$ChannelType)
+
+    if ($ChannelType -eq "tv") {
+        return -join ([char[]](0x5267, 0x96c6))
+    }
+    return -join ([char[]](0x7535, 0x5f71))
+}
+
 $published = 0
 $rowIndex = 0
 $totalRows = @($rows).Count
@@ -294,8 +332,8 @@ foreach ($row in @($rows)) {
     if ($published -ge $maxPostsPerRun) {
         break
     }
-    $parts = $row -split "`t", 7
-    if ($parts.Count -lt 7) {
+    $parts = $row -split "`t", 8
+    if ($parts.Count -lt 8) {
         continue
     }
     $resourceId = $parts[0]
@@ -308,6 +346,8 @@ foreach ($row in @($rows)) {
     $intro = Convert-HexUtf8 $parts[4]
     $channelType = Resolve-ChannelType $parts[5]
     $posterUrl = Resolve-PosterUrl $parts[6]
+    $year = $parts[7]
+    $mediaType = Resolve-MediaTypeLabel $channelType
     $channelId = if ($channelType -eq "tv") { $tvChannelId } else { $movieChannelId }
     Write-RunLog "POST start resource=$resourceId movie=$movieId channelType=$channelType poster=$([bool]$posterUrl)"
 
@@ -316,6 +356,8 @@ foreach ($row in @($rows)) {
             -Title $title `
             -Link $link `
             -Intro $intro `
+            -Year $year `
+            -MediaType $mediaType `
             -PosterUrl $posterUrl `
             -ChannelType $channelType `
             -GuildId $guildId `

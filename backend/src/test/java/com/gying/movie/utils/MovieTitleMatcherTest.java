@@ -24,6 +24,18 @@ class MovieTitleMatcherTest {
         assertFalse(MovieTitleMatcher.isExactMatch(movie, "福尔摩斯"));
     }
 
+    @Test
+    void seasonKeywordOnlyMatchesRequestedSeason() {
+        MovieMetadata first = movie("\u6743\u529b\u7684\u6e38\u620f \u7b2c\u4e00\u5b63", "Game of Thrones", null);
+        first.setSeason(1);
+        MovieMetadata eighth = movie("\u6743\u529b\u7684\u6e38\u620f \u7b2c\u516b\u5b63", "Game of Thrones", null);
+        eighth.setSeason(8);
+
+        String keyword = "\u6743\u529b\u7684\u6e38\u620f\u7b2c\u516b\u5b63";
+        assertFalse(MovieTitleMatcher.isExactMatch(first, keyword));
+        assertTrue(MovieTitleMatcher.isExactMatch(eighth, keyword));
+    }
+
     private MovieMetadata movie(String titleCn, String titleEn, String aliases) {
         MovieMetadata movie = new MovieMetadata();
         movie.setTitleCn(titleCn);

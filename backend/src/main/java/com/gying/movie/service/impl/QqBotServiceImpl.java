@@ -1,5 +1,6 @@
 package com.gying.movie.service.impl;
 
+import jakarta.annotation.PreDestroy;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gying.movie.client.NapCatClient;
@@ -48,10 +49,13 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -82,9 +86,15 @@ public class QqBotServiceImpl implements IQqBotService {
     private final IResourceHubPublishService resourceHubPublishService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IQqBotSearchLogService qqBotSearchLogService;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
     private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
     private final Map<String, ResourceSearchContext> resourceSearchContexts = new ConcurrentHashMap<>();
+    private final ExecutorService searchExecutor = Executors.newFixedThreadPool(4, runnable -> {
+        Thread thread = new Thread(runnable, "qq-bot-search");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public QqBotServiceImpl(
             QqBotProperties qqBotProperties,
@@ -101,7 +111,8 @@ public class QqBotServiceImpl implements IQqBotService {
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
-            IQqBotSearchLogService qqBotSearchLogService) {
+            IQqBotSearchLogService qqBotSearchLogService,
+            GyingSourceWorkflowService gyingSourceWorkflowService) {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
@@ -117,6 +128,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.resourceHubPublishService = resourceHubPublishService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.qqBotSearchLogService = qqBotSearchLogService;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
     }
 
     @Override
@@ -143,21 +155,42 @@ public class QqBotServiceImpl implements IQqBotService {
             keyword = text.trim();
         }
         if (!hasText(keyword)) {
+            if (isBotMentioned(event, selfId)) {
+                trySend(groupId, userId, defaultHelpReply());
+                return true;
+            }
             return false;
         }
 
         String safeKeyword = trim(keyword, 80);
-        trySend(groupId, "正在搜索：" + safeKeyword);
-        CompletableFuture.runAsync(() -> searchAndReply(groupId, safeKeyword, String.valueOf(userId)));
+        trySend(groupId, userId, "\u8bf7\u7a0d\u540e..");
+        try {
+            searchExecutor.execute(() -> {
+                try {
+                    searchAndReply(groupId, userId, safeKeyword, String.valueOf(userId));
+                } catch (Throwable error) {
+                    log.error("QQ bot async search crashed for keyword {}", safeKeyword, error);
+                    trySend(groupId, userId, "\u641c\u7d22\u5931\u8d25\uff1a" + safeError(error.getMessage()));
+                }
+            });
+        } catch (RejectedExecutionException error) {
+            log.warn("QQ bot search executor is unavailable for keyword {}", safeKeyword, error);
+            trySend(groupId, userId, "\u641c\u7d22\u4efb\u52a1\u8f83\u591a\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5");
+        }
         return true;
     }
 
-    private void searchAndReply(Long groupId, String keyword, String userKey) {
+    @PreDestroy
+    void shutdownSearchExecutor() {
+        searchExecutor.shutdownNow();
+    }
+
+    private void searchAndReply(Long groupId, Long userId, String keyword, String userKey) {
         try {
-            trySend(groupId, buildSearchReply(keyword, userKey));
+            trySend(groupId, userId, buildSearchReply(keyword, userKey));
         } catch (Exception e) {
             log.warn("QQ bot resource search failed for keyword {}", keyword, e);
-            trySend(groupId, "搜索失败：" + safeError(e.getMessage()));
+            trySend(groupId, userId, "搜索失败：" + safeError(e.getMessage()));
         }
     }
 
@@ -171,15 +204,16 @@ public class QqBotServiceImpl implements IQqBotService {
         String requestedKeyword = trim(keyword, 80);
         if (!hasText(requestedKeyword)) {
             return finishSearch(userKey, requestedKeyword, "REJECTED", null, 0,
-                    "请输入要搜索的影片名称。", "empty keyword");
+                    defaultHelpReply(), "empty keyword");
         }
         ResourcePreference resourcePreference = parseResourcePreference(requestedKeyword);
         if (resourcePreference != null) {
             return buildResourcePreferenceReply(requestedKeyword, userKey, resourcePreference);
         }
         SuggestedCandidates activeSuggestions = activeSuggestedCandidates(userKey);
-        String selectedKeyword = resolveSuggestedCandidate(activeSuggestions, requestedKeyword);
-        if (isCandidateSelection(requestedKeyword) && activeSuggestions != null && !hasText(selectedKeyword)) {
+        MovieSearchCandidate selectedCandidate = resolveSuggestedCandidate(activeSuggestions, requestedKeyword);
+        String selectedKeyword = candidateTitle(selectedCandidate);
+        if (isCandidateSelection(requestedKeyword) && activeSuggestions != null && selectedCandidate == null) {
             return finishSearch(userKey, requestedKeyword, "AMBIGUOUS", null, 0,
                     "序号无效，请回复 1-" + activeSuggestions.candidates().size() + " 之间的序号。",
                     "invalid candidate selection");
@@ -200,11 +234,30 @@ public class QqBotServiceImpl implements IQqBotService {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
+        MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
-        MovieMetadata movie = localCandidates.stream()
-                .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
-                .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
-                .orElse(null);
+        if (selectedCandidate != null && movie == null) {
+            return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                    "所选候选无法建立可信影片元数据：" + safeKeyword
+                            + "\n已跳过外部资源搜索，请重新回复其他候选序号。",
+                    "selected candidate metadata unavailable");
+        }
+        if (selectedCandidate == null) {
+            MovieMetadata exactLocalMovie = localCandidates.stream()
+                    .filter(candidate -> MovieTitleMatcher.isExactMatch(candidate, safeKeyword))
+                    .max(Comparator.comparingInt(candidate -> scoreMovie(candidate, safeKeyword)))
+                    .orElse(null);
+            if (exactLocalMovie != null) {
+                List<MovieSearchCandidate> candidates = findSearchCandidates(safeKeyword, localCandidates);
+                if (hasDistinctCandidate(exactLocalMovie, candidates)) {
+                    rememberSuggestedCandidates(userKey, candidates);
+                    return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                            MovieSearchCandidateUtils.formatReply(safeKeyword, candidates),
+                            "candidate selection required");
+                }
+            }
+            movie = exactLocalMovie;
+        }
         if (movie == null) {
             SeasonSearchUtils.SeasonQuery seasonQuery = SeasonSearchUtils.parse(safeKeyword);
             if (seasonQuery != null) {
@@ -213,7 +266,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     movie = syncedSeasonMovie;
                 }
             }
-            if (movie == null && (hasText(selectedKeyword) || wasSuggestedCandidate(userKey, safeKeyword))) {
+            if (movie == null) {
                 movie = syncExactMovieMetadata(safeKeyword);
             }
             if (movie == null) {
@@ -247,15 +300,13 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         rememberResourceSearchContext(userKey, movie, safeKeyword);
-        List<ResourceLink> links = loadResources(movie.getId());
         List<String> transferNotes = new ArrayList<>();
-        if (links.isEmpty()) {
-            runDiscoveryPipeline(movie, safeKeyword, transferNotes);
-            links = loadResources(movie.getId());
-        }
-        List<DiscoveredResource> fallbackLinks = links.isEmpty()
-                ? loadFallbackCloudLinks(movie, safeKeyword)
-                : List.of();
+        List<ResourceLink> links = ensureOwnedQuarkResources(
+                movie,
+                safeKeyword,
+                transferNotes,
+                1);
+        List<DiscoveredResource> fallbackLinks = List.of();
         int resourceCount = links.size() + fallbackLinks.size();
         return finishSearch(userKey, safeKeyword, resourceCount == 0 ? "NO_RESOURCE" : "SUCCEEDED",
                 movie.getId(), resourceCount, buildReply(movie, links, fallbackLinks, transferNotes),
@@ -309,36 +360,42 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         boolean allProviders = QqResourcePreferenceParser.ALL.equals(preference.provider());
-        Set<String> selectedProviders = allProviders
-                ? QqResourcePreferenceParser.supportedProviders()
-                : Set.of(preference.provider());
+        boolean wantsOnlyQuark = "QUARK".equals(preference.provider());
         List<String> transferNotes = new ArrayList<>();
-        List<ResourceLink> links = loadResources(movie.getId(), selectedProviders, preference.count());
-        boolean wantsQuark = allProviders || "QUARK".equals(preference.provider());
-        boolean hasQuark = links.stream().anyMatch(link -> "QUARK".equalsIgnoreCase(link.getProvider()));
-        if (wantsQuark
-                && ((!hasQuark && allProviders) || links.size() < preference.count())) {
-            runDiscoveryPipeline(movie, context.keyword(), transferNotes, preference.count());
-            links = loadResources(movie.getId(), selectedProviders, preference.count());
-        }
-
-        int remaining = Math.max(preference.count() - links.size(), 0);
-        Set<String> fallbackProviders = allProviders
-                ? QqResourcePreferenceParser.fallbackProviders()
-                : "QUARK".equals(preference.provider()) ? Set.of() : Set.of(preference.provider());
-        Set<String> excludedUrls = links.stream()
+        int quarkTarget = wantsOnlyQuark ? preference.count() : 1;
+        List<ResourceLink> quarkLinks = ensureOwnedQuarkResources(
+                movie,
+                context.keyword(),
+                transferNotes,
+                quarkTarget);
+        List<ResourceLink> links = new ArrayList<>(quarkLinks);
+        List<DiscoveredResource> fallbackLinks = List.of();
+        if (!quarkLinks.isEmpty() && !wantsOnlyQuark) {
+            int requestedOtherCount = allProviders
+                    ? Math.max(preference.count() - quarkLinks.size(), 0)
+                    : preference.count();
+            Set<String> requestedProviders = allProviders
+                    ? QqResourcePreferenceParser.fallbackProviders()
+                    : Set.of(preference.provider());
+            List<ResourceLink> requestedLinks = requestedOtherCount == 0
+                    ? List.of()
+                    : loadResources(movie.getId(), requestedProviders, requestedOtherCount);
+            links.addAll(requestedLinks);
+            int remaining = Math.max(requestedOtherCount - requestedLinks.size(), 0);
+            Set<String> excludedUrls = links.stream()
                 .map(ResourceLink::getUrl)
                 .filter(this::hasText)
                 .map(value -> value.trim().toLowerCase())
                 .collect(java.util.stream.Collectors.toSet());
-        List<DiscoveredResource> fallbackLinks = remaining == 0 || fallbackProviders.isEmpty()
-                ? List.of()
-                : loadFallbackCloudLinks(
-                        movie,
-                        context.keyword(),
-                        fallbackProviders,
-                        remaining,
-                        excludedUrls);
+            fallbackLinks = remaining == 0 || requestedProviders.isEmpty()
+                    ? List.of()
+                    : loadFallbackCloudLinks(
+                            movie,
+                            context.keyword(),
+                            requestedProviders,
+                            remaining,
+                            excludedUrls);
+        }
         int resourceCount = links.size() + fallbackLinks.size();
         rememberResourceSearchContext(userKey, movie, context.keyword());
         String reply = buildSelectedResourcesReply(movie, preference, links, fallbackLinks, transferNotes);
@@ -348,6 +405,42 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void runDiscoveryPipeline(MovieMetadata movie, String keyword, List<String> transferNotes) {
         runDiscoveryPipeline(movie, keyword, transferNotes, safeMaxResults());
+    }
+
+    private List<ResourceLink> ensureOwnedQuarkResources(
+            MovieMetadata movie,
+            String keyword,
+            List<String> transferNotes,
+            int requestedCount) {
+        int safeCount = safeMaxResults(requestedCount);
+        List<ResourceLink> links = loadOwnedQuarkResourcesForReply(movie, safeCount);
+        if (links.size() >= safeCount) {
+            return links;
+        }
+        tryGyingResourceWorkflow(movie, transferNotes);
+        links = loadOwnedQuarkResourcesForReply(movie, safeCount);
+        if (links.size() >= safeCount) {
+            return links;
+        }
+        runDiscoveryPipeline(movie, keyword, transferNotes, safeCount);
+        return loadOwnedQuarkResourcesForReply(movie, safeCount);
+    }
+
+    private void tryGyingResourceWorkflow(MovieMetadata movie, List<String> transferNotes) {
+        if (movie == null || !hasText(movie.getId())) {
+            return;
+        }
+        try {
+            Map<String, Object> result = gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId());
+            String status = result == null ? null : String.valueOf(result.get("status"));
+            if ("PUBLISHED".equalsIgnoreCase(status)
+                    || "ALREADY_PUBLISHED".equalsIgnoreCase(status)) {
+                transferNotes.add("GYING 资源已完成转存和发布");
+            }
+        } catch (Exception error) {
+            log.info("GYING resource search/transfer failed for movie {}, falling back to PanSou",
+                    movie.getId(), error);
+        }
     }
 
     private void runDiscoveryPipeline(
@@ -449,29 +542,82 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private List<MovieMetadata> findMovieCandidates(String keyword) {
-        String lookupKeyword = firstText(SeasonSearchUtils.baseTitle(keyword), keyword);
+        List<String> lookupKeywords = buildLookupKeywords(keyword);
         List<MovieMetadata> candidates = movieService.list(new QueryWrapper<MovieMetadata>()
                 .eq("status", "ACTIVE")
-                .and(query -> query.like("title_cn", lookupKeyword)
-                        .or().like("title_en", lookupKeyword)
-                        .or().like("series_name", lookupKeyword)
-                        .or().like("aliases", lookupKeyword))
+                .and(query -> {
+                    boolean first = true;
+                    for (String lookupKeyword : lookupKeywords) {
+                        if (!first) {
+                            query.or();
+                        }
+                        query.like("title_cn", lookupKeyword)
+                                .or().like("title_en", lookupKeyword)
+                                .or().like("series_name", lookupKeyword)
+                                .or().like("aliases", lookupKeyword);
+                        first = false;
+                    }
+                })
                 .orderByDesc("popularity")
                 .orderByDesc("tmdb_popularity")
                 .orderByDesc("created_at")
-                .last("LIMIT 8"));
+                .last("LIMIT 30"));
         return candidates.stream()
                 .sorted(Comparator.comparingInt((MovieMetadata movie) -> scoreMovie(movie, keyword)).reversed())
                 .toList();
     }
 
     private MovieMetadata syncExactMovieMetadata(String keyword) {
-        try {
-            return tmdbMetadataSyncService.syncExactByKeyword(keyword);
-        } catch (Exception e) {
-            log.warn("TMDB metadata sync failed for QQ keyword {}", keyword, e);
-            return null;
+        for (String searchKeyword : buildMetadataSearchKeywords(keyword)) {
+            try {
+                MovieMetadata movie = tmdbMetadataSyncService.syncExactByKeyword(searchKeyword);
+                if (MovieTitleMatcher.isExactMatch(movie, keyword)) {
+                    return movie;
+                }
+            } catch (Exception e) {
+                log.warn("TMDB metadata sync failed for QQ keyword {}", searchKeyword, e);
+            }
         }
+        return null;
+    }
+
+    private List<String> buildLookupKeywords(String keyword) {
+        LinkedHashSet<String> values = new LinkedHashSet<>();
+        String baseTitle = SeasonSearchUtils.baseTitle(keyword);
+        addSearchKeyword(values, baseTitle);
+        addSearchKeyword(values, keyword);
+        addSearchKeyword(values, compactTitle(keyword));
+        String compact = compactTitle(baseTitle);
+        if (compact.length() >= 3) {
+            addSearchKeyword(values, compact.substring(0, Math.min(3, compact.length())));
+        }
+        return List.copyOf(values);
+    }
+
+    private List<String> buildMetadataSearchKeywords(String keyword) {
+        LinkedHashSet<String> values = new LinkedHashSet<>();
+        addSearchKeyword(values, keyword);
+        addSearchKeyword(values, SeasonSearchUtils.baseTitle(keyword));
+        addSearchKeyword(values, compactTitle(keyword));
+        return List.copyOf(values);
+    }
+
+    private void addSearchKeyword(Set<String> values, String value) {
+        if (hasText(value) && compactTitle(value).length() >= 2) {
+            values.add(value.trim());
+        }
+    }
+
+    private String compactTitle(String value) {
+        if (!hasText(value)) {
+            return "";
+        }
+        StringBuilder compact = new StringBuilder();
+        value.trim().toLowerCase(Locale.ROOT)
+                .codePoints()
+                .filter(Character::isLetterOrDigit)
+                .forEach(compact::appendCodePoint);
+        return compact.toString();
     }
 
     private List<MovieSearchCandidate> findSearchCandidates(
@@ -484,16 +630,40 @@ public class QqBotServiceImpl implements IQqBotService {
                         title(movie),
                         movie.getTitleEn(),
                         movie.getYear(),
-                        scoreMovie(movie, keyword)))
+                        scoreMovie(movie, keyword),
+                        "LOCAL",
+                        resolveCandidateMediaType(movie),
+                        movie.getTmdbId() == null ? movie.getId() : String.valueOf(movie.getTmdbId()),
+                        movie.getId()))
                 .toList();
+        List<MovieSearchCandidate> gying;
+        try {
+            gying = gyingSourceWorkflowService.searchCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS);
+        } catch (Exception e) {
+            log.warn("GYING candidate search failed for QQ keyword {}", keyword, e);
+            gying = List.of();
+        }
         List<MovieSearchCandidate> tmdb;
         try {
             tmdb = tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            tmdb.forEach(candidate -> {
+                if (!hasText(candidate.getSource())) {
+                    candidate.setSource("TMDB");
+                }
+                if (!hasText(candidate.getSourceType())) {
+                    candidate.setSourceType(candidate.getMediaType());
+                }
+                if (!hasText(candidate.getSourceId()) && candidate.getTmdbId() != null) {
+                    candidate.setSourceId(String.valueOf(candidate.getTmdbId()));
+                }
+            });
         } catch (Exception e) {
             log.warn("TMDB candidate search failed for QQ keyword {}", keyword, e);
             tmdb = List.of();
         }
-        return MovieSearchCandidateUtils.merge(local, tmdb, MAX_CANDIDATE_SUGGESTIONS);
+        List<MovieSearchCandidate> preferred = MovieSearchCandidateUtils.merge(
+                gying, local, MAX_CANDIDATE_SUGGESTIONS);
+        return MovieSearchCandidateUtils.merge(preferred, tmdb, MAX_CANDIDATE_SUGGESTIONS);
     }
 
     private String resolveCandidateMediaType(MovieMetadata movie) {
@@ -509,12 +679,6 @@ public class QqBotServiceImpl implements IQqBotService {
                 List.copyOf(candidates)));
     }
 
-    private boolean wasSuggestedCandidate(String userKey, String keyword) {
-        SuggestedCandidates suggestions = activeSuggestedCandidates(userKey);
-        return suggestions != null && MovieSearchCandidateUtils.searchableTitles(suggestions.candidates()).stream()
-                .anyMatch(title -> MovieTitleMatcher.normalizedEquals(title, keyword));
-    }
-
     private SuggestedCandidates activeSuggestedCandidates(String userKey) {
         String key = candidateUserKey(userKey);
         SuggestedCandidates suggestions = suggestedCandidates.get(key);
@@ -525,13 +689,91 @@ public class QqBotServiceImpl implements IQqBotService {
         return suggestions;
     }
 
-    private String resolveSuggestedCandidate(SuggestedCandidates suggestions, String keyword) {
+    private MovieSearchCandidate resolveSuggestedCandidate(
+            SuggestedCandidates suggestions,
+            String keyword) {
         if (suggestions == null || !isCandidateSelection(keyword)) {
             return null;
         }
-        return MovieSearchCandidateUtils.selectionTitle(
-                suggestions.candidates(),
-                Integer.parseInt(keyword.trim()));
+        int index = Integer.parseInt(keyword.trim()) - 1;
+        return index < 0 || index >= suggestions.candidates().size()
+                ? null
+                : suggestions.candidates().get(index);
+    }
+
+    private String candidateTitle(MovieSearchCandidate candidate) {
+        return candidate == null
+                ? null
+                : firstText(candidate.getTitle(), candidate.getOriginalTitle());
+    }
+
+    private MovieMetadata resolveSelectedCandidateMovie(MovieSearchCandidate candidate) {
+        if (candidate == null) {
+            return null;
+        }
+        if ("GYING".equalsIgnoreCase(candidate.getSource())
+                && hasText(candidate.getSourceType())
+                && hasText(candidate.getSourceId())) {
+            try {
+                Map<String, Object> result = gyingSourceWorkflowService.ensureMovieResource(
+                        candidate.getSourceType(),
+                        candidate.getSourceId());
+                String localMovieId = result == null ? null : String.valueOf(result.get("localMovieId"));
+                if (hasText(localMovieId) && !"null".equalsIgnoreCase(localMovieId)) {
+                    MovieMetadata local = movieService.getById(localMovieId);
+                    if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
+                        return local;
+                    }
+                }
+            } catch (Exception error) {
+                log.info("Selected GYING candidate {}/{} could not complete directly; "
+                                + "continuing with local metadata and PanSou fallback",
+                        candidate.getSourceType(), candidate.getSourceId(), error);
+            }
+            return findMovieCandidates(candidateTitle(candidate)).stream()
+                    .filter(movie -> matchesCandidate(movie, candidate))
+                    .max(Comparator.comparingInt(movie -> scoreMovie(movie, candidateTitle(candidate))))
+                    .orElse(null);
+        }
+        if (hasText(candidate.getLocalMovieId())) {
+            MovieMetadata local = movieService.getById(candidate.getLocalMovieId());
+            if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
+                return local;
+            }
+        }
+        return syncExactMovieMetadata(candidateTitle(candidate));
+    }
+
+    private boolean hasDistinctCandidate(
+            MovieMetadata exactLocalMovie,
+            List<MovieSearchCandidate> candidates) {
+        if (exactLocalMovie == null || candidates == null || candidates.size() < 2) {
+            return false;
+        }
+        return candidates.stream().anyMatch(candidate -> !matchesCandidate(exactLocalMovie, candidate));
+    }
+
+    private boolean matchesCandidate(MovieMetadata movie, MovieSearchCandidate candidate) {
+        if (movie == null || candidate == null || !MovieTitleMatcher.isExactMatch(
+                movie,
+                candidateTitle(candidate))) {
+            return false;
+        }
+        String candidateType = normalizeCandidateMediaType(candidate.getMediaType());
+        String movieType = resolveCandidateMediaType(movie);
+        if (hasText(candidateType) && hasText(movieType) && !candidateType.equals(movieType)) {
+            return false;
+        }
+        return candidate.getYear() == null
+                || movie.getYear() == null
+                || candidate.getYear().equals(movie.getYear());
+    }
+
+    private String normalizeCandidateMediaType(String mediaType) {
+        return hasText(mediaType)
+                && List.of("tv", "series", "show", "drama", "ac").contains(mediaType.toLowerCase(Locale.ROOT))
+                ? "tv"
+                : hasText(mediaType) ? "movie" : "";
     }
 
     private boolean isCandidateSelection(String value) {
@@ -654,7 +896,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private int scoreMovie(MovieMetadata movie, String keyword) {
-        String normalized = firstText(SeasonSearchUtils.baseTitle(keyword), keyword).toLowerCase();
+        String normalized = compactTitle(firstText(SeasonSearchUtils.baseTitle(keyword), keyword));
         int score = 0;
         score += exactScore(movie.getTitleCn(), normalized, 100);
         score += exactScore(movie.getTitleEn(), normalized, 90);
@@ -668,7 +910,7 @@ public class QqBotServiceImpl implements IQqBotService {
         if (!hasText(value)) {
             return 0;
         }
-        String normalized = value.trim().toLowerCase();
+        String normalized = compactTitle(value);
         if (normalized.equals(keyword)) {
             return exactScore;
         }
@@ -676,7 +918,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private int containsScore(String value, String keyword, int score) {
-        return hasText(value) && value.toLowerCase().contains(keyword) ? score : 0;
+        return hasText(value) && compactTitle(value).contains(keyword) ? score : 0;
     }
 
     private List<ResourceLink> loadResources(String movieId) {
@@ -687,6 +929,86 @@ public class QqBotServiceImpl implements IQqBotService {
             String movieId,
             Set<String> providers,
             int maxResults) {
+        return loadResources(movieId, providers, maxResults, false);
+    }
+
+    private List<ResourceLink> loadOwnedQuarkResources(String movieId, int maxResults) {
+        int limit = Math.min(Math.max(maxResults, 1), 100);
+        return resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("provider", "QUARK")
+                .eq("audit_status", 1)
+                .eq("status", "ACTIVE")
+                .orderByDesc("created_at")
+                .last("LIMIT " + limit)).stream()
+                .filter(this::isOwnedQuarkShare)
+                .toList();
+    }
+
+    private List<ResourceLink> loadOwnedQuarkResourcesForReply(MovieMetadata movie, int maxResults) {
+        int limit = safeMaxResults(maxResults);
+        int candidateLimit = Math.min(Math.max(limit * 5, 20), 100);
+        List<ResourceLink> sameMovieCandidates = loadOwnedQuarkResources(movie.getId(), candidateLimit).stream()
+                .sorted(Comparator.comparingInt(link -> ownedResourcePriority(link, movie)))
+                .toList();
+        Map<String, ResourceLink> unique = new LinkedHashMap<>();
+        for (ResourceLink candidate : sameMovieCandidates) {
+            ResourceLink ready = prepareResourceForReply(candidate);
+            if (ready != null) {
+                unique.put(resourceIdentity(ready), ready);
+            }
+            if (unique.size() >= limit) {
+                break;
+            }
+        }
+        if (unique.size() >= limit) {
+            return List.copyOf(unique.values());
+        }
+
+        String requestedTitle = title(movie);
+        String baseTitle = SeasonSearchUtils.baseTitle(requestedTitle);
+        if (!hasText(baseTitle) || baseTitle.length() < 2) {
+            return List.copyOf(unique.values());
+        }
+        List<ResourceLink> relatedCandidates = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .ne("movie_id", movie.getId())
+                .eq("provider", "QUARK")
+                .eq("source", "RESOURCE_HUB")
+                .eq("audit_status", 1)
+                .eq("status", "ACTIVE")
+                .like("name", baseTitle)
+                .orderByDesc("created_at")
+                .last("LIMIT 50"));
+        for (ResourceLink candidate : relatedCandidates) {
+            if (!isOwnedQuarkShare(candidate)
+                    || !SeasonSearchUtils.hasSeasonMarker(candidate.getName())
+                    || !SeasonSearchUtils.matchesRequestedSeason(candidate.getName(), requestedTitle)
+                    || !ResourceTitleMatcher.isRelevant(movie, candidate.getName(), requestedTitle)) {
+                continue;
+            }
+            ResourceLink ready = prepareResourceForReply(candidate);
+            if (ready != null) {
+                unique.putIfAbsent(resourceIdentity(ready), ready);
+            }
+            if (unique.size() >= limit) {
+                break;
+            }
+        }
+        return List.copyOf(unique.values());
+    }
+
+    private String resourceIdentity(ResourceLink link) {
+        if (link != null && hasText(link.getUrl())) {
+            return link.getUrl().trim().toLowerCase();
+        }
+        return link != null && link.getId() != null ? "id:" + link.getId() : "missing";
+    }
+
+    private List<ResourceLink> loadResources(
+            String movieId,
+            Set<String> providers,
+            int maxResults,
+            boolean ownedQuarkOnly) {
         int limit = safeMaxResults(maxResults);
         QueryWrapper<ResourceLink> query = new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
@@ -695,11 +1017,19 @@ public class QqBotServiceImpl implements IQqBotService {
         if (providers != null && !providers.isEmpty()) {
             query.in("provider", providers);
         }
+        if (ownedQuarkOnly) {
+            query.eq("source", "RESOURCE_HUB");
+        }
         List<ResourceLink> candidates = resourceLinkService.list(query
                 .orderByDesc("created_at")
                 .last("LIMIT " + Math.min(Math.max(limit * 5, 20), 100))).stream()
-                .sorted(Comparator.comparingInt(
-                        link -> "QUARK".equalsIgnoreCase(link.getProvider()) ? 0 : 1))
+                .filter(link -> providers == null
+                        || providers.isEmpty()
+                        || providers.contains(link != null && hasText(link.getProvider())
+                                ? link.getProvider().trim().toUpperCase()
+                                : ""))
+                .filter(link -> !ownedQuarkOnly || isOwnedQuarkShare(link))
+                .sorted(Comparator.comparingInt(this::resourceReplyPriority))
                 .toList();
         List<ResourceLink> resources = new ArrayList<>();
         for (ResourceLink link : candidates) {
@@ -712,6 +1042,72 @@ public class QqBotServiceImpl implements IQqBotService {
             }
         }
         return resources;
+    }
+
+    private int resourceReplyPriority(ResourceLink link) {
+        if (isOwnedQuarkShare(link)) {
+            return 0;
+        }
+        return link != null && "QUARK".equalsIgnoreCase(link.getProvider()) ? 1 : 2;
+    }
+
+    private boolean isOwnedQuarkShare(ResourceLink link) {
+        if (link == null || !"QUARK".equalsIgnoreCase(link.getProvider())) {
+            return false;
+        }
+        if ("RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                || "GYING_PUBLISHED".equalsIgnoreCase(link.getSource())
+                || link.getUploaderId() != null) {
+            return true;
+        }
+        if (!"GYING".equalsIgnoreCase(link.getSource())
+                || link.getId() == null
+                || !hasText(link.getUrl())) {
+            return false;
+        }
+        try {
+            ResourceDiscoveryResult discovery = discoveryResultService.getOne(
+                    new QueryWrapper<ResourceDiscoveryResult>()
+                    .eq("resource_link_id", link.getId())
+                    .eq("share_url", link.getUrl())
+                    .eq("status", "SAVED")
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"),
+                    false);
+            return discovery != null
+                    && quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .eq("share_url", link.getUrl())
+                    .isNotNull("saved_path")) > 0;
+        } catch (Exception error) {
+            log.warn("Failed to verify legacy GYING owned share {}", link.getId(), error);
+            return false;
+        }
+    }
+
+    private int ownedResourcePriority(ResourceLink link, MovieMetadata movie) {
+        int health = isNormalLink(link) ? 0 : 20;
+        int coverage = resourceCoveragePriority(link == null ? null : link.getName(), title(movie));
+        int ownership = link != null && link.getUploaderId() != null ? 0 : 1;
+        return health + coverage + ownership;
+    }
+
+    private int resourceCoveragePriority(String resourceTitle, String requestedTitle) {
+        if (!hasText(resourceTitle)) {
+            return 8;
+        }
+        String compact = resourceTitle.replaceAll("\\s+", "");
+        if (compact.matches("(?s).*(?:\u5168\u96c6|\u5168\u5b63|\u5168\\d+\u5b63|\\d+[-~\u81f3]\\d+\u5b63).*$")) {
+            return 0;
+        }
+        boolean requestedSeason = SeasonSearchUtils.matchesRequestedSeason(resourceTitle, requestedTitle);
+        if (requestedSeason && compact.matches("(?s).*(?:\u5b8c\u7ed3|\u5168\u96c6|\u5168\\d+\u96c6).*$")) {
+            return 1;
+        }
+        if (compact.matches("(?is).*(?:\u66f4\u65b0\u81f3|\u7b2c\\d+\u96c6|S\\d+E\\d+|\\bE\\d+).*$")) {
+            return 6;
+        }
+        return requestedSeason ? 2 : 4;
     }
 
     private List<DiscoveredResource> loadFallbackCloudLinks(MovieMetadata movie, String keyword) {
@@ -801,11 +1197,9 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (!currentCheck.checked()) {
             String reason = "Unable to verify share link: " + safeError(currentCheck.message());
-            if ("SUSPECTED_INVALID".equalsIgnoreCase(link.getLinkStatus())) {
-                markLinkInvalid(link, "Repeated link verification failure: " + safeError(currentCheck.message()));
-                retireTransferForRediscovery(link, reason);
-            } else {
-                markLinkSuspected(link, reason);
+            recordLinkValidationUnavailable(link, reason);
+            if (isNormalLink(link)) {
+                return link;
             }
             return null;
         }
@@ -984,6 +1378,12 @@ public class QqBotServiceImpl implements IQqBotService {
         resourceLinkService.updateById(link);
     }
 
+    private void recordLinkValidationUnavailable(ResourceLink link, String reason) {
+        link.setLastCheckError(trim(reason, 1000));
+        link.setUpdatedAt(LocalDateTime.now());
+        resourceLinkService.updateById(link);
+    }
+
     private String firstBlockedKeyword(String keyword) {
         if (!hasText(qqBotProperties.getBlockedKeywords())) {
             return null;
@@ -1013,11 +1413,8 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
         if (links.isEmpty() && fallbackLinks.isEmpty()) {
-            if (!transferNotes.isEmpty()) {
-                reply.append("\n\n已搜索，但未能保存资源。");
-            } else {
-                reply.append("\n\n暂时没有可用资源链接。");
-            }
+            reply.append("\n\n夸克候选已尝试转存、重分享和重新发现，但暂时没有可用的自有分享。")
+                    .append("\n为确保每次资源回复都带有效夸克链接，本次未返回第三方网盘，请稍后重试。");
             appendResourcePreferenceHint(reply);
             return reply.toString();
         }
@@ -1064,23 +1461,31 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         int resourceCount = links.size() + fallbackLinks.size();
         if (resourceCount == 0) {
-            if ("QUARK".equals(preference.provider())) {
-                reply.append("\n\n夸克候选已优先尝试转存并创建我的分享，但暂时没有可用链接。");
-            } else {
-                reply.append("\n\n没有找到可用的")
-                        .append(QqResourcePreferenceParser.label(preference.provider()))
-                        .append("链接。");
-            }
-            if (!transferNotes.isEmpty() && QqResourcePreferenceParser.ALL.equals(preference.provider())) {
-                reply.append("\n夸克转存未生成可用分享，其他网盘也没有匹配结果。");
-            }
+            reply.append("\n\n夸克候选已尝试转存、重分享和重新发现，但暂时没有可用的自有分享。")
+                    .append("\n为确保每次资源回复都带有效夸克链接，本次未返回第三方网盘，请稍后重试。");
             appendResourcePreferenceHint(reply);
             return reply.toString();
         }
 
-        reply.append("\n\n已按")
-                .append(QqResourcePreferenceParser.label(preference.provider()))
-                .append("返回 ").append(resourceCount).append(" 条：");
+        long quarkCount = links.stream().filter(this::isOwnedQuarkShare).count();
+        int requestedProviderCount = resourceCount - (int) quarkCount;
+        if (!"QUARK".equals(preference.provider())
+                && !QqResourcePreferenceParser.ALL.equals(preference.provider())) {
+            reply.append("\n\n已附带 ").append(quarkCount).append(" 条自有夸克分享");
+            if (requestedProviderCount > 0) {
+                reply.append("，并按")
+                        .append(QqResourcePreferenceParser.label(preference.provider()))
+                        .append("返回 ").append(requestedProviderCount).append(" 条：");
+            } else {
+                reply.append("；暂未找到可用的")
+                        .append(QqResourcePreferenceParser.label(preference.provider()))
+                        .append("链接：");
+            }
+        } else {
+            reply.append("\n\n已按")
+                    .append(QqResourcePreferenceParser.label(preference.provider()))
+                    .append("返回 ").append(resourceCount).append(" 条：");
+        }
         int index = 1;
         for (ResourceLink link : links) {
             reply.append("\n").append(index++).append(". ")
@@ -1177,6 +1582,27 @@ public class QqBotServiceImpl implements IQqBotService {
                 && "group".equalsIgnoreCase(event.path("message_type").asText());
     }
 
+    private boolean isBotMentioned(JsonNode event, Long selfId) {
+        if (event == null || selfId == null) {
+            return false;
+        }
+        if (event.path("to_me").asBoolean(false)) {
+            return true;
+        }
+        JsonNode message = event.path("message");
+        if (message.isArray()) {
+            for (JsonNode segment : message) {
+                if ("at".equalsIgnoreCase(segment.path("type").asText())
+                        && String.valueOf(selfId).equals(segment.path("data").path("qq").asText())) {
+                    return true;
+                }
+            }
+        }
+        String marker = "[CQ:at,qq=" + selfId + "]";
+        return message.isTextual() && message.asText("").contains(marker)
+                || event.path("raw_message").asText("").contains(marker);
+    }
+
     private boolean isOwnMessage(Long userId, Long selfId) {
         return userId != null && selfId != null && userId.equals(selfId);
     }
@@ -1246,7 +1672,7 @@ public class QqBotServiceImpl implements IQqBotService {
         List<String> result = new ArrayList<>();
         String raw = qqBotProperties.getCommandPrefixes();
         if (!hasText(raw)) {
-            return List.of("找", "搜", "/movie", "/search");
+            return List.of("\u641c\u7d22", "\u641c", "\u627e", "/movie", "/search");
         }
         for (String item : raw.split(",")) {
             String value = item.trim();
@@ -1254,6 +1680,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 result.add(value);
             }
         }
+        result.sort(Comparator.comparingInt(String::length).reversed());
         return result;
     }
 
@@ -1285,16 +1712,24 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(trim(message, 120), "未知错误");
     }
 
-    private void trySend(Long groupId, String message) {
+    private void trySend(Long groupId, Long userId, String message) {
         try {
             if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
-                qqOfficialBotClient.sendGroupMessage(groupId, trim(message, 1800));
+                String mention = userId == null ? "" : "<@" + userId + "> ";
+                qqOfficialBotClient.sendGroupMessage(groupId, mention + trim(message, 1800));
             } else {
-                napCatClient.sendGroupMessage(groupId, trim(message, 1800));
+                napCatClient.sendGroupMessage(groupId, userId, trim(message, 1800));
             }
         } catch (Exception e) {
             log.warn("Failed to send QQ group message to {}", groupId, e);
         }
+    }
+
+    private String defaultHelpReply() {
+        return firstText(
+                qqBotProperties.getDefaultReply(),
+                "机器人使用方法：@机器人 搜/找 影片名\n"
+                        + "影片上下文保留 5 分钟，可回复指定网盘及数量，例如“百度 3”“夸克 2”或“资源 8”。");
     }
 
     private String trim(String value, int maxLength) {

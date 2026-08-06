@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkShareResult;
 import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +28,11 @@ public class QuarkShareClient {
     private static final String BASE_URL = "https://drive-pc.quark.cn";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             + "(KHTML, like Gecko) quark-cloud-drive/3.14.2 Chrome/112.0.5615.165 Electron/24.1.3.8 Safari/537.36";
+    private static final Pattern MEDIA_FILE_PATTERN = Pattern.compile(
+            "(?i).+\\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts|m2ts|iso)$");
+    private static final int MEDIA_SCAN_MAX_DEPTH = 6;
+    private static final int MEDIA_SCAN_PAGE_SIZE = 100;
+    private static final int MEDIA_SCAN_MAX_PAGES = 20;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -57,26 +65,8 @@ public class QuarkShareClient {
     public FolderContentCheck checkFolderContent(String savePath) {
         String cookie = quarkAutoSaveClient.getPrimaryCookie();
         PathInfo pathInfo = resolvePath(cookie, savePath);
-        JsonNode body = get(cookie, "/1/clouddrive/file/sort", Map.of(
-                "pdir_fid", pathInfo.fid(),
-                "_page", "1",
-                "_size", "1",
-                "_fetch_total", "1",
-                "_fetch_sub_dirs", "0",
-                "sort", "file_type:asc,updated_at:desc"));
-        ensureOk(body, "list Quark folder failed");
-        JsonNode data = body.path("data");
-        JsonNode list = firstArray(data.path("list"), data.path("items"), data.path("files"));
-        int itemCount = list == null ? 0 : list.size();
-        JsonNode metadata = body.path("metadata");
-        int total = firstInt(
-                data.path("total"),
-                data.path("_total"),
-                data.path("count"),
-                metadata.path("_total"),
-                metadata.path("total"));
-        boolean hasContent = itemCount > 0 || total > 0;
-        return new FolderContentCheck(pathInfo.fid(), pathInfo.name(), hasContent, Math.max(total, itemCount));
+        int mediaFileCount = findMediaFiles(cookie, pathInfo.fid(), 0, new HashSet<>());
+        return new FolderContentCheck(pathInfo.fid(), pathInfo.name(), mediaFileCount > 0, mediaFileCount);
     }
 
     public FolderContentCheck waitForFolderContent(String savePath, int attempts, long intervalMs) {
@@ -92,6 +82,47 @@ public class QuarkShareClient {
             }
         }
         return lastCheck;
+    }
+
+    private int findMediaFiles(String cookie, String folderFid, int depth, Set<String> visited) {
+        if (depth > MEDIA_SCAN_MAX_DEPTH || !visited.add(folderFid)) {
+            return 0;
+        }
+        for (int page = 1; page <= MEDIA_SCAN_MAX_PAGES; page++) {
+            JsonNode body = get(cookie, "/1/clouddrive/file/sort", Map.of(
+                    "pdir_fid", folderFid,
+                    "_page", String.valueOf(page),
+                    "_size", String.valueOf(MEDIA_SCAN_PAGE_SIZE),
+                    "_fetch_total", "1",
+                    "_fetch_sub_dirs", "0",
+                    "sort", "file_type:asc,updated_at:desc"));
+            ensureOk(body, "list Quark folder failed");
+            JsonNode data = body.path("data");
+            JsonNode list = firstArray(data.path("list"), data.path("items"), data.path("files"));
+            if (list == null || list.isEmpty()) {
+                break;
+            }
+            for (JsonNode item : list) {
+                if (!item.path("dir").asBoolean(false)
+                        && MEDIA_FILE_PATTERN.matcher(item.path("file_name").asText("")).matches()) {
+                    return 1;
+                }
+            }
+            if (depth < MEDIA_SCAN_MAX_DEPTH) {
+                for (JsonNode item : list) {
+                    String childFid = item.path("fid").asText(null);
+                    if (item.path("dir").asBoolean(false)
+                            && hasText(childFid)
+                            && findMediaFiles(cookie, childFid, depth + 1, visited) > 0) {
+                        return 1;
+                    }
+                }
+            }
+            if (list.size() < MEDIA_SCAN_PAGE_SIZE) {
+                break;
+            }
+        }
+        return 0;
     }
 
     private PathInfo resolvePath(String cookie, String savePath) {
@@ -275,15 +306,6 @@ public class QuarkShareClient {
             }
         }
         return null;
-    }
-
-    private int firstInt(JsonNode... values) {
-        for (JsonNode value : values) {
-            if (value != null && value.isNumber()) {
-                return value.asInt();
-            }
-        }
-        return 0;
     }
 
     private record PathInfo(String fid, String name) {

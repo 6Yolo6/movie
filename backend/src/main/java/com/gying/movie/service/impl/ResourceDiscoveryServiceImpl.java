@@ -21,6 +21,7 @@ import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -135,16 +136,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     if (isDuplicate(movie.getId(), urlHash, resource.getUrl())) {
                         saveDiscovery(task, movie, resource, urlHash, "DUPLICATE", now);
                         result.setDuplicate(result.getDuplicate() + 1);
-                        markResourceStatus(movie, "AVAILABLE", now);
                         continue;
                     }
                     ResourceDiscoveryResult discovery = saveDiscovery(task, movie, resource, urlHash, "DISCOVERED", now);
                     result.setDiscovered(result.getDiscovered() + 1);
-                    markResourceStatus(movie, "AVAILABLE", now);
                     if (createQuarkTransferTask(discovery, resource, urlHash, now)) {
                         result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
-                    } else {
-                        ignoreDiscovery(discovery, "Movie already has a Quark transfer task", now);
                     }
                 } catch (Exception itemError) {
                     result.setFailed(result.getFailed() + 1);
@@ -152,7 +149,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 }
             }
             if (result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
-                markResourceStatus(movie, "TRAILER", now);
+                refreshResourceStatus(movie, now);
             }
             String status = result.getFailed() > 0 && result.getDiscovered() + result.getDuplicate() == 0
                     ? "FAILED"
@@ -239,31 +236,20 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 .in("status", List.of("PENDING", "RUNNING", "SUBMITTED"))) > 0;
     }
 
-    private void ignoreDiscovery(ResourceDiscoveryResult discovery, String reason, LocalDateTime now) {
-        discovery.setStatus("IGNORED");
-        discovery.setFailureReason(trim(reason, 1000));
-        discovery.setUpdatedAt(now);
-        discoveryResultService.updateById(discovery);
-    }
 
     private boolean isDuplicate(String movieId, String urlHash, String url) {
         long existingLinks = resourceLinkService.count(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
+                .isNull("deleted_at")
                 .eq("status", "ACTIVE"));
         if (existingLinks > 0) {
-            return true;
-        }
-        long existingDiscoveries = discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
-                .eq("movie_id", movieId)
-                .eq("original_url_hash", urlHash)
-                .in("status", List.of("DISCOVERED", "SAVED", "DUPLICATE")));
-        if (existingDiscoveries > 0) {
             return true;
         }
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("url", url)
+                .isNull("deleted_at")
                 .eq("status", "ACTIVE")) > 0;
     }
 
@@ -274,6 +260,16 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         movie.setResourceStatus(resourceStatus);
         movie.setUpdatedAt(now);
         movieService.updateById(movie);
+    }
+
+    private void refreshResourceStatus(MovieMetadata movie, LocalDateTime now) {
+        long activeResources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movie.getId())
+                .eq("status", "ACTIVE")
+                .eq("type", "DISK")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")));
+        markResourceStatus(movie, activeResources > 0 ? "AVAILABLE" : "TRAILER", now);
     }
 
     private DiscoveryPayload normalizePayload(ResourceDiscoveryRequest request) {
@@ -392,11 +388,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         addCandidate(candidates, movie.getTitleCn());
         addCandidate(candidates, movie.getTitleEn());
         addCandidate(candidates, movie.getSeriesName());
-        if (movie.getYear() != null && !candidates.isEmpty()) {
-            return candidates.iterator().next() + " " + movie.getYear();
-        }
-        return candidates.stream().findFirst()
+        String title = candidates.stream().findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie has no searchable title"));
+        if (movie.getSeason() != null && movie.getSeason() > 0) {
+            return SeasonSearchUtils.seasonQualifiedTitle(title, movie.getSeason());
+        }
+        return movie.getYear() == null ? title : title + " " + movie.getYear();
     }
 
     private void addCandidate(Set<String> candidates, String value) {

@@ -3,6 +3,8 @@ package com.gying.movie.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.QqBotProperties;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -30,10 +32,21 @@ public class NapCatClient {
     }
 
     public void sendGroupMessage(Long groupId, String message) {
+        sendGroupMessage(groupId, null, message);
+    }
+
+    public void sendGroupMessage(Long groupId, Long userId, String message) {
         requireConfigured();
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("group_id", groupId);
-        payload.put("message", message);
+        if (userId == null) {
+            payload.put("message", message);
+        } else {
+            List<Map<String, Object>> segments = new ArrayList<>();
+            segments.add(segment("at", Map.of("qq", String.valueOf(userId))));
+            segments.add(segment("text", Map.of("text", " " + message)));
+            payload.put("message", segments);
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -62,6 +75,13 @@ public class NapCatClient {
         } catch (Exception e) {
             throw new IllegalStateException("NapCat send_group_msg response parse failed", e);
         }
+    }
+
+    private Map<String, Object> segment(String type, Map<String, Object> data) {
+        Map<String, Object> segment = new LinkedHashMap<>();
+        segment.put("type", type);
+        segment.put("data", data);
+        return segment;
     }
 
     private void requireConfigured() {

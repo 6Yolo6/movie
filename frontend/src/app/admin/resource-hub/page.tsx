@@ -41,6 +41,7 @@ import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
 const { Title, Text } = Typography;
+const MISSING_RESOURCE_BATCH_LIMIT = 20;
 
 interface ApiEnvelope<T> {
     code?: string;
@@ -94,6 +95,21 @@ interface Overview {
     discoveredCount: number;
     savedDiscoveryCount: number;
     pendingQuarkTransfers: number;
+    collectionStats: {
+        tmdbMovies: number;
+        tmdbSyncedLast24Hours: number;
+        tmdbCreatedLast24Hours: number;
+        tmdbTasksLast24Hours: number;
+        tmdbSucceededLast24Hours: number;
+        tmdbFailedLast24Hours: number;
+        discoveriesLast24Hours: number;
+        savedDiscoveriesLast24Hours: number;
+        resourcesSavedLast24Hours: number;
+        latestTmdbTaskAt?: string;
+        latestTmdbTaskSource?: string;
+        latestTmdbTaskStatus?: string;
+        nextTmdbRunAt?: string;
+    };
 }
 
 interface PageResult<T> {
@@ -182,6 +198,7 @@ interface DiscoveryPipelineJob {
     status?: string;
     taskId?: number;
     result?: Record<string, unknown>;
+    errors?: string[];
 }
 
 interface TmdbFormValues {
@@ -258,6 +275,7 @@ export default function ResourceHubAdminPage() {
     const [missingTotal, setMissingTotal] = useState(0);
     const [missingKeyword, setMissingKeyword] = useState('');
     const [missingSortOrder, setMissingSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [selectedMissingIds, setSelectedMissingIds] = useState<React.Key[]>([]);
     const [publishLimit, setPublishLimit] = useState(20);
     const [quarkLimit, setQuarkLimit] = useState(5);
     const [invalidChecks, setInvalidChecks] = useState<InvalidResourceCheck[]>([]);
@@ -611,6 +629,16 @@ export default function ResourceHubAdminPage() {
         }
     };
 
+    const waitForDiscoveryJob = async (started: DiscoveryPipelineJob, maxAttempts = 1800) => {
+        if (!started.jobId) throw new Error(t('operationFailed'));
+        let job = started;
+        for (let attempt = 0; attempt < maxAttempts && job.status === 'RUNNING'; attempt += 1) {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            job = await requestJson<DiscoveryPipelineJob>(`/api/admin/resource-hub/discover/jobs/${started.jobId}`);
+        }
+        return job;
+    };
+
     const resolveMissingResource = async (movieId: string, source: 'GYING' | 'PANSOU') => {
         const key = `missing-${source}-${movieId}`;
         setRunningAction(key);
@@ -619,19 +647,92 @@ export default function ResourceHubAdminPage() {
                 `/api/admin/resource-hub/missing-resources/${encodeURIComponent(movieId)}/resolve?source=${source}`,
                 { method: 'POST' },
             );
-            if (!started.jobId) throw new Error(t('operationFailed'));
-            let job = started;
-            for (let attempt = 0; attempt < 240 && job.status === 'RUNNING'; attempt += 1) {
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                job = await requestJson<DiscoveryPipelineJob>(`/api/admin/resource-hub/discover/jobs/${started.jobId}`);
-            }
+            const job = await waitForDiscoveryJob(started, 240);
             if (job.status !== 'SUCCEEDED') {
-                throw new Error(t('resourceHubMissingResolveFailed'));
+                throw new Error(job.errors?.[0] || t('resourceHubMissingResolveFailed'));
             }
-            message.success(t('resourceHubMissingResolved', { source }));
+            const resolvedSource = typeof job.result?.fallbackSource === 'string'
+                ? `${source} -> ${job.result.fallbackSource}`
+                : source;
+            message.success(t('resourceHubMissingResolved', { source: resolvedSource }));
             await refreshAll();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubMissingResolveFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const resolveMissingResourcesBatch = async (source: 'GYING' | 'PANSOU') => {
+        if (selectedMissingIds.length === 0) {
+            message.warning(t('resourceHubSelectMissingResources'));
+            return;
+        }
+        if (selectedMissingIds.length > MISSING_RESOURCE_BATCH_LIMIT) {
+            message.warning(t('resourceHubMissingBatchLimit', {
+                limit: MISSING_RESOURCE_BATCH_LIMIT,
+            }));
+            return;
+        }
+        const key = `missing-batch-${source}`;
+        setRunningAction(key);
+        try {
+            const started = await requestJson<DiscoveryPipelineJob>(
+                `/api/admin/resource-hub/missing-resources/batch/resolve?source=${source}`,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(selectedMissingIds),
+                },
+            );
+            const job = await waitForDiscoveryJob(started);
+            if (job.status !== 'SUCCEEDED') {
+                throw new Error(job.errors?.[0] || t('resourceHubMissingResolveFailed'));
+            }
+            const result = job.result as { selected?: number; succeeded?: number; failed?: number };
+            const counts = {
+                selected: result.selected || selectedMissingIds.length,
+                succeeded: result.succeeded || 0,
+                failed: result.failed || 0,
+            };
+            if (counts.failed > 0) {
+                message.warning(t('resourceHubMissingBatchPartialDone', counts));
+            } else {
+                message.success(t('resourceHubMissingBatchDone', counts));
+            }
+            setSelectedMissingIds([]);
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceHubMissingResolveFailed'));
+        } finally {
+            setRunningAction(null);
+        }
+    };
+
+    const reconcileDiscoveries = async () => {
+        setRunningAction('reconcile-discoveries');
+        try {
+            type ReconcileResult = {
+                titleRestored: number;
+                taskConflictRestored: number;
+                failedSynced: number;
+                staleReasonCleared: number;
+            };
+            const preview = await requestJson<ReconcileResult>(
+                '/api/admin/resource-hub/discoveries/reconcile?dryRun=true&limit=2000',
+                { method: 'POST' },
+            );
+            const changes = preview.titleRestored
+                + preview.taskConflictRestored
+                + preview.failedSynced
+                + preview.staleReasonCleared;
+            const result = changes === 0 ? preview : await requestJson<ReconcileResult>(
+                '/api/admin/resource-hub/discoveries/reconcile?dryRun=false&limit=2000',
+                { method: 'POST' },
+            );
+            message.success(t('resourceHubReconcileDone', result));
+            await refreshAll();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
         } finally {
             setRunningAction(null);
         }
@@ -764,9 +865,10 @@ export default function ResourceHubAdminPage() {
             fixed: 'right',
             width: 260,
             render: (_: unknown, record) => {
-                const canRetryShare = record.status === 'FAILED'
-                    && record.failureReason?.includes('share creation failed');
-                const canPublish = record.status === 'DISCOVERED' || canRetryShare;
+                const canPublish = record.status === 'DISCOVERED'
+                    || record.status === 'FAILED';
+                const shouldRetryTransfer = !record.shareUrl
+                    || record.status === 'FAILED';
                 return (
                     <Space size={6}>
                     {canPublish && (
@@ -776,12 +878,12 @@ export default function ResourceHubAdminPage() {
                             loading={runningAction === `publish-${record.id}`}
                             onClick={() => runAction(
                                 `publish-${record.id}`,
-                                canRetryShare
+                                shouldRetryTransfer
                                     ? `/api/admin/resource-hub/discoveries/${record.id}/retry-share-publish`
                                     : `/api/admin/resource-hub/discoveries/${record.id}/publish`,
                             )}
                         >
-                            {record.shareUrl ? t('resourceHubPublish') : t('resourceHubRetrySharePublish')}
+                            {shouldRetryTransfer ? t('resourceHubRetrySharePublish') : t('resourceHubPublish')}
                         </Button>
                     )}
                     {(record.resourceLinkId || record.shareUrl || record.status === 'SAVED') && (
@@ -852,6 +954,7 @@ export default function ResourceHubAdminPage() {
     ];
 
     const counts = overview?.taskStatusCounts || {};
+    const collectionStats = overview?.collectionStats;
     const workerEffective = Boolean(overview?.enabled && overview?.worker.enabled);
 
     return (
@@ -918,6 +1021,34 @@ export default function ResourceHubAdminPage() {
                             label: t('resourceHubDashboard'),
                             children: (
                                 <Row gutter={[16, 16]}>
+                                    <Col xs={24}>
+                                        <Card title={t('resourceHubCollectionStats')} loading={loading}>
+                                            <Row gutter={[16, 16]}>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbMovies')} value={collectionStats?.tmdbMovies || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbSynced24h')} value={collectionStats?.tmdbSyncedLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubTmdbCreated24h')} value={collectionStats?.tmdbCreatedLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic
+                                                        title={t('resourceHubTmdbTasks24h')}
+                                                        value={collectionStats?.tmdbTasksLast24Hours || 0}
+                                                        suffix={`/ ${collectionStats?.tmdbFailedLast24Hours || 0} ${t('resourceHubFailedShort')}`}
+                                                    />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubDiscoveries24h')} value={collectionStats?.discoveriesLast24Hours || 0} />
+                                                </Col>
+                                                <Col xs={12} md={8} xl={4}>
+                                                    <Statistic title={t('resourceHubResourcesSaved24h')} value={collectionStats?.resourcesSavedLast24Hours || 0} />
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    </Col>
                                     <Col xs={24} xl={10}>
                                         <Card title={t('resourceHubRuntime')} loading={loading}>
                                             <Space direction="vertical" size="middle" className="w-full">
@@ -933,6 +1064,14 @@ export default function ResourceHubAdminPage() {
                                                     </Descriptions.Item>
                                                     <Descriptions.Item label={t('resourceHubScheduleDelay')}>
                                                         {formatDelay(overview?.worker.fixedDelayMs)}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubLatestTmdbTask')}>
+                                                        {collectionStats?.latestTmdbTaskAt
+                                                            ? `${t(`resourceHubSource.${collectionStats.latestTmdbTaskSource}`, { defaultValue: collectionStats.latestTmdbTaskSource })} / ${t(`resourceHubStatus.${collectionStats.latestTmdbTaskStatus}`, { defaultValue: collectionStats.latestTmdbTaskStatus })} / ${formatDate(collectionStats.latestTmdbTaskAt)}`
+                                                            : '-'}
+                                                    </Descriptions.Item>
+                                                    <Descriptions.Item label={t('resourceHubNextTmdbRun')}>
+                                                        {formatDate(collectionStats?.nextTmdbRunAt)}
                                                     </Descriptions.Item>
                                                     <Descriptions.Item label={t('resourceHubAutoApprove')}>
                                                         {boolTag(Boolean(overview?.autoApprove), t('resourceHubAutoApproveOn'), t('resourceHubAutoApproveOff'))}
@@ -1146,6 +1285,9 @@ export default function ResourceHubAdminPage() {
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
+                                                    <Col xs={24}>
+                                                        <Text type="secondary">{t('resourceHubSyncIntervalHelp')}</Text>
+                                                    </Col>
                                                     <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>
                                                             <InputNumber min={1} max={50} className="w-full" />
@@ -1340,6 +1482,13 @@ export default function ResourceHubAdminPage() {
                                             }}
                                         />
                                         <Button icon={<ReloadOutlined />} onClick={fetchDiscoveries}>{t('resourceHubRefreshResults')}</Button>
+                                        <Button
+                                            icon={<CloudSyncOutlined />}
+                                            loading={runningAction === 'reconcile-discoveries'}
+                                            onClick={reconcileDiscoveries}
+                                        >
+                                            {t('resourceHubReconcileDiscoveries')}
+                                        </Button>
                                     </Space>
                                     <Space className="mb-4" wrap>
                                         <Text type="secondary">
@@ -1434,11 +1583,38 @@ export default function ResourceHubAdminPage() {
                                             {t('refresh')}
                                         </Button>
                                     </Space>
+                                    <Space className="mb-4" wrap>
+                                        <Text type="secondary">
+                                            {t('resourceHubSelectedCount', { count: selectedMissingIds.length })}
+                                        </Text>
+                                        <Button
+                                            icon={<CloudSyncOutlined />}
+                                            disabled={selectedMissingIds.length === 0}
+                                            loading={runningAction === 'missing-batch-GYING'}
+                                            onClick={() => resolveMissingResourcesBatch('GYING')}
+                                        >
+                                            {t('resourceHubBatchResolveFromGying')}
+                                        </Button>
+                                        <Button
+                                            type="primary"
+                                            icon={<SearchOutlined />}
+                                            disabled={selectedMissingIds.length === 0}
+                                            loading={runningAction === 'missing-batch-PANSOU'}
+                                            onClick={() => resolveMissingResourcesBatch('PANSOU')}
+                                        >
+                                            {t('resourceHubBatchResolveFromPanSou')}
+                                        </Button>
+                                    </Space>
                                     <Table
                                         columns={missingResourceColumns}
                                         dataSource={missingResources}
                                         rowKey="id"
                                         loading={missingLoading}
+                                        rowSelection={{
+                                            selectedRowKeys: selectedMissingIds,
+                                            preserveSelectedRowKeys: true,
+                                            onChange: setSelectedMissingIds,
+                                        }}
                                         scroll={{ x: 1300 }}
                                         locale={{ emptyText: <Empty description={t('resourceHubNoMissingResources')} /> }}
                                         pagination={{

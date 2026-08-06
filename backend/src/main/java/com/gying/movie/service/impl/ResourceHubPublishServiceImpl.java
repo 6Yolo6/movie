@@ -15,6 +15,7 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -153,7 +154,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
             ResourceLink link = new ResourceLink();
             link.setMovieId(discovery.getMovieId());
-            link.setName(firstText(discovery.getTitle(), movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
+            link.setName(resourceTitle(movie, discovery));
             link.setType(type);
             link.setProvider(provider);
             link.setUrl(url);
@@ -338,7 +339,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             String urlHash,
             LocalDateTime now) {
         link.setMovieId(discovery.getMovieId());
-        link.setName(firstText(discovery.getTitle(), link.getName(), movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
+        link.setName(resourceTitle(movie, discovery));
         link.setType(type);
         link.setProvider(provider);
         link.setUrl(url);
@@ -379,6 +380,15 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         movieService.updateById(movie);
     }
 
+    private String resourceTitle(MovieMetadata movie, ResourceDiscoveryResult discovery) {
+        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            String title = SeasonSearchUtils.seasonQualifiedTitle(
+                    firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
+                    movie.getSeason());
+            return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+        }
+        return firstText(discovery.getTitle(), movie.getTitleCn(), movie.getTitleEn(), movie.getId());
+    }
     private String normalizeType(String type) {
         String normalized = hasText(type) ? type.trim().toUpperCase() : "DISK";
         if (!ALLOWED_TYPES.contains(normalized)) {

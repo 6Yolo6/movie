@@ -19,9 +19,11 @@ import {
     Typography,
 } from 'antd';
 import {
+    DatabaseOutlined,
     DeleteOutlined,
     EditOutlined,
     EyeOutlined,
+    PictureOutlined,
     PlusOutlined,
     ReloadOutlined,
 } from '@ant-design/icons';
@@ -35,6 +37,13 @@ import AdminMovieModal from '@/components/admin/AdminMovieModal';
 const { Title, Text } = Typography;
 
 const compactText = (value?: string) => value || '-';
+const delay = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+type WorkflowJob = {
+    jobId: string;
+    status: string;
+    errors?: string[];
+};
 
 export default function AdminMoviesPage() {
     const { user, token } = useAuthStore();
@@ -49,6 +58,7 @@ export default function AdminMoviesPage() {
     const [includeDeleted, setIncludeDeleted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingMovie, setEditingMovie] = useState<MovieMetadata | null>(null);
+    const [running, setRunning] = useState('');
 
     const fetchMovies = useCallback(async () => {
         if (!token) {
@@ -89,6 +99,47 @@ export default function AdminMoviesPage() {
         }
         fetchMovies();
     }, [fetchMovies, message, router, t, user]);
+
+    const runGyingJob = async (key: string, path: string) => {
+        if (!token) return;
+        setRunning(key);
+        try {
+            const response = await api(path, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) {
+                message.error(await readApiError(response, t('operationFailed')));
+                return;
+            }
+            const started = await response.json() as WorkflowJob;
+            for (let attempt = 0; attempt < 180; attempt += 1) {
+                const jobResponse = await api(`/api/admin/gying-source/jobs/${started.jobId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!jobResponse.ok) {
+                    message.error(await readApiError(jobResponse, t('operationFailed')));
+                    return;
+                }
+                const job = await jobResponse.json() as WorkflowJob;
+                if (job.status === 'SUCCEEDED') {
+                    message.success(t('gyingSourceActionSucceeded'));
+                    await fetchMovies();
+                    return;
+                }
+                if (job.status === 'FAILED') {
+                    message.error(job.errors?.join('; ') || t('operationFailed'));
+                    return;
+                }
+                await delay(1500);
+            }
+            message.error(t('gyingSourceJobTimeout'));
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setRunning('');
+        }
+    };
 
     const deleteMovie = async (movie: MovieMetadata) => {
         if (!token) return;
@@ -196,7 +247,7 @@ export default function AdminMoviesPage() {
         {
             title: t('actions'),
             key: 'actions',
-            width: 142,
+            width: 220,
             fixed: 'right',
             render: (_: unknown, record) => (
                 <Space size={4}>
@@ -219,6 +270,34 @@ export default function AdminMoviesPage() {
                             }}
                         />
                     </Tooltip>
+                    <Tooltip title={t('movieRepairPoster')}>
+                        <Button
+                            type="text"
+                            icon={<PictureOutlined />}
+                            loading={running === `poster-${record.id}`}
+                            disabled={Boolean(running && running !== `poster-${record.id}`)}
+                            aria-label={t('movieRepairPoster')}
+                            onClick={() => runGyingJob(
+                                `poster-${record.id}`,
+                                `/api/admin/gying-source/movies/${record.id}/poster/repair`,
+                            )}
+                        />
+                    </Tooltip>
+                    {['tv', 'ac'].includes(record.category) && (
+                        <Tooltip title={t('gyingSourceEnsureSeasons')}>
+                            <Button
+                                type="text"
+                                icon={<DatabaseOutlined />}
+                                loading={running === `seasons-${record.id}`}
+                                disabled={Boolean(running && running !== `seasons-${record.id}`)}
+                                aria-label={t('gyingSourceEnsureSeasons')}
+                                onClick={() => runGyingJob(
+                                    `seasons-${record.id}`,
+                                    `/api/admin/gying-source/movies/${record.id}/seasons/ensure?maxPages=20`,
+                                )}
+                            />
+                        </Tooltip>
+                    )}
                     {record.status !== 'DELETED' && (
                         <Popconfirm
                             title={t('deleteMovieTitle')}
@@ -250,6 +329,17 @@ export default function AdminMoviesPage() {
                         <Space wrap>
                             <Button icon={<ReloadOutlined />} onClick={fetchMovies} loading={loading}>
                                 {t('refresh')}
+                            </Button>
+                            <Button
+                                icon={<PictureOutlined />}
+                                loading={running === 'repair-posters'}
+                                disabled={Boolean(running && running !== 'repair-posters')}
+                                onClick={() => runGyingJob(
+                                    'repair-posters',
+                                    '/api/admin/gying-source/posters/repair?limit=50',
+                                )}
+                            >
+                                {t('movieRepairMissingPosters')}
                             </Button>
                             <Button
                                 type="primary"

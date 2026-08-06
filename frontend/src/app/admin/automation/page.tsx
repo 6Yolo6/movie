@@ -12,6 +12,8 @@ import {
     Form,
     Input,
     InputNumber,
+    Modal,
+    QRCode,
     Row,
     Select,
     Space,
@@ -20,9 +22,21 @@ import {
     Table,
     Tabs,
     Tag,
+    Tooltip,
     Typography,
 } from 'antd';
-import { MessageOutlined, NotificationOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+    DeleteOutlined,
+    LinkOutlined,
+    MessageOutlined,
+    NotificationOutlined,
+    PlusOutlined,
+    RedoOutlined,
+    ReloadOutlined,
+    SaveOutlined,
+    SendOutlined,
+    UserAddOutlined,
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '@/lib/api';
@@ -62,7 +76,19 @@ interface AutomationConfig {
 interface AutomationOverview {
     config: AutomationConfig;
     botStatusCounts: Record<string, number>;
+    botRecentStatusCounts: Record<string, number>;
+    botSummary: {
+        total: number;
+        last24Hours: number;
+        succeeded: number;
+        successRate: number;
+        noResult: number;
+        ambiguous: number;
+        blocked: number;
+        failed: number;
+    };
     channelStatusCounts: Record<string, number>;
+    channelRecentStatusCounts: Record<string, number>;
 }
 
 interface BotSearchLog {
@@ -91,8 +117,96 @@ interface ChannelPostLog {
     createdAt?: string;
 }
 
-const BOT_STATUSES = ['SUCCEEDED', 'NO_RESOURCE', 'NO_METADATA', 'TRAILER', 'BLOCKED', 'RATE_LIMITED', 'REJECTED'];
+interface SocialPublishTarget {
+    id: number;
+    platform: 'QQ_CHANNEL' | 'WEIBO';
+    accountKey: string;
+    name: string;
+    targetRef?: string;
+    channelRef?: string;
+    enabled: boolean;
+    autoPostEnabled: boolean;
+    scheduleTime: string;
+    postsPerRun: number;
+    postIntervalSeconds: number;
+    template?: string;
+    lastAutoRunAt?: string;
+}
+
+interface SocialPublishingOverview {
+    targets: SocialPublishTarget[];
+    posted: number;
+    failed: number;
+    pending: number;
+    postedLast24Hours: number;
+    publisher?: {
+        ok?: boolean;
+        qq?: {
+            configured?: boolean;
+            ready?: boolean;
+            accounts?: QqPublishingAccount[];
+            error?: string;
+        };
+        weibo?: {
+            ready?: boolean;
+            configured?: boolean;
+            authenticated?: boolean;
+            mode?: string;
+            error?: string;
+        };
+        error?: string;
+    };
+}
+
+interface QqPublishingAccount {
+    accountKey: string;
+    status: 'AUTHORIZED' | 'UNAUTHORIZED' | 'WAITING' | 'FAILED' | 'EXPIRED';
+    ready?: boolean;
+    error?: string;
+    targetCount?: number;
+}
+
+interface QqLoginAttempt extends QqPublishingAccount {
+    verificationUri?: string;
+    expiresInSeconds?: number;
+    expiresAt?: string;
+}
+
+interface QqAccountFormValues {
+    accountKey: string;
+}
+
+interface SocialPostLog {
+    id: number;
+    targetId: number;
+    platform: 'QQ_CHANNEL' | 'WEIBO';
+    resourceLinkId: number;
+    movieId: string;
+    title?: string;
+    status: 'PENDING' | 'POSTED' | 'FAILED';
+    externalUrl?: string;
+    errorMessage?: string;
+    postedAt?: string;
+    createdAt?: string;
+}
+
+interface SocialTargetFormValues {
+    platform: 'QQ_CHANNEL' | 'WEIBO';
+    accountKey: string;
+    name: string;
+    targetRef?: string;
+    channelRef?: string;
+    enabled: boolean;
+    autoPostEnabled: boolean;
+    scheduleTime: string;
+    postsPerRun: number;
+    postIntervalSeconds: number;
+    template?: string;
+}
+
+const BOT_STATUSES = ['SUCCEEDED', 'NO_RESOURCE', 'NO_METADATA', 'TRAILER', 'AMBIGUOUS', 'BLOCKED', 'RATE_LIMITED', 'REJECTED', 'FAILED'];
 const CHANNEL_STATUSES = ['POSTED', 'FAILED', 'SKIPPED'];
+const SOCIAL_STATUSES = ['PENDING', 'POSTED', 'FAILED'];
 
 function unwrap<T>(payload: ApiEnvelope<T> | T): T {
     if (payload && typeof payload === 'object' && 'data' in payload) {
@@ -108,9 +222,12 @@ function formatDate(value?: string) {
 export default function QqAutomationAdminPage() {
     const { user, token } = useAuthStore();
     const router = useRouter();
-    const { message } = App.useApp();
+    const { message, modal } = App.useApp();
     const { t } = useTranslation();
     const [form] = Form.useForm<AutomationConfig>();
+    const [socialTargetForm] = Form.useForm<SocialTargetFormValues>();
+    const [qqAccountForm] = Form.useForm<QqAccountFormValues>();
+    const socialTargetPlatform = Form.useWatch('platform', socialTargetForm);
     const [overview, setOverview] = useState<AutomationOverview | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -127,10 +244,59 @@ export default function QqAutomationAdminPage() {
     const [postStatus, setPostStatus] = useState<string | undefined>();
     const [postChannelType, setPostChannelType] = useState<string | undefined>();
     const [postKeyword, setPostKeyword] = useState('');
+    const [socialOverview, setSocialOverview] = useState<SocialPublishingOverview | null>(null);
+    const [socialLoading, setSocialLoading] = useState(false);
+    const [socialBusyId, setSocialBusyId] = useState<number | 'all'>();
+    const [socialLogs, setSocialLogs] = useState<SocialPostLog[]>([]);
+    const [socialLogsLoading, setSocialLogsLoading] = useState(false);
+    const [socialLogPage, setSocialLogPage] = useState(1);
+    const [socialLogTotal, setSocialLogTotal] = useState(0);
+    const [socialLogStatus, setSocialLogStatus] = useState<string | undefined>();
+    const [socialLogPlatform, setSocialLogPlatform] = useState<string | undefined>();
+    const [socialRetryId, setSocialRetryId] = useState<number>();
+    const [socialCreateOpen, setSocialCreateOpen] = useState(false);
+    const [socialCreating, setSocialCreating] = useState(false);
+    const [qqAccountOpen, setQqAccountOpen] = useState(false);
+    const [qqAccountBusy, setQqAccountBusy] = useState(false);
+    const [qqAccountRemoving, setQqAccountRemoving] = useState<string>();
+    const [qqLoginAttempt, setQqLoginAttempt] = useState<QqLoginAttempt | null>(null);
 
     const authHeaders = useMemo(() => ({
         Authorization: `Bearer ${token}`,
     }), [token]);
+
+    const qqAccounts = useMemo(() => {
+        const accounts = new Map<string, QqPublishingAccount>();
+        const targetCounts = new Map<string, number>();
+        const activeTargetAccounts = new Set<string>();
+        for (const account of socialOverview?.publisher?.qq?.accounts || []) {
+            accounts.set(account.accountKey, { ...account });
+        }
+        for (const target of socialOverview?.targets || []) {
+            if (target.platform !== 'QQ_CHANNEL' || !target.accountKey) continue;
+            targetCounts.set(target.accountKey, (targetCounts.get(target.accountKey) || 0) + 1);
+            if (target.enabled || target.autoPostEnabled) activeTargetAccounts.add(target.accountKey);
+        }
+        for (const [accountKey, targetCount] of targetCounts) {
+            const account = accounts.get(accountKey);
+            if (account) {
+                account.targetCount = targetCount;
+                continue;
+            }
+            if (!activeTargetAccounts.has(accountKey)) continue;
+            accounts.set(accountKey, {
+                accountKey,
+                status: 'UNAUTHORIZED' as const,
+                ready: false,
+                targetCount,
+            });
+        }
+        return Array.from(accounts.values()).sort((left, right) => left.accountKey.localeCompare(right.accountKey));
+    }, [socialOverview]);
+
+    const qqAccountOptions = qqAccounts
+        .filter(account => account.ready || account.status === 'AUTHORIZED')
+        .map(account => ({ value: account.accountKey, label: account.accountKey }));
 
     const requestJson = useCallback(async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
         const res = await api(path, {
@@ -159,6 +325,7 @@ export default function QqAutomationAdminPage() {
             REJECTED: 'default',
             FAILED: 'red',
             SKIPPED: 'default',
+            PENDING: 'gold',
         };
         return <Tag color={colorMap[status] || 'default'}>{t(`qqAutomationStatus.${status}`, { defaultValue: status })}</Tag>;
     };
@@ -215,6 +382,48 @@ export default function QqAutomationAdminPage() {
         }
     }, [message, postChannelType, postKeyword, postPage, postStatus, requestJson, t, token]);
 
+    const fetchSocialOverview = useCallback(async () => {
+        if (!token) return;
+        setSocialLoading(true);
+        try {
+            setSocialOverview(await requestJson<SocialPublishingOverview>('/api/admin/social-publishing/overview'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('socialPublishingLoadFailed'));
+        } finally {
+            setSocialLoading(false);
+        }
+    }, [message, requestJson, t, token]);
+
+    const fetchSocialLogs = useCallback(async () => {
+        if (!token) return;
+        setSocialLogsLoading(true);
+        try {
+            const query = new URLSearchParams({
+                page: String(socialLogPage),
+                size: '20',
+            });
+            if (socialLogStatus) query.set('status', socialLogStatus);
+            if (socialLogPlatform) query.set('platform', socialLogPlatform);
+            const data = await requestJson<PageResult<SocialPostLog>>(
+                `/api/admin/social-publishing/logs?${query.toString()}`,
+            );
+            setSocialLogs(data.records || []);
+            setSocialLogTotal(data.total || 0);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('socialPublishingLogsLoadFailed'));
+        } finally {
+            setSocialLogsLoading(false);
+        }
+    }, [
+        message,
+        requestJson,
+        socialLogPage,
+        socialLogPlatform,
+        socialLogStatus,
+        t,
+        token,
+    ]);
+
     useEffect(() => {
         if (!user) return;
         if (user.role !== 'ADMIN') {
@@ -233,8 +442,22 @@ export default function QqAutomationAdminPage() {
         fetchPostLogs();
     }, [fetchPostLogs]);
 
+    useEffect(() => {
+        fetchSocialOverview();
+    }, [fetchSocialOverview]);
+
+    useEffect(() => {
+        fetchSocialLogs();
+    }, [fetchSocialLogs]);
+
     const refreshAll = async () => {
-        await Promise.all([fetchOverview(), fetchBotLogs(), fetchPostLogs()]);
+        await Promise.all([
+            fetchOverview(),
+            fetchBotLogs(),
+            fetchPostLogs(),
+            fetchSocialOverview(),
+            fetchSocialLogs(),
+        ]);
     };
 
     const saveConfig = async (values: AutomationConfig) => {
@@ -279,7 +502,401 @@ export default function QqAutomationAdminPage() {
         { title: t('resourceLink'), dataIndex: 'linkUrl', ellipsis: true, render: (value?: string) => value || '-' },
     ];
 
-    const botCounts = overview?.botStatusCounts || {};
+    const updateSocialTargetValue = <K extends keyof SocialPublishTarget>(
+        id: number,
+        field: K,
+        value: SocialPublishTarget[K],
+    ) => {
+        setSocialOverview(current => current ? {
+            ...current,
+            targets: current.targets.map(target => target.id === id ? { ...target, [field]: value } : target),
+        } : current);
+    };
+
+    const saveSocialTarget = async (target: SocialPublishTarget) => {
+        setSocialBusyId(target.id);
+        try {
+            await requestJson(`/api/admin/social-publishing/targets/${target.id}`, {
+                method: 'PUT',
+                body: JSON.stringify(target),
+            });
+            message.success(t('socialPublishingTargetSaved'));
+            await fetchSocialOverview();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setSocialBusyId(undefined);
+        }
+    };
+
+    const openQqAccountLogin = () => {
+        qqAccountForm.resetFields();
+        setQqLoginAttempt(null);
+        setQqAccountOpen(true);
+    };
+
+    const startQqAccountLogin = async (values: QqAccountFormValues) => {
+        setQqAccountBusy(true);
+        try {
+            const attempt = await requestJson<QqLoginAttempt>('/api/admin/social-publishing/qq-accounts/login', {
+                method: 'POST',
+                body: JSON.stringify(values),
+            });
+            setQqLoginAttempt(attempt);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setQqAccountBusy(false);
+        }
+    };
+
+    const removeQqAccount = (account: QqPublishingAccount) => {
+        modal.confirm({
+            title: t('socialPublishingRemoveQqAccountTitle'),
+            content: t('socialPublishingRemoveQqAccountHelp', {
+                account: account.accountKey,
+                count: account.targetCount || 0,
+            }),
+            okText: t('delete'),
+            okButtonProps: { danger: true },
+            cancelText: t('cancel'),
+            onOk: async () => {
+                setQqAccountRemoving(account.accountKey);
+                try {
+                    await requestJson(`/api/admin/social-publishing/qq-accounts/${encodeURIComponent(account.accountKey)}`, {
+                        method: 'DELETE',
+                    });
+                    message.success(t('socialPublishingQqAccountRemoved'));
+                    await fetchSocialOverview();
+                } catch (error) {
+                    message.error(error instanceof Error ? error.message : t('operationFailed'));
+                    throw error;
+                } finally {
+                    setQqAccountRemoving(undefined);
+                }
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (!qqAccountOpen || qqLoginAttempt?.status !== 'WAITING' || !qqLoginAttempt.accountKey) return;
+        let cancelled = false;
+        const timer = window.setInterval(async () => {
+            try {
+                const status = await requestJson<QqLoginAttempt>(
+                    `/api/admin/social-publishing/qq-accounts/${encodeURIComponent(qqLoginAttempt.accountKey)}/login-status`,
+                );
+                if (cancelled) return;
+                setQqLoginAttempt(status);
+                if (status.status === 'AUTHORIZED') {
+                    message.success(t('socialPublishingQqAuthorized'));
+                    await fetchSocialOverview();
+                }
+            } catch {
+                // Keep the QR visible; the next interval can recover from a transient request failure.
+            }
+        }, 3000);
+        return () => {
+            cancelled = true;
+            window.clearInterval(timer);
+        };
+    }, [fetchSocialOverview, message, qqAccountOpen, qqLoginAttempt, requestJson, t]);
+
+    const openCreateSocialTarget = () => {
+        socialTargetForm.resetFields();
+        socialTargetForm.setFieldsValue({
+            platform: 'QQ_CHANNEL',
+            accountKey: qqAccountOptions[0]?.value,
+            enabled: true,
+            autoPostEnabled: false,
+            scheduleTime: '10:00',
+            postsPerRun: 1,
+            postIntervalSeconds: 60,
+            template: t('socialPublishingDefaultQqTemplate'),
+        });
+        setSocialCreateOpen(true);
+    };
+
+    const createSocialTarget = async (values: SocialTargetFormValues) => {
+        setSocialCreating(true);
+        try {
+            await requestJson('/api/admin/social-publishing/targets', {
+                method: 'POST',
+                body: JSON.stringify(values),
+            });
+            message.success(t('socialPublishingTargetCreated'));
+            setSocialCreateOpen(false);
+            await fetchSocialOverview();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setSocialCreating(false);
+        }
+    };
+
+    const publishSocialTarget = async (targetId?: number) => {
+        setSocialBusyId(targetId || 'all');
+        try {
+            const path = targetId
+                ? `/api/admin/social-publishing/targets/${targetId}/publish-next?runNow=true`
+                : '/api/admin/social-publishing/publish-next?runNow=true';
+            await requestJson(path, {
+                method: 'POST',
+                body: targetId ? undefined : JSON.stringify([]),
+            });
+            message.success(t('socialPublishingPublished'));
+            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setSocialBusyId(undefined);
+        }
+    };
+
+    const retrySocialLog = async (logId: number) => {
+        setSocialRetryId(logId);
+        try {
+            await requestJson(`/api/admin/social-publishing/logs/${logId}/retry`, {
+                method: 'POST',
+            });
+            message.success(t('socialPublishingRetrySubmitted'));
+            await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setSocialRetryId(undefined);
+        }
+    };
+
+    const qqAccountColumns: ColumnsType<QqPublishingAccount> = [
+        {
+            title: t('socialPublishingAccountKey'),
+            dataIndex: 'accountKey',
+            width: 180,
+            render: (value: string) => <Text code>{value}</Text>,
+        },
+        {
+            title: t('status'),
+            dataIndex: 'status',
+            width: 150,
+            render: (value: QqPublishingAccount['status']) => (
+                <Tag color={value === 'AUTHORIZED' ? 'green' : value === 'WAITING' ? 'blue' : value === 'FAILED' ? 'red' : 'default'}>
+                    {t(`socialPublishingQqStatus.${value}`)}
+                </Tag>
+            ),
+        },
+        {
+            title: t('socialPublishingTargets'),
+            dataIndex: 'targetCount',
+            width: 120,
+            render: (value?: number) => value || 0,
+        },
+        {
+            title: t('socialPublishingError'),
+            dataIndex: 'error',
+            ellipsis: true,
+            render: (value?: string) => value || '-',
+        },
+        {
+            title: t('actions'),
+            width: 100,
+            fixed: 'right',
+            render: (_, account) => (
+                <Tooltip title={t('delete')}>
+                    <Button
+                        danger
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        loading={qqAccountRemoving === account.accountKey}
+                        onClick={() => removeQqAccount(account)}
+                    />
+                </Tooltip>
+            ),
+        },
+    ];
+
+    const socialColumns: ColumnsType<SocialPublishTarget> = [
+        {
+            title: t('socialPublishingPlatform'),
+            dataIndex: 'platform',
+            width: 120,
+            render: (value: string) => <Tag color={value === 'WEIBO' ? 'red' : 'blue'}>{value === 'WEIBO' ? t('socialPublishingWeibo') : 'QQ'}</Tag>,
+        },
+        {
+            title: t('socialPublishingAccountKey'),
+            dataIndex: 'accountKey',
+            width: 130,
+            render: (value: string) => <Text code>{value}</Text>,
+        },
+        {
+            title: t('socialPublishingTarget'),
+            dataIndex: 'name',
+            width: 180,
+            render: (value: string, target) => (
+                <Input value={value} onChange={event => updateSocialTargetValue(target.id, 'name', event.target.value)} />
+            ),
+        },
+        {
+            title: t('socialPublishingChannelNumber'),
+            dataIndex: 'targetRef',
+            width: 150,
+            render: (value: string | undefined, target) => target.platform === 'QQ_CHANNEL'
+                ? <Input value={value} onChange={event => updateSocialTargetValue(target.id, 'targetRef', event.target.value)} />
+                : '-',
+        },
+        {
+            title: t('socialPublishingBoardId'),
+            dataIndex: 'channelRef',
+            width: 150,
+            render: (value: string | undefined, target) => target.platform === 'QQ_CHANNEL'
+                ? <Input allowClear placeholder={t('socialPublishingDefaultBoard')} value={value} onChange={event => updateSocialTargetValue(target.id, 'channelRef', event.target.value)} />
+                : '-',
+        },
+        {
+            title: t('enabled'),
+            dataIndex: 'enabled',
+            width: 90,
+            render: (value: boolean, target) => (
+                <Switch checked={value} onChange={checked => updateSocialTargetValue(target.id, 'enabled', checked)} />
+            ),
+        },
+        {
+            title: t('socialPublishingAutoPost'),
+            dataIndex: 'autoPostEnabled',
+            width: 100,
+            render: (value: boolean, target) => (
+                <Switch checked={value} onChange={checked => updateSocialTargetValue(target.id, 'autoPostEnabled', checked)} />
+            ),
+        },
+        {
+            title: t('socialPublishingTime'),
+            dataIndex: 'scheduleTime',
+            width: 110,
+            render: (value: string, target) => (
+                <Input value={value} onChange={event => updateSocialTargetValue(target.id, 'scheduleTime', event.target.value)} />
+            ),
+        },
+        {
+            title: t('socialPublishingPosts'),
+            dataIndex: 'postsPerRun',
+            width: 100,
+            render: (value: number, target) => (
+                <InputNumber min={1} max={20} value={value} onChange={next => updateSocialTargetValue(target.id, 'postsPerRun', next || 1)} />
+            ),
+        },
+        {
+            title: t('socialPublishingInterval'),
+            dataIndex: 'postIntervalSeconds',
+            width: 120,
+            render: (value: number, target) => (
+                <InputNumber
+                    min={0}
+                    max={86400}
+                    value={value}
+                    onChange={next => updateSocialTargetValue(target.id, 'postIntervalSeconds', next || 0)}
+                />
+            ),
+        },
+        {
+            title: t('socialPublishingTemplate'),
+            dataIndex: 'template',
+            width: 320,
+            render: (value: string | undefined, target) => (
+                <Input.TextArea
+                    rows={2}
+                    value={value}
+                    onChange={event => updateSocialTargetValue(target.id, 'template', event.target.value)}
+                />
+            ),
+        },
+        {
+            title: t('actions'),
+            key: 'actions',
+            fixed: 'right',
+            width: 190,
+            render: (_, target) => (
+                <Space>
+                    <Button
+                        icon={<SaveOutlined />}
+                        loading={socialBusyId === target.id}
+                        onClick={() => saveSocialTarget(target)}
+                    >
+                        {t('save')}
+                    </Button>
+                    <Button
+                        type="primary"
+                        icon={<SendOutlined />}
+                        loading={socialBusyId === target.id}
+                        disabled={!target.enabled}
+                        onClick={() => publishSocialTarget(target.id)}
+                    >
+                        {t('socialPublishingPublish')}
+                    </Button>
+                </Space>
+            ),
+        },
+    ];
+
+    const socialLogColumns: ColumnsType<SocialPostLog> = [
+        { title: 'ID', dataIndex: 'id', width: 80 },
+        {
+            title: t('socialPublishingPlatform'),
+            dataIndex: 'platform',
+            width: 110,
+            render: (value: string) => (
+                <Tag color={value === 'WEIBO' ? 'red' : 'blue'}>
+                    {value === 'WEIBO' ? t('socialPublishingWeibo') : 'QQ'}
+                </Tag>
+            ),
+        },
+        {
+            title: t('socialPublishingTarget'),
+            dataIndex: 'targetId',
+            width: 180,
+            render: (value: number) => socialOverview?.targets.find(target => target.id === value)?.name || `#${value}`,
+        },
+        { title: t('movieTitle'), dataIndex: 'title', width: 220, ellipsis: true, render: (value?: string) => value || '-' },
+        { title: t('status'), dataIndex: 'status', width: 110, render: statusTag },
+        { title: t('movieId'), dataIndex: 'movieId', width: 160, ellipsis: true },
+        { title: t('resourceId'), dataIndex: 'resourceLinkId', width: 110 },
+        {
+            title: t('socialPublishingExternalUrl'),
+            dataIndex: 'externalUrl',
+            width: 180,
+            render: (value?: string) => value ? (
+                <Typography.Link href={value} target="_blank" rel="noreferrer">
+                    <LinkOutlined /> {t('socialPublishingViewPost')}
+                </Typography.Link>
+            ) : '-',
+        },
+        { title: t('socialPublishingPostedAt'), dataIndex: 'postedAt', width: 180, render: formatDate },
+        { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
+        {
+            title: t('socialPublishingError'),
+            dataIndex: 'errorMessage',
+            width: 260,
+            ellipsis: true,
+            render: (value?: string) => value ? <Tooltip title={value}>{value}</Tooltip> : '-',
+        },
+        {
+            title: t('actions'),
+            key: 'actions',
+            fixed: 'right',
+            width: 110,
+            render: (_, log) => (
+                <Button
+                    icon={<RedoOutlined />}
+                    loading={socialRetryId === log.id}
+                    disabled={log.status === 'POSTED'}
+                    onClick={() => retrySocialLog(log.id)}
+                >
+                    {t('socialPublishingRetry')}
+                </Button>
+            ),
+        },
+    ];
+
+    const botSummary = overview?.botSummary;
     const channelCounts = overview?.channelStatusCounts || {};
 
     return (
@@ -299,24 +916,34 @@ export default function QqAutomationAdminPage() {
                 </div>
 
                 <Row gutter={[16, 16]} className="mb-6">
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationSearchSuccess')} value={botCounts.SUCCEEDED || 0} prefix={<MessageOutlined />} />
+                            <Statistic title={t('qqAutomationSearchTotal')} value={botSummary?.total || 0} prefix={<MessageOutlined />} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationSearchBlocked')} value={(botCounts.BLOCKED || 0) + (botCounts.RATE_LIMITED || 0)} />
+                            <Statistic title={t('qqAutomationSearch24h')} value={botSummary?.last24Hours || 0} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
+                        <Card loading={loading}>
+                            <Statistic title={t('qqAutomationSearchSuccessRate')} value={botSummary?.successRate || 0} suffix="%" precision={1} />
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={8} xl={4}>
+                        <Card loading={loading}>
+                            <Statistic title={t('qqAutomationSearchNoResult')} value={botSummary?.noResult || 0} />
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
                             <Statistic title={t('qqAutomationPostsDone')} value={channelCounts.POSTED || 0} prefix={<NotificationOutlined />} />
                         </Card>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={12} md={8} xl={4}>
                         <Card loading={loading}>
-                            <Statistic title={t('qqAutomationPostsFailed')} value={channelCounts.FAILED || 0} />
+                            <Statistic title={t('qqAutomationSearchFailed')} value={(botSummary?.failed || 0) + (botSummary?.ambiguous || 0)} />
                         </Card>
                     </Col>
                 </Row>
@@ -414,6 +1041,7 @@ export default function QqAutomationAdminPage() {
                                                             <Form.Item name="channelPostTemplate" label={t('qqAutomationPostTemplate')}>
                                                                 <Input.TextArea rows={5} />
                                                             </Form.Item>
+                                                            <Text type="secondary">{t('qqAutomationPostTemplateHelp')}</Text>
                                                         </Col>
                                                     </Row>
                                                     <Text type="secondary">{t('qqAutomationChannelIdHelp')}</Text>
@@ -530,8 +1158,333 @@ export default function QqAutomationAdminPage() {
                                 </Card>
                             ),
                         },
+                        {
+                            key: 'social',
+                            label: t('socialPublishingTab'),
+                            children: (
+                                <Space direction="vertical" size={16} className="w-full">
+                                    <Row gutter={[16, 16]}>
+                                        <Col xs={12} md={6}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingPosted')} value={socialOverview?.posted || 0} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingPosted24h')} value={socialOverview?.postedLast24Hours || 0} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingPending')} value={socialOverview?.pending || 0} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Card loading={socialLoading}>
+                                                <Statistic title={t('socialPublishingFailed')} value={socialOverview?.failed || 0} />
+                                            </Card>
+                                        </Col>
+                                    </Row>
+                                    <Alert
+                                        type={socialOverview?.publisher?.qq?.ready && socialOverview?.publisher?.weibo?.ready ? 'success' : 'warning'}
+                                        showIcon
+                                        message={t('socialPublishingAuthStatus')}
+                                        description={t('socialPublishingAuthHelp', {
+                                            qq: socialOverview?.publisher?.qq?.ready ? t('socialPublishingReady') : t('socialPublishingNeedsAuth'),
+                                            weibo: socialOverview?.publisher?.weibo?.ready
+                                                ? t('socialPublishingWebSessionReady')
+                                                : t('socialPublishingWebSessionNotReady', {
+                                                    reason: socialOverview?.publisher?.weibo?.error || t('socialPublishingNeedsAuth'),
+                                                }),
+                                        })}
+                                    />
+                                    <Card
+                                        title={t('socialPublishingQqAccounts')}
+                                        extra={(
+                                            <Button type="primary" icon={<UserAddOutlined />} onClick={openQqAccountLogin}>
+                                                {t('socialPublishingAddQqAccount')}
+                                            </Button>
+                                        )}
+                                    >
+                                        <Table
+                                            rowKey="accountKey"
+                                            columns={qqAccountColumns}
+                                            dataSource={qqAccounts}
+                                            loading={socialLoading}
+                                            pagination={false}
+                                            scroll={{ x: 760 }}
+                                            locale={{ emptyText: <Empty description={t('socialPublishingNoQqAccounts')} /> }}
+                                        />
+                                    </Card>
+                                    <Card
+                                        title={t('socialPublishingTargets')}
+                                        extra={(
+                                            <Space>
+                                                <Button icon={<PlusOutlined />} onClick={openCreateSocialTarget}>
+                                                    {t('socialPublishingAddTarget')}
+                                                </Button>
+                                                <Button
+                                                    type="primary"
+                                                    icon={<SendOutlined />}
+                                                    loading={socialBusyId === 'all'}
+                                                    onClick={() => publishSocialTarget()}
+                                                >
+                                                    {t('socialPublishingPublishAll')}
+                                                </Button>
+                                            </Space>
+                                        )}
+                                    >
+                                        <Table
+                                            rowKey="id"
+                                            columns={socialColumns}
+                                            dataSource={socialOverview?.targets || []}
+                                            loading={socialLoading}
+                                            pagination={false}
+                                            scroll={{ x: 1900 }}
+                                        />
+                                    </Card>
+                                    <Card title={t('socialPublishingHistory')}>
+                                        <Space className="mb-4" wrap>
+                                            <Select
+                                                allowClear
+                                                placeholder={t('socialPublishingPlatform')}
+                                                options={[
+                                                    { value: 'QQ_CHANNEL', label: 'QQ' },
+                                                    { value: 'WEIBO', label: t('socialPublishingWeibo') },
+                                                ]}
+                                                value={socialLogPlatform}
+                                                style={{ width: 150 }}
+                                                onChange={(value) => {
+                                                    setSocialLogPlatform(value);
+                                                    setSocialLogPage(1);
+                                                }}
+                                            />
+                                            <Select
+                                                allowClear
+                                                placeholder={t('filterByStatus')}
+                                                options={SOCIAL_STATUSES.map(value => ({
+                                                    value,
+                                                    label: t(`qqAutomationStatus.${value}`, { defaultValue: value }),
+                                                }))}
+                                                value={socialLogStatus}
+                                                style={{ width: 160 }}
+                                                onChange={(value) => {
+                                                    setSocialLogStatus(value);
+                                                    setSocialLogPage(1);
+                                                }}
+                                            />
+                                            <Button icon={<ReloadOutlined />} onClick={fetchSocialLogs}>
+                                                {t('refresh')}
+                                            </Button>
+                                        </Space>
+                                        <Table
+                                            rowKey="id"
+                                            columns={socialLogColumns}
+                                            dataSource={socialLogs}
+                                            loading={socialLogsLoading}
+                                            scroll={{ x: 1900 }}
+                                            locale={{ emptyText: <Empty description={t('socialPublishingNoLogs')} /> }}
+                                            pagination={{
+                                                current: socialLogPage,
+                                                pageSize: 20,
+                                                total: socialLogTotal,
+                                                onChange: setSocialLogPage,
+                                                showTotal: total => t('totalItems', { count: total }),
+                                            }}
+                                        />
+                                    </Card>
+                                </Space>
+                            ),
+                        },
                     ]}
                 />
+                <Modal
+                    title={t('socialPublishingAddQqAccount')}
+                    open={qqAccountOpen}
+                    confirmLoading={qqAccountBusy}
+                    okText={qqLoginAttempt ? t('close') : t('socialPublishingGenerateQr')}
+                    cancelText={t('cancel')}
+                    onOk={() => {
+                        if (qqLoginAttempt) setQqAccountOpen(false);
+                        else qqAccountForm.submit();
+                    }}
+                    onCancel={() => setQqAccountOpen(false)}
+                    destroyOnHidden
+                >
+                    {!qqLoginAttempt ? (
+                        <Form form={qqAccountForm} layout="vertical" onFinish={startQqAccountLogin}>
+                            <Form.Item
+                                name="accountKey"
+                                label={t('socialPublishingAccountKey')}
+                                extra={t('socialPublishingQqAccountKeyHelp')}
+                                rules={[
+                                    { required: true, whitespace: true },
+                                    { pattern: /^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/, message: t('socialPublishingQqAccountKeyInvalid') },
+                                ]}
+                            >
+                                <Input placeholder="qq-main" autoComplete="off" />
+                            </Form.Item>
+                        </Form>
+                    ) : (
+                        <Space direction="vertical" size={16} align="center" className="w-full">
+                            <Tag color={qqLoginAttempt.status === 'AUTHORIZED' ? 'green' : qqLoginAttempt.status === 'WAITING' ? 'blue' : 'red'}>
+                                {t(`socialPublishingQqStatus.${qqLoginAttempt.status}`)}
+                            </Tag>
+                            {qqLoginAttempt.verificationUri && qqLoginAttempt.status === 'WAITING' && (
+                                <QRCode value={qqLoginAttempt.verificationUri} size={220} />
+                            )}
+                            <Text strong>{qqLoginAttempt.accountKey}</Text>
+                            {qqLoginAttempt.status === 'WAITING' && (
+                                <Text type="secondary">
+                                    {t('socialPublishingQqQrExpires', { time: formatDate(qqLoginAttempt.expiresAt) })}
+                                </Text>
+                            )}
+                            {qqLoginAttempt.verificationUri && qqLoginAttempt.status === 'WAITING' && (
+                                <Typography.Link href={qqLoginAttempt.verificationUri} target="_blank" rel="noreferrer">
+                                    {t('socialPublishingOpenAuthorizationLink')}
+                                </Typography.Link>
+                            )}
+                            {qqLoginAttempt.error && <Alert type="error" showIcon message={qqLoginAttempt.error} />}
+                        </Space>
+                    )}
+                </Modal>
+                <Modal
+                    title={t('socialPublishingAddTarget')}
+                    open={socialCreateOpen}
+                    confirmLoading={socialCreating}
+                    okText={t('save')}
+                    cancelText={t('cancel')}
+                    onOk={() => socialTargetForm.submit()}
+                    onCancel={() => setSocialCreateOpen(false)}
+                    destroyOnHidden
+                >
+                    <Alert
+                        className="mb-4"
+                        type="info"
+                        showIcon
+                        message={t('socialPublishingAccountScope')}
+                    />
+                    <Form
+                        form={socialTargetForm}
+                        layout="vertical"
+                        onFinish={createSocialTarget}
+                    >
+                        <Row gutter={12}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="platform"
+                                    label={t('socialPublishingPlatform')}
+                                    rules={[{ required: true }]}
+                                >
+                                    <Select
+                                        options={[
+                                            { value: 'QQ_CHANNEL', label: 'QQ' },
+                                            { value: 'WEIBO', label: t('socialPublishingWeibo') },
+                                        ]}
+                                        onChange={(platform: 'QQ_CHANNEL' | 'WEIBO') => {
+                                            socialTargetForm.setFieldsValue({
+                                                accountKey: platform === 'QQ_CHANNEL' ? qqAccountOptions[0]?.value : 'default',
+                                                targetRef: platform === 'QQ_CHANNEL' ? undefined : 'default',
+                                                channelRef: undefined,
+                                                template: platform === 'QQ_CHANNEL'
+                                                    ? t('socialPublishingDefaultQqTemplate')
+                                                    : t('socialPublishingDefaultWeiboTemplate'),
+                                            });
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="accountKey"
+                                    label={t('socialPublishingAccountKey')}
+                                    rules={[{ required: true }]}
+                                >
+                                    <Select
+                                        options={socialTargetPlatform === 'WEIBO'
+                                            ? [{ value: 'default', label: 'default' }]
+                                            : qqAccountOptions}
+                                        notFoundContent={t('socialPublishingNoAuthorizedQqAccounts')}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item
+                            name="name"
+                            label={t('socialPublishingTarget')}
+                            rules={[{ required: true, whitespace: true }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                        {socialTargetPlatform !== 'WEIBO' && (
+                            <Row gutter={12}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="targetRef"
+                                        label={t('socialPublishingChannelNumber')}
+                                        rules={[{ required: true, whitespace: true }]}
+                                    >
+                                        <Input placeholder="pd..." />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name="channelRef" label={t('socialPublishingBoardId')}>
+                                        <Input allowClear placeholder={t('socialPublishingDefaultBoard')} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        )}
+                        <Row gutter={12}>
+                            <Col span={8}>
+                                <Form.Item name="enabled" label={t('enabled')} valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="autoPostEnabled"
+                                    label={t('socialPublishingAutoPost')}
+                                    valuePropName="checked"
+                                >
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="scheduleTime"
+                                    label={t('socialPublishingTime')}
+                                    rules={[{ required: true, pattern: /^([01]\d|2[0-3]):[0-5]\d$/ }]}
+                                >
+                                    <Input placeholder="10:00" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={12}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="postsPerRun"
+                                    label={t('socialPublishingPosts')}
+                                    rules={[{ required: true }]}
+                                >
+                                    <InputNumber min={1} max={20} className="w-full" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="postIntervalSeconds"
+                                    label={t('socialPublishingInterval')}
+                                    rules={[{ required: true }]}
+                                >
+                                    <InputNumber min={0} max={86400} className="w-full" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="template" label={t('socialPublishingTemplate')}>
+                            <Input.TextArea rows={6} />
+                        </Form.Item>
+                        <Text type="secondary">{t('qqAutomationPostTemplateHelp')}</Text>
+                    </Form>
+                </Modal>
             </div>
         </div>
     );

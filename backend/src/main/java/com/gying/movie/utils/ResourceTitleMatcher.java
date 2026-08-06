@@ -27,11 +27,25 @@ public final class ResourceTitleMatcher {
             return false;
         }
 
-        SeasonSearchUtils.SeasonQuery requestedSeason = SeasonSearchUtils.parse(keyword);
-        SeasonSearchUtils.SeasonQuery movieSeason = SeasonSearchUtils.parse(movie.getTitleCn());
-        if (requestedSeason != null
-                && (movieSeason == null || movieSeason.season() != requestedSeason.season())
-                && !SeasonSearchUtils.matchesRequestedSeason(resourceTitle, keyword)) {
+        boolean seasonAware = isSeasonAware(movie);
+        SeasonSearchUtils.SeasonQuery requestedSeason = seasonAware
+                ? SeasonSearchUtils.parse(keyword)
+                : null;
+        SeasonSearchUtils.SeasonQuery titleSeason = seasonAware
+                ? SeasonSearchUtils.parse(movie.getTitleCn())
+                : null;
+        Integer movieSeason = movie.getSeason() != null
+                && seasonAware ? movie.getSeason()
+                : titleSeason == null ? null : titleSeason.season();
+        if (requestedSeason != null && movieSeason != null
+                && movieSeason != requestedSeason.season()) {
+            return false;
+        }
+        int targetSeason = requestedSeason != null
+                ? requestedSeason.season()
+                : movieSeason == null ? 0 : movieSeason;
+        if (targetSeason > 0 && SeasonSearchUtils.hasSeasonMarker(resourceTitle)
+                && !SeasonSearchUtils.coversSeason(resourceTitle, targetSeason)) {
             return false;
         }
 
@@ -44,6 +58,9 @@ public final class ResourceTitleMatcher {
 
         Set<String> expectedTitles = new LinkedHashSet<>();
         addCandidate(expectedTitles, normalizedKeyword);
+        if (requestedSeason != null) {
+            addCandidate(expectedTitles, normalizeTitle(requestedSeason.baseTitle()));
+        }
         addCandidate(expectedTitles, normalizeTitle(movie.getTitleCn()));
         addCandidate(expectedTitles, normalizeTitle(movie.getTitleEn()));
         addCandidate(expectedTitles, normalizeTitle(movie.getSeriesName()));
@@ -62,6 +79,11 @@ public final class ResourceTitleMatcher {
             }
         }
         return false;
+    }
+
+    private static boolean isSeasonAware(MovieMetadata movie) {
+        return movie != null && ("tv".equalsIgnoreCase(movie.getCategory())
+                || "ac".equalsIgnoreCase(movie.getCategory()));
     }
 
     private static String extractResourceCoreTitle(String value) {

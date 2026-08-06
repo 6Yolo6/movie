@@ -352,10 +352,13 @@ public class ResourceLinkController {
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
-        long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                .eq("url", resourceUrl)
-                .eq("status", "ACTIVE")
-                .ne("id", id));
+        long duplicateCount = Objects.equals(resourceUrl, resource.getUrl())
+                ? 0
+                : resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                        .eq("url", resourceUrl)
+                        .eq("status", "ACTIVE")
+                        .isNull("deleted_at")
+                        .ne("id", id));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
@@ -962,7 +965,8 @@ public class ResourceLinkController {
         }
         QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         ResourceDiscoveryResult discovery = findDiscovery(link);
         LocalDateTime now = LocalDateTime.now();

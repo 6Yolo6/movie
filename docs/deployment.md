@@ -62,7 +62,9 @@ docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
 - `QQ_BOT_*` 配置命令、限流、敏感词、回复通道和自动转存。
 - NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
 - 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。
-- OpenClaw 被动回复可调用 `/api/qq-bot/search-reply`；当前本机命令补丁升级后可能被覆盖，应迁移为正式插件。
+- OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/网盘选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。
+- Docker 部署会把 Windows 可维护源同步到 `/home/node/.openclaw-runtime-plugins` 的非 world-writable Linux 运行副本，并自动重启 Gateway，以满足 OpenClaw 插件安全检查。
+- 每个资源回复都先验证自有夸克分享；用户指定其他网盘时会在自有夸克之后追加指定数量。群回复会 @ 对应用户，上下文有效期为 5 分钟。
 
 ## 腾讯频道
 
@@ -84,6 +86,33 @@ Invoke-RestMethod http://127.0.0.1:8092/health
 ```
 
 后端使用 `QQ_CHANNEL_PUBLISHER_BASE_URL` 和 `QQ_CHANNEL_PUBLISHER_TOKEN`。桥接只处理指定 `PENDING` 日志；不可用时记录留给 `publish-latest-resource-to-qq-channel.ps1` 定时处理。
+
+## 多平台发布
+
+`social-publisher` 是独立容器，负责多个 QQ 频道账号和新浪微博，不复用或覆盖原宿主机 `tencent-channel-cli` 登录状态。
+
+关键配置：
+
+- `SOCIAL_PUBLISHER_BASE_URL`、`SOCIAL_PUBLISHER_TOKEN`：后端访问独立发布容器。
+- `QQ_CHANNEL_ACCOUNTS_ROOT`：容器内多个 QQ 账号的独立凭据目录，生产 compose 固定为 `/data/qq-accounts` 并挂载持久卷。
+- `WEIBO_WEB_COOKIE`：新浪微博网页端当前登录会话 Cookie，只写入部署环境，不写入数据库或 Git。
+- `WEIBO_WEB_XSRF_TOKEN`：可选；未配置时从 Cookie 中的 `XSRF-TOKEN` 自动读取。
+- `WEIBO_WEB_FINGERPRINT`：网页发帖请求中的浏览器 `fp` 参数，必须与当前会话配套。
+- `WEIBO_WEB_CLIENT_VERSION`、`WEIBO_WEB_USER_AGENT`：可选的网页客户端版本和 User-Agent 覆盖值。
+
+首次部署：
+
+```powershell
+docker compose -f docker-compose.prod.yml up -d --build social-publisher
+```
+
+QQ 登录信息按账号标识分别保存在 `social-publisher-qq-accounts` 卷；微博网页会话从部署环境读取。后台 `/admin/automation` 的“多平台发布”页签可新增 QQ 账号并生成授权二维码，扫码后自动轮询授权结果；移除账号时会删除该账号凭据并停用其频道目标，历史发布记录保留。页面还可维护频道、每日时间、每次条数、间隔和模板，并可对单个目标或全部目标手动发布下一条。候选按站内热度、TMDB 热度和资源录入时间排序；同一目标不会重复发布同一影片。
+
+微博凭据档案固定为 `default`；QQ 账号使用页面填写的 2-32 位账号标识，每个标识对应独立 `.qqcli` 登录目录。先完成扫码授权，再为该账号添加一个或多个频道目标。
+
+微博发布器固定向 `https://www.weibo.com/ajax/statuses/update` 发送网页表单请求，参数包括正文、公开可见性和浏览器 `fp`。当前仅发布文本和资源链接，不上传海报。响应中的登录失效、频率限制和安全验证会分类写入发布记录；遇到验证码时不会自动处理。
+
+Cookie 与 `fp` 会随网页登录状态变化而失效。更新 `.env` 后执行 `docker compose -f docker-compose.prod.yml up -d --build social-publisher` 重新加载；建议先手动发布一条确认成功，再开启微博目标自动发布。
 
 ## 上线检查
 

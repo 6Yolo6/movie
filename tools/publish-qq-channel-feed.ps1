@@ -8,6 +8,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Intro,
 
+    [string]$Year = "",
+    [string]$MediaType = "",
     [string]$PosterUrl = "",
     [string]$GuildId = $env:QQ_CHANNEL_GUILD_ID,
     [string]$ChannelId = $env:QQ_CHANNEL_ID,
@@ -55,6 +57,8 @@ if ($cliPath.EndsWith(".ps1", [System.StringComparison]::OrdinalIgnoreCase)) {
 }
 
 $titleLabel = -join ([char[]](0x6807, 0x9898, 0xff1a))
+$yearLabel = -join ([char[]](0x5e74, 0x4efd, 0xff1a))
+$typeLabel = -join ([char[]](0x7c7b, 0x578b, 0xff1a))
 $linkLabel = -join ([char[]](0x94fe, 0x63a5, 0xff1a))
 $introLabel = -join ([char[]](0x7b80, 0x4ecb, 0xff1a))
 $linkText = -join ([char[]](0x67e5, 0x770b, 0x8d44, 0x6e90))
@@ -62,12 +66,12 @@ $linkMarkup = "[$linkText]($Link)"
 
 if ($ContentTemplate) {
     $hasLinkPlaceholder = $ContentTemplate.Contains("{{link}}")
-    $rendered = $ContentTemplate.Replace("{{title}}", $Title).Replace("{{link}}", $linkMarkup).Replace("{{intro}}", $Intro)
+    $rendered = $ContentTemplate.Replace("{{title}}", $Title).Replace("{{year}}", $Year).Replace("{{type}}", $MediaType).Replace("{{link}}", $linkMarkup).Replace("{{intro}}", $Intro)
     if (-not $hasLinkPlaceholder) {
         $rendered += "`n$linkLabel$linkMarkup"
     }
 } else {
-    $rendered = "$titleLabel$Title`n$linkLabel$linkMarkup`n$introLabel$Intro"
+    $rendered = "$titleLabel$Title`n$yearLabel$Year`n$typeLabel$MediaType`n$linkLabel$linkMarkup`n$introLabel$Intro"
 }
 
 $rendered = $rendered.Replace("\r\n", "`n").Replace("\n", "`n").Replace("`r`n", "`n")
