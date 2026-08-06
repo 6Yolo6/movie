@@ -13,6 +13,7 @@ import {
     Input,
     InputNumber,
     Modal,
+    QRCode,
     Row,
     Select,
     Space,
@@ -25,6 +26,7 @@ import {
     Typography,
 } from 'antd';
 import {
+    DeleteOutlined,
     LinkOutlined,
     MessageOutlined,
     NotificationOutlined,
@@ -33,6 +35,7 @@ import {
     ReloadOutlined,
     SaveOutlined,
     SendOutlined,
+    UserAddOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
@@ -138,18 +141,39 @@ interface SocialPublishingOverview {
     postedLast24Hours: number;
     publisher?: {
         ok?: boolean;
-        qq?: { configured?: boolean; ready?: boolean; tokenSource?: string; error?: string };
+        qq?: {
+            configured?: boolean;
+            ready?: boolean;
+            accounts?: QqPublishingAccount[];
+            error?: string;
+        };
         weibo?: {
             ready?: boolean;
+            configured?: boolean;
             authenticated?: boolean;
-            developerVerified?: boolean;
-            plan?: string;
-            writeRemaining?: number;
-            tokenExpiresAt?: string;
+            mode?: string;
             error?: string;
         };
         error?: string;
     };
+}
+
+interface QqPublishingAccount {
+    accountKey: string;
+    status: 'AUTHORIZED' | 'UNAUTHORIZED' | 'WAITING' | 'FAILED' | 'EXPIRED';
+    ready?: boolean;
+    error?: string;
+    targetCount?: number;
+}
+
+interface QqLoginAttempt extends QqPublishingAccount {
+    verificationUri?: string;
+    expiresInSeconds?: number;
+    expiresAt?: string;
+}
+
+interface QqAccountFormValues {
+    accountKey: string;
 }
 
 interface SocialPostLog {
@@ -198,10 +222,11 @@ function formatDate(value?: string) {
 export default function QqAutomationAdminPage() {
     const { user, token } = useAuthStore();
     const router = useRouter();
-    const { message } = App.useApp();
+    const { message, modal } = App.useApp();
     const { t } = useTranslation();
     const [form] = Form.useForm<AutomationConfig>();
     const [socialTargetForm] = Form.useForm<SocialTargetFormValues>();
+    const [qqAccountForm] = Form.useForm<QqAccountFormValues>();
     const socialTargetPlatform = Form.useWatch('platform', socialTargetForm);
     const [overview, setOverview] = useState<AutomationOverview | null>(null);
     const [loading, setLoading] = useState(true);
@@ -231,10 +256,47 @@ export default function QqAutomationAdminPage() {
     const [socialRetryId, setSocialRetryId] = useState<number>();
     const [socialCreateOpen, setSocialCreateOpen] = useState(false);
     const [socialCreating, setSocialCreating] = useState(false);
+    const [qqAccountOpen, setQqAccountOpen] = useState(false);
+    const [qqAccountBusy, setQqAccountBusy] = useState(false);
+    const [qqAccountRemoving, setQqAccountRemoving] = useState<string>();
+    const [qqLoginAttempt, setQqLoginAttempt] = useState<QqLoginAttempt | null>(null);
 
     const authHeaders = useMemo(() => ({
         Authorization: `Bearer ${token}`,
     }), [token]);
+
+    const qqAccounts = useMemo(() => {
+        const accounts = new Map<string, QqPublishingAccount>();
+        const targetCounts = new Map<string, number>();
+        const activeTargetAccounts = new Set<string>();
+        for (const account of socialOverview?.publisher?.qq?.accounts || []) {
+            accounts.set(account.accountKey, { ...account });
+        }
+        for (const target of socialOverview?.targets || []) {
+            if (target.platform !== 'QQ_CHANNEL' || !target.accountKey) continue;
+            targetCounts.set(target.accountKey, (targetCounts.get(target.accountKey) || 0) + 1);
+            if (target.enabled || target.autoPostEnabled) activeTargetAccounts.add(target.accountKey);
+        }
+        for (const [accountKey, targetCount] of targetCounts) {
+            const account = accounts.get(accountKey);
+            if (account) {
+                account.targetCount = targetCount;
+                continue;
+            }
+            if (!activeTargetAccounts.has(accountKey)) continue;
+            accounts.set(accountKey, {
+                accountKey,
+                status: 'UNAUTHORIZED' as const,
+                ready: false,
+                targetCount,
+            });
+        }
+        return Array.from(accounts.values()).sort((left, right) => left.accountKey.localeCompare(right.accountKey));
+    }, [socialOverview]);
+
+    const qqAccountOptions = qqAccounts
+        .filter(account => account.ready || account.status === 'AUTHORIZED')
+        .map(account => ({ value: account.accountKey, label: account.accountKey }));
 
     const requestJson = useCallback(async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
         const res = await api(path, {
@@ -467,11 +529,84 @@ export default function QqAutomationAdminPage() {
         }
     };
 
+    const openQqAccountLogin = () => {
+        qqAccountForm.resetFields();
+        setQqLoginAttempt(null);
+        setQqAccountOpen(true);
+    };
+
+    const startQqAccountLogin = async (values: QqAccountFormValues) => {
+        setQqAccountBusy(true);
+        try {
+            const attempt = await requestJson<QqLoginAttempt>('/api/admin/social-publishing/qq-accounts/login', {
+                method: 'POST',
+                body: JSON.stringify(values),
+            });
+            setQqLoginAttempt(attempt);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setQqAccountBusy(false);
+        }
+    };
+
+    const removeQqAccount = (account: QqPublishingAccount) => {
+        modal.confirm({
+            title: t('socialPublishingRemoveQqAccountTitle'),
+            content: t('socialPublishingRemoveQqAccountHelp', {
+                account: account.accountKey,
+                count: account.targetCount || 0,
+            }),
+            okText: t('delete'),
+            okButtonProps: { danger: true },
+            cancelText: t('cancel'),
+            onOk: async () => {
+                setQqAccountRemoving(account.accountKey);
+                try {
+                    await requestJson(`/api/admin/social-publishing/qq-accounts/${encodeURIComponent(account.accountKey)}`, {
+                        method: 'DELETE',
+                    });
+                    message.success(t('socialPublishingQqAccountRemoved'));
+                    await fetchSocialOverview();
+                } catch (error) {
+                    message.error(error instanceof Error ? error.message : t('operationFailed'));
+                    throw error;
+                } finally {
+                    setQqAccountRemoving(undefined);
+                }
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (!qqAccountOpen || qqLoginAttempt?.status !== 'WAITING' || !qqLoginAttempt.accountKey) return;
+        let cancelled = false;
+        const timer = window.setInterval(async () => {
+            try {
+                const status = await requestJson<QqLoginAttempt>(
+                    `/api/admin/social-publishing/qq-accounts/${encodeURIComponent(qqLoginAttempt.accountKey)}/login-status`,
+                );
+                if (cancelled) return;
+                setQqLoginAttempt(status);
+                if (status.status === 'AUTHORIZED') {
+                    message.success(t('socialPublishingQqAuthorized'));
+                    await fetchSocialOverview();
+                }
+            } catch {
+                // Keep the QR visible; the next interval can recover from a transient request failure.
+            }
+        }, 3000);
+        return () => {
+            cancelled = true;
+            window.clearInterval(timer);
+        };
+    }, [fetchSocialOverview, message, qqAccountOpen, qqLoginAttempt, requestJson, t]);
+
     const openCreateSocialTarget = () => {
         socialTargetForm.resetFields();
         socialTargetForm.setFieldsValue({
             platform: 'QQ_CHANNEL',
-            accountKey: 'secondary',
+            accountKey: qqAccountOptions[0]?.value,
             enabled: true,
             autoPostEnabled: false,
             scheduleTime: '10:00',
@@ -532,6 +667,53 @@ export default function QqAutomationAdminPage() {
             setSocialRetryId(undefined);
         }
     };
+
+    const qqAccountColumns: ColumnsType<QqPublishingAccount> = [
+        {
+            title: t('socialPublishingAccountKey'),
+            dataIndex: 'accountKey',
+            width: 180,
+            render: (value: string) => <Text code>{value}</Text>,
+        },
+        {
+            title: t('status'),
+            dataIndex: 'status',
+            width: 150,
+            render: (value: QqPublishingAccount['status']) => (
+                <Tag color={value === 'AUTHORIZED' ? 'green' : value === 'WAITING' ? 'blue' : value === 'FAILED' ? 'red' : 'default'}>
+                    {t(`socialPublishingQqStatus.${value}`)}
+                </Tag>
+            ),
+        },
+        {
+            title: t('socialPublishingTargets'),
+            dataIndex: 'targetCount',
+            width: 120,
+            render: (value?: number) => value || 0,
+        },
+        {
+            title: t('socialPublishingError'),
+            dataIndex: 'error',
+            ellipsis: true,
+            render: (value?: string) => value || '-',
+        },
+        {
+            title: t('actions'),
+            width: 100,
+            fixed: 'right',
+            render: (_, account) => (
+                <Tooltip title={t('delete')}>
+                    <Button
+                        danger
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        loading={qqAccountRemoving === account.accountKey}
+                        onClick={() => removeQqAccount(account)}
+                    />
+                </Tooltip>
+            ),
+        },
+    ];
 
     const socialColumns: ColumnsType<SocialPublishTarget> = [
         {
@@ -1010,20 +1192,36 @@ export default function QqAutomationAdminPage() {
                                         description={t('socialPublishingAuthHelp', {
                                             qq: socialOverview?.publisher?.qq?.ready ? t('socialPublishingReady') : t('socialPublishingNeedsAuth'),
                                             weibo: socialOverview?.publisher?.weibo?.ready
-                                                ? t('socialPublishingReady')
-                                                : socialOverview?.publisher?.weibo?.authenticated
-                                                    ? t('socialPublishingNoWriteAccess', {
-                                                        plan: socialOverview.publisher.weibo.plan || '-',
-                                                    })
-                                                    : t('socialPublishingNeedsAuth'),
+                                                ? t('socialPublishingWebSessionReady')
+                                                : t('socialPublishingWebSessionNotReady', {
+                                                    reason: socialOverview?.publisher?.weibo?.error || t('socialPublishingNeedsAuth'),
+                                                }),
                                         })}
                                     />
+                                    <Card
+                                        title={t('socialPublishingQqAccounts')}
+                                        extra={(
+                                            <Button type="primary" icon={<UserAddOutlined />} onClick={openQqAccountLogin}>
+                                                {t('socialPublishingAddQqAccount')}
+                                            </Button>
+                                        )}
+                                    >
+                                        <Table
+                                            rowKey="accountKey"
+                                            columns={qqAccountColumns}
+                                            dataSource={qqAccounts}
+                                            loading={socialLoading}
+                                            pagination={false}
+                                            scroll={{ x: 760 }}
+                                            locale={{ emptyText: <Empty description={t('socialPublishingNoQqAccounts')} /> }}
+                                        />
+                                    </Card>
                                     <Card
                                         title={t('socialPublishingTargets')}
                                         extra={(
                                             <Space>
                                                 <Button icon={<PlusOutlined />} onClick={openCreateSocialTarget}>
-                                                    {t('socialPublishingAddAccount')}
+                                                    {t('socialPublishingAddTarget')}
                                                 </Button>
                                                 <Button
                                                     type="primary"
@@ -1101,7 +1299,57 @@ export default function QqAutomationAdminPage() {
                     ]}
                 />
                 <Modal
-                    title={t('socialPublishingAddAccount')}
+                    title={t('socialPublishingAddQqAccount')}
+                    open={qqAccountOpen}
+                    confirmLoading={qqAccountBusy}
+                    okText={qqLoginAttempt ? t('close') : t('socialPublishingGenerateQr')}
+                    cancelText={t('cancel')}
+                    onOk={() => {
+                        if (qqLoginAttempt) setQqAccountOpen(false);
+                        else qqAccountForm.submit();
+                    }}
+                    onCancel={() => setQqAccountOpen(false)}
+                    destroyOnHidden
+                >
+                    {!qqLoginAttempt ? (
+                        <Form form={qqAccountForm} layout="vertical" onFinish={startQqAccountLogin}>
+                            <Form.Item
+                                name="accountKey"
+                                label={t('socialPublishingAccountKey')}
+                                extra={t('socialPublishingQqAccountKeyHelp')}
+                                rules={[
+                                    { required: true, whitespace: true },
+                                    { pattern: /^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/, message: t('socialPublishingQqAccountKeyInvalid') },
+                                ]}
+                            >
+                                <Input placeholder="qq-main" autoComplete="off" />
+                            </Form.Item>
+                        </Form>
+                    ) : (
+                        <Space direction="vertical" size={16} align="center" className="w-full">
+                            <Tag color={qqLoginAttempt.status === 'AUTHORIZED' ? 'green' : qqLoginAttempt.status === 'WAITING' ? 'blue' : 'red'}>
+                                {t(`socialPublishingQqStatus.${qqLoginAttempt.status}`)}
+                            </Tag>
+                            {qqLoginAttempt.verificationUri && qqLoginAttempt.status === 'WAITING' && (
+                                <QRCode value={qqLoginAttempt.verificationUri} size={220} />
+                            )}
+                            <Text strong>{qqLoginAttempt.accountKey}</Text>
+                            {qqLoginAttempt.status === 'WAITING' && (
+                                <Text type="secondary">
+                                    {t('socialPublishingQqQrExpires', { time: formatDate(qqLoginAttempt.expiresAt) })}
+                                </Text>
+                            )}
+                            {qqLoginAttempt.verificationUri && qqLoginAttempt.status === 'WAITING' && (
+                                <Typography.Link href={qqLoginAttempt.verificationUri} target="_blank" rel="noreferrer">
+                                    {t('socialPublishingOpenAuthorizationLink')}
+                                </Typography.Link>
+                            )}
+                            {qqLoginAttempt.error && <Alert type="error" showIcon message={qqLoginAttempt.error} />}
+                        </Space>
+                    )}
+                </Modal>
+                <Modal
+                    title={t('socialPublishingAddTarget')}
                     open={socialCreateOpen}
                     confirmLoading={socialCreating}
                     okText={t('save')}
@@ -1135,7 +1383,7 @@ export default function QqAutomationAdminPage() {
                                         ]}
                                         onChange={(platform: 'QQ_CHANNEL' | 'WEIBO') => {
                                             socialTargetForm.setFieldsValue({
-                                                accountKey: platform === 'QQ_CHANNEL' ? 'secondary' : 'default',
+                                                accountKey: platform === 'QQ_CHANNEL' ? qqAccountOptions[0]?.value : 'default',
                                                 targetRef: platform === 'QQ_CHANNEL' ? undefined : 'default',
                                                 channelRef: undefined,
                                                 template: platform === 'QQ_CHANNEL'
@@ -1155,7 +1403,8 @@ export default function QqAutomationAdminPage() {
                                     <Select
                                         options={socialTargetPlatform === 'WEIBO'
                                             ? [{ value: 'default', label: 'default' }]
-                                            : [{ value: 'secondary', label: 'secondary' }]}
+                                            : qqAccountOptions}
+                                        notFoundContent={t('socialPublishingNoAuthorizedQqAccounts')}
                                     />
                                 </Form.Item>
                             </Col>

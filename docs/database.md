@@ -26,6 +26,6 @@ mysql -uroot -p gying < backend/src/main/resources/db/schema.sql
 `migration_resource_reports.sql` 会增加资源质量字段、拒绝原因字段和 `resource_report` 举报表。
 `migration_resource_hub.sql` 会增加 Resource Hub 所需的 TMDB 标识、资源追踪字段和任务表。
 `migration_qq_channel_template_year_type.sql` 只把仍使用旧默认值的 QQ 频道模板升级为包含年份和类型的版本，不覆盖管理员自定义模板。
-`migration_social_publishing.sql` 会创建多平台发布目标和审计日志，并预置 4 个第二 QQ 账号频道目标与 1 个新浪微博目标；所有自动发布默认关闭。
+`migration_social_publishing.sql` 会创建多平台发布目标和审计日志，并预置 1 个新浪微博目标；QQ 账号扫码授权后再由管理员添加频道目标，所有自动发布默认关闭。
 
 如果你已经手动执行过某些字段，请先用 `DESC resource_link;` 和 `SHOW TABLES LIKE 'resource_report';` 确认，避免重复 `ALTER TABLE`。

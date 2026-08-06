@@ -76,8 +76,12 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 基础路径：`/api/admin/social-publishing`。
 
-- `GET /overview`：目标列表、发布统计和独立发布容器的 QQ/微博授权状态。
-- `POST /targets`：添加已授权发布账号下的频道或平台目标；当前 QQ 使用 `secondary` 凭据档案，微博使用 `default`。
+- `GET /overview`：目标列表、发布统计和独立发布容器的 QQ/微博网页会话状态。
+- `GET /qq-accounts`：列出独立发布器中的 QQ 账号及授权状态。
+- `POST /qq-accounts/login`：为新的账号标识生成 QQ 授权二维码并启动后台轮询。
+- `GET /qq-accounts/{accountKey}/login-status`：查询扫码授权结果。
+- `DELETE /qq-accounts/{accountKey}`：删除 QQ 账号凭据并停用其发布目标，保留历史日志。
+- `POST /targets`：为已授权 QQ 账号或微博 `default` 网页会话添加发布目标。
 - `PUT /targets/{id}`：更新目标名称、频道号、版块、启用状态、每日时间、每次条数、间隔和模板。
 - `POST /targets/{id}/publish-next?runNow=true`：对单个目标发布下一条热度候选。
 - `POST /publish-next?runNow=true`：对请求体中的目标 ID 批量发布；空数组表示全部启用目标。
