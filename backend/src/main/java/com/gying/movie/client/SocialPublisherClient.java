@@ -35,4 +35,52 @@ public class SocialPublisherClient {
         Map<String, Object> response = restClient.get().uri("/health").retrieve().body(Map.class);
         return response == null ? Map.of() : response;
     }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> qqAccounts() {
+        Map<String, Object> response = restClient.get()
+                .uri("/accounts/qq")
+                .header("X-Internal-Token", requiredToken())
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> startQqLogin(Map<String, Object> request) {
+        Map<String, Object> response = restClient.post()
+                .uri("/accounts/qq/login")
+                .header("X-Internal-Token", requiredToken())
+                .body(request)
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> qqLoginStatus(String accountKey) {
+        Map<String, Object> response = restClient.get()
+                .uri("/accounts/qq/{accountKey}/login-status", accountKey)
+                .header("X-Internal-Token", requiredToken())
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> removeQqAccount(String accountKey) {
+        Map<String, Object> response = restClient.delete()
+                .uri("/accounts/qq/{accountKey}", accountKey)
+                .header("X-Internal-Token", requiredToken())
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    private String requiredToken() {
+        if (token.isBlank()) {
+            throw new IllegalStateException("Social publisher token is not configured");
+        }
+        return token;
+    }
 }

@@ -93,14 +93,15 @@ services:
     environment:
       - SOCIAL_PUBLISHER_PORT=8093
       - SOCIAL_PUBLISHER_TOKEN=${SOCIAL_PUBLISHER_TOKEN:-}
-      - QQ_CHANNEL_SECONDARY_TOKEN=${QQ_CHANNEL_SECONDARY_TOKEN:-}
-      - QQ_CHANNEL_SECONDARY_HOME=/root
-      - WEIBO_CLI_TOKEN=${WEIBO_CLI_TOKEN:-}
-      - WEIBO_CLI_REFRESH_TOKEN=${WEIBO_CLI_REFRESH_TOKEN:-}
+      - QQ_CHANNEL_ACCOUNTS_ROOT=/data/qq-accounts
+      - WEIBO_WEB_COOKIE=${WEIBO_WEB_COOKIE:-}
+      - WEIBO_WEB_XSRF_TOKEN=${WEIBO_WEB_XSRF_TOKEN:-}
+      - WEIBO_WEB_FINGERPRINT=${WEIBO_WEB_FINGERPRINT:-}
+      - WEIBO_WEB_CLIENT_VERSION=${WEIBO_WEB_CLIENT_VERSION:-v1.1.237}
+      - WEIBO_WEB_USER_AGENT=${WEIBO_WEB_USER_AGENT:-}
       - TZ=Asia/Shanghai
     volumes:
-      - social-publisher-qqcli:/root/.qqcli
-      - social-publisher-weibo:/root/.weibo-cli
+      - social-publisher-qq-accounts:/data/qq-accounts
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -165,8 +166,7 @@ volumes:
   pansou-data:
   quark-auto-save-data:
   napcat-data:
-  social-publisher-qqcli:
-  social-publisher-weibo:
+  social-publisher-qq-accounts:
 
 networks:
   gying-net:

@@ -4,9 +4,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import mysql from 'mysql2/promise';
+import { publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
 
 const port = Number(process.env.SOCIAL_PUBLISHER_PORT || 8093);
 const internalToken = process.env.SOCIAL_PUBLISHER_TOKEN || process.env.APP_INTERNAL_TOKEN || '';
+const qqAccountsRoot = path.resolve(process.env.QQ_CHANNEL_ACCOUNTS_ROOT || '/data/qq-accounts');
+const qqAccountKeyPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/;
+const qqLoginAttempts = new Map();
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'host.docker.internal',
   port: Number(process.env.DB_PORT || 3306),
@@ -26,6 +30,32 @@ function writeJson(res, status, payload) {
   res.end(body);
 }
 
+function readJsonBody(req, limit = 8192) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > limit) {
+        reject(new Error('Request body is too large'));
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(body));
+      } catch {
+        reject(new Error('Request body must be valid JSON'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
@@ -33,6 +63,7 @@ function run(command, args, options = {}) {
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
+    options.onChild?.(child);
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => {
@@ -51,6 +82,153 @@ function run(command, args, options = {}) {
       resolve(stdout.trim());
     });
   });
+}
+
+function validateQqAccountKey(value) {
+  const key = String(value || '').trim();
+  if (!qqAccountKeyPattern.test(key)) {
+    throw new Error('QQ account key must be 2-32 characters using letters, numbers, _ or -');
+  }
+  return key;
+}
+
+function qqAccountHome(accountKey) {
+  const key = validateQqAccountKey(accountKey);
+  return path.join(qqAccountsRoot, key);
+}
+
+function qqEnvironment(accountKey) {
+  return {
+    QQ_AI_CONNECT_TOKEN: '',
+    HOME: qqAccountHome(accountKey),
+  };
+}
+
+function qqStatusReady(result) {
+  const data = result?.data || result || {};
+  return Boolean(result?.success && (data.valid === true || data.status === 'authorized'));
+}
+
+function qqAttemptView(attempt) {
+  return {
+    accountKey: attempt.accountKey,
+    status: attempt.status,
+    verificationUri: attempt.verificationUri || null,
+    expiresInSeconds: attempt.expiresInSeconds || null,
+    expiresAt: attempt.expiresAt || null,
+    error: attempt.error || null,
+  };
+}
+
+async function readQqStatus(accountKey) {
+  const result = parseJsonOutput(await run(
+    'tencent-channel-cli',
+    ['login', 'status', '--json'],
+    { env: qqEnvironment(accountKey), timeoutMs: 30000 },
+  ));
+  const data = result.data || {};
+  return {
+    accountKey,
+    status: qqStatusReady(result) ? 'AUTHORIZED' : 'UNAUTHORIZED',
+    ready: qqStatusReady(result),
+    valid: Boolean(data.valid),
+    message: data.message || null,
+    tokenSource: data.tokenSource || null,
+  };
+}
+
+async function qqAccountKeys() {
+  await fs.mkdir(qqAccountsRoot, { recursive: true });
+  const entries = await fs.readdir(qqAccountsRoot, { withFileTypes: true });
+  const keys = entries.filter(entry => entry.isDirectory() && qqAccountKeyPattern.test(entry.name)).map(entry => entry.name);
+  for (const key of qqLoginAttempts.keys()) if (!keys.includes(key)) keys.push(key);
+  return keys.sort();
+}
+
+async function qqAccountList() {
+  const keys = await qqAccountKeys();
+  return Promise.all(keys.map(async accountKey => {
+    const attempt = qqLoginAttempts.get(accountKey);
+    if (attempt && ['WAITING', 'AUTHORIZED', 'FAILED', 'EXPIRED'].includes(attempt.status)) {
+      return { accountKey, status: attempt.status, ready: attempt.status === 'AUTHORIZED', error: attempt.error || null };
+    }
+    try {
+      return await readQqStatus(accountKey);
+    } catch (error) {
+      return { accountKey, status: 'UNAUTHORIZED', ready: false, error: compact(error.message) };
+    }
+  }));
+}
+
+async function startQqLogin(accountKeyValue, force = false) {
+  const accountKey = validateQqAccountKey(accountKeyValue);
+  const current = qqLoginAttempts.get(accountKey);
+  if (current?.status === 'WAITING') return qqAttemptView(current);
+  if (!force) {
+    try {
+      if ((await readQqStatus(accountKey)).ready) {
+        throw new Error(`QQ account ${accountKey} is already authorized`);
+      }
+    } catch (error) {
+      if (String(error.message).includes('already authorized')) throw error;
+    }
+  }
+  const home = qqAccountHome(accountKey);
+  await fs.mkdir(home, { recursive: true });
+  const qrPath = path.join(os.tmpdir(), `gying-qq-${accountKey}-${Date.now()}.png`);
+  const login = parseJsonOutput(await run(
+    'tencent-channel-cli',
+    ['login', '--json', '--qrcode-path', qrPath, ...(force ? ['--yes'] : [])],
+    { env: qqEnvironment(accountKey), timeoutMs: 30000 },
+  ));
+  const data = login.data || login;
+  await fs.rm(qrPath, { force: true });
+  const expiresInSeconds = Number(data.expires_in_s || 600);
+  const attempt = {
+    accountKey,
+    status: 'WAITING',
+    verificationUri: data.verification_uri || null,
+    expiresInSeconds,
+    expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
+    error: null,
+    child: null,
+  };
+  qqLoginAttempts.set(accountKey, attempt);
+  void run(
+    'tencent-channel-cli',
+    ['login', 'poll-token', '--json'],
+    {
+      env: qqEnvironment(accountKey),
+      timeoutMs: Math.max(expiresInSeconds + 60, 120) * 1000,
+      onChild: child => { attempt.child = child; },
+    },
+  ).then(output => {
+    const result = parseJsonOutput(output);
+    attempt.status = qqStatusReady(result) ? 'AUTHORIZED' : 'FAILED';
+    attempt.error = attempt.status === 'FAILED' ? compact(result.data?.message || result.message || 'QQ authorization failed') : null;
+  }).catch(error => {
+    attempt.status = attempt.status === 'WAITING' ? 'EXPIRED' : 'FAILED';
+    attempt.error = compact(error.message);
+  }).finally(() => {
+    attempt.child = null;
+  });
+  return qqAttemptView(attempt);
+}
+
+async function qqLoginStatus(accountKeyValue) {
+  const accountKey = validateQqAccountKey(accountKeyValue);
+  const attempt = qqLoginAttempts.get(accountKey);
+  if (attempt) return qqAttemptView(attempt);
+  return readQqStatus(accountKey);
+}
+
+async function removeQqAccount(accountKeyValue) {
+  const accountKey = validateQqAccountKey(accountKeyValue);
+  const attempt = qqLoginAttempts.get(accountKey);
+  if (attempt?.child) attempt.child.kill();
+  qqLoginAttempts.delete(accountKey);
+  await fs.rm(qqAccountHome(accountKey), { recursive: true, force: true });
+  return { accountKey, deleted: true };
 }
 
 function compact(value, limit = 1000) {
@@ -146,15 +324,8 @@ async function preparePoster(posterUrl) {
   return file;
 }
 
-function qqEnvironment() {
-  return {
-    QQ_AI_CONNECT_TOKEN: process.env.QQ_CHANNEL_SECONDARY_TOKEN || process.env.QQ_AI_CONNECT_TOKEN || '',
-    HOME: process.env.QQ_CHANNEL_SECONDARY_HOME || '/root',
-  };
-}
-
 async function resolveQqDestination(row) {
-  const env = qqEnvironment();
+  const env = qqEnvironment(row.account_key);
   const joined = parseJsonOutput(await run(
     'tencent-channel-cli',
     ['manage', 'get-my-join-guild-info', '--json'],
@@ -195,7 +366,7 @@ async function publishQq(row, content, posterPath) {
     ];
     if (posterPath) args.push('--image', posterPath);
     args.push('--json');
-    const result = parseJsonOutput(await run('tencent-channel-cli', args, { env: qqEnvironment() }));
+    const result = parseJsonOutput(await run('tencent-channel-cli', args, { env: qqEnvironment(row.account_key) }));
     if (!result.success) throw new Error(compact(result.message || result.error || JSON.stringify(result)));
     return {
       externalUrl: result.data?.share_url || null,
@@ -206,55 +377,9 @@ async function publishQq(row, content, posterPath) {
   }
 }
 
-async function discoverWeiboCommand(hasPoster) {
-  const catalog = parseJsonOutput(await run(
-    'weibo',
-    ['commands', 'list', '--group', 'statuses', '--available', '--output', 'json'],
-  ));
-  const commands = catalog.commands || catalog.data?.commands || [];
-  const writable = commands.filter(command => String(command.method || '').toUpperCase() === 'POST');
-  const priorities = hasPoster
-    ? ['upload', 'update', 'share', 'publish', 'create']
-    : ['update', 'share', 'publish', 'create'];
-  for (const name of priorities) {
-    const command = writable.find(item => String(item.action || item.name || '').toLowerCase() === name);
-    if (command) return command.action || command.name;
-  }
-  const command = writable.find(item => /(share|publish|create|update|upload)/i.test(item.action || item.name || ''));
-  if (!command) throw new Error('Current Weibo account has no available status publishing command');
-  return command.action || command.name;
-}
-
-async function publishWeibo(row, content, posterPath) {
-  const action = process.env.WEIBO_PUBLISH_ACTION || await discoverWeiboCommand(Boolean(posterPath));
-  const details = parseJsonOutput(await run(
-    'weibo',
-    ['commands', 'show', 'statuses', action, '--output', 'json'],
-  ));
-  const flags = details.command?.flags || details.data?.command?.flags || [];
-  const names = new Set(flags.map(flag => flag.name));
-  const args = ['statuses', action];
+async function publishWeibo(row, content) {
   const finalContent = truncateWeiboContent(content, row.resource_url);
-  if (names.has('status')) args.push('--status', finalContent);
-  else if (names.has('text')) args.push('--text', finalContent);
-  else if (names.has('content')) args.push('--content', finalContent);
-  else throw new Error(`Weibo command statuses ${action} has no supported text flag`);
-  if (names.has('mblog_statement')) args.push('--mblog_statement', '1');
-  if (names.has('url')) args.push('--url', row.resource_url);
-  if (posterPath && names.has('pic')) args.push('--pic', posterPath);
-  if (posterPath && names.has('image')) args.push('--image', posterPath);
-  args.push('--output', 'json');
-  const result = parseJsonOutput(await run('weibo', args));
-  const payload = result.data || result;
-  const uid = payload.user?.idstr || payload.user?.id || payload.uid;
-  const mid = payload.mblogid || payload.mid;
-  return {
-    externalUrl: result.share_url
-      || result.url
-      || result.data?.share_url
-      || (uid && mid ? `https://weibo.com/${uid}/${mid}` : null),
-    result,
-  };
+  return publishWeiboWeb(finalContent);
 }
 
 async function publish(logId) {
@@ -262,15 +387,17 @@ async function publish(logId) {
   const content = render(row.template, row);
   let posterPath = null;
   try {
-    try {
-      posterPath = await preparePoster(row.poster_url);
-    } catch {
-      posterPath = null;
+    if (row.platform === 'QQ_CHANNEL') {
+      try {
+        posterPath = await preparePoster(row.poster_url);
+      } catch {
+        posterPath = null;
+      }
     }
     const published = row.platform === 'QQ_CHANNEL'
       ? await publishQq(row, content, posterPath)
       : row.platform === 'WEIBO'
-        ? await publishWeibo(row, content, posterPath)
+        ? await publishWeibo(row, content)
         : (() => { throw new Error(`Unsupported social platform ${row.platform}`); })();
     await pool.query(
       `UPDATE social_post_log
@@ -293,56 +420,25 @@ async function publish(logId) {
 }
 
 async function health() {
-  const result = { ok: true, qq: { configured: Boolean(process.env.QQ_CHANNEL_SECONDARY_TOKEN) }, weibo: {} };
+  const result = { ok: true, qq: {}, weibo: {} };
   try {
-    const status = parseJsonOutput(await run(
-      'tencent-channel-cli',
-      ['login', 'status'],
-      { env: qqEnvironment(), timeoutMs: 30000 },
-    ));
-    result.qq.ready = Boolean(status.success && status.data?.valid);
-    result.qq.tokenSource = status.data?.tokenSource;
+    const accounts = await qqAccountList();
+    result.qq.accounts = accounts;
+    result.qq.configured = accounts.length > 0;
+    result.qq.ready = accounts.some(account => account.ready);
   } catch (error) {
+    result.qq.configured = false;
     result.qq.ready = false;
     result.qq.error = compact(error.message);
   }
-  try {
-    const account = parseJsonOutput(await run(
-      'weibo',
-      ['auth', 'whoami', '--output', 'json'],
-      { timeoutMs: 30000 },
-    ));
-    const subscription = account.subscription || account.data?.subscription || {};
-    const user = account.user || account.data?.user || {};
-    const usage = subscription.usage || {};
-    const write = usage.write || {};
-    const writeLimit = Number(write.limit ?? subscription.plan?.rateLimitConfig?.write?.limit ?? 0);
-    const writeRemaining = Number(write.remaining ?? usage.writeRemaining ?? writeLimit);
-    result.weibo.authenticated = true;
-    result.weibo.developerVerified = Boolean(user.developerIdentity?.isVerified);
-    result.weibo.plan = subscription.plan?.name || null;
-    result.weibo.writeLimit = writeLimit;
-    result.weibo.writeRemaining = writeRemaining;
-    result.weibo.tokenExpiresAt = account.token?.expiresAt || account.data?.token?.expiresAt || null;
-    result.weibo.ready = result.weibo.developerVerified && writeLimit > 0 && writeRemaining > 0;
-    if (!result.weibo.developerVerified) {
-      result.weibo.error = 'Weibo developer verification is required';
-    } else if (writeLimit <= 0) {
-      result.weibo.error = `Weibo plan ${result.weibo.plan || 'unknown'} has no publishing quota`;
-    } else if (writeRemaining <= 0) {
-      result.weibo.error = 'Weibo publishing quota is exhausted';
-    }
-  } catch (error) {
-    result.weibo.authenticated = false;
-    result.weibo.ready = false;
-    result.weibo.error = compact(error.message);
-  }
+  result.weibo = weiboWebHealth();
   return result;
 }
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.method === 'GET' && req.url === '/health') {
+    const url = new URL(req.url || '/', 'http://social-publisher');
+    if (req.method === 'GET' && url.pathname === '/health') {
       writeJson(res, 200, await health());
       return;
     }
@@ -350,12 +446,31 @@ const server = http.createServer(async (req, res) => {
       writeJson(res, 401, { error: 'Unauthorized' });
       return;
     }
-    const match = req.url?.match(/^\/posts\/(\d+)$/);
-    if (req.method !== 'POST' || !match) {
-      writeJson(res, 404, { error: 'Not found' });
+    if (req.method === 'GET' && url.pathname === '/accounts/qq') {
+      writeJson(res, 200, { accounts: await qqAccountList() });
       return;
     }
-    writeJson(res, 200, await publish(Number(match[1])));
+    if (req.method === 'POST' && url.pathname === '/accounts/qq/login') {
+      const body = await readJsonBody(req);
+      writeJson(res, 200, await startQqLogin(body.accountKey, Boolean(body.force)));
+      return;
+    }
+    const qqLoginMatch = url.pathname.match(/^\/accounts\/qq\/([^/]+)\/login-status$/);
+    if (req.method === 'GET' && qqLoginMatch) {
+      writeJson(res, 200, await qqLoginStatus(decodeURIComponent(qqLoginMatch[1])));
+      return;
+    }
+    const qqAccountMatch = url.pathname.match(/^\/accounts\/qq\/([^/]+)$/);
+    if (req.method === 'DELETE' && qqAccountMatch) {
+      writeJson(res, 200, await removeQqAccount(decodeURIComponent(qqAccountMatch[1])));
+      return;
+    }
+    const postMatch = url.pathname.match(/^\/posts\/(\d+)$/);
+    if (req.method === 'POST' && postMatch) {
+      writeJson(res, 200, await publish(Number(postMatch[1])));
+      return;
+    }
+    writeJson(res, 404, { error: 'Not found' });
   } catch (error) {
     writeJson(res, 502, { error: compact(error.message) });
   }

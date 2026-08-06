@@ -406,9 +406,5 @@ ON DUPLICATE KEY UPDATE config_value = config_value;
 INSERT INTO social_publish_target
   (platform, account_key, name, target_ref, channel_ref, enabled, auto_post_enabled, schedule_time, posts_per_run, post_interval_seconds, template)
 VALUES
-  ('QQ_CHANNEL', 'secondary', 'QQ pd14267329', 'pd14267329', NULL, 1, 0, '10:00', 1, 60, '标题：{{title}}\n年份：{{year}}\n类型：{{type}}\n链接：{{link}}\n简介：{{intro}}'),
-  ('QQ_CHANNEL', 'secondary', 'QQ pd58754560', 'pd58754560', NULL, 1, 0, '10:10', 1, 60, '标题：{{title}}\n年份：{{year}}\n类型：{{type}}\n链接：{{link}}\n简介：{{intro}}'),
-  ('QQ_CHANNEL', 'secondary', 'QQ pd24958827', 'pd24958827', NULL, 1, 0, '10:20', 1, 60, '标题：{{title}}\n年份：{{year}}\n类型：{{type}}\n链接：{{link}}\n简介：{{intro}}'),
-  ('QQ_CHANNEL', 'secondary', 'QQ pd66263704', 'pd66263704', NULL, 1, 0, '10:30', 1, 60, '标题：{{title}}\n年份：{{year}}\n类型：{{type}}\n链接：{{link}}\n简介：{{intro}}'),
   ('WEIBO', 'default', '新浪微博', 'default', NULL, 1, 0, '11:00', 1, 60, '{{title}}（{{year}}）\n{{type}}\n{{intro}}\n{{link}}')
 ON DUPLICATE KEY UPDATE name = VALUES(name);

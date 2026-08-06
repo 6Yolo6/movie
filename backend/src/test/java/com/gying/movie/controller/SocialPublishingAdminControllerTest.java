@@ -9,12 +9,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.gying.movie.client.SocialPublisherClient;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.entity.SocialPublishTarget;
 import com.gying.movie.service.ISocialPostLogService;
 import com.gying.movie.service.ISocialPublishTargetService;
 import com.gying.movie.service.impl.SocialPublishingService;
 import com.gying.movie.utils.AuthHelper;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,18 +25,20 @@ import org.mockito.ArgumentCaptor;
 class SocialPublishingAdminControllerTest {
     private AuthHelper authHelper;
     private ISocialPublishTargetService targetService;
+    private SocialPublisherClient publisherClient;
     private SocialPublishingAdminController controller;
 
     @BeforeEach
     void setUp() {
         authHelper = mock(AuthHelper.class);
         targetService = mock(ISocialPublishTargetService.class);
+        publisherClient = mock(SocialPublisherClient.class);
         controller = new SocialPublishingAdminController(
                 authHelper,
                 targetService,
                 mock(ISocialPostLogService.class),
                 mock(SocialPublishingService.class),
-                mock(SocialPublisherClient.class));
+                publisherClient);
     }
 
     @Test
@@ -66,15 +70,36 @@ class SocialPublishingAdminControllerTest {
     }
 
     @Test
-    void rejectsUnsupportedCredentialProfile() {
+    void rejectsInvalidQqAccountKey() {
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () ->
                 controller.createTarget(Map.of(
                         "platform", "QQ_CHANNEL",
-                        "accountKey", "another-account",
+                        "accountKey", "bad account key",
                         "name", "频道",
                         "targetRef", "pd12345678"), "Bearer admin"));
 
-        assertEquals("QQ publisher currently supports account key: secondary", error.getMessage());
+        assertEquals(
+                "QQ account key must be 2-32 characters using letters, numbers, _ or -",
+                error.getMessage());
+    }
+
+    @Test
+    void removesQqAccountAndDisablesItsTargets() {
+        SocialPublishTarget target = new SocialPublishTarget();
+        target.setId(9L);
+        target.setEnabled(true);
+        target.setAutoPostEnabled(true);
+        when(targetService.list(any(QueryWrapper.class))).thenReturn(List.of(target));
+        when(publisherClient.removeQqAccount("secondary")).thenReturn(Map.of("deleted", true));
+
+        ApiResponse<Map<String, Object>> response = controller.removeQqAccount("secondary", "Bearer admin");
+
+        assertEquals("OK", response.getCode());
+        assertEquals(1, response.getData().get("disabledTargets"));
+        assertTrue(!target.getEnabled());
+        assertTrue(!target.getAutoPostEnabled());
+        verify(targetService).updateBatchById(List.of(target));
+        verify(publisherClient).removeQqAccount("secondary");
     }
 
     @Test

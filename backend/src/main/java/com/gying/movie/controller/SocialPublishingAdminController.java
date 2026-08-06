@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,6 +70,52 @@ public class SocialPublishingAdminController {
         } catch (Exception error) {
             result.put("publisher", Map.of("ok", false, "error", safeMessage(error)));
         }
+        return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/qq-accounts")
+    public ApiResponse<Map<String, Object>> qqAccounts(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.qqAccounts());
+    }
+
+    @PostMapping("/qq-accounts/login")
+    public ApiResponse<Map<String, Object>> startQqLogin(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        String accountKey = accountKey(request.get("accountKey"));
+        return ApiResponse.ok(publisherClient.startQqLogin(Map.of(
+                "accountKey", accountKey,
+                "force", request.containsKey("force") && bool(request.get("force")))));
+    }
+
+    @GetMapping("/qq-accounts/{accountKey}/login-status")
+    public ApiResponse<Map<String, Object>> qqLoginStatus(
+            @PathVariable String accountKey,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.qqLoginStatus(accountKey(accountKey)));
+    }
+
+    @DeleteMapping("/qq-accounts/{accountKey}")
+    public ApiResponse<Map<String, Object>> removeQqAccount(
+            @PathVariable String accountKey,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        String key = accountKey(accountKey);
+        List<SocialPublishTarget> targets = targetService.list(new QueryWrapper<SocialPublishTarget>()
+                .eq("platform", "QQ_CHANNEL")
+                .eq("account_key", key));
+        for (SocialPublishTarget target : targets) {
+            target.setEnabled(false);
+            target.setAutoPostEnabled(false);
+            target.setUpdatedAt(LocalDateTime.now());
+        }
+        if (!targets.isEmpty()) targetService.updateBatchById(targets);
+        Map<String, Object> result = new LinkedHashMap<>(publisherClient.removeQqAccount(key));
+        result.put("disabledTargets", targets.size());
         return ApiResponse.ok(result);
     }
 
@@ -196,6 +243,15 @@ public class SocialPublishingAdminController {
         return result;
     }
 
+    private String accountKey(Object value) {
+        String key = requiredText(value, "Account key");
+        if (!key.matches("[A-Za-z0-9][A-Za-z0-9_-]{1,31}")) {
+            throw new IllegalArgumentException(
+                    "QQ account key must be 2-32 characters using letters, numbers, _ or -");
+        }
+        return key;
+    }
+
     private String requiredPlatform(Object value) {
         String platform = requiredText(value, "Platform").toUpperCase();
         if (!SUPPORTED_PLATFORMS.contains(platform)) {
@@ -212,9 +268,7 @@ public class SocialPublishingAdminController {
         target.setPostsPerRun(integer(target.getPostsPerRun(), 1, 20, 1));
         target.setPostIntervalSeconds(integer(target.getPostIntervalSeconds(), 0, 86400, 60));
         if ("QQ_CHANNEL".equals(target.getPlatform())) {
-            if (!"secondary".equals(target.getAccountKey())) {
-                throw new IllegalArgumentException("QQ publisher currently supports account key: secondary");
-            }
+            target.setAccountKey(accountKey(target.getAccountKey()));
             target.setTargetRef(requiredText(target.getTargetRef(), "QQ channel number"));
         } else {
             if (!"default".equals(target.getAccountKey())) {
