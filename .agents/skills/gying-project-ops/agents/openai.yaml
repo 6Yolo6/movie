@@ -1,0 +1,4 @@
+interface:
+  display_name: "GYing 项目运维"
+  short_description: "维护 GYing Movie 的部署、恢复、数据与发布链路"
+  default_prompt: "使用 $gying-project-ops 审计当前 GYing Movie 运行环境，并依据验证结果更新 docs/current-project-status.md。"
