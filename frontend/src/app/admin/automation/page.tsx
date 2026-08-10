@@ -529,6 +529,31 @@ export default function QqAutomationAdminPage() {
         }
     };
 
+    const removeSocialTarget = (target: SocialPublishTarget) => {
+        modal.confirm({
+            title: t('socialPublishingRemoveTargetTitle'),
+            content: t('socialPublishingRemoveTargetHelp', { target: target.name }),
+            okText: t('delete'),
+            okButtonProps: { danger: true },
+            cancelText: t('cancel'),
+            onOk: async () => {
+                setSocialBusyId(target.id);
+                try {
+                    await requestJson(`/api/admin/social-publishing/targets/${target.id}`, {
+                        method: 'DELETE',
+                    });
+                    message.success(t('socialPublishingTargetRemoved'));
+                    await Promise.all([fetchSocialOverview(), fetchSocialLogs()]);
+                } catch (error) {
+                    message.error(error instanceof Error ? error.message : t('operationFailed'));
+                    throw error;
+                } finally {
+                    setSocialBusyId(undefined);
+                }
+            },
+        });
+    };
+
     const openQqAccountLogin = () => {
         qqAccountForm.resetFields();
         setQqLoginAttempt(null);
@@ -813,7 +838,7 @@ export default function QqAutomationAdminPage() {
             title: t('actions'),
             key: 'actions',
             fixed: 'right',
-            width: 190,
+            width: 240,
             render: (_, target) => (
                 <Space>
                     <Button
@@ -832,6 +857,15 @@ export default function QqAutomationAdminPage() {
                     >
                         {t('socialPublishingPublish')}
                     </Button>
+                    <Tooltip title={t('delete')}>
+                        <Button
+                            danger
+                            type="text"
+                            icon={<DeleteOutlined />}
+                            loading={socialBusyId === target.id}
+                            onClick={() => removeSocialTarget(target)}
+                        />
+                    </Tooltip>
                 </Space>
             ),
         },
@@ -853,7 +887,8 @@ export default function QqAutomationAdminPage() {
             title: t('socialPublishingTarget'),
             dataIndex: 'targetId',
             width: 180,
-            render: (value: number) => socialOverview?.targets.find(target => target.id === value)?.name || `#${value}`,
+            render: (value: number) => socialOverview?.targets.find(target => target.id === value)?.name
+                || t('socialPublishingDeletedTarget', { id: value }),
         },
         { title: t('movieTitle'), dataIndex: 'title', width: 220, ellipsis: true, render: (value?: string) => value || '-' },
         { title: t('status'), dataIndex: 'status', width: 110, render: statusTag },
@@ -883,16 +918,19 @@ export default function QqAutomationAdminPage() {
             key: 'actions',
             fixed: 'right',
             width: 110,
-            render: (_, log) => (
-                <Button
-                    icon={<RedoOutlined />}
-                    loading={socialRetryId === log.id}
-                    disabled={log.status === 'POSTED'}
-                    onClick={() => retrySocialLog(log.id)}
-                >
-                    {t('socialPublishingRetry')}
-                </Button>
-            ),
+            render: (_, log) => {
+                const targetExists = socialOverview?.targets.some(target => target.id === log.targetId);
+                return (
+                    <Button
+                        icon={<RedoOutlined />}
+                        loading={socialRetryId === log.id}
+                        disabled={log.status === 'POSTED' || !targetExists}
+                        onClick={() => retrySocialLog(log.id)}
+                    >
+                        {t('socialPublishingRetry')}
+                    </Button>
+                );
+            },
         },
     ];
 

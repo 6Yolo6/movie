@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.gying.movie.client.SocialPublisherClient;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.entity.SocialPublishTarget;
 import com.gying.movie.service.ISocialPostLogService;
@@ -25,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 class SocialPublishingAdminControllerTest {
     private AuthHelper authHelper;
     private ISocialPublishTargetService targetService;
+    private ISocialPostLogService logService;
     private SocialPublisherClient publisherClient;
     private SocialPublishingAdminController controller;
 
@@ -32,11 +34,12 @@ class SocialPublishingAdminControllerTest {
     void setUp() {
         authHelper = mock(AuthHelper.class);
         targetService = mock(ISocialPublishTargetService.class);
+        logService = mock(ISocialPostLogService.class);
         publisherClient = mock(SocialPublisherClient.class);
         controller = new SocialPublishingAdminController(
                 authHelper,
                 targetService,
-                mock(ISocialPostLogService.class),
+                logService,
                 mock(SocialPublishingService.class),
                 publisherClient);
     }
@@ -113,5 +116,22 @@ class SocialPublishingAdminControllerTest {
                         "name", "新浪微博"), "Bearer admin"));
 
         assertEquals("Publishing account target already exists", error.getMessage());
+    }
+
+    @Test
+    void deletesTargetAndRetainsPublishingHistory() {
+        SocialPublishTarget target = new SocialPublishTarget();
+        target.setId(11L);
+        when(targetService.getById(11L)).thenReturn(target);
+        when(targetService.removeById(11L)).thenReturn(true);
+
+        ApiResponse<Map<String, Object>> response = controller.deleteTarget(11L, "Bearer admin");
+
+        assertEquals("OK", response.getCode());
+        assertEquals(true, response.getData().get("deleted"));
+        assertEquals(true, response.getData().get("historyRetained"));
+        verify(authHelper).requireAdmin("Bearer admin");
+        verify(logService).update(any(UpdateWrapper.class));
+        verify(targetService).removeById(11L);
     }
 }
