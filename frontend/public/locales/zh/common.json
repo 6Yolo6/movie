@@ -349,6 +349,13 @@
   "resourceHubSyncPage": "页码",
   "resourceHubSyncItems": "每次条数",
   "resourceHubSyncIntervalHelp": "自动采集会按设置的间隔每次轮询一个 TMDB 来源，使多个来源在全天分散执行；例如 2 个来源、间隔 12 小时，则每个来源每天采集一次。",
+  "resourceHubGyingDiscovery": "资源搜索优先使用 GYING",
+  "resourceHubGyingAutoSync": "GYING 目录自动采集",
+  "resourceHubGyingSources": "GYING 目录来源",
+  "resourceHubGyingSyncInterval": "GYING 轮询间隔（小时）",
+  "resourceHubGyingSyncPage": "GYING 页码",
+  "resourceHubGyingSyncItems": "GYING 每次条数",
+  "resourceHubGyingSyncHelp": "GYING 目录采集默认关闭；启用后会低频采集元数据，已有 TMDB 影片只绑定来源身份，新影片不直接写入第三方资源链接。",
   "resourceHubDiscoveryLimit": "搜索结果上限",
   "resourceHubTaskLimit": "任务处理上限",
   "resourceHubPublishLimit": "发布上限",
@@ -425,6 +432,11 @@
     "TOP_RATED_MOVIE": "高分电影",
     "TOP_RATED_TV": "高分剧集",
     "UPCOMING_MOVIE": "即将上映"
+  },
+  "resourceHubGyingSource": {
+    "HITS_MOVIE": "热门电影",
+    "HITS_TV": "热门剧集",
+    "HITS_ANIME": "热门动漫"
   },
   "resourceHubTaskType": {
     "METADATA_SYNC": "元数据同步",

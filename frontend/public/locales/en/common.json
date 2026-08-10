@@ -349,6 +349,13 @@
   "resourceHubSyncPage": "Page",
   "resourceHubSyncItems": "Items per run",
   "resourceHubSyncIntervalHelp": "Automatic collection processes one TMDB source per interval so configured sources are spread across the day. For example, two sources at a 12-hour interval means each source runs once per day.",
+  "resourceHubGyingDiscovery": "Prefer GYING resource search",
+  "resourceHubGyingAutoSync": "GYING catalog auto sync",
+  "resourceHubGyingSources": "GYING catalog sources",
+  "resourceHubGyingSyncInterval": "GYING rotation interval (hours)",
+  "resourceHubGyingSyncPage": "GYING page",
+  "resourceHubGyingSyncItems": "GYING items per run",
+  "resourceHubGyingSyncHelp": "GYING catalog sync is disabled by default. Existing TMDB movies only receive a source identity, while new metadata never imports third-party links directly.",
   "resourceHubDiscoveryLimit": "Discovery result limit",
   "resourceHubTaskLimit": "Task limit",
   "resourceHubPublishLimit": "Publish limit",
@@ -425,6 +432,11 @@
     "TOP_RATED_MOVIE": "Top rated movies",
     "TOP_RATED_TV": "Top rated TV",
     "UPCOMING_MOVIE": "Upcoming movies"
+  },
+  "resourceHubGyingSource": {
+    "HITS_MOVIE": "Popular movies",
+    "HITS_TV": "Popular TV",
+    "HITS_ANIME": "Popular anime"
   },
   "resourceHubTaskType": {
     "METADATA_SYNC": "Metadata sync",
