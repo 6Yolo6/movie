@@ -1413,8 +1413,7 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
         if (links.isEmpty() && fallbackLinks.isEmpty()) {
-            reply.append("\n\n夸克候选已尝试转存、重分享和重新发现，但暂时没有可用的自有分享。")
-                    .append("\n为确保每次资源回复都带有效夸克链接，本次未返回第三方网盘，请稍后重试。");
+            reply.append("\n\n本次未返回第三方网盘；夸克候选已尝试转存、重分享和重新发现，但暂时没有可用分享，链接已失效。");
             appendResourcePreferenceHint(reply);
             return reply.toString();
         }
@@ -1461,8 +1460,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         int resourceCount = links.size() + fallbackLinks.size();
         if (resourceCount == 0) {
-            reply.append("\n\n夸克候选已尝试转存、重分享和重新发现，但暂时没有可用的自有分享。")
-                    .append("\n为确保每次资源回复都带有效夸克链接，本次未返回第三方网盘，请稍后重试。");
+            reply.append("\n\n本次未返回第三方网盘；夸克候选已尝试转存、重分享和重新发现，但暂时没有可用分享，链接已失效。");
             appendResourcePreferenceHint(reply);
             return reply.toString();
         }
@@ -1471,7 +1469,7 @@ public class QqBotServiceImpl implements IQqBotService {
         int requestedProviderCount = resourceCount - (int) quarkCount;
         if (!"QUARK".equals(preference.provider())
                 && !QqResourcePreferenceParser.ALL.equals(preference.provider())) {
-            reply.append("\n\n已附带 ").append(quarkCount).append(" 条自有夸克分享");
+            reply.append("\n\n已附带 ").append(quarkCount).append(" 条夸克分享");
             if (requestedProviderCount > 0) {
                 reply.append("，并按")
                         .append(QqResourcePreferenceParser.label(preference.provider()))
@@ -1729,7 +1727,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(
                 qqBotProperties.getDefaultReply(),
                 "机器人使用方法：@机器人 搜/找 影片名\n"
-                        + "影片上下文保留 5 分钟，可回复指定网盘及数量，例如“百度 3”“夸克 2”或“资源 8”。");
+                        + "影片上下文保留 5 分钟，可在5分钟内回复指定网盘，例如“百度 3”“夸克 2”。");
     }
 
     private String trim(String value, int maxLength) {

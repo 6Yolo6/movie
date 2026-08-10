@@ -327,7 +327,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
             request.setMovieId(movie.getId());
             request.setKeyword(buildDiscoveryKeyword(movie));
-            request.setSource("PANSOU");
+            request.setSource("AUTO");
             request.setMaxResults(clamp(resourceHubProperties.getTmdb().getDiscoveryMaxResults(), 10, 1, 50));
             resourceDiscoveryService.enqueue(request);
             result.setDiscoveryTasksCreated(result.getDiscoveryTasksCreated() + 1);

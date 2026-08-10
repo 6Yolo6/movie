@@ -9,6 +9,7 @@ public class ResourceHubProperties {
     private boolean enabled = false;
     private boolean autoApprove = true;
     private Tmdb tmdb = new Tmdb();
+    private Gying gying = new Gying();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
     private Worker worker = new Worker();
@@ -26,6 +27,18 @@ public class ResourceHubProperties {
         private boolean autoDiscoveryEnabled = true;
         private int discoveryMaxResults = 10;
         private int discoveryCooldownHours = 24;
+        private long requestIntervalMs = 250;
+        private int maxRetries = 2;
+    }
+
+    @Data
+    public static class Gying {
+        private boolean discoveryEnabled = true;
+        private boolean autoSyncEnabled = false;
+        private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME";
+        private int autoSyncPage = 1;
+        private int autoSyncMaxItems = 10;
+        private int autoSyncIntervalHours = 24;
     }
 
     @Data

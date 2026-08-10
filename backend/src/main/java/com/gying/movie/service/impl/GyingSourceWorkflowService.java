@@ -7,6 +7,7 @@ import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.dto.MovieSearchCandidate;
+import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
@@ -24,6 +25,7 @@ import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.GyingMetadataMatcher;
 import com.gying.movie.utils.MovieTitleMatcher;
+import com.gying.movie.utils.ResourceTitleMatcher;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import java.math.BigDecimal;
@@ -101,6 +103,7 @@ public class GyingSourceWorkflowService {
         int safeLimit = Math.min(Math.max(limit, 1), 30);
         List<Map<String, Object>> items = mapList(gyingSourceClient.get("/search", Map.of(
                 "q", safeKeyword,
+                "mode", 2,
                 "limit", safeLimit)).get("items"));
         return items.stream()
                 .map(item -> {
@@ -130,6 +133,109 @@ public class GyingSourceWorkflowService {
                 .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())
                 .limit(safeLimit)
                 .toList();
+    }
+
+    public List<DiscoveredResource> discoverResources(MovieMetadata movie, int limit) {
+        if (movie == null) {
+            return List.of();
+        }
+        int safeLimit = Math.min(Math.max(limit, 1), 20);
+        List<String> typeCodes = gyingTypeCodes(movie);
+        MovieSourceIdentity identity = findGyingIdentity(movie.getId());
+        if (identity == null) {
+            identity = discoverGyingIdentityBySearch(movie, typeCodes);
+        }
+        if (identity == null) {
+            return List.of();
+        }
+
+        Map<String, Object> snapshot = gyingSourceClient.get(
+                "/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
+        return selectTransferCandidates(mapList(snapshot.get("resources"))).stream()
+                .map(item -> {
+                    DiscoveredResource resource = new DiscoveredResource();
+                    resource.setTitle(firstText(stringValue(item.get("title")), stringValue(snapshot.get("title"))));
+                    resource.setProvider("QUARK");
+                    resource.setUrl(stringValue(item.get("url")));
+                    resource.setCode(stringValue(item.get("code")));
+                    resource.setSource("GYING");
+                    resource.setSourceRef(stringValue(item.get("source_id")));
+                    return resource;
+                })
+                .filter(item -> hasText(item.getUrl()))
+                .filter(item -> ResourceTitleMatcher.isRelevant(movie, item.getTitle(), null))
+                .limit(safeLimit)
+                .toList();
+    }
+
+    public Map<String, Object> syncCatalogMetadata(String source, int page, int limit) {
+        String normalizedSource = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
+        String typeCode = switch (normalizedSource) {
+            case "HITS_MOVIE" -> "mv";
+            case "HITS_TV" -> "tv";
+            case "HITS_ANIME" -> "ac";
+            default -> throw new IllegalArgumentException("Unsupported GYING catalog source: " + source);
+        };
+        int safePage = Math.min(Math.max(page, 1), 500);
+        int safeLimit = Math.min(Math.max(limit, 1), 20);
+        List<Map<String, Object>> candidates = fetchCatalogCandidates(typeCode, "hits", safePage, safeLimit);
+        int inserted = 0;
+        int linked = 0;
+        int failed = 0;
+        Set<String> movieIds = new LinkedHashSet<>();
+        List<String> errors = new ArrayList<>();
+
+        for (Map<String, Object> candidate : candidates) {
+            String mid = stringValue(candidate.get("mid"));
+            try {
+                String title = stringValue(candidate.get("title"));
+                Integer year = integerValue(candidate.get("year"));
+                Integer season = "mv".equals(typeCode) ? null : integerValue(candidate.get("season"));
+                MovieMetadata existing = resolveLocalMovie(typeCode, mid, title, year);
+                if (existing != null) {
+                    GyingMetadataMatcher.SourceMetadata metadata = new GyingMetadataMatcher.SourceMetadata(
+                            typeCode, title, year, season, List.of(), List.of());
+                    GyingMetadataMatcher.MatchEvidence evidence = GyingMetadataMatcher.score(existing, metadata);
+                    if (!evidence.autoMatch()) {
+                        throw new IllegalStateException("GYING metadata did not pass strict local matching");
+                    }
+                    saveIdentity(existing.getId(), "GYING", typeCode, required(mid, "GYING movie id"), season,
+                            evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
+                    movieIds.add(existing.getId());
+                    linked++;
+                    continue;
+                }
+
+                String targetMovieId = gyingMovieId(typeCode, required(mid, "GYING movie id"));
+                gyingSourceClient.post("/ingest", Map.of(
+                        "typeCode", typeCode,
+                        "mid", mid,
+                        "targetMovieId", targetMovieId,
+                        "uploadPoster", true,
+                        "includeResources", false));
+                if (movieService.getById(targetMovieId) == null) {
+                    throw new IllegalStateException("GYING metadata was not saved: " + targetMovieId);
+                }
+                movieIds.add(targetMovieId);
+                inserted++;
+            } catch (Exception error) {
+                failed++;
+                if (errors.size() < 10) {
+                    errors.add(firstText(mid, "unknown") + ": " + safeText(error.getMessage()));
+                }
+            }
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("source", normalizedSource);
+        result.put("page", safePage);
+        result.put("requested", safeLimit);
+        result.put("processed", inserted + linked);
+        result.put("inserted", inserted);
+        result.put("linked", linked);
+        result.put("movieIds", List.copyOf(movieIds));
+        result.put("failed", failed);
+        result.put("errors", errors);
+        return result;
     }
 
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
@@ -1089,15 +1195,7 @@ public class GyingSourceWorkflowService {
     }
 
     private MovieSourceIdentity discoverGyingIdentity(MovieMetadata movie, int maxPages) {
-        String category = movie == null || !hasText(movie.getCategory())
-                ? ""
-                : movie.getCategory().trim().toLowerCase(Locale.ROOT);
-        List<String> typeCodes = switch (category) {
-            case "mv" -> List.of("mv");
-            case "tv" -> List.of("tv", "ac");
-            case "ac" -> List.of("ac", "tv");
-            default -> List.of();
-        };
+        List<String> typeCodes = gyingTypeCodes(movie);
         MovieSourceIdentity searched = discoverGyingIdentityBySearch(movie, typeCodes);
         if (searched != null) {
             return searched;
@@ -1159,6 +1257,23 @@ public class GyingSourceWorkflowService {
         return null;
     }
 
+    private List<String> gyingTypeCodes(MovieMetadata movie) {
+        String category = movie == null || !hasText(movie.getCategory())
+                ? ""
+                : movie.getCategory().trim().toLowerCase(Locale.ROOT);
+        return switch (category) {
+            case "mv" -> List.of("mv");
+            case "tv" -> List.of("tv", "ac");
+            case "ac" -> List.of("ac", "tv");
+            default -> List.of();
+        };
+    }
+
+    private String gyingMovieId(String typeCode, String mid) {
+        String value = "gying_" + normalizeTypeCode(typeCode) + "_" + required(mid, "GYING movie id");
+        return value.length() <= 64 ? value : value.substring(0, 64);
+    }
+
     private MovieSourceIdentity discoverGyingIdentityBySearch(
             MovieMetadata movie, List<String> typeCodes) {
         LinkedHashSet<String> queries = new LinkedHashSet<>();
@@ -1172,6 +1287,7 @@ public class GyingSourceWorkflowService {
                 Map<String, Object> response = gyingSourceClient.get("/search", Map.of(
                         "q", query,
                         "typeCode", typeCode,
+                        "mode", 3,
                         "limit", 20));
                 List<ScoredSource> scored = mapList(
                                 response == null ? null : response.get("items")).stream()

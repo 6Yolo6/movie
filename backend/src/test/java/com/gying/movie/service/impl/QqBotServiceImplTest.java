@@ -299,7 +299,7 @@ class QqBotServiceImplTest {
         service.buildSearchReply("哈哈哈哈哈", "user-3");
         String reply = service.buildSearchReply("百度 1", "user-3");
 
-        assertTrue(reply.contains("已附带 1 条自有夸克分享，并按百度返回 1 条"));
+        assertTrue(reply.contains("已附带 1 条夸克分享，并按百度返回 1 条"));
         assertTrue(reply.contains("https://pan.quark.cn/s/owned-share"));
         assertTrue(reply.contains("BAIDU - 哈哈哈哈哈 第二季"));
         assertTrue(reply.contains("https://pan.baidu.com/s/fallback?pwd=7d32"));
@@ -422,7 +422,7 @@ class QqBotServiceImplTest {
 
         String reply = service.buildSearchReply("百度 2", "preference-user");
 
-        assertTrue(reply.contains("已附带 1 条自有夸克分享，并按百度返回 2 条"));
+        assertTrue(reply.contains("已附带 1 条夸克分享，并按百度返回 2 条"));
         assertTrue(reply.contains("https://pan.quark.cn/s/context-share"));
         assertTrue(reply.contains("https://pan.baidu.com/s/one"));
         assertTrue(reply.contains("https://pan.baidu.com/s/two"));

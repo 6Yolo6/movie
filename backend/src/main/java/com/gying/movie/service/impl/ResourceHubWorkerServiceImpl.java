@@ -10,6 +10,7 @@ import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IGyingMetadataSyncService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -32,6 +33,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final ResourceHubProperties resourceHubProperties;
     private final IResourceHubTaskService taskService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
+    private final IGyingMetadataSyncService gyingMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
@@ -41,6 +43,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             ResourceHubProperties resourceHubProperties,
             IResourceHubTaskService taskService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
+            IGyingMetadataSyncService gyingMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
@@ -48,6 +51,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
+        this.gyingMetadataSyncService = gyingMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
@@ -75,6 +79,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setStartedAt(LocalDateTime.now());
         try {
             enqueueTmdbAutoSyncTasks(result);
+            enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
             runQuarkTransfers(result);
             publishResources(result);
@@ -125,6 +130,47 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .in("status", List.of("PENDING", "RUNNING"))) > 0;
     }
 
+    private void enqueueGyingAutoSyncTasks(ResourceHubWorkerResult result) {
+        ResourceHubProperties.Gying gying = resourceHubProperties.getGying();
+        if (!gying.isAutoSyncEnabled()) {
+            return;
+        }
+        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources());
+        if (sources.isEmpty() || hasActiveGyingMetadataSyncTask(sources)) {
+            return;
+        }
+        ResourceHubTask latestTask = latestGyingMetadataSyncTask(sources);
+        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(gying.getAutoSyncIntervalHours(), 1));
+        if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
+            return;
+        }
+        String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
+        try {
+            gyingMetadataSyncService.enqueue(source, gying.getAutoSyncPage(), gying.getAutoSyncMaxItems());
+            result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+        } catch (Exception error) {
+            addError(result, "gying auto sync " + source + ": " + error.getMessage());
+        }
+    }
+
+    private boolean hasActiveGyingMetadataSyncTask(List<String> sources) {
+        return taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "GYING")
+                .in("keyword", sources)
+                .in("status", List.of("PENDING", "RUNNING"))) > 0;
+    }
+
+    private ResourceHubTask latestGyingMetadataSyncTask(List<String> sources) {
+        return taskService.getOne(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "GYING")
+                .in("keyword", sources)
+                .orderByDesc("created_at")
+                .orderByDesc("id")
+                .last("LIMIT 1"), false);
+    }
+
     private ResourceHubTask latestMetadataSyncTask(List<String> sources) {
         return taskService.getOne(new QueryWrapper<ResourceHubTask>()
                 .eq("task_type", "METADATA_SYNC")
@@ -158,6 +204,20 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .toList();
     }
 
+    private List<String> gyingAutoSyncSources(String raw) {
+        if (!hasText(raw)) {
+            return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        }
+        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        return List.of(raw.split(",")).stream()
+                .map(String::trim)
+                .filter(this::hasText)
+                .map(String::toUpperCase)
+                .filter(supported::contains)
+                .distinct()
+                .toList();
+    }
+
     private void runDueTasks(ResourceHubWorkerResult result) {
         List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>()
                 .eq("status", "PENDING")
@@ -179,7 +239,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setTasksProcessed(result.getTasksProcessed() + 1);
         try {
             if ("METADATA_SYNC".equalsIgnoreCase(task.getTaskType())) {
-                TmdbSyncResult syncResult = tmdbMetadataSyncService.runTask(task.getId());
+                TmdbSyncResult syncResult = "GYING".equalsIgnoreCase(task.getSource())
+                        ? gyingMetadataSyncService.runTask(task.getId())
+                        : tmdbMetadataSyncService.runTask(task.getId());
                 taskResult.setStatus(syncResult.getStatus());
                 if ("SUCCEEDED".equalsIgnoreCase(syncResult.getStatus())) {
                     result.setTasksSucceeded(result.getTasksSucceeded() + 1);

@@ -16,6 +16,7 @@ import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
+import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
 import com.gying.movie.entity.ResourceLink;
@@ -234,7 +235,7 @@ class GyingSourceWorkflowServiceTest {
         when(gyingSourceClient.get("/recent?limit=100"))
                 .thenReturn(Map.of("items", List.of()));
         when(gyingSourceClient.get("/search", Map.of(
-                "q", "揭秘日", "typeCode", "mv", "limit", 20)))
+                "q", "揭秘日", "typeCode", "mv", "mode", 3, "limit", 20)))
                 .thenReturn(Map.of("items", List.of(
                         Map.of(
                                 "typeCode", "mv",
@@ -281,6 +282,54 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(0, searchIdentity.getSeason());
         verify(gyingSourceClient, never())
                 .get("/catalog?typeCode=mv&sort=score&page=1&limit=60");
+    }
+
+    @Test
+    void discoversStrictGyingQuarkResourcesBeforePanSou() {
+        MovieMetadata movie = movie("tmdb_tv_1431", "犯罪现场调查", "tv", "TRAILER");
+        movie.setSeason(1);
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setMovieId(movie.getId());
+        identity.setSource("GYING");
+        identity.setSourceType("tv");
+        identity.setExternalId("E9xe");
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(gyingSourceClient.get("/movie/tv/E9xe")).thenReturn(Map.of(
+                "title", "犯罪现场调查 第一季",
+                "resources", List.of(Map.of(
+                        "title", "犯罪现场调查 全15季 1080P",
+                        "provider", "QUARK",
+                        "url", "https://pan.quark.cn/s/csi",
+                        "source_id", "DRKXX"))));
+
+        List<DiscoveredResource> resources = service.discoverResources(movie, 5);
+
+        assertEquals(1, resources.size());
+        assertEquals("GYING", resources.get(0).getSource());
+        assertEquals("DRKXX", resources.get(0).getSourceRef());
+    }
+
+    @Test
+    void syncCatalogMetadataDoesNotImportThirdPartyResources() {
+        MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of(
+                        "typeCode", "mv",
+                        "mid", "NEW1",
+                        "title", "目录电影",
+                        "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById("gying_mv_NEW1")).thenReturn(saved);
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+
+        Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+
+        assertEquals(1, result.get("inserted"));
+        assertEquals(List.of(saved.getId()), result.get("movieIds"));
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals(false, payload.getValue().get("includeResources"));
+        assertEquals("gying_mv_NEW1", payload.getValue().get("targetMovieId"));
     }
 
     @Test

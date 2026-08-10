@@ -42,6 +42,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
     private final ResourceHubProperties resourceHubProperties;
     private final PanSouClient panSouClient;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final IMovieMetadataService movieService;
     private final IResourceHubTaskService taskService;
     private final IResourceDiscoveryResultService discoveryResultService;
@@ -52,6 +53,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     public ResourceDiscoveryServiceImpl(
             ResourceHubProperties resourceHubProperties,
             PanSouClient panSouClient,
+            GyingSourceWorkflowService gyingSourceWorkflowService,
             IMovieMetadataService movieService,
             IResourceHubTaskService taskService,
             IResourceDiscoveryResultService discoveryResultService,
@@ -60,6 +62,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             ObjectMapper objectMapper) {
         this.resourceHubProperties = resourceHubProperties;
         this.panSouClient = panSouClient;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
         this.movieService = movieService;
         this.taskService = taskService;
         this.discoveryResultService = discoveryResultService;
@@ -117,10 +120,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             for (DiscoveredResource resource : resources) {
                 try {
                     if (!ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), payload.keyword())) {
-                        ResourceDiscoveryResult ignored = saveDiscovery(
-                                task, movie, resource, ResourceHubHashUtils.sha256(resource.getUrl()), "IGNORED", now);
-                        ignored.setFailureReason("Resource title does not match movie title");
-                        discoveryResultService.updateById(ignored);
+                        result.setRejected(result.getRejected() + 1);
                         continue;
                     }
                     String urlHash = ResourceHubHashUtils.sha256(resource.getUrl());
@@ -128,7 +128,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     if (sourceCheck.checked() && !sourceCheck.valid()) {
                         ResourceDiscoveryResult ignored = saveDiscovery(
                                 task, movie, resource, urlHash, "IGNORED", now);
-                        ignored.setFailureReason("PanSou detected invalid source link: "
+                        ignored.setFailureReason("Source validation detected invalid link: "
                                 + trim(sourceCheck.message(), 900));
                         discoveryResultService.updateById(ignored);
                         continue;
@@ -169,10 +169,25 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     }
 
     private List<DiscoveredResource> discover(DiscoveryPayload payload, MovieMetadata movie) {
-        if (!"PANSOU".equalsIgnoreCase(payload.source())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
+        String source = payload.source().toUpperCase();
+        if ("GYING".equals(source)) {
+            return gyingSourceWorkflowService.discoverResources(movie, payload.maxResults());
         }
-        return panSouClient.searchQuark(resolveKeyword(payload, movie), payload.maxResults());
+        if ("AUTO".equals(source) && resourceHubProperties.getGying().isDiscoveryEnabled()) {
+            try {
+                List<DiscoveredResource> gyingResources = gyingSourceWorkflowService.discoverResources(
+                        movie, payload.maxResults());
+                if (!gyingResources.isEmpty()) {
+                    return gyingResources;
+                }
+            } catch (RuntimeException ignored) {
+                // GYING is preferred, but a site outage must not block the PanSou fallback.
+            }
+        }
+        if ("AUTO".equals(source) || "PANSOU".equals(source)) {
+            return panSouClient.searchQuark(resolveKeyword(payload, movie), payload.maxResults());
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
     }
 
     private LinkCheckResult checkSourceLink(String url) {
@@ -193,10 +208,10 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
         discovery.setTaskId(task.getId());
         discovery.setMovieId(movie.getId());
-        discovery.setSource("PANSOU");
+        discovery.setSource(trim(firstText(resource.getSource(), task.getSource(), "PANSOU"), 30));
         discovery.setSourceRef(trim(resource.getSourceRef(), 100));
         discovery.setTitle(trim(firstText(resource.getTitle(), movie.getTitleCn(), movie.getTitleEn()), 255));
-        discovery.setProvider("QUARK");
+        discovery.setProvider(trim(firstText(resource.getProvider(), "QUARK"), 30));
         discovery.setResourceType("DISK");
         discovery.setOriginalUrl(resource.getUrl());
         discovery.setOriginalUrlHash(urlHash);
@@ -214,7 +229,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
-        if (hasMovieTransferTask(discovery.getMovieId())) {
+        if (!"QUARK".equalsIgnoreCase(resource.getProvider()) || hasMovieTransferTask(discovery.getMovieId())) {
             return false;
         }
         QuarkTransferTask transfer = new QuarkTransferTask();
@@ -277,8 +292,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieId or movieTitle is required");
         }
         String movieId = resolveMovieId(request);
-        String source = hasText(request.getSource()) ? request.getSource().trim().toUpperCase() : "PANSOU";
-        if (!"PANSOU".equals(source)) {
+        String source = hasText(request.getSource()) ? request.getSource().trim().toUpperCase() : "AUTO";
+        if (!Set.of("AUTO", "GYING", "PANSOU").contains(source)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
         }
         int maxResults = Math.min(Math.max(request.getMaxResults() == null

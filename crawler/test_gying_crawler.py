@@ -1,9 +1,23 @@
 import unittest
 
-from crawler.gying_crawler import normalize_search_items, preserve_existing_resource_source
+from crawler.gying_crawler import (
+    gying_search_type,
+    normalize_search_mode,
+    normalize_search_items,
+    preserve_existing_resource_source,
+)
 
 
 class GyingSearchParserTest(unittest.TestCase):
+
+    def test_maps_search_categories_and_clamps_mode(self):
+        self.assertEqual(0, gying_search_type())
+        self.assertEqual(1, gying_search_type("mv"))
+        self.assertEqual(2, gying_search_type("tv"))
+        self.assertEqual(3, gying_search_type("ac"))
+        self.assertEqual(1, normalize_search_mode(0))
+        self.assertEqual(2, normalize_search_mode("2"))
+        self.assertEqual(3, normalize_search_mode(99))
 
     def test_parses_parallel_search_arrays_and_keeps_movie_season_empty(self):
         payload = {

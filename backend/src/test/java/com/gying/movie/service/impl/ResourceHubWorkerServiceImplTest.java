@@ -16,6 +16,7 @@ import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IGyingMetadataSyncService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -72,6 +73,7 @@ class ResourceHubWorkerServiceImplTest {
         private final ResourceHubProperties properties = new ResourceHubProperties();
         private final IResourceHubTaskService taskService = mock(IResourceHubTaskService.class);
         private final ITmdbMetadataSyncService tmdbService = mock(ITmdbMetadataSyncService.class);
+        private final IGyingMetadataSyncService gyingService = mock(IGyingMetadataSyncService.class);
         private final IResourceDiscoveryService discoveryService = mock(IResourceDiscoveryService.class);
         private final IQuarkTransferRunnerService transferService = mock(IQuarkTransferRunnerService.class);
         private final IResourceHubPublishService publishService = mock(IResourceHubPublishService.class);
@@ -91,6 +93,7 @@ class ResourceHubWorkerServiceImplTest {
                     properties,
                     taskService,
                     tmdbService,
+                    gyingService,
                     discoveryService,
                     transferService,
                     publishService,
