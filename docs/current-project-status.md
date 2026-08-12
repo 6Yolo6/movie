@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-08-10
+更新时间：2026-08-12
 
 本文件只记录当前能力、长期约束和仍需处理的工作。历史验证样例、一次性资源 ID、临时调试过程不在此保留；具体接口和部署参数分别以 `docs/api.md`、`docs/deployment.md` 为准。
 
@@ -102,7 +102,7 @@
 
 ## 仍需处理
 
-- 重建生产 `gying-source` 容器，并用一条计划保留的真实资源验证 GYING 发布接口修复；当前代码和请求契约测试已通过，但尚未执行真实发布。
+- 用一条计划保留的真实资源验证已部署的 GYING 发布接口修复；容器健康、只读候选和请求契约已验证，但尚未执行真实发布。
 - 将当前 OpenClaw QQBot 的本机 `node_modules` 补丁升级为正式私有插件或上游配置。
 - 在管理员权限下重新启用每日腾讯频道自动发帖计划任务；手动立即发帖不受影响。
 - 配置新的 `WEIBO_WEB_COOKIE` 与 `WEIBO_WEB_FINGERPRINT`，完成项目内单条真实发布验收后再开启微博目标自动发布。
@@ -121,7 +121,7 @@
 
 ## 验收
 
-2026-08-12 已定位 GYING 发布 502 为上游接口契约变化：发布入口从路径绑定改为固定 `/res/pan/add`，影片类型和 ID 改由 `binds[0]` 表单字段传递。采集器代码和接口参考已更新；`python -m py_compile crawler/gying_crawler.py crawler/test_gying_crawler.py`、4 项采集器单测及 `git diff --check` 通过。生产容器尚未重建，也未执行真实发布验收。
+2026-08-12 已定位 GYING 发布 502 为上游接口契约变化：发布入口从路径绑定改为固定 `/res/pan/add`，影片类型和 ID 改由 `binds[0]` 表单字段传递。提交 `39c6213` 已部署到生产 `gying-source` 镜像 `sha256:359aebd…ae5da`；容器健康、账号配置状态、只读最近更新、backend 到 source、backend API 和 nginx 首页均验证通过，容器内源码确认使用新契约且重建后无异常日志。旧镜像 `sha256:fc15fed…2434b` 保留为应用回滚基线；本次未改数据库或卷，也未执行真实发布。
 
 2026-08-10 已完成多平台发布目标删除和全量 `sys_config` 管理页改造；删除目标会保留 `social_post_log` 并终止待发布记录。后端完整测试、前端 lint/生产构建和 `git diff --check` 通过；生产 `backend`、`frontend` 容器已重建，后端片库接口及 nginx 下 `/admin/settings`、`/admin/automation` 均返回 200。
 
