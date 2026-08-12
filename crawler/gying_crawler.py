@@ -658,12 +658,14 @@ def normalize_download_section(section, target_user=None):
     return resources
 
 def publish_pan_resource(type_code, mid, title, panurl, panpw="", login_visible=0):
-    endpoint = f"{BASE_URL}/res/pan/add/{type_code}/{mid}"
+    endpoint = f"{BASE_URL}/res/pan/add"
     payload = {
         "title": title,
         "panurl": panurl,
         "panpw": panpw or "",
         "is": str(int(login_visible)),
+        "binds[0][dir]": type_code,
+        "binds[0][id]": mid,
     }
     resp = site_post(
         endpoint,

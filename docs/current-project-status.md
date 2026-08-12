@@ -65,6 +65,7 @@
 - GYING 搜索参数已按站点分类约定映射：`0` 为全部、`1` 为电影、`2` 为剧集、`3` 为动漫；普通候选使用适中模式，自动身份绑定使用精准模式，并限制模式值为 `1..3`。
 - GYING 定时目录采集成功后会为本地影片排入 `AUTO` 资源发现任务，沿用 GYING 优先、PanSou 兜底、夸克转存、自有分享和正式入库流程；已有可用资源或冷却期内任务会跳过。
 - 管理页可切换当前 GYING 用户名、密码、Cookie 和发布者显示名；凭据不回显、不入库，容器重启后恢复环境变量默认值。
+- GYING 网盘发布使用固定 `POST /res/pan/add`，通过 `binds[0][dir]` 与 `binds[0][id]` 绑定影片；旧的路径参数形式会被上游返回 404。
 
 ### QQ 自动化
 
@@ -101,6 +102,7 @@
 
 ## 仍需处理
 
+- 重建生产 `gying-source` 容器，并用一条计划保留的真实资源验证 GYING 发布接口修复；当前代码和请求契约测试已通过，但尚未执行真实发布。
 - 将当前 OpenClaw QQBot 的本机 `node_modules` 补丁升级为正式私有插件或上游配置。
 - 在管理员权限下重新启用每日腾讯频道自动发帖计划任务；手动立即发帖不受影响。
 - 配置新的 `WEIBO_WEB_COOKIE` 与 `WEIBO_WEB_FINGERPRINT`，完成项目内单条真实发布验收后再开启微博目标自动发布。
@@ -118,6 +120,8 @@
 - 删除核心数据、重复清理和标题匹配不确定时先 dry-run，不执行物理删除。
 
 ## 验收
+
+2026-08-12 已定位 GYING 发布 502 为上游接口契约变化：发布入口从路径绑定改为固定 `/res/pan/add`，影片类型和 ID 改由 `binds[0]` 表单字段传递。采集器代码和接口参考已更新；`python -m py_compile crawler/gying_crawler.py crawler/test_gying_crawler.py`、4 项采集器单测及 `git diff --check` 通过。生产容器尚未重建，也未执行真实发布验收。
 
 2026-08-10 已完成多平台发布目标删除和全量 `sys_config` 管理页改造；删除目标会保留 `social_post_log` 并终止待发布记录。后端完整测试、前端 lint/生产构建和 `git diff --check` 通过；生产 `backend`、`frontend` 容器已重建，后端片库接口及 nginx 下 `/admin/settings`、`/admin/automation` 均返回 200。
 

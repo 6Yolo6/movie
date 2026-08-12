@@ -1,10 +1,12 @@
 import unittest
+from unittest.mock import Mock, patch
 
 from crawler.gying_crawler import (
     gying_search_type,
     normalize_search_mode,
     normalize_search_items,
     preserve_existing_resource_source,
+    publish_pan_resource,
 )
 
 
@@ -69,6 +71,40 @@ class GyingSearchParserTest(unittest.TestCase):
             preserve_existing_resource_source("GYING_PUBLISHED"),
         )
         self.assertEqual("GYING", preserve_existing_resource_source(None))
+
+    @patch("crawler.gying_crawler.site_post")
+    def test_publishes_pan_resource_with_current_binding_contract(self, site_post):
+        response = Mock()
+        response.ok = True
+        response.json.return_value = {"code": 200}
+        site_post.return_value = response
+
+        result = publish_pan_resource(
+            "mv",
+            "VeewM",
+            "4K/2160P Minions & Monsters (2026)",
+            "https://pan.quark.cn/s/example",
+        )
+
+        self.assertEqual({"code": 200}, result)
+        endpoint, = site_post.call_args.args
+        self.assertTrue(endpoint.endswith("/res/pan/add"))
+        self.assertFalse(endpoint.endswith("/res/pan/add/mv/VeewM"))
+        self.assertEqual(
+            {
+                "title": "4K/2160P Minions & Monsters (2026)",
+                "panurl": "https://pan.quark.cn/s/example",
+                "panpw": "",
+                "is": "0",
+                "binds[0][dir]": "mv",
+                "binds[0][id]": "VeewM",
+            },
+            site_post.call_args.kwargs["data"],
+        )
+        self.assertEqual(
+            "XMLHttpRequest",
+            site_post.call_args.kwargs["headers"]["X-Requested-With"],
+        )
 
 
 if __name__ == "__main__":

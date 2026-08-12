@@ -63,6 +63,9 @@
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
 没有可靠结果时才回退到片库目录扫描。
 
+向 GYING 发布网盘资源使用 `POST /res/pan/add`；表单中的 `binds[0][dir]` 传递
+`mv|tv|ac` 类型，`binds[0][id]` 传递 GYING 影片 ID。不得再把类型和 ID 拼入请求路径。
+
 ## QQ 自动化
 
 - `GET /api/qq-bot/health`：机器人配置状态。
