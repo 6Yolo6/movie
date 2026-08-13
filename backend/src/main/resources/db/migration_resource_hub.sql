@@ -163,6 +163,31 @@ CREATE TABLE IF NOT EXISTS `quark_transfer_task` (
   KEY `idx_quark_original_hash` (`movie_id`, `original_url_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quark Transfer Tasks';
 
+CREATE TABLE IF NOT EXISTS `xunlei_transfer_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `discovery_result_id` bigint DEFAULT NULL,
+  `movie_id` varchar(64) NOT NULL,
+  `original_url` text NOT NULL,
+  `original_url_hash` char(64) DEFAULT NULL,
+  `saved_path` varchar(500) DEFAULT NULL,
+  `share_url` text,
+  `share_url_hash` char(64) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'PENDING' COMMENT 'PENDING, RUNNING, SUBMITTED, SUCCEEDED, WAITING_SHARE, FAILED, CANCELED',
+  `attempts` int DEFAULT '0',
+  `last_error` varchar(1000) DEFAULT NULL,
+  `request_payload` json DEFAULT NULL,
+  `response_payload` json DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `finished_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_xunlei_discovery` (`discovery_result_id`),
+  KEY `idx_xunlei_movie_status` (`movie_id`, `status`),
+  KEY `idx_xunlei_status_created` (`status`, `created_at`),
+  KEY `idx_xunlei_original_hash` (`movie_id`, `original_url_hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Xunlei Transfer Tasks';
+
 INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.hub.enabled', 'false', 'Enable Resource Hub automation (true/false)'),
 ('resource.hub.auto_approve', 'true', 'Auto approve Resource Hub imported resources'),
@@ -179,6 +204,7 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.hub.worker.enabled', 'false', 'Enable Resource Hub worker'),
 ('resource.hub.worker.task_limit', '5', 'Tasks processed per worker run'),
 ('resource.hub.worker.quark_limit', '5', 'Quark transfers submitted per worker run'),
+('resource.hub.worker.xunlei_limit', '5', 'Xunlei transfers submitted per worker run'),
 ('resource.hub.worker.publish_limit', '20', 'Discoveries published per worker run')
 ON DUPLICATE KEY UPDATE config_value = config_value;
 

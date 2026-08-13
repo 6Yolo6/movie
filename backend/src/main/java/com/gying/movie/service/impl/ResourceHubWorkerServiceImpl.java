@@ -10,6 +10,7 @@ import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.service.IGyingMetadataSyncService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubConfigService;
@@ -36,6 +37,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IGyingMetadataSyncService gyingMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubConfigService resourceHubConfigService;
 
@@ -46,6 +48,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             IGyingMetadataSyncService gyingMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
             IResourceHubConfigService resourceHubConfigService) {
         this.resourceHubProperties = resourceHubProperties;
@@ -54,6 +57,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         this.gyingMetadataSyncService = gyingMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.resourceHubConfigService = resourceHubConfigService;
     }
@@ -82,6 +86,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
             runQuarkTransfers(result);
+            runXunleiTransfers(result);
             publishResources(result);
         } finally {
             result.setFinishedAt(LocalDateTime.now());
@@ -120,6 +125,12 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         } catch (Exception e) {
             addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
         }
+    }
+
+    public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
+            ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
+            IQuarkTransferRunnerService q, IResourceHubPublishService pub, IResourceHubConfigService c) {
+        this(p, t, tm, gm, d, q, null, pub, c);
     }
 
     private boolean hasActiveMetadataSyncTask(List<String> sources) {
@@ -288,6 +299,14 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             result.setQuarkTransfers(failed);
             addError(result, "quark transfers: " + e.getMessage());
         }
+    }
+
+    private void runXunleiTransfers(ResourceHubWorkerResult result) {
+        try {
+            if (xunleiTransferRunnerService == null) return;
+            QuarkTransferRunResult xunlei = xunleiTransferRunnerService.submitPending(resourceHubProperties.getWorker().getXunleiLimit());
+            for (String error : xunlei.getErrors()) addError(result, "xunlei transfers: " + error);
+        } catch (Exception e) { addError(result, "xunlei transfers: " + e.getMessage()); }
     }
 
     private void publishResources(ResourceHubWorkerResult result) {

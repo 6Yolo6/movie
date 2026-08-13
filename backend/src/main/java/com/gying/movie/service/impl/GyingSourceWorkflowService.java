@@ -15,6 +15,7 @@ import com.gying.movie.entity.MovieSourceIdentity;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IMovieSourceIdentityService;
 import com.gying.movie.service.IQuarkShareService;
@@ -23,6 +24,8 @@ import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferTaskService;
 import com.gying.movie.utils.GyingMetadataMatcher;
 import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.ResourceTitleMatcher;
@@ -61,6 +64,8 @@ public class GyingSourceWorkflowService {
     private final IQuarkTransferRunnerService transferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IQuarkShareService quarkShareService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
     public GyingSourceWorkflowService(
             GyingSourceClient gyingSourceClient,
@@ -74,7 +79,9 @@ public class GyingSourceWorkflowService {
             IQuarkTransferTaskService transferTaskService,
             IQuarkTransferRunnerService transferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
-            IQuarkShareService quarkShareService) {
+            IQuarkShareService quarkShareService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService) {
         this.gyingSourceClient = gyingSourceClient;
         this.tmdbClient = tmdbClient;
         this.posterStorageService = posterStorageService;
@@ -87,6 +94,15 @@ public class GyingSourceWorkflowService {
         this.transferRunnerService = transferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.quarkShareService = quarkShareService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+    }
+
+    public GyingSourceWorkflowService(GyingSourceClient gc, TmdbClient tc, PosterStorageService pc, PanSouClient ps,
+            IMovieMetadataService ms, IMovieSourceIdentityService si, IResourceLinkService rl,
+            IResourceDiscoveryResultService dr, IQuarkTransferTaskService qt, IQuarkTransferRunnerService qr,
+            IResourceHubPublishService rp, IQuarkShareService qs) {
+        this(gc, tc, pc, ps, ms, si, rl, dr, qt, qr, rp, qs, null, null);
     }
 
     public List<Map<String, Object>> recentCandidates(int limit) {
@@ -155,7 +171,7 @@ public class GyingSourceWorkflowService {
                 .map(item -> {
                     DiscoveredResource resource = new DiscoveredResource();
                     resource.setTitle(firstText(stringValue(item.get("title")), stringValue(snapshot.get("title"))));
-                    resource.setProvider("QUARK");
+                    resource.setProvider(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase());
                     resource.setUrl(stringValue(item.get("url")));
                     resource.setCode(stringValue(item.get("code")));
                     resource.setSource("GYING");
@@ -895,6 +911,10 @@ public class GyingSourceWorkflowService {
 
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
+        String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
+        if ("XUNLEI".equals(provider) && xunleiTransferTaskService != null && xunleiTransferRunnerService != null) {
+            return transferXunleiCandidate(movie, candidate, originalUrl);
+        }
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         ResourceDiscoveryResult discovery = discoveryResultService.getOne(
                 new QueryWrapper<ResourceDiscoveryResult>()
@@ -916,7 +936,7 @@ public class GyingSourceWorkflowService {
             discovery.setCreatedAt(now);
         }
         discovery.setTitle(trim(title, 255));
-        discovery.setProvider("QUARK");
+        discovery.setProvider(provider);
         discovery.setResourceType("DISK");
         discovery.setCode(trim(stringValue(candidate.get("code")), 50));
         discovery.setQuality(trim(extractQuality(title), 50));
@@ -968,6 +988,33 @@ public class GyingSourceWorkflowService {
         return new TransferOutcome(discovery, transfer, shareUrl);
     }
 
+    private TransferOutcome transferXunleiCandidate(MovieMetadata movie, Map<String, Object> candidate, String originalUrl) {
+        String urlHash = ResourceHubHashUtils.sha256(originalUrl);
+        LocalDateTime now = LocalDateTime.now();
+        ResourceDiscoveryResult discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).orderByDesc("updated_at").last("LIMIT 1"), false);
+        if (discovery == null) {
+            discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource("GYING");
+            discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
+            discovery.setOriginalUrlHash(urlHash); discovery.setCreatedAt(now);
+        }
+        discovery.setTitle(trim(buildResourceTitle(movie, stringValue(candidate.get("title")), "XUNLEI"), 255));
+        discovery.setProvider("XUNLEI"); discovery.setResourceType("DISK"); discovery.setCode(trim(stringValue(candidate.get("code")), 50));
+        discovery.setStatus("DISCOVERED"); discovery.setUpdatedAt(now);
+        if (discovery.getId() == null) discoveryResultService.save(discovery); else discoveryResultService.updateById(discovery);
+        XunleiTransferTask transfer = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+        if (transfer == null) {
+            transfer = new XunleiTransferTask(); transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(movie.getId());
+            transfer.setOriginalUrl(originalUrl); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING"); transfer.setAttempts(0);
+            transfer.setCreatedAt(now); transfer.setUpdatedAt(now); xunleiTransferTaskService.save(transfer);
+        }
+        if (!hasText(transfer.getShareUrl())) xunleiTransferRunnerService.submitOne(transfer.getId());
+        transfer = xunleiTransferTaskService.getById(transfer.getId());
+        if (transfer == null || !hasText(transfer.getShareUrl())) throw new IllegalStateException("Xunlei transfer succeeded without an own share URL");
+        return new TransferOutcome(discovery, null, transfer.getShareUrl());
+    }
+
     private Map<String, Object> publishLocalResource(
             String typeCode,
             String siteMid,
@@ -987,14 +1034,14 @@ public class GyingSourceWorkflowService {
     private List<Map<String, Object>> selectTransferCandidates(List<Map<String, Object>> resources) {
         List<Map<String, Object>> ordered = resources.stream()
                 .filter(item -> !Boolean.TRUE.equals(item.get("is_own")))
-                .filter(item -> "QUARK".equalsIgnoreCase(stringValue(item.get("provider"))))
+                .filter(item -> List.of("QUARK", "XUNLEI").contains(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase()))
                 .filter(item -> hasText(stringValue(item.get("url"))))
                 .sorted((left, right) -> qualityScore(stringValue(right.get("title")))
                         - qualityScore(stringValue(left.get("title"))))
                 .limit(20)
                 .toList();
         Map<String, String> links = new LinkedHashMap<>();
-        ordered.forEach(item -> links.put(stringValue(item.get("url")), "QUARK"));
+        ordered.forEach(item -> links.put(stringValue(item.get("url")), firstText(stringValue(item.get("provider")), "QUARK")));
         Map<String, LinkCheckResult> checks;
         try {
             checks = panSouClient.checkLinksByProvider(links);

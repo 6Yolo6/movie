@@ -12,6 +12,7 @@ public class ResourceHubProperties {
     private Gying gying = new Gying();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
+    private Xunlei xunlei = new Xunlei();
     private Worker worker = new Worker();
     private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
 
@@ -66,11 +67,28 @@ public class ResourceHubProperties {
     }
 
     @Data
+    public static class Xunlei {
+        private boolean enabled = false;
+        private String baseUrl = "https://api-pan.xunlei.com/drive/v1";
+        private String authorization;
+        private String clientId;
+        private String deviceId;
+        private String clientVersion = "1.0.0";
+        private String captchaToken;
+        private String savePath = "/GYing Resource Hub";
+        private boolean shareEnabled = false;
+        private String shareCreatePath;
+        private int pollAttempts = 20;
+        private long pollIntervalMs = 1000;
+    }
+
+    @Data
     public static class Worker {
         private boolean enabled = false;
         private long fixedDelayMs = 60000;
         private int taskLimit = 5;
         private int quarkLimit = 5;
+        private int xunleiLimit = 5;
         private int publishLimit = 20;
     }
 

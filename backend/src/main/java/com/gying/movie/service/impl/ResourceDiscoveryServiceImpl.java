@@ -14,12 +14,14 @@ import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IXunleiTransferTaskService;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
@@ -48,6 +50,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private final IResourceDiscoveryResultService discoveryResultService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IResourceLinkService resourceLinkService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final ObjectMapper objectMapper;
 
     public ResourceDiscoveryServiceImpl(
@@ -59,6 +62,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             IResourceDiscoveryResultService discoveryResultService,
             IQuarkTransferTaskService quarkTransferTaskService,
             IResourceLinkService resourceLinkService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
             ObjectMapper objectMapper) {
         this.resourceHubProperties = resourceHubProperties;
         this.panSouClient = panSouClient;
@@ -68,7 +72,14 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         this.discoveryResultService = discoveryResultService;
         this.quarkTransferTaskService = quarkTransferTaskService;
         this.resourceLinkService = resourceLinkService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.objectMapper = objectMapper;
+    }
+
+    public ResourceDiscoveryServiceImpl(ResourceHubProperties p, PanSouClient ps, GyingSourceWorkflowService gs,
+            IMovieMetadataService ms, IResourceHubTaskService ts, IResourceDiscoveryResultService ds,
+            IQuarkTransferTaskService qs, IResourceLinkService ls, ObjectMapper om) {
+        this(p, ps, gs, ms, ts, ds, qs, ls, null, om);
     }
 
     @Override
@@ -140,7 +151,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     }
                     ResourceDiscoveryResult discovery = saveDiscovery(task, movie, resource, urlHash, "DISCOVERED", now);
                     result.setDiscovered(result.getDiscovered() + 1);
-                    if (createQuarkTransferTask(discovery, resource, urlHash, now)) {
+                    if (createTransferTask(discovery, resource, urlHash, now)) {
                         result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
                     }
                 } catch (Exception itemError) {
@@ -185,7 +196,13 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             }
         }
         if ("AUTO".equals(source) || "PANSOU".equals(source)) {
-            return panSouClient.searchQuark(resolveKeyword(payload, movie), payload.maxResults());
+            String keyword = resolveKeyword(payload, movie);
+            List<DiscoveredResource> quark = panSouClient.searchQuark(keyword, payload.maxResults());
+            List<DiscoveredResource> xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
+            Map<String, DiscoveredResource> merged = new LinkedHashMap<>();
+            if (quark != null) for (DiscoveredResource item : quark) if (item != null && hasText(item.getUrl())) merged.put(item.getUrl(), item);
+            if (xunlei != null) for (DiscoveredResource item : xunlei) if (item != null && hasText(item.getUrl())) merged.putIfAbsent(item.getUrl(), item);
+            return merged.values().stream().limit(payload.maxResults()).toList();
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
     }
@@ -211,7 +228,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         discovery.setSource(trim(firstText(resource.getSource(), task.getSource(), "PANSOU"), 30));
         discovery.setSourceRef(trim(resource.getSourceRef(), 100));
         discovery.setTitle(trim(firstText(resource.getTitle(), movie.getTitleCn(), movie.getTitleEn()), 255));
-        discovery.setProvider(trim(firstText(resource.getProvider(), "QUARK"), 30));
+        discovery.setProvider(trim(firstText(resource.getProvider(), "QUARK"), 30).toUpperCase());
         discovery.setResourceType("DISK");
         discovery.setOriginalUrl(resource.getUrl());
         discovery.setOriginalUrlHash(urlHash);
@@ -224,14 +241,21 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         return discovery;
     }
 
-    private boolean createQuarkTransferTask(
+    private boolean createTransferTask(
             ResourceDiscoveryResult discovery,
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
-        if (!"QUARK".equalsIgnoreCase(resource.getProvider()) || hasMovieTransferTask(discovery.getMovieId())) {
+        if (hasMovieTransferTask(discovery.getMovieId(), resource.getProvider())) {
             return false;
         }
+        if ("XUNLEI".equalsIgnoreCase(resource.getProvider())) {
+            XunleiTransferTask transfer = new XunleiTransferTask();
+            transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(discovery.getMovieId());
+            transfer.setOriginalUrl(resource.getUrl()); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING");
+            transfer.setAttempts(0); transfer.setCreatedAt(now); transfer.setUpdatedAt(now); xunleiTransferTaskService.save(transfer); return true;
+        }
+        if (!"QUARK".equalsIgnoreCase(resource.getProvider())) return false;
         QuarkTransferTask transfer = new QuarkTransferTask();
         transfer.setDiscoveryResultId(discovery.getId());
         transfer.setMovieId(discovery.getMovieId());
@@ -245,7 +269,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         return true;
     }
 
-    private boolean hasMovieTransferTask(String movieId) {
+    private boolean hasMovieTransferTask(String movieId, String provider) {
+        if ("XUNLEI".equalsIgnoreCase(provider) && xunleiTransferTaskService != null) return xunleiTransferTaskService.count(new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", movieId).in("status", List.of("PENDING", "RUNNING", "SUBMITTED", "WAITING_SHARE"))) > 0;
         return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .eq("movie_id", movieId)
                 .in("status", List.of("PENDING", "RUNNING", "SUBMITTED"))) > 0;

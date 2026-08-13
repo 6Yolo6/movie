@@ -82,7 +82,20 @@ resource-hub:
     share-expired-type: ${QUARK_SHARE_EXPIRED_TYPE:1}
     share-passcode: ${QUARK_SHARE_PASSCODE:}
     share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:12}
-    share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:500}
+      share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:500}
+    xunlei:
+      enabled: ${XUNLEI_ENABLED:false}
+      base-url: ${XUNLEI_BASE_URL:https://api-pan.xunlei.com/drive/v1}
+      authorization: ${XUNLEI_AUTHORIZATION:}
+      client-id: ${XUNLEI_CLIENT_ID:}
+      device-id: ${XUNLEI_DEVICE_ID:}
+      client-version: ${XUNLEI_CLIENT_VERSION:1.0.0}
+      captcha-token: ${XUNLEI_CAPTCHA_TOKEN:}
+      save-path: ${XUNLEI_SAVE_PATH:/GYing Resource Hub}
+      share-enabled: ${XUNLEI_SHARE_ENABLED:false}
+      share-create-path: ${XUNLEI_SHARE_CREATE_PATH:}
+      poll-attempts: ${XUNLEI_POLL_ATTEMPTS:20}
+      poll-interval-ms: ${XUNLEI_POLL_INTERVAL_MS:1000}
   worker:
     enabled: ${RESOURCE_HUB_WORKER_ENABLED:false}
     fixed-delay-ms: ${RESOURCE_HUB_WORKER_FIXED_DELAY_MS:60000}
