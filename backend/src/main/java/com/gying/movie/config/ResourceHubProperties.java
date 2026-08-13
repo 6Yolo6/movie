@@ -73,7 +73,7 @@ public class ResourceHubProperties {
         private String authorization;
         private String clientId;
         private String deviceId;
-        private String clientVersion = "1.0.0";
+        private String clientVersion = "1.82.0";
         private String captchaToken;
         private String savePath = "/GYing Resource Hub";
         private boolean shareEnabled = false;
