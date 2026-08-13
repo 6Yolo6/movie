@@ -719,5 +719,11 @@
   "gyingSourceIngestCatalogPage": "采集本页并确保发布",
   "gyingSourceEnsureSeasons": "补齐剩余季",
   "movieRepairPoster": "自动补图",
-  "movieRepairMissingPosters": "批量补全缺失海报"
+  "movieRepairMissingPosters": "批量补全缺失海报",
+  "socialPublishingWeiboLoginTitle": "微博扫码登录",
+  "socialPublishingWeiboRefreshCookie": "扫码更新 Cookie",
+  "socialPublishingWeiboLoginHelp": "微博会话失效时，在独立窗口扫码登录，成功后自动更新当前发布会话。",
+  "socialPublishingWeiboScanHelp": "请使用微博 App 扫描下方页面二维码并完成登录。",
+  "socialPublishingWeiboQrAlt": "微博登录页面",
+  "socialPublishingWeiboAuthorized": "微博会话已更新"
 }

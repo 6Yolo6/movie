@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import mysql from 'mysql2/promise';
 import { publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
+import { restoreWeiboSession, startWeiboLogin, weiboLoginStatus } from './weibo-login.mjs';
 
 const port = Number(process.env.SOCIAL_PUBLISHER_PORT || 8093);
 const internalToken = process.env.SOCIAL_PUBLISHER_TOKEN || process.env.APP_INTERNAL_TOKEN || '';
@@ -453,6 +454,15 @@ const server = http.createServer(async (req, res) => {
       writeJson(res, 200, await removeQqAccount(decodeURIComponent(qqAccountMatch[1])));
       return;
     }
+    if (req.method === 'POST' && url.pathname === '/accounts/weibo/login') {
+      const body = await readJsonBody(req);
+      writeJson(res, 200, await startWeiboLogin(Boolean(body.force)));
+      return;
+    }
+    if (req.method === 'GET' && url.pathname === '/accounts/weibo/login-status') {
+      writeJson(res, 200, weiboLoginStatus());
+      return;
+    }
     const postMatch = url.pathname.match(/^\/posts\/(\d+)$/);
     if (req.method === 'POST' && postMatch) {
       writeJson(res, 200, await publish(Number(postMatch[1])));
@@ -465,5 +475,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, '0.0.0.0', () => {
+  void restoreWeiboSession();
   console.log(`social publisher listening on ${port}`);
 });

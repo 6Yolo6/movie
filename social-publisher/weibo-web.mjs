@@ -1,6 +1,23 @@
 const DEFAULT_ENDPOINT = 'https://www.weibo.com/ajax/statuses/update';
 const DEFAULT_CLIENT_VERSION = 'v1.1.237';
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36';
+let runtimeSession = null;
+
+export function setWeiboRuntimeSession(session) {
+  if (!session?.cookie || !session?.fingerprint) return false;
+  runtimeSession = {
+    cookie: String(session.cookie).trim(),
+    xsrfToken: String(session.xsrfToken || cookieValue(session.cookie, 'XSRF-TOKEN')).trim(),
+    fingerprint: String(session.fingerprint).trim(),
+    userAgent: String(session.userAgent || '').trim(),
+    updatedAt: session.updatedAt || new Date().toISOString(),
+  };
+  return true;
+}
+
+export function weiboRuntimeSession() {
+  return runtimeSession ? { ...runtimeSession } : null;
+}
 
 function compact(value, limit = 300) {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
@@ -23,13 +40,13 @@ export function cookieValue(cookie, name) {
 }
 
 export function weiboWebConfig(env = process.env) {
-  const cookie = String(env.WEIBO_WEB_COOKIE || '').trim();
+  const cookie = String(runtimeSession?.cookie || env.WEIBO_WEB_COOKIE || '').trim();
   return {
     cookie,
-    xsrfToken: String(env.WEIBO_WEB_XSRF_TOKEN || cookieValue(cookie, 'XSRF-TOKEN')).trim(),
-    fingerprint: String(env.WEIBO_WEB_FINGERPRINT || '').trim(),
+    xsrfToken: String(runtimeSession?.xsrfToken || env.WEIBO_WEB_XSRF_TOKEN || cookieValue(cookie, 'XSRF-TOKEN')).trim(),
+    fingerprint: String(runtimeSession?.fingerprint || env.WEIBO_WEB_FINGERPRINT || '').trim(),
     clientVersion: String(env.WEIBO_WEB_CLIENT_VERSION || DEFAULT_CLIENT_VERSION).trim(),
-    userAgent: String(env.WEIBO_WEB_USER_AGENT || DEFAULT_USER_AGENT).trim(),
+    userAgent: String(runtimeSession?.userAgent || env.WEIBO_WEB_USER_AGENT || DEFAULT_USER_AGENT).trim(),
     endpoint: DEFAULT_ENDPOINT,
   };
 }
@@ -103,7 +120,7 @@ export async function publishWeiboWeb(content, options = {}) {
     if ([301, 302, 303, 307, 308, 401, 403].includes(response.status)) {
       throw new Error('Weibo web session expired or was rejected');
     }
-    throw new Error(`Weibo returned a non-JSON response (HTTP ${response.status})`);
+    throw new Error(`Weibo returned a non-JSON response (HTTP ${response.status}): ${compact(raw, 180)}`);
   }
 
   if (response.status === 418 || response.status === 429) {

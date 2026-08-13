@@ -153,6 +153,7 @@ interface SocialPublishingOverview {
             authenticated?: boolean;
             mode?: string;
             error?: string;
+            loginStatus?: string;
         };
         error?: string;
     };
@@ -170,6 +171,14 @@ interface QqLoginAttempt extends QqPublishingAccount {
     verificationUri?: string;
     expiresInSeconds?: number;
     expiresAt?: string;
+}
+
+interface WeiboLoginAttempt {
+    status: 'IDLE' | 'WAITING' | 'AUTHORIZED' | 'FAILED' | 'EXPIRED';
+    verificationImage?: string | null;
+    expiresAt?: string | null;
+    error?: string | null;
+    updatedAt?: string | null;
 }
 
 interface QqAccountFormValues {
@@ -260,6 +269,9 @@ export default function QqAutomationAdminPage() {
     const [qqAccountBusy, setQqAccountBusy] = useState(false);
     const [qqAccountRemoving, setQqAccountRemoving] = useState<string>();
     const [qqLoginAttempt, setQqLoginAttempt] = useState<QqLoginAttempt | null>(null);
+    const [weiboLoginOpen, setWeiboLoginOpen] = useState(false);
+    const [weiboLoginBusy, setWeiboLoginBusy] = useState(false);
+    const [weiboLoginAttempt, setWeiboLoginAttempt] = useState<WeiboLoginAttempt | null>(null);
 
     const authHeaders = useMemo(() => ({
         Authorization: `Bearer ${token}`,
@@ -574,6 +586,38 @@ export default function QqAutomationAdminPage() {
             setQqAccountBusy(false);
         }
     };
+
+    const startWeiboLogin = async () => {
+        setWeiboLoginBusy(true);
+        try {
+            const attempt = await requestJson<WeiboLoginAttempt>('/api/admin/social-publishing/weibo/login', { method: 'POST', body: JSON.stringify({}) });
+            setWeiboLoginAttempt(attempt);
+            setWeiboLoginOpen(true);
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        } finally {
+            setWeiboLoginBusy(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!weiboLoginOpen || !weiboLoginAttempt || weiboLoginAttempt.status !== 'WAITING') return;
+        let cancelled = false;
+        const timer = window.setInterval(async () => {
+            try {
+                const status = await requestJson<WeiboLoginAttempt>('/api/admin/social-publishing/weibo/login-status');
+                if (cancelled) return;
+                setWeiboLoginAttempt(status);
+                if (status.status === 'AUTHORIZED') {
+                    message.success(t('socialPublishingWeiboAuthorized'));
+                    await fetchSocialOverview();
+                }
+            } catch {
+                // Retry on the next interval.
+            }
+        }, 3000);
+        return () => { cancelled = true; window.clearInterval(timer); };
+    }, [fetchSocialOverview, message, requestJson, t, weiboLoginAttempt, weiboLoginOpen]);
 
     const removeQqAccount = (account: QqPublishingAccount) => {
         modal.confirm({
@@ -1237,6 +1281,12 @@ export default function QqAutomationAdminPage() {
                                         })}
                                     />
                                     <Card
+                                        title={t('socialPublishingWeiboLoginTitle')}
+                                        extra={<Button type="primary" icon={<ReloadOutlined />} loading={weiboLoginBusy} onClick={startWeiboLogin}>{t('socialPublishingWeiboRefreshCookie')}</Button>}
+                                    >
+                                        <Text type="secondary">{t('socialPublishingWeiboLoginHelp')}</Text>
+                                    </Card>
+                                    <Card
                                         title={t('socialPublishingQqAccounts')}
                                         extra={(
                                             <Button type="primary" icon={<UserAddOutlined />} onClick={openQqAccountLogin}>
@@ -1336,6 +1386,24 @@ export default function QqAutomationAdminPage() {
                         },
                     ]}
                 />
+                <Modal
+                    title={t('socialPublishingWeiboLoginTitle')}
+                    open={weiboLoginOpen}
+                    footer={null}
+                    onCancel={() => setWeiboLoginOpen(false)}
+                    destroyOnHidden
+                >
+                    <Space direction="vertical" size={16} align="center" className="w-full">
+                        <Tag color={weiboLoginAttempt?.status === 'AUTHORIZED' ? 'green' : weiboLoginAttempt?.status === 'WAITING' ? 'blue' : 'red'}>
+                            {weiboLoginAttempt?.status || 'IDLE'}
+                        </Tag>
+                        {weiboLoginAttempt?.verificationImage && weiboLoginAttempt.status === 'WAITING' && (
+                            <img src={weiboLoginAttempt.verificationImage} alt={t('socialPublishingWeiboQrAlt')} style={{ width: 420, maxWidth: '100%' }} />
+                        )}
+                        {weiboLoginAttempt?.status === 'WAITING' && <Text type="secondary">{t('socialPublishingWeiboScanHelp')}</Text>}
+                        {weiboLoginAttempt?.error && <Alert type="error" showIcon message={weiboLoginAttempt.error} />}
+                    </Space>
+                </Modal>
                 <Modal
                     title={t('socialPublishingAddQqAccount')}
                     open={qqAccountOpen}

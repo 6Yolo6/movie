@@ -18,6 +18,7 @@
 - 数据依赖：MySQL、Redis、MinIO；资源搜索和转存连接现有 PanSou、quark-auto-save 服务。
 - QQ 集成：NapCat/官方 QQBot 用于群聊；宿主机 `tencent-channel-cli` 保留原频道账号，独立 `social-publisher` 容器承载第二 QQ 账号和新浪微博。
 - 生产容器和 JVM 使用 `Asia/Shanghai`。
+- 微博网页会话通过 social-publisher 独立持久化浏览器会话支持管理员扫码更新，会话文件只保存在运行时卷。
 
 ## 已具备能力
 

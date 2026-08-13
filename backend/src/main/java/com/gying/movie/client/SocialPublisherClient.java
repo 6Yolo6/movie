@@ -77,6 +77,27 @@ public class SocialPublisherClient {
         return response == null ? Map.of() : response;
     }
 
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> startWeiboLogin() {
+        Map<String, Object> response = restClient.post()
+                .uri("/accounts/weibo/login")
+                .header("X-Internal-Token", requiredToken())
+                .body(Map.of())
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> weiboLoginStatus() {
+        Map<String, Object> response = restClient.get()
+                .uri("/accounts/weibo/login-status")
+                .header("X-Internal-Token", requiredToken())
+                .retrieve()
+                .body(Map.class);
+        return response == null ? Map.of() : response;
+    }
+
     private String requiredToken() {
         if (token.isBlank()) {
             throw new IllegalStateException("Social publisher token is not configured");

@@ -100,9 +100,11 @@ services:
       - WEIBO_WEB_FINGERPRINT=${WEIBO_WEB_FINGERPRINT:-}
       - WEIBO_WEB_CLIENT_VERSION=${WEIBO_WEB_CLIENT_VERSION:-v1.1.237}
       - WEIBO_WEB_USER_AGENT=${WEIBO_WEB_USER_AGENT:-}
+      - WEIBO_PROFILE_ROOT=/data/weibo
       - TZ=Asia/Shanghai
     volumes:
       - social-publisher-qq-accounts:/data/qq-accounts
+      - social-publisher-weibo:/data/weibo
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -168,6 +170,7 @@ volumes:
   quark-auto-save-data:
   napcat-data:
   social-publisher-qq-accounts:
+  social-publisher-weibo:
 
 networks:
   gying-net:

@@ -719,5 +719,11 @@
   "gyingSourceIngestCatalogPage": "Ingest and publish this page",
   "gyingSourceEnsureSeasons": "Complete remaining seasons",
   "movieRepairPoster": "Repair poster",
-  "movieRepairMissingPosters": "Repair missing posters"
+  "movieRepairMissingPosters": "Repair missing posters",
+  "socialPublishingWeiboLoginTitle": "Weibo QR login",
+  "socialPublishingWeiboRefreshCookie": "Scan to refresh Cookie",
+  "socialPublishingWeiboLoginHelp": "When the Weibo session expires, scan the QR code in the isolated browser session. The publisher updates automatically after login.",
+  "socialPublishingWeiboScanHelp": "Scan the QR code with the Weibo app and finish signing in.",
+  "socialPublishingWeiboQrAlt": "Weibo login page",
+  "socialPublishingWeiboAuthorized": "Weibo session updated"
 }

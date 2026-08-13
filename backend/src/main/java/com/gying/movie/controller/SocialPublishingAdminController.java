@@ -121,6 +121,20 @@ public class SocialPublishingAdminController {
         return ApiResponse.ok(result);
     }
 
+    @PostMapping("/weibo/login")
+    public ApiResponse<Map<String, Object>> startWeiboLogin(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.startWeiboLogin());
+    }
+
+    @GetMapping("/weibo/login-status")
+    public ApiResponse<Map<String, Object>> weiboLoginStatus(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.weiboLoginStatus());
+    }
+
     @PostMapping("/targets")
     public ApiResponse<SocialPublishTarget> createTarget(
             @RequestBody Map<String, Object> request,
