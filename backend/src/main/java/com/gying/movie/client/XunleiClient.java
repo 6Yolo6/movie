@@ -11,6 +11,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -27,9 +28,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class XunleiClient {
     private static final Pattern SHARE_PATTERN = Pattern.compile("https?://[^/]+/s/([^/?#]+)(?:[/?#].*)?", Pattern.CASE_INSENSITIVE);
+    private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
+    private static final String PACKAGE_NAME = "pan.xunlei.com";
+    private static final String[] WEB_ALGORITHMS = ("b9Dldv6kRsRyOG4tFHzeJ4RbOi0n7nO8omFouLVgvLNB.TEHDOteMPrRB66yQIF9tF+pfPAIesa/xg."
+            + "Fmx27GlNbrIxiPSQVm.crlPVriPRAiuCEKZvK4yihP55gTRvLd7qDVLsDtWzhkXt5Iqs7TpoP."
+            + "E2toogseEdgXmlfnz1ppUhUvD9B2jgSA+YG.a2f3L0AioU+0PvTeCtk.6d6w1xX9j95GEPNpd+T4HmbTceZNEF310ppRe."
+            + "BvsJ+CSS7i.Rv").split("\\.");
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ResourceHubProperties properties;
+    private final Map<String, CaptchaEntry> captchaCache = new ConcurrentHashMap<>();
 
     public XunleiClient(RestTemplateBuilder builder, ObjectMapper objectMapper, ResourceHubProperties properties) {
         this.restTemplate = builder.setConnectTimeout(Duration.ofSeconds(15)).setReadTimeout(Duration.ofSeconds(30)).build();
@@ -114,13 +122,25 @@ public class XunleiClient {
         headers.set("X-Device-Id", firstText(properties.getXunlei().getDeviceId(), deviceId()));
         headers.set("X-Client-Id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "xunlei-open-api"));
         headers.set("X-Client-Version", properties.getXunlei().getClientVersion());
-        headers.set("X-Captcha-Token", captchaToken());
+        String action = action(method, path);
+        headers.set("X-Captcha-Token", captchaToken(action, false));
         try {
             String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
             ResponseEntity<String> response = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
             if (response.getStatusCode().isError() || root.path("error").isObject()) throw new IllegalStateException("Xunlei API request failed: HTTP " + response.getStatusCode().value());
             return root;
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            String response = e.getResponseBodyAsString();
+            if (response.contains("captcha_invalid") || response.contains("\"error_code\":9")) {
+                headers.set("X-Captcha-Token", captchaToken(action, true));
+                String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+                try {
+                    ResponseEntity<String> retried = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
+                    return objectMapper.readTree(retried.getBody());
+                } catch (Exception retryError) { throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError); }
+            }
+            throw new IllegalStateException("Xunlei API request failed: HTTP " + e.getStatusCode().value(), e);
         } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
         catch (Exception e) { throw new IllegalStateException("Xunlei API response parse failed", e); }
     }
@@ -143,10 +163,45 @@ public class XunleiClient {
             return value.toString();
         } catch (Exception e) { throw new IllegalStateException("Failed to derive Xunlei device id", e); }
     }
-    private String captchaToken() {
+    private String captchaToken(String action, boolean refresh) {
+        if (!refresh) {
+            CaptchaEntry cached = captchaCache.get(action);
+            if (cached != null && cached.expiresAt() > System.currentTimeMillis()) return cached.token();
+        }
         String configured = properties.getXunlei().getCaptchaToken();
-        if (hasText(configured)) return configured.trim();
-        throw new IllegalStateException("Xunlei captcha token is not configured; set XUNLEI_CAPTCHA_TOKEN from an active web session");
+        if (!refresh && hasText(configured)) return configured.trim();
+        String token = initializeCaptcha(action);
+        captchaCache.put(action, new CaptchaEntry(token, System.currentTimeMillis() + 240_000));
+        return token;
+    }
+    private String initializeCaptcha(String action) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String source = firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "Xqp0kJBXWhwaTpB6")
+                + properties.getXunlei().getClientVersion() + PACKAGE_NAME
+                + firstText(properties.getXunlei().getDeviceId(), deviceId()) + timestamp;
+        for (String algorithm : WEB_ALGORITHMS) source = md5(source + algorithm);
+        Map<String, Object> meta = new LinkedHashMap<>();
+        meta.put("client_version", properties.getXunlei().getClientVersion()); meta.put("package_name", PACKAGE_NAME);
+        meta.put("user_id", jwtClaim("sub")); meta.put("timestamp", timestamp); meta.put("captcha_sign", "1." + source);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("action", action); body.put("captcha_token", ""); body.put("client_id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud")));
+        body.put("device_id", firstText(properties.getXunlei().getDeviceId(), deviceId())); body.put("redirect_uri", "xlaccsdk01://xunlei.com/callback?state=harbor"); body.put("meta", meta);
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(CAPTCHA_URL, body, String.class);
+            JsonNode root = objectMapper.readTree(response.getBody());
+            String token = root.path("captcha_token").asText(null);
+            if (!hasText(token)) throw new IllegalStateException("Xunlei CAPTCHA initialization requires interactive verification");
+            return token;
+        } catch (RestClientException e) { throw new IllegalStateException("Xunlei CAPTCHA initialization failed", e); }
+        catch (Exception e) { throw new IllegalStateException("Xunlei CAPTCHA response parse failed", e); }
+    }
+    private String action(HttpMethod method, String path) {
+        String clean = path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
+        return method.name() + ":/drive/v1" + clean;
+    }
+    private String md5(String value) {
+        try { byte[] digest = MessageDigest.getInstance("MD5").digest(value.getBytes(StandardCharsets.UTF_8)); StringBuilder result = new StringBuilder(); for (byte item : digest) result.append(String.format("%02x", item)); return result.toString(); }
+        catch (Exception e) { throw new IllegalStateException("Failed to sign Xunlei CAPTCHA request", e); }
     }
     private void requireConfigured() { if (!isConfigured()) throw new IllegalStateException("Xunlei transfer is not configured"); }
     private boolean isSuccess(String s) { return s != null && List.of("phase_type_complete", "complete", "completed", "success", "succeeded", "finished", "done").contains(s.toLowerCase()); }
@@ -157,4 +212,5 @@ public class XunleiClient {
     public record ShareInfo(String shareId, String passCode, String passCodeToken, List<String> fileIds) {}
     public record RestoreResult(String taskId, String response, String parentId) {}
     public record RestoreStatus(boolean success, String status, String response) {}
+    private record CaptchaEntry(String token, long expiresAt) {}
 }
