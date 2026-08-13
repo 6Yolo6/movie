@@ -34,7 +34,13 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     @Override public QuarkTransferRunResult submitPending(int limit) {
         QuarkTransferRunResult result = new QuarkTransferRunResult();
         if (!client.isConfigured()) return result;
-        List<XunleiTransferTask> tasks = taskService.list(new QueryWrapper<XunleiTransferTask>().in("status", List.of("PENDING", "FAILED", "SUBMITTED", "WAITING_SHARE")).orderByAsc("created_at").last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
+        List<String> statuses = properties.getXunlei().isShareEnabled()
+                ? List.of("PENDING", "FAILED", "WAITING_SHARE")
+                : List.of("PENDING", "FAILED");
+        List<XunleiTransferTask> tasks = taskService.list(new QueryWrapper<XunleiTransferTask>()
+                .in("status", statuses)
+                .orderByAsc("created_at")
+                .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
         tasks.forEach(task -> submit(task, result));
         return result;
     }
@@ -47,6 +53,14 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     private void submit(XunleiTransferTask task, QuarkTransferRunResult result) {
         try {
+            if ("WAITING_SHARE".equalsIgnoreCase(task.getStatus()) && task.getSavedPath() != null) {
+                String share = client.createShare(task.getSavedPath());
+                if (share == null) { result.setSkipped(result.getSkipped() + 1); return; }
+                task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share));
+                task.setStatus("SUCCEEDED"); task.setLastError(null); task.setFinishedAt(LocalDateTime.now());
+                task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); updatePublishedLink(task);
+                result.setSubmitted(result.getSubmitted() + 1); return;
+            }
             task.setStatus("RUNNING"); task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1); task.setStartedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
             XunleiClient.RestoreResult restore = client.restore(task.getOriginalUrl(), properties.getXunlei().getSavePath());
             task.setResponsePayload(restore.response()); task.setSavedPath(restore.parentId()); task.setStatus("SUBMITTED"); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
