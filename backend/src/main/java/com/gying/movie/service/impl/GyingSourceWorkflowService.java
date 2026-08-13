@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class GyingSourceWorkflowService {
@@ -67,6 +68,7 @@ public class GyingSourceWorkflowService {
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
+    @Autowired
     public GyingSourceWorkflowService(
             GyingSourceClient gyingSourceClient,
             TmdbClient tmdbClient,

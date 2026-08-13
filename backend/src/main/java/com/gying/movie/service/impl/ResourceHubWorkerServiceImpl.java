@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
@@ -41,6 +42,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubConfigService resourceHubConfigService;
 
+    @Autowired
     public ResourceHubWorkerServiceImpl(
             ResourceHubProperties resourceHubProperties,
             IResourceHubTaskService taskService,
