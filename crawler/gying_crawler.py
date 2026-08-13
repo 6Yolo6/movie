@@ -818,14 +818,19 @@ def fetch_user_content_page(page=1):
         })
     return {"resources": resources, "page": data.get("page") or {}}
 
-def list_my_pan_resources(limit=200, max_pages=50):
+def list_my_pan_resources(limit=200, max_pages=50, source_ids=None):
     safe_limit = min(max(int(limit), 1), 1000)
+    target_ids = {str(value).strip() for value in (source_ids or []) if str(value).strip()}
     resources = []
     for page in range(1, max_pages + 1):
         result = fetch_user_content_page(page)
         page_resources = result["resources"]
-        resources.extend(page_resources)
-        if len(resources) >= safe_limit or not page_resources:
+        if target_ids:
+            resources.extend(item for item in page_resources if item.get("source_id") in target_ids)
+        else:
+            resources.extend(page_resources)
+        found_ids = {item.get("source_id") for item in resources}
+        if (target_ids and target_ids.issubset(found_ids)) or len(resources) >= safe_limit or not page_resources:
             break
         page_info = result.get("page") or {}
         current = int(page_info.get("curr") or page)
@@ -1375,7 +1380,16 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             if path == "/my-resources":
                 limit = int((query.get("limit") or ["200"])[0])
-                self.send_json(200, {"items": list_my_pan_resources(limit)})
+                source_ids = {
+                    value.strip()
+                    for value in (query.get("sourceIds") or [""])[0].split(",")
+                    if value.strip()
+                }
+                self.send_json(200, {"items": list_my_pan_resources(
+                    limit,
+                    max_pages=100 if source_ids else 50,
+                    source_ids=source_ids,
+                )})
                 return
             if path == "/account":
                 self.send_json(200, account_status())

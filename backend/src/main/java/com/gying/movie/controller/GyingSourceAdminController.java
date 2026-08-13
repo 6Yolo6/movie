@@ -147,6 +147,16 @@ public class GyingSourceAdminController {
                 () -> workflowService.ensureCatalogPage(typeCode, sort, page, Math.min(Math.max(limit, 1), 30))));
     }
 
+    @PostMapping("/recent/ensure")
+    public ResponseEntity<?> ensureRecentMovies(
+            @RequestBody List<Map<String, Object>> candidates,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob(
+                "ENSURE_RECENT_BATCH",
+                () -> workflowService.ensureMovieResources(candidates)));
+    }
+
     @PostMapping("/movies/{movieId}/seasons/ensure")
     public ResponseEntity<?> ensureRemainingSeasons(
             @PathVariable String movieId,
@@ -235,6 +245,16 @@ public class GyingSourceAdminController {
         return ResponseEntity.ok(startJob(
                 "REPAIR_PUBLISHED",
                 () -> workflowService.repairPublishedResources(safeLimit)));
+    }
+
+    @PostMapping("/published-resources/repair-by-ids")
+    public ResponseEntity<?> repairPublishedResourcesByIds(
+            @RequestBody List<String> sourceIds,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ResponseEntity.ok(startJob(
+                "REPAIR_PUBLISHED_BY_IDS",
+                () -> workflowService.repairPublishedResourcesBySourceIds(sourceIds)));
     }
 
     @GetMapping("/jobs/{jobId}")

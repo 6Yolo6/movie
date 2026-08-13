@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import type { Key } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Alert,
@@ -122,6 +123,8 @@ export default function GyingSourcePage() {
     const [healthLimit, setHealthLimit] = useState(200);
     const [account, setAccount] = useState<AccountStatus | null>(null);
     const [accountLoading, setAccountLoading] = useState(false);
+    const [selectedRecentKeys, setSelectedRecentKeys] = useState<Key[]>([]);
+    const [healthSourceIds, setHealthSourceIds] = useState('');
 
     const requestJson = useCallback(async <T,>(path: string, options?: RequestInit): Promise<T> => {
         if (!token) throw new Error(t('adminAccessRequired'));
@@ -235,11 +238,11 @@ export default function GyingSourcePage() {
         throw new Error(t('gyingSourceJobTimeout'));
     };
 
-    const startJob = async (key: string, path: string) => {
+    const startJob = async (key: string, path: string, options?: RequestInit) => {
         setRunning(key);
         setResult(null);
         try {
-            const started = await requestJson<WorkflowJob>(path, { method: 'POST' });
+            const started = await requestJson<WorkflowJob>(path, { method: 'POST', ...options });
             const completed = await waitForJob(started.jobId);
             setResult(summarizeResult(completed.result || {}));
             message.success(t('gyingSourceActionSucceeded'));
@@ -257,6 +260,23 @@ export default function GyingSourcePage() {
         `ensure-${candidate.typeCode}-${candidate.mid}`,
         `/api/admin/gying-source/movies/${candidate.typeCode}/${candidate.mid}/ensure`,
     );
+
+    const ensureSelectedRecent = async () => {
+        const selected = new Set(selectedRecentKeys.map(String));
+        const candidates = recent
+            .filter((item) => selected.has(`${item.typeCode}-${item.mid}`))
+            .map(({ typeCode, mid }) => ({ typeCode, mid }));
+        if (!candidates.length) {
+            message.warning(t('gyingSourceSelectRecentFirst'));
+            return;
+        }
+        const completed = await startJob(
+            'ensure-recent-batch',
+            '/api/admin/gying-source/recent/ensure',
+            { body: JSON.stringify(candidates) },
+        );
+        if (completed) setSelectedRecentKeys([]);
+    };
 
     const ensureSeasons = (movieId: string) => startJob(
         `seasons-${movieId}`,
@@ -294,6 +314,35 @@ export default function GyingSourcePage() {
                 ...current,
                 items: (repair.items as PublishedResource[]) || current.items,
             } : null);
+        }
+    };
+
+    const parsedHealthSourceIds = Array.from(new Set(
+        healthSourceIds.split(/[\s,，;；]+/).map((value) => value.trim()).filter(Boolean),
+    ));
+
+    const repairPublishedByIds = async (single: boolean) => {
+        const sourceIds = parsedHealthSourceIds;
+        if (!sourceIds.length || (single && sourceIds.length !== 1)) {
+            message.warning(t(single ? 'gyingSourceSingleIdRequired' : 'gyingSourceIdsRequired'));
+            return;
+        }
+        const key = single ? 'repair-published-single' : 'repair-published-batch';
+        const completed = await startJob(
+            key,
+            '/api/admin/gying-source/published-resources/repair-by-ids',
+            { body: JSON.stringify(sourceIds) },
+        );
+        if (completed?.result) {
+            const repair = completed.result as Record<string, unknown>;
+            const items = (repair.items as PublishedResource[]) || [];
+            setHealth({
+                checked: Number(repair.checked || items.length),
+                valid: 0,
+                invalid: Number(repair.invalid || 0),
+                unclear: 0,
+                items,
+            });
         }
     };
 
@@ -367,6 +416,12 @@ export default function GyingSourcePage() {
     ];
 
     const healthColumns: ColumnsType<PublishedResource> = [
+        {
+            title: t('gyingResourceId'),
+            dataIndex: 'source_id',
+            width: 130,
+            render: (value: string) => <Typography.Text copyable>{value}</Typography.Text>,
+        },
         {
             title: t('movieTitle'),
             dataIndex: 'movie_title',
@@ -442,11 +497,30 @@ export default function GyingSourcePage() {
                     {t('refresh')}
                 </Button>
             </Form>
+            <Space className="mb-4" wrap>
+                <Button
+                    type="primary"
+                    icon={<CloudSyncOutlined />}
+                    loading={running === 'ensure-recent-batch'}
+                    disabled={!selectedRecentKeys.length || Boolean(running && running !== 'ensure-recent-batch')}
+                    onClick={ensureSelectedRecent}
+                >
+                    {t('gyingSourceEnsureSelectedRecent')}
+                </Button>
+                <Typography.Text type="secondary">
+                    {t('selectedCount', { count: selectedRecentKeys.length })}
+                </Typography.Text>
+            </Space>
             <Table
                 rowKey={(record) => `${record.typeCode}-${record.mid}`}
                 columns={candidateColumns}
                 dataSource={recent}
                 loading={loadingLists}
+                rowSelection={{
+                    selectedRowKeys: selectedRecentKeys,
+                    onChange: setSelectedRecentKeys,
+                    preserveSelectedRowKeys: true,
+                }}
                 pagination={{ pageSize: 12 }}
                 scroll={{ x: 760 }}
             />
@@ -557,6 +631,38 @@ export default function GyingSourcePage() {
                     {t('gyingSourceRepairPublished')}
                 </Button>
             </Space>
+            <div className="mb-5 border-t border-gray-200 pt-4 dark:border-gray-800">
+                <Typography.Title level={5}>{t('gyingSourceRepairByIdTitle')}</Typography.Title>
+                <Space direction="vertical" className="w-full" size="middle">
+                    <Input.TextArea
+                        value={healthSourceIds}
+                        rows={3}
+                        maxLength={10000}
+                        placeholder={t('gyingSourceRepairIdsPlaceholder')}
+                        onChange={(event) => setHealthSourceIds(event.target.value)}
+                    />
+                    <Space wrap>
+                        <Button
+                            danger
+                            icon={<ToolOutlined />}
+                            loading={running === 'repair-published-single'}
+                            disabled={parsedHealthSourceIds.length !== 1 || Boolean(running && running !== 'repair-published-single')}
+                            onClick={() => repairPublishedByIds(true)}
+                        >
+                            {t('gyingSourceRepairSingleId')}
+                        </Button>
+                        <Button
+                            danger
+                            icon={<ToolOutlined />}
+                            loading={running === 'repair-published-batch'}
+                            disabled={!parsedHealthSourceIds.length || parsedHealthSourceIds.length > 100 || Boolean(running && running !== 'repair-published-batch')}
+                            onClick={() => repairPublishedByIds(false)}
+                        >
+                            {t('gyingSourceRepairBatchIds', { count: parsedHealthSourceIds.length })}
+                        </Button>
+                    </Space>
+                </Space>
+            </div>
             {health && (
                 <Space className="mb-4" wrap>
                     <Tag>{t('gyingSourceCheckedCount', { count: health.checked })}</Tag>
@@ -571,7 +677,7 @@ export default function GyingSourcePage() {
                 dataSource={health?.items || []}
                 loading={running === 'check-published'}
                 pagination={{ pageSize: 20 }}
-                scroll={{ x: 820 }}
+                scroll={{ x: 950 }}
             />
         </div>
     );

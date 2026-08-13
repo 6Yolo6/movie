@@ -2,6 +2,7 @@ package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -359,6 +360,51 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("INVALID", local.getLinkStatus());
         assertFalse(local.getLastCheckError().isBlank());
         verify(resourceLinkService).updateById(local);
+    }
+
+    @Test
+    void checkPublishedResourcesBySourceIdsFiltersAndReportsMissingIds() {
+        String url = "https://pan.quark.cn/s/dead";
+        when(gyingSourceClient.get(eq("/my-resources"), any(Map.class))).thenReturn(Map.of(
+                "items", List.of(Map.of(
+                        "source_id", "SITE1",
+                        "mid", "EGER",
+                        "type_code", "mv",
+                        "title", "后室 4K",
+                        "url", url,
+                        "provider", "QUARK"))));
+        when(panSouClient.checkLinksByProvider(Map.of(url, "QUARK"))).thenReturn(Map.of(
+                url, new LinkCheckResult(url, true, false, "invalid")));
+
+        Map<String, Object> result = service.checkPublishedResourcesBySourceIds(
+                List.of("SITE1", "MISSING"), true);
+
+        assertEquals(1, result.get("checked"));
+        assertEquals(List.of("MISSING"), result.get("notFound"));
+        assertEquals("INVALID", ((List<Map<String, Object>>) result.get("items")).get(0).get("checkStatus"));
+        ArgumentCaptor<Map<String, ?>> query = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).get(eq("/my-resources"), query.capture());
+        assertEquals("SITE1,MISSING", query.getValue().get("sourceIds"));
+    }
+
+    @Test
+    void ensureMovieResourcesDeduplicatesSelectedRecentCandidates() {
+        MovieMetadata movie = movie("EGER", "后室", "mv", "TRAILER");
+        when(gyingSourceClient.get("/movie/mv/EGER")).thenReturn(Map.of(
+                "title", "后室",
+                "resources", List.of(),
+                "ownResources", List.of()));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", "EGER"));
+        when(movieService.getById("EGER")).thenReturn(movie);
+
+        Map<String, Object> result = service.ensureMovieResources(List.of(
+                Map.of("typeCode", "mv", "mid", "EGER"),
+                Map.of("typeCode", "mv", "mid", "EGER")));
+
+        assertEquals(1, result.get("checked"));
+        assertEquals(1, result.get("succeeded"));
+        assertTrue(((List<?>) result.get("items")).size() == 1);
+        verify(gyingSourceClient, times(1)).get("/movie/mv/EGER");
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {

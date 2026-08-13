@@ -55,8 +55,10 @@
 
 - `GET|PUT /account`：读取凭据配置状态或切换当前运行时账号。
 - `GET /candidates/recent`、`GET /candidates/trailers`：候选。
+- `POST /recent/ensure`：请求体为最近更新表格中所选的 `{typeCode,mid}` 数组，最多 60 部。
 - `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
 - `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
+- `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问

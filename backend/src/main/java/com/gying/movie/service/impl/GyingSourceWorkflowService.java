@@ -258,6 +258,31 @@ public class GyingSourceWorkflowService {
 
     public Map<String, Object> ensureCatalogPage(String typeCode, String sort, int page, int limit) {
         List<Map<String, Object>> candidates = catalogCandidates(typeCode, sort, page, limit);
+        return ensureMovieResources(candidates);
+    }
+
+    public Map<String, Object> ensureMovieResources(List<Map<String, Object>> requestedCandidates) {
+        if (requestedCandidates == null || requestedCandidates.isEmpty()) {
+            throw new IllegalArgumentException("At least one GYING movie is required");
+        }
+        List<Map<String, Object>> candidates = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        for (Map<String, Object> candidate : requestedCandidates) {
+            if (candidate == null) {
+                continue;
+            }
+            String typeCode = normalizeTypeCode(stringValue(candidate.get("typeCode")));
+            String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+            if (seen.add(siteKey(typeCode, mid))) {
+                candidates.add(Map.of("typeCode", typeCode, "mid", mid));
+            }
+            if (candidates.size() >= 60) {
+                break;
+            }
+        }
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException("At least one valid GYING movie is required");
+        }
         List<Map<String, Object>> items = new ArrayList<>();
         int succeeded = 0;
         int failed = 0;
@@ -598,9 +623,32 @@ public class GyingSourceWorkflowService {
     }
 
     public Map<String, Object> checkPublishedResources(int limit, boolean updateLocal) {
+        return checkPublishedResources(limit, Set.of(), updateLocal);
+    }
+
+    public Map<String, Object> checkPublishedResourcesBySourceIds(
+            List<String> sourceIds, boolean updateLocal) {
+        Set<String> normalizedIds = normalizeSourceIds(sourceIds);
+        return checkPublishedResources(1000, normalizedIds, updateLocal);
+    }
+
+    private Map<String, Object> checkPublishedResources(
+            int limit, Set<String> sourceIds, boolean updateLocal) {
         int safeLimit = Math.min(Math.max(limit, 1), 500);
-        List<Map<String, Object>> items = mapList(
-                gyingSourceClient.get("/my-resources?limit=" + safeLimit).get("items"));
+        if (!sourceIds.isEmpty()) {
+            safeLimit = 1000;
+        }
+        Map<String, Object> response = sourceIds.isEmpty()
+                ? gyingSourceClient.get("/my-resources?limit=" + safeLimit)
+                : gyingSourceClient.get("/my-resources", Map.of(
+                        "limit", safeLimit,
+                        "sourceIds", String.join(",", sourceIds)));
+        List<Map<String, Object>> items = mapList(response.get("items"));
+        if (!sourceIds.isEmpty()) {
+            items = items.stream()
+                    .filter(item -> sourceIds.contains(stringValue(item.get("source_id"))))
+                    .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+        }
         Map<String, String> linksByProvider = new LinkedHashMap<>();
         for (Map<String, Object> item : items) {
             String url = stringValue(item.get("url"));
@@ -652,11 +700,28 @@ public class GyingSourceWorkflowService {
         result.put("invalid", invalid);
         result.put("unclear", unclear);
         result.put("items", items);
+        if (!sourceIds.isEmpty()) {
+            Set<String> foundIds = items.stream()
+                    .map(item -> stringValue(item.get("source_id")))
+                    .filter(this::hasText)
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+            result.put("requested", sourceIds.size());
+            result.put("notFound", sourceIds.stream().filter(id -> !foundIds.contains(id)).toList());
+        }
         return result;
     }
 
     public Map<String, Object> repairPublishedResources(int limit) {
         Map<String, Object> checked = checkPublishedResources(limit, true);
+        return repairCheckedPublishedResources(checked);
+    }
+
+    public Map<String, Object> repairPublishedResourcesBySourceIds(List<String> sourceIds) {
+        Map<String, Object> checked = checkPublishedResourcesBySourceIds(sourceIds, true);
+        return repairCheckedPublishedResources(checked);
+    }
+
+    private Map<String, Object> repairCheckedPublishedResources(Map<String, Object> checked) {
         List<Map<String, Object>> items = mapList(checked.get("items"));
         int repaired = 0;
         int reshared = 0;
@@ -789,7 +854,32 @@ public class GyingSourceWorkflowService {
         result.put("failed", failed);
         result.put("items", items);
         result.put("errors", errors);
+        if (checked.containsKey("requested")) {
+            result.put("requested", checked.get("requested"));
+            result.put("notFound", checked.get("notFound"));
+        }
         return result;
+    }
+
+    private Set<String> normalizeSourceIds(List<String> sourceIds) {
+        if (sourceIds == null || sourceIds.isEmpty()) {
+            throw new IllegalArgumentException("At least one GYING resource id is required");
+        }
+        Set<String> normalized = sourceIds.stream()
+                .map(this::requiredSourceId)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        if (normalized.size() > 100) {
+            throw new IllegalArgumentException("At most 100 GYING resource ids can be processed at once");
+        }
+        return normalized;
+    }
+
+    private String requiredSourceId(String value) {
+        String sourceId = required(value, "GYING resource id");
+        if (!sourceId.matches("[A-Za-z0-9_-]{1,100}")) {
+            throw new IllegalArgumentException("Invalid GYING resource id: " + sourceId);
+        }
+        return sourceId;
     }
 
     private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate) {
