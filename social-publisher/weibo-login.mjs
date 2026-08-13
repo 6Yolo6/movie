@@ -24,10 +24,10 @@ function fingerprint(page) {
 
 async function sessionFromPage(page) {
   const cookies = await page.context().cookies('https://weibo.com');
-  const cookie = cookies.map(item => `${item.name}=${encodeURIComponent(item.value)}`).join('; ');
+  const cookie = cookies.map(item => `${item.name}=${item.value}`).join('; ');
   const sub = cookies.find(item => item.name === 'SUB' || item.name === 'SUBP');
   if (!sub) return null;
-  const fp = await fingerprint(page);
+  const fp = String(process.env.WEIBO_WEB_FINGERPRINT || '').trim() || await fingerprint(page);
   const session = { cookie, xsrfToken: cookieValue(cookie, 'XSRF-TOKEN'), fingerprint: fp, userAgent: await page.evaluate(() => navigator.userAgent), updatedAt: new Date().toISOString() };
   await fs.mkdir(root, { recursive: true });
   await fs.writeFile(stateFile, JSON.stringify(session), { mode: 0o600 });
