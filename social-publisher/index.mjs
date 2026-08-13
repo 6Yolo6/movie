@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import mysql from 'mysql2/promise';
 import { publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
-import { restoreWeiboSession, startWeiboLogin, weiboLoginStatus } from './weibo-login.mjs';
+import { restoreWeiboSession, startWeiboLogin, weiboLoginStatus } from './weibo-sso-login.mjs';
 
 const port = Number(process.env.SOCIAL_PUBLISHER_PORT || 8093);
 const internalToken = process.env.SOCIAL_PUBLISHER_TOKEN || process.env.APP_INTERNAL_TOKEN || '';

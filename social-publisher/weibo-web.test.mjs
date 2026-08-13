@@ -87,3 +87,20 @@ test('classifies an expired web session', async () => {
     /session expired/i,
   );
 });
+
+test('reports response fields when Weibo omits an error message', async () => {
+  await assert.rejects(
+    publishWeiboWeb('test', {
+      config: {
+        cookie: 'SUB=session',
+        xsrfToken: '',
+        fingerprint: 'browser-fp',
+        clientVersion: 'v1',
+        userAgent: 'test',
+        endpoint: 'https://www.weibo.com/ajax/statuses/update',
+      },
+      fetchImpl: async () => new Response(JSON.stringify({ ok: 0, errno: 12345, data: {} }), { status: 200 }),
+    }),
+    /code=12345; response fields=ok,errno,data/,
+  );
+});

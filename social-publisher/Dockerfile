@@ -12,6 +12,7 @@ RUN npm ci --omit=dev
 COPY index.mjs ./
 COPY weibo-web.mjs ./
 COPY weibo-login.mjs ./
+COPY weibo-sso-login.mjs ./
 
 EXPOSE 8093
 CMD ["node", "index.mjs"]

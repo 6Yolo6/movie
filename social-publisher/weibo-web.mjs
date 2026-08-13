@@ -74,8 +74,14 @@ function postUrl(payload) {
   return uid && mid ? `https://weibo.com/${uid}/${mid}` : null;
 }
 
-function responseMessage(payload) {
-  return compact(payload?.msg || payload?.message || payload?.error || payload?.data?.msg || 'Unknown response');
+function responseMessage(payload, status) {
+  const direct = payload?.msg || payload?.message || payload?.error || payload?.error_msg || payload?.errmsg
+    || payload?.data?.msg || payload?.data?.message || payload?.data?.error;
+  if (direct) return compact(direct);
+  const codes = [payload?.code, payload?.error_code, payload?.errno, payload?.retcode]
+    .filter(value => value !== undefined && value !== null);
+  const keys = payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 12).join(',') : typeof payload;
+  return `HTTP ${status}; code=${codes.join('/') || 'none'}; response fields=${keys || 'none'}`;
 }
 
 export async function publishWeiboWeb(content, options = {}) {
@@ -124,10 +130,10 @@ export async function publishWeiboWeb(content, options = {}) {
   }
 
   if (response.status === 418 || response.status === 429) {
-    throw new Error(`Weibo security control or rate limit: ${responseMessage(payload)}`);
+    throw new Error(`Weibo security control or rate limit: ${responseMessage(payload, response.status)}`);
   }
   if (!response.ok || (payload.ok !== 1 && String(payload.code) !== '100000' && payload.success !== true)) {
-    const message = responseMessage(payload);
+    const message = responseMessage(payload, response.status);
     if (/登录|login|session|cookie/i.test(message) || [401, 403].includes(response.status)) {
       throw new Error(`Weibo web session expired or was rejected: ${message}`);
     }
