@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-08-12
+更新时间：2026-08-13
 
 本文件只记录当前能力、长期约束和仍需处理的工作。历史验证样例、一次性资源 ID、临时调试过程不在此保留；具体接口和部署参数分别以 `docs/api.md`、`docs/deployment.md` 为准。
 
@@ -122,7 +122,7 @@
 
 ## 验收
 
-2026-08-13 已完成 GYING 管理页批量操作：提交前端勾选批量确保接口 `/recent/ensure`，健康页支持单条或最多 100 个 `panlist.id` 定向修复接口 `/published-resources/repair-by-ids`；后端单测、完整测试、前端 lint/生产构建和 Compose 配置检查通过，尚未执行真实修复任务。
+2026-08-13 已完成并部署 GYING 管理页批量操作：提交 `fff2028` 已重建 backend、frontend、gying-source、nginx；前端支持最近更新勾选批量确保，健康页支持单条或最多 100 个 `panlist.id` 定向修复，接口分别为 `/recent/ensure` 和 `/published-resources/repair-by-ids`。backend 完整测试、前端 lint/生产构建、Compose 配置、容器状态、source 健康、backend API、nginx 首页和管理页静态渲染均通过；未执行真实修复任务。旧应用镜像已在部署前记录，可按服务回滚。
 
 2026-08-12 已定位 GYING 发布 502 为上游接口契约变化：发布入口从路径绑定改为固定 `/res/pan/add`，影片类型和 ID 改由 `binds[0]` 表单字段传递。提交 `39c6213` 已部署到生产 `gying-source` 镜像 `sha256:359aebd…ae5da`；容器健康、账号配置状态、只读最近更新、backend 到 source、backend API 和 nginx 首页均验证通过，容器内源码确认使用新契约且重建后无异常日志。旧镜像 `sha256:fc15fed…2434b` 保留为应用回滚基线；本次未改数据库或卷，也未执行真实发布。
 
