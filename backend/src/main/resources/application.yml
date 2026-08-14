@@ -83,7 +83,7 @@ resource-hub:
     share-passcode: ${QUARK_SHARE_PASSCODE:}
     share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:12}
     share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:500}
-    xunlei:
+  xunlei:
       enabled: ${XUNLEI_ENABLED:false}
       base-url: ${XUNLEI_BASE_URL:https://api-pan.xunlei.com/drive/v1}
       authorization: ${XUNLEI_AUTHORIZATION:}

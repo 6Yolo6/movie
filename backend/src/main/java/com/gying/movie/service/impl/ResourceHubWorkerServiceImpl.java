@@ -87,8 +87,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             enqueueTmdbAutoSyncTasks(result);
             enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
-            runQuarkTransfers(result);
             runXunleiTransfers(result);
+            runQuarkTransfers(result);
             publishResources(result);
         } finally {
             result.setFinishedAt(LocalDateTime.now());

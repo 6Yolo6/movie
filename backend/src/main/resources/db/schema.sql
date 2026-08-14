@@ -306,6 +306,35 @@ CREATE TABLE `quark_transfer_task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quark Transfer Tasks';
 
 -- ----------------------------
+-- Table structure for xunlei_transfer_task
+-- ----------------------------
+DROP TABLE IF EXISTS `xunlei_transfer_task`;
+CREATE TABLE `xunlei_transfer_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `discovery_result_id` bigint DEFAULT NULL,
+  `movie_id` varchar(64) NOT NULL,
+  `original_url` text NOT NULL,
+  `original_url_hash` char(64) DEFAULT NULL,
+  `saved_path` varchar(500) DEFAULT NULL,
+  `share_url` text,
+  `share_url_hash` char(64) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'PENDING' COMMENT 'PENDING, RUNNING, SUBMITTED, SUCCEEDED, WAITING_SHARE, FAILED, CANCELED',
+  `attempts` int DEFAULT '0',
+  `last_error` varchar(1000) DEFAULT NULL,
+  `request_payload` json DEFAULT NULL,
+  `response_payload` json DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `finished_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_xunlei_discovery` (`discovery_result_id`),
+  KEY `idx_xunlei_movie_status` (`movie_id`, `status`),
+  KEY `idx_xunlei_status_created` (`status`, `created_at`),
+  KEY `idx_xunlei_original_hash` (`movie_id`, `original_url_hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='迅雷转存任务';
+
+-- ----------------------------
 -- Table structure for movie_source_identity
 -- ----------------------------
 DROP TABLE IF EXISTS `movie_source_identity`;

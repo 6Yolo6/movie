@@ -6,12 +6,14 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.ResourceHubIngestRequest;
 import com.gying.movie.dto.ResourceHubIngestResponse;
+import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.utils.InternalAuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import java.time.LocalDateTime;
@@ -37,18 +39,29 @@ public class ResourceHubInternalController {
     private final IMovieMetadataService movieService;
     private final IResourceLinkService resourceLinkService;
     private final IResourceDiscoveryResultService discoveryResultService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
     public ResourceHubInternalController(
             InternalAuthHelper internalAuthHelper,
             ResourceHubProperties resourceHubProperties,
             IMovieMetadataService movieService,
             IResourceLinkService resourceLinkService,
-            IResourceDiscoveryResultService discoveryResultService) {
+            IResourceDiscoveryResultService discoveryResultService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService) {
         this.internalAuthHelper = internalAuthHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.movieService = movieService;
         this.resourceLinkService = resourceLinkService;
         this.discoveryResultService = discoveryResultService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+    }
+
+    @PostMapping("/xunlei-transfers/{taskId}/run")
+    public ApiResponse<QuarkTransferRunResult> runXunleiTransfer(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @org.springframework.web.bind.annotation.PathVariable Long taskId) {
+        internalAuthHelper.requireInternal(token);
+        return ApiResponse.ok(xunleiTransferRunnerService.submitOne(taskId));
     }
 
     @GetMapping("/health")

@@ -211,6 +211,16 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private boolean ensurePublishableShare(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
+        if (isXunleiDiscovery(discovery)) {
+            if (hasText(discovery.getShareUrl())) {
+                return true;
+            }
+            discovery.setFailureReason("Xunlei own share is not ready");
+            discovery.setUpdatedAt(LocalDateTime.now());
+            discoveryResultService.updateById(discovery);
+            result.setSkipped(result.getSkipped() + 1);
+            return false;
+        }
         if (!resourceHubProperties.getQuark().isShareEnabled() || !isQuarkDiscovery(discovery)) {
             return true;
         }
@@ -258,6 +268,13 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 && ("QUARK".equalsIgnoreCase(discovery.getProvider())
                         || (hasText(discovery.getOriginalUrl())
                                 && discovery.getOriginalUrl().toLowerCase().contains("pan.quark.cn/s/")));
+    }
+
+    private boolean isXunleiDiscovery(ResourceDiscoveryResult discovery) {
+        return discovery != null
+                && ("XUNLEI".equalsIgnoreCase(discovery.getProvider())
+                        || (hasText(discovery.getOriginalUrl())
+                                && discovery.getOriginalUrl().toLowerCase().contains("pan.xunlei.com/s/")));
     }
 
     private QuarkTransferTask findTransferTask(ResourceDiscoveryResult discovery) {
