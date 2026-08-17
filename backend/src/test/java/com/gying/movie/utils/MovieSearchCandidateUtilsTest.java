@@ -33,7 +33,32 @@ class MovieSearchCandidateUtilsTest {
         assertNull(MovieSearchCandidateUtils.selectionTitle(merged, 5));
     }
 
+    @Test
+    void balancesGyingWithFallbackCandidates() {
+        List<MovieSearchCandidate> gying = java.util.stream.IntStream.range(0, 8)
+                .mapToObj(index -> sourcedCandidate(
+                        "GYING", "GYING " + index, 2020 + index, 200 - index))
+                .toList();
+        List<MovieSearchCandidate> fallback = java.util.stream.IntStream.range(0, 8)
+                .mapToObj(index -> sourcedCandidate(
+                        "TMDB", "TMDB " + index, 2020 + index, 180 - index))
+                .toList();
+
+        List<MovieSearchCandidate> merged = MovieSearchCandidateUtils.mergeBalanced(
+                gying, fallback, 10, 4);
+
+        assertEquals(10, merged.size());
+        assertEquals(4, merged.stream().filter(item -> "GYING".equals(item.getSource())).count());
+        assertEquals("GYING", merged.get(0).getSource());
+        assertEquals("TMDB", merged.get(1).getSource());
+    }
+
     private MovieSearchCandidate candidate(Long id, String type, String title, Integer year, int score) {
         return new MovieSearchCandidate(id, type, title, null, year, score);
+    }
+
+    private MovieSearchCandidate sourcedCandidate(String source, String title, Integer year, int score) {
+        return new MovieSearchCandidate(null, "movie", title, null, year, score,
+                source, "movie", title, null);
     }
 }

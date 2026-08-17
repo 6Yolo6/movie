@@ -6,11 +6,17 @@ import com.gying.movie.config.ResourceHubProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +36,8 @@ public class XunleiClient {
     private static final Pattern SHARE_PATTERN = Pattern.compile("https?://[^/]+/s/([^/?#]+)(?:[/?#].*)?", Pattern.CASE_INSENSITIVE);
     private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
     private static final String PACKAGE_NAME = "pan.xunlei.com";
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of(
+            "mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "m4v", "ts", "m2ts");
     private static final String[] WEB_ALGORITHMS = ("b9Dldv6kRsRyOG4tFHzeJ4RbOi0n7nO8omFouLVgvLNB.TEHDOteMPrRB66yQIF9tF+pfPAIesa/xg."
             + "Fmx27GlNbrIxiPSQVm.crlPVriPRAiuCEKZvK4yihP55gTRvLd7qDVLsDtWzhkXt5Iqs7TpoP."
             + "E2toogseEdgXmlfnz1ppUhUvD9B2jgSA+YG.a2f3L0AioU+0PvTeCtk.6d6w1xX9j95GEPNpd+T4HmbTceZNEF310ppRe."
@@ -53,20 +61,34 @@ public class XunleiClient {
     public RestoreResult restore(String shareUrl, String savePath) {
         requireConfigured();
         ShareInfo share = inspectShare(shareUrl);
-        String parentId = ensureDirectory(savePath);
+        DirectoryInfo directory = ensureDirectory(savePath);
+        long startedAt = System.currentTimeMillis();
+        JsonNode response = request(HttpMethod.POST, "/share/restore", restorePayload(share, directory));
+        String taskId = firstText(response.path("restore_task_id").asText(null), response.path("task_id").asText(null), response.path("data").path("restore_task_id").asText(null));
+        if (!hasText(taskId)) {
+            throw new IllegalStateException("Xunlei restore response did not include task id");
+        }
+        String restoredFileId = firstText(
+                response.path("file_id").asText(null),
+                response.path("data").path("file_id").asText(null));
+        return new RestoreResult(
+                taskId,
+                response.toString(),
+                directory.id(),
+                restoredFileId,
+                share.fileNames(),
+                startedAt);
+    }
+
+    static Map<String, Object> restorePayload(ShareInfo share, DirectoryInfo directory) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("share_id", share.shareId());
         body.put("pass_code", share.passCode());
         body.put("pass_code_token", share.passCodeToken());
         body.put("file_ids", share.fileIds());
-        body.put("parent_id", parentId);
-        body.put("ancestor_ids", List.of());
-        JsonNode response = request(HttpMethod.POST, "/share/restore", body);
-        String taskId = firstText(response.path("restore_task_id").asText(null), response.path("task_id").asText(null), response.path("data").path("restore_task_id").asText(null));
-        if (!hasText(taskId)) {
-            throw new IllegalStateException("Xunlei restore response did not include task id");
-        }
-        return new RestoreResult(taskId, response.toString(), parentId);
+        body.put("parent_id", directory.id());
+        body.put("ancestor_ids", directory.ancestorIds());
+        return body;
     }
 
     public RestoreStatus await(String taskId) {
@@ -82,12 +104,110 @@ public class XunleiClient {
         return new RestoreStatus(false, "TIMEOUT", latest == null ? null : latest.toString());
     }
 
+    public ContentSummary awaitContent(String parentId) {
+        ResourceHubProperties.Xunlei x = properties.getXunlei();
+        ContentSummary latest = new ContentSummary(0, 0, 0);
+        for (int attempt = 0; attempt < Math.max(1, x.getPollAttempts()); attempt++) {
+            latest = inspectContent(parentId);
+            if (latest.videoCount() > 0) {
+                return latest;
+            }
+            sleep(x.getPollIntervalMs());
+        }
+        throw new IllegalStateException("Xunlei restored folder contains no video files"
+                + " (folders=" + latest.folderCount() + ", files=" + latest.fileCount() + ")");
+    }
+
+    public RestoredSelection awaitRestoredFiles(
+            String restoreFolderId,
+            List<String> expectedNames,
+            long restoreStartedAt) {
+        if (!hasText(restoreFolderId)) {
+            throw new IllegalStateException("Xunlei restore response did not include restore folder id");
+        }
+        ResourceHubProperties.Xunlei x = properties.getXunlei();
+        for (int attempt = 0; attempt < Math.max(1, x.getPollAttempts()); attempt++) {
+            JsonNode response = request(HttpMethod.GET,
+                    "/files?parent_id=" + restoreFolderId + "&usage=DISPLAY&limit=100", null);
+            List<JsonNode> restored = selectRestoredFiles(
+                    response.path("files"), expectedNames, restoreStartedAt);
+            if (!restored.isEmpty()) {
+                int folders = 0;
+                int files = 0;
+                int videos = 0;
+                List<String> ids = new ArrayList<>();
+                for (JsonNode item : restored) {
+                    String id = item.path("id").asText(null);
+                    if (!hasText(id)) continue;
+                    ids.add(id);
+                    if (isFolder(item)) {
+                        folders++;
+                        ContentSummary nested = inspectContent(id);
+                        folders += nested.folderCount();
+                        files += nested.fileCount();
+                        videos += nested.videoCount();
+                    } else {
+                        files++;
+                        if (isVideo(item)) videos++;
+                    }
+                }
+                if (!ids.isEmpty() && videos > 0) {
+                    return new RestoredSelection(List.copyOf(ids), new ContentSummary(folders, files, videos));
+                }
+            }
+            sleep(x.getPollIntervalMs());
+        }
+        throw new IllegalStateException(
+                "Xunlei restore completed but no new matching video files were found in My Transfers");
+    }
+
     public String createShare(String parentId) {
+        return createShare(List.of(parentId));
+    }
+
+    public String createShare(List<String> fileIds) {
         ResourceHubProperties.Xunlei x = properties.getXunlei();
         if (!x.isShareEnabled() || !hasText(x.getShareCreatePath())) return null;
-        Map<String, Object> body = Map.of("file_ids", List.of(parentId));
-        JsonNode response = request(HttpMethod.POST, x.getShareCreatePath(), body);
-        return findUrl(response);
+        JsonNode response = request(HttpMethod.POST, x.getShareCreatePath(), sharePayload(fileIds));
+        return parseShareUrl(response);
+    }
+
+    static Map<String, Object> sharePayload(String fileId) {
+        return sharePayload(List.of(fileId));
+    }
+
+    static Map<String, Object> sharePayload(List<String> fileIds) {
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("subscribe_push", "false");
+        params.put("WithPassCodeInLink", "true");
+        params.put("share_file_order", "MODIFY_TIME_DESC");
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("file_ids", fileIds);
+        body.put("share_to", "copy");
+        body.put("params", params);
+        body.put("title", "云盘资源分享");
+        body.put("restore_limit", "-1");
+        body.put("expiration_days", "-1");
+        return body;
+    }
+
+    static String parseShareUrl(JsonNode response) {
+        String url = firstTextStatic(
+                response.path("share_url").asText(null),
+                response.path("data").path("share_url").asText(null));
+        if (!hasTextStatic(url)) {
+            return null;
+        }
+        String passCode = firstTextStatic(
+                response.path("pass_code").asText(null),
+                response.path("data").path("pass_code").asText(null));
+        if (!hasTextStatic(passCode) || url.contains("pwd=")) {
+            return url;
+        }
+        return UriComponentsBuilder.fromUriString(url)
+                .queryParam("pwd", passCode)
+                .build()
+                .toUriString();
     }
 
     private ShareInfo inspectShare(String shareUrl) {
@@ -97,21 +217,177 @@ public class XunleiClient {
         String passCode = UriComponentsBuilder.fromUriString(shareUrl).build().getQueryParams().getFirst("pwd");
         JsonNode response = request(HttpMethod.GET, "/share?share_id=" + shareId + "&pass_code=" + (passCode == null ? "" : passCode) + "&limit=100", null);
         String token = firstText(response.path("pass_code_token").asText(null), response.path("data").path("pass_code_token").asText(null));
-        List<String> fileIds = new ArrayList<>();
-        collectFileIds(response, fileIds);
+        List<String> fileIds = extractTopLevelFileIds(response);
         if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no files");
-        return new ShareInfo(shareId, passCode, token, fileIds);
+        return new ShareInfo(shareId, passCode, token, fileIds, extractTopLevelFileNames(response));
     }
 
-    private String ensureDirectory(String path) {
-        if (!hasText(path) || "/".equals(path.trim())) return "";
-        JsonNode files = request(HttpMethod.GET, "/files?parent_id=&limit=100", null);
-        String name = path.trim().replaceFirst("^/+", "");
-        for (JsonNode item : files.path("files")) {
-            if (name.equals(item.path("name").asText()) && item.path("kind").asText("").contains("folder")) return item.path("id").asText("0");
+    private DirectoryInfo ensureDirectory(String path) {
+        String restoreRootId = findRestoreRootId();
+        String parentId = restoreRootId;
+        if (!hasText(path) || "/".equals(path.trim())) return new DirectoryInfo(restoreRootId, List.of());
+        for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
+            if (!hasText(segment)) continue;
+            JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
+            String folderId = null;
+            for (JsonNode item : files.path("files")) {
+                if (segment.equals(item.path("name").asText())
+                        && item.path("kind").asText("").contains("folder")) {
+                    folderId = item.path("id").asText(null);
+                    break;
+                }
+            }
+            if (!hasText(folderId)) {
+                JsonNode created = request(HttpMethod.POST, "/files",
+                        Map.of("name", segment, "parent_id", parentId, "kind", "drive#folder"));
+                folderId = firstText(
+                        created.path("id").asText(null),
+                        created.path("file").path("id").asText(null),
+                        created.path("data").path("id").asText(null));
+            }
+            if (!hasText(folderId)) {
+                throw new IllegalStateException("Xunlei folder creation did not return an id");
+            }
+            parentId = folderId;
         }
-        JsonNode created = request(HttpMethod.POST, "/files", Map.of("name", name, "parent_id", "", "kind", "drive#folder"));
-        return firstText(created.path("id").asText(null), created.path("file").path("id").asText(null), created.path("data").path("id").asText(null), "");
+        return new DirectoryInfo(restoreRootId, List.of());
+    }
+
+    private String findRestoreRootId() {
+        JsonNode response = request(HttpMethod.GET,
+                "/files?parent_id=&usage=DISPLAY&limit=100", null);
+        for (JsonNode item : response.path("files")) {
+            if (isFolder(item) && "我的转存".equals(item.path("name").asText())) {
+                String id = item.path("id").asText(null);
+                if (hasText(id)) return id;
+            }
+        }
+        throw new IllegalStateException("Xunlei system restore folder was not found");
+    }
+
+    static List<String> extractTopLevelFileIds(JsonNode response) {
+        JsonNode files = firstArray(
+                response.path("files"),
+                response.path("file_list"),
+                response.path("data").path("files"),
+                response.path("data").path("file_list"));
+        if (files == null) {
+            return List.of();
+        }
+        List<String> ids = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (JsonNode item : files) {
+            String id = item.path("id").asText(null);
+            if (hasTextStatic(id) && seen.add(id)) {
+                ids.add(id);
+            }
+        }
+        return List.copyOf(ids);
+    }
+
+    static List<String> extractTopLevelFileNames(JsonNode response) {
+        JsonNode files = firstArray(
+                response.path("files"),
+                response.path("file_list"),
+                response.path("data").path("files"),
+                response.path("data").path("file_list"));
+        if (files == null) return List.of();
+        List<String> names = new ArrayList<>();
+        for (JsonNode item : files) {
+            String name = firstTextStatic(
+                    item.path("name").asText(null),
+                    item.path("file_name").asText(null));
+            if (hasTextStatic(name)) names.add(name);
+        }
+        return List.copyOf(names);
+    }
+
+    static List<JsonNode> selectRestoredFiles(
+            JsonNode files,
+            List<String> expectedNames,
+            long restoreStartedAt) {
+        if (files == null || !files.isArray()) return List.of();
+        long earliest = restoreStartedAt - 5_000;
+        List<String> expected = expectedNames == null
+                ? List.of()
+                : expectedNames.stream()
+                        .filter(XunleiClient::hasTextStatic)
+                        .map(XunleiClient::normalizeFileName)
+                        .filter(XunleiClient::hasTextStatic)
+                        .toList();
+        List<JsonNode> result = new ArrayList<>();
+        for (JsonNode item : files) {
+            String name = firstTextStatic(
+                    item.path("name").asText(null),
+                    item.path("file_name").asText(null));
+            if (!hasTextStatic(item.path("id").asText(null)) || !createdAfter(item, earliest)) continue;
+            String normalized = normalizeFileName(name);
+            boolean matches = expected.isEmpty() || expected.stream().anyMatch(value ->
+                    normalized.equals(value)
+                            || normalized.startsWith(value)
+                            || value.startsWith(normalized));
+            if (matches) result.add(item);
+        }
+        return List.copyOf(result);
+    }
+
+    private static boolean createdAfter(JsonNode item, long earliestEpochMs) {
+        for (String field : List.of("created_time", "user_modified_time", "modified_time")) {
+            String value = item.path(field).asText(null);
+            if (!hasTextStatic(value)) continue;
+            try {
+                if (OffsetDateTime.parse(value).toInstant().toEpochMilli() >= earliestEpochMs) return true;
+            } catch (Exception ignored) {
+                try {
+                    if (Instant.parse(value).toEpochMilli() >= earliestEpochMs) return true;
+                } catch (Exception ignoredAgain) {
+                    // Try the remaining timestamp fields.
+                }
+            }
+        }
+        return false;
+    }
+
+    private static String normalizeFileName(String value) {
+        return hasTextStatic(value)
+                ? value.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]+", "")
+                : "";
+    }
+
+    private ContentSummary inspectContent(String parentId) {
+        ArrayDeque<FolderEntry> queue = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+        queue.add(new FolderEntry(parentId, 0));
+        int folders = 0;
+        int files = 0;
+        int videos = 0;
+        while (!queue.isEmpty() && folders + files < 500) {
+            FolderEntry entry = queue.removeFirst();
+            if (!seen.add(entry.id())) {
+                continue;
+            }
+            JsonNode response = request(HttpMethod.GET,
+                    "/files?parent_id=" + entry.id() + "&usage=DISPLAY&limit=100", null);
+            JsonNode children = response.path("files");
+            if (!children.isArray()) {
+                continue;
+            }
+            for (JsonNode child : children) {
+                if (isFolder(child)) {
+                    folders++;
+                    String childId = child.path("id").asText(null);
+                    if (entry.depth() < 8 && hasText(childId)) {
+                        queue.addLast(new FolderEntry(childId, entry.depth() + 1));
+                    }
+                } else {
+                    files++;
+                    if (isVideo(child)) {
+                        videos++;
+                    }
+                }
+            }
+        }
+        return new ContentSummary(folders, files, videos);
     }
 
     private JsonNode request(HttpMethod method, String path, Object body) {
@@ -138,17 +414,43 @@ public class XunleiClient {
                 try {
                     ResponseEntity<String> retried = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
                     return objectMapper.readTree(retried.getBody());
-                } catch (Exception retryError) { throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError); }
+                } catch (org.springframework.web.client.HttpStatusCodeException retryError) {
+                    throw new IllegalStateException(
+                            "Xunlei API request failed after CAPTCHA refresh: "
+                                    + method.name() + " " + safeEndpoint(path)
+                                    + " HTTP " + retryError.getStatusCode().value()
+                                    + apiErrorSuffix(retryError),
+                            retryError);
+                } catch (Exception retryError) {
+                    throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError);
+                }
             }
-            throw new IllegalStateException("Xunlei API request failed: HTTP " + e.getStatusCode().value(), e);
+            throw new IllegalStateException(
+                    "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path)
+                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e),
+                    e);
         } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
         catch (Exception e) { throw new IllegalStateException("Xunlei API response parse failed", e); }
     }
 
-    private void collectFileIds(JsonNode node, List<String> ids) {
-        if (node == null || node.isMissingNode()) return;
-        if (node.isObject()) { String id = node.path("id").asText(null); if (hasText(id) && (node.has("name") || node.has("file_name"))) ids.add(id); node.fields().forEachRemaining(e -> collectFileIds(e.getValue(), ids)); }
-        else if (node.isArray()) node.forEach(item -> collectFileIds(item, ids));
+    private static JsonNode firstArray(JsonNode... values) {
+        for (JsonNode value : values) {
+            if (value != null && value.isArray()) return value;
+        }
+        return null;
+    }
+
+    private static boolean isFolder(JsonNode item) {
+        return item.path("kind").asText("").toLowerCase(Locale.ROOT).contains("folder");
+    }
+
+    private static boolean isVideo(JsonNode item) {
+        String extension = item.path("file_extension").asText("").toLowerCase(Locale.ROOT);
+        if (VIDEO_EXTENSIONS.contains(extension)) return true;
+        String mimeType = item.path("mime_type").asText("").toLowerCase(Locale.ROOT);
+        if (mimeType.startsWith("video/")) return true;
+        String category = item.path("file_category").asText("");
+        return "VIDEO".equalsIgnoreCase(category);
     }
 
     private String findUrl(JsonNode node) { if (node == null || node.isMissingNode()) return null; if (node.isTextual() && node.asText().startsWith("http")) return node.asText(); if (node.isObject()) { for (var it = node.fields(); it.hasNext();) { String v = findUrl(it.next().getValue()); if (v != null) return v; } } else if (node.isArray()) for (JsonNode item : node) { String v = findUrl(item); if (v != null) return v; } return null; }
@@ -199,6 +501,20 @@ public class XunleiClient {
         String clean = path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
         return method.name() + ":/drive/v1" + clean;
     }
+    private String safeEndpoint(String path) {
+        return path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
+    }
+    private String apiErrorSuffix(org.springframework.web.client.HttpStatusCodeException error) {
+        try {
+            JsonNode root = objectMapper.readTree(error.getResponseBodyAsString());
+            String name = root.path("error").isTextual() ? root.path("error").asText() : null;
+            String code = root.path("error_code").isValueNode() ? root.path("error_code").asText() : null;
+            if (!hasText(name) && !hasText(code)) return "";
+            return " (error=" + firstText(name, "unknown") + ", code=" + firstText(code, "unknown") + ")";
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
     private String md5(String value) {
         try { byte[] digest = MessageDigest.getInstance("MD5").digest(value.getBytes(StandardCharsets.UTF_8)); StringBuilder result = new StringBuilder(); for (byte item : digest) result.append(String.format("%02x", item)); return result.toString(); }
         catch (Exception e) { throw new IllegalStateException("Failed to sign Xunlei CAPTCHA request", e); }
@@ -209,8 +525,25 @@ public class XunleiClient {
     private void sleep(long ms) { try { Thread.sleep(Math.max(0, ms)); } catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException("interrupted while waiting for Xunlei task", e); } }
     private String firstText(String... values) { for (String value : values) if (hasText(value)) return value.trim(); return null; }
     private boolean hasText(String value) { return value != null && !value.isBlank(); }
-    public record ShareInfo(String shareId, String passCode, String passCodeToken, List<String> fileIds) {}
-    public record RestoreResult(String taskId, String response, String parentId) {}
+    private static String firstTextStatic(String... values) { for (String value : values) if (hasTextStatic(value)) return value.trim(); return null; }
+    private static boolean hasTextStatic(String value) { return value != null && !value.isBlank(); }
+    public record ShareInfo(
+            String shareId,
+            String passCode,
+            String passCodeToken,
+            List<String> fileIds,
+            List<String> fileNames) {}
+    public record DirectoryInfo(String id, List<String> ancestorIds) {}
+    public record RestoreResult(
+            String taskId,
+            String response,
+            String parentId,
+            String restoredFileId,
+            List<String> expectedNames,
+            long startedAt) {}
     public record RestoreStatus(boolean success, String status, String response) {}
+    public record ContentSummary(int folderCount, int fileCount, int videoCount) {}
+    public record RestoredSelection(List<String> fileIds, ContentSummary content) {}
+    private record FolderEntry(String id, int depth) {}
     private record CaptchaEntry(String token, long expiresAt) {}
 }

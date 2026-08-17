@@ -7,12 +7,15 @@ import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.ResourceHubIngestRequest;
 import com.gying.movie.dto.ResourceHubIngestResponse;
 import com.gying.movie.dto.QuarkTransferRunResult;
+import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.utils.InternalAuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
@@ -39,6 +42,8 @@ public class ResourceHubInternalController {
     private final IMovieMetadataService movieService;
     private final IResourceLinkService resourceLinkService;
     private final IResourceDiscoveryResultService discoveryResultService;
+    private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IResourceHubPublishService resourceHubPublishService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
     public ResourceHubInternalController(
@@ -47,13 +52,33 @@ public class ResourceHubInternalController {
             IMovieMetadataService movieService,
             IResourceLinkService resourceLinkService,
             IResourceDiscoveryResultService discoveryResultService,
+            IQuarkTransferRunnerService quarkTransferRunnerService,
+            IResourceHubPublishService resourceHubPublishService,
             IXunleiTransferRunnerService xunleiTransferRunnerService) {
         this.internalAuthHelper = internalAuthHelper;
         this.resourceHubProperties = resourceHubProperties;
         this.movieService = movieService;
         this.resourceLinkService = resourceLinkService;
         this.discoveryResultService = discoveryResultService;
+        this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.resourceHubPublishService = resourceHubPublishService;
         this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+    }
+
+    @PostMapping("/discoveries/{discoveryResultId}/publish")
+    public ApiResponse<ResourceHubPublishResult> publishDiscovery(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @org.springframework.web.bind.annotation.PathVariable Long discoveryResultId) {
+        internalAuthHelper.requireInternal(token);
+        return ApiResponse.ok(resourceHubPublishService.publishDiscovery(discoveryResultId));
+    }
+
+    @PostMapping("/quark-transfers/{taskId}/run")
+    public ApiResponse<QuarkTransferRunResult> runQuarkTransfer(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @org.springframework.web.bind.annotation.PathVariable Long taskId) {
+        internalAuthHelper.requireInternal(token);
+        return ApiResponse.ok(quarkTransferRunnerService.submitOne(taskId));
     }
 
     @PostMapping("/xunlei-transfers/{taskId}/run")

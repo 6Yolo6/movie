@@ -27,6 +27,44 @@ public final class MovieSearchCandidateUtils {
                 .toList();
     }
 
+    public static List<MovieSearchCandidate> mergeBalanced(
+            List<MovieSearchCandidate> gyingCandidates,
+            List<MovieSearchCandidate> fallbackCandidates,
+            int limit,
+            int maxGying) {
+        int safeLimit = Math.max(limit, 1);
+        int safeGyingLimit = Math.min(Math.max(maxGying, 0), safeLimit);
+        Map<String, MovieSearchCandidate> unique = new LinkedHashMap<>();
+        addAll(unique, gyingCandidates);
+        addAll(unique, fallbackCandidates);
+        Comparator<MovieSearchCandidate> ordering = Comparator
+                .comparingInt(MovieSearchCandidate::getScore).reversed()
+                .thenComparing(candidate -> firstText(candidate.getTitle(), candidate.getOriginalTitle(), ""));
+        List<MovieSearchCandidate> gying = unique.values().stream()
+                .filter(candidate -> "GYING".equalsIgnoreCase(candidate.getSource()))
+                .sorted(ordering)
+                .limit(safeGyingLimit)
+                .toList();
+        List<MovieSearchCandidate> fallback = unique.values().stream()
+                .filter(candidate -> !"GYING".equalsIgnoreCase(candidate.getSource()))
+                .sorted(Comparator.comparingInt(MovieSearchCandidateUtils::sourcePriority).reversed()
+                        .thenComparing(ordering))
+                .toList();
+        List<MovieSearchCandidate> result = new ArrayList<>();
+        int gyingIndex = 0;
+        int fallbackIndex = 0;
+        while (result.size() < safeLimit
+                && (gyingIndex < gying.size() || fallbackIndex < fallback.size())) {
+            if (gyingIndex < gying.size()) {
+                result.add(gying.get(gyingIndex++));
+            }
+            if (result.size() < safeLimit && fallbackIndex < fallback.size()) {
+                result.add(fallback.get(fallbackIndex++));
+            }
+        }
+        return List.copyOf(result);
+    }
+
     public static String formatReply(String keyword, List<MovieSearchCandidate> candidates) {
         StringBuilder reply = new StringBuilder("请选择要搜索的影片：");
         int index = 0;

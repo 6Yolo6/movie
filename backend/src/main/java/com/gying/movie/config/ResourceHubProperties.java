@@ -77,7 +77,7 @@ public class ResourceHubProperties {
         private String captchaToken;
         private String savePath = "/GYing Resource Hub";
         private boolean shareEnabled = false;
-        private String shareCreatePath;
+        private String shareCreatePath = "/share";
         private int pollAttempts = 20;
         private long pollIntervalMs = 1000;
     }

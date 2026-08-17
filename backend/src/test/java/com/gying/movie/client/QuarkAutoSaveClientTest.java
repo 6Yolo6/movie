@@ -3,6 +3,7 @@ package com.gying.movie.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -94,6 +95,98 @@ class QuarkAutoSaveClientTest {
                 "鬼灭之刃 更至63集 4K合集 最新");
 
         assertEquals(shareUrl, resolved);
+    }
+
+    @Test
+    void usesRootShareWhenSingleSeasonHasDirectVideoFiles() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        when(restTemplate.postForEntity(
+                contains("/get_share_detail"),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok("""
+                        {"success":true,"data":{"list":[
+                          {"fid":"episode-1","file_name":"森林民宿.E01.1080p.mkv","dir":false},
+                          {"fid":"episode-2","file_name":"森林民宿.E02.1080p.mkv","dir":false}
+                        ]}}
+                        """));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+        String shareUrl = "https://pan.quark.cn/s/forest";
+
+        assertEquals(shareUrl, client.resolveSeasonShareUrl(
+                shareUrl,
+                1,
+                "2021 森林民宿 剧集 HDTV 中字"));
+    }
+
+    @Test
+    void selectsSingleUnmarkedContentDirectoryForFirstSeason() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        when(restTemplate.postForEntity(
+                contains("/get_share_detail"),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(
+                        ResponseEntity.ok("""
+                                {"success":true,"data":{"list":[
+                                  {"fid":"episodes","file_name":"森林民宿","dir":true}
+                                ]}}
+                                """),
+                        ResponseEntity.ok("""
+                                {"success":true,"data":{"list":[
+                                  {"fid":"episode-1","file_name":"E01.mp4","dir":false}
+                                ]}}
+                                """),
+                        ResponseEntity.ok("""
+                                {"success":true,"data":{"list":[
+                                  {"fid":"episodes","file_name":"森林民宿","dir":true}
+                                ]}}
+                                """),
+                        ResponseEntity.ok("""
+                                {"success":true,"data":{"list":[
+                                  {"fid":"episode-1","file_name":"E01.mp4","dir":false}
+                                ]}}
+                                """));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+        String shareUrl = "https://pan.quark.cn/s/forest-folder";
+
+        assertEquals(shareUrl + "#/list/share/episodes", client.resolveSeasonShareUrl(
+                shareUrl,
+                1,
+                "2021 森林民宿 剧集 HDTV 中字"));
+    }
+
+    @Test
+    void rejectsRootWithConflictingSeasonDirectory() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        when(restTemplate.postForEntity(
+                contains("/get_share_detail"),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok("""
+                        {"success":true,"data":{"list":[
+                          {"fid":"season-2","file_name":"Season 2","dir":true},
+                          {"fid":"extras","file_name":"Extras","dir":true}
+                        ]}}
+                        """));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+
+        assertThrows(IllegalStateException.class, () -> client.resolveSeasonShareUrl(
+                "https://pan.quark.cn/s/multi-season",
+                1,
+                "森林民宿 剧集 HDTV 中字"));
     }
 
     @Test

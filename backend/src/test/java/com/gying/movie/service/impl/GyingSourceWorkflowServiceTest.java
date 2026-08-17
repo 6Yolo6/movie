@@ -18,6 +18,7 @@ import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.dto.DiscoveredResource;
+import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
 import com.gying.movie.entity.ResourceLink;
@@ -114,6 +115,27 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(42L, result.get("resourceId"));
         assertEquals(false, result.get("transferMode"));
         verify(transferRunnerService, never()).submitOne(any());
+    }
+
+    @Test
+    void searchCandidatesExcludesGyingMoviesWithoutCloudResources() {
+        when(gyingSourceClient.get(eq("/search"), any())).thenReturn(Map.of(
+                "items", List.of(
+                        Map.of("typeCode", "mv", "mid", "with-link", "title", "有资源影片", "year", 2026),
+                        Map.of("typeCode", "mv", "mid", "without-link", "title", "空资源影片", "year", 2026))));
+        when(gyingSourceClient.get("/movie/mv/with-link")).thenReturn(Map.of(
+                "resources", List.of(Map.of(
+                        "provider", "QUARK",
+                        "url", "https://pan.quark.cn/s/owned"))));
+        when(gyingSourceClient.get("/movie/mv/without-link")).thenReturn(Map.of(
+                "resources", List.of()));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+
+        List<MovieSearchCandidate> candidates = service.searchCandidates("影片", 10);
+
+        assertEquals(List.of("with-link"), candidates.stream()
+                .map(MovieSearchCandidate::getSourceId)
+                .toList());
     }
 
     @Test

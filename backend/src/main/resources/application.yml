@@ -93,7 +93,7 @@ resource-hub:
       captcha-token: ${XUNLEI_CAPTCHA_TOKEN:}
       save-path: ${XUNLEI_SAVE_PATH:/GYing Resource Hub}
       share-enabled: ${XUNLEI_SHARE_ENABLED:false}
-      share-create-path: ${XUNLEI_SHARE_CREATE_PATH:}
+      share-create-path: ${XUNLEI_SHARE_CREATE_PATH:/share}
       poll-attempts: ${XUNLEI_POLL_ATTEMPTS:20}
       poll-interval-ms: ${XUNLEI_POLL_INTERVAL_MS:1000}
   worker:

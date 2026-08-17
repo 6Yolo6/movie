@@ -44,6 +44,8 @@
 - `POST /discoveries/reconcile?dryRun=true&limit=2000`：重评历史标题误判/任务冲突并同步失败任务状态。
 - `POST /discoveries/{id}/qq-channel-post?runNow=true`、`POST /discoveries/batch/qq-channel-post?runNow=true`：立即或排队发 QQ。
 - `POST /quark/transfers/submit`、`POST /quark/transfers/{taskId}/submit`：转存。
+- `POST /api/internal/resource-hub/quark-transfers/{taskId}/run`：使用 internal token 定向执行一条夸克转存任务，不扫描其他队列。
+- `POST /api/internal/resource-hub/discoveries/{discoveryResultId}/publish`：使用 internal token 定向发布一条已有自有分享的发现结果。
 - `POST /api/internal/resource-hub/xunlei-transfers/{taskId}/run`：使用 internal token 定向执行一条迅雷转存任务，不扫描其他队列。
 - `GET /missing-resources`、`POST /missing-resources/{movieId}/resolve?source=GYING|PANSOU`：缺网盘资源检查和补全。
 - `POST /missing-resources/batch/resolve?source=GYING|PANSOU`：按请求体中的影片 ID 数组批量补全，最多 20 部。

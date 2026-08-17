@@ -67,6 +67,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private static final int MAX_REPLY_RESOURCES = 5;
     private static final int MAX_SELECTABLE_RESOURCES = 10;
     private static final int MAX_CANDIDATE_SUGGESTIONS = 10;
+    private static final int MAX_GYING_CANDIDATE_SUGGESTIONS = 4;
     private static final long CANDIDATE_TTL_SECONDS = 300;
     private static final long RESOURCE_CONTEXT_TTL_SECONDS = 300;
     private static final String PERMANENT_LINK_INVALID_REASON = "Re-shared link is still invalid; possible policy violation";
@@ -661,9 +662,13 @@ public class QqBotServiceImpl implements IQqBotService {
             log.warn("TMDB candidate search failed for QQ keyword {}", keyword, e);
             tmdb = List.of();
         }
-        List<MovieSearchCandidate> preferred = MovieSearchCandidateUtils.merge(
-                gying, local, MAX_CANDIDATE_SUGGESTIONS);
-        return MovieSearchCandidateUtils.merge(preferred, tmdb, MAX_CANDIDATE_SUGGESTIONS);
+        List<MovieSearchCandidate> fallback = MovieSearchCandidateUtils.merge(
+                local, tmdb, MAX_CANDIDATE_SUGGESTIONS * 2);
+        return MovieSearchCandidateUtils.mergeBalanced(
+                gying,
+                fallback,
+                MAX_CANDIDATE_SUGGESTIONS,
+                MAX_GYING_CANDIDATE_SUGGESTIONS);
     }
 
     private String resolveCandidateMediaType(MovieMetadata movie) {

@@ -124,6 +124,7 @@ public class GyingSourceWorkflowService {
                 "mode", 2,
                 "limit", safeLimit)).get("items"));
         return items.stream()
+                .filter(this::hasSearchableCloudResource)
                 .map(item -> {
                     String typeCode = stringValue(item.get("typeCode"));
                     String mid = stringValue(item.get("mid"));
@@ -151,6 +152,24 @@ public class GyingSourceWorkflowService {
                 .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())
                 .limit(safeLimit)
                 .toList();
+    }
+
+    private boolean hasSearchableCloudResource(Map<String, Object> item) {
+        String typeCode = stringValue(item.get("typeCode"));
+        String mid = stringValue(item.get("mid"));
+        if (!hasText(typeCode) || !hasText(mid)) {
+            return false;
+        }
+        try {
+            Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+            return mapList(snapshot.get("resources")).stream().anyMatch(resource -> {
+                String provider = firstText(stringValue(resource.get("provider")), "").toUpperCase(Locale.ROOT);
+                return List.of("QUARK", "XUNLEI").contains(provider)
+                        && hasText(stringValue(resource.get("url")));
+            });
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     public List<DiscoveredResource> discoverResources(MovieMetadata movie, int limit) {
