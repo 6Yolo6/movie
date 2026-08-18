@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigResponse {
+    private boolean xunleiAuthorizationConfigured;
+    private boolean xunleiCaptchaConfigured;
     private boolean enabled;
     private boolean autoApprove;
     private boolean tmdbConfigured;

@@ -50,6 +50,8 @@ interface ApiEnvelope<T> {
 }
 
 interface ResourceHubConfig {
+    xunleiAuthorizationConfigured: boolean;
+    xunleiCaptchaConfigured: boolean;
     enabled: boolean;
     autoApprove: boolean;
     tmdbConfigured: boolean;
@@ -78,6 +80,11 @@ type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources'
     tmdbAutoSyncSources: string[];
     gyingAutoSyncSources: string[];
 };
+
+interface XunleiCredentialFormValues {
+    xunleiAuthorization?: string;
+    xunleiCaptchaToken?: string;
+}
 
 interface WorkerStatus {
     enabled: boolean;
@@ -256,6 +263,7 @@ export default function ResourceHubAdminPage() {
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [configForm] = Form.useForm<ResourceHubConfigFormValues>();
+    const [xunleiCredentialForm] = Form.useForm<XunleiCredentialFormValues>();
     const [tmdbForm] = Form.useForm<TmdbFormValues>();
     const [discoveryForm] = Form.useForm<DiscoveryFormValues>();
 
@@ -444,6 +452,32 @@ export default function ResourceHubAdminPage() {
             });
             configForm.setFieldsValue(normalizeConfigForm(data));
             message.success(t('resourceHubConfigSaved'));
+            await fetchOverview();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
+        } finally {
+            setSavingConfig(false);
+        }
+    };
+
+    const saveXunleiCredentials = async (values: XunleiCredentialFormValues) => {
+        const authorization = values.xunleiAuthorization?.trim();
+        const captchaToken = values.xunleiCaptchaToken?.trim();
+        if (!authorization && !captchaToken) {
+            message.info(t('resourceHubCredentialEnterOne'));
+            return;
+        }
+        setSavingConfig(true);
+        try {
+            await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    xunleiAuthorization: authorization || undefined,
+                    xunleiCaptchaToken: captchaToken || undefined,
+                }),
+            });
+            xunleiCredentialForm.resetFields();
+            message.success(t('resourceHubXunleiCredentialsUpdated'));
             await fetchOverview();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
@@ -1357,6 +1391,45 @@ export default function ResourceHubAdminPage() {
                                                 </Row>
                                                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
                                                     {t('resourceHubSaveSettings')}
+                                                </Button>
+                                            </Form>
+                                        </Card>
+                                    </Col>
+                                    <Col xs={24}>
+                                        <Card title={t('resourceHubXunleiCredentials')} loading={loading}>
+                                            <Form form={xunleiCredentialForm} layout="vertical" onFinish={saveXunleiCredentials}>
+                                                <Alert
+                                                    className="mb-4"
+                                                    type="info"
+                                                    showIcon
+                                                    message={t('resourceHubXunleiCredentialsHelp')}
+                                                />
+                                                <Row gutter={12}>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item
+                                                            name="xunleiAuthorization"
+                                                            label={t('resourceHubXunleiAuthorization')}
+                                                            extra={overview?.config.xunleiAuthorizationConfigured
+                                                                ? t('resourceHubCredentialConfiguredKeepBlank')
+                                                                : t('resourceHubCredentialNotConfigured')}
+                                                        >
+                                                            <Input.Password autoComplete="off" placeholder={t('resourceHubXunleiAuthorizationPlaceholder')} />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item
+                                                            name="xunleiCaptchaToken"
+                                                            label={t('resourceHubXunleiCaptchaToken')}
+                                                            extra={overview?.config.xunleiCaptchaConfigured
+                                                                ? t('resourceHubCredentialConfiguredKeepBlank')
+                                                                : t('resourceHubCredentialNotConfigured')}
+                                                        >
+                                                            <Input.Password autoComplete="off" placeholder={t('resourceHubXunleiCaptchaPlaceholder')} />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
+                                                    {t('resourceHubUpdateXunleiCredentials')}
                                                 </Button>
                                             </Form>
                                         </Card>

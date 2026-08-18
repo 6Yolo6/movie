@@ -4,6 +4,9 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigRequest {
+    /** Runtime-only credentials. Blank values keep the current process value. */
+    private String xunleiAuthorization;
+    private String xunleiCaptchaToken;
     private Boolean enabled;
     private Boolean autoApprove;
     private Boolean tmdbAutoSyncEnabled;

@@ -103,6 +103,17 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Tmdb tmdb = properties.getTmdb();
         ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
+        ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+
+        // Credentials are intentionally runtime-only. They are never written to sys_config.
+        if (xunlei != null) {
+            if (hasText(request.getXunleiAuthorization())) {
+                xunlei.setAuthorization(request.getXunleiAuthorization().trim());
+            }
+            if (hasText(request.getXunleiCaptchaToken())) {
+                xunlei.setCaptchaToken(request.getXunleiCaptchaToken().trim());
+            }
+        }
 
         if (request.getEnabled() != null) {
             properties.setEnabled(request.getEnabled());
@@ -209,6 +220,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubConfigResponse response = new ResourceHubConfigResponse();
+        ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+        response.setXunleiAuthorizationConfigured(xunlei != null && hasText(xunlei.getAuthorization()));
+        response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));

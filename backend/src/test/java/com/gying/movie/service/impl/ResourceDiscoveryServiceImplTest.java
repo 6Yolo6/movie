@@ -23,6 +23,7 @@ import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IXunleiTransferTaskService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ class ResourceDiscoveryServiceImplTest {
     private IMovieMetadataService movieService;
     private IResourceHubTaskService taskService;
     private IResourceDiscoveryResultService discoveryService;
+    private IXunleiTransferTaskService xunleiTransferTaskService;
     private ResourceDiscoveryServiceImpl service;
     private MovieMetadata movie;
     private ResourceHubTask task;
@@ -49,6 +51,7 @@ class ResourceDiscoveryServiceImplTest {
         movieService = mock(IMovieMetadataService.class);
         taskService = mock(IResourceHubTaskService.class);
         discoveryService = mock(IResourceDiscoveryResultService.class);
+        xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         service = new ResourceDiscoveryServiceImpl(
                 properties,
                 panSouClient,
@@ -58,6 +61,7 @@ class ResourceDiscoveryServiceImplTest {
                 discoveryService,
                 mock(IQuarkTransferTaskService.class),
                 mock(IResourceLinkService.class),
+                xunleiTransferTaskService,
                 new ObjectMapper());
 
         movie = new MovieMetadata();
@@ -102,6 +106,23 @@ class ResourceDiscoveryServiceImplTest {
         assertEquals(0, result.getDiscovered());
         assertEquals(1, result.getRejected());
         verify(discoveryService, never()).save(any());
+    }
+
+    @Test
+    void keepsQuarkAndXunleiCandidatesWhenQuarkHasMoreResults() {
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
+        DiscoveredResource quark = resource(
+                "肖申克的救赎 4K", "https://pan.quark.cn/s/quark", "PANSOU");
+        DiscoveredResource xunlei = resource(
+                "肖申克的救赎 4K 迅雷", "https://pan.xunlei.com/s/xunlei", "PANSOU");
+        xunlei.setProvider("XUNLEI");
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(quark));
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(xunlei));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(2, result.getDiscovered());
+        verify(discoveryService, org.mockito.Mockito.times(2)).save(any(ResourceDiscoveryResult.class));
     }
 
     private DiscoveredResource resource(String title, String url, String source) {

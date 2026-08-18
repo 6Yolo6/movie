@@ -201,12 +201,36 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             String keyword = resolveKeyword(payload, movie);
             List<DiscoveredResource> quark = panSouClient.searchQuark(keyword, payload.maxResults());
             List<DiscoveredResource> xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
-            Map<String, DiscoveredResource> merged = new LinkedHashMap<>();
-            if (quark != null) for (DiscoveredResource item : quark) if (item != null && hasText(item.getUrl())) merged.put(item.getUrl(), item);
-            if (xunlei != null) for (DiscoveredResource item : xunlei) if (item != null && hasText(item.getUrl())) merged.putIfAbsent(item.getUrl(), item);
-            return merged.values().stream().limit(payload.maxResults()).toList();
+            return mergeProviderResults(quark, xunlei, payload.maxResults());
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
+    }
+
+    private List<DiscoveredResource> mergeProviderResults(
+            List<DiscoveredResource> quark,
+            List<DiscoveredResource> xunlei,
+            int maxResults) {
+        Map<String, DiscoveredResource> merged = new LinkedHashMap<>();
+        int rounds = Math.max(quark == null ? 0 : quark.size(), xunlei == null ? 0 : xunlei.size());
+        for (int index = 0; index < rounds && merged.size() < maxResults; index++) {
+            addProviderResult(merged, quark, index, maxResults);
+            addProviderResult(merged, xunlei, index, maxResults);
+        }
+        return merged.values().stream().limit(maxResults).toList();
+    }
+
+    private void addProviderResult(
+            Map<String, DiscoveredResource> merged,
+            List<DiscoveredResource> resources,
+            int index,
+            int maxResults) {
+        if (resources == null || index >= resources.size() || merged.size() >= maxResults) {
+            return;
+        }
+        DiscoveredResource item = resources.get(index);
+        if (item != null && hasText(item.getUrl())) {
+            merged.putIfAbsent(item.getUrl(), item);
+        }
     }
 
     private LinkCheckResult checkSourceLink(String url) {
