@@ -169,16 +169,14 @@ public class QuarkShareClient {
             JsonNode body = get(cookie, "/1/clouddrive/task",
                     Map.of("task_id", taskId, "retry_index", String.valueOf(i)));
             if (body.path("code").asInt(-1) == 0 || body.path("status").asInt(-1) == 200) {
-                JsonNode data = body.path("data");
-                String shareId = data.path("share_id").asText(null);
+                String shareId = findTextByField(body, "share_id", "shareId");
                 if (hasText(shareId)) {
                     return shareId;
                 }
-                if (data.path("status").asInt(0) == 2) {
-                    break;
-                }
             }
-            sleep(intervalMs);
+            if (i + 1 < attempts) {
+                sleep(intervalMs);
+            }
         }
         throw new IllegalStateException("Quark share task did not return share_id");
     }
@@ -186,16 +184,44 @@ public class QuarkShareClient {
     private QuarkShareResult submitShare(String cookie, String shareId) {
         JsonNode body = post(cookie, "/1/clouddrive/share/password", Map.of("share_id", shareId));
         ensureOk(body, "submit Quark share failed");
-        JsonNode data = body.path("data");
-        String shareUrl = data.path("share_url").asText(null);
+        String shareUrl = findTextByField(body, "share_url", "shareUrl");
         if (!hasText(shareUrl)) {
             throw new IllegalStateException("submit Quark share response missing share_url");
         }
-        String passcode = data.path("passcode").asText(null);
+        String passcode = findTextByField(body, "passcode", "pwd", "password");
         QuarkShareResult result = new QuarkShareResult();
         result.setShareUrl(hasText(passcode) ? shareUrl + "?pwd=" + passcode : shareUrl);
-        result.setTitle(data.path("title").asText(null));
+        result.setTitle(findTextByField(body, "title"));
         return result;
+    }
+
+    private String findTextByField(JsonNode node, String... fieldNames) {
+        if (node == null || node.isMissingNode() || node.isNull() || fieldNames == null) {
+            return null;
+        }
+        if (node.isObject()) {
+            for (String fieldName : fieldNames) {
+                JsonNode value = node.get(fieldName);
+                if (value != null && value.isValueNode() && hasText(value.asText(null))) {
+                    return value.asText().trim();
+                }
+            }
+            var fields = node.fields();
+            while (fields.hasNext()) {
+                String found = findTextByField(fields.next().getValue(), fieldNames);
+                if (hasText(found)) {
+                    return found;
+                }
+            }
+        } else if (node.isArray()) {
+            for (JsonNode child : node) {
+                String found = findTextByField(child, fieldNames);
+                if (hasText(found)) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     private JsonNode get(String cookie, String path, Map<String, String> extraParams) {

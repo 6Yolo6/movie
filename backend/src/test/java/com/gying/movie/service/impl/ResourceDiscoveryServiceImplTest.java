@@ -77,7 +77,7 @@ class ResourceDiscoveryServiceImplTest {
         task.setKeyword("肖申克的救赎 1994");
         when(taskService.getById(1L)).thenReturn(task);
         when(movieService.getById(movie.getId())).thenReturn(movie);
-        when(panSouClient.checkLink(anyString()))
+        when(panSouClient.checkLink(any(DiscoveredResource.class)))
                 .thenReturn(new LinkCheckResult("https://pan.quark.cn/s/test", false, false, "unchecked"));
     }
 
@@ -123,6 +123,8 @@ class ResourceDiscoveryServiceImplTest {
 
         assertEquals(2, result.getDiscovered());
         verify(discoveryService, org.mockito.Mockito.times(2)).save(any(ResourceDiscoveryResult.class));
+        verify(panSouClient).checkLink(quark);
+        verify(panSouClient).checkLink(xunlei);
     }
 
     private DiscoveredResource resource(String title, String url, String source) {

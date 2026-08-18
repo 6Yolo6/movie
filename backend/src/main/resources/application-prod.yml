@@ -104,8 +104,8 @@ resource-hub:
     share-url-type: ${QUARK_SHARE_URL_TYPE:1}
     share-expired-type: ${QUARK_SHARE_EXPIRED_TYPE:1}
     share-passcode: ${QUARK_SHARE_PASSCODE:}
-    share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:12}
-    share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:500}
+    share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:30}
+    share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:1000}
   xunlei:
       enabled: ${XUNLEI_ENABLED:false}
       base-url: ${XUNLEI_BASE_URL:https://api-pan.xunlei.com/drive/v1}

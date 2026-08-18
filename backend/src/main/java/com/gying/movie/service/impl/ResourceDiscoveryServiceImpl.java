@@ -137,7 +137,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                         continue;
                     }
                     String urlHash = ResourceHubHashUtils.sha256(resource.getUrl());
-                    LinkCheckResult sourceCheck = checkSourceLink(resource.getUrl());
+                    LinkCheckResult sourceCheck = checkSourceLink(resource);
                     if (sourceCheck.checked() && !sourceCheck.valid()) {
                         ResourceDiscoveryResult ignored = saveDiscovery(
                                 task, movie, resource, urlHash, "IGNORED", now);
@@ -233,9 +233,10 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         }
     }
 
-    private LinkCheckResult checkSourceLink(String url) {
+    private LinkCheckResult checkSourceLink(DiscoveredResource resource) {
+        String url = resource == null ? null : resource.getUrl();
         try {
-            return panSouClient.checkLink(url);
+            return panSouClient.checkLink(resource);
         } catch (Exception ignored) {
             return new LinkCheckResult(url, false, false, "Source link validation unavailable");
         }

@@ -62,8 +62,8 @@ public class ResourceHubProperties {
         private int shareUrlType = 1;
         private int shareExpiredType = 1;
         private String sharePasscode = "";
-        private int sharePollAttempts = 12;
-        private long sharePollIntervalMs = 500;
+        private int sharePollAttempts = 30;
+        private long sharePollIntervalMs = 1000;
     }
 
     @Data
