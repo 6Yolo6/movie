@@ -69,8 +69,12 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     private void submit(XunleiTransferTask task, QuarkTransferRunResult result) {
         try {
-            if (("SUCCEEDED".equalsIgnoreCase(task.getStatus()) && task.getShareUrl() != null)
-                    || "CANCELED".equalsIgnoreCase(task.getStatus())
+            if ("SUCCEEDED".equalsIgnoreCase(task.getStatus()) && task.getShareUrl() != null) {
+                clearLastError(task.getId());
+                result.setSkipped(result.getSkipped() + 1);
+                return;
+            }
+            if ("CANCELED".equalsIgnoreCase(task.getStatus())
                     || "RUNNING".equalsIgnoreCase(task.getStatus())) {
                 result.setSkipped(result.getSkipped() + 1);
                 return;

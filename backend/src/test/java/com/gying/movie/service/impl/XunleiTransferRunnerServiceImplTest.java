@@ -52,6 +52,7 @@ class XunleiTransferRunnerServiceImplTest {
 
         assertEquals(1, result.getSkipped());
         assertEquals(0, result.getFailed());
+        verify(taskService).update(any());
         verifyNoInteractions(client);
     }
 
