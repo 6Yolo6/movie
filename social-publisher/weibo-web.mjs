@@ -1,6 +1,23 @@
 const DEFAULT_ENDPOINT = 'https://www.weibo.com/ajax/statuses/update';
 const DEFAULT_CLIENT_VERSION = 'v1.1.237';
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36';
+let runtimeSession = null;
+
+export function setWeiboRuntimeSession(session) {
+  if (!session?.cookie || !session?.fingerprint) return false;
+  runtimeSession = {
+    cookie: String(session.cookie).trim(),
+    xsrfToken: String(session.xsrfToken || cookieValue(session.cookie, 'XSRF-TOKEN')).trim(),
+    fingerprint: String(session.fingerprint).trim(),
+    userAgent: String(session.userAgent || '').trim(),
+    updatedAt: session.updatedAt || new Date().toISOString(),
+  };
+  return true;
+}
+
+export function weiboRuntimeSession() {
+  return runtimeSession ? { ...runtimeSession } : null;
+}
 
 function compact(value, limit = 300) {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
@@ -23,13 +40,13 @@ export function cookieValue(cookie, name) {
 }
 
 export function weiboWebConfig(env = process.env) {
-  const cookie = String(env.WEIBO_WEB_COOKIE || '').trim();
+  const cookie = String(runtimeSession?.cookie || env.WEIBO_WEB_COOKIE || '').trim();
   return {
     cookie,
-    xsrfToken: String(env.WEIBO_WEB_XSRF_TOKEN || cookieValue(cookie, 'XSRF-TOKEN')).trim(),
-    fingerprint: String(env.WEIBO_WEB_FINGERPRINT || '').trim(),
+    xsrfToken: String(runtimeSession?.xsrfToken || env.WEIBO_WEB_XSRF_TOKEN || cookieValue(cookie, 'XSRF-TOKEN')).trim(),
+    fingerprint: String(runtimeSession?.fingerprint || env.WEIBO_WEB_FINGERPRINT || '').trim(),
     clientVersion: String(env.WEIBO_WEB_CLIENT_VERSION || DEFAULT_CLIENT_VERSION).trim(),
-    userAgent: String(env.WEIBO_WEB_USER_AGENT || DEFAULT_USER_AGENT).trim(),
+    userAgent: String(runtimeSession?.userAgent || env.WEIBO_WEB_USER_AGENT || DEFAULT_USER_AGENT).trim(),
     endpoint: DEFAULT_ENDPOINT,
   };
 }
@@ -57,8 +74,14 @@ function postUrl(payload) {
   return uid && mid ? `https://weibo.com/${uid}/${mid}` : null;
 }
 
-function responseMessage(payload) {
-  return compact(payload?.msg || payload?.message || payload?.error || payload?.data?.msg || 'Unknown response');
+function responseMessage(payload, status) {
+  const direct = payload?.msg || payload?.message || payload?.error || payload?.error_msg || payload?.errmsg
+    || payload?.data?.msg || payload?.data?.message || payload?.data?.error;
+  if (direct) return compact(direct);
+  const codes = [payload?.code, payload?.error_code, payload?.errno, payload?.retcode]
+    .filter(value => value !== undefined && value !== null);
+  const keys = payload && typeof payload === 'object' ? Object.keys(payload).slice(0, 12).join(',') : typeof payload;
+  return `HTTP ${status}; code=${codes.join('/') || 'none'}; response fields=${keys || 'none'}`;
 }
 
 export async function publishWeiboWeb(content, options = {}) {
@@ -103,14 +126,14 @@ export async function publishWeiboWeb(content, options = {}) {
     if ([301, 302, 303, 307, 308, 401, 403].includes(response.status)) {
       throw new Error('Weibo web session expired or was rejected');
     }
-    throw new Error(`Weibo returned a non-JSON response (HTTP ${response.status})`);
+    throw new Error(`Weibo returned a non-JSON response (HTTP ${response.status}): ${compact(raw, 180)}`);
   }
 
   if (response.status === 418 || response.status === 429) {
-    throw new Error(`Weibo security control or rate limit: ${responseMessage(payload)}`);
+    throw new Error(`Weibo security control or rate limit: ${responseMessage(payload, response.status)}`);
   }
   if (!response.ok || (payload.ok !== 1 && String(payload.code) !== '100000' && payload.success !== true)) {
-    const message = responseMessage(payload);
+    const message = responseMessage(payload, response.status);
     if (/登录|login|session|cookie/i.test(message) || [401, 403].includes(response.status)) {
       throw new Error(`Weibo web session expired or was rejected: ${message}`);
     }

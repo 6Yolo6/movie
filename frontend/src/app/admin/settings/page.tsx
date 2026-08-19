@@ -1,8 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Card, Switch, App, Typography, Divider, Spin, InputNumber, Space, Tag } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+    App,
+    Button,
+    Card,
+    Empty,
+    Input,
+    InputNumber,
+    Space,
+    Spin,
+    Switch,
+    Tag,
+    Typography,
+} from 'antd';
+import { ReloadOutlined, SaveOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
@@ -10,16 +23,25 @@ import { api } from '@/lib/api';
 const { Title, Text } = Typography;
 
 interface ConfigItem {
+    id: number;
     configKey: string;
     configValue: string;
-    description: string;
+    description?: string;
+    updatedAt?: string;
 }
 
-const DEFAULTS = {
-    auditEnabled: true,
-    maxResources: 100,
-    submitInterval: 60,
+const isBooleanValue = (value: string) => value === 'true' || value === 'false';
+
+const isNumericConfig = (config: ConfigItem) => {
+    if (!/^-?\d+(\.\d+)?$/.test(config.configValue)) return false;
+    return /(min|max|limit|count|total|page|items|seconds|minutes|hours|interval|per\.user)/i
+        .test(config.configKey);
 };
+
+const isMultilineConfig = (config: ConfigItem) => (
+    config.configValue.includes('\n')
+    || /(template|blocked.keywords|description)/i.test(config.configKey)
+);
 
 export default function SystemSettingsPage() {
     const { user, token } = useAuthStore();
@@ -27,41 +49,28 @@ export default function SystemSettingsPage() {
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState<string | null>(null);
-
-    const [auditEnabled, setAuditEnabled] = useState(DEFAULTS.auditEnabled);
-    const [maxResources, setMaxResources] = useState(DEFAULTS.maxResources);
-    const [submitInterval, setSubmitInterval] = useState(DEFAULTS.submitInterval);
+    const [saving, setSaving] = useState<string>();
+    const [configs, setConfigs] = useState<ConfigItem[]>([]);
+    const [draftValues, setDraftValues] = useState<Record<string, string>>({});
+    const [keyword, setKeyword] = useState('');
 
     const fetchConfig = useCallback(async () => {
         if (!token) return;
 
         setLoading(true);
         try {
-            const res = await api('/api/admin/config', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+            const response = await api('/api/admin/config', {
+                headers: { Authorization: `Bearer ${token}` },
             });
-
-            if (res.ok) {
-                const configs: ConfigItem[] = await res.json();
-                configs.forEach(config => {
-                    switch (config.configKey) {
-                        case 'resource.audit.enabled':
-                            setAuditEnabled(config.configValue === 'true');
-                            break;
-                        case 'resource.max.per.user':
-                            setMaxResources(parseInt(config.configValue));
-                            break;
-                        case 'resource.submit.interval.seconds':
-                            setSubmitInterval(parseInt(config.configValue));
-                            break;
-                    }
-                });
-            } else {
+            if (!response.ok) {
                 message.error(t('configurationLoadFailed'));
+                return;
             }
+
+            const items: ConfigItem[] = await response.json();
+            const sorted = [...items].sort((left, right) => left.configKey.localeCompare(right.configKey));
+            setConfigs(sorted);
+            setDraftValues(Object.fromEntries(sorted.map(item => [item.configKey, item.configValue])));
         } catch {
             message.error(t('networkError'));
         } finally {
@@ -82,10 +91,31 @@ export default function SystemSettingsPage() {
         return () => clearTimeout(timer);
     }, [fetchConfig, message, router, t, user]);
 
-    const updateConfig = async (key: string, value: string): Promise<boolean> => {
-        setSaving(key);
+    const groupedConfigs = useMemo(() => {
+        const normalizedKeyword = keyword.trim().toLowerCase();
+        const filtered = normalizedKeyword
+            ? configs.filter(config => (
+                config.configKey.toLowerCase().includes(normalizedKeyword)
+                || (config.description || '').toLowerCase().includes(normalizedKeyword)
+            ))
+            : configs;
+
+        return filtered.reduce<Record<string, ConfigItem[]>>((groups, config) => {
+            const group = config.configKey.split('.')[0] || 'other';
+            groups[group] = [...(groups[group] || []), config];
+            return groups;
+        }, {});
+    }, [configs, keyword]);
+
+    const updateDraft = (key: string, value: string) => {
+        setDraftValues(current => ({ ...current, [key]: value }));
+    };
+
+    const updateConfig = async (config: ConfigItem) => {
+        const value = draftValues[config.configKey] ?? '';
+        setSaving(config.configKey);
         try {
-            const res = await api(`/api/admin/config/${key}`, {
+            const response = await api(`/api/admin/config/${encodeURIComponent(config.configKey)}`, {
                 method: 'PUT',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -93,50 +123,58 @@ export default function SystemSettingsPage() {
                 },
                 body: value,
             });
-
-            if (res.ok) {
-                message.success(t('configurationUpdated'));
-                return true;
-            } else {
+            if (!response.ok) {
                 message.error(t('configurationUpdateFailed'));
-                return false;
+                return;
             }
+
+            setConfigs(current => current.map(item => (
+                item.configKey === config.configKey ? { ...item, configValue: value } : item
+            )));
+            message.success(t('configurationUpdated'));
         } catch {
             message.error(t('networkError'));
-            return false;
         } finally {
-            setSaving(null);
+            setSaving(undefined);
         }
     };
 
-    const handleToggleAudit = async (checked: boolean) => {
-        const prev = auditEnabled;
-        setAuditEnabled(checked);
-        const ok = await updateConfig('resource.audit.enabled', checked.toString());
-        if (!ok) setAuditEnabled(prev);
-    };
-
-    const handleMaxResourcesChange = async (value: number | null) => {
-        if (value !== null) {
-            const prev = maxResources;
-            setMaxResources(value);
-            const ok = await updateConfig('resource.max.per.user', value.toString());
-            if (!ok) setMaxResources(prev);
+    const renderEditor = (config: ConfigItem) => {
+        const value = draftValues[config.configKey] ?? '';
+        if (isBooleanValue(config.configValue)) {
+            return (
+                <Switch
+                    checked={value === 'true'}
+                    checkedChildren="ON"
+                    unCheckedChildren="OFF"
+                    onChange={checked => updateDraft(config.configKey, String(checked))}
+                />
+            );
         }
-    };
-
-    const handleIntervalChange = async (value: number | null) => {
-        if (value !== null) {
-            const prev = submitInterval;
-            setSubmitInterval(value);
-            const ok = await updateConfig('resource.submit.interval.seconds', value.toString());
-            if (!ok) setSubmitInterval(prev);
+        if (isNumericConfig(config)) {
+            return (
+                <InputNumber
+                    value={value === '' ? null : Number(value)}
+                    onChange={next => updateDraft(config.configKey, next === null ? '' : String(next))}
+                    style={{ width: '100%' }}
+                />
+            );
         }
+        if (isMultilineConfig(config)) {
+            return (
+                <Input.TextArea
+                    autoSize={{ minRows: 2, maxRows: 8 }}
+                    value={value}
+                    onChange={event => updateDraft(config.configKey, event.target.value)}
+                />
+            );
+        }
+        return <Input value={value} onChange={event => updateDraft(config.configKey, event.target.value)} />;
     };
 
     if (loading) {
         return (
-            <div className="container mx-auto px-4 py-8 flex justify-center">
+            <div className="container mx-auto flex justify-center px-4 py-8">
                 <Spin size="large" />
             </div>
         );
@@ -145,83 +183,71 @@ export default function SystemSettingsPage() {
     return (
         <div className="container mx-auto px-4 py-8">
             <Card>
-                <Title level={2}>{t('systemSettings')}</Title>
-                <Text type="secondary">{t('settingsDescription')}</Text>
-
-                <Divider />
-
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Title level={5} className="!m-0">{t('resourceAudit')}</Title>
-                                <Tag color="blue">Default: ON</Tag>
-                            </div>
-                            <Text type="secondary">{t('resourceAuditHelp')}</Text>
-                        </div>
-                        <Switch
-                            checked={auditEnabled}
-                            onChange={handleToggleAudit}
-                            loading={saving === 'resource.audit.enabled'}
-                            checkedChildren="ON"
-                            unCheckedChildren="OFF"
-                            className="ml-4"
-                        />
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <Title level={2} className="!mb-1">{t('systemSettings')}</Title>
+                        <Text type="secondary">{t('settingsDescription')}</Text>
                     </div>
-
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Title level={5} className="!m-0">{t('maxResourcesPerUser')}</Title>
-                                <Tag color="blue">Default: {DEFAULTS.maxResources}</Tag>
-                            </div>
-                            <Text type="secondary">{t('maxResourcesHelp')}</Text>
-                        </div>
-                        <Space>
-                            <InputNumber
-                                min={1}
-                                max={1000}
-                                value={maxResources}
-                                onChange={handleMaxResourcesChange}
-                                disabled={saving === 'resource.max.per.user'}
-                                className="ml-4"
-                                style={{ width: 120 }}
-                            />
-                            <Text type="secondary">{t('resourcesUnit')}</Text>
-                        </Space>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Title level={5} className="!m-0">{t('submitRateLimit')}</Title>
-                                <Tag color="blue">Default: {DEFAULTS.submitInterval}s</Tag>
-                            </div>
-                            <Text type="secondary">{t('submitRateHelp')}</Text>
-                        </div>
-                        <Space>
-                            <InputNumber
-                                min={0}
-                                max={3600}
-                                value={submitInterval}
-                                onChange={handleIntervalChange}
-                                disabled={saving === 'resource.submit.interval.seconds'}
-                                className="ml-4"
-                                style={{ width: 120 }}
-                            />
-                            <Text type="secondary">{t('secondsUnit')}</Text>
-                        </Space>
-                    </div>
-
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <Title level={5} className="!mt-0 !mb-2">{t('additionalProtections')}</Title>
-                        <ul className="list-disc list-inside space-y-1">
-                            <li>{t('newUsersPublisher')}</li>
-                            <li>{t('duplicateBlocked')}</li>
-                            <li>{t('publisherOnly')}</li>
-                        </ul>
-                    </div>
+                    <Space wrap>
+                        <Tag color="blue">{t('systemConfigCount', { count: configs.length })}</Tag>
+                        <Button icon={<ReloadOutlined />} onClick={fetchConfig}>
+                            {t('refresh')}
+                        </Button>
+                    </Space>
                 </div>
+
+                <Input
+                    allowClear
+                    className="my-6"
+                    prefix={<SearchOutlined />}
+                    placeholder={t('systemConfigSearchPlaceholder')}
+                    value={keyword}
+                    onChange={event => setKeyword(event.target.value)}
+                />
+
+                {Object.keys(groupedConfigs).length === 0 ? (
+                    <Empty description={t('systemConfigEmpty')} />
+                ) : (
+                    <div className="space-y-8">
+                        {Object.entries(groupedConfigs).map(([group, items]) => (
+                            <section key={group}>
+                                <div className="mb-3 flex items-center gap-2">
+                                    <Title level={4} className="!m-0">{group.toUpperCase()}</Title>
+                                    <Tag>{items.length}</Tag>
+                                </div>
+                                <div className="divide-y rounded-lg border">
+                                    {items.map(config => {
+                                        const changed = (draftValues[config.configKey] ?? '') !== config.configValue;
+                                        return (
+                                            <div
+                                                key={config.configKey}
+                                                className="grid gap-4 p-4 lg:grid-cols-[minmax(240px,1fr)_minmax(320px,1.4fr)_44px] lg:items-center"
+                                            >
+                                                <div className="min-w-0">
+                                                    <Text code className="break-all">{config.configKey}</Text>
+                                                    <div className="mt-1">
+                                                        <Text type="secondary">
+                                                            {config.description || t('systemConfigNoDescription')}
+                                                        </Text>
+                                                    </div>
+                                                </div>
+                                                <div className="min-w-0">{renderEditor(config)}</div>
+                                                <Button
+                                                    aria-label={t('save')}
+                                                    type={changed ? 'primary' : 'default'}
+                                                    icon={<SaveOutlined />}
+                                                    disabled={!changed}
+                                                    loading={saving === config.configKey}
+                                                    onClick={() => updateConfig(config)}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        ))}
+                    </div>
+                )}
             </Card>
         </div>
     );

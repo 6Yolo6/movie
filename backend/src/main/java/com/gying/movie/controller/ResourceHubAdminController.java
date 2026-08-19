@@ -155,6 +155,10 @@ public class ResourceHubAdminController {
         result.put("pansouApiBaseUrl", nullToEmpty(resourceHubProperties.getPansou().getApiBaseUrl()));
         result.put("pansouApiConfigured", hasText(resourceHubProperties.getPansou().getApiKey()));
         result.put("quarkBaseUrl", nullToEmpty(resourceHubProperties.getQuark().getBaseUrl()));
+        result.put("xunleiEnabled", resourceHubProperties.getXunlei().isEnabled());
+        result.put("xunleiConfigured", resourceHubProperties.getXunlei().isEnabled()
+                && hasText(resourceHubProperties.getXunlei().getAuthorization())
+                && hasText(resourceHubProperties.getXunlei().getCaptchaToken()));
         result.put("config", config);
         result.put("worker", workerStatusMap());
         result.put("taskStatusCounts", taskService.countByStatus());

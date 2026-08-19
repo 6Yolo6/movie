@@ -17,15 +17,66 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceHubTaskService;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 
 class QuarkTransferRunnerServiceImplTest {
+
+    @Test
+    void gyingTransferFailureEnqueuesPansouFallback() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true);
+        properties.getQuark().setRunImmediately(false);
+        QuarkAutoSaveClient autoSaveClient = mock(QuarkAutoSaveClient.class);
+        IQuarkShareService shareService = mock(IQuarkShareService.class);
+        IQuarkTransferTaskService taskService = mock(IQuarkTransferTaskService.class);
+        IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
+        IResourceHubTaskService hubTaskService = mock(IResourceHubTaskService.class);
+        IMovieMetadataService movieService = mock(IMovieMetadataService.class);
+        QuarkTransferRunnerServiceImpl service = new QuarkTransferRunnerServiceImpl(
+                properties,
+                autoSaveClient,
+                shareService,
+                taskService,
+                discoveryService,
+                hubTaskService,
+                movieService,
+                new ObjectMapper());
+
+        QuarkTransferTask task = new QuarkTransferTask();
+        task.setId(900L);
+        task.setMovieId("tmdb_movie_900");
+        task.setDiscoveryResultId(901L);
+        task.setOriginalUrl("https://pan.quark.cn/s/source");
+        task.setStatus("PENDING");
+        task.setRequestPayload("{\"taskname\":\"测试电影\",\"shareurl\":\"https://pan.quark.cn/s/source\",\"savepath\":\"/GYing Resource Hub/movie/测试电影\"}");
+
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(task.getDiscoveryResultId());
+        discovery.setSource("GYING");
+        when(taskService.getById(task.getId())).thenReturn(task);
+        when(discoveryService.getById(task.getDiscoveryResultId())).thenReturn(discovery);
+        when(autoSaveClient.addTask(any())).thenThrow(new IllegalStateException("transfer failed"));
+        when(hubTaskService.count(any())).thenReturn(0L);
+
+        var result = service.submitOne(task.getId());
+
+        assertEquals(1, result.getFailed());
+        ArgumentCaptor<ResourceHubTask> fallback = ArgumentCaptor.forClass(ResourceHubTask.class);
+        verify(hubTaskService).enqueue(fallback.capture());
+        assertEquals("RESOURCE_DISCOVERY", fallback.getValue().getTaskType());
+        assertEquals("PANSOU", fallback.getValue().getSource());
+        assertEquals(task.getMovieId(), fallback.getValue().getMovieId());
+        assertTrue(fallback.getValue().getPayload().contains("\"source\":\"PANSOU\""));
+    }
 
     @Test
     void movieWithHistoricalSeasonOneUsesDirectMovieTransfer() {
@@ -43,6 +94,7 @@ class QuarkTransferRunnerServiceImplTest {
                 shareService,
                 taskService,
                 discoveryService,
+                mock(IResourceHubTaskService.class),
                 movieService,
                 new ObjectMapper());
 
@@ -120,6 +172,7 @@ class QuarkTransferRunnerServiceImplTest {
                 shareService,
                 taskService,
                 discoveryService,
+                mock(IResourceHubTaskService.class),
                 movieService,
                 new ObjectMapper());
 

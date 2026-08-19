@@ -2,6 +2,7 @@ package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,8 @@ import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
+import com.gying.movie.dto.DiscoveredResource;
+import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
 import com.gying.movie.entity.ResourceLink;
@@ -112,6 +115,27 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(42L, result.get("resourceId"));
         assertEquals(false, result.get("transferMode"));
         verify(transferRunnerService, never()).submitOne(any());
+    }
+
+    @Test
+    void searchCandidatesExcludesGyingMoviesWithoutCloudResources() {
+        when(gyingSourceClient.get(eq("/search"), any())).thenReturn(Map.of(
+                "items", List.of(
+                        Map.of("typeCode", "mv", "mid", "with-link", "title", "有资源影片", "year", 2026),
+                        Map.of("typeCode", "mv", "mid", "without-link", "title", "空资源影片", "year", 2026))));
+        when(gyingSourceClient.get("/movie/mv/with-link")).thenReturn(Map.of(
+                "resources", List.of(Map.of(
+                        "provider", "QUARK",
+                        "url", "https://pan.quark.cn/s/owned"))));
+        when(gyingSourceClient.get("/movie/mv/without-link")).thenReturn(Map.of(
+                "resources", List.of()));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+
+        List<MovieSearchCandidate> candidates = service.searchCandidates("影片", 10);
+
+        assertEquals(List.of("with-link"), candidates.stream()
+                .map(MovieSearchCandidate::getSourceId)
+                .toList());
     }
 
     @Test
@@ -234,7 +258,7 @@ class GyingSourceWorkflowServiceTest {
         when(gyingSourceClient.get("/recent?limit=100"))
                 .thenReturn(Map.of("items", List.of()));
         when(gyingSourceClient.get("/search", Map.of(
-                "q", "揭秘日", "typeCode", "mv", "limit", 20)))
+                "q", "揭秘日", "typeCode", "mv", "mode", 3, "limit", 20)))
                 .thenReturn(Map.of("items", List.of(
                         Map.of(
                                 "typeCode", "mv",
@@ -284,6 +308,54 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void discoversStrictGyingQuarkResourcesBeforePanSou() {
+        MovieMetadata movie = movie("tmdb_tv_1431", "犯罪现场调查", "tv", "TRAILER");
+        movie.setSeason(1);
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setMovieId(movie.getId());
+        identity.setSource("GYING");
+        identity.setSourceType("tv");
+        identity.setExternalId("E9xe");
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(gyingSourceClient.get("/movie/tv/E9xe")).thenReturn(Map.of(
+                "title", "犯罪现场调查 第一季",
+                "resources", List.of(Map.of(
+                        "title", "犯罪现场调查 全15季 1080P",
+                        "provider", "QUARK",
+                        "url", "https://pan.quark.cn/s/csi",
+                        "source_id", "DRKXX"))));
+
+        List<DiscoveredResource> resources = service.discoverResources(movie, 5);
+
+        assertEquals(1, resources.size());
+        assertEquals("GYING", resources.get(0).getSource());
+        assertEquals("DRKXX", resources.get(0).getSourceRef());
+    }
+
+    @Test
+    void syncCatalogMetadataDoesNotImportThirdPartyResources() {
+        MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of(
+                        "typeCode", "mv",
+                        "mid", "NEW1",
+                        "title", "目录电影",
+                        "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById("gying_mv_NEW1")).thenReturn(saved);
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+
+        Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+
+        assertEquals(1, result.get("inserted"));
+        assertEquals(List.of(saved.getId()), result.get("movieIds"));
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals(false, payload.getValue().get("includeResources"));
+        assertEquals("gying_mv_NEW1", payload.getValue().get("targetMovieId"));
+    }
+
+    @Test
     void checkPublishedResourcesMarksMappedInvalidLink() {
         String url = "https://pan.quark.cn/s/dead";
         ResourceLink local = new ResourceLink();
@@ -310,6 +382,51 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("INVALID", local.getLinkStatus());
         assertFalse(local.getLastCheckError().isBlank());
         verify(resourceLinkService).updateById(local);
+    }
+
+    @Test
+    void checkPublishedResourcesBySourceIdsFiltersAndReportsMissingIds() {
+        String url = "https://pan.quark.cn/s/dead";
+        when(gyingSourceClient.get(eq("/my-resources"), any(Map.class))).thenReturn(Map.of(
+                "items", List.of(Map.of(
+                        "source_id", "SITE1",
+                        "mid", "EGER",
+                        "type_code", "mv",
+                        "title", "后室 4K",
+                        "url", url,
+                        "provider", "QUARK"))));
+        when(panSouClient.checkLinksByProvider(Map.of(url, "QUARK"))).thenReturn(Map.of(
+                url, new LinkCheckResult(url, true, false, "invalid")));
+
+        Map<String, Object> result = service.checkPublishedResourcesBySourceIds(
+                List.of("SITE1", "MISSING"), true);
+
+        assertEquals(1, result.get("checked"));
+        assertEquals(List.of("MISSING"), result.get("notFound"));
+        assertEquals("INVALID", ((List<Map<String, Object>>) result.get("items")).get(0).get("checkStatus"));
+        ArgumentCaptor<Map<String, ?>> query = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).get(eq("/my-resources"), query.capture());
+        assertEquals("SITE1,MISSING", query.getValue().get("sourceIds"));
+    }
+
+    @Test
+    void ensureMovieResourcesDeduplicatesSelectedRecentCandidates() {
+        MovieMetadata movie = movie("EGER", "后室", "mv", "TRAILER");
+        when(gyingSourceClient.get("/movie/mv/EGER")).thenReturn(Map.of(
+                "title", "后室",
+                "resources", List.of(),
+                "ownResources", List.of()));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", "EGER"));
+        when(movieService.getById("EGER")).thenReturn(movie);
+
+        Map<String, Object> result = service.ensureMovieResources(List.of(
+                Map.of("typeCode", "mv", "mid", "EGER"),
+                Map.of("typeCode", "mv", "mid", "EGER")));
+
+        assertEquals(1, result.get("checked"));
+        assertEquals(1, result.get("succeeded"));
+        assertTrue(((List<?>) result.get("items")).size() == 1);
+        verify(gyingSourceClient, times(1)).get("/movie/mv/EGER");
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {

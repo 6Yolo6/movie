@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -23,6 +25,45 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 class ResourceHubPublishServiceImplTest {
+
+    @Test
+    void doesNotPublishOriginalXunleiLinkBeforeOwnShareIsReady() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true);
+        IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
+        IResourceLinkService resourceService = mock(IResourceLinkService.class);
+        IQuarkTransferTaskService transferService = mock(IQuarkTransferTaskService.class);
+        IQuarkShareService shareService = mock(IQuarkShareService.class);
+        IMovieMetadataService movieService = mock(IMovieMetadataService.class);
+        ResourceHubPublishServiceImpl service = new ResourceHubPublishServiceImpl(
+                properties, discoveryService, resourceService, transferService, shareService, movieService);
+
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(900L);
+        discovery.setMovieId("bLL9W");
+        discovery.setTitle("青年华盛顿 (2026) 4K");
+        discovery.setProvider("XUNLEI");
+        discovery.setResourceType("DISK");
+        discovery.setOriginalUrl("https://pan.xunlei.com/s/source-share");
+        discovery.setOriginalUrlHash("source-hash");
+        discovery.setStatus("DISCOVERED");
+        MovieMetadata movie = new MovieMetadata();
+        movie.setId(discovery.getMovieId());
+        movie.setTitleCn("青年华盛顿");
+        movie.setYear(2026);
+        movie.setStatus("ACTIVE");
+
+        when(discoveryService.getById(900L)).thenReturn(discovery);
+        when(movieService.getById(discovery.getMovieId())).thenReturn(movie);
+
+        ResourceHubPublishResult result = service.publishDiscovery(900L);
+
+        assertEquals(0, result.getPublished());
+        assertEquals(1, result.getSkipped());
+        assertEquals(0, result.getFailed());
+        assertEquals("Xunlei own share is not ready", discovery.getFailureReason());
+        verify(resourceService, never()).save(any(ResourceLink.class));
+    }
 
     @Test
     void recoversFailedShareAndPublishesResource() {

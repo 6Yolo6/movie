@@ -9,10 +9,10 @@ TMDB 元数据或本地 canonical 影片
   -> movie_source_identity（TMDB / GYING）
   -> 本地 PanSou + 外部 Panso API + GYING 候选
   -> resource_discovery_result
-  -> quark_transfer_task
-  -> quark-auto-save
+  -> quark_transfer_task / xunlei_transfer_task
+  -> quark-auto-save / 迅雷 Drive API
   -> 目标影片或季的保存目录
-  -> 自有夸克分享
+  -> 自有夸克或迅雷分享
   -> resource_link
   -> 前端 / QQ 机器人 / QQ 频道
 ```
@@ -34,6 +34,7 @@ TMDB 元数据或本地 canonical 影片
 - `GYING_SOURCE_BASE_URL`、`GYING_SOURCE_API_TOKEN` 和 GYING 账号凭据
 - `QUARK_AUTO_SAVE_BASE_URL` 及 API token
 - 夸克 Cookie，优先在 quark-auto-save WebUI 配置，环境变量只作兜底
+- 迅雷 `XUNLEI_AUTHORIZATION`、CAPTCHA、客户端标识和分享接口配置
 - backend 内部认证、QQ token 和 `QQ_CHANNEL_PUBLISHER_*`
 
 `sys_config` 管理：
@@ -46,6 +47,7 @@ TMDB 元数据或本地 canonical 影片
 - `resource.hub.worker.enabled`
 - `resource.hub.worker.task_limit`
 - `resource.hub.worker.quark_limit`
+- `resource.hub.worker.xunlei_limit`
 - `resource.hub.worker.publish_limit`
 
 调度间隔从启动属性 `RESOURCE_HUB_WORKER_FIXED_DELAY_MS` 绑定；
@@ -83,6 +85,9 @@ TMDB 元数据或本地 canonical 影片
 管理接口需要管理员认证。`/api/internal/resource-hub` 下的内部接口需要 internal token。
 不得把 token 写入命令历史或状态文档。
 
+迅雷可通过 `POST /api/internal/resource-hub/xunlei-transfers/{taskId}/run` 定向重试单条任务。
+该接口只处理指定任务，适合在大量历史夸克失败任务积压时验收或恢复迅雷任务。
+
 耗时发现和修复接口返回 `jobId`，应轮询 job 接口。不能通过增加 nginx 超时来掩盖旧同步调用。
 
 ## 状态含义
@@ -90,6 +95,7 @@ TMDB 元数据或本地 canonical 影片
 - `resource_hub_task`：`PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELED`。
 - `resource_discovery_result`：`DISCOVERED`、`SAVED`、`DUPLICATE`、`IGNORED`、`FAILED`。
 - `quark_transfer_task`：任务生命周期及转存、分享结果。
+- `xunlei_transfer_task`：`PENDING`、`RUNNING`、`SUBMITTED`、`WAITING_SHARE`、`SUCCEEDED`、`FAILED`、`CANCELED`。
 - `resource_link`：正式发布状态、`link_status`、验证时间和最近错误。
 - `movie_source_identity`：外部来源身份、季号、匹配方式、置信度和审核状态。
 
@@ -103,6 +109,7 @@ TMDB 元数据或本地 canonical 影片
 - GYING：`gying-source` 健康，当前账号有效，PoW/登录和候选读取正常。
 - quark-auto-save：API token 可认证，WebUI 中账号 Cookie 有效。
 - Quark share：保存目录存在且非空，分享任务返回 `share_id`，最终 URL 验证通过。
+- 迅雷：Authorization 未过期，CAPTCHA 可初始化，Drive API 可用；分享接口未验证时保持 `XUNLEI_SHARE_ENABLED=false`。
 - MinIO：health 成功，浏览器可访问海报前缀。
 - Redis：backend 连接成功。
 
@@ -119,6 +126,7 @@ TMDB 元数据或本地 canonical 影片
 - 标题不匹配资源：先复核标题、别名和季信息，再通过状态和 `deleted_at` 软清理，
   保留发现和转存历史。
 - 同一影片和来源存在有效分享时，不重复创建自有分享。
+- 迅雷处于 `WAITING_SHARE` 且分享关闭时不得再次转存，也不得把第三方源链接写入正式资源。
 
 每次维护记录输入过滤条件、dry-run 数量、人工排除项、实际处理数量、处理后状态和备份。
 

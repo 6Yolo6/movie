@@ -7,7 +7,7 @@ Resource Hub 在现有片库模型上补充元数据采集、资源发现、转�
 - `movie_metadata` 保存影视元数据；`resource_link` 保存可用链接。
 - `popularity` 是站内收藏热度，TMDB 热度和评分使用 `tmdb_*` 字段。
 - TMDB 数据先按 TMDB ID、剧集名、标题、别名和年份匹配 canonical 影片。
-- 自动资源使用 `resource_discovery_result` 和 `quark_transfer_task` 保留发现与转存轨迹。
+- 自动资源使用 `resource_discovery_result`、`quark_transfer_task` 和 `xunlei_transfer_task` 保留发现与转存轨迹。
 - 自动发布资源标记来源，核心记录只软删除。
 
 ## 流水线
@@ -16,9 +16,9 @@ Resource Hub 在现有片库模型上补充元数据采集、资源发现、转�
 2. 跳过已有可用资源、可发布发现或近期重复任务。
 3. 合并本地 PanSou 与外部 Panso API 结果并按 URL 去重。
 4. 校验标题相关性和源链接状态，保存发现结果。
-5. 为夸克结果创建转存任务并运行 quark-auto-save。
-6. 确认保存目录有内容，创建自有夸克分享。
-7. 仅将可用自有分享发布到 `resource_link`。
+5. 为夸克或迅雷结果创建对应转存任务；夸克运行 quark-auto-save，迅雷调用当前账号的 Drive API。
+6. 确认保存目录有内容并创建自有分享；迅雷公开分享接口未验证时停在 `WAITING_SHARE`。
+7. 仅将可用自有分享发布到 `resource_link`，不得回退发布第三方迅雷或夸克源链接。
 8. 无资源影片保持 `TRAILER`，可从缺资源页重新处理。
 
 ## 恢复与去重

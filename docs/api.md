@@ -44,6 +44,9 @@
 - `POST /discoveries/reconcile?dryRun=true&limit=2000`：重评历史标题误判/任务冲突并同步失败任务状态。
 - `POST /discoveries/{id}/qq-channel-post?runNow=true`、`POST /discoveries/batch/qq-channel-post?runNow=true`：立即或排队发 QQ。
 - `POST /quark/transfers/submit`、`POST /quark/transfers/{taskId}/submit`：转存。
+- `POST /api/internal/resource-hub/quark-transfers/{taskId}/run`：使用 internal token 定向执行一条夸克转存任务，不扫描其他队列。
+- `POST /api/internal/resource-hub/discoveries/{discoveryResultId}/publish`：使用 internal token 定向发布一条已有自有分享的发现结果。
+- `POST /api/internal/resource-hub/xunlei-transfers/{taskId}/run`：使用 internal token 定向执行一条迅雷转存任务，不扫描其他队列。
 - `GET /missing-resources`、`POST /missing-resources/{movieId}/resolve?source=GYING|PANSOU`：缺网盘资源检查和补全。
 - `POST /missing-resources/batch/resolve?source=GYING|PANSOU`：按请求体中的影片 ID 数组批量补全，最多 20 部。
 - `GET /worker/status`、`POST /worker/run-once?force=true`：Worker。
@@ -55,13 +58,18 @@
 
 - `GET|PUT /account`：读取凭据配置状态或切换当前运行时账号。
 - `GET /candidates/recent`、`GET /candidates/trailers`：候选。
+- `POST /recent/ensure`：请求体为最近更新表格中所选的 `{typeCode,mid}` 数组，最多 60 部。
 - `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
 - `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
+- `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
 没有可靠结果时才回退到片库目录扫描。
+
+向 GYING 发布网盘资源使用 `POST /res/pan/add`；表单中的 `binds[0][dir]` 传递
+`mv|tv|ac` 类型，`binds[0][id]` 传递 GYING 影片 ID。不得再把类型和 ID 拼入请求路径。
 
 ## QQ 自动化
 

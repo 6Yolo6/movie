@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigResponse {
+    private boolean xunleiAuthorizationConfigured;
+    private boolean xunleiCaptchaConfigured;
     private boolean enabled;
     private boolean autoApprove;
     private boolean tmdbConfigured;
@@ -15,6 +17,12 @@ public class ResourceHubConfigResponse {
     private boolean tmdbAutoDiscoveryEnabled;
     private int tmdbDiscoveryMaxResults;
     private int tmdbDiscoveryCooldownHours;
+    private boolean gyingDiscoveryEnabled;
+    private boolean gyingAutoSyncEnabled;
+    private String gyingAutoSyncSources;
+    private int gyingAutoSyncPage;
+    private int gyingAutoSyncMaxItems;
+    private int gyingAutoSyncIntervalHours;
     private boolean workerEnabled;
     private long workerFixedDelayMs;
     private int workerTaskLimit;

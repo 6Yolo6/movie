@@ -16,6 +16,8 @@ import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IGyingMetadataSyncService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -25,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 class ResourceHubWorkerServiceImplTest {
 
@@ -68,10 +72,39 @@ class ResourceHubWorkerServiceImplTest {
                         "TRENDING_TV_DAY"));
     }
 
+    @Test
+    void runsXunleiBeforeQuarkSoQuarkBacklogCannotStarveIt() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true);
+        properties.getWorker().setEnabled(true);
+        IResourceHubTaskService taskService = mock(IResourceHubTaskService.class);
+        ITmdbMetadataSyncService tmdbService = mock(ITmdbMetadataSyncService.class);
+        IGyingMetadataSyncService gyingService = mock(IGyingMetadataSyncService.class);
+        IResourceDiscoveryService discoveryService = mock(IResourceDiscoveryService.class);
+        IQuarkTransferRunnerService quarkService = mock(IQuarkTransferRunnerService.class);
+        IXunleiTransferRunnerService xunleiService = mock(IXunleiTransferRunnerService.class);
+        IResourceHubPublishService publishService = mock(IResourceHubPublishService.class);
+        IResourceHubConfigService configService = mock(IResourceHubConfigService.class);
+        when(taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(quarkService.submitPending(any(Integer.class))).thenReturn(new QuarkTransferRunResult());
+        when(xunleiService.submitPending(any(Integer.class))).thenReturn(new QuarkTransferRunResult());
+        when(publishService.publishPending(any(Integer.class))).thenReturn(new ResourceHubPublishResult());
+        ResourceHubWorkerServiceImpl service = new ResourceHubWorkerServiceImpl(
+                properties, taskService, tmdbService, gyingService, discoveryService,
+                quarkService, xunleiService, publishService, configService);
+
+        service.runOnce();
+
+        InOrder order = Mockito.inOrder(xunleiService, quarkService);
+        order.verify(xunleiService).submitPending(any(Integer.class));
+        order.verify(quarkService).submitPending(any(Integer.class));
+    }
+
     private static class Fixture {
         private final ResourceHubProperties properties = new ResourceHubProperties();
         private final IResourceHubTaskService taskService = mock(IResourceHubTaskService.class);
         private final ITmdbMetadataSyncService tmdbService = mock(ITmdbMetadataSyncService.class);
+        private final IGyingMetadataSyncService gyingService = mock(IGyingMetadataSyncService.class);
         private final IResourceDiscoveryService discoveryService = mock(IResourceDiscoveryService.class);
         private final IQuarkTransferRunnerService transferService = mock(IQuarkTransferRunnerService.class);
         private final IResourceHubPublishService publishService = mock(IResourceHubPublishService.class);
@@ -91,6 +124,7 @@ class ResourceHubWorkerServiceImplTest {
                     properties,
                     taskService,
                     tmdbService,
+                    gyingService,
                     discoveryService,
                     transferService,
                     publishService,

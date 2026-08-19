@@ -43,6 +43,7 @@ SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
 POW_MIN_SECONDS = 3
 _SITE_SESSION = None
 _SITE_SESSION_LOCK = threading.RLock()
+_SITE_LAST_REQUEST_AT = 0.0
 _ACCOUNT_SOURCE = "ENV"
 _ACCOUNT_UPDATED_AT = None
 API_TOKEN = os.getenv("GYING_SOURCE_API_TOKEN", "")
@@ -51,6 +52,7 @@ API_PORT = int(os.getenv("GYING_SOURCE_API_PORT", "8091"))
 IMAGE_CONNECT_TIMEOUT = float(os.getenv("GYING_IMAGE_CONNECT_TIMEOUT", "5"))
 IMAGE_READ_TIMEOUT = float(os.getenv("GYING_IMAGE_READ_TIMEOUT", "30"))
 IMAGE_MAX_ATTEMPTS = max(int(os.getenv("GYING_IMAGE_MAX_ATTEMPTS", "3")), 1)
+SITE_REQUEST_INTERVAL_SECONDS = max(float(os.getenv("GYING_REQUEST_INTERVAL_MS", "1000")) / 1000.0, 0.0)
 IMAGE_SIZES = tuple(value.strip() for value in os.getenv("GYING_IMAGE_SIZES", "384,256").split(",")
                     if value.strip().isdigit())
 
@@ -416,20 +418,34 @@ def login_site_session(session):
 
     return False
 
+def wait_for_site_request_slot():
+    global _SITE_LAST_REQUEST_AT
+    if SITE_REQUEST_INTERVAL_SECONDS <= 0:
+        return
+    remaining = SITE_REQUEST_INTERVAL_SECONDS - (time.monotonic() - _SITE_LAST_REQUEST_AT)
+    if remaining > 0:
+        time.sleep(remaining)
+    _SITE_LAST_REQUEST_AT = time.monotonic()
+
+
 def site_get(url, *, timeout=10, headers=None, **kwargs):
     with _SITE_SESSION_LOCK:
         session = get_site_session()
         request_headers = headers or {}
+        wait_for_site_request_slot()
         resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
         if is_pow_challenge_response(resp):
             if solve_browser_pow(session, url):
+                wait_for_site_request_slot()
                 resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
         if is_login_required_response(resp):
             if login_site_session(session):
+                wait_for_site_request_slot()
                 resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
                 if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                    wait_for_site_request_slot()
                     resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
         return resp
@@ -440,16 +456,21 @@ def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
         request_headers = headers or {}
         referer = request_headers.get("Referer", BASE_URL + "/")
 
+        wait_for_site_request_slot()
         warmup = session.get(referer, timeout=timeout)
         if is_pow_challenge_response(warmup) and solve_browser_pow(session, referer):
+            wait_for_site_request_slot()
             warmup = session.get(referer, timeout=timeout)
         if is_login_required_response(warmup) and not login_site_session(session):
             raise RuntimeError("Gying login is required")
 
+        wait_for_site_request_slot()
         resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
         if is_pow_challenge_response(resp) and solve_browser_pow(session, referer):
+            wait_for_site_request_slot()
             resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
         if is_login_required_response(resp) and login_site_session(session):
+            wait_for_site_request_slot()
             resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
         return resp
 
@@ -637,12 +658,14 @@ def normalize_download_section(section, target_user=None):
     return resources
 
 def publish_pan_resource(type_code, mid, title, panurl, panpw="", login_visible=0):
-    endpoint = f"{BASE_URL}/res/pan/add/{type_code}/{mid}"
+    endpoint = f"{BASE_URL}/res/pan/add"
     payload = {
         "title": title,
         "panurl": panurl,
         "panpw": panpw or "",
         "is": str(int(login_visible)),
+        "binds[0][dir]": type_code,
+        "binds[0][id]": mid,
     }
     resp = site_post(
         endpoint,
@@ -795,14 +818,19 @@ def fetch_user_content_page(page=1):
         })
     return {"resources": resources, "page": data.get("page") or {}}
 
-def list_my_pan_resources(limit=200, max_pages=50):
+def list_my_pan_resources(limit=200, max_pages=50, source_ids=None):
     safe_limit = min(max(int(limit), 1), 1000)
+    target_ids = {str(value).strip() for value in (source_ids or []) if str(value).strip()}
     resources = []
     for page in range(1, max_pages + 1):
         result = fetch_user_content_page(page)
         page_resources = result["resources"]
-        resources.extend(page_resources)
-        if len(resources) >= safe_limit or not page_resources:
+        if target_ids:
+            resources.extend(item for item in page_resources if item.get("source_id") in target_ids)
+        else:
+            resources.extend(page_resources)
+        found_ids = {item.get("source_id") for item in resources}
+        if (target_ids and target_ids.issubset(found_ids)) or len(resources) >= safe_limit or not page_resources:
             break
         page_info = result.get("page") or {}
         current = int(page_info.get("curr") or page)
@@ -917,7 +945,19 @@ def normalize_search_items(payload, type_code=None, limit=30):
     return items
 
 
-def search_movies(query, type_code=None, limit=30):
+def gying_search_type(type_code=None):
+    """Translate local type codes to the site's search category values."""
+    return {"mv": 1, "tv": 2, "ac": 3}.get(str(type_code or "").strip().lower(), 0)
+
+
+def normalize_search_mode(mode=3):
+    try:
+        return min(max(int(mode), 1), 3)
+    except (TypeError, ValueError):
+        return 3
+
+
+def search_movies(query, type_code=None, limit=30, mode=3):
     safe_query = str(query or "").strip()
     if not safe_query:
         raise ValueError("search query is required")
@@ -926,7 +966,11 @@ def search_movies(query, type_code=None, limit=30):
     safe_limit = min(max(int(limit), 1), 100)
     resp = site_get(
         f"{BASE_URL}/search",
-        params={"q": safe_query, "type": 0, "mode": 3},
+        params={
+            "q": safe_query,
+            "type": gying_search_type(type_code),
+            "mode": normalize_search_mode(mode),
+        },
         timeout=20,
         headers={"Referer": f"{BASE_URL}/"},
     )
@@ -1089,7 +1133,7 @@ def preserve_existing_resource_source(source):
     return value or "GYING"
 
 
-def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
+def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, include_resources=True):
     global _SITE_SESSION
     movie_id = str(target_movie_id or mid).strip()
     if not movie_id:
@@ -1155,7 +1199,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None):
         series_name,
         season,
     )
-    resources = fetch_download_resources(type_code, mid, [])
+    resources = fetch_download_resources(type_code, mid, []) if include_resources else []
     inserted = 0
     updated = 0
 
@@ -1324,8 +1368,9 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
             if path == "/search":
                 query_text = (query.get("q") or [""])[0]
                 type_code = (query.get("typeCode") or [""])[0].strip().lower() or None
+                mode = normalize_search_mode((query.get("mode") or ["3"])[0])
                 limit = int((query.get("limit") or ["30"])[0])
-                self.send_json(200, {"items": search_movies(query_text, type_code, limit)})
+                self.send_json(200, {"items": search_movies(query_text, type_code, limit, mode)})
                 return
             if path == "/series":
                 type_code = (query.get("typeCode") or ["tv"])[0]
@@ -1335,7 +1380,16 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             if path == "/my-resources":
                 limit = int((query.get("limit") or ["200"])[0])
-                self.send_json(200, {"items": list_my_pan_resources(limit)})
+                source_ids = {
+                    value.strip()
+                    for value in (query.get("sourceIds") or [""])[0].split(",")
+                    if value.strip()
+                }
+                self.send_json(200, {"items": list_my_pan_resources(
+                    limit,
+                    max_pages=100 if source_ids else 50,
+                    source_ids=source_ids,
+                )})
                 return
             if path == "/account":
                 self.send_json(200, account_status())
@@ -1368,6 +1422,7 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                         payload["mid"],
                         bool(payload.get("uploadPoster", True)),
                         payload.get("targetMovieId"),
+                        bool(payload.get("includeResources", True)),
                     )
                 finally:
                     db.close()

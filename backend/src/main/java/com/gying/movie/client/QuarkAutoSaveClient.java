@@ -32,6 +32,8 @@ public class QuarkAutoSaveClient {
     private static final int MOVIE_DIRECTORY_MAX_DEPTH = 3;
     private static final int MOVIE_DIRECTORY_MIN_SCORE = 200;
     private static final Pattern DIRECTORY_YEAR_PATTERN = Pattern.compile("(?<!\\d)(?:18|19|20)\\d{2}(?!\\d)");
+    private static final Pattern VIDEO_FILE_PATTERN = Pattern.compile(
+            "(?i).*\\.(?:mp4|mkv|avi|mov|wmv|flv|ts|m4v|webm|rmvb|iso)$");
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -81,7 +83,94 @@ public class QuarkAutoSaveClient {
         if (season == 1 && SeasonSearchUtils.canUseRootForFirstSeason(sourceTitle)) {
             return shareUrl;
         }
+        if (season == 1) {
+            String rootSeason = resolveUnmarkedFirstSeasonRoot(baseShareUrl, shareUrl, sourceTitle);
+            if (rootSeason != null) {
+                return rootSeason;
+            }
+        }
         throw new IllegalStateException("Quark source has no explicit season " + season + " directory");
+    }
+
+    private String resolveUnmarkedFirstSeasonRoot(String baseShareUrl, String shareUrl, String sourceTitle) {
+        JsonNode list = getShareDetailData(shareUrl).path("list");
+        if (!list.isArray() || hasConflictingSeasonMarker(list, 1)) {
+            return null;
+        }
+        boolean directVideo = false;
+        int directories = 0;
+        JsonNode onlyDirectory = null;
+        for (JsonNode item : list) {
+            String name = item.path("file_name").asText("");
+            if (item.path("dir").asBoolean(false)) {
+                directories++;
+                onlyDirectory = item;
+            } else if (isVideoFile(name)) {
+                directVideo = true;
+            }
+        }
+        if (directVideo) {
+            return shareUrl;
+        }
+        if (directories != 1 || onlyDirectory == null) {
+            return null;
+        }
+        String fid = onlyDirectory.path("fid").asText(null);
+        if (fid == null || fid.isBlank() || SeasonSearchUtils.hasSeasonMarker(onlyDirectory.path("file_name").asText(""))) {
+            return null;
+        }
+        ContentInspection inspection = inspectContentDirectory(
+                baseShareUrl + "#/list/share/" + fid,
+                0,
+                new HashSet<>());
+        return inspection.hasVideo() && !inspection.hasConflictingSeason()
+                ? baseShareUrl + "#/list/share/" + fid
+                : null;
+    }
+
+    private ContentInspection inspectContentDirectory(String shareUrl, int depth, Set<String> visited) {
+        JsonNode list = getShareDetailData(shareUrl).path("list");
+        if (!list.isArray()) {
+            return new ContentInspection(false, true);
+        }
+        boolean hasVideo = false;
+        boolean conflictingSeason = hasConflictingSeasonMarker(list, 1);
+        for (JsonNode item : list) {
+            String name = item.path("file_name").asText("");
+            if (!item.path("dir").asBoolean(false) && isVideoFile(name)) {
+                hasVideo = true;
+                continue;
+            }
+            String fid = item.path("fid").asText(null);
+            if (!item.path("dir").asBoolean(false) || fid == null || !visited.add(fid)) {
+                continue;
+            }
+            if (depth >= 3) {
+                continue;
+            }
+            ContentInspection nested = inspectContentDirectory(
+                    shareUrl.substring(0, shareUrl.indexOf("#/list/share/"))
+                            + "#/list/share/" + fid,
+                    depth + 1,
+                    visited);
+            hasVideo |= nested.hasVideo();
+            conflictingSeason |= nested.hasConflictingSeason();
+        }
+        return new ContentInspection(hasVideo, conflictingSeason);
+    }
+
+    private boolean hasConflictingSeasonMarker(JsonNode list, int season) {
+        for (JsonNode item : list) {
+            String name = item.path("file_name").asText("");
+            if (SeasonSearchUtils.hasSeasonMarker(name) && !SeasonSearchUtils.coversSeason(name, season)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVideoFile(String name) {
+        return name != null && VIDEO_FILE_PATTERN.matcher(name.trim()).matches();
     }
 
     public MovieShareSelection resolveMovieShareUrl(
@@ -472,5 +561,8 @@ public class QuarkAutoSaveClient {
     }
 
     public record MovieShareSelection(String shareUrl, boolean recursive) {
+    }
+
+    private record ContentInspection(boolean hasVideo, boolean hasConflictingSeason) {
     }
 }

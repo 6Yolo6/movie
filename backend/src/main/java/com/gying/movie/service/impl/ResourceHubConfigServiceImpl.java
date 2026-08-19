@@ -29,6 +29,12 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_TMDB_AUTO_DISCOVERY_ENABLED = "resource.hub.tmdb.auto_discovery_enabled";
     private static final String KEY_TMDB_DISCOVERY_MAX_RESULTS = "resource.hub.tmdb.discovery_max_results";
     private static final String KEY_TMDB_DISCOVERY_COOLDOWN_HOURS = "resource.hub.tmdb.discovery_cooldown_hours";
+    private static final String KEY_GYING_DISCOVERY_ENABLED = "resource.hub.gying.discovery_enabled";
+    private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
+    private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
+    private static final String KEY_GYING_AUTO_SYNC_PAGE = "resource.hub.gying.auto_sync_page";
+    private static final String KEY_GYING_AUTO_SYNC_MAX_ITEMS = "resource.hub.gying.auto_sync_max_items";
+    private static final String KEY_GYING_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.gying.auto_sync_interval_hours";
     private static final String KEY_WORKER_ENABLED = "resource.hub.worker.enabled";
     private static final String KEY_WORKER_TASK_LIMIT = "resource.hub.worker.task_limit";
     private static final String KEY_WORKER_QUARK_LIMIT = "resource.hub.worker.quark_limit";
@@ -54,6 +60,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     @Override
     public synchronized ResourceHubConfigResponse reload() {
         ResourceHubProperties.Tmdb tmdb = properties.getTmdb();
+        ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
 
         properties.setEnabled(readBoolean(KEY_ENABLED, properties.isEnabled()));
@@ -66,6 +73,13 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         tmdb.setAutoDiscoveryEnabled(readBoolean(KEY_TMDB_AUTO_DISCOVERY_ENABLED, tmdb.isAutoDiscoveryEnabled()));
         tmdb.setDiscoveryMaxResults(readInt(KEY_TMDB_DISCOVERY_MAX_RESULTS, tmdb.getDiscoveryMaxResults(), 1, 50));
         tmdb.setDiscoveryCooldownHours(readInt(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, tmdb.getDiscoveryCooldownHours(), 1, 720));
+        gying.setDiscoveryEnabled(readBoolean(KEY_GYING_DISCOVERY_ENABLED, gying.isDiscoveryEnabled()));
+        gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
+        gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
+        gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
+        gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
+        gying.setAutoSyncIntervalHours(readInt(
+                KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, gying.getAutoSyncIntervalHours(), 1, 720));
         worker.setEnabled(readBoolean(KEY_WORKER_ENABLED, worker.isEnabled()));
         worker.setTaskLimit(readInt(KEY_WORKER_TASK_LIMIT, worker.getTaskLimit(), 1, 20));
         worker.setQuarkLimit(readInt(KEY_WORKER_QUARK_LIMIT, worker.getQuarkLimit(), 1, 20));
@@ -87,7 +101,19 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         }
 
         ResourceHubProperties.Tmdb tmdb = properties.getTmdb();
+        ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
+        ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+
+        // Credentials are intentionally runtime-only. They are never written to sys_config.
+        if (xunlei != null) {
+            if (hasText(request.getXunleiAuthorization())) {
+                xunlei.setAuthorization(request.getXunleiAuthorization().trim());
+            }
+            if (hasText(request.getXunleiCaptchaToken())) {
+                xunlei.setCaptchaToken(request.getXunleiCaptchaToken().trim());
+            }
+        }
 
         if (request.getEnabled() != null) {
             properties.setEnabled(request.getEnabled());
@@ -135,6 +161,37 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             tmdb.setDiscoveryCooldownHours(value);
             upsert(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, Integer.toString(value), "Discovery retry cooldown in hours");
         }
+        if (request.getGyingDiscoveryEnabled() != null) {
+            gying.setDiscoveryEnabled(request.getGyingDiscoveryEnabled());
+            upsert(KEY_GYING_DISCOVERY_ENABLED, Boolean.toString(request.getGyingDiscoveryEnabled()),
+                    "Prefer GYING before PanSou resource discovery");
+        }
+        if (request.getGyingAutoSyncEnabled() != null) {
+            gying.setAutoSyncEnabled(request.getGyingAutoSyncEnabled());
+            upsert(KEY_GYING_AUTO_SYNC_ENABLED, Boolean.toString(request.getGyingAutoSyncEnabled()),
+                    "Enable scheduled GYING metadata collection");
+        }
+        if (request.getGyingAutoSyncSources() != null) {
+            String value = normalizeGyingSources(request.getGyingAutoSyncSources());
+            gying.setAutoSyncSources(value);
+            upsert(KEY_GYING_AUTO_SYNC_SOURCES, value, "GYING scheduled metadata sources");
+        }
+        if (request.getGyingAutoSyncPage() != null) {
+            int value = clamp(request.getGyingAutoSyncPage(), 1, 500);
+            gying.setAutoSyncPage(value);
+            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(value), "GYING scheduled catalog page");
+        }
+        if (request.getGyingAutoSyncMaxItems() != null) {
+            int value = clamp(request.getGyingAutoSyncMaxItems(), 1, 20);
+            gying.setAutoSyncMaxItems(value);
+            upsert(KEY_GYING_AUTO_SYNC_MAX_ITEMS, Integer.toString(value), "GYING scheduled item limit");
+        }
+        if (request.getGyingAutoSyncIntervalHours() != null) {
+            int value = clamp(request.getGyingAutoSyncIntervalHours(), 1, 720);
+            gying.setAutoSyncIntervalHours(value);
+            upsert(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value),
+                    "GYING source rotation interval in hours");
+        }
         if (request.getWorkerEnabled() != null) {
             worker.setEnabled(request.getWorkerEnabled());
             upsert(KEY_WORKER_ENABLED, Boolean.toString(request.getWorkerEnabled()), "Enable Resource Hub worker");
@@ -160,8 +217,12 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     private ResourceHubConfigResponse fromProperties() {
         ResourceHubProperties.Tmdb tmdb = properties.getTmdb();
+        ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubConfigResponse response = new ResourceHubConfigResponse();
+        ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+        response.setXunleiAuthorizationConfigured(xunlei != null && hasText(xunlei.getAuthorization()));
+        response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));
@@ -173,6 +234,12 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setTmdbAutoDiscoveryEnabled(tmdb.isAutoDiscoveryEnabled());
         response.setTmdbDiscoveryMaxResults(tmdb.getDiscoveryMaxResults());
         response.setTmdbDiscoveryCooldownHours(tmdb.getDiscoveryCooldownHours());
+        response.setGyingDiscoveryEnabled(gying.isDiscoveryEnabled());
+        response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
+        response.setGyingAutoSyncSources(gying.getAutoSyncSources());
+        response.setGyingAutoSyncPage(gying.getAutoSyncPage());
+        response.setGyingAutoSyncMaxItems(gying.getAutoSyncMaxItems());
+        response.setGyingAutoSyncIntervalHours(gying.getAutoSyncIntervalHours());
         response.setWorkerEnabled(worker.isEnabled());
         response.setWorkerFixedDelayMs(worker.getFixedDelayMs());
         response.setWorkerTaskLimit(worker.getTaskLimit());
@@ -193,6 +260,21 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_TMDB_AUTO_DISCOVERY_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoDiscoveryEnabled()), "Create discovery tasks after TMDB sync"));
         defaults.put(KEY_TMDB_DISCOVERY_MAX_RESULTS, values(Integer.toString(properties.getTmdb().getDiscoveryMaxResults()), "PanSou discovery result limit"));
         defaults.put(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, values(Integer.toString(properties.getTmdb().getDiscoveryCooldownHours()), "Discovery retry cooldown in hours"));
+        defaults.put(KEY_GYING_DISCOVERY_ENABLED, values(
+                Boolean.toString(properties.getGying().isDiscoveryEnabled()),
+                "Prefer GYING before PanSou resource discovery"));
+        defaults.put(KEY_GYING_AUTO_SYNC_ENABLED, values(
+                Boolean.toString(properties.getGying().isAutoSyncEnabled()),
+                "Enable scheduled GYING metadata collection"));
+        defaults.put(KEY_GYING_AUTO_SYNC_SOURCES, values(
+                properties.getGying().getAutoSyncSources(), "GYING scheduled metadata sources"));
+        defaults.put(KEY_GYING_AUTO_SYNC_PAGE, values(
+                Integer.toString(properties.getGying().getAutoSyncPage()), "GYING scheduled catalog page"));
+        defaults.put(KEY_GYING_AUTO_SYNC_MAX_ITEMS, values(
+                Integer.toString(properties.getGying().getAutoSyncMaxItems()), "GYING scheduled item limit"));
+        defaults.put(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, values(
+                Integer.toString(properties.getGying().getAutoSyncIntervalHours()),
+                "GYING source rotation interval in hours"));
         defaults.put(KEY_WORKER_ENABLED, values(Boolean.toString(properties.getWorker().isEnabled()), "Enable Resource Hub worker"));
         defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Tasks processed per worker run"));
         defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Quark transfers submitted per worker run"));
@@ -258,6 +340,21 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 .distinct()
                 .toList());
         return hasText(normalized) ? normalized : "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
+    }
+
+    private String normalizeGyingSources(String raw) {
+        if (!hasText(raw)) {
+            return "HITS_MOVIE,HITS_TV,HITS_ANIME";
+        }
+        java.util.Set<String> supported = java.util.Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        String normalized = String.join(",", java.util.Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .filter(this::hasText)
+                .map(String::toUpperCase)
+                .filter(supported::contains)
+                .distinct()
+                .toList());
+        return hasText(normalized) ? normalized : "HITS_MOVIE,HITS_TV,HITS_ANIME";
     }
 
     private int clamp(int value, int min, int max) {

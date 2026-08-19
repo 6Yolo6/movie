@@ -1,6 +1,7 @@
 package com.gying.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gying.movie.client.SocialPublisherClient;
 import com.gying.movie.dto.ApiResponse;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -119,6 +121,20 @@ public class SocialPublishingAdminController {
         return ApiResponse.ok(result);
     }
 
+    @PostMapping("/weibo/login")
+    public ApiResponse<Map<String, Object>> startWeiboLogin(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.startWeiboLogin());
+    }
+
+    @GetMapping("/weibo/login-status")
+    public ApiResponse<Map<String, Object>> weiboLoginStatus(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(publisherClient.weiboLoginStatus());
+    }
+
     @PostMapping("/targets")
     public ApiResponse<SocialPublishTarget> createTarget(
             @RequestBody Map<String, Object> request,
@@ -185,6 +201,33 @@ public class SocialPublishingAdminController {
             throw new IllegalArgumentException("Publishing account target already exists");
         }
         return ApiResponse.ok(target);
+    }
+
+    @DeleteMapping("/targets/{id}")
+    @Transactional
+    public ApiResponse<Map<String, Object>> deleteTarget(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        SocialPublishTarget target = targetService.getById(id);
+        if (target == null) {
+            throw new IllegalArgumentException("Social publish target not found");
+        }
+
+        logService.update(new UpdateWrapper<SocialPostLog>()
+                .eq("target_id", id)
+                .eq("status", "PENDING")
+                .set("status", "FAILED")
+                .set("error_message", "Publishing target deleted")
+                .set("updated_at", LocalDateTime.now()));
+        if (!targetService.removeById(id)) {
+            throw new IllegalStateException("Failed to delete social publish target");
+        }
+
+        return ApiResponse.ok(Map.of(
+                "deleted", true,
+                "targetId", id,
+                "historyRetained", true));
     }
 
     @PostMapping("/targets/{id}/publish-next")

@@ -11,11 +11,13 @@ import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
+import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -36,6 +38,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     private final IQuarkShareService quarkShareService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IResourceDiscoveryResultService discoveryResultService;
+    private final IResourceHubTaskService resourceHubTaskService;
     private final IMovieMetadataService movieService;
     private final ObjectMapper objectMapper;
 
@@ -45,6 +48,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             IQuarkShareService quarkShareService,
             IQuarkTransferTaskService quarkTransferTaskService,
             IResourceDiscoveryResultService discoveryResultService,
+            IResourceHubTaskService resourceHubTaskService,
             IMovieMetadataService movieService,
             ObjectMapper objectMapper) {
         this.resourceHubProperties = resourceHubProperties;
@@ -52,6 +56,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
         this.quarkShareService = quarkShareService;
         this.quarkTransferTaskService = quarkTransferTaskService;
         this.discoveryResultService = discoveryResultService;
+        this.resourceHubTaskService = resourceHubTaskService;
         this.movieService = movieService;
         this.objectMapper = objectMapper;
     }
@@ -172,6 +177,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             task.setUpdatedAt(LocalDateTime.now());
             quarkTransferTaskService.updateById(task);
             markDiscoveryFailed(task, task.getLastError(), task.getUpdatedAt());
+            enqueuePansouFallback(task);
             result.setFailed(result.getFailed() + 1);
             addError(result, "task " + task.getId() + ": " + e.getMessage());
         }
@@ -189,6 +195,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             task.setUpdatedAt(now);
             quarkTransferTaskService.updateById(task);
             markDiscoveryFailed(task, error, now);
+            enqueuePansouFallback(task);
             result.setFailed(result.getFailed() + 1);
             addError(result, "task " + task.getId() + " share: " + e.getMessage());
         }
@@ -206,6 +213,39 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
         discovery.setFailureReason(error);
         discovery.setUpdatedAt(now);
         discoveryResultService.updateById(discovery);
+    }
+
+    private void enqueuePansouFallback(QuarkTransferTask transferTask) {
+        if (transferTask.getDiscoveryResultId() == null) {
+            return;
+        }
+        ResourceDiscoveryResult discovery = discoveryResultService.getById(transferTask.getDiscoveryResultId());
+        if (discovery == null || !"GYING".equalsIgnoreCase(discovery.getSource())) {
+            return;
+        }
+        long existing = resourceHubTaskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "RESOURCE_DISCOVERY")
+                .eq("movie_id", transferTask.getMovieId())
+                .eq("source", "PANSOU")
+                .ge("created_at", LocalDateTime.now().minusHours(24)));
+        if (existing > 0) {
+            return;
+        }
+        try {
+            ResourceHubTask fallback = new ResourceHubTask();
+            fallback.setTaskType("RESOURCE_DISCOVERY");
+            fallback.setMovieId(transferTask.getMovieId());
+            fallback.setSource("PANSOU");
+            fallback.setPriority(4);
+            fallback.setPayload(objectMapper.writeValueAsString(Map.of(
+                    "movieId", transferTask.getMovieId(),
+                    "source", "PANSOU",
+                    "maxResults", Math.min(Math.max(
+                            resourceHubProperties.getTmdb().getDiscoveryMaxResults(), 1), 50))));
+            resourceHubTaskService.enqueue(fallback);
+        } catch (Exception ignored) {
+            // Preserve the original transfer failure; the next manual retry can still search PanSou.
+        }
     }
 
     private Map<String, Object> resolveRequestPayload(

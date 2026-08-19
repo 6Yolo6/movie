@@ -4,13 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.TmdbListItem;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -32,10 +37,17 @@ public class TmdbClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ResourceHubProperties properties;
+    private final Object rateLimitLock = new Object();
+    private long lastRequestNanos;
 
+    @Autowired
     public TmdbClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
             ResourceHubProperties properties) {
-        this.restTemplate = restTemplateBuilder.build();
+        this(restTemplateBuilder.build(), objectMapper, properties);
+    }
+
+    TmdbClient(RestTemplate restTemplate, ObjectMapper objectMapper, ResourceHubProperties properties) {
+        this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.properties = properties;
     }
@@ -125,13 +137,69 @@ public class TmdbClient {
                 .fromUriString(baseUrl.replaceAll("/+$", "") + endpoint)
                 .queryParam("api_key", properties.getTmdb().getApiKey());
         customizer.customize(builder);
+        int maxRetries = Math.min(Math.max(properties.getTmdb().getMaxRetries(), 0), 5);
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            awaitRequestSlot();
+            try {
+                ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
+                return objectMapper.readTree(response.getBody());
+            } catch (HttpStatusCodeException e) {
+                int status = e.getStatusCode().value();
+                if ((status == 429 || status >= 500) && attempt < maxRetries) {
+                    sleep(retryDelayMillis(e.getResponseHeaders(), attempt));
+                    continue;
+                }
+                throw new IllegalStateException(
+                        "TMDB request failed with HTTP " + status + ": " + endpoint, e);
+            } catch (ResourceAccessException e) {
+                if (attempt < maxRetries) {
+                    sleep(retryDelayMillis(null, attempt));
+                    continue;
+                }
+                throw new IllegalStateException("TMDB request timed out or is unavailable: " + endpoint, e);
+            } catch (RestClientException e) {
+                throw new IllegalStateException("TMDB request failed: " + endpoint, e);
+            } catch (Exception e) {
+                throw new IllegalStateException("TMDB response parse failed: " + endpoint, e);
+            }
+        }
+        throw new IllegalStateException("TMDB retry limit reached: " + endpoint);
+    }
+
+    private void awaitRequestSlot() {
+        long intervalMs = Math.min(Math.max(properties.getTmdb().getRequestIntervalMs(), 0), 10000);
+        if (intervalMs <= 0) {
+            return;
+        }
+        synchronized (rateLimitLock) {
+            long intervalNanos = Duration.ofMillis(intervalMs).toNanos();
+            long remainingNanos = intervalNanos - (System.nanoTime() - lastRequestNanos);
+            if (lastRequestNanos > 0 && remainingNanos > 0) {
+                sleep(Math.max(Duration.ofNanos(remainingNanos).toMillis(), 1));
+            }
+            lastRequestNanos = System.nanoTime();
+        }
+    }
+
+    private long retryDelayMillis(HttpHeaders headers, int attempt) {
+        long fallback = Math.min(1000L * (1L << attempt), 10000L);
+        String retryAfter = headers == null ? null : headers.getFirst(HttpHeaders.RETRY_AFTER);
+        if (retryAfter == null || retryAfter.isBlank()) {
+            return fallback;
+        }
         try {
-            ResponseEntity<String> response = restTemplate.getForEntity(builder.toUriString(), String.class);
-            return objectMapper.readTree(response.getBody());
-        } catch (RestClientException e) {
-            throw new IllegalStateException("TMDB request failed: " + endpoint, e);
-        } catch (Exception e) {
-            throw new IllegalStateException("TMDB response parse failed: " + endpoint, e);
+            return Math.min(Math.max(Long.parseLong(retryAfter.trim()) * 1000L, 0), 30000L);
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private void sleep(long delayMillis) {
+        try {
+            Thread.sleep(delayMillis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("TMDB request interrupted", e);
         }
     }
 

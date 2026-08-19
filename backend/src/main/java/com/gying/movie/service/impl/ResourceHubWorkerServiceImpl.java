@@ -10,6 +10,8 @@ import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IGyingMetadataSyncService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
@@ -32,24 +35,31 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final ResourceHubProperties resourceHubProperties;
     private final IResourceHubTaskService taskService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
+    private final IGyingMetadataSyncService gyingMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubConfigService resourceHubConfigService;
 
+    @Autowired
     public ResourceHubWorkerServiceImpl(
             ResourceHubProperties resourceHubProperties,
             IResourceHubTaskService taskService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
+            IGyingMetadataSyncService gyingMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
             IResourceHubConfigService resourceHubConfigService) {
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
+        this.gyingMetadataSyncService = gyingMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.resourceHubConfigService = resourceHubConfigService;
     }
@@ -75,7 +85,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setStartedAt(LocalDateTime.now());
         try {
             enqueueTmdbAutoSyncTasks(result);
+            enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
+            runXunleiTransfers(result);
             runQuarkTransfers(result);
             publishResources(result);
         } finally {
@@ -117,12 +129,59 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
     }
 
+    public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
+            ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
+            IQuarkTransferRunnerService q, IResourceHubPublishService pub, IResourceHubConfigService c) {
+        this(p, t, tm, gm, d, q, null, pub, c);
+    }
+
     private boolean hasActiveMetadataSyncTask(List<String> sources) {
         return taskService.count(new QueryWrapper<ResourceHubTask>()
                 .eq("task_type", "METADATA_SYNC")
                 .eq("source", "TMDB")
                 .in("keyword", sources)
                 .in("status", List.of("PENDING", "RUNNING"))) > 0;
+    }
+
+    private void enqueueGyingAutoSyncTasks(ResourceHubWorkerResult result) {
+        ResourceHubProperties.Gying gying = resourceHubProperties.getGying();
+        if (!gying.isAutoSyncEnabled()) {
+            return;
+        }
+        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources());
+        if (sources.isEmpty() || hasActiveGyingMetadataSyncTask(sources)) {
+            return;
+        }
+        ResourceHubTask latestTask = latestGyingMetadataSyncTask(sources);
+        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(gying.getAutoSyncIntervalHours(), 1));
+        if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
+            return;
+        }
+        String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
+        try {
+            gyingMetadataSyncService.enqueue(source, gying.getAutoSyncPage(), gying.getAutoSyncMaxItems());
+            result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+        } catch (Exception error) {
+            addError(result, "gying auto sync " + source + ": " + error.getMessage());
+        }
+    }
+
+    private boolean hasActiveGyingMetadataSyncTask(List<String> sources) {
+        return taskService.count(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "GYING")
+                .in("keyword", sources)
+                .in("status", List.of("PENDING", "RUNNING"))) > 0;
+    }
+
+    private ResourceHubTask latestGyingMetadataSyncTask(List<String> sources) {
+        return taskService.getOne(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
+                .eq("source", "GYING")
+                .in("keyword", sources)
+                .orderByDesc("created_at")
+                .orderByDesc("id")
+                .last("LIMIT 1"), false);
     }
 
     private ResourceHubTask latestMetadataSyncTask(List<String> sources) {
@@ -158,6 +217,20 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .toList();
     }
 
+    private List<String> gyingAutoSyncSources(String raw) {
+        if (!hasText(raw)) {
+            return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        }
+        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        return List.of(raw.split(",")).stream()
+                .map(String::trim)
+                .filter(this::hasText)
+                .map(String::toUpperCase)
+                .filter(supported::contains)
+                .distinct()
+                .toList();
+    }
+
     private void runDueTasks(ResourceHubWorkerResult result) {
         List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>()
                 .eq("status", "PENDING")
@@ -179,7 +252,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setTasksProcessed(result.getTasksProcessed() + 1);
         try {
             if ("METADATA_SYNC".equalsIgnoreCase(task.getTaskType())) {
-                TmdbSyncResult syncResult = tmdbMetadataSyncService.runTask(task.getId());
+                TmdbSyncResult syncResult = "GYING".equalsIgnoreCase(task.getSource())
+                        ? gyingMetadataSyncService.runTask(task.getId())
+                        : tmdbMetadataSyncService.runTask(task.getId());
                 taskResult.setStatus(syncResult.getStatus());
                 if ("SUCCEEDED".equalsIgnoreCase(syncResult.getStatus())) {
                     result.setTasksSucceeded(result.getTasksSucceeded() + 1);
@@ -226,6 +301,14 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             result.setQuarkTransfers(failed);
             addError(result, "quark transfers: " + e.getMessage());
         }
+    }
+
+    private void runXunleiTransfers(ResourceHubWorkerResult result) {
+        try {
+            if (xunleiTransferRunnerService == null) return;
+            QuarkTransferRunResult xunlei = xunleiTransferRunnerService.submitPending(resourceHubProperties.getWorker().getXunleiLimit());
+            for (String error : xunlei.getErrors()) addError(result, "xunlei transfers: " + error);
+        } catch (Exception e) { addError(result, "xunlei transfers: " + e.getMessage()); }
     }
 
     private void publishResources(ResourceHubWorkerResult result) {

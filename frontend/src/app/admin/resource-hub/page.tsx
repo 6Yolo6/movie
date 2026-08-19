@@ -50,6 +50,8 @@ interface ApiEnvelope<T> {
 }
 
 interface ResourceHubConfig {
+    xunleiAuthorizationConfigured: boolean;
+    xunleiCaptchaConfigured: boolean;
     enabled: boolean;
     autoApprove: boolean;
     tmdbConfigured: boolean;
@@ -61,6 +63,12 @@ interface ResourceHubConfig {
     tmdbAutoDiscoveryEnabled: boolean;
     tmdbDiscoveryMaxResults: number;
     tmdbDiscoveryCooldownHours: number;
+    gyingDiscoveryEnabled: boolean;
+    gyingAutoSyncEnabled: boolean;
+    gyingAutoSyncSources: string;
+    gyingAutoSyncPage: number;
+    gyingAutoSyncMaxItems: number;
+    gyingAutoSyncIntervalHours: number;
     workerEnabled: boolean;
     workerFixedDelayMs: number;
     workerTaskLimit: number;
@@ -68,9 +76,15 @@ interface ResourceHubConfig {
     workerPublishLimit: number;
 }
 
-type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources'> & {
+type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources'> & {
     tmdbAutoSyncSources: string[];
+    gyingAutoSyncSources: string[];
 };
+
+interface XunleiCredentialFormValues {
+    xunleiAuthorization?: string;
+    xunleiCaptchaToken?: string;
+}
 
 interface WorkerStatus {
     enabled: boolean;
@@ -226,6 +240,8 @@ const TMDB_SOURCE_KEYS = [
     'UPCOMING_MOVIE',
 ];
 
+const GYING_SOURCE_KEYS = ['HITS_MOVIE', 'HITS_TV', 'HITS_ANIME'];
+
 const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY'];
 const TASK_STATUS_OPTIONS = ['PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELED'];
 const DISCOVERY_STATUS_OPTIONS = ['DISCOVERED', 'SAVED', 'DUPLICATE', 'IGNORED', 'FAILED'];
@@ -247,6 +263,7 @@ export default function ResourceHubAdminPage() {
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [configForm] = Form.useForm<ResourceHubConfigFormValues>();
+    const [xunleiCredentialForm] = Form.useForm<XunleiCredentialFormValues>();
     const [tmdbForm] = Form.useForm<TmdbFormValues>();
     const [discoveryForm] = Form.useForm<DiscoveryFormValues>();
 
@@ -290,6 +307,11 @@ export default function ResourceHubAdminPage() {
         label: t(`resourceHubSource.${value}`),
     })), [t]);
 
+    const gyingSourceOptions = useMemo(() => GYING_SOURCE_KEYS.map((value) => ({
+        value,
+        label: t(`resourceHubGyingSource.${value}`),
+    })), [t]);
+
     const requestJson = useCallback(async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
         const res = await api(path, {
             ...options,
@@ -308,6 +330,9 @@ export default function ResourceHubAdminPage() {
         ...config,
         tmdbAutoSyncSources: config.tmdbAutoSyncSources
             ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+            : [],
+        gyingAutoSyncSources: config.gyingAutoSyncSources
+            ? config.gyingAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
             : [],
     });
 
@@ -422,10 +447,37 @@ export default function ResourceHubAdminPage() {
                 body: JSON.stringify({
                     ...values,
                     tmdbAutoSyncSources: values.tmdbAutoSyncSources.join(','),
+                    gyingAutoSyncSources: values.gyingAutoSyncSources.join(','),
                 }),
             });
             configForm.setFieldsValue(normalizeConfigForm(data));
             message.success(t('resourceHubConfigSaved'));
+            await fetchOverview();
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
+        } finally {
+            setSavingConfig(false);
+        }
+    };
+
+    const saveXunleiCredentials = async (values: XunleiCredentialFormValues) => {
+        const authorization = values.xunleiAuthorization?.trim();
+        const captchaToken = values.xunleiCaptchaToken?.trim();
+        if (!authorization && !captchaToken) {
+            message.info(t('resourceHubCredentialEnterOne'));
+            return;
+        }
+        setSavingConfig(true);
+        try {
+            await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    xunleiAuthorization: authorization || undefined,
+                    xunleiCaptchaToken: captchaToken || undefined,
+                }),
+            });
+            xunleiCredentialForm.resetFields();
+            message.success(t('resourceHubXunleiCredentialsUpdated'));
             await fetchOverview();
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
@@ -1265,6 +1317,16 @@ export default function ResourceHubAdminPage() {
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item name="gyingDiscoveryEnabled" label={t('resourceHubGyingDiscovery')} valuePropName="checked">
+                                                            <Switch />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item name="gyingAutoSyncEnabled" label={t('resourceHubGyingAutoSync')} valuePropName="checked">
+                                                            <Switch />
+                                                        </Form.Item>
+                                                    </Col>
                                                     <Col xs={24}>
                                                         <Form.Item name="tmdbAutoSyncSources" label={t('resourceHubTmdbSources')}>
                                                             <Select mode="multiple" options={tmdbSourceOptions} />
@@ -1288,6 +1350,29 @@ export default function ResourceHubAdminPage() {
                                                     <Col xs={24}>
                                                         <Text type="secondary">{t('resourceHubSyncIntervalHelp')}</Text>
                                                     </Col>
+                                                    <Col xs={24}>
+                                                        <Form.Item name="gyingAutoSyncSources" label={t('resourceHubGyingSources')}>
+                                                            <Select mode="multiple" options={gyingSourceOptions} />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={8}>
+                                                        <Form.Item name="gyingAutoSyncIntervalHours" label={t('resourceHubGyingSyncInterval')}>
+                                                            <InputNumber min={1} max={720} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={8}>
+                                                        <Form.Item name="gyingAutoSyncPage" label={t('resourceHubGyingSyncPage')}>
+                                                            <InputNumber min={1} max={500} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={8}>
+                                                        <Form.Item name="gyingAutoSyncMaxItems" label={t('resourceHubGyingSyncItems')}>
+                                                            <InputNumber min={1} max={20} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Text type="secondary">{t('resourceHubGyingSyncHelp')}</Text>
+                                                    </Col>
                                                     <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>
                                                             <InputNumber min={1} max={50} className="w-full" />
@@ -1306,6 +1391,45 @@ export default function ResourceHubAdminPage() {
                                                 </Row>
                                                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
                                                     {t('resourceHubSaveSettings')}
+                                                </Button>
+                                            </Form>
+                                        </Card>
+                                    </Col>
+                                    <Col xs={24}>
+                                        <Card title={t('resourceHubXunleiCredentials')} loading={loading}>
+                                            <Form form={xunleiCredentialForm} layout="vertical" onFinish={saveXunleiCredentials}>
+                                                <Alert
+                                                    className="mb-4"
+                                                    type="info"
+                                                    showIcon
+                                                    message={t('resourceHubXunleiCredentialsHelp')}
+                                                />
+                                                <Row gutter={12}>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item
+                                                            name="xunleiAuthorization"
+                                                            label={t('resourceHubXunleiAuthorization')}
+                                                            extra={overview?.config.xunleiAuthorizationConfigured
+                                                                ? t('resourceHubCredentialConfiguredKeepBlank')
+                                                                : t('resourceHubCredentialNotConfigured')}
+                                                        >
+                                                            <Input.Password autoComplete="off" placeholder={t('resourceHubXunleiAuthorizationPlaceholder')} />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Form.Item
+                                                            name="xunleiCaptchaToken"
+                                                            label={t('resourceHubXunleiCaptchaToken')}
+                                                            extra={overview?.config.xunleiCaptchaConfigured
+                                                                ? t('resourceHubCredentialConfiguredKeepBlank')
+                                                                : t('resourceHubCredentialNotConfigured')}
+                                                        >
+                                                            <Input.Password autoComplete="off" placeholder={t('resourceHubXunleiCaptchaPlaceholder')} />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
+                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
+                                                    {t('resourceHubUpdateXunleiCredentials')}
                                                 </Button>
                                             </Form>
                                         </Card>

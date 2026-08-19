@@ -1,9 +1,25 @@
 import unittest
+from unittest.mock import Mock, patch
 
-from crawler.gying_crawler import normalize_search_items, preserve_existing_resource_source
+from crawler.gying_crawler import (
+    gying_search_type,
+    normalize_search_mode,
+    normalize_search_items,
+    preserve_existing_resource_source,
+    publish_pan_resource,
+)
 
 
 class GyingSearchParserTest(unittest.TestCase):
+
+    def test_maps_search_categories_and_clamps_mode(self):
+        self.assertEqual(0, gying_search_type())
+        self.assertEqual(1, gying_search_type("mv"))
+        self.assertEqual(2, gying_search_type("tv"))
+        self.assertEqual(3, gying_search_type("ac"))
+        self.assertEqual(1, normalize_search_mode(0))
+        self.assertEqual(2, normalize_search_mode("2"))
+        self.assertEqual(3, normalize_search_mode(99))
 
     def test_parses_parallel_search_arrays_and_keeps_movie_season_empty(self):
         payload = {
@@ -55,6 +71,40 @@ class GyingSearchParserTest(unittest.TestCase):
             preserve_existing_resource_source("GYING_PUBLISHED"),
         )
         self.assertEqual("GYING", preserve_existing_resource_source(None))
+
+    @patch("crawler.gying_crawler.site_post")
+    def test_publishes_pan_resource_with_current_binding_contract(self, site_post):
+        response = Mock()
+        response.ok = True
+        response.json.return_value = {"code": 200}
+        site_post.return_value = response
+
+        result = publish_pan_resource(
+            "mv",
+            "VeewM",
+            "4K/2160P Minions & Monsters (2026)",
+            "https://pan.quark.cn/s/example",
+        )
+
+        self.assertEqual({"code": 200}, result)
+        endpoint, = site_post.call_args.args
+        self.assertTrue(endpoint.endswith("/res/pan/add"))
+        self.assertFalse(endpoint.endswith("/res/pan/add/mv/VeewM"))
+        self.assertEqual(
+            {
+                "title": "4K/2160P Minions & Monsters (2026)",
+                "panurl": "https://pan.quark.cn/s/example",
+                "panpw": "",
+                "is": "0",
+                "binds[0][dir]": "mv",
+                "binds[0][id]": "VeewM",
+            },
+            site_post.call_args.kwargs["data"],
+        )
+        self.assertEqual(
+            "XMLHttpRequest",
+            site_post.call_args.kwargs["headers"]["X-Requested-With"],
+        )
 
 
 if __name__ == "__main__":

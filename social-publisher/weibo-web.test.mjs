@@ -45,6 +45,32 @@ test('posts the captured web form and returns a public URL', async () => {
   assert.equal(result.externalUrl, 'https://weibo.com/123/AbCd');
 });
 
+test('preserves long post content without adding an ellipsis', async () => {
+  const content = `影片简介：${'完整简介内容'.repeat(80)}\nhttps://example.com/resource`;
+  let postedContent;
+
+  await publishWeiboWeb(content, {
+    config: {
+      cookie: 'SUB=secret',
+      xsrfToken: 'xsrf',
+      fingerprint: 'browser-fp',
+      clientVersion: 'v1',
+      userAgent: 'test-agent',
+      endpoint: 'https://www.weibo.com/ajax/statuses/update',
+    },
+    fetchImpl: async (_url, options) => {
+      postedContent = options.body.get('content');
+      return new Response(JSON.stringify({
+        ok: 1,
+        data: { mblogid: 'LongPost', user: { idstr: '123' } },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+
+  assert.equal(postedContent, content);
+  assert.equal(postedContent.endsWith('…'), false);
+});
+
 test('classifies an expired web session', async () => {
   await assert.rejects(
     publishWeiboWeb('test', {
@@ -59,5 +85,22 @@ test('classifies an expired web session', async () => {
       fetchImpl: async () => new Response('<html>login</html>', { status: 302 }),
     }),
     /session expired/i,
+  );
+});
+
+test('reports response fields when Weibo omits an error message', async () => {
+  await assert.rejects(
+    publishWeiboWeb('test', {
+      config: {
+        cookie: 'SUB=session',
+        xsrfToken: '',
+        fingerprint: 'browser-fp',
+        clientVersion: 'v1',
+        userAgent: 'test',
+        endpoint: 'https://www.weibo.com/ajax/statuses/update',
+      },
+      fetchImpl: async () => new Response(JSON.stringify({ ok: 0, errno: 12345, data: {} }), { status: 200 }),
+    }),
+    /code=12345; response fields=ok,errno,data/,
   );
 });
