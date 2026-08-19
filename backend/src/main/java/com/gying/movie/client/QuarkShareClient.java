@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkShareResult;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,11 +56,43 @@ public class QuarkShareClient {
         }
         String cookie = quarkAutoSaveClient.getPrimaryCookie();
         PathInfo pathInfo = resolvePath(cookie, savePath);
-        String taskId = createShareTask(cookie, pathInfo.fid(), firstText(title, pathInfo.name(), "GYing Resource"));
-        String shareId = pollShareId(cookie, taskId);
-        QuarkShareResult result = submitShare(cookie, shareId);
+        String shareTitle = firstText(title, pathInfo.name(), "GYing Resource");
+        QuarkShareResult result;
+        try {
+            result = createShare(cookie, List.of(pathInfo.fid()), shareTitle);
+        } catch (QuarkShareRejectedException rejected) {
+            List<String> mediaFids = findMediaFids(cookie, pathInfo.fid(), 0, new HashSet<>());
+            mediaFids.removeAll(rejected.invalidFids());
+            if (mediaFids.isEmpty()) {
+                throw rejected;
+            }
+            result = createShareExcludingRejected(cookie, mediaFids, shareTitle);
+        }
         result.setFid(pathInfo.fid());
         return result;
+    }
+
+    private QuarkShareResult createShareExcludingRejected(
+            String cookie,
+            List<String> initialFids,
+            String title) {
+        List<String> fids = new ArrayList<>(initialFids);
+        for (int attempt = 0; attempt < 3 && !fids.isEmpty(); attempt++) {
+            try {
+                return createShare(cookie, fids, title);
+            } catch (QuarkShareRejectedException rejected) {
+                if (rejected.invalidFids().isEmpty() || !fids.removeAll(rejected.invalidFids())) {
+                    throw rejected;
+                }
+            }
+        }
+        throw new IllegalStateException("Saved Quark folder has no shareable media files");
+    }
+
+    private QuarkShareResult createShare(String cookie, List<String> fids, String title) {
+        String taskId = createShareTask(cookie, fids, title);
+        String shareId = pollShareId(cookie, taskId);
+        return submitShare(cookie, shareId);
     }
 
     public FolderContentCheck checkFolderContent(String savePath) {
@@ -125,6 +158,48 @@ public class QuarkShareClient {
         return 0;
     }
 
+    private List<String> findMediaFids(String cookie, String folderFid, int depth, Set<String> visited) {
+        List<String> mediaFids = new ArrayList<>();
+        if (depth > MEDIA_SCAN_MAX_DEPTH || !visited.add(folderFid)) {
+            return mediaFids;
+        }
+        for (int page = 1; page <= MEDIA_SCAN_MAX_PAGES; page++) {
+            JsonNode body = get(cookie, "/1/clouddrive/file/sort", Map.of(
+                    "pdir_fid", folderFid,
+                    "_page", String.valueOf(page),
+                    "_size", String.valueOf(MEDIA_SCAN_PAGE_SIZE),
+                    "_fetch_total", "1",
+                    "_fetch_sub_dirs", "0",
+                    "sort", "file_type:asc,updated_at:desc"));
+            ensureOk(body, "list Quark folder failed");
+            JsonNode list = firstArray(body.path("data").path("list"),
+                    body.path("data").path("items"), body.path("data").path("files"));
+            if (list == null || list.isEmpty()) {
+                break;
+            }
+            for (JsonNode item : list) {
+                String fid = item.path("fid").asText(null);
+                String fileName = item.path("file_name").asText("");
+                if (!item.path("dir").asBoolean(false) && hasText(fid)
+                        && MEDIA_FILE_PATTERN.matcher(fileName).matches()) {
+                    mediaFids.add(fid);
+                }
+            }
+            if (depth < MEDIA_SCAN_MAX_DEPTH) {
+                for (JsonNode item : list) {
+                    String childFid = item.path("fid").asText(null);
+                    if (item.path("dir").asBoolean(false) && hasText(childFid)) {
+                        mediaFids.addAll(findMediaFids(cookie, childFid, depth + 1, visited));
+                    }
+                }
+            }
+            if (list.size() < MEDIA_SCAN_PAGE_SIZE) {
+                break;
+            }
+        }
+        return mediaFids;
+    }
+
     private PathInfo resolvePath(String cookie, String savePath) {
         String normalizedPath = normalizePath(savePath);
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -144,9 +219,9 @@ public class QuarkShareClient {
         return new PathInfo(fid, item.path("file_name").asText(lastPathSegment(normalizedPath)));
     }
 
-    private String createShareTask(String cookie, String fid, String title) {
+    private String createShareTask(String cookie, List<String> fids, String title) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("fid_list", List.of(fid));
+        payload.put("fid_list", fids);
         payload.put("title", title);
         payload.put("url_type", properties.getQuark().getShareUrlType());
         payload.put("expired_type", properties.getQuark().getShareExpiredType());
@@ -173,6 +248,12 @@ public class QuarkShareClient {
                 if (hasText(shareId)) {
                     return shareId;
                 }
+            }
+            if (body.path("data").path("status").asInt(0) == 3
+                    || (body.has("code") && body.path("code").asInt(0) != 0)) {
+                throw new QuarkShareRejectedException(
+                        firstText(body.path("message").asText(null), "Quark share task failed"),
+                        findTextArrayByField(body, "invalid_fids"));
             }
             if (i + 1 < attempts) {
                 sleep(intervalMs);
@@ -222,6 +303,36 @@ public class QuarkShareClient {
             }
         }
         return null;
+    }
+
+    private Set<String> findTextArrayByField(JsonNode node, String fieldName) {
+        Set<String> values = new HashSet<>();
+        collectTextArrayByField(node, fieldName, values);
+        return values;
+    }
+
+    private void collectTextArrayByField(JsonNode node, String fieldName, Set<String> values) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return;
+        }
+        if (node.isObject()) {
+            JsonNode field = node.get(fieldName);
+            if (field != null && field.isArray()) {
+                for (JsonNode value : field) {
+                    if (value.isValueNode() && hasText(value.asText(null))) {
+                        values.add(value.asText().trim());
+                    }
+                }
+            }
+            var fields = node.fields();
+            while (fields.hasNext()) {
+                collectTextArrayByField(fields.next().getValue(), fieldName, values);
+            }
+        } else if (node.isArray()) {
+            for (JsonNode child : node) {
+                collectTextArrayByField(child, fieldName, values);
+            }
+        }
     }
 
     private JsonNode get(String cookie, String path, Map<String, String> extraParams) {
@@ -335,6 +446,19 @@ public class QuarkShareClient {
     }
 
     private record PathInfo(String fid, String name) {
+    }
+
+    private static final class QuarkShareRejectedException extends IllegalStateException {
+        private final Set<String> invalidFids;
+
+        private QuarkShareRejectedException(String message, Set<String> invalidFids) {
+            super(message);
+            this.invalidFids = invalidFids == null ? Set.of() : Set.copyOf(invalidFids);
+        }
+
+        private Set<String> invalidFids() {
+            return invalidFids;
+        }
     }
 
     public record FolderContentCheck(String fid, String name, boolean hasContent, int itemCount) {
