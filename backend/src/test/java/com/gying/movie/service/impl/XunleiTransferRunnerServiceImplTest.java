@@ -1,7 +1,9 @@
 package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -51,5 +53,32 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals(1, result.getSkipped());
         assertEquals(0, result.getFailed());
         verifyNoInteractions(client);
+    }
+
+    @Test
+    void clearsPreviousErrorAfterWaitingShareRetrySucceeds() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(3L);
+        task.setStatus("WAITING_SHARE");
+        task.setSavedPath("saved-file-id");
+        task.setLastError("old authorization error");
+        when(taskService.getById(3L)).thenReturn(task);
+        when(client.createShare("saved-file-id"))
+                .thenReturn("https://pan.xunlei.com/s/share?pwd=code");
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties,
+                client,
+                taskService,
+                mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult result = service.submitOne(3L);
+
+        assertEquals(1, result.getSubmitted());
+        assertEquals("SUCCEEDED", task.getStatus());
+        verify(taskService).update(any());
     }
 }

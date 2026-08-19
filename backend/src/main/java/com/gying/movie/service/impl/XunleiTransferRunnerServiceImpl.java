@@ -81,7 +81,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 if (share == null) { result.setSkipped(result.getSkipped() + 1); return; }
                 task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share));
                 task.setStatus("SUCCEEDED"); task.setLastError(null); task.setFinishedAt(LocalDateTime.now());
-                task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); updatePublishedLink(task);
+                task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); clearLastError(task.getId()); updatePublishedLink(task);
                 result.setSubmitted(result.getSubmitted() + 1); return;
             }
             task.setStatus("RUNNING"); task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1); task.setStartedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
@@ -91,7 +91,14 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
             if (!status.success()) { task.setStatus("FAILED"); task.setLastError("Xunlei restore " + status.status()); result.setFailed(result.getFailed() + 1); }
             else { task.setStatus("WAITING_SHARE"); XunleiClient.RestoredSelection restored = client.awaitRestoredFiles(restore.restoredFileId(), restore.expectedNames(), restore.startedAt()); task.setSavedPath(restored.fileIds().get(0)); String share = client.createShare(restored.fileIds()); if (share != null) { task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share)); task.setStatus("SUCCEEDED"); task.setLastError(null); updatePublishedLink(task); result.setSubmitted(result.getSubmitted() + 1); } else { task.setLastError("Xunlei restore succeeded but share API did not return a URL"); result.setSubmitted(result.getSubmitted() + 1); } }
             task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
+            if ("SUCCEEDED".equalsIgnoreCase(task.getStatus())) clearLastError(task.getId());
         } catch (Exception e) { task.setStatus("FAILED"); task.setLastError(e.getMessage()); task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(e.getMessage()); }
+    }
+
+    private void clearLastError(Long taskId) {
+        if (taskId != null) taskService.update(new UpdateWrapper<XunleiTransferTask>()
+                .eq("id", taskId)
+                .set("last_error", null));
     }
 
     private void updatePublishedLink(XunleiTransferTask task) {
