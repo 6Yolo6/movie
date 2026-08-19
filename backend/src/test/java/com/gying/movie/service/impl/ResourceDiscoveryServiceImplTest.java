@@ -18,6 +18,7 @@ import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
+import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
@@ -125,6 +126,27 @@ class ResourceDiscoveryServiceImplTest {
         verify(discoveryService, org.mockito.Mockito.times(2)).save(any(ResourceDiscoveryResult.class));
         verify(panSouClient).checkLink(quark);
         verify(panSouClient).checkLink(xunlei);
+    }
+
+    @Test
+    void letsXunleiTransferApiValidateCandidateWhenPanSouReportsBad() {
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
+        DiscoveredResource xunlei = resource(
+                "肖申克的救赎 4K 迅雷", "https://pan.xunlei.com/s/xunlei", "PANSOU");
+        xunlei.setProvider("XUNLEI");
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of());
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(xunlei));
+        when(panSouClient.checkLink(xunlei))
+                .thenReturn(new LinkCheckResult(xunlei.getUrl(), true, false, "bad"));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(1, result.getDiscovered());
+        ArgumentCaptor<ResourceDiscoveryResult> discovery =
+                ArgumentCaptor.forClass(ResourceDiscoveryResult.class);
+        verify(discoveryService).save(discovery.capture());
+        assertEquals("DISCOVERED", discovery.getValue().getStatus());
+        verify(xunleiTransferTaskService).save(any(XunleiTransferTask.class));
     }
 
     private DiscoveredResource resource(String title, String url, String source) {

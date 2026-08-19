@@ -138,7 +138,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     }
                     String urlHash = ResourceHubHashUtils.sha256(resource.getUrl());
                     LinkCheckResult sourceCheck = checkSourceLink(resource);
-                    if (sourceCheck.checked() && !sourceCheck.valid()) {
+                    // PanSou's Xunlei checker can report "bad" for links that the
+                    // official Xunlei transfer API can still open and save. Treat
+                    // that check as advisory and let the transfer runner perform
+                    // the authoritative validation. Quark keeps the early reject.
+                    if (!"XUNLEI".equalsIgnoreCase(resource.getProvider())
+                            && sourceCheck.checked() && !sourceCheck.valid()) {
                         ResourceDiscoveryResult ignored = saveDiscovery(
                                 task, movie, resource, urlHash, "IGNORED", now);
                         ignored.setFailureReason("Source validation detected invalid link: "
