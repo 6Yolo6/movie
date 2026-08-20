@@ -37,7 +37,8 @@ public class XunleiClient {
     private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
     private static final String PACKAGE_NAME = "pan.xunlei.com";
     private static final Set<String> VIDEO_EXTENSIONS = Set.of(
-            "mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "m4v", "ts", "m2ts");
+            "mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "m4v", "ts", "m2ts",
+            "mpg", "mpeg", "mpe", "vob", "3gp", "3g2", "rm", "rmvb", "asf", "ogv");
     private static final String[] WEB_ALGORITHMS = ("b9Dldv6kRsRyOG4tFHzeJ4RbOi0n7nO8omFouLVgvLNB.TEHDOteMPrRB66yQIF9tF+pfPAIesa/xg."
             + "Fmx27GlNbrIxiPSQVm.crlPVriPRAiuCEKZvK4yihP55gTRvLd7qDVLsDtWzhkXt5Iqs7TpoP."
             + "E2toogseEdgXmlfnz1ppUhUvD9B2jgSA+YG.a2f3L0AioU+0PvTeCtk.6d6w1xX9j95GEPNpd+T4HmbTceZNEF310ppRe."
@@ -217,9 +218,9 @@ public class XunleiClient {
         String passCode = UriComponentsBuilder.fromUriString(shareUrl).build().getQueryParams().getFirst("pwd");
         JsonNode response = request(HttpMethod.GET, "/share?share_id=" + shareId + "&pass_code=" + (passCode == null ? "" : passCode) + "&limit=100", null);
         String token = firstText(response.path("pass_code_token").asText(null), response.path("data").path("pass_code_token").asText(null));
-        List<String> fileIds = extractTopLevelFileIds(response);
-        if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no files");
-        return new ShareInfo(shareId, passCode, token, fileIds, extractTopLevelFileNames(response));
+        List<String> fileIds = extractVideoFileIds(response);
+        if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no video files");
+        return new ShareInfo(shareId, passCode, token, fileIds, extractVideoFileNames(response));
     }
 
     private DirectoryInfo ensureDirectory(String path) {
@@ -300,6 +301,53 @@ public class XunleiClient {
             if (hasTextStatic(name)) names.add(name);
         }
         return List.copyOf(names);
+    }
+
+    /**
+     * Return only playable video file ids from a share response.  Share APIs may
+     * embed descendants under children/files; folders are deliberately ignored
+     * so restoring a share cannot pull in advertising documents or images.
+     */
+    static List<String> extractVideoFileIds(JsonNode response) {
+        List<String> ids = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        collectVideoFiles(response == null ? null : firstArray(
+                response.path("files"), response.path("file_list"),
+                response.path("data").path("files"), response.path("data").path("file_list")), ids, seen);
+        return List.copyOf(ids);
+    }
+
+    static List<String> extractVideoFileNames(JsonNode response) {
+        List<String> names = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        collectVideoNames(response == null ? null : firstArray(
+                response.path("files"), response.path("file_list"),
+                response.path("data").path("files"), response.path("data").path("file_list")), names, seen);
+        return List.copyOf(names);
+    }
+
+    private static void collectVideoFiles(JsonNode items, List<String> ids, Set<String> seen) {
+        if (items == null || !items.isArray()) return;
+        for (JsonNode item : items) {
+            if (isFolder(item)) {
+                collectVideoFiles(firstArray(item.path("children"), item.path("files"), item.path("file_list")), ids, seen);
+                continue;
+            }
+            String id = item.path("id").asText(null);
+            if (hasTextStatic(id) && isVideo(item) && seen.add(id)) ids.add(id);
+        }
+    }
+
+    private static void collectVideoNames(JsonNode items, List<String> names, Set<String> seen) {
+        if (items == null || !items.isArray()) return;
+        for (JsonNode item : items) {
+            if (isFolder(item)) {
+                collectVideoNames(firstArray(item.path("children"), item.path("files"), item.path("file_list")), names, seen);
+                continue;
+            }
+            String name = firstTextStatic(item.path("name").asText(null), item.path("file_name").asText(null));
+            if (hasTextStatic(name) && isVideo(item) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
+        }
     }
 
     static List<JsonNode> selectRestoredFiles(

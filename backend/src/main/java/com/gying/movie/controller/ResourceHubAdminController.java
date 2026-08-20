@@ -16,6 +16,7 @@ import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.entity.QqChannelPostLog;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
@@ -25,6 +26,8 @@ import com.gying.movie.entity.UserFavorite;
 import com.gying.movie.entity.Comment;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferTaskService;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceDiscoveryService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
@@ -75,9 +78,11 @@ public class ResourceHubAdminController {
     private final IResourceHubTaskService taskService;
     private final IResourceDiscoveryResultService discoveryResultService;
     private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubWorkerService resourceHubWorkerService;
     private final IResourceHubConfigService resourceHubConfigService;
@@ -102,9 +107,11 @@ public class ResourceHubAdminController {
             IResourceHubTaskService taskService,
             IResourceDiscoveryResultService discoveryResultService,
             IQuarkTransferTaskService quarkTransferTaskService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
             ITmdbMetadataSyncService tmdbMetadataSyncService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
             IResourceHubWorkerService resourceHubWorkerService,
             IResourceHubConfigService resourceHubConfigService,
@@ -121,9 +128,11 @@ public class ResourceHubAdminController {
         this.taskService = taskService;
         this.discoveryResultService = discoveryResultService;
         this.quarkTransferTaskService = quarkTransferTaskService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.resourceHubWorkerService = resourceHubWorkerService;
         this.resourceHubConfigService = resourceHubConfigService;
@@ -841,9 +850,32 @@ public class ResourceHubAdminController {
             throw new IllegalStateException("Discovery result is not retryable: " + discovery.getStatus());
         }
 
-        QuarkTransferTask transfer = findOrCreateTransfer(discovery);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("discoveryResultId", discoveryResultId);
+        if ("XUNLEI".equalsIgnoreCase(discovery.getProvider())) {
+            XunleiTransferTask transfer = findOrCreateXunleiTransfer(discovery);
+            if (!hasText(transfer.getShareUrl())) {
+                transfer.setAttempts(0);
+                transfer.setStatus("PENDING");
+                transfer.setLastError(null);
+                transfer.setUpdatedAt(LocalDateTime.now());
+                xunleiTransferTaskService.updateById(transfer);
+                QuarkTransferRunResult transferResult = xunleiTransferRunnerService.submitOne(transfer.getId());
+                result.put("transferTaskId", transfer.getId());
+                result.put("transferProvider", "XUNLEI");
+                result.put("transferSubmitted", transferResult.getSubmitted());
+                result.put("transferFailed", transferResult.getFailed());
+                result.put("transferErrors", transferResult.getErrors());
+                transfer = xunleiTransferTaskService.getById(transfer.getId());
+                if (transferResult.getFailed() > 0 || transfer == null || !hasText(transfer.getShareUrl())) {
+                    throw new IllegalStateException(transferResult.getErrors().isEmpty()
+                            ? "Xunlei transfer did not create an own share"
+                            : transferResult.getErrors().get(0));
+                }
+            }
+            return publishRetriedDiscovery(discovery, discoveryResultId, result);
+        }
+        QuarkTransferTask transfer = findOrCreateTransfer(discovery);
         if (!hasText(transfer.getShareUrl())) {
             QuarkTransferRunResult transferResult = quarkTransferRunnerService.submitOne(transfer.getId());
             result.put("transferTaskId", transfer.getId());
@@ -873,6 +905,43 @@ public class ResourceHubAdminController {
         }
         requirePublishedResource(discovery.getMovieId());
         return result;
+    }
+
+    private Map<String, Object> publishRetriedDiscovery(ResourceDiscoveryResult discovery,
+            Long discoveryResultId, Map<String, Object> result) {
+        ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryResultId);
+        result.put("published", publishResult.getPublished());
+        result.put("updated", publishResult.getUpdated());
+        result.put("failed", publishResult.getFailed());
+        result.put("skipped", publishResult.getSkipped());
+        result.put("errors", publishResult.getErrors());
+        if (publishResult.getFailed() > 0) {
+            throw new IllegalStateException(publishResult.getErrors().isEmpty()
+                    ? "Discovery publish failed" : publishResult.getErrors().get(0));
+        }
+        requirePublishedResource(discovery.getMovieId());
+        return result;
+    }
+
+    private XunleiTransferTask findOrCreateXunleiTransfer(ResourceDiscoveryResult discovery) {
+        XunleiTransferTask transfer = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("discovery_result_id", discovery.getId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+        if (transfer != null && !"CANCELED".equalsIgnoreCase(transfer.getStatus())) return transfer;
+        if (!hasText(discovery.getOriginalUrl())) throw new IllegalStateException("Discovery result has no source URL to transfer");
+        LocalDateTime now = LocalDateTime.now();
+        transfer = new XunleiTransferTask();
+        transfer.setDiscoveryResultId(discovery.getId());
+        transfer.setMovieId(discovery.getMovieId());
+        transfer.setOriginalUrl(discovery.getOriginalUrl());
+        transfer.setOriginalUrlHash(firstText(discovery.getOriginalUrlHash(), ResourceHubHashUtils.sha256(discovery.getOriginalUrl())));
+        transfer.setStatus("PENDING");
+        transfer.setAttempts(0);
+        transfer.setCreatedAt(now);
+        transfer.setUpdatedAt(now);
+        xunleiTransferTaskService.save(transfer);
+        return transfer;
     }
 
     private boolean recoverFailedDiscoveryWithPanSou(

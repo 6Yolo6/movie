@@ -1302,6 +1302,10 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (!canRefreshShare(link)) {
             String reason = firstText(currentCheck.message(), "Link is invalid and cannot be refreshed");
+            if (isTrustedPublishedShare(link)) {
+                markLinkSuspected(link, reason);
+                return link;
+            }
             markLinkInvalid(link, reason);
             retireTransferForRediscovery(link, reason);
             return null;
@@ -1494,6 +1498,12 @@ public class QqBotServiceImpl implements IQqBotService {
         return "QUARK".equalsIgnoreCase(link.getProvider())
                 && "RESOURCE_HUB".equalsIgnoreCase(link.getSource())
                 && resourceHubProperties.getQuark().isShareEnabled();
+    }
+
+    private boolean isTrustedPublishedShare(ResourceLink link) {
+        return link != null && ("GYING_PUBLISHED".equalsIgnoreCase(link.getSource())
+                || "RESOURCE_HUB".equalsIgnoreCase(link.getSource()))
+                && OWNED_SHARE_PROVIDERS.contains(firstText(link.getProvider(), "").toUpperCase(Locale.ROOT));
     }
 
     private void markLinkNormal(ResourceLink link) {

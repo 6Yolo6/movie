@@ -47,4 +47,34 @@ class XunleiClientTest {
         assertEquals("my-transfers-id", payload.get("parent_id"));
         assertEquals(List.of(), payload.get("ancestor_ids"));
     }
+
+    @Test
+    void extractsOnlyVideoFilesFromNestedShareItems() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {
+                  "files": [
+                    {"id":"folder", "kind":"drive#folder", "children":[
+                      {"id":"movie", "name":"Movie.MKV", "file_extension":"MKV", "kind":"drive#file"},
+                      {"id":"poster", "name":"poster.jpg", "file_extension":"jpg", "kind":"drive#file"},
+                      {"id":"readme", "name":"README.pdf", "file_extension":"pdf", "kind":"drive#file"}
+                    ]},
+                    {"id":"trailer", "name":"trailer.mp4", "mime_type":"video/mp4", "kind":"drive#file"}
+                  ]
+                }
+                """);
+
+        assertEquals(List.of("movie", "trailer"), XunleiClient.extractVideoFileIds(response));
+        assertEquals(List.of("Movie.MKV", "trailer.mp4"), XunleiClient.extractVideoFileNames(response));
+    }
+
+    @Test
+    void ignoresShareContainingOnlyFoldersAndDocuments() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        assertEquals(List.of(), XunleiClient.extractVideoFileIds(mapper.readTree("""
+                {"files":[{"id":"folder","kind":"drive#folder","children":[
+                  {"id":"poster","name":"poster.png","file_extension":"png"}
+                ]}]}
+                """)));
+    }
 }
