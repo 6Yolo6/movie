@@ -4,7 +4,7 @@ import bcrypt
 # 数据库配置
 DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASS = "Root@123"
+DB_PASS = "`````"
 DB_NAME = "gying"
 
 def reset_admin_password(username, new_password):
