@@ -77,6 +77,32 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void ensureMovieMetadataDoesNotImportOrTransferDefaultResources() {
+        MovieMetadata movie = movie("META1", "元数据候选", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/movie/mv/META1")).thenReturn(Map.of(
+                "title", movie.getTitleCn(),
+                "year", 2026,
+                "resources", List.of(Map.of(
+                        "source_id", "SOURCE1",
+                        "provider", "QUARK",
+                        "title", "元数据候选 720P",
+                        "url", "https://pan.quark.cn/s/source1")),
+                "ownResources", List.of()));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+
+        Map<String, Object> result = service.ensureMovieMetadata("mv", "META1");
+
+        assertEquals("METADATA_READY", result.get("status"));
+        assertEquals(movie.getId(), result.get("localMovieId"));
+        assertEquals(1, result.get("siteResourceCount"));
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals(false, payload.getValue().get("includeResources"));
+        verify(transferRunnerService, never()).submitOne(any());
+        verify(resourceLinkService, never()).save(any());
+    }
+
+    @Test
     void ensureMoviePublishesExistingLocalResourceWithoutTransfer() {
         MovieMetadata movie = movie("EGER", "后室", "mv", "TRAILER");
         ResourceLink local = new ResourceLink();

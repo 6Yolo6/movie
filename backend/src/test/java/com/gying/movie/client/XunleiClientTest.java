@@ -77,4 +77,24 @@ class XunleiClientTest {
                 ]}]}
                 """)));
     }
+
+    @Test
+    void recognizesVideoNamesAndNestedNodesUsedByXunleiShareApi() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {
+                  "data": {
+                    "file_list": [
+                      {"file_id":"folder-1", "file_type":"folder", "items":[
+                        {"fid":"movie-1", "filename":"Movie 2160P.MP4", "mimeType":"application/octet-stream"},
+                        {"fid":"poster-1", "filename":"poster.webp", "mimeType":"image/webp"}
+                      ]}
+                    ]
+                  }
+                }
+                """);
+
+        assertEquals(List.of("movie-1"), XunleiClient.extractVideoFileIds(response));
+        assertEquals(List.of("Movie 2160P.MP4"), XunleiClient.extractVideoFileNames(response));
+    }
 }

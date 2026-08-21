@@ -329,11 +329,19 @@ public class XunleiClient {
     private static void collectVideoFiles(JsonNode items, List<String> ids, Set<String> seen) {
         if (items == null || !items.isArray()) return;
         for (JsonNode item : items) {
-            if (isFolder(item)) {
-                collectVideoFiles(firstArray(item.path("children"), item.path("files"), item.path("file_list")), ids, seen);
+            JsonNode nested = firstArray(
+                    item.path("children"),
+                    item.path("files"),
+                    item.path("file_list"),
+                    item.path("items"));
+            if (isFolder(item) || nested != null) {
+                collectVideoFiles(nested, ids, seen);
                 continue;
             }
-            String id = item.path("id").asText(null);
+            String id = firstTextStatic(
+                    item.path("id").asText(null),
+                    item.path("file_id").asText(null),
+                    item.path("fid").asText(null));
             if (hasTextStatic(id) && isVideo(item) && seen.add(id)) ids.add(id);
         }
     }
@@ -341,11 +349,19 @@ public class XunleiClient {
     private static void collectVideoNames(JsonNode items, List<String> names, Set<String> seen) {
         if (items == null || !items.isArray()) return;
         for (JsonNode item : items) {
-            if (isFolder(item)) {
-                collectVideoNames(firstArray(item.path("children"), item.path("files"), item.path("file_list")), names, seen);
+            JsonNode nested = firstArray(
+                    item.path("children"),
+                    item.path("files"),
+                    item.path("file_list"),
+                    item.path("items"));
+            if (isFolder(item) || nested != null) {
+                collectVideoNames(nested, names, seen);
                 continue;
             }
-            String name = firstTextStatic(item.path("name").asText(null), item.path("file_name").asText(null));
+            String name = firstTextStatic(
+                    item.path("name").asText(null),
+                    item.path("file_name").asText(null),
+                    item.path("filename").asText(null));
             if (hasTextStatic(name) && isVideo(item) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
         }
     }
@@ -489,16 +505,46 @@ public class XunleiClient {
     }
 
     private static boolean isFolder(JsonNode item) {
-        return item.path("kind").asText("").toLowerCase(Locale.ROOT).contains("folder");
+        String kind = firstTextStatic(
+                item.path("kind").asText(null),
+                item.path("file_type").asText(null),
+                item.path("type").asText(null));
+        String mimeType = firstTextStatic(
+                item.path("mime_type").asText(null),
+                item.path("mimeType").asText(null),
+                item.path("content_type").asText(null));
+        return (kind != null && kind.toLowerCase(Locale.ROOT).contains("folder"))
+                || (mimeType != null && mimeType.toLowerCase(Locale.ROOT).contains("folder"));
     }
 
     private static boolean isVideo(JsonNode item) {
-        String extension = item.path("file_extension").asText("").toLowerCase(Locale.ROOT);
+        String name = firstTextStatic(
+                item.path("name").asText(null),
+                item.path("file_name").asText(null),
+                item.path("filename").asText(null));
+        String extension = firstTextStatic(
+                item.path("file_extension").asText(null),
+                item.path("fileExtension").asText(null),
+                item.path("extension").asText(null));
+        if (!hasTextStatic(extension) && hasTextStatic(name) && name.contains(".")) {
+            extension = name.substring(name.lastIndexOf('.') + 1);
+        }
+        extension = extension == null ? "" : extension.toLowerCase(Locale.ROOT).replaceFirst("^\\.", "");
         if (VIDEO_EXTENSIONS.contains(extension)) return true;
-        String mimeType = item.path("mime_type").asText("").toLowerCase(Locale.ROOT);
+        String mimeType = firstTextStatic(
+                item.path("mime_type").asText(null),
+                item.path("mimeType").asText(null),
+                item.path("content_type").asText(null),
+                item.path("media_type").asText(null));
+        mimeType = mimeType == null ? "" : mimeType.toLowerCase(Locale.ROOT);
         if (mimeType.startsWith("video/")) return true;
-        String category = item.path("file_category").asText("");
-        return "VIDEO".equalsIgnoreCase(category);
+        String category = firstTextStatic(
+                item.path("file_category").asText(null),
+                item.path("fileCategory").asText(null),
+                item.path("category").asText(null));
+        if ("VIDEO".equalsIgnoreCase(category)) return true;
+        String kind = firstTextStatic(item.path("kind").asText(null), item.path("type").asText(null));
+        return kind != null && kind.toLowerCase(Locale.ROOT).contains("video");
     }
 
     private String findUrl(JsonNode node) { if (node == null || node.isMissingNode()) return null; if (node.isTextual() && node.asText().startsWith("http")) return node.asText(); if (node.isObject()) { for (var it = node.fields(); it.hasNext();) { String v = findUrl(it.next().getValue()); if (v != null) return v; } } else if (node.isArray()) for (JsonNode item : node) { String v = findUrl(item); if (v != null) return v; } return null; }

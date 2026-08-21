@@ -496,48 +496,23 @@ public class GyingSourceWorkflowService {
         return items;
     }
 
+    public Map<String, Object> ensureMovieMetadata(String typeCode, String mid) {
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, false);
+        Map<String, Object> result = movieMetadataResult(ingested);
+        result.put("status", "METADATA_READY");
+        return result;
+    }
+
     public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
-        String safeType = normalizeTypeCode(typeCode);
-        String safeMid = required(mid, "GYING movie id");
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + safeType + "/" + safeMid);
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
+        String safeType = ingested.typeCode();
+        String safeMid = ingested.mid();
+        Map<String, Object> snapshot = ingested.snapshot();
+        MovieMetadata movie = ingested.movie();
         List<Map<String, Object>> allResources = mapList(snapshot.get("resources"));
         List<Map<String, Object>> ownResources = mapList(snapshot.get("ownResources"));
 
-        GyingMetadataMatcher.SourceMetadata sourceMetadata = sourceMetadata(safeType, snapshot);
-        MovieMetadata canonical = resolveLocalMovie(
-                safeType, safeMid, sourceMetadata.title(), sourceMetadata.year());
-        MovieMetadata seriesTemplate = canonical == null ? findSeriesTemplate(sourceMetadata) : null;
-        String localMovieId = canonical != null
-                ? canonical.getId()
-                : seriesTemplate != null ? seasonMovieId(seriesTemplate, sourceMetadata.season()) : safeMid;
-        gyingSourceClient.post("/ingest", Map.of(
-                "typeCode", safeType,
-                "mid", safeMid,
-                "targetMovieId", localMovieId,
-                "uploadPoster", true));
-        MovieMetadata movie = movieService.getById(localMovieId);
-        if (movie == null) {
-            throw new IllegalStateException("Movie was not saved after GYING ingest: " + localMovieId);
-        }
-        if (seriesTemplate != null) {
-            movie.setTmdbId(seriesTemplate.getTmdbId());
-            movie.setTmdbType(seriesTemplate.getTmdbType());
-            movie.setSeriesName(firstText(
-                    SeasonSearchUtils.baseTitle(sourceMetadata.title()),
-                    seriesTemplate.getSeriesName()));
-            movie.setSeason(sourceMetadata.season());
-            movie.setUpdatedAt(LocalDateTime.now());
-            movieService.updateById(movie);
-        }
-        bindSourceIdentities(movie, safeType, safeMid, sourceMetadata);
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("typeCode", safeType);
-        result.put("mid", safeMid);
-        result.put("localMovieId", movie.getId());
-        result.put("title", firstText(movie.getTitleCn(), stringValue(snapshot.get("title")), safeMid));
-        result.put("siteResourceCount", allResources.size());
-        result.put("ownSiteResourceCount", ownResources.size());
+        Map<String, Object> result = movieMetadataResult(ingested);
 
         if (!ownResources.isEmpty()) {
             ResourceLink own = findResourceBySourceIds(movie.getId(),
@@ -590,6 +565,60 @@ public class GyingSourceWorkflowService {
         result.put("sourceId", publishedSourceId);
         result.put("site", published.get("site"));
         markMovieAvailable(movie);
+        return result;
+    }
+
+    private GyingMovieMetadata ingestMovieMetadata(
+            String typeCode,
+            String mid,
+            boolean includeResources) {
+        String safeType = normalizeTypeCode(typeCode);
+        String safeMid = required(mid, "GYING movie id");
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + safeType + "/" + safeMid);
+
+        GyingMetadataMatcher.SourceMetadata sourceMetadata = sourceMetadata(safeType, snapshot);
+        MovieMetadata canonical = resolveLocalMovie(
+                safeType, safeMid, sourceMetadata.title(), sourceMetadata.year());
+        MovieMetadata seriesTemplate = canonical == null ? findSeriesTemplate(sourceMetadata) : null;
+        String localMovieId = canonical != null
+                ? canonical.getId()
+                : seriesTemplate != null ? seasonMovieId(seriesTemplate, sourceMetadata.season()) : safeMid;
+        gyingSourceClient.post("/ingest", Map.of(
+                "typeCode", safeType,
+                "mid", safeMid,
+                "targetMovieId", localMovieId,
+                "uploadPoster", true,
+                "includeResources", includeResources));
+        MovieMetadata movie = movieService.getById(localMovieId);
+        if (movie == null) {
+            throw new IllegalStateException("Movie was not saved after GYING ingest: " + localMovieId);
+        }
+        if (seriesTemplate != null) {
+            movie.setTmdbId(seriesTemplate.getTmdbId());
+            movie.setTmdbType(seriesTemplate.getTmdbType());
+            movie.setSeriesName(firstText(
+                    SeasonSearchUtils.baseTitle(sourceMetadata.title()),
+                    seriesTemplate.getSeriesName()));
+            movie.setSeason(sourceMetadata.season());
+            movie.setUpdatedAt(LocalDateTime.now());
+            movieService.updateById(movie);
+        }
+        bindSourceIdentities(movie, safeType, safeMid, sourceMetadata);
+        return new GyingMovieMetadata(safeType, safeMid, snapshot, movie);
+    }
+
+    private Map<String, Object> movieMetadataResult(GyingMovieMetadata ingested) {
+        Map<String, Object> snapshot = ingested.snapshot();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("typeCode", ingested.typeCode());
+        result.put("mid", ingested.mid());
+        result.put("localMovieId", ingested.movie().getId());
+        result.put("title", firstText(
+                ingested.movie().getTitleCn(),
+                stringValue(snapshot.get("title")),
+                ingested.mid()));
+        result.put("siteResourceCount", mapList(snapshot.get("resources")).size());
+        result.put("ownSiteResourceCount", mapList(snapshot.get("ownResources")).size());
         return result;
     }
 
@@ -1760,6 +1789,13 @@ public class GyingSourceWorkflowService {
             Map<String, Object> candidate,
             GyingMetadataMatcher.SourceMetadata source,
             GyingMetadataMatcher.MatchEvidence evidence) {
+    }
+
+    private record GyingMovieMetadata(
+            String typeCode,
+            String mid,
+            Map<String, Object> snapshot,
+            MovieMetadata movie) {
     }
 
     private record TransferOutcome(

@@ -9,7 +9,6 @@ import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QqOfficialBotClient;
 import com.gying.movie.config.QqBotProperties;
 import com.gying.movie.config.ResourceHubProperties;
-import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
@@ -97,6 +96,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
     private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
     private final Map<String, ResourceSearchContext> resourceSearchContexts = new ConcurrentHashMap<>();
+    private final Map<String, ResourceCandidates> resourceCandidates = new ConcurrentHashMap<>();
     private final ExecutorService searchExecutor = Executors.newFixedThreadPool(4, runnable -> {
         Thread thread = new Thread(runnable, "qq-bot-search");
         thread.setDaemon(true);
@@ -157,7 +157,8 @@ public class QqBotServiceImpl implements IQqBotService {
         String text = extractMessageText(event.path("message"));
         String keyword = extractKeyword(text);
         if (!hasText(keyword) && isCandidateSelection(text)
-                && activeSuggestedCandidates(String.valueOf(userId)) != null) {
+                && (activeSuggestedCandidates(String.valueOf(userId)) != null
+                        || activeResourceCandidates(String.valueOf(userId)) != null)) {
             keyword = text.trim();
         }
         if (!hasText(keyword)
@@ -174,7 +175,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         String safeKeyword = trim(keyword, 80);
-        trySend(groupId, userId, "\u8bf7\u7a0d\u540e..");
+        trySend(groupId, userId, "正在搜索资源，请稍后...");
         try {
             searchExecutor.execute(() -> {
                 try {
@@ -194,6 +195,10 @@ public class QqBotServiceImpl implements IQqBotService {
     @PreDestroy
     void shutdownSearchExecutor() {
         searchExecutor.shutdownNow();
+    }
+
+    Instant now() {
+        return Instant.now();
     }
 
     private void searchAndReply(Long groupId, Long userId, String keyword, String userKey) {
@@ -220,6 +225,27 @@ public class QqBotServiceImpl implements IQqBotService {
         ResourcePreference resourcePreference = parseResourcePreference(requestedKeyword);
         if (resourcePreference != null) {
             return buildResourcePreferenceReply(requestedKeyword, userKey, resourcePreference);
+        }
+        boolean candidateSelection = isCandidateSelection(requestedKeyword);
+        if (candidateSelection && removeExpiredResourceCandidates(userKey)) {
+            return finishSearch(userKey, requestedKeyword, "EXPIRED", null, 0,
+                    "资源候选已过期，请重新搜索影片并选择资源。",
+                    "resource candidates expired");
+        }
+        ResourceCandidates activeResources = activeResourceCandidates(userKey);
+        if (activeResources != null && candidateSelection) {
+            int index = Integer.parseInt(requestedKeyword.trim()) - 1;
+            if (index < 0 || index >= activeResources.resources().size()) {
+                return finishSearch(userKey, requestedKeyword, "AMBIGUOUS", activeResources.movieId(), 0,
+                        "资源序号无效，请回复 1-" + activeResources.resources().size() + " 之间的序号。",
+                        "invalid resource selection");
+            }
+            ResourceChoice selected = activeResources.resources().get(index);
+            resourceCandidates.remove(candidateUserKey(userKey));
+            return completeResourceSelection(userKey, requestedKeyword, activeResources, selected);
+        }
+        if (!candidateSelection) {
+            resourceCandidates.remove(candidateUserKey(userKey));
         }
         SuggestedCandidates activeSuggestions = activeSuggestedCandidates(userKey);
         MovieSearchCandidate selectedCandidate = resolveSuggestedCandidate(activeSuggestions, requestedKeyword);
@@ -311,19 +337,15 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         rememberResourceSearchContext(userKey, movie, safeKeyword);
-        List<String> transferNotes = new ArrayList<>();
-        List<ResourceLink> links = ensureOwnedResources(
-                movie,
-                safeKeyword,
-                transferNotes,
-                OWNED_SHARE_PROVIDERS,
-                Math.min(safeMaxResults(), 2),
-                true);
-        List<DiscoveredResource> fallbackLinks = List.of();
-        int resourceCount = links.size() + fallbackLinks.size();
-        return finishSearch(userKey, safeKeyword, resourceCount == 0 ? "NO_RESOURCE" : "SUCCEEDED",
-                movie.getId(), resourceCount, buildReply(movie, links, fallbackLinks, transferNotes),
-                resourceCount == 0 ? "no resource link" : null);
+        List<String> searchNotes = new ArrayList<>();
+        List<ResourceChoice> choices = findResourceChoices(movie, safeKeyword, searchNotes);
+        if (!choices.isEmpty()) {
+            rememberResourceCandidates(userKey, movie, choices);
+            return finishSearch(userKey, safeKeyword, "RESOURCE_SELECTION", movie.getId(), choices.size(),
+                    buildResourceSelectionReply(movie, choices, searchNotes), null);
+        }
+        return finishSearch(userKey, safeKeyword, "NO_RESOURCE", movie.getId(), 0,
+                buildNoResourceReply(movie, searchNotes), "no resource candidate");
     }
 
     private String finishSearch(
@@ -381,137 +403,256 @@ public class QqBotServiceImpl implements IQqBotService {
             return finishSearch(userKey, requestedCommand, "UNSUPPORTED_PROVIDER", movie.getId(), 0,
                     "目前仅支持夸克和迅雷自有分享链接。", "unsupported cloud provider");
         }
-        List<String> transferNotes = new ArrayList<>();
-        Set<String> requestedProviders = allProviders
-                ? OWNED_SHARE_PROVIDERS
-                : Set.of(preference.provider());
-        List<ResourceLink> links = ensureOwnedResources(
-                movie,
-                context.keyword(),
-                transferNotes,
-                requestedProviders,
-                preference.count(),
-                allProviders);
-        int resourceCount = links.size();
-        rememberResourceSearchContext(userKey, movie, context.keyword());
-        String reply = buildSelectedResourcesReply(movie, preference, links, List.of(), transferNotes);
-        return finishSearch(userKey, requestedCommand, resourceCount == 0 ? "NO_RESOURCE" : "SUCCEEDED",
-                movie.getId(), resourceCount, reply, resourceCount == 0 ? "no requested resource link" : null);
-    }
-
-    private void runDiscoveryPipeline(MovieMetadata movie, String keyword, List<String> transferNotes) {
-        runDiscoveryPipeline(movie, keyword, transferNotes, safeMaxResults());
-    }
-
-    private List<ResourceLink> ensureOwnedResources(
-            MovieMetadata movie,
-            String keyword,
-            List<String> transferNotes,
-            Set<String> providers,
-            int requestedCount,
-            boolean requireEachProvider) {
-        int safeCount = safeMaxResults(requestedCount);
-        List<ResourceLink> links = loadOwnedResourcesForReply(movie, providers, safeCount);
-        if (hasEnoughOwnedResources(links, providers, safeCount, requireEachProvider)) {
-            return links;
-        }
-        tryGyingResourceWorkflow(movie, transferNotes);
-        links = loadOwnedResourcesForReply(movie, providers, safeCount);
-        if (hasEnoughOwnedResources(links, providers, safeCount, requireEachProvider)) {
-            return links;
-        }
-        runDiscoveryPipeline(movie, keyword, transferNotes, safeCount);
-        return loadOwnedResourcesForReply(movie, providers, safeCount);
-    }
-
-    private boolean hasEnoughOwnedResources(
-            List<ResourceLink> links,
-            Set<String> providers,
-            int requestedCount,
-            boolean requireEachProvider) {
-        if (links == null || links.isEmpty()) {
-            return false;
-        }
-        if (requireEachProvider) {
-            return providers.stream().allMatch(provider -> links.stream()
-                    .anyMatch(link -> provider.equalsIgnoreCase(link.getProvider())));
-        }
-        return links.size() >= requestedCount;
-    }
-
-    private void tryGyingResourceWorkflow(MovieMetadata movie, List<String> transferNotes) {
-        if (movie == null || !hasText(movie.getId())) {
-            return;
-        }
-        try {
-            Map<String, Object> result = gyingSourceWorkflowService.ensureLocalMovieResource(movie.getId());
-            String status = result == null ? null : String.valueOf(result.get("status"));
-            if ("PUBLISHED".equalsIgnoreCase(status)
-                    || "ALREADY_PUBLISHED".equalsIgnoreCase(status)) {
-                transferNotes.add("GYING 资源已完成转存和发布");
+        List<String> searchNotes = new ArrayList<>();
+        ResourceCandidates candidates = activeResourceCandidates(userKey);
+        if (candidates == null || !context.movieId().equals(candidates.movieId())) {
+            List<ResourceChoice> discovered = findResourceChoices(movie, context.keyword(), searchNotes);
+            if (!discovered.isEmpty()) {
+                rememberResourceCandidates(userKey, movie, discovered);
+                candidates = activeResourceCandidates(userKey);
             }
-        } catch (Exception error) {
-            log.info("GYING resource search/transfer failed for movie {}, falling back to PanSou",
-                    movie.getId(), error);
         }
+        if (candidates == null || candidates.resources().isEmpty()) {
+            String detail = searchNotes.isEmpty()
+                    ? "暂未找到可用的夸克或迅雷资源；已完成多次搜索，请稍后再试。"
+                    : String.join("；", searchNotes);
+            return finishSearch(userKey, requestedCommand, "NO_RESOURCE", movie.getId(), 0,
+                    "没有找到可供选择的资源：" + detail, detail);
+        }
+        List<ResourceChoice> filtered = allProviders
+                ? candidates.allResources()
+                : candidates.allResources().stream()
+                        .filter(choice -> preference.provider().equalsIgnoreCase(choice.provider()))
+                        .toList();
+        if (filtered.isEmpty()) {
+            return finishSearch(userKey, requestedCommand, "NO_RESOURCE", movie.getId(), 0,
+                    "当前没有" + QqResourcePreferenceParser.label(preference.provider())
+                            + "资源候选，请回复“资源”查看全部候选，或重新搜索影片。",
+                    "no matching provider candidate");
+        }
+        ResourceCandidates filteredCandidates = new ResourceCandidates(
+                now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
+                candidates.movieId(),
+                candidates.movieTitle(),
+                candidates.allResources(),
+                filtered);
+        resourceCandidates.put(candidateUserKey(userKey), filteredCandidates);
+        String note = QqResourcePreferenceParser.hasExplicitCount(requestedCommand)
+                ? "已忽略数量指令，仅展示候选；请回复单个资源序号，避免重复转存。"
+                : null;
+        List<String> notes = note == null ? searchNotes : new ArrayList<>(searchNotes);
+        if (note != null) {
+            notes.add(note);
+        }
+        return finishSearch(userKey, requestedCommand, "RESOURCE_SELECTION", movie.getId(), filtered.size(),
+                buildResourceSelectionReply(movie, filtered, notes), null);
     }
 
-    private void runDiscoveryPipeline(
+    private List<ResourceChoice> findResourceChoices(
             MovieMetadata movie,
             String keyword,
-            List<String> transferNotes,
-            int maxResults) {
-        if (!resourceHubProperties.isEnabled()) {
-            transferNotes.add("Resource Hub 未启用，无法自动搜索资源");
-            return;
+            List<String> searchNotes) {
+        List<ResourceChoice> choices = new ArrayList<>();
+        for (ResourceLink link : loadOwnedResourcesForReply(movie, OWNED_SHARE_PROVIDERS, MAX_SELECTABLE_RESOURCES)) {
+            choices.add(ResourceChoice.owned(link));
         }
+        if (resourceHubProperties.isEnabled()) {
+            discoverResourceCandidates(movie, keyword, searchNotes);
+            List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(
+                    new QueryWrapper<ResourceDiscoveryResult>()
+                            .eq("movie_id", movie.getId())
+                            .in("provider", OWNED_SHARE_PROVIDERS)
+                            .in("status", List.of("DISCOVERED", "FAILED"))
+                            .orderByDesc("confidence")
+                            .orderByDesc("created_at")
+                            .last("LIMIT " + MAX_SELECTABLE_RESOURCES));
+            if (discoveries == null) {
+                discoveries = List.of();
+            }
+            Set<String> identities = new LinkedHashSet<>();
+            choices.forEach(choice -> identities.add(choice.identity()));
+            for (ResourceDiscoveryResult discovery : discoveries) {
+                ResourceChoice choice = ResourceChoice.discovery(discovery);
+                if (hasText(choice.name()) && identities.add(choice.identity())) {
+                    choices.add(choice);
+                }
+                if (choices.size() >= MAX_SELECTABLE_RESOURCES) {
+                    break;
+                }
+            }
+        }
+        return List.copyOf(choices);
+    }
+
+    private void discoverResourceCandidates(MovieMetadata movie, String keyword, List<String> searchNotes) {
         List<String> errors = new ArrayList<>();
         for (String searchKeyword : buildSearchKeywords(movie, keyword)) {
-            ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
-            request.setMovieId(movie.getId());
-            request.setKeyword(searchKeyword);
-            request.setSource("PANSOU");
-            request.setMaxResults(safeMaxResults(maxResults));
-
-            ResourceHubTask task = resourceDiscoveryService.enqueue(request);
-            ResourceDiscoveryRunResult discoveryRun = resourceDiscoveryService.runTask(task.getId());
-            if (discoveryRun.getDiscovered() > 0 || discoveryRun.getDuplicate() > 0) {
-                submitTransferTasks(movie.getId(), transferNotes, maxResults);
-                publishMovieDiscoveries(movie.getId(), transferNotes, maxResults);
-                return;
-            }
-            if (!discoveryRun.getErrors().isEmpty()) {
-                errors.add(safeError(discoveryRun.getErrors().get(0)));
+            try {
+                ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
+                request.setMovieId(movie.getId());
+                request.setKeyword(searchKeyword);
+                request.setSource("AUTO");
+                request.setMaxResults(MAX_SELECTABLE_RESOURCES);
+                request.setDeferTransfer(true);
+                ResourceHubTask task = resourceDiscoveryService.enqueue(request);
+                ResourceDiscoveryRunResult result = resourceDiscoveryService.runTask(task.getId());
+                if (result.getDiscovered() > 0 || result.getDuplicate() > 0) {
+                    return;
+                }
+                if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+                    errors.add(safeError(result.getErrors().get(0)));
+                }
+            } catch (Exception error) {
+                errors.add(safeError(error.getMessage()));
             }
         }
-        transferNotes.add("没有搜索到可用资源");
-        transferNotes.addAll(errors);
+        searchNotes.add(errors.isEmpty()
+                ? "多次搜索后仍未发现可转存资源"
+                : "资源搜索失败：" + String.join("；", errors));
     }
 
-    private void submitTransferTasks(String movieId, List<String> transferNotes, int maxResults) {
-        if (!qqBotProperties.isAutoTransfer()) {
+    private String completeResourceSelection(
+            String userKey,
+            String requestedKeyword,
+            ResourceCandidates candidates,
+            ResourceChoice choice) {
+        if (choice.resourceLink() != null) {
+            return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
+                    buildSelectedResourceReply(candidates.movieTitle(), choice.resourceLink()), null);
+        }
+        List<String> transferNotes = new ArrayList<>();
+        ResourceLink transferred = transferSelectedDiscovery(choice.discoveryId(), transferNotes);
+        if (transferred != null) {
+            return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
+                    buildSelectedResourceReply(candidates.movieTitle(), transferred), null);
+        }
+        String detail = transferNotes.isEmpty()
+                ? "所选资源多次转存后仍失败，可能无资源、违规或分享内没有视频文件。"
+                : String.join("；", transferNotes);
+        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0,
+                "所选资源转存失败：" + detail + "\n请重新搜索影片并选择其他资源。", detail);
+    }
+
+    private ResourceLink transferSelectedDiscovery(Long discoveryId, List<String> transferNotes) {
+        if (discoveryId == null) {
+            transferNotes.add("资源记录已失效");
+            return null;
+        }
+        ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryId);
+        if (discovery == null) {
+            transferNotes.add("资源记录已失效");
+            return null;
+        }
+        try {
+            if ("XUNLEI".equalsIgnoreCase(discovery.getProvider())) {
+                XunleiTransferTask task = xunleiTransferTaskService.getOne(
+                        new QueryWrapper<XunleiTransferTask>()
+                                .eq("discovery_result_id", discoveryId)
+                                .orderByDesc("created_at")
+                                .last("LIMIT 1"), false);
+                if (task == null) {
+                    resourceDiscoveryService.ensureTransferTask(discoveryId);
+                    task = xunleiTransferTaskService.getOne(
+                            new QueryWrapper<XunleiTransferTask>()
+                                    .eq("discovery_result_id", discoveryId)
+                                    .orderByDesc("created_at")
+                                    .last("LIMIT 1"), false);
+                }
+                if (task == null && hasText(discovery.getOriginalUrlHash())) {
+                    task = xunleiTransferTaskService.getOne(
+                            new QueryWrapper<XunleiTransferTask>()
+                                    .eq("movie_id", discovery.getMovieId())
+                                    .eq("original_url_hash", discovery.getOriginalUrlHash())
+                                    .orderByDesc("updated_at")
+                                    .last("LIMIT 1"), false);
+                }
+                if (task == null) {
+                    transferNotes.add("未创建迅雷转存任务，请稍后重试");
+                    return null;
+                }
+                submitXunleiTransferTask(task, transferNotes);
+                syncTaskShareToDiscovery(discovery, xunleiTransferTaskService.getById(task.getId()));
+            } else {
+                QuarkTransferTask task = quarkTransferTaskService.getOne(
+                        new QueryWrapper<QuarkTransferTask>()
+                                .eq("discovery_result_id", discoveryId)
+                                .orderByDesc("created_at")
+                                .last("LIMIT 1"), false);
+                if (task == null) {
+                    resourceDiscoveryService.ensureTransferTask(discoveryId);
+                    task = quarkTransferTaskService.getOne(
+                            new QueryWrapper<QuarkTransferTask>()
+                                    .eq("discovery_result_id", discoveryId)
+                                    .orderByDesc("created_at")
+                                    .last("LIMIT 1"), false);
+                }
+                if (task == null && hasText(discovery.getOriginalUrlHash())) {
+                    task = quarkTransferTaskService.getOne(
+                            new QueryWrapper<QuarkTransferTask>()
+                                    .eq("movie_id", discovery.getMovieId())
+                                    .eq("original_url_hash", discovery.getOriginalUrlHash())
+                                    .orderByDesc("updated_at")
+                                    .last("LIMIT 1"), false);
+                }
+                if (task == null) {
+                    transferNotes.add("未创建夸克转存任务，请稍后重试");
+                    return null;
+                }
+                submitTransferTask(task, transferNotes);
+                syncTaskShareToDiscovery(discovery, quarkTransferTaskService.getById(task.getId()));
+            }
+            ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryId);
+            if (publishResult != null && publishResult.getFailed() > 0
+                    && publishResult.getErrors() != null && !publishResult.getErrors().isEmpty()) {
+                transferNotes.add(safeError(publishResult.getErrors().get(0)));
+            }
+            ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryId);
+            if (refreshed != null && refreshed.getResourceLinkId() != null) {
+                ResourceLink link = resourceLinkService.getById(refreshed.getResourceLinkId());
+                ResourceLink ready = prepareResourceForReply(link);
+                if (ready == null) {
+                    transferNotes.add("分享链接校验失败，可能违规或分享内没有视频文件");
+                }
+                return ready;
+            }
+            if (refreshed != null && hasText(refreshed.getFailureReason())) {
+                transferNotes.add(userFacingTransferError(refreshed.getFailureReason()));
+            }
+        } catch (Exception error) {
+            transferNotes.add(userFacingTransferError(error.getMessage()));
+        }
+        return null;
+    }
+
+    private void syncTaskShareToDiscovery(ResourceDiscoveryResult discovery, Object task) {
+        if (discovery == null || task == null) {
             return;
         }
-        List<QuarkTransferTask> tasks = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>()
-                .eq("movie_id", movieId)
-                .in("status", List.of("PENDING", "FAILED", "SUBMITTED"))
-                .orderByDesc("created_at")
-                .last("LIMIT " + safeMaxResults(maxResults)));
-        for (QuarkTransferTask task : tasks) {
-            submitTransferTask(task, transferNotes);
+        String shareUrl = null;
+        String shareHash = null;
+        if (task instanceof QuarkTransferTask quark) {
+            shareUrl = quark.getShareUrl();
+            shareHash = quark.getShareUrlHash();
+        } else if (task instanceof XunleiTransferTask xunlei) {
+            shareUrl = xunlei.getShareUrl();
+            shareHash = xunlei.getShareUrlHash();
         }
-        List<XunleiTransferTask> xunleiTasks = xunleiTransferTaskService.list(
-                new QueryWrapper<XunleiTransferTask>()
-                .eq("movie_id", movieId)
-                .in("status", List.of("PENDING", "FAILED", "WAITING_SHARE"))
-                .orderByDesc("created_at")
-                .last("LIMIT " + safeMaxResults(maxResults)));
-        for (XunleiTransferTask task : xunleiTasks) {
-            submitXunleiTransferTask(task, transferNotes);
+        if (!hasText(shareUrl)) {
+            return;
         }
+        discovery.setShareUrl(shareUrl);
+        discovery.setShareUrlHash(shareHash);
+        discovery.setStatus("DISCOVERED");
+        discovery.setFailureReason(null);
+        discovery.setUpdatedAt(LocalDateTime.now());
+        discoveryResultService.updateById(discovery);
     }
 
     private void submitTransferTask(QuarkTransferTask task, List<String> transferNotes) {
+        if (task == null) {
+            transferNotes.add("夸克转存任务不存在");
+            return;
+        }
         if ("SUBMITTED".equalsIgnoreCase(task.getStatus())) {
             ensureShareUrl(task, transferNotes);
             addSavedPathNote(task, transferNotes);
@@ -522,11 +663,15 @@ public class QqBotServiceImpl implements IQqBotService {
             QuarkTransferTask refreshed = quarkTransferTaskService.getById(task.getId());
             ensureShareUrl(refreshed, transferNotes);
             addSavedPathNote(refreshed, transferNotes);
-            if (result.getFailed() > 0 && !result.getErrors().isEmpty()) {
+            if (refreshed != null && hasText(refreshed.getLastError())) {
+                transferNotes.add(userFacingTransferError(refreshed.getLastError()));
+            }
+            if (result != null && result.getFailed() > 0
+                    && result.getErrors() != null && !result.getErrors().isEmpty()) {
                 transferNotes.add(safeError(result.getErrors().get(0)));
             }
         } catch (Exception e) {
-            transferNotes.add("转存失败：" + safeError(e.getMessage()));
+            transferNotes.add(userFacingTransferError(e.getMessage()));
         }
     }
 
@@ -545,6 +690,10 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void submitXunleiTransferTask(XunleiTransferTask task, List<String> transferNotes) {
+        if (task == null) {
+            transferNotes.add("迅雷转存任务不存在");
+            return;
+        }
         try {
             QuarkTransferRunResult result = xunleiTransferRunnerService.submitOne(task.getId());
             XunleiTransferTask refreshed = xunleiTransferTaskService.getById(task.getId());
@@ -552,30 +701,15 @@ public class QqBotServiceImpl implements IQqBotService {
                 transferNotes.add("已创建我的迅雷分享");
             }
             addSavedPathNote(refreshed, transferNotes);
-            if (result.getFailed() > 0 && !result.getErrors().isEmpty()) {
+            if (refreshed != null && hasText(refreshed.getLastError())) {
+                transferNotes.add(userFacingTransferError(refreshed.getLastError()));
+            }
+            if (result != null && result.getFailed() > 0
+                    && result.getErrors() != null && !result.getErrors().isEmpty()) {
                 transferNotes.add(safeError(result.getErrors().get(0)));
             }
         } catch (Exception e) {
-            transferNotes.add("迅雷转存失败：" + safeError(e.getMessage()));
-        }
-    }
-
-    private void publishMovieDiscoveries(String movieId, List<String> transferNotes, int maxResults) {
-        List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
-                .eq("movie_id", movieId)
-                .eq("status", "DISCOVERED")
-                .orderByDesc("confidence")
-                .orderByAsc("created_at")
-                .last("LIMIT " + safeMaxResults(maxResults)));
-        for (ResourceDiscoveryResult discovery : discoveries) {
-            try {
-                ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discovery.getId());
-                if (publishResult.getFailed() > 0 && !publishResult.getErrors().isEmpty()) {
-                    transferNotes.add(safeError(publishResult.getErrors().get(0)));
-                }
-            } catch (Exception e) {
-                transferNotes.add("发布资源失败：" + safeError(e.getMessage()));
-            }
+            transferNotes.add(userFacingTransferError(e.getMessage()));
         }
     }
 
@@ -716,15 +850,17 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void rememberSuggestedCandidates(String userKey, List<MovieSearchCandidate> candidates) {
-        suggestedCandidates.put(candidateUserKey(userKey), new SuggestedCandidates(
-                Instant.now().plusSeconds(CANDIDATE_TTL_SECONDS),
+        String key = candidateUserKey(userKey);
+        resourceCandidates.remove(key);
+        suggestedCandidates.put(key, new SuggestedCandidates(
+                now().plusSeconds(CANDIDATE_TTL_SECONDS),
                 List.copyOf(candidates)));
     }
 
     private SuggestedCandidates activeSuggestedCandidates(String userKey) {
         String key = candidateUserKey(userKey);
         SuggestedCandidates suggestions = suggestedCandidates.get(key);
-        if (suggestions != null && suggestions.expiresAt().isBefore(Instant.now())) {
+        if (suggestions != null && suggestions.expiresAt().isBefore(now())) {
             suggestedCandidates.remove(key);
             return null;
         }
@@ -757,7 +893,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 && hasText(candidate.getSourceType())
                 && hasText(candidate.getSourceId())) {
             try {
-                Map<String, Object> result = gyingSourceWorkflowService.ensureMovieResource(
+                Map<String, Object> result = gyingSourceWorkflowService.ensureMovieMetadata(
                         candidate.getSourceType(),
                         candidate.getSourceId());
                 String localMovieId = result == null ? null : String.valueOf(result.get("localMovieId"));
@@ -768,7 +904,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     }
                 }
             } catch (Exception error) {
-                log.info("Selected GYING candidate {}/{} could not complete directly; "
+                log.info("Selected GYING candidate {}/{} metadata could not be prepared directly; "
                                 + "continuing with local metadata and PanSou fallback",
                         candidate.getSourceType(), candidate.getSourceId(), error);
             }
@@ -831,15 +967,49 @@ public class QqBotServiceImpl implements IQqBotService {
             return;
         }
         resourceSearchContexts.put(candidateUserKey(userKey), new ResourceSearchContext(
-                Instant.now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
+                now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
                 movie.getId(),
                 keyword.trim()));
+    }
+
+    private void rememberResourceCandidates(String userKey, MovieMetadata movie, List<ResourceChoice> links) {
+        if (movie == null || links == null || links.isEmpty()) {
+            return;
+        }
+        String key = candidateUserKey(userKey);
+        suggestedCandidates.remove(key);
+        resourceCandidates.put(key, new ResourceCandidates(
+                now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
+                movie.getId(),
+                title(movie),
+                List.copyOf(links),
+                List.copyOf(links)));
+    }
+
+    private boolean removeExpiredResourceCandidates(String userKey) {
+        String key = candidateUserKey(userKey);
+        ResourceCandidates candidates = resourceCandidates.get(key);
+        if (candidates == null || !candidates.expiresAt().isBefore(now())) {
+            return false;
+        }
+        resourceCandidates.remove(key, candidates);
+        return true;
+    }
+
+    private ResourceCandidates activeResourceCandidates(String userKey) {
+        String key = candidateUserKey(userKey);
+        ResourceCandidates candidates = resourceCandidates.get(key);
+        if (candidates != null && candidates.expiresAt().isBefore(now())) {
+            resourceCandidates.remove(key);
+            return null;
+        }
+        return candidates;
     }
 
     private ResourceSearchContext activeResourceSearchContext(String userKey) {
         String key = candidateUserKey(userKey);
         ResourceSearchContext context = resourceSearchContexts.get(key);
-        if (context != null && context.expiresAt().isBefore(Instant.now())) {
+        if (context != null && context.expiresAt().isBefore(now())) {
             resourceSearchContexts.remove(key);
             return null;
         }
@@ -922,7 +1092,7 @@ public class QqBotServiceImpl implements IQqBotService {
             return true;
         }
         String key = hasText(userKey) ? userKey.trim() : "anonymous";
-        Instant now = Instant.now();
+        Instant now = now();
         Instant windowStart = now.minusSeconds(60);
         Deque<Instant> hits = searchRateLimits.computeIfAbsent(key, ignored -> new ArrayDeque<>());
         synchronized (hits) {
@@ -1207,67 +1377,6 @@ public class QqBotServiceImpl implements IQqBotService {
         return requestedSeason ? 2 : 4;
     }
 
-    private List<DiscoveredResource> loadFallbackCloudLinks(MovieMetadata movie, String keyword) {
-        return loadFallbackCloudLinks(
-                movie,
-                keyword,
-                QqResourcePreferenceParser.fallbackProviders(),
-                MAX_REPLY_RESOURCES,
-                Set.of());
-    }
-
-    private List<DiscoveredResource> loadFallbackCloudLinks(
-            MovieMetadata movie,
-            String keyword,
-            Set<String> providers,
-            int maxResults,
-            Set<String> excludedUrls) {
-        int limit = safeMaxResults(maxResults);
-        if (providers == null || providers.isEmpty() || limit <= 0) {
-            return List.of();
-        }
-        int searchLimit = Math.min(Math.max(limit * 8, 30), 100);
-        Map<String, DiscoveredResource> unique = new LinkedHashMap<>();
-        for (String searchKeyword : buildSearchKeywords(movie, keyword)) {
-            try {
-                for (DiscoveredResource resource : panSouClient.searchClouds(
-                        searchKeyword,
-                        providers,
-                        searchLimit)) {
-                    String normalizedUrl = resource == null || !hasText(resource.getUrl())
-                            ? null
-                            : resource.getUrl().trim().toLowerCase();
-                    if (resource == null
-                            || !hasText(normalizedUrl)
-                            || (excludedUrls != null && excludedUrls.contains(normalizedUrl))
-                            || !providers.contains(hasText(resource.getProvider())
-                                    ? resource.getProvider().trim().toUpperCase()
-                                    : "")
-                            || !ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), searchKeyword)
-                            || !isFallbackLinkAvailable(resource)) {
-                        continue;
-                    }
-                    unique.putIfAbsent(normalizedUrl, resource);
-                    if (unique.size() >= limit) {
-                        return List.copyOf(unique.values());
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("Fallback cloud search failed for QQ keyword {}", keyword, e);
-            }
-        }
-        return List.copyOf(unique.values());
-    }
-
-    private boolean isFallbackLinkAvailable(DiscoveredResource resource) {
-        try {
-            LinkCheckResult check = panSouClient.checkLink(resource);
-            return !check.checked() || check.valid();
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
     private ResourceLink prepareResourceForReply(ResourceLink link) {
         if (link == null || !hasText(link.getUrl())) {
             return null;
@@ -1548,11 +1657,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return null;
     }
 
-    private String buildReply(
-            MovieMetadata movie,
-            List<ResourceLink> links,
-            List<DiscoveredResource> fallbackLinks,
-            List<String> transferNotes) {
+    private String buildNoResourceReply(MovieMetadata movie, List<String> searchNotes) {
         StringBuilder reply = new StringBuilder();
         reply.append("片名：").append(title(movie));
         if (movie.getYear() != null) {
@@ -1562,93 +1667,59 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "地区", join(movie.getRegions()));
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
-        if (links.isEmpty() && fallbackLinks.isEmpty()) {
-            reply.append("\n\n本次暂未找到有效的夸克或迅雷自有分享链接；已尝试转存、重分享和重新发现。");
-            appendResourcePreferenceHint(reply);
-            return reply.toString();
-        }
-        if (links.isEmpty()) {
-            reply.append("\n\n备选网盘链接：");
-            int index = 1;
-            for (DiscoveredResource resource : fallbackLinks) {
-                reply.append("\n").append(index++).append(". ")
-                        .append(firstText(resource.getProvider(), "网盘"))
-                        .append(" - ").append(trim(firstText(resource.getTitle(), title(movie)), 60))
-                        .append("\n").append(resource.getUrl());
-                if (hasText(resource.getCode())) {
-                    reply.append("\n提取码：").append(resource.getCode());
-                }
-            }
-            appendResourcePreferenceHint(reply);
-            return reply.toString();
-        }
-        reply.append("\n\n资源链接：");
-        int index = 1;
-        for (ResourceLink link : links) {
-            reply.append("\n").append(index++).append(". ")
-                    .append(firstText(link.getProvider(), link.getType(), "RESOURCE"))
-                    .append(" - ").append(trim(firstText(link.getName(), title(movie)), 60))
-                    .append("\n").append(link.getUrl());
-            if (hasText(link.getCode())) {
-                reply.append("\n提取码：").append(link.getCode());
-            }
+        reply.append("\n\n多次搜索后仍未找到可供选择的夸克或迅雷资源。");
+        if (searchNotes != null && !searchNotes.isEmpty()) {
+            reply.append("\n处理提示：").append(String.join("；", searchNotes));
         }
         appendResourcePreferenceHint(reply);
         return reply.toString();
     }
 
-    private String buildSelectedResourcesReply(
-            MovieMetadata movie,
-            ResourcePreference preference,
-            List<ResourceLink> links,
-            List<DiscoveredResource> fallbackLinks,
-            List<String> transferNotes) {
-        StringBuilder reply = new StringBuilder();
-        reply.append("片名：").append(title(movie));
-        if (movie.getYear() != null) {
-            reply.append(" (").append(movie.getYear()).append(")");
-        }
-        int resourceCount = links.size() + fallbackLinks.size();
-        if (resourceCount == 0) {
-            reply.append("\n\n本次暂未找到有效的夸克或迅雷自有分享链接；已尝试转存、重分享和重新发现。");
-            appendResourcePreferenceHint(reply);
-            return reply.toString();
-        }
-
-        if (QqResourcePreferenceParser.ALL.equals(preference.provider())) {
-            reply.append("\n\n已返回夸克和迅雷自有分享链接，共 ").append(resourceCount).append(" 条：");
-        } else {
-            reply.append("\n\n已按")
-                    .append(QqResourcePreferenceParser.label(preference.provider()))
-                    .append("返回 ").append(resourceCount).append(" 条：");
-        }
+    private String buildResourceSelectionReply(MovieMetadata movie, List<ResourceChoice> links, List<String> transferNotes) {
+        StringBuilder reply = new StringBuilder("影片：").append(title(movie));
+        reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
         int index = 1;
-        for (ResourceLink link : links) {
+        for (ResourceChoice choice : links) {
             reply.append("\n").append(index++).append(". ")
-                    .append(firstText(link.getProvider(), link.getType(), "RESOURCE"))
-                    .append(" - ").append(trim(firstText(link.getName(), title(movie)), 60))
-                    .append("\n").append(link.getUrl());
-            if (hasText(link.getCode())) {
-                reply.append("\n提取码：").append(link.getCode());
-            }
+                    .append(displayResourceChoiceName(choice, title(movie)))
+                    .append(" [").append(resourceProviderLabel(choice.provider())).append("]");
         }
-        for (DiscoveredResource resource : fallbackLinks) {
-            reply.append("\n").append(index++).append(". ")
-                    .append(firstText(resource.getProvider(), "网盘"))
-                    .append(" - ").append(trim(firstText(resource.getTitle(), title(movie)), 60))
-                    .append("\n").append(resource.getUrl());
-            if (hasText(resource.getCode())) {
-                reply.append("\n提取码：").append(resource.getCode());
-            }
+        if (transferNotes != null && !transferNotes.isEmpty()) {
+            reply.append("\n\n处理提示：").append(String.join("；", transferNotes));
         }
-        appendResourcePreferenceHint(reply);
+        return reply.toString();
+    }
+
+    private String displayResourceChoiceName(ResourceChoice choice, String movieTitle) {
+        String name = firstText(choice == null ? null : choice.name(), movieTitle, "资源");
+        String lower = name.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("http://") || lower.startsWith("https://")
+                || lower.startsWith("magnet:")) {
+            name = firstText(movieTitle, "资源");
+        }
+        return trim(name, 100);
+    }
+
+    private String resourceProviderLabel(String provider) {
+        return firstText(
+                provider == null ? null : QqResourcePreferenceParser.label(provider.toUpperCase(Locale.ROOT)),
+                "网盘");
+    }
+
+    private String buildSelectedResourceReply(String movieTitle, ResourceLink link) {
+        StringBuilder reply = new StringBuilder("已选择资源：").append(firstText(link.getName(), movieTitle));
+        reply.append("\n网盘：").append(firstText(link.getProvider(), "未知"));
+        if (hasText(link.getUrl())) {
+            reply.append("\n").append(link.getUrl());
+        }
+        if (hasText(link.getCode())) {
+            reply.append("\n提取码：").append(link.getCode());
+        }
         return reply.toString();
     }
 
     private void appendResourcePreferenceHint(StringBuilder reply) {
-        reply.append("\n\n需要切换网盘或数量，可在 5 分钟内回复“夸克 2”“迅雷 2”或“资源 4”（最多 ")
-                .append(MAX_SELECTABLE_RESOURCES)
-                .append(" 条）。");
+        reply.append("\n\n需要筛选网盘，可在 5 分钟内回复“夸克”或“迅雷”；不再支持按数量批量转存，请从资源候选中回复序号。");
     }
 
     private void addSavedPathNote(QuarkTransferTask task, List<String> transferNotes) {
@@ -1854,6 +1925,33 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(trim(message, 120), "未知错误");
     }
 
+    private String userFacingTransferError(String message) {
+        String detail = safeError(message);
+        String lower = detail.toLowerCase(Locale.ROOT);
+        if (lower.contains("no video")
+                || lower.contains("no transferred media")
+                || lower.contains("no new matching")
+                || lower.contains("没有视频")
+                || lower.contains("无视频")) {
+            return "转存失败：分享内没有视频文件";
+        }
+        if (lower.contains("违规")
+                || lower.contains("forbidden")
+                || lower.contains("violation")
+                || lower.contains("policy")
+                || lower.contains("blocked")) {
+            return "转存失败：资源可能违规或已被平台拦截";
+        }
+        if (lower.contains("not found")
+                || lower.contains("不存在")
+                || lower.contains("invalid")
+                || lower.contains("失效")
+                || lower.contains("分享为空")) {
+            return "转存失败：资源无效或已无资源";
+        }
+        return "转存失败：" + detail;
+    }
+
     private void trySend(Long groupId, Long userId, String message) {
         try {
             if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
@@ -1871,7 +1969,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(
                 qqBotProperties.getDefaultReply(),
                 "机器人使用方法：@机器人 搜/找 影片名\n"
-                        + "影片上下文保留 5 分钟，可在5分钟内回复“夸克 2”“迅雷 2”或“资源 4”；百度网盘暂不支持。");
+                        + "影片和资源候选保留 5 分钟；先选影片，再按资源名称回复序号，确认后才转存。可回复“夸克”或“迅雷”筛选，百度网盘暂不支持。");
     }
 
     private String trim(String value, int maxLength) {
@@ -1890,5 +1988,51 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private record ResourceSearchContext(Instant expiresAt, String movieId, String keyword) {
+    }
+
+    private record ResourceCandidates(
+            Instant expiresAt,
+            String movieId,
+            String movieTitle,
+            List<ResourceChoice> allResources,
+            List<ResourceChoice> resources) {
+    }
+
+    private record ResourceChoice(String name, String provider, String identity, ResourceLink resourceLink, Long discoveryId) {
+        static ResourceChoice owned(ResourceLink link) {
+            return new ResourceChoice(link.getName(), link.getProvider(), link.getUrl(), link, null);
+        }
+
+        static ResourceChoice discovery(ResourceDiscoveryResult discovery) {
+            return new ResourceChoice(
+                    discoveryDisplayName(discovery),
+                    discovery.getProvider(),
+                    firstTextStatic(discovery.getShareUrl(), discovery.getOriginalUrl(), "discovery:" + discovery.getId()),
+                    null,
+                    discovery.getId());
+        }
+
+        private static String discoveryDisplayName(ResourceDiscoveryResult discovery) {
+            String base = firstTextStatic(discovery.getTitle(), "资源");
+            String detail = firstTextStatic(
+                    discovery.getQuality(),
+                    discovery.getVersionNote(),
+                    discovery.getFileSize());
+            if (detail != null && !base.contains(detail)) {
+                return base + " · " + detail;
+            }
+            return base;
+        }
+
+        private static String firstTextStatic(String... values) {
+            if (values != null) {
+                for (String value : values) {
+                    if (value != null && !value.isBlank()) {
+                        return value.trim();
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

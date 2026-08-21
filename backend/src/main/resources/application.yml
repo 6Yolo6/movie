@@ -122,7 +122,7 @@ qq-bot:
   rate-limit-per-minute: ${QQ_BOT_RATE_LIMIT_PER_MINUTE:5}
   blocked-keywords: ${QQ_BOT_BLOCKED_KEYWORDS:}
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
-  default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟，可在5分钟内回复指定网盘，例如“百度 3”“夸克 2”。}
+  default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟；先选择影片，再从资源名称/画质候选中回复单个序号。可回复“夸克”或“迅雷”筛选；不支持按数量批量转存。}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
   napcat:
     base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://localhost:3000}
