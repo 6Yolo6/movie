@@ -131,4 +131,14 @@ class XunleiClientTest {
                 XunleiClient.normalizeShareUrl(
                         "https://pan.xunlei.com/s/share-id?pwd=kept###", "other"));
     }
+
+    @Test
+    void normalizesBase64UrlPagingTokensForTheDriveApi() {
+        assertEquals("YWJjZA==", XunleiClient.normalizeBase64Token("YWJjZA"));
+        assertEquals("YWJjZA==", XunleiClient.normalizeBase64Token("YWJjZA=="));
+        assertEquals("VOx/nv+token", XunleiClient.normalizeBase64Token("VOx_nv-token"));
+        assertEquals(null, XunleiClient.normalizeBase64Token("illegal token"));
+        assertEquals(null, XunleiClient.normalizeBase64Token("a"));
+        assertEquals(null, XunleiClient.normalizeBase64Token(""));
+    }
 }

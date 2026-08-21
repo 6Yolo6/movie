@@ -244,7 +244,13 @@ public class XunleiClient {
         collectSharePage(root, folders, fileIds, fileNames, seenFiles, seenNames);
         String rootPageToken = shareNextPageToken(root);
         while (hasText(rootPageToken)) {
-            JsonNode page = requestSharePage(shareId, passCode, passCodeToken, null, rootPageToken);
+            JsonNode page;
+            try {
+                page = requestSharePage(shareId, passCode, passCodeToken, null, rootPageToken);
+            } catch (IllegalStateException error) {
+                if (!isRecoverableShareTraversalError(error)) throw error;
+                break;
+            }
             passCodeToken = sharePassCodeToken(page, passCodeToken);
             collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
             String next = shareNextPageToken(page);
@@ -257,7 +263,13 @@ public class XunleiClient {
             if (!hasText(parentId) || !visitedFolders.add(parentId)) continue;
             String pageToken = null;
             do {
-                JsonNode page = requestSharePage(shareId, passCode, passCodeToken, parentId, pageToken);
+                JsonNode page;
+                try {
+                    page = requestSharePage(shareId, passCode, passCodeToken, parentId, pageToken);
+                } catch (IllegalStateException error) {
+                    if (!isRecoverableShareTraversalError(error)) throw error;
+                    break;
+                }
                 passCodeToken = sharePassCodeToken(page, passCodeToken);
                 collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
                 String next = shareNextPageToken(page);
@@ -274,12 +286,14 @@ public class XunleiClient {
                 .queryParam("share_id", shareId)
                 .queryParam("limit", 30)
                 .queryParam("keyword", "")
-                .queryParam("page_token", hasText(pageToken) ? pageToken : "")
                 .queryParam("scene", "NORMAL")
                 .queryParam("order", "DEFAULT_ORDER");
         if (hasText(passCode)) uri.queryParam("pass_code", passCode);
-        if (hasText(passCodeToken)) uri.queryParam("pass_code_token", passCodeToken);
+        String normalizedPassCodeToken = normalizeBase64Token(passCodeToken);
+        if (hasText(normalizedPassCodeToken)) uri.queryParam("pass_code_token", normalizedPassCodeToken);
         if (hasText(parentId)) uri.queryParam("parent_id", parentId);
+        String normalizedPageToken = normalizeBase64Token(pageToken);
+        if (hasText(normalizedPageToken)) uri.queryParam("page_token", normalizedPageToken);
         return request(HttpMethod.GET, uri.build().encode().toUriString(), null);
     }
 
@@ -314,17 +328,24 @@ public class XunleiClient {
     }
 
     private static String sharePassCodeToken(JsonNode response, String fallback) {
-        return firstTextStatic(
+        String candidate = firstTextStatic(
                 response.path("pass_code_token").asText(null), response.path("passCodeToken").asText(null),
                 response.path("data").path("pass_code_token").asText(null),
-                response.path("data").path("passCodeToken").asText(null), fallback);
+                response.path("data").path("passCodeToken").asText(null));
+        return firstTextStatic(normalizeBase64Token(candidate), fallback);
     }
 
     private static String shareNextPageToken(JsonNode response) {
-        return firstTextStatic(
+        return normalizeBase64Token(firstTextStatic(
                 response.path("next_page_token").asText(null), response.path("nextPageToken").asText(null),
                 response.path("data").path("next_page_token").asText(null),
-                response.path("data").path("nextPageToken").asText(null));
+                response.path("data").path("nextPageToken").asText(null)));
+    }
+
+    private static boolean isRecoverableShareTraversalError(IllegalStateException error) {
+        String message = error.getMessage();
+        return message != null && message.contains("HTTP 400")
+                && (message.contains("invalid_argument") || message.contains("illegal base64"));
     }
 
     private DirectoryInfo ensureDirectory(String path) {
@@ -582,7 +603,9 @@ public class XunleiClient {
                 }
             }
             throw new IllegalStateException(
-                    "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path)
+                    (e.getStatusCode().value() == 401
+                            ? "Xunlei Authorization expired or invalid; update XUNLEI_AUTHORIZATION in Resource Hub settings"
+                            : "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path))
                             + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e),
                     e);
         } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
@@ -719,6 +742,14 @@ public class XunleiClient {
         } catch (Exception ignored) {
             return "";
         }
+    }
+    static String normalizeBase64Token(String value) {
+        if (!hasTextStatic(value)) return null;
+        String token = value.trim().replace('-', '+').replace('_', '/');
+        if (token.length() < 2 || !token.matches("[A-Za-z0-9+/]+={0,2}")) return null;
+        int remainder = token.length() % 4;
+        if (remainder == 1) return null;
+        return remainder == 0 ? token : token + "=".repeat(4 - remainder);
     }
     private String md5(String value) {
         try { byte[] digest = MessageDigest.getInstance("MD5").digest(value.getBytes(StandardCharsets.UTF_8)); StringBuilder result = new StringBuilder(); for (byte item : digest) result.append(String.format("%02x", item)); return result.toString(); }
