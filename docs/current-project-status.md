@@ -43,8 +43,8 @@
 - 迅雷任务从失败恢复为成功时会显式清空旧 `last_error`，避免管理页同时显示成功状态和过期错误。
 - 迅雷转存与公开分享已完成真实链路验证；生产 `XUNLEI_SHARE_ENABLED=true`，没有自有分享时发布器仍禁止回退写入第三方迅雷源链接。
 - 迅雷分享响应兼容顶层、`data`、`share` 和 `data.share` 下的 URL/提取码字段；分享接口未返回自有 URL 时任务明确计为失败，不再以“已提交”或“成功但无链接”继续发布。
-- 迅雷 `/share` 的分页令牌会按 base64url/base64 规范化后再发送；单个分页或目录令牌返回 400 时保留已读取的视频结果，不再把整个任务误报为“没有自有分享 URL”。
-- 迅雷 restore 现在递归筛选源分享中的视频文件 ID，只转存视频，不再连带广告图片、文档或整个顶层目录；自动失败任务最多尝试 3 次，手工重试可显式重新执行。
+- 迅雷公开分享根目录使用 `/share`，子目录遍历使用 `/share/detail`；`pass_code_token` 和 `page_token` 按网页响应作为不透明值原样保留，并在 URI 中只做一次百分号编码，不再强制转换 base64/base64url。目录遍历失败且尚未发现视频时会透传真实迅雷错误，不再误报“contains no video files”。
+- 迅雷公开分享读取不发送账户 Authorization；restore、文件列表和自有分享创建仍要求账户 Authorization。restore 递归筛选源分享中的视频文件 ID，只转存视频，不连带广告图片、文档或整个顶层目录；自动失败任务最多尝试 3 次，手工指定任务重试允许越过该上限。
 - “发现结果”的重试分享与发布按 provider 分流：迅雷记录调用迅雷 runner，夸克记录调用 quark runner，避免迅雷链接误送至 quark-auto-save。
 - 迅雷分享文件解析兼容真实 API 的 `file_id`/`fid`、`filename`、`items`、camelCase MIME/扩展名等字段，并可从文件名后缀识别视频，避免链接内有视频却误报“contains no video files”。
 - `AUTO` 发现即使 GYING 已返回夸克候选，也会继续补充搜索迅雷候选；QQ 资源列表会同时读取系统自有夸克、迅雷和待选择的迅雷发现结果，不再因夸克先命中而跳过迅雷。
@@ -113,7 +113,7 @@
 - 密钥、Cookie、密码、Token 只放 `.env`、外部服务配置或进程内存，不提交到 Git。
 - Resource Hub 和 QQ 自动化的非敏感运行参数保存在 `sys_config`。
 - Resource Hub 管理页可在迅雷 Authorization 或 CAPTCHA Token 过期后直接更新当前后端进程内的凭据；接口只返回是否已配置，不回显或入库敏感值，容器重启后仍以 `.env` 为默认来源。
-- 迅雷 Authorization 当前是短时 OIDC access token，项目只保存运行时 access token，没有 refresh token 或官方设备续期凭据；收到 401 时必须从迅雷已登录网页/客户端重新取得最新 Authorization，再在 Resource Hub 页面更新。代码不会尝试猜测或伪造续期接口。
+- 迅雷 Authorization 当前是短时 OIDC access token，项目只保存运行时 access token，没有 refresh token 或官方设备续期凭据；浏览器网页登录 Cookie/Session 不等于 Drive API Bearer token，Resource Hub 也不会读取浏览器 Cookie、存储或请求头自动导入凭据。收到 401 时必须取得新的 Authorization 并在 Resource Hub 页面更新；代码不会尝试猜测或伪造续期接口。
 - “系统设置”按键名前缀展示、搜索和编辑 `sys_config` 全部现有配置，支持布尔、数字、单行和多行值；新增数据库配置不需要再修改前端固定键名列表。
 - 数据库新增表和字段默认使用中文 `COMMENT`。
 - 外部结果必须通过标题相关性、链接状态和重复检查后才能发布。
@@ -122,7 +122,7 @@
 ## 仍需处理
 
 - 用一条计划保留的真实资源验证已部署的 GYING 发布接口修复；容器健康、只读候选和请求契约已验证，但尚未执行真实发布。
-- 本次代码回归与生产重建已完成：迅雷 `/share` 请求补齐网页分页参数，分页令牌兼容 base64url/base64，单个非法分页令牌会降级保留已读取结果；分享 URL/提取码兼容多种响应结构，历史任务会合并发现记录中的提取码；转存成功但无自有分享 URL 时明确计为失败。已确认官方 `401 unauthenticated` 的根因是 OIDC access token 过期；当前真实迅雷转存/分享/发布仍待更新凭据后验收。
+- 迅雷分享解析与目录遍历修复已完成并部署：任务 `78` 已证明真实分享存在视频，`/share/detail`、token 原样传递和 URI 单次编码均通过真实接口，不再出现“无视频”或 `illegal base64`。当前任务已继续到账户转存步骤并由官方返回 `401 unauthenticated`；生产 Authorization 于 2026-08-19 20:49:40 +08:00 过期，更新凭据后仍需完成转存、自有分享和正式入库验收。
 - 将当前 OpenClaw QQBot 的本机 `node_modules` 补丁升级为正式私有插件或上游配置。
 - 在管理员权限下重新启用每日腾讯频道自动发帖计划任务；手动立即发帖不受影响。
 - 配置新的 `WEIBO_WEB_COOKIE` 与 `WEIBO_WEB_FINGERPRINT`，完成项目内单条真实发布验收后再开启微博目标自动发布。
@@ -140,6 +140,8 @@
 - 删除核心数据、重复清理和标题匹配不确定时先 dry-run，不执行物理删除。
 
 ## 验收
+
+2026-08-21 已完成迅雷真实分享目录遍历修复并重新部署：根目录与子目录分别使用 `/share`、`/share/detail`，公开分享读取与账户 Authorization 分离，分享 token 作为不透明值原样保留并以 `URI` 发送，避免 HTTP 客户端二次编码；手工指定任务重试可越过 Worker 3 次限制。`mvn -q test`、`git diff --check`、生产 Compose 配置和运维就绪检查通过；backend 镜像 `sha256:967ac9a0…` 与 nginx 已重建，内外片库 API 均返回 200。真实任务 `78` 已从 `illegal base64` 推进到 `/share/restore` 前的账户授权校验，最终仅返回已过期 Authorization 的 `401 unauthenticated`；尚未生成 `saved_path` 或自有 `share_url`，因此未宣称真实转存成功。
 
 2026-08-21 延续中断任务完成迅雷与 GYING 发布修复：单片“确保资源并发布”先合并当前账号内容列表，已发布有效资源不再重复新增，明确失效资源转入健康修复；管理页最近操作结果改为中文字段表并保留原始 JSON。迅雷客户端补齐 `/share` 请求参数并兼容多层响应字段，历史提取码自动并入 URL；无自有分享 URL 明确报失败。`mvn -q test`、采集器单测/编译、前端 lint/build、Compose 配置和运维就绪检查通过；生产 backend、frontend、gying-source 已重建，nginx 已重新创建。当前官方迅雷 Authorization 探测返回 `401 unauthenticated`，真实转存链路需更新凭据后再验收。
 

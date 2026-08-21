@@ -3,6 +3,7 @@ package com.gying.movie.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 @Component
 public class XunleiClient {
@@ -238,6 +240,7 @@ public class XunleiClient {
         List<String> fileIds = new ArrayList<>();
         List<String> fileNames = new ArrayList<>();
         String passCodeToken = null;
+        IllegalStateException traversalError = null;
 
         JsonNode root = requestSharePage(shareId, passCode, null, null, null);
         passCodeToken = sharePassCodeToken(root, passCodeToken);
@@ -249,6 +252,7 @@ public class XunleiClient {
                 page = requestSharePage(shareId, passCode, passCodeToken, null, rootPageToken);
             } catch (IllegalStateException error) {
                 if (!isRecoverableShareTraversalError(error)) throw error;
+                traversalError = error;
                 break;
             }
             passCodeToken = sharePassCodeToken(page, passCodeToken);
@@ -268,6 +272,7 @@ public class XunleiClient {
                     page = requestSharePage(shareId, passCode, passCodeToken, parentId, pageToken);
                 } catch (IllegalStateException error) {
                     if (!isRecoverableShareTraversalError(error)) throw error;
+                    traversalError = error;
                     break;
                 }
                 passCodeToken = sharePassCodeToken(page, passCodeToken);
@@ -277,24 +282,36 @@ public class XunleiClient {
                 pageToken = next;
             } while (hasText(pageToken));
         }
+        if (fileIds.isEmpty() && traversalError != null) throw traversalError;
         return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
     }
 
     private JsonNode requestSharePage(
             String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
-        UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/share")
+        return request(HttpMethod.GET, sharePageUri(shareId, passCode, passCodeToken, parentId, pageToken), null);
+    }
+
+    static String sharePageUri(
+            String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
+        boolean detailRequest = hasTextStatic(parentId);
+        UriComponentsBuilder uri = UriComponentsBuilder.fromPath(detailRequest ? "/share/detail" : "/share")
                 .queryParam("share_id", shareId)
                 .queryParam("limit", 30)
                 .queryParam("keyword", "")
                 .queryParam("scene", "NORMAL")
-                .queryParam("order", "DEFAULT_ORDER");
-        if (hasText(passCode)) uri.queryParam("pass_code", passCode);
-        String normalizedPassCodeToken = normalizeBase64Token(passCodeToken);
-        if (hasText(normalizedPassCodeToken)) uri.queryParam("pass_code_token", normalizedPassCodeToken);
-        if (hasText(parentId)) uri.queryParam("parent_id", parentId);
-        String normalizedPageToken = normalizeBase64Token(pageToken);
-        if (hasText(normalizedPageToken)) uri.queryParam("page_token", normalizedPageToken);
-        return request(HttpMethod.GET, uri.build().encode().toUriString(), null);
+                .queryParam("order", detailRequest ? "MODIFY_TIME_DESC_V2" : "DEFAULT_ORDER")
+                .queryParam("thumbnail_size", "SIZE_MEDIUM");
+        if (!detailRequest && hasTextStatic(passCode)) uri.queryParam("pass_code", passCode);
+        String safePassCodeToken = opaqueShareToken(passCodeToken);
+        if (hasTextStatic(safePassCodeToken)) {
+            uri.queryParam("pass_code_token", UriUtils.encode(safePassCodeToken, StandardCharsets.UTF_8));
+        }
+        if (detailRequest) uri.queryParam("parent_id", parentId);
+        String safePageToken = opaqueShareToken(pageToken);
+        if (hasTextStatic(safePageToken)) {
+            uri.queryParam("page_token", UriUtils.encode(safePageToken, StandardCharsets.UTF_8));
+        }
+        return uri.build(true).toUriString();
     }
 
     private static void collectSharePage(
@@ -332,11 +349,11 @@ public class XunleiClient {
                 response.path("pass_code_token").asText(null), response.path("passCodeToken").asText(null),
                 response.path("data").path("pass_code_token").asText(null),
                 response.path("data").path("passCodeToken").asText(null));
-        return firstTextStatic(normalizeBase64Token(candidate), fallback);
+        return firstTextStatic(opaqueShareToken(candidate), fallback);
     }
 
     private static String shareNextPageToken(JsonNode response) {
-        return normalizeBase64Token(firstTextStatic(
+        return opaqueShareToken(firstTextStatic(
                 response.path("next_page_token").asText(null), response.path("nextPageToken").asText(null),
                 response.path("data").path("next_page_token").asText(null),
                 response.path("data").path("nextPageToken").asText(null)));
@@ -571,14 +588,16 @@ public class XunleiClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(HttpHeaders.AUTHORIZATION, bearer(properties.getXunlei().getAuthorization()));
+        if (requiresAuthorization(method, path)) {
+            headers.set(HttpHeaders.AUTHORIZATION, bearer(properties.getXunlei().getAuthorization()));
+        }
         headers.set("X-Device-Id", firstText(properties.getXunlei().getDeviceId(), deviceId()));
         headers.set("X-Client-Id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "xunlei-open-api"));
         headers.set("X-Client-Version", properties.getXunlei().getClientVersion());
         String action = action(method, path);
         headers.set("X-Captcha-Token", captchaToken(action, false));
         try {
-            String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+            URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
             ResponseEntity<String> response = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
             if (response.getStatusCode().isError() || root.path("error").isObject()) throw new IllegalStateException("Xunlei API request failed: HTTP " + response.getStatusCode().value());
@@ -587,7 +606,7 @@ public class XunleiClient {
             String response = e.getResponseBodyAsString();
             if (response.contains("captcha_invalid") || response.contains("\"error_code\":9")) {
                 headers.set("X-Captcha-Token", captchaToken(action, true));
-                String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+                URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
                 try {
                     ResponseEntity<String> retried = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
                     return objectMapper.readTree(retried.getBody());
@@ -596,7 +615,8 @@ public class XunleiClient {
                             "Xunlei API request failed after CAPTCHA refresh: "
                                     + method.name() + " " + safeEndpoint(path)
                                     + " HTTP " + retryError.getStatusCode().value()
-                                    + apiErrorSuffix(retryError),
+                                    + apiErrorSuffix(retryError)
+                                    + shareTokenProfile(path, retryError.getResponseBodyAsString()),
                             retryError);
                 } catch (Exception retryError) {
                     throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError);
@@ -606,7 +626,8 @@ public class XunleiClient {
                     (e.getStatusCode().value() == 401
                             ? "Xunlei Authorization expired or invalid; update XUNLEI_AUTHORIZATION in Resource Hub settings"
                             : "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path))
-                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e),
+                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e)
+                            + shareTokenProfile(path, e.getResponseBodyAsString()),
                     e);
         } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
         catch (Exception e) { throw new IllegalStateException("Xunlei API response parse failed", e); }
@@ -714,6 +735,15 @@ public class XunleiClient {
         String clean = path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
         return method.name() + ":/drive/v1" + clean;
     }
+    static boolean requiresAuthorization(HttpMethod method, String path) {
+        String endpoint = path == null ? "" : path.split("\\?", 2)[0];
+        return method != HttpMethod.GET
+                || !("/share".equals(endpoint) || "/share/detail".equals(endpoint));
+    }
+    static URI requestUri(String baseUrl, String path) {
+        String value = baseUrl.replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+        return URI.create(value);
+    }
     private String safeEndpoint(String path) {
         return path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
     }
@@ -750,6 +780,35 @@ public class XunleiClient {
         int remainder = token.length() % 4;
         if (remainder == 1) return null;
         return remainder == 0 ? token : token + "=".repeat(4 - remainder);
+    }
+    static String opaqueShareToken(String value) {
+        if (!hasTextStatic(value)) return null;
+        String token = value.trim();
+        try {
+            if (token.contains("%")) token = UriUtils.decode(token, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException error) {
+            return null;
+        }
+        return token.chars().anyMatch(character -> Character.isWhitespace(character) || Character.isISOControl(character))
+                ? null
+                : token;
+    }
+    static String shareTokenProfile(String path, String responseBody) {
+        if (path == null || !path.startsWith("/share/detail")
+                || responseBody == null || !responseBody.contains("illegal base64")) return "";
+        String token = UriComponentsBuilder.fromUriString(path).build().getQueryParams().getFirst("pass_code_token");
+        token = opaqueShareToken(token);
+        if (!hasTextStatic(token)) return " (pass_code_token=missing)";
+        for (int index = 0; index < token.length(); index++) {
+            char character = token.charAt(index);
+            if (!(Character.isLetterOrDigit(character) || character == '+' || character == '/'
+                    || character == '=')) {
+                String category = character == '-' || character == '_' ? "base64url" : "other";
+                return " (pass_code_token_length=" + token.length()
+                        + ", first_non_base64_index=" + index + ", character_category=" + category + ")";
+            }
+        }
+        return " (pass_code_token_length=" + token.length() + ", alphabet=base64)";
     }
     private String md5(String value) {
         try { byte[] digest = MessageDigest.getInstance("MD5").digest(value.getBytes(StandardCharsets.UTF_8)); StringBuilder result = new StringBuilder(); for (byte item : digest) result.append(String.format("%02x", item)); return result.toString(); }

@@ -48,31 +48,33 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
         tasks.stream()
                 .filter(task -> !hasReachedRetryLimit(task))
-                .forEach(task -> submitGuarded(task, result));
+                .forEach(task -> submitGuarded(task, result, false));
         return result;
     }
 
     @Override public QuarkTransferRunResult submitOne(Long taskId) {
         XunleiTransferTask task = taskService.getById(taskId);
         if (task == null) throw new IllegalArgumentException("Xunlei transfer task not found");
-        QuarkTransferRunResult result = new QuarkTransferRunResult(); result.setTaskId(taskId); submitGuarded(task, result); return result;
+        QuarkTransferRunResult result = new QuarkTransferRunResult(); result.setTaskId(taskId);
+        submitGuarded(task, result, true);
+        return result;
     }
 
-    private void submitGuarded(XunleiTransferTask task, QuarkTransferRunResult result) {
+    private void submitGuarded(XunleiTransferTask task, QuarkTransferRunResult result, boolean manualRetry) {
         if (task.getId() == null || !runningTaskIds.add(task.getId())) {
             result.setSkipped(result.getSkipped() + 1);
             return;
         }
         try {
-            submit(task, result);
+            submit(task, result, manualRetry);
         } finally {
             runningTaskIds.remove(task.getId());
         }
     }
 
-    private void submit(XunleiTransferTask task, QuarkTransferRunResult result) {
+    private void submit(XunleiTransferTask task, QuarkTransferRunResult result, boolean manualRetry) {
         try {
-            if (hasReachedRetryLimit(task)) {
+            if (!manualRetry && hasReachedRetryLimit(task)) {
                 result.setSkipped(result.getSkipped() + 1);
                 return;
             }

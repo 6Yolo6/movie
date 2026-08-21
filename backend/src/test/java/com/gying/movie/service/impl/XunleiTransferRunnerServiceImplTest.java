@@ -144,4 +144,32 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals("https://pan.xunlei.com/s/share-id?pwd=abcd", task.getOriginalUrl());
         verify(client).restore(eq("https://pan.xunlei.com/s/share-id?pwd=abcd"), any());
     }
+
+    @Test
+    void explicitRetryRunsEvenAfterAutomaticAttemptLimit() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(6L);
+        task.setStatus("FAILED");
+        task.setAttempts(3);
+        task.setOriginalUrl("https://pan.xunlei.com/s/share-id?pwd=abcd");
+        when(taskService.getById(6L)).thenReturn(task);
+        when(client.restore(eq(task.getOriginalUrl()), any()))
+                .thenThrow(new IllegalStateException("manual retry reached client"));
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties,
+                client,
+                taskService,
+                mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult result = service.submitOne(6L);
+
+        assertEquals(1, result.getFailed());
+        assertEquals(4, task.getAttempts());
+        assertEquals("manual retry reached client", task.getLastError());
+        verify(client).restore(eq(task.getOriginalUrl()), any());
+    }
 }
