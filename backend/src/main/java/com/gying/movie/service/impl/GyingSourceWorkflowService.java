@@ -514,7 +514,7 @@ public class GyingSourceWorkflowService {
 
         Map<String, Object> result = movieMetadataResult(ingested);
 
-        if (!ownResources.isEmpty()) {
+        if (!ownResources.isEmpty() && hasValidOwnResource(ownResources)) {
             ResourceLink own = findResourceBySourceIds(movie.getId(),
                     ownResources.stream().map(item -> stringValue(item.get("source_id"))).toList());
             result.put("status", "ALREADY_PUBLISHED");
@@ -801,7 +801,9 @@ public class GyingSourceWorkflowService {
             }
             try {
                 ResourceLink local = findLocalPublishedResource(item);
-                QuarkTransferTask transfer = findRepairTransfer(local, item);
+                String provider = firstText(stringValue(item.get("provider")), local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
+                QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+                XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider) ? findRepairXunleiTransfer(local, item) : null;
                 MovieMetadata movie = local == null ? null : movieService.getById(local.getMovieId());
                 if (movie == null && transfer != null) {
                     movie = movieService.getById(transfer.getMovieId());
@@ -820,8 +822,27 @@ public class GyingSourceWorkflowService {
                         transfer.setUpdatedAt(LocalDateTime.now());
                         transferTaskService.updateById(transfer);
                         newUrl = quarkShareService.ensureShareUrl(transfer);
-                        requireConfirmedValid(newUrl);
+                        requireConfirmedValid(newUrl, "QUARK");
                         repairMode = "RESHARED";
+                    } catch (Exception error) {
+                        reshareError = safeText(error.getMessage());
+                        newUrl = null;
+                    }
+                }
+
+                if (!hasText(newUrl) && xunleiTransfer != null && hasText(xunleiTransfer.getSavedPath())) {
+                    try {
+                        xunleiTransfer.setStatus("WAITING_SHARE");
+                        xunleiTransfer.setLastError(null);
+                        xunleiTransfer.setUpdatedAt(LocalDateTime.now());
+                        xunleiTransferTaskService.updateById(xunleiTransfer);
+                        xunleiTransferRunnerService.submitOne(xunleiTransfer.getId());
+                        xunleiTransfer = xunleiTransferTaskService.getById(xunleiTransfer.getId());
+                        newUrl = xunleiTransfer == null ? null : xunleiTransfer.getShareUrl();
+                        if (hasText(newUrl)) {
+                            requireConfirmedValid(newUrl, "XUNLEI");
+                            repairMode = "RESHARED";
+                        }
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -843,7 +864,7 @@ public class GyingSourceWorkflowService {
                     for (Map<String, Object> candidate : candidates) {
                         try {
                             transferOutcome = transferCandidate(movie, candidate);
-                            requireConfirmedValid(transferOutcome.shareUrl());
+                            requireConfirmedValid(transferOutcome.shareUrl(), stringValue(candidate.get("provider")));
                             newUrl = transferOutcome.shareUrl();
                             repairMode = "RETRANSFERRED";
                             break;
@@ -880,7 +901,8 @@ public class GyingSourceWorkflowService {
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
                 ResourceLink updated = local == null ? new ResourceLink() : local;
-                applyRepairedLink(updated, item, movie, title, newUrl);
+                applyRepairedLink(updated, item, movie, title, newUrl,
+                        transferOutcome == null ? provider : transferOutcome.discovery().getProvider());
                 if (updated.getId() == null) {
                     resourceLinkService.save(updated);
                 } else {
@@ -1173,12 +1195,43 @@ public class GyingSourceWorkflowService {
                 .last("LIMIT 1"), false);
     }
 
+    private XunleiTransferTask findRepairXunleiTransfer(ResourceLink local, Map<String, Object> item) {
+        String url = stringValue(item.get("url"));
+        if (hasText(url)) {
+            XunleiTransferTask byUrl = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("share_url", url).orderByDesc("updated_at").last("LIMIT 1"), false);
+            if (byUrl != null && hasText(byUrl.getSavedPath())) return byUrl;
+        }
+        if (local == null || !hasText(local.getMovieId())) return null;
+        return xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", local.getMovieId()).isNotNull("saved_path")
+                .in("status", List.of("SUBMITTED", "FAILED", "WAITING_SHARE"))
+                .orderByDesc("updated_at").last("LIMIT 1"), false);
+    }
+
+    private boolean hasValidOwnResource(List<Map<String, Object>> ownResources) {
+        Map<String, String> links = new LinkedHashMap<>();
+        for (Map<String, Object> item : ownResources) {
+            String url = stringValue(item.get("url"));
+            if (hasText(url)) links.putIfAbsent(url, firstText(stringValue(item.get("provider")), "QUARK"));
+        }
+        if (links.isEmpty()) return false;
+        try {
+            return panSouClient.checkLinksByProvider(links).entrySet().stream()
+                    .anyMatch(entry -> entry.getValue() != null
+                            && entry.getValue().checked() && entry.getValue().valid());
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     private void applyRepairedLink(
             ResourceLink link,
             Map<String, Object> item,
             MovieMetadata movie,
             String title,
-            String newUrl) {
+            String newUrl,
+            String provider) {
         LocalDateTime now = LocalDateTime.now();
         boolean creating = link.getId() == null;
         if (creating || !hasText(link.getMovieId())) {
@@ -1188,7 +1241,7 @@ public class GyingSourceWorkflowService {
         }
         link.setName(trim(firstText(title, stringValue(item.get("title")), "GYING Resource"), 255));
         link.setType("DISK");
-        link.setProvider("QUARK");
+        link.setProvider(firstText(provider, "QUARK").toUpperCase(Locale.ROOT));
         link.setUrl(newUrl);
         link.setUrlHash(ResourceHubHashUtils.sha256(newUrl));
         link.setCode(null);
@@ -1232,9 +1285,13 @@ public class GyingSourceWorkflowService {
         return saved;
     }
 
-    private void requireConfirmedValid(String url) {
-        String safeUrl = required(url, "new Quark share URL");
-        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, "QUARK")).get(safeUrl);
+    private void requireConfirmedValid(String url, String provider) {
+        String safeUrl = required(url, "new cloud share URL");
+        String safeProvider = firstText(provider, "QUARK").toUpperCase(Locale.ROOT);
+        if ("XUNLEI".equals(safeProvider)) {
+            return;
+        }
+        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, safeProvider)).get(safeUrl);
         if (check == null || !check.checked()) {
             throw new IllegalStateException("Unable to confirm new Quark share: "
                     + (check == null ? "missing link check result" : safeText(check.message())));

@@ -97,4 +97,16 @@ class XunleiClientTest {
         assertEquals(List.of("movie-1"), XunleiClient.extractVideoFileIds(response));
         assertEquals(List.of("Movie 2160P.MP4"), XunleiClient.extractVideoFileNames(response));
     }
+
+    @Test
+    void walksArbitraryShareResponseListsAndCamelCaseFileFields() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {"data":{"shareFileList":[{"fileId":"folder","type":"folder","entries":[
+                  {"fileId":"video-4496","fileName":"Movie.2160P.mkv","mimeType":"application/octet-stream"}
+                ]}]},"meta":{"items":[{"fileId":"poster","fileName":"poster.jpg"}]}}
+                """);
+        assertEquals(List.of("video-4496"), XunleiClient.extractVideoFileIds(response));
+        assertEquals(List.of("Movie.2160P.mkv"), XunleiClient.extractVideoFileNames(response));
+    }
 }

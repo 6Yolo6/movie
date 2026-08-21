@@ -216,11 +216,104 @@ public class XunleiClient {
         if (!matcher.matches()) throw new IllegalArgumentException("Invalid Xunlei share URL");
         String shareId = matcher.group(1);
         String passCode = UriComponentsBuilder.fromUriString(shareUrl).build().getQueryParams().getFirst("pwd");
-        JsonNode response = request(HttpMethod.GET, "/share?share_id=" + shareId + "&pass_code=" + (passCode == null ? "" : passCode) + "&limit=100", null);
-        String token = firstText(response.path("pass_code_token").asText(null), response.path("data").path("pass_code_token").asText(null));
-        List<String> fileIds = extractVideoFileIds(response);
+        ShareSelection selection = inspectShareFiles(shareId, passCode);
+        List<String> fileIds = selection.fileIds();
         if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no video files");
-        return new ShareInfo(shareId, passCode, token, fileIds, extractVideoFileNames(response));
+        return new ShareInfo(shareId, passCode, selection.passCodeToken(), fileIds, selection.fileNames());
+    }
+
+    private ShareSelection inspectShareFiles(String shareId, String passCode) {
+        ArrayDeque<String> folders = new ArrayDeque<>();
+        Set<String> visitedFolders = new HashSet<>();
+        Set<String> seenFiles = new HashSet<>();
+        Set<String> seenNames = new HashSet<>();
+        List<String> fileIds = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        String passCodeToken = null;
+
+        JsonNode root = requestSharePage(shareId, passCode, null, null, null);
+        passCodeToken = sharePassCodeToken(root, passCodeToken);
+        collectSharePage(root, folders, fileIds, fileNames, seenFiles, seenNames);
+        String rootPageToken = shareNextPageToken(root);
+        while (hasText(rootPageToken)) {
+            JsonNode page = requestSharePage(shareId, passCode, passCodeToken, null, rootPageToken);
+            passCodeToken = sharePassCodeToken(page, passCodeToken);
+            collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+            String next = shareNextPageToken(page);
+            if (rootPageToken.equals(next)) break;
+            rootPageToken = next;
+        }
+
+        while (!folders.isEmpty() && visitedFolders.size() < 500) {
+            String parentId = folders.removeFirst();
+            if (!hasText(parentId) || !visitedFolders.add(parentId)) continue;
+            String pageToken = null;
+            do {
+                JsonNode page = requestSharePage(shareId, passCode, passCodeToken, parentId, pageToken);
+                passCodeToken = sharePassCodeToken(page, passCodeToken);
+                collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+                String next = shareNextPageToken(page);
+                if (hasText(pageToken) && pageToken.equals(next)) break;
+                pageToken = next;
+            } while (hasText(pageToken));
+        }
+        return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
+    }
+
+    private JsonNode requestSharePage(
+            String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
+        UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/share")
+                .queryParam("share_id", shareId)
+                .queryParam("pass_code", passCode == null ? "" : passCode)
+                .queryParam("limit", 100);
+        if (hasText(passCodeToken)) uri.queryParam("pass_code_token", passCodeToken);
+        if (hasText(parentId)) uri.queryParam("parent_id", parentId);
+        if (hasText(pageToken)) uri.queryParam("page_token", pageToken);
+        return request(HttpMethod.GET, uri.build().encode().toUriString(), null);
+    }
+
+    private static void collectSharePage(
+            JsonNode response,
+            ArrayDeque<String> folders,
+            List<String> fileIds,
+            List<String> fileNames,
+            Set<String> seenFiles,
+            Set<String> seenNames) {
+        extractVideoFileIds(response).stream().filter(seenFiles::add).forEach(fileIds::add);
+        extractVideoFileNames(response).stream()
+                .filter(name -> seenNames.add(name.toLowerCase(Locale.ROOT)))
+                .forEach(fileNames::add);
+        collectFolderIds(response, folders, new HashSet<>());
+    }
+
+    private static void collectFolderIds(JsonNode node, ArrayDeque<String> folders, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectFolderIds(item, folders, seen);
+            return;
+        }
+        if (!node.isObject()) return;
+        if (isFolder(node)) {
+            String id = firstTextStatic(
+                    node.path("id").asText(null), node.path("file_id").asText(null),
+                    node.path("fileId").asText(null), node.path("fid").asText(null));
+            if (hasTextStatic(id) && seen.add(id)) folders.addLast(id);
+        }
+        node.fields().forEachRemaining(entry -> collectFolderIds(entry.getValue(), folders, seen));
+    }
+
+    private static String sharePassCodeToken(JsonNode response, String fallback) {
+        return firstTextStatic(
+                response.path("pass_code_token").asText(null), response.path("passCodeToken").asText(null),
+                response.path("data").path("pass_code_token").asText(null),
+                response.path("data").path("passCodeToken").asText(null), fallback);
+    }
+
+    private static String shareNextPageToken(JsonNode response) {
+        return firstTextStatic(
+                response.path("next_page_token").asText(null), response.path("nextPageToken").asText(null),
+                response.path("data").path("next_page_token").asText(null),
+                response.path("data").path("nextPageToken").asText(null));
     }
 
     private DirectoryInfo ensureDirectory(String path) {
@@ -311,59 +404,47 @@ public class XunleiClient {
     static List<String> extractVideoFileIds(JsonNode response) {
         List<String> ids = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        collectVideoFiles(response == null ? null : firstArray(
-                response.path("files"), response.path("file_list"),
-                response.path("data").path("files"), response.path("data").path("file_list")), ids, seen);
+        collectVideoFiles(response, ids, seen);
         return List.copyOf(ids);
     }
 
     static List<String> extractVideoFileNames(JsonNode response) {
         List<String> names = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        collectVideoNames(response == null ? null : firstArray(
-                response.path("files"), response.path("file_list"),
-                response.path("data").path("files"), response.path("data").path("file_list")), names, seen);
+        collectVideoNames(response, names, seen);
         return List.copyOf(names);
     }
 
-    private static void collectVideoFiles(JsonNode items, List<String> ids, Set<String> seen) {
-        if (items == null || !items.isArray()) return;
-        for (JsonNode item : items) {
-            JsonNode nested = firstArray(
-                    item.path("children"),
-                    item.path("files"),
-                    item.path("file_list"),
-                    item.path("items"));
-            if (isFolder(item) || nested != null) {
-                collectVideoFiles(nested, ids, seen);
-                continue;
-            }
-            String id = firstTextStatic(
-                    item.path("id").asText(null),
-                    item.path("file_id").asText(null),
-                    item.path("fid").asText(null));
-            if (hasTextStatic(id) && isVideo(item) && seen.add(id)) ids.add(id);
+    private static void collectVideoFiles(JsonNode node, List<String> ids, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectVideoFiles(item, ids, seen);
+            return;
         }
+        if (!node.isObject()) return;
+        if (!isFolder(node)) {
+            String id = firstTextStatic(
+                    node.path("id").asText(null), node.path("file_id").asText(null),
+                    node.path("fileId").asText(null), node.path("fid").asText(null));
+            if (hasTextStatic(id) && isVideo(node) && seen.add(id)) ids.add(id);
+        }
+        node.fields().forEachRemaining(entry -> collectVideoFiles(entry.getValue(), ids, seen));
     }
 
-    private static void collectVideoNames(JsonNode items, List<String> names, Set<String> seen) {
-        if (items == null || !items.isArray()) return;
-        for (JsonNode item : items) {
-            JsonNode nested = firstArray(
-                    item.path("children"),
-                    item.path("files"),
-                    item.path("file_list"),
-                    item.path("items"));
-            if (isFolder(item) || nested != null) {
-                collectVideoNames(nested, names, seen);
-                continue;
-            }
-            String name = firstTextStatic(
-                    item.path("name").asText(null),
-                    item.path("file_name").asText(null),
-                    item.path("filename").asText(null));
-            if (hasTextStatic(name) && isVideo(item) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
+    private static void collectVideoNames(JsonNode node, List<String> names, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectVideoNames(item, names, seen);
+            return;
         }
+        if (!node.isObject()) return;
+        if (!isFolder(node)) {
+            String name = firstTextStatic(
+                    node.path("name").asText(null), node.path("file_name").asText(null),
+                    node.path("filename").asText(null), node.path("fileName").asText(null));
+            if (hasTextStatic(name) && isVideo(node) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
+        }
+        node.fields().forEachRemaining(entry -> collectVideoNames(entry.getValue(), names, seen));
     }
 
     static List<JsonNode> selectRestoredFiles(
@@ -624,6 +705,11 @@ public class XunleiClient {
     public record ShareInfo(
             String shareId,
             String passCode,
+            String passCodeToken,
+            List<String> fileIds,
+            List<String> fileNames) {}
+
+    private record ShareSelection(
             String passCodeToken,
             List<String> fileIds,
             List<String> fileNames) {}
