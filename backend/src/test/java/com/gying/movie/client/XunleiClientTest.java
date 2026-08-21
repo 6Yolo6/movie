@@ -109,4 +109,26 @@ class XunleiClientTest {
         assertEquals(List.of("video-4496"), XunleiClient.extractVideoFileIds(response));
         assertEquals(List.of("Movie.2160P.mkv"), XunleiClient.extractVideoFileNames(response));
     }
+
+    @Test
+    void parsesNestedShareUrlAndPassCode() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {"data":{"share":{"url":"https://pan.xunlei.com/s/owned","pass_code":"abcd"}}}
+                """);
+
+        assertEquals("https://pan.xunlei.com/s/owned?pwd=abcd", XunleiClient.parseShareUrl(response));
+    }
+
+    @Test
+    void appendsSeparateExtractionCodeAndRemovesFragmentNoise() {
+        assertEquals(
+                "https://pan.xunlei.com/s/share-id?pwd=abcd",
+                XunleiClient.normalizeShareUrl(
+                        "https://pan.xunlei.com/s/share-id#ignored", "abcd"));
+        assertEquals(
+                "https://pan.xunlei.com/s/share-id?pwd=kept",
+                XunleiClient.normalizeShareUrl(
+                        "https://pan.xunlei.com/s/share-id?pwd=kept###", "other"));
+    }
 }

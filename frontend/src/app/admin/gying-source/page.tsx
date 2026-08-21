@@ -8,6 +8,8 @@ import {
     App,
     Button,
     Card,
+    Collapse,
+    Descriptions,
     Form,
     Input,
     InputNumber,
@@ -104,6 +106,22 @@ const summarizeResult = (value: Record<string, unknown>) => {
     return Array.isArray(items) ? { ...summary, itemCount: items.length } : summary;
 };
 
+const resultFieldKeys: Record<string, string> = {
+    checked: 'gyingResultChecked',
+    valid: 'gyingResultValid',
+    invalid: 'gyingResultInvalid',
+    unclear: 'gyingResultUnclear',
+    repaired: 'gyingResultRepaired',
+    reshared: 'gyingResultReshared',
+    retransferred: 'gyingResultRetransferred',
+    skipped: 'gyingResultSkipped',
+    failed: 'gyingResultFailed',
+    requested: 'gyingResultRequested',
+    notFound: 'gyingResultNotFound',
+    itemCount: 'gyingResultItemCount',
+    errors: 'gyingResultErrors',
+};
+
 export default function GyingSourcePage() {
     const { user, token } = useAuthStore();
     const router = useRouter();
@@ -125,6 +143,15 @@ export default function GyingSourcePage() {
     const [accountLoading, setAccountLoading] = useState(false);
     const [selectedRecentKeys, setSelectedRecentKeys] = useState<Key[]>([]);
     const [healthSourceIds, setHealthSourceIds] = useState('');
+
+    const renderResultValue = (value: unknown) => {
+        if (Array.isArray(value)) {
+            return value.length > 0 ? value.map(String).join('\n') : t('gyingResultNone');
+        }
+        if (value && typeof value === 'object') return JSON.stringify(value);
+        if (typeof value === 'boolean') return value ? t('yes') : t('no');
+        return String(value ?? t('gyingResultNone'));
+    };
 
     const requestJson = useCallback(async <T,>(path: string, options?: RequestInit): Promise<T> => {
         if (!token) throw new Error(t('adminAccessRequired'));
@@ -737,10 +764,32 @@ export default function GyingSourcePage() {
                     {result && (
                         <Alert
                             className="mt-6"
-                            type="success"
+                            type={Number(result.failed || 0) > 0 ? 'error' : 'success'}
                             showIcon
                             message={t('gyingSourceLastResult')}
-                            description={<pre className="m-0 max-h-72 overflow-auto text-xs">{JSON.stringify(result, null, 2)}</pre>}
+                            description={(
+                                <div className="mt-3">
+                                    <Descriptions
+                                        size="small"
+                                        bordered
+                                        column={{ xs: 1, sm: 2, lg: 3 }}
+                                        items={Object.entries(result).map(([key, value]) => ({
+                                            key,
+                                            label: resultFieldKeys[key] ? t(resultFieldKeys[key]) : key,
+                                            children: <span className="whitespace-pre-wrap break-all">{renderResultValue(value)}</span>,
+                                        }))}
+                                    />
+                                    <Collapse
+                                        className="mt-3"
+                                        ghost
+                                        items={[{
+                                            key: 'raw',
+                                            label: t('gyingResultTechnicalDetails'),
+                                            children: <pre className="m-0 max-h-72 overflow-auto text-xs">{JSON.stringify(result, null, 2)}</pre>,
+                                        }]}
+                                    />
+                                </div>
+                            )}
                         />
                     )}
                 </Card>

@@ -144,6 +144,30 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void ensureMovieRoutesInvalidPublishedResourceToHealthRepairWithoutRepublishing() {
+        MovieMetadata movie = movie("dlvj", "气体人第一号", "tv", "AVAILABLE");
+        String url = "https://pan.quark.cn/s/dead";
+        when(gyingSourceClient.get("/movie/tv/dlvj")).thenReturn(Map.of(
+                "title", "气体人第一号",
+                "resources", List.of(),
+                "ownResources", List.of(Map.of(
+                        "source_id", "SITE-DEAD",
+                        "url", url,
+                        "provider", "QUARK"))));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", movie.getId()));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(panSouClient.checkLinksByProvider(Map.of(url, "QUARK"))).thenReturn(Map.of(
+                url, new LinkCheckResult(url, true, false, "invalid")));
+
+        Map<String, Object> result = service.ensureMovieResource("tv", "dlvj");
+
+        assertEquals("ALREADY_PUBLISHED_NEEDS_REPAIR", result.get("status"));
+        assertEquals(true, result.get("repairRequired"));
+        assertEquals("SITE-DEAD", result.get("sourceId"));
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test
     void searchCandidatesExcludesGyingMoviesWithoutCloudResources() {
         when(gyingSourceClient.get(eq("/search"), any())).thenReturn(Map.of(
                 "items", List.of(
@@ -315,6 +339,9 @@ class GyingSourceWorkflowServiceTest {
                                 "url", "https://pan.quark.cn/s/own"))));
         when(gyingSourceClient.post(eq("/ingest"), any()))
                 .thenReturn(Map.of("movieId", movie.getId()));
+        when(panSouClient.checkLinksByProvider(any()))
+                .thenReturn(Map.of("https://pan.quark.cn/s/own",
+                        new LinkCheckResult("https://pan.quark.cn/s/own", true, true, "ok")));
 
         Map<String, Object> result = service.ensureLocalMovieResource(movie.getId());
 

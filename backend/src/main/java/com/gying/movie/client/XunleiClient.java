@@ -195,13 +195,21 @@ public class XunleiClient {
     static String parseShareUrl(JsonNode response) {
         String url = firstTextStatic(
                 response.path("share_url").asText(null),
-                response.path("data").path("share_url").asText(null));
+                response.path("url").asText(null),
+                response.path("share").path("share_url").asText(null),
+                response.path("share").path("url").asText(null),
+                response.path("data").path("share_url").asText(null),
+                response.path("data").path("url").asText(null),
+                response.path("data").path("share").path("share_url").asText(null),
+                response.path("data").path("share").path("url").asText(null));
         if (!hasTextStatic(url)) {
             return null;
         }
         String passCode = firstTextStatic(
                 response.path("pass_code").asText(null),
-                response.path("data").path("pass_code").asText(null));
+                response.path("share").path("pass_code").asText(null),
+                response.path("data").path("pass_code").asText(null),
+                response.path("data").path("share").path("pass_code").asText(null));
         if (!hasTextStatic(passCode) || url.contains("pwd=")) {
             return url;
         }
@@ -264,11 +272,14 @@ public class XunleiClient {
             String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
         UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/share")
                 .queryParam("share_id", shareId)
-                .queryParam("pass_code", passCode == null ? "" : passCode)
-                .queryParam("limit", 100);
+                .queryParam("limit", 30)
+                .queryParam("keyword", "")
+                .queryParam("page_token", hasText(pageToken) ? pageToken : "")
+                .queryParam("scene", "NORMAL")
+                .queryParam("order", "DEFAULT_ORDER");
+        if (hasText(passCode)) uri.queryParam("pass_code", passCode);
         if (hasText(passCodeToken)) uri.queryParam("pass_code_token", passCodeToken);
         if (hasText(parentId)) uri.queryParam("parent_id", parentId);
-        if (hasText(pageToken)) uri.queryParam("page_token", pageToken);
         return request(HttpMethod.GET, uri.build().encode().toUriString(), null);
     }
 
@@ -594,7 +605,10 @@ public class XunleiClient {
                 item.path("mime_type").asText(null),
                 item.path("mimeType").asText(null),
                 item.path("content_type").asText(null));
-        return (kind != null && kind.toLowerCase(Locale.ROOT).contains("folder"))
+        return (kind != null && (kind.toLowerCase(Locale.ROOT).contains("folder")
+                || kind.toLowerCase(Locale.ROOT).contains("directory")))
+                || item.path("is_folder").asBoolean(false)
+                || item.path("isFolder").asBoolean(false)
                 || (mimeType != null && mimeType.toLowerCase(Locale.ROOT).contains("folder"));
     }
 
@@ -602,7 +616,8 @@ public class XunleiClient {
         String name = firstTextStatic(
                 item.path("name").asText(null),
                 item.path("file_name").asText(null),
-                item.path("filename").asText(null));
+                item.path("filename").asText(null),
+                item.path("fileName").asText(null));
         String extension = firstTextStatic(
                 item.path("file_extension").asText(null),
                 item.path("fileExtension").asText(null),
@@ -684,8 +699,23 @@ public class XunleiClient {
             JsonNode root = objectMapper.readTree(error.getResponseBodyAsString());
             String name = root.path("error").isTextual() ? root.path("error").asText() : null;
             String code = root.path("error_code").isValueNode() ? root.path("error_code").asText() : null;
-            if (!hasText(name) && !hasText(code)) return "";
-            return " (error=" + firstText(name, "unknown") + ", code=" + firstText(code, "unknown") + ")";
+            String description = root.path("error_description").asText(null);
+            String detail = null;
+            JsonNode details = root.path("error_details");
+            if (details.isArray()) {
+                for (JsonNode item : details) {
+                    String candidate = item.path("detail").asText(null);
+                    if (hasText(candidate)) {
+                        detail = candidate;
+                        break;
+                    }
+                }
+            }
+            if (!hasText(name) && !hasText(code) && !hasText(description) && !hasText(detail)) return "";
+            return " (error=" + firstText(name, "unknown")
+                    + ", code=" + firstText(code, "unknown")
+                    + (hasText(description) ? ", description=" + description : "")
+                    + (hasText(detail) ? ", detail=" + detail : "") + ")";
         } catch (Exception ignored) {
             return "";
         }
@@ -702,6 +732,15 @@ public class XunleiClient {
     private boolean hasText(String value) { return value != null && !value.isBlank(); }
     private static String firstTextStatic(String... values) { for (String value : values) if (hasTextStatic(value)) return value.trim(); return null; }
     private static boolean hasTextStatic(String value) { return value != null && !value.isBlank(); }
+    public static String normalizeShareUrl(String url, String code) {
+        if (!hasTextStatic(url)) return url;
+        String normalized = url.trim();
+        int fragment = normalized.indexOf('#');
+        if (fragment >= 0) normalized = normalized.substring(0, fragment);
+        if (!hasTextStatic(code) || normalized.contains("pwd=")) return normalized;
+        String separator = normalized.contains("?") ? "&" : "?";
+        return normalized + separator + "pwd=" + code.trim();
+    }
     public record ShareInfo(
             String shareId,
             String passCode,

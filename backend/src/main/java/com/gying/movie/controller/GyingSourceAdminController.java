@@ -254,7 +254,7 @@ public class GyingSourceAdminController {
         authHelper.requireAdmin(token);
         return ResponseEntity.ok(startJob(
                 "REPAIR_PUBLISHED_BY_IDS",
-                () -> workflowService.repairPublishedResourcesBySourceIds(sourceIds)));
+                () -> workflowService.repairPublishedResourcesByKeys(sourceIds)));
     }
 
     @GetMapping("/jobs/{jobId}")
