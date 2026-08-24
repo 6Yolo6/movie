@@ -51,9 +51,16 @@ docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
 
 先保持定时 Worker 关闭，通过后台手动跑一条计划保留资源，确认搜索、转存、自有分享和入库后再启用调度。quark-auto-save API Token 不等于夸克 Cookie；两者都要有效。
 
+生产 `quark-auto-save` 使用 `/app/config/quark_config.json` 持久卷，当前全局计划为 `0 8,18,20 * * *`。
+GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个时段执行）自动检查来源更新并周转存；正常任务缺省配置可通过管理 API `/update?token=...` 批量补齐。
+迁移前必须备份配置，只修改 `/GYing Resource Hub/tv/`、`/GYing Resource Hub/anime/` 下没有 `shareurl_ban` 且没有 `runweek` 的任务，保留 `runweek: []` 禁用任务和封禁任务不变。
+首次转存仍由 Resource Hub 手动任务直接执行，不受 `runweek` 过滤；更新来源后由周计划负责后续追更。API token 由 quark-auto-save WebUI 凭据派生，不能与夸克 Cookie 混用，也不得写入日志或文档。
+
 ## GYING
 
 `gying-source` 复用一个加锁 Session，处理 PoW 和登录。环境变量提供重启后的默认账号；管理员可在 `/admin/gying-source` 临时切换当前账号，密码和 Cookie 不持久化。
+
+“爬取我已发布资源”按钮复用 `gying_crawler.py` 的 `/my-resources` 分页和影片元数据入库链路；同步时按 GYING `source_id` 或 URL 去重，已有资源只计为跳过，不重复插入。
 
 生产验证顺序：健康检查、候选读取、本人资源读取、单条无变更检查，最后才执行真实发布或修复。
 
@@ -62,9 +69,9 @@ docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
 - `QQ_BOT_*` 配置命令、限流、敏感词、回复通道和自动转存。
 - NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
 - 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。
-- OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/网盘选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。
-- Docker 部署会把 Windows 可维护源同步到 `/home/node/.openclaw-runtime-plugins` 的非 world-writable Linux 运行副本，并自动重启 Gateway，以满足 OpenClaw 插件安全检查。
-- 每个资源回复都先验证自有夸克分享；用户指定其他网盘时会在自有夸克之后追加指定数量。群回复会 @ 对应用户，上下文有效期为 5 分钟。
+- OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/候选选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。搜索收到后先回复“正在搜索资源，请稍后...”。
+- Docker 部署会把 Windows 可维护源同步到唯一的非 world-writable Linux 运行副本 `/home/node/.openclaw-runtime-plugins/qqbot-project`，同时从 `plugins.load.paths` 清理历史 QQBot runtime 路径并自动重启 Gateway。不得同时加载多份 `@tencent-connect/openclaw-qqbot`，否则旧副本可能抢先拦截消息，使搜索进度和指令补丁失效。
+- 群机器人先展示影片候选，用户选定影片后会展示年份、类型、地区、评分、简介和资源名称/画质候选；回复单个资源序号后才执行所选夸克或迅雷转存，成功回复也会带完整影片元数据。可用“夸克”或“迅雷”筛选，但不支持“夸克10”等数量批量转存。多次失败、无视频文件或违规/平台拦截会及时返回明确提示；群回复会 @ 对应用户，上下文有效期为 5 分钟。
 
 ## 腾讯频道
 

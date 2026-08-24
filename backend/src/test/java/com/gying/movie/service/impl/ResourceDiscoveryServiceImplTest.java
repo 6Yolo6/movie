@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -16,6 +17,7 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.entity.MovieMetadata;
+import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.XunleiTransferTask;
@@ -37,6 +39,8 @@ class ResourceDiscoveryServiceImplTest {
     private IMovieMetadataService movieService;
     private IResourceHubTaskService taskService;
     private IResourceDiscoveryResultService discoveryService;
+    private IQuarkTransferTaskService quarkTransferTaskService;
+    private IResourceLinkService resourceLinkService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
     private ResourceDiscoveryServiceImpl service;
     private MovieMetadata movie;
@@ -52,6 +56,8 @@ class ResourceDiscoveryServiceImplTest {
         movieService = mock(IMovieMetadataService.class);
         taskService = mock(IResourceHubTaskService.class);
         discoveryService = mock(IResourceDiscoveryResultService.class);
+        quarkTransferTaskService = mock(IQuarkTransferTaskService.class);
+        resourceLinkService = mock(IResourceLinkService.class);
         xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         service = new ResourceDiscoveryServiceImpl(
                 properties,
@@ -60,8 +66,8 @@ class ResourceDiscoveryServiceImplTest {
                 movieService,
                 taskService,
                 discoveryService,
-                mock(IQuarkTransferTaskService.class),
-                mock(IResourceLinkService.class),
+                quarkTransferTaskService,
+                resourceLinkService,
                 xunleiTransferTaskService,
                 new ObjectMapper());
 
@@ -94,6 +100,49 @@ class ResourceDiscoveryServiceImplTest {
         ArgumentCaptor<ResourceDiscoveryResult> saved = ArgumentCaptor.forClass(ResourceDiscoveryResult.class);
         verify(discoveryService).save(saved.capture());
         assertEquals("GYING", saved.getValue().getSource());
+    }
+
+    @Test
+    void supplementsGyingQuarkResultsWithXunleiCandidates() {
+        DiscoveredResource gying = resource(
+                "鑲栫敵鍏嬬殑鏁戣祹 4K", "https://pan.quark.cn/s/gying", "GYING");
+        DiscoveredResource xunlei = resource(
+                "鑲栫敵鍏嬬殑鏁戣祹 4K 杩呴浄", "https://pan.xunlei.com/s/xunlei", "PANSOU");
+        xunlei.setProvider("XUNLEI");
+        movie.setTitleCn("Movie");
+        movie.setTitleEn("Movie");
+        task.setKeyword("Movie");
+        gying.setTitle("Movie 4K");
+        xunlei.setTitle("Movie 4K XUNLEI");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(gying));
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(xunlei));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(2, result.getDiscovered());
+        verify(panSouClient).searchClouds(anyString(), any(), anyInt());
+        verify(xunleiTransferTaskService).save(any(XunleiTransferTask.class));
+    }
+
+    @Test
+    void supplementsGyingXunleiResultsWithQuarkCandidates() {
+        DiscoveredResource gying = resource(
+                "Movie 4K 迅雷", "https://pan.xunlei.com/s/gying", "GYING");
+        gying.setProvider("XUNLEI");
+        DiscoveredResource quark = resource(
+                "Movie 4K 夸克", "https://pan.quark.cn/s/quark", "PANSOU");
+        quark.setProvider("QUARK");
+        movie.setTitleCn("Movie");
+        movie.setTitleEn("Movie");
+        task.setKeyword("Movie");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(gying));
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(quark));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(2, result.getDiscovered());
+        verify(panSouClient).searchQuark(anyString(), anyInt());
+        verify(quarkTransferTaskService).save(any(QuarkTransferTask.class));
     }
 
     @Test
@@ -147,6 +196,97 @@ class ResourceDiscoveryServiceImplTest {
         verify(discoveryService).save(discovery.capture());
         assertEquals("DISCOVERED", discovery.getValue().getStatus());
         verify(xunleiTransferTaskService).save(any(XunleiTransferTask.class));
+    }
+
+    @Test
+    void deferredDiscoverySavesCandidatesWithoutCreatingTransferTasks() {
+        task.setPayload("""
+                {
+                  "movieId": "tmdb_movie_278",
+                  "keyword": "肖申克的救赎 1994",
+                  "source": "AUTO",
+                  "maxResults": 10,
+                  "deferTransfer": true
+                }
+                """);
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(resource(
+                "肖申克的救赎 4K REMUX",
+                "https://pan.quark.cn/s/deferred",
+                "GYING")));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(1, result.getDiscovered());
+        assertEquals(0, result.getTransferTasksCreated());
+        verify(discoveryService).save(any(ResourceDiscoveryResult.class));
+        verify(quarkTransferTaskService, never()).save(any());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @Test
+    void ensureTransferTaskCreatesOnlySelectedQuarkTask() {
+        ResourceDiscoveryResult discovery = discovery(
+                101L,
+                "QUARK",
+                "https://pan.quark.cn/s/selected");
+        when(discoveryService.getById(discovery.getId())).thenReturn(discovery);
+        when(quarkTransferTaskService.save(any(QuarkTransferTask.class))).thenReturn(true);
+
+        assertTrue(service.ensureTransferTask(discovery.getId()));
+
+        ArgumentCaptor<QuarkTransferTask> saved = ArgumentCaptor.forClass(QuarkTransferTask.class);
+        verify(quarkTransferTaskService).save(saved.capture());
+        assertEquals(discovery.getId(), saved.getValue().getDiscoveryResultId());
+        assertEquals(discovery.getOriginalUrl(), saved.getValue().getOriginalUrl());
+        assertEquals("PENDING", saved.getValue().getStatus());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @Test
+    void ensureTransferTaskCreatesOnlySelectedXunleiTask() {
+        ResourceDiscoveryResult discovery = discovery(
+                102L,
+                "XUNLEI",
+                "https://pan.xunlei.com/s/selected");
+        when(discoveryService.getById(discovery.getId())).thenReturn(discovery);
+        when(xunleiTransferTaskService.save(any(XunleiTransferTask.class))).thenReturn(true);
+
+        assertTrue(service.ensureTransferTask(discovery.getId()));
+
+        ArgumentCaptor<XunleiTransferTask> saved = ArgumentCaptor.forClass(XunleiTransferTask.class);
+        verify(xunleiTransferTaskService).save(saved.capture());
+        assertEquals(discovery.getId(), saved.getValue().getDiscoveryResultId());
+        assertEquals(discovery.getOriginalUrl(), saved.getValue().getOriginalUrl());
+        assertEquals("PENDING", saved.getValue().getStatus());
+        verify(quarkTransferTaskService, never()).save(any());
+    }
+
+    @Test
+    void ensureTransferTaskReusesExistingTaskWithoutSavingDuplicate() {
+        ResourceDiscoveryResult discovery = discovery(
+                103L,
+                "QUARK",
+                "https://pan.quark.cn/s/existing");
+        QuarkTransferTask existing = new QuarkTransferTask();
+        existing.setId(900L);
+        when(discoveryService.getById(discovery.getId())).thenReturn(discovery);
+        when(quarkTransferTaskService.getOne(any(), org.mockito.ArgumentMatchers.eq(false)))
+                .thenReturn(existing);
+
+        assertTrue(service.ensureTransferTask(discovery.getId()));
+
+        verify(quarkTransferTaskService, never()).save(any());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    private ResourceDiscoveryResult discovery(long id, String provider, String url) {
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(id);
+        discovery.setMovieId(movie.getId());
+        discovery.setProvider(provider);
+        discovery.setOriginalUrl(url);
+        discovery.setOriginalUrlHash("hash-" + id);
+        return discovery;
     }
 
     private DiscoveredResource resource(String title, String url, String source) {

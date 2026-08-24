@@ -48,4 +48,17 @@ class ResourceHubConfigServiceImplTest {
         assertEquals("current-captcha", properties.getXunlei().getCaptchaToken());
         verifyNoInteractions(sysConfigService);
     }
+
+    @Test
+    void exposesJwtAuthorizationExpirationWithoutExposingToken() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setAuthorization("Bearer eyJhbGciOiJub25lIn0.eyJleHAiOjQxMDI0NDQ4MDB9.signature");
+        ResourceHubConfigServiceImpl service = new ResourceHubConfigServiceImpl(
+                properties, mock(ISysConfigService.class));
+
+        ResourceHubConfigResponse response = service.getConfig();
+
+        assertEquals("2100-01-01T00:00:00Z", response.getXunleiAuthorizationExpiresAt());
+        assertTrue(!response.isXunleiAuthorizationExpired());
+    }
 }

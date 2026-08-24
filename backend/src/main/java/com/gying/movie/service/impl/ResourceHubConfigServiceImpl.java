@@ -10,8 +10,15 @@ import com.gying.movie.service.ISysConfigService;
 import jakarta.annotation.PostConstruct;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,10 +49,18 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     private final ResourceHubProperties properties;
     private final ISysConfigService sysConfigService;
+    private final ObjectMapper objectMapper;
 
     public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService) {
+        this(properties, sysConfigService, new ObjectMapper());
+    }
+
+    @Autowired
+    public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService,
+            ObjectMapper objectMapper) {
         this.properties = properties;
         this.sysConfigService = sysConfigService;
+        this.objectMapper = objectMapper;
     }
 
     @PostConstruct
@@ -222,6 +237,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubConfigResponse response = new ResourceHubConfigResponse();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
         response.setXunleiAuthorizationConfigured(xunlei != null && hasText(xunlei.getAuthorization()));
+        String expiresAt = xunleiAuthorizationExpiresAt(xunlei == null ? null : xunlei.getAuthorization());
+        response.setXunleiAuthorizationExpiresAt(expiresAt);
+        response.setXunleiAuthorizationExpired(expiresAt != null
+                && Instant.parse(expiresAt).isBefore(Instant.now()));
         response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
@@ -246,6 +265,25 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setWorkerQuarkLimit(worker.getQuarkLimit());
         response.setWorkerPublishLimit(worker.getPublishLimit());
         return response;
+    }
+
+    private String xunleiAuthorizationExpiresAt(String authorization) {
+        if (!hasText(authorization)) {
+            return null;
+        }
+        try {
+            String token = authorization.trim().replaceFirst("(?i)^Bearer\\s+", "");
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) {
+                return null;
+            }
+            JsonNode payload = objectMapper.readTree(new String(
+                    Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8));
+            long exp = payload.path("exp").asLong(0);
+            return exp <= 0 ? null : DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochSecond(exp));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private void ensureDefaults() {

@@ -11,4 +11,5 @@ public class ResourceDiscoveryRequest {
     private Integer maxResults;
     private Boolean refresh;
     private Boolean runNow;
+    private Boolean deferTransfer;
 }

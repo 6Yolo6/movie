@@ -754,6 +754,21 @@ def fetch_movie_resource_snapshot(type_code, mid):
     resources = fetch_download_resources(type_code, mid, [], target_user="")
     for resource in resources:
         resource["is_own"] = resource.get("uploader") == TARGET_USER
+    # /res/downurl may omit an already-published item or return stale public data.
+    # The authenticated content list is authoritative for duplicate prevention.
+    owned = list_my_pan_resources(limit=1000, max_pages=50, type_code=type_code, mid=mid)
+    by_source = {item.get("source_id"): item for item in resources if item.get("source_id")}
+    by_url = {item.get("url"): item for item in resources if item.get("url")}
+    for item in owned:
+        existing = by_source.get(item.get("source_id")) or by_url.get(item.get("url"))
+        if existing is None:
+            resources.append(item)
+        else:
+            existing.update(item)
+        if item.get("url"):
+            by_url[item.get("url")] = existing or item
+        if item.get("source_id"):
+            by_source[item.get("source_id")] = existing or item
     title = metadata.get("title") or metadata.get("name") or metadata.get("ename")
     series_name, season = parse_season(title, type_code)
     return {
@@ -818,17 +833,22 @@ def fetch_user_content_page(page=1):
         })
     return {"resources": resources, "page": data.get("page") or {}}
 
-def list_my_pan_resources(limit=200, max_pages=50, source_ids=None):
+def list_my_pan_resources(limit=200, max_pages=50, source_ids=None, type_code=None, mid=None):
     safe_limit = min(max(int(limit), 1), 1000)
     target_ids = {str(value).strip() for value in (source_ids or []) if str(value).strip()}
     resources = []
     for page in range(1, max_pages + 1):
         result = fetch_user_content_page(page)
         page_resources = result["resources"]
+        matching = page_resources
+        if type_code or mid:
+            matching = [item for item in matching
+                        if (not type_code or item.get("type_code") == type_code)
+                        and (not mid or item.get("mid") == mid)]
         if target_ids:
-            resources.extend(item for item in page_resources if item.get("source_id") in target_ids)
+            resources.extend(item for item in matching if item.get("source_id") in target_ids)
         else:
-            resources.extend(page_resources)
+            resources.extend(matching)
         found_ids = {item.get("source_id") for item in resources}
         if (target_ids and target_ids.issubset(found_ids)) or len(resources) >= safe_limit or not page_resources:
             break

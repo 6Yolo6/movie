@@ -6,6 +6,7 @@ import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
+import com.gying.movie.client.XunleiClient;
 import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.QuarkTransferRunResult;
@@ -496,56 +497,39 @@ public class GyingSourceWorkflowService {
         return items;
     }
 
+    public Map<String, Object> ensureMovieMetadata(String typeCode, String mid) {
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, false);
+        Map<String, Object> result = movieMetadataResult(ingested);
+        result.put("status", "METADATA_READY");
+        return result;
+    }
+
     public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
-        String safeType = normalizeTypeCode(typeCode);
-        String safeMid = required(mid, "GYING movie id");
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + safeType + "/" + safeMid);
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
+        String safeType = ingested.typeCode();
+        String safeMid = ingested.mid();
+        Map<String, Object> snapshot = ingested.snapshot();
+        MovieMetadata movie = ingested.movie();
         List<Map<String, Object>> allResources = mapList(snapshot.get("resources"));
         List<Map<String, Object>> ownResources = mapList(snapshot.get("ownResources"));
 
-        GyingMetadataMatcher.SourceMetadata sourceMetadata = sourceMetadata(safeType, snapshot);
-        MovieMetadata canonical = resolveLocalMovie(
-                safeType, safeMid, sourceMetadata.title(), sourceMetadata.year());
-        MovieMetadata seriesTemplate = canonical == null ? findSeriesTemplate(sourceMetadata) : null;
-        String localMovieId = canonical != null
-                ? canonical.getId()
-                : seriesTemplate != null ? seasonMovieId(seriesTemplate, sourceMetadata.season()) : safeMid;
-        gyingSourceClient.post("/ingest", Map.of(
-                "typeCode", safeType,
-                "mid", safeMid,
-                "targetMovieId", localMovieId,
-                "uploadPoster", true));
-        MovieMetadata movie = movieService.getById(localMovieId);
-        if (movie == null) {
-            throw new IllegalStateException("Movie was not saved after GYING ingest: " + localMovieId);
-        }
-        if (seriesTemplate != null) {
-            movie.setTmdbId(seriesTemplate.getTmdbId());
-            movie.setTmdbType(seriesTemplate.getTmdbType());
-            movie.setSeriesName(firstText(
-                    SeasonSearchUtils.baseTitle(sourceMetadata.title()),
-                    seriesTemplate.getSeriesName()));
-            movie.setSeason(sourceMetadata.season());
-            movie.setUpdatedAt(LocalDateTime.now());
-            movieService.updateById(movie);
-        }
-        bindSourceIdentities(movie, safeType, safeMid, sourceMetadata);
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("typeCode", safeType);
-        result.put("mid", safeMid);
-        result.put("localMovieId", movie.getId());
-        result.put("title", firstText(movie.getTitleCn(), stringValue(snapshot.get("title")), safeMid));
-        result.put("siteResourceCount", allResources.size());
-        result.put("ownSiteResourceCount", ownResources.size());
+        Map<String, Object> result = movieMetadataResult(ingested);
 
         if (!ownResources.isEmpty()) {
+            String ownState = ownResourceState(ownResources);
             ResourceLink own = findResourceBySourceIds(movie.getId(),
                     ownResources.stream().map(item -> stringValue(item.get("source_id"))).toList());
-            result.put("status", "ALREADY_PUBLISHED");
+            result.put("status", ownState);
             result.put("resourceId", own == null ? null : own.getId());
             result.put("sourceId", stringValue(ownResources.get(0).get("source_id")));
-            markMovieAvailable(movie);
+            if ("ALREADY_PUBLISHED".equals(ownState)) {
+                markMovieAvailable(movie);
+            } else if ("ALREADY_PUBLISHED_NEEDS_REPAIR".equals(ownState)) {
+                result.put("repairRequired", true);
+                result.put("repairHint", "Use the published-resource health repair action");
+            } else {
+                result.put("healthCheckRequired", true);
+            }
             return result;
         }
 
@@ -590,6 +574,60 @@ public class GyingSourceWorkflowService {
         result.put("sourceId", publishedSourceId);
         result.put("site", published.get("site"));
         markMovieAvailable(movie);
+        return result;
+    }
+
+    private GyingMovieMetadata ingestMovieMetadata(
+            String typeCode,
+            String mid,
+            boolean includeResources) {
+        String safeType = normalizeTypeCode(typeCode);
+        String safeMid = required(mid, "GYING movie id");
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + safeType + "/" + safeMid);
+
+        GyingMetadataMatcher.SourceMetadata sourceMetadata = sourceMetadata(safeType, snapshot);
+        MovieMetadata canonical = resolveLocalMovie(
+                safeType, safeMid, sourceMetadata.title(), sourceMetadata.year());
+        MovieMetadata seriesTemplate = canonical == null ? findSeriesTemplate(sourceMetadata) : null;
+        String localMovieId = canonical != null
+                ? canonical.getId()
+                : seriesTemplate != null ? seasonMovieId(seriesTemplate, sourceMetadata.season()) : safeMid;
+        gyingSourceClient.post("/ingest", Map.of(
+                "typeCode", safeType,
+                "mid", safeMid,
+                "targetMovieId", localMovieId,
+                "uploadPoster", true,
+                "includeResources", includeResources));
+        MovieMetadata movie = movieService.getById(localMovieId);
+        if (movie == null) {
+            throw new IllegalStateException("Movie was not saved after GYING ingest: " + localMovieId);
+        }
+        if (seriesTemplate != null) {
+            movie.setTmdbId(seriesTemplate.getTmdbId());
+            movie.setTmdbType(seriesTemplate.getTmdbType());
+            movie.setSeriesName(firstText(
+                    SeasonSearchUtils.baseTitle(sourceMetadata.title()),
+                    seriesTemplate.getSeriesName()));
+            movie.setSeason(sourceMetadata.season());
+            movie.setUpdatedAt(LocalDateTime.now());
+            movieService.updateById(movie);
+        }
+        bindSourceIdentities(movie, safeType, safeMid, sourceMetadata);
+        return new GyingMovieMetadata(safeType, safeMid, snapshot, movie);
+    }
+
+    private Map<String, Object> movieMetadataResult(GyingMovieMetadata ingested) {
+        Map<String, Object> snapshot = ingested.snapshot();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("typeCode", ingested.typeCode());
+        result.put("mid", ingested.mid());
+        result.put("localMovieId", ingested.movie().getId());
+        result.put("title", firstText(
+                ingested.movie().getTitleCn(),
+                stringValue(snapshot.get("title")),
+                ingested.mid()));
+        result.put("siteResourceCount", mapList(snapshot.get("resources")).size());
+        result.put("ownSiteResourceCount", mapList(snapshot.get("ownResources")).size());
         return result;
     }
 
@@ -661,6 +699,70 @@ public class GyingSourceWorkflowService {
 
     public Map<String, Object> checkPublishedResources(int limit, boolean updateLocal) {
         return checkPublishedResources(limit, Set.of(), updateLocal);
+    }
+
+    public Map<String, Object> syncMyPublishedResources(int limit) {
+        int safeLimit = Math.min(Math.max(limit, 1), 1000);
+        List<Map<String, Object>> published = mapList(
+                gyingSourceClient.get("/my-resources?limit=" + safeLimit).get("items"));
+        Map<String, MovieMetadata> movies = new LinkedHashMap<>();
+        List<Map<String, Object>> items = new ArrayList<>();
+        int imported = 0;
+        int skipped = 0;
+        int failed = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (Map<String, Object> sourceItem : published) {
+            Map<String, Object> item = new LinkedHashMap<>(sourceItem);
+            try {
+                ResourceLink existing = findLocalPublishedResource(item);
+                if (existing != null) {
+                    item.put("status", "SKIPPED");
+                    item.put("resourceId", existing.getId());
+                    item.put("localMovieId", existing.getMovieId());
+                    skipped++;
+                    items.add(item);
+                    continue;
+                }
+                String typeCode = normalizeTypeCode(stringValue(item.get("type_code")));
+                String mid = required(stringValue(item.get("mid")), "GYING movie id");
+                String movieKey = siteKey(typeCode, mid);
+                MovieMetadata movie = movies.get(movieKey);
+                if (movie == null) {
+                    movie = ingestMovieMetadata(typeCode, mid, false).movie();
+                    movies.put(movieKey, movie);
+                }
+                String url = required(stringValue(item.get("url")), "published resource URL");
+                String title = firstText(stringValue(item.get("title")), movie.getTitleCn(), movie.getTitleEn(), mid);
+                String provider = firstText(stringValue(item.get("provider")), "QUARK");
+                ResourceLink resource = new ResourceLink();
+                applyRepairedLink(resource, item, movie, title, url, provider);
+                resource.setCode(trim(stringValue(item.get("code")), 50));
+                resourceLinkService.save(resource);
+                markMovieAvailable(movie);
+                item.put("status", "IMPORTED");
+                item.put("resourceId", resource.getId());
+                item.put("localMovieId", movie.getId());
+                imported++;
+            } catch (Exception error) {
+                failed++;
+                item.put("status", "FAILED");
+                item.put("error", safeText(error.getMessage()));
+                if (errors.size() < 20) {
+                    errors.add(firstText(stringValue(item.get("source_id")), "unknown") + ": "
+                            + safeText(error.getMessage()));
+                }
+            }
+            items.add(item);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("checked", published.size());
+        result.put("imported", imported);
+        result.put("skipped", skipped);
+        result.put("failed", failed);
+        result.put("items", items);
+        result.put("errors", errors);
+        return result;
     }
 
     public Map<String, Object> checkPublishedResourcesBySourceIds(
@@ -758,6 +860,182 @@ public class GyingSourceWorkflowService {
         return repairCheckedPublishedResources(checked);
     }
 
+    /**
+     * Repair a movie as a whole.  Unlike the resource-id endpoint this also
+     * fills a missing provider, so an invalid Quark link and a missing Xunlei
+     * link can be fixed in one operation.
+     */
+    public Map<String, Object> repairPublishedResourcesByMovieKeys(List<String> movieKeys) {
+        if (movieKeys == null || movieKeys.isEmpty()) {
+            throw new IllegalArgumentException("At least one movie key is required");
+        }
+        List<Map<String, Object>> items = new ArrayList<>();
+        int repaired = 0;
+        int failed = 0;
+        int skipped = 0;
+        int reshared = 0;
+        int retransferred = 0;
+        List<String> errors = new ArrayList<>();
+        for (String key : new LinkedHashSet<>(movieKeys)) {
+            try {
+                String[] parts = requiredMovieKey(key);
+                Map<String, Object> item = repairOneMovie(parts[0], parts[1]);
+                items.add(item);
+                repaired += integerValue(item.get("repaired")) == null ? 0 : integerValue(item.get("repaired"));
+                reshared += integerValue(item.get("reshared")) == null ? 0 : integerValue(item.get("reshared"));
+                retransferred += integerValue(item.get("retransferred")) == null ? 0 : integerValue(item.get("retransferred"));
+                skipped += integerValue(item.get("skipped")) == null ? 0 : integerValue(item.get("skipped"));
+                failed += integerValue(item.get("failed")) == null ? 0 : integerValue(item.get("failed"));
+                stringList(item.get("xunleiErrors")).stream()
+                        .map(error -> key + ": " + error)
+                        .limit(Math.max(0, 20 - errors.size()))
+                        .forEach(errors::add);
+                if (hasText(stringValue(item.get("repairError"))) && errors.size() < 20) {
+                    errors.add(key + ": " + stringValue(item.get("repairError")));
+                }
+            } catch (Exception error) {
+                failed++;
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("movieKey", key);
+                item.put("repairStatus", "FAILED");
+                item.put("repairError", safeText(error.getMessage()));
+                items.add(item);
+                if (errors.size() < 20) errors.add(key + ": " + safeText(error.getMessage()));
+            }
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("checked", items.size());
+        result.put("repaired", repaired);
+        result.put("reshared", reshared);
+        result.put("retransferred", retransferred);
+        result.put("skipped", skipped);
+        result.put("failed", failed);
+        result.put("items", items);
+        result.put("errors", errors);
+        return result;
+    }
+
+    public Map<String, Object> repairPublishedResourcesByKeys(List<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            throw new IllegalArgumentException("At least one resource ID or movie key is required");
+        }
+        List<String> movieKeys = keys.stream()
+                .filter(value -> value != null && value.matches("(?i)(mv|tv|ac)/.+"))
+                .toList();
+        List<String> sourceIds = keys.stream()
+                .filter(value -> value == null || !value.matches("(?i)(mv|tv|ac)/.+"))
+                .toList();
+        if (movieKeys.isEmpty()) return repairPublishedResourcesBySourceIds(sourceIds);
+        if (sourceIds.isEmpty()) return repairPublishedResourcesByMovieKeys(movieKeys);
+        Map<String, Object> resources = repairPublishedResourcesBySourceIds(sourceIds);
+        Map<String, Object> movies = repairPublishedResourcesByMovieKeys(movieKeys);
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (String field : List.of("checked", "repaired", "reshared", "retransferred", "skipped", "failed")) {
+            int left = integerValue(resources.get(field)) == null ? 0 : integerValue(resources.get(field));
+            int right = integerValue(movies.get(field)) == null ? 0 : integerValue(movies.get(field));
+            result.put(field, left + right);
+        }
+        List<Map<String, Object>> items = new ArrayList<>(mapList(resources.get("items")));
+        items.addAll(mapList(movies.get("items")));
+        result.put("items", items);
+        List<String> errors = new ArrayList<>();
+        errors.addAll(stringList(resources.get("errors")));
+        errors.addAll(stringList(movies.get("errors")));
+        result.put("errors", errors.stream().limit(20).toList());
+        return result;
+    }
+
+    private String[] requiredMovieKey(String value) {
+        String key = required(value, "movie key").trim();
+        String[] parts = key.split("/", 2);
+        if (parts.length != 2 || !TYPE_CODES.contains(parts[0].toLowerCase(Locale.ROOT))
+                || !hasText(parts[1])) {
+            throw new IllegalArgumentException("Movie key must be mv|tv|ac/{GYING movie id}");
+        }
+        return new String[] { parts[0].toLowerCase(Locale.ROOT), parts[1].trim() };
+    }
+
+    private Map<String, Object> repairOneMovie(String typeCode, String mid) {
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        List<Map<String, Object>> own = mapList(snapshot.get("ownResources"));
+        Map<String, LinkCheckResult> checks = new LinkedHashMap<>();
+        Map<String, String> links = new LinkedHashMap<>();
+        for (Map<String, Object> item : own) {
+            String url = stringValue(item.get("url"));
+            if (hasText(url)) links.putIfAbsent(url, firstText(stringValue(item.get("provider")), "QUARK"));
+        }
+        if (!links.isEmpty()) {
+            checks.putAll(panSouClient.checkLinksByProvider(links));
+        }
+        List<Map<String, Object>> invalid = own.stream().filter(item -> {
+            LinkCheckResult check = checks.get(stringValue(item.get("url")));
+            return check != null && check.checked() && !check.valid();
+        }).map(item -> {
+            Map<String, Object> enriched = new LinkedHashMap<>(item);
+            enriched.putIfAbsent("type_code", typeCode);
+            enriched.putIfAbsent("mid", mid);
+            enriched.putIfAbsent("provider", firstText(stringValue(item.get("provider")), "QUARK"));
+            enriched.put("checkStatus", "INVALID");
+            return enriched;
+        }).toList();
+        Map<String, Object> checked = new LinkedHashMap<>();
+        checked.put("items", invalid);
+        checked.put("checked", invalid.size());
+        checked.put("invalid", invalid.size());
+        Map<String, Object> repairedExisting = repairCheckedPublishedResources(checked);
+
+        Map<String, Object> refreshed = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        boolean hasXunlei = mapList(refreshed.get("ownResources")).stream()
+                .anyMatch(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))));
+        int retransferred = integerValue(repairedExisting.get("retransferred")) == null ? 0 : integerValue(repairedExisting.get("retransferred"));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("movieKey", typeCode + "/" + mid);
+        result.put("repaired", integerValue(repairedExisting.get("repaired")) == null ? 0 : repairedExisting.get("repaired"));
+        result.put("reshared", integerValue(repairedExisting.get("reshared")) == null ? 0 : repairedExisting.get("reshared"));
+        result.put("retransferred", retransferred);
+        result.put("skipped", 0);
+        result.put("failed", repairedExisting.get("failed"));
+        if (!hasXunlei) {
+            GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
+            List<Map<String, Object>> xunleiResources = mapList(ingested.snapshot().get("resources")).stream()
+                    .filter(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))))
+                    .toList();
+            List<Map<String, Object>> candidates = selectTransferCandidates(xunleiResources);
+            boolean added = false;
+            List<String> xunleiErrors = new ArrayList<>();
+            int xunleiAttempts = 0;
+            for (Map<String, Object> candidate : candidates) {
+                xunleiAttempts++;
+                try {
+                    ResourceLink local = transferAndPublishLocally(ingested.movie(), candidate);
+                    Map<String, Object> published = publishLocalResource(typeCode, mid, ingested.movie(), local);
+                    verifyPublishedUpdate(typeCode, mid, required(stringValue(published.get("sourceId")), "published GYING source id"), local.getUrl());
+                    result.put("xunleiStatus", "PUBLISHED");
+                    result.put("retransferred", retransferred + 1);
+                    result.put("repaired", (integerValue(result.get("repaired")) == null
+                            ? 0 : integerValue(result.get("repaired"))) + 1);
+                    added = true;
+                    break;
+                } catch (Exception error) {
+                    if (xunleiErrors.size() < 10) {
+                        xunleiErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
+                                + ": " + safeText(error.getMessage()));
+                    }
+                }
+            }
+            if (!added) {
+                result.put("xunleiStatus", candidates.isEmpty() ? "NO_CANDIDATE" : "FAILED");
+                result.put("xunleiAttempts", xunleiAttempts);
+                result.put("xunleiErrors", xunleiErrors);
+                result.put("repairStatus", "PARTIAL");
+                result.put("failed", (integerValue(result.get("failed")) == null ? 0 : integerValue(result.get("failed"))) + 1);
+            }
+        } else {
+            result.put("xunleiStatus", "ALREADY_PUBLISHED");
+        }
+        return result;
+    }
+
     private Map<String, Object> repairCheckedPublishedResources(Map<String, Object> checked) {
         List<Map<String, Object>> items = mapList(checked.get("items"));
         int repaired = 0;
@@ -772,7 +1050,9 @@ public class GyingSourceWorkflowService {
             }
             try {
                 ResourceLink local = findLocalPublishedResource(item);
-                QuarkTransferTask transfer = findRepairTransfer(local, item);
+                String provider = firstText(stringValue(item.get("provider")), local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
+                QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+                XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider) ? findRepairXunleiTransfer(local, item) : null;
                 MovieMetadata movie = local == null ? null : movieService.getById(local.getMovieId());
                 if (movie == null && transfer != null) {
                     movie = movieService.getById(transfer.getMovieId());
@@ -791,8 +1071,27 @@ public class GyingSourceWorkflowService {
                         transfer.setUpdatedAt(LocalDateTime.now());
                         transferTaskService.updateById(transfer);
                         newUrl = quarkShareService.ensureShareUrl(transfer);
-                        requireConfirmedValid(newUrl);
+                        requireConfirmedValid(newUrl, "QUARK");
                         repairMode = "RESHARED";
+                    } catch (Exception error) {
+                        reshareError = safeText(error.getMessage());
+                        newUrl = null;
+                    }
+                }
+
+                if (!hasText(newUrl) && xunleiTransfer != null && hasText(xunleiTransfer.getSavedPath())) {
+                    try {
+                        xunleiTransfer.setStatus("WAITING_SHARE");
+                        xunleiTransfer.setLastError(null);
+                        xunleiTransfer.setUpdatedAt(LocalDateTime.now());
+                        xunleiTransferTaskService.updateById(xunleiTransfer);
+                        xunleiTransferRunnerService.submitOne(xunleiTransfer.getId());
+                        xunleiTransfer = xunleiTransferTaskService.getById(xunleiTransfer.getId());
+                        newUrl = xunleiTransfer == null ? null : xunleiTransfer.getShareUrl();
+                        if (hasText(newUrl)) {
+                            requireConfirmedValid(newUrl, "XUNLEI");
+                            repairMode = "RESHARED";
+                        }
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -809,12 +1108,16 @@ public class GyingSourceWorkflowService {
                             local = findLocalPublishedResource(item);
                         }
                     }
-                    List<Map<String, Object>> candidates = selectTransferCandidates(mapList(snapshot.get("resources")));
+                    List<Map<String, Object>> providerResources = mapList(snapshot.get("resources")).stream()
+                            .filter(candidate -> provider.equalsIgnoreCase(firstText(
+                                    stringValue(candidate.get("provider")), "QUARK")))
+                            .toList();
+                    List<Map<String, Object>> candidates = selectTransferCandidates(providerResources);
                     List<String> candidateErrors = new ArrayList<>();
                     for (Map<String, Object> candidate : candidates) {
                         try {
                             transferOutcome = transferCandidate(movie, candidate);
-                            requireConfirmedValid(transferOutcome.shareUrl());
+                            requireConfirmedValid(transferOutcome.shareUrl(), stringValue(candidate.get("provider")));
                             newUrl = transferOutcome.shareUrl();
                             repairMode = "RETRANSFERRED";
                             break;
@@ -851,7 +1154,8 @@ public class GyingSourceWorkflowService {
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
                 ResourceLink updated = local == null ? new ResourceLink() : local;
-                applyRepairedLink(updated, item, movie, title, newUrl);
+                applyRepairedLink(updated, item, movie, title, newUrl,
+                        transferOutcome == null ? provider : transferOutcome.discovery().getProvider());
                 if (updated.getId() == null) {
                     resourceLinkService.save(updated);
                 } else {
@@ -1010,6 +1314,7 @@ public class GyingSourceWorkflowService {
     }
 
     private TransferOutcome transferXunleiCandidate(MovieMetadata movie, Map<String, Object> candidate, String originalUrl) {
+        originalUrl = XunleiClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         LocalDateTime now = LocalDateTime.now();
         ResourceDiscoveryResult discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
@@ -1072,6 +1377,10 @@ public class GyingSourceWorkflowService {
         Map<String, LinkCheckResult> resolvedChecks = checks;
         return ordered.stream()
                 .filter(item -> {
+                    if ("XUNLEI".equalsIgnoreCase(firstText(
+                            stringValue(item.get("provider")), "QUARK"))) {
+                        return true;
+                    }
                     LinkCheckResult check = resolvedChecks.get(stringValue(item.get("url")));
                     return check == null || !check.checked() || check.valid();
                 })
@@ -1144,12 +1453,48 @@ public class GyingSourceWorkflowService {
                 .last("LIMIT 1"), false);
     }
 
+    private XunleiTransferTask findRepairXunleiTransfer(ResourceLink local, Map<String, Object> item) {
+        String url = stringValue(item.get("url"));
+        if (hasText(url)) {
+            XunleiTransferTask byUrl = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("share_url", url).orderByDesc("updated_at").last("LIMIT 1"), false);
+            if (byUrl != null && hasText(byUrl.getSavedPath())) return byUrl;
+        }
+        if (local == null || !hasText(local.getMovieId())) return null;
+        return xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", local.getMovieId()).isNotNull("saved_path")
+                .in("status", List.of("SUBMITTED", "FAILED", "WAITING_SHARE"))
+                .orderByDesc("updated_at").last("LIMIT 1"), false);
+    }
+
+    private String ownResourceState(List<Map<String, Object>> ownResources) {
+        Map<String, String> links = new LinkedHashMap<>();
+        for (Map<String, Object> item : ownResources) {
+            String url = stringValue(item.get("url"));
+            if (hasText(url)) links.putIfAbsent(url, firstText(stringValue(item.get("provider")), "QUARK"));
+        }
+        if (links.isEmpty()) return "ALREADY_PUBLISHED_CHECK_REQUIRED";
+        try {
+            Map<String, LinkCheckResult> checks = panSouClient.checkLinksByProvider(links);
+            if (checks.values().stream().anyMatch(check -> check != null && check.checked() && check.valid())) {
+                return "ALREADY_PUBLISHED";
+            }
+            if (checks.values().stream().anyMatch(check -> check != null && check.checked() && !check.valid())) {
+                return "ALREADY_PUBLISHED_NEEDS_REPAIR";
+            }
+            return "ALREADY_PUBLISHED_CHECK_REQUIRED";
+        } catch (Exception ignored) {
+            return "ALREADY_PUBLISHED_CHECK_REQUIRED";
+        }
+    }
+
     private void applyRepairedLink(
             ResourceLink link,
             Map<String, Object> item,
             MovieMetadata movie,
             String title,
-            String newUrl) {
+            String newUrl,
+            String provider) {
         LocalDateTime now = LocalDateTime.now();
         boolean creating = link.getId() == null;
         if (creating || !hasText(link.getMovieId())) {
@@ -1159,7 +1504,7 @@ public class GyingSourceWorkflowService {
         }
         link.setName(trim(firstText(title, stringValue(item.get("title")), "GYING Resource"), 255));
         link.setType("DISK");
-        link.setProvider("QUARK");
+        link.setProvider(firstText(provider, "QUARK").toUpperCase(Locale.ROOT));
         link.setUrl(newUrl);
         link.setUrlHash(ResourceHubHashUtils.sha256(newUrl));
         link.setCode(null);
@@ -1203,9 +1548,13 @@ public class GyingSourceWorkflowService {
         return saved;
     }
 
-    private void requireConfirmedValid(String url) {
-        String safeUrl = required(url, "new Quark share URL");
-        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, "QUARK")).get(safeUrl);
+    private void requireConfirmedValid(String url, String provider) {
+        String safeUrl = required(url, "new cloud share URL");
+        String safeProvider = firstText(provider, "QUARK").toUpperCase(Locale.ROOT);
+        if ("XUNLEI".equals(safeProvider)) {
+            return;
+        }
+        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, safeProvider)).get(safeUrl);
         if (check == null || !check.checked()) {
             throw new IllegalStateException("Unable to confirm new Quark share: "
                     + (check == null ? "missing link check result" : safeText(check.message())));
@@ -1760,6 +2109,13 @@ public class GyingSourceWorkflowService {
             Map<String, Object> candidate,
             GyingMetadataMatcher.SourceMetadata source,
             GyingMetadataMatcher.MatchEvidence evidence) {
+    }
+
+    private record GyingMovieMetadata(
+            String typeCode,
+            String mid,
+            Map<String, Object> snapshot,
+            MovieMetadata movie) {
     }
 
     private record TransferOutcome(

@@ -236,6 +236,17 @@ public class GyingSourceAdminController {
                 () -> workflowService.checkPublishedResources(safeLimit, true)));
     }
 
+    @PostMapping("/published-resources/sync")
+    public ResponseEntity<?> syncPublishedResources(
+            @RequestParam(defaultValue = "500") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        int safeLimit = Math.min(Math.max(limit, 1), 1000);
+        return ResponseEntity.ok(startJob(
+                "SYNC_PUBLISHED",
+                () -> workflowService.syncMyPublishedResources(safeLimit)));
+    }
+
     @PostMapping("/published-resources/repair")
     public ResponseEntity<?> repairPublishedResources(
             @RequestParam(defaultValue = "200") int limit,
@@ -254,7 +265,7 @@ public class GyingSourceAdminController {
         authHelper.requireAdmin(token);
         return ResponseEntity.ok(startJob(
                 "REPAIR_PUBLISHED_BY_IDS",
-                () -> workflowService.repairPublishedResourcesBySourceIds(sourceIds)));
+                () -> workflowService.repairPublishedResourcesByKeys(sourceIds)));
     }
 
     @GetMapping("/jobs/{jobId}")

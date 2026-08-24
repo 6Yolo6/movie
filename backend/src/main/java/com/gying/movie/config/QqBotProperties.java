@@ -16,7 +16,8 @@ public class QqBotProperties {
     private String blockedKeywords;
     private boolean autoTransfer = true;
     private String defaultReply = "机器人使用方法：@机器人 搜/找 影片名\n"
-            + "影片上下文保留 5 分钟，可回复指定网盘及数量，例如“百度 3”“夸克 2”或“资源 8”。";
+            + "影片上下文保留 5 分钟；先选择影片，再从资源名称/画质候选中回复单个序号。"
+            + "可回复“夸克”或“迅雷”筛选；不支持按数量批量转存。";
     private String replyProvider = "napcat";
     private Napcat napcat = new Napcat();
     private Qqbot qqbot = new Qqbot();

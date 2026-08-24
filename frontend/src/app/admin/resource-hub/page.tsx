@@ -51,6 +51,8 @@ interface ApiEnvelope<T> {
 
 interface ResourceHubConfig {
     xunleiAuthorizationConfigured: boolean;
+    xunleiAuthorizationExpiresAt?: string | null;
+    xunleiAuthorizationExpired?: boolean;
     xunleiCaptchaConfigured: boolean;
     enabled: boolean;
     autoApprove: boolean;
@@ -1415,6 +1417,13 @@ export default function ResourceHubAdminPage() {
                                                         >
                                                             <Input.Password autoComplete="off" placeholder={t('resourceHubXunleiAuthorizationPlaceholder')} />
                                                         </Form.Item>
+                                                        {overview?.config.xunleiAuthorizationExpiresAt && (
+                                                            <Text type={overview.config.xunleiAuthorizationExpired ? 'danger' : 'secondary'}>
+                                                                {t('resourceHubXunleiAuthorizationExpiresAt', {
+                                                                    value: new Date(overview.config.xunleiAuthorizationExpiresAt).toLocaleString(),
+                                                                })}
+                                                            </Text>
+                                                        )}
                                                     </Col>
                                                     <Col xs={24} md={12}>
                                                         <Form.Item

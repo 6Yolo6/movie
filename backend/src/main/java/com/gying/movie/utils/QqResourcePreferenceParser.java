@@ -36,9 +36,7 @@ public final class QqResourcePreferenceParser {
         }
         String compact = normalize(value);
         Matcher countMatcher = TRAILING_COUNT.matcher(compact);
-        Integer requestedCount = null;
         if (countMatcher.find()) {
-            requestedCount = Integer.parseInt(countMatcher.group(1));
             compact = compact.substring(0, countMatcher.start());
         }
         compact = stripCommandWords(compact);
@@ -47,9 +45,15 @@ public final class QqResourcePreferenceParser {
             return null;
         }
         int safeMax = Math.max(maxCount, 1);
-        int count = requestedCount == null ? defaultCount : requestedCount;
-        count = Math.min(Math.max(count, 1), safeMax);
+        int count = Math.min(Math.max(defaultCount, 1), safeMax);
         return new ResourcePreference(provider, count);
+    }
+
+    public static boolean hasExplicitCount(String value) {
+        if (!hasText(value)) {
+            return false;
+        }
+        return TRAILING_COUNT.matcher(normalize(value)).find();
     }
 
     public static Set<String> supportedProviders() {

@@ -61,6 +61,7 @@
 - `POST /recent/ensure`：请求体为最近更新表格中所选的 `{typeCode,mid}` 数组，最多 60 部。
 - `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
 - `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
+- `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
 - `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
 
@@ -75,10 +76,10 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 - `GET /api/qq-bot/health`：机器人配置状态。
 - `POST /api/qq-bot/onebot?token=`：NapCat/OneBot 上报。
-- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本；`userKey` 维持 5 分钟影片/网盘上下文。资源结果必须包含已验证的自有夸克分享，OpenClaw 补丁据此生成二维码。
+- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本；`userKey` 维持 5 分钟影片和资源候选上下文。机器人收到 `/movie`、`/search`、`搜` 或 `找` 搜索后先回“正在搜索资源，请稍后...”，也支持无空格的“搜片名/找片名”。完成后先返回影片候选；用户选定影片后再返回包含片名、年份、类型、地区、TMDB 评分和简介的影片元数据，以及最多 10 条资源名称/画质候选，其中优先展示夸克资源。只有用户回复单个资源序号时才创建并执行对应的夸克或迅雷转存任务；成功回复会再次附带影片元数据和最终自有分享。可回复“夸克”或“迅雷”筛选候选，不支持“夸克10”等按数量批量转存指令。若所选分享失效，统一回复“该分享已失效，不可访问”，并保留候选上下文，用户可继续回复其他序号，无需重新搜索；无视频文件或平台违规/拦截时也会保留候选并提示继续选择。
 - `/api/admin/qq-automation/*`：配置、群搜索日志和频道发帖日志。
 
-查询先读取本地正式资源。无法精确命中时优先请求 GYING 搜索并返回带来源的影片候选，用户回复序号后才按选中的 GYING 类型和影片 ID 采集、转存；GYING 无可用资源时再进入本地 PanSou、外部 Panso API、转存和发布。模糊影片结果只返回候选，未选择前不触发资源链路。
+查询先读取本地正式资源。无法精确命中时优先请求 GYING 搜索并返回带来源的影片候选；用户回复影片序号后只导入对应元数据，再返回资源名称/画质候选。用户继续回复单个资源序号后，才按选中的资源和提供方创建、执行转存并发布自有分享；GYING 无可用资源时再进入本地 PanSou、外部 Panso API 的候选发现流程。模糊影片结果和资源候选在用户确认前都不会触发转存。
 
 ## 多平台发布
 

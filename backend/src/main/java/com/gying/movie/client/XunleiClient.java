@@ -3,6 +3,7 @@ package com.gying.movie.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 @Component
 public class XunleiClient {
@@ -195,13 +197,21 @@ public class XunleiClient {
     static String parseShareUrl(JsonNode response) {
         String url = firstTextStatic(
                 response.path("share_url").asText(null),
-                response.path("data").path("share_url").asText(null));
+                response.path("url").asText(null),
+                response.path("share").path("share_url").asText(null),
+                response.path("share").path("url").asText(null),
+                response.path("data").path("share_url").asText(null),
+                response.path("data").path("url").asText(null),
+                response.path("data").path("share").path("share_url").asText(null),
+                response.path("data").path("share").path("url").asText(null));
         if (!hasTextStatic(url)) {
             return null;
         }
         String passCode = firstTextStatic(
                 response.path("pass_code").asText(null),
-                response.path("data").path("pass_code").asText(null));
+                response.path("share").path("pass_code").asText(null),
+                response.path("data").path("pass_code").asText(null),
+                response.path("data").path("share").path("pass_code").asText(null));
         if (!hasTextStatic(passCode) || url.contains("pwd=")) {
             return url;
         }
@@ -216,11 +226,143 @@ public class XunleiClient {
         if (!matcher.matches()) throw new IllegalArgumentException("Invalid Xunlei share URL");
         String shareId = matcher.group(1);
         String passCode = UriComponentsBuilder.fromUriString(shareUrl).build().getQueryParams().getFirst("pwd");
-        JsonNode response = request(HttpMethod.GET, "/share?share_id=" + shareId + "&pass_code=" + (passCode == null ? "" : passCode) + "&limit=100", null);
-        String token = firstText(response.path("pass_code_token").asText(null), response.path("data").path("pass_code_token").asText(null));
-        List<String> fileIds = extractVideoFileIds(response);
+        ShareSelection selection = inspectShareFiles(shareId, passCode);
+        List<String> fileIds = selection.fileIds();
         if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no video files");
-        return new ShareInfo(shareId, passCode, token, fileIds, extractVideoFileNames(response));
+        return new ShareInfo(shareId, passCode, selection.passCodeToken(), fileIds, selection.fileNames());
+    }
+
+    private ShareSelection inspectShareFiles(String shareId, String passCode) {
+        ArrayDeque<String> folders = new ArrayDeque<>();
+        Set<String> visitedFolders = new HashSet<>();
+        Set<String> seenFiles = new HashSet<>();
+        Set<String> seenNames = new HashSet<>();
+        List<String> fileIds = new ArrayList<>();
+        List<String> fileNames = new ArrayList<>();
+        String passCodeToken = null;
+        IllegalStateException traversalError = null;
+
+        JsonNode root = requestSharePage(shareId, passCode, null, null, null);
+        passCodeToken = sharePassCodeToken(root, passCodeToken);
+        collectSharePage(root, folders, fileIds, fileNames, seenFiles, seenNames);
+        String rootPageToken = shareNextPageToken(root);
+        while (hasText(rootPageToken)) {
+            JsonNode page;
+            try {
+                page = requestSharePage(shareId, passCode, passCodeToken, null, rootPageToken);
+            } catch (IllegalStateException error) {
+                if (!isRecoverableShareTraversalError(error)) throw error;
+                traversalError = error;
+                break;
+            }
+            passCodeToken = sharePassCodeToken(page, passCodeToken);
+            collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+            String next = shareNextPageToken(page);
+            if (rootPageToken.equals(next)) break;
+            rootPageToken = next;
+        }
+
+        while (!folders.isEmpty() && visitedFolders.size() < 500) {
+            String parentId = folders.removeFirst();
+            if (!hasText(parentId) || !visitedFolders.add(parentId)) continue;
+            String pageToken = null;
+            do {
+                JsonNode page;
+                try {
+                    page = requestSharePage(shareId, passCode, passCodeToken, parentId, pageToken);
+                } catch (IllegalStateException error) {
+                    if (!isRecoverableShareTraversalError(error)) throw error;
+                    traversalError = error;
+                    break;
+                }
+                passCodeToken = sharePassCodeToken(page, passCodeToken);
+                collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+                String next = shareNextPageToken(page);
+                if (hasText(pageToken) && pageToken.equals(next)) break;
+                pageToken = next;
+            } while (hasText(pageToken));
+        }
+        if (fileIds.isEmpty() && traversalError != null) throw traversalError;
+        return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
+    }
+
+    private JsonNode requestSharePage(
+            String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
+        return request(HttpMethod.GET, sharePageUri(shareId, passCode, passCodeToken, parentId, pageToken), null);
+    }
+
+    static String sharePageUri(
+            String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
+        boolean detailRequest = hasTextStatic(parentId);
+        UriComponentsBuilder uri = UriComponentsBuilder.fromPath(detailRequest ? "/share/detail" : "/share")
+                .queryParam("share_id", shareId)
+                .queryParam("limit", 30)
+                .queryParam("keyword", "")
+                .queryParam("scene", "NORMAL")
+                .queryParam("order", detailRequest ? "MODIFY_TIME_DESC_V2" : "DEFAULT_ORDER")
+                .queryParam("thumbnail_size", "SIZE_MEDIUM");
+        if (!detailRequest && hasTextStatic(passCode)) uri.queryParam("pass_code", passCode);
+        String safePassCodeToken = opaqueShareToken(passCodeToken);
+        if (hasTextStatic(safePassCodeToken)) {
+            uri.queryParam("pass_code_token", UriUtils.encode(safePassCodeToken, StandardCharsets.UTF_8));
+        }
+        if (detailRequest) uri.queryParam("parent_id", parentId);
+        String safePageToken = opaqueShareToken(pageToken);
+        if (hasTextStatic(safePageToken)) {
+            uri.queryParam("page_token", UriUtils.encode(safePageToken, StandardCharsets.UTF_8));
+        }
+        return uri.build(true).toUriString();
+    }
+
+    private static void collectSharePage(
+            JsonNode response,
+            ArrayDeque<String> folders,
+            List<String> fileIds,
+            List<String> fileNames,
+            Set<String> seenFiles,
+            Set<String> seenNames) {
+        extractVideoFileIds(response).stream().filter(seenFiles::add).forEach(fileIds::add);
+        extractVideoFileNames(response).stream()
+                .filter(name -> seenNames.add(name.toLowerCase(Locale.ROOT)))
+                .forEach(fileNames::add);
+        collectFolderIds(response, folders, new HashSet<>());
+    }
+
+    private static void collectFolderIds(JsonNode node, ArrayDeque<String> folders, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectFolderIds(item, folders, seen);
+            return;
+        }
+        if (!node.isObject()) return;
+        if (isFolder(node)) {
+            String id = firstTextStatic(
+                    node.path("id").asText(null), node.path("file_id").asText(null),
+                    node.path("fileId").asText(null), node.path("fid").asText(null));
+            if (hasTextStatic(id) && seen.add(id)) folders.addLast(id);
+        }
+        node.fields().forEachRemaining(entry -> collectFolderIds(entry.getValue(), folders, seen));
+    }
+
+    private static String sharePassCodeToken(JsonNode response, String fallback) {
+        String candidate = firstTextStatic(
+                response.path("pass_code_token").asText(null), response.path("passCodeToken").asText(null),
+                response.path("data").path("pass_code_token").asText(null),
+                response.path("data").path("passCodeToken").asText(null));
+        return firstTextStatic(opaqueShareToken(candidate), fallback);
+    }
+
+    private static String shareNextPageToken(JsonNode response) {
+        return opaqueShareToken(firstTextStatic(
+                response.path("next_page_token").asText(null), response.path("nextPageToken").asText(null),
+                response.path("data").path("next_page_token").asText(null),
+                response.path("data").path("nextPageToken").asText(null)));
+    }
+
+    private static boolean isRecoverableShareTraversalError(IllegalStateException error) {
+        String message = error.getMessage();
+        return message != null && message.contains("HTTP 400")
+                && (message.contains("invalid_argument") || message.contains("illegal base64"));
     }
 
     private DirectoryInfo ensureDirectory(String path) {
@@ -311,43 +453,47 @@ public class XunleiClient {
     static List<String> extractVideoFileIds(JsonNode response) {
         List<String> ids = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        collectVideoFiles(response == null ? null : firstArray(
-                response.path("files"), response.path("file_list"),
-                response.path("data").path("files"), response.path("data").path("file_list")), ids, seen);
+        collectVideoFiles(response, ids, seen);
         return List.copyOf(ids);
     }
 
     static List<String> extractVideoFileNames(JsonNode response) {
         List<String> names = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        collectVideoNames(response == null ? null : firstArray(
-                response.path("files"), response.path("file_list"),
-                response.path("data").path("files"), response.path("data").path("file_list")), names, seen);
+        collectVideoNames(response, names, seen);
         return List.copyOf(names);
     }
 
-    private static void collectVideoFiles(JsonNode items, List<String> ids, Set<String> seen) {
-        if (items == null || !items.isArray()) return;
-        for (JsonNode item : items) {
-            if (isFolder(item)) {
-                collectVideoFiles(firstArray(item.path("children"), item.path("files"), item.path("file_list")), ids, seen);
-                continue;
-            }
-            String id = item.path("id").asText(null);
-            if (hasTextStatic(id) && isVideo(item) && seen.add(id)) ids.add(id);
+    private static void collectVideoFiles(JsonNode node, List<String> ids, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectVideoFiles(item, ids, seen);
+            return;
         }
+        if (!node.isObject()) return;
+        if (!isFolder(node)) {
+            String id = firstTextStatic(
+                    node.path("id").asText(null), node.path("file_id").asText(null),
+                    node.path("fileId").asText(null), node.path("fid").asText(null));
+            if (hasTextStatic(id) && isVideo(node) && seen.add(id)) ids.add(id);
+        }
+        node.fields().forEachRemaining(entry -> collectVideoFiles(entry.getValue(), ids, seen));
     }
 
-    private static void collectVideoNames(JsonNode items, List<String> names, Set<String> seen) {
-        if (items == null || !items.isArray()) return;
-        for (JsonNode item : items) {
-            if (isFolder(item)) {
-                collectVideoNames(firstArray(item.path("children"), item.path("files"), item.path("file_list")), names, seen);
-                continue;
-            }
-            String name = firstTextStatic(item.path("name").asText(null), item.path("file_name").asText(null));
-            if (hasTextStatic(name) && isVideo(item) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
+    private static void collectVideoNames(JsonNode node, List<String> names, Set<String> seen) {
+        if (node == null || node.isMissingNode() || node.isNull()) return;
+        if (node.isArray()) {
+            for (JsonNode item : node) collectVideoNames(item, names, seen);
+            return;
         }
+        if (!node.isObject()) return;
+        if (!isFolder(node)) {
+            String name = firstTextStatic(
+                    node.path("name").asText(null), node.path("file_name").asText(null),
+                    node.path("filename").asText(null), node.path("fileName").asText(null));
+            if (hasTextStatic(name) && isVideo(node) && seen.add(name.toLowerCase(Locale.ROOT))) names.add(name);
+        }
+        node.fields().forEachRemaining(entry -> collectVideoNames(entry.getValue(), names, seen));
     }
 
     static List<JsonNode> selectRestoredFiles(
@@ -442,14 +588,16 @@ public class XunleiClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(HttpHeaders.AUTHORIZATION, bearer(properties.getXunlei().getAuthorization()));
+        if (requiresAuthorization(method, path)) {
+            headers.set(HttpHeaders.AUTHORIZATION, bearer(properties.getXunlei().getAuthorization()));
+        }
         headers.set("X-Device-Id", firstText(properties.getXunlei().getDeviceId(), deviceId()));
         headers.set("X-Client-Id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "xunlei-open-api"));
         headers.set("X-Client-Version", properties.getXunlei().getClientVersion());
         String action = action(method, path);
         headers.set("X-Captcha-Token", captchaToken(action, false));
         try {
-            String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+            URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
             ResponseEntity<String> response = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
             if (response.getStatusCode().isError() || root.path("error").isObject()) throw new IllegalStateException("Xunlei API request failed: HTTP " + response.getStatusCode().value());
@@ -458,7 +606,7 @@ public class XunleiClient {
             String response = e.getResponseBodyAsString();
             if (response.contains("captcha_invalid") || response.contains("\"error_code\":9")) {
                 headers.set("X-Captcha-Token", captchaToken(action, true));
-                String url = properties.getXunlei().getBaseUrl().replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+                URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
                 try {
                     ResponseEntity<String> retried = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
                     return objectMapper.readTree(retried.getBody());
@@ -467,15 +615,19 @@ public class XunleiClient {
                             "Xunlei API request failed after CAPTCHA refresh: "
                                     + method.name() + " " + safeEndpoint(path)
                                     + " HTTP " + retryError.getStatusCode().value()
-                                    + apiErrorSuffix(retryError),
+                                    + apiErrorSuffix(retryError)
+                                    + shareTokenProfile(path, retryError.getResponseBodyAsString()),
                             retryError);
                 } catch (Exception retryError) {
                     throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError);
                 }
             }
             throw new IllegalStateException(
-                    "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path)
-                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e),
+                    (e.getStatusCode().value() == 401
+                            ? "Xunlei Authorization expired or invalid; update XUNLEI_AUTHORIZATION in Resource Hub settings"
+                            : "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path))
+                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e)
+                            + shareTokenProfile(path, e.getResponseBodyAsString()),
                     e);
         } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
         catch (Exception e) { throw new IllegalStateException("Xunlei API response parse failed", e); }
@@ -489,16 +641,50 @@ public class XunleiClient {
     }
 
     private static boolean isFolder(JsonNode item) {
-        return item.path("kind").asText("").toLowerCase(Locale.ROOT).contains("folder");
+        String kind = firstTextStatic(
+                item.path("kind").asText(null),
+                item.path("file_type").asText(null),
+                item.path("type").asText(null));
+        String mimeType = firstTextStatic(
+                item.path("mime_type").asText(null),
+                item.path("mimeType").asText(null),
+                item.path("content_type").asText(null));
+        return (kind != null && (kind.toLowerCase(Locale.ROOT).contains("folder")
+                || kind.toLowerCase(Locale.ROOT).contains("directory")))
+                || item.path("is_folder").asBoolean(false)
+                || item.path("isFolder").asBoolean(false)
+                || (mimeType != null && mimeType.toLowerCase(Locale.ROOT).contains("folder"));
     }
 
     private static boolean isVideo(JsonNode item) {
-        String extension = item.path("file_extension").asText("").toLowerCase(Locale.ROOT);
+        String name = firstTextStatic(
+                item.path("name").asText(null),
+                item.path("file_name").asText(null),
+                item.path("filename").asText(null),
+                item.path("fileName").asText(null));
+        String extension = firstTextStatic(
+                item.path("file_extension").asText(null),
+                item.path("fileExtension").asText(null),
+                item.path("extension").asText(null));
+        if (!hasTextStatic(extension) && hasTextStatic(name) && name.contains(".")) {
+            extension = name.substring(name.lastIndexOf('.') + 1);
+        }
+        extension = extension == null ? "" : extension.toLowerCase(Locale.ROOT).replaceFirst("^\\.", "");
         if (VIDEO_EXTENSIONS.contains(extension)) return true;
-        String mimeType = item.path("mime_type").asText("").toLowerCase(Locale.ROOT);
+        String mimeType = firstTextStatic(
+                item.path("mime_type").asText(null),
+                item.path("mimeType").asText(null),
+                item.path("content_type").asText(null),
+                item.path("media_type").asText(null));
+        mimeType = mimeType == null ? "" : mimeType.toLowerCase(Locale.ROOT);
         if (mimeType.startsWith("video/")) return true;
-        String category = item.path("file_category").asText("");
-        return "VIDEO".equalsIgnoreCase(category);
+        String category = firstTextStatic(
+                item.path("file_category").asText(null),
+                item.path("fileCategory").asText(null),
+                item.path("category").asText(null));
+        if ("VIDEO".equalsIgnoreCase(category)) return true;
+        String kind = firstTextStatic(item.path("kind").asText(null), item.path("type").asText(null));
+        return kind != null && kind.toLowerCase(Locale.ROOT).contains("video");
     }
 
     private String findUrl(JsonNode node) { if (node == null || node.isMissingNode()) return null; if (node.isTextual() && node.asText().startsWith("http")) return node.asText(); if (node.isObject()) { for (var it = node.fields(); it.hasNext();) { String v = findUrl(it.next().getValue()); if (v != null) return v; } } else if (node.isArray()) for (JsonNode item : node) { String v = findUrl(item); if (v != null) return v; } return null; }
@@ -549,6 +735,15 @@ public class XunleiClient {
         String clean = path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
         return method.name() + ":/drive/v1" + clean;
     }
+    static boolean requiresAuthorization(HttpMethod method, String path) {
+        String endpoint = path == null ? "" : path.split("\\?", 2)[0];
+        return method != HttpMethod.GET
+                || !("/share".equals(endpoint) || "/share/detail".equals(endpoint));
+    }
+    static URI requestUri(String baseUrl, String path) {
+        String value = baseUrl.replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
+        return URI.create(value);
+    }
     private String safeEndpoint(String path) {
         return path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
     }
@@ -557,11 +752,63 @@ public class XunleiClient {
             JsonNode root = objectMapper.readTree(error.getResponseBodyAsString());
             String name = root.path("error").isTextual() ? root.path("error").asText() : null;
             String code = root.path("error_code").isValueNode() ? root.path("error_code").asText() : null;
-            if (!hasText(name) && !hasText(code)) return "";
-            return " (error=" + firstText(name, "unknown") + ", code=" + firstText(code, "unknown") + ")";
+            String description = root.path("error_description").asText(null);
+            String detail = null;
+            JsonNode details = root.path("error_details");
+            if (details.isArray()) {
+                for (JsonNode item : details) {
+                    String candidate = item.path("detail").asText(null);
+                    if (hasText(candidate)) {
+                        detail = candidate;
+                        break;
+                    }
+                }
+            }
+            if (!hasText(name) && !hasText(code) && !hasText(description) && !hasText(detail)) return "";
+            return " (error=" + firstText(name, "unknown")
+                    + ", code=" + firstText(code, "unknown")
+                    + (hasText(description) ? ", description=" + description : "")
+                    + (hasText(detail) ? ", detail=" + detail : "") + ")";
         } catch (Exception ignored) {
             return "";
         }
+    }
+    static String normalizeBase64Token(String value) {
+        if (!hasTextStatic(value)) return null;
+        String token = value.trim().replace('-', '+').replace('_', '/');
+        if (token.length() < 2 || !token.matches("[A-Za-z0-9+/]+={0,2}")) return null;
+        int remainder = token.length() % 4;
+        if (remainder == 1) return null;
+        return remainder == 0 ? token : token + "=".repeat(4 - remainder);
+    }
+    static String opaqueShareToken(String value) {
+        if (!hasTextStatic(value)) return null;
+        String token = value.trim();
+        try {
+            if (token.contains("%")) token = UriUtils.decode(token, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException error) {
+            return null;
+        }
+        return token.chars().anyMatch(character -> Character.isWhitespace(character) || Character.isISOControl(character))
+                ? null
+                : token;
+    }
+    static String shareTokenProfile(String path, String responseBody) {
+        if (path == null || !path.startsWith("/share/detail")
+                || responseBody == null || !responseBody.contains("illegal base64")) return "";
+        String token = UriComponentsBuilder.fromUriString(path).build().getQueryParams().getFirst("pass_code_token");
+        token = opaqueShareToken(token);
+        if (!hasTextStatic(token)) return " (pass_code_token=missing)";
+        for (int index = 0; index < token.length(); index++) {
+            char character = token.charAt(index);
+            if (!(Character.isLetterOrDigit(character) || character == '+' || character == '/'
+                    || character == '=')) {
+                String category = character == '-' || character == '_' ? "base64url" : "other";
+                return " (pass_code_token_length=" + token.length()
+                        + ", first_non_base64_index=" + index + ", character_category=" + category + ")";
+            }
+        }
+        return " (pass_code_token_length=" + token.length() + ", alphabet=base64)";
     }
     private String md5(String value) {
         try { byte[] digest = MessageDigest.getInstance("MD5").digest(value.getBytes(StandardCharsets.UTF_8)); StringBuilder result = new StringBuilder(); for (byte item : digest) result.append(String.format("%02x", item)); return result.toString(); }
@@ -575,9 +822,23 @@ public class XunleiClient {
     private boolean hasText(String value) { return value != null && !value.isBlank(); }
     private static String firstTextStatic(String... values) { for (String value : values) if (hasTextStatic(value)) return value.trim(); return null; }
     private static boolean hasTextStatic(String value) { return value != null && !value.isBlank(); }
+    public static String normalizeShareUrl(String url, String code) {
+        if (!hasTextStatic(url)) return url;
+        String normalized = url.trim();
+        int fragment = normalized.indexOf('#');
+        if (fragment >= 0) normalized = normalized.substring(0, fragment);
+        if (!hasTextStatic(code) || normalized.contains("pwd=")) return normalized;
+        String separator = normalized.contains("?") ? "&" : "?";
+        return normalized + separator + "pwd=" + code.trim();
+    }
     public record ShareInfo(
             String shareId,
             String passCode,
+            String passCodeToken,
+            List<String> fileIds,
+            List<String> fileNames) {}
+
+    private record ShareSelection(
             String passCodeToken,
             List<String> fileIds,
             List<String> fileNames) {}

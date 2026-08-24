@@ -50,7 +50,7 @@ $content = Get-Content -Raw -Encoding UTF8 $path
 if ($content -notmatch "function runGyingMovieSearch") {
     $helper = @'
 function buildGyingDefaultReply() {
-    return "\u673a\u5668\u4eba\u4f7f\u7528\u65b9\u6cd5\uff1a@\u673a\u5668\u4eba \u641c/\u627e \u5f71\u7247\u540d\n\u5f71\u7247\u4e0a\u4e0b\u6587\u4fdd\u7559 5 \u5206\u949f\uff0c\u53ef\u56de\u590d\u6307\u5b9a\u7f51\u76d8\u53ca\u6570\u91cf\uff0c\u4f8b\u5982\u201c\u767e\u5ea6 3\u201d\u201c\u5938\u514b 2\u201d\u6216\u201c\u8d44\u6e90 8\u201d\u3002";
+    return "\u673a\u5668\u4eba\u4f7f\u7528\u65b9\u6cd5\uff1a@\u673a\u5668\u4eba \u641c/\u627e \u5f71\u7247\u540d\n\u5148\u9009\u62e9\u5f71\u7247\uff0c\u518d\u4ece\u8d44\u6e90\u540d\u79f0/\u753b\u8d28\u5019\u9009\u4e2d\u56de\u590d\u5355\u4e2a\u5e8f\u53f7\uff1b\u53ef\u7528\u201c\u5938\u514b\u201d\u6216\u201c\u8fc5\u96f7\u201d\u7b5b\u9009\uff0c\u4e0d\u652f\u6309\u6570\u91cf\u6279\u91cf\u8f6c\u5b58\u3002";
 }
 async function buildGyingQrMediaUrls(reply) {
     const matches = String(reply ?? "").match(/https:\/\/pan\.quark\.cn\/s\/[^\s]+/giu) ?? [];
@@ -122,7 +122,7 @@ function extractGyingTextCommand(content) {
         if (normalized === prefix) {
             return "";
         }
-        if (normalized.startsWith(`${prefix} `)) {
+        if (normalized.startsWith(prefix)) {
             return normalized.slice(prefix.length).trim();
         }
     }
@@ -134,7 +134,7 @@ function extractGyingTextCommand(content) {
 
 $desiredHelper = @'
 function buildGyingDefaultReply() {
-    return "\u673a\u5668\u4eba\u4f7f\u7528\u65b9\u6cd5\uff1a@\u673a\u5668\u4eba \u641c/\u627e \u5f71\u7247\u540d\n\u5f71\u7247\u4e0a\u4e0b\u6587\u4fdd\u7559 5 \u5206\u949f\uff0c\u53ef\u56de\u590d\u6307\u5b9a\u7f51\u76d8\u53ca\u6570\u91cf\uff0c\u4f8b\u5982\u201c\u767e\u5ea6 3\u201d\u201c\u5938\u514b 2\u201d\u6216\u201c\u8d44\u6e90 8\u201d\u3002";
+    return "\u673a\u5668\u4eba\u4f7f\u7528\u65b9\u6cd5\uff1a@\u673a\u5668\u4eba \u641c/\u627e \u5f71\u7247\u540d\n\u5148\u9009\u62e9\u5f71\u7247\uff0c\u518d\u4ece\u8d44\u6e90\u540d\u79f0/\u753b\u8d28\u5019\u9009\u4e2d\u56de\u590d\u5355\u4e2a\u5e8f\u53f7\uff1b\u53ef\u7528\u201c\u5938\u514b\u201d\u6216\u201c\u8fc5\u96f7\u201d\u7b5b\u9009\uff0c\u4e0d\u652f\u6309\u6570\u91cf\u6279\u91cf\u8f6c\u5b58\u3002";
 }
 async function buildGyingQrMediaUrls(reply) {
     const matches = String(reply ?? "").match(/https:\/\/pan\.quark\.cn\/s\/[^\s]+/giu) ?? [];
@@ -206,7 +206,7 @@ function extractGyingTextCommand(content) {
         if (normalized === prefix) {
             return "";
         }
-        if (normalized.startsWith(`${prefix} `)) {
+        if (normalized.startsWith(prefix)) {
             return normalized.slice(prefix.length).trim();
         }
     }
@@ -279,15 +279,31 @@ $content = $content -replace 'if \(!cmd\)\r?\n        return null; // 不是插�
 
 $gatewayPath = $gatewayFile.FullName
 $gatewayContent = Get-Content -Raw -Encoding UTF8 $gatewayPath
+$progressTextBlock = @'
+const progressText = msg.type === "group" && msg.senderId
+                        ? `<@${msg.senderId}> \u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...`
+                        : "\u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...";
+'@
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(?s)const progressText\s*=.*?;',
+        $progressTextBlock)
 if ($gatewayContent -notmatch 'sendC2CImageMessage') {
     $gatewayContent = $gatewayContent -replace 'sendC2CMessage, sendChannelMessage, sendGroupMessage,',
             'sendC2CMessage, sendChannelMessage, sendGroupMessage, sendC2CImageMessage, sendGroupImageMessage,'
 }
 $gatewayContent = $gatewayContent -replace 'const isGyingMovieSearchCommand = \(text\) => .*?;\r?\n', ""
+$gatewayContent = $gatewayContent -replace '\s*const isGyingSearchStartCommand = \(text\) => .*?;\r?\n', "`n"
 $gatewayContent = $gatewayContent -replace '\s*const isGyingMentionFallback = \(msg\) => .*?;\r?\n', "`n"
 if ($gatewayContent -notmatch "const isGyingMovieSearchCommand") {
     $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s+.+)?|(?:[1-9]|10)|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?))$/iu.test(String(text ?? `"`").trim());`n    const isGyingMentionFallback = (msg) => msg?.type === `"group`" && (msg?.eventType === `"GROUP_AT_MESSAGE_CREATE`" || msg?.mentions?.some((mention) => mention?.is_you));"
 }
+if ($gatewayContent -notmatch "const isGyingSearchStartCommand") {
+    $gatewayContent = $gatewayContent -replace '(const isGyingMovieSearchCommand = .*?;\r?\n)',
+            "`$1    const isGyingSearchStartCommand = (text) => /^(?:(?:\\/movie|\\/search)\\s+.+|(?:\\u641c|\\u627e)\\s+.+)$/iu.test(String(text ?? `"`").trim());`n"
+}
+
+$gatewayContent = $gatewayContent -replace 'const isGyingSearchStartCommand = .*', '    const isGyingSearchStartCommand = (text) => /^(?:(?:\/movie|\/search)\s+.+|(?:\u641c|\u627e)\s*.+)$/iu.test(String(text ?? "").trim());'
 
 if ($gatewayContent -match 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}') {
     $gatewayContent = $gatewayContent -replace 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}', "if (!content.startsWith(`"/`") && !isGyingMovieSearchCommand(content) && !isGyingMentionFallback(msg)) {`n            msgQueue.enqueue(msg);`n            return;`n        }"
@@ -297,6 +313,43 @@ $gatewayContent = $gatewayContent -replace 'if \(!content\.startsWith\("/"\) && 
 $gatewayContent = $gatewayContent -replace '\r?\n\s*gyingMentionFallback: isGyingMentionFallback\(msg\),', ""
 $gatewayContent = $gatewayContent -replace 'queueSnapshot: msgQueue\.getSnapshot\(peerId\),',
         "queueSnapshot: msgQueue.getSnapshot(peerId),`n            gyingMentionFallback: isGyingMentionFallback(msg),"
+if ($gatewayContent -notmatch 'Gying search progress sent') {
+    $progressHandler = @'
+            let gyingProgressToken = null;
+            if (isGyingSearchStartCommand(content)) {
+                try {
+                    gyingProgressToken = await getAccessToken(account.appId, account.clientSecret);
+                    const progressText = msg.type === "group" && msg.senderId
+                        ? `<@${msg.senderId}> 正在搜索资源，请稍后...`
+                        : "正在搜索资源，请稍后...";
+                    if (msg.type === "group" && msg.groupOpenid) {
+                        await sendGroupMessage(gyingProgressToken, msg.groupOpenid, progressText, msg.messageId);
+                    }
+                    else if (msg.type === "c2c" || msg.type === "dm") {
+                        await sendC2CMessage(gyingProgressToken, msg.senderId, progressText, msg.messageId);
+                    }
+                    log?.info(`[qqbot:${account.accountId}] Gying search progress sent`);
+                }
+                catch (progressErr) {
+                    log?.warn?.(`[qqbot:${account.accountId}] Failed to send Gying search progress: ${progressErr}`);
+                }
+            }
+'@
+    $gatewayContent = $gatewayContent -replace '(?m)^\s*const reply = await matchSlashCommand\(cmdCtx\);$',
+            ($progressHandler + "`n            const reply = await matchSlashCommand(cmdCtx);")
+}
+$gatewayContent = $gatewayContent -replace 'const token = await getAccessToken\(account\.appId, account\.clientSecret\);',
+        'const token = gyingProgressToken ?? await getAccessToken(account.appId, account.clientSecret);'
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        'const token = gyingProgressToken \?\? await getAccessToken\(account\.appId, account\.clientSecret\);',
+        'const token = await getAccessToken(account.appId, account.clientSecret);',
+        1)
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(let gyingProgressToken = null;[\s\S]*?const token = )await getAccessToken\(account\.appId, account\.clientSecret\);',
+        '$1gyingProgressToken ?? await getAccessToken(account.appId, account.clientSecret);',
+        1)
 $gatewayContent = $gatewayContent -replace 'const isFileResult = typeof reply === "object" && reply !== null && "filePath" in reply;\r?\n\s*const replyText = isFileResult \? reply\.text : reply;\r?\n\s*const replyFile = isFileResult \? reply\.filePath : null;',
         "const isStructuredResult = typeof reply === `"object`" && reply !== null;`n            const rawReplyText = isStructuredResult ? reply.text : reply;`n            const replyText = msg.type === `"group`" && msg.senderId ? ``<@`${msg.senderId}> `${rawReplyText}`` : rawReplyText;`n            const replyFile = isStructuredResult && `"filePath`" in reply ? reply.filePath : null;`n            const replyMediaUrls = isStructuredResult ? (reply.mediaUrls ?? (reply.mediaUrl ? [reply.mediaUrl] : [])) : [];"
 if ($gatewayContent -notmatch 'Gying QR image sent') {
@@ -332,7 +385,10 @@ if ($OpenClawContainer -and (Get-Command docker -ErrorAction SilentlyContinue)) 
 }
 if ($containerRunning) {
     $containerProject = "/home/node/.openclaw/npm/projects/$($projectDir.Name)"
-    $runtimeProject = "/home/node/.openclaw-runtime-plugins/$($projectDir.Name)"
+    # Keep one canonical secured runtime path. OpenClaw may have stale copies from
+    # previous installs; loading more than one QQBot package makes patch behavior
+    # nondeterministic because the first loaded plugin wins message interception.
+    $runtimeProject = "/home/node/.openclaw-runtime-plugins/qqbot-project"
     $runtimePluginPath = "$runtimeProject/node_modules/@tencent-connect/openclaw-qqbot"
     docker exec -u 0 $OpenClawContainer mkdir -p $runtimeProject | Out-Null
     docker exec -u 0 $OpenClawContainer cp -a "$containerProject/." "$runtimeProject/" | Out-Null
@@ -360,10 +416,10 @@ if (Test-Path $configPath) {
         if (-not $config.plugins.load) {
             $config.plugins | Add-Member -NotePropertyName load -NotePropertyValue ([pscustomobject]@{})
         }
-        $paths = @($config.plugins.load.paths)
-        if ($paths -notcontains $runtimePluginPath) {
-            $paths += $runtimePluginPath
+        $paths = @($config.plugins.load.paths) | Where-Object {
+            $_ -notlike '/home/node/.openclaw-runtime-plugins/*/node_modules/@tencent-connect/openclaw-qqbot'
         }
+        $paths = @(@($paths + $runtimePluginPath) | Select-Object -Unique)
         $config.plugins.load | Add-Member -NotePropertyName paths -NotePropertyValue $paths -Force
     }
     $config | ConvertTo-Json -Depth 12 | Set-Content -Encoding UTF8 $configPath

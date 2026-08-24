@@ -158,7 +158,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     }
                     ResourceDiscoveryResult discovery = saveDiscovery(task, movie, resource, urlHash, "DISCOVERED", now);
                     result.setDiscovered(result.getDiscovered() + 1);
-                    if (createTransferTask(discovery, resource, urlHash, now)) {
+                    if (!payload.deferTransfer() && createTransferTask(discovery, resource, urlHash, now)) {
                         result.setTransferTasksCreated(result.getTransferTasksCreated() + 1);
                     }
                 } catch (Exception itemError) {
@@ -186,6 +186,88 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         }
     }
 
+    /**
+     * Creates (or reuses) the transfer task for one discovery result. The
+     * normal discovery run deliberately de-duplicates pending tasks by
+     * movie/provider, which is useful for background processing but can leave
+     * a later user-selected candidate without a task. QQ selection calls this
+     * method so only the chosen URL is scheduled.
+     */
+    @Override
+    public boolean ensureTransferTask(Long discoveryResultId) {
+        if (discoveryResultId == null) {
+            return false;
+        }
+        ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryResultId);
+        String normalizedProvider = discovery == null || !hasText(discovery.getProvider())
+                ? ""
+                : discovery.getProvider().trim().toUpperCase();
+        if (discovery == null || !hasText(discovery.getMovieId())
+                || !hasText(discovery.getOriginalUrl())
+                || !Set.of("QUARK", "XUNLEI").contains(normalizedProvider)) {
+            return false;
+        }
+        String provider = normalizedProvider;
+        String urlHash = firstText(discovery.getOriginalUrlHash(),
+                ResourceHubHashUtils.sha256(discovery.getOriginalUrl()));
+        LocalDateTime now = LocalDateTime.now();
+        if ("XUNLEI".equals(provider)) {
+            if (xunleiTransferTaskService == null) {
+                return false;
+            }
+            XunleiTransferTask task = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("discovery_result_id", discoveryResultId)
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (task != null) {
+                return true;
+            }
+            task = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("movie_id", discovery.getMovieId())
+                    .eq("original_url_hash", urlHash)
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (task != null) {
+                return true;
+            }
+            task = new XunleiTransferTask();
+            task.setDiscoveryResultId(discoveryResultId);
+            task.setMovieId(discovery.getMovieId());
+            task.setOriginalUrl(discovery.getOriginalUrl());
+            task.setOriginalUrlHash(urlHash);
+            task.setStatus("PENDING");
+            task.setAttempts(0);
+            task.setCreatedAt(now);
+            task.setUpdatedAt(now);
+            return xunleiTransferTaskService.save(task);
+        }
+        QuarkTransferTask task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("discovery_result_id", discoveryResultId)
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+        if (task != null) {
+            return true;
+        }
+        task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", discovery.getMovieId())
+                .eq("original_url_hash", urlHash)
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+        if (task != null) {
+            return true;
+        }
+        task = new QuarkTransferTask();
+        task.setDiscoveryResultId(discoveryResultId);
+        task.setMovieId(discovery.getMovieId());
+        task.setOriginalUrl(discovery.getOriginalUrl());
+        task.setOriginalUrlHash(urlHash);
+        task.setStatus("PENDING");
+        task.setAttempts(0);
+        task.setCreatedAt(now);
+        task.setUpdatedAt(now);
+        return quarkTransferTaskService.save(task);
+    }
+
     private List<DiscoveredResource> discover(DiscoveryPayload payload, MovieMetadata movie) {
         String source = payload.source().toUpperCase();
         if ("GYING".equals(source)) {
@@ -196,7 +278,18 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 List<DiscoveredResource> gyingResources = gyingSourceWorkflowService.discoverResources(
                         movie, payload.maxResults());
                 if (!gyingResources.isEmpty()) {
-                    return gyingResources;
+                    String keyword = resolveKeyword(payload, movie);
+                    boolean hasQuark = hasProvider(gyingResources, "QUARK");
+                    boolean hasXunlei = hasProvider(gyingResources, "XUNLEI");
+                    List<DiscoveredResource> supplemental = new java.util.ArrayList<>();
+                    if (!hasQuark) {
+                        supplemental.addAll(panSouClient.searchQuark(keyword, payload.maxResults()));
+                    }
+                    if (!hasXunlei) {
+                        supplemental.addAll(panSouClient.searchClouds(
+                                keyword, Set.of("XUNLEI"), payload.maxResults()));
+                    }
+                    return mergeProviderResults(gyingResources, supplemental, payload.maxResults());
                 }
             } catch (RuntimeException ignored) {
                 // GYING is preferred, but a site outage must not block the PanSou fallback.
@@ -222,6 +315,11 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             addProviderResult(merged, xunlei, index, maxResults);
         }
         return merged.values().stream().limit(maxResults).toList();
+    }
+
+    private boolean hasProvider(List<DiscoveredResource> resources, String provider) {
+        return resources != null && resources.stream().anyMatch(resource -> resource != null
+                && provider.equalsIgnoreCase(resource.getProvider()));
     }
 
     private void addProviderResult(
@@ -358,7 +456,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 ? DEFAULT_MAX_RESULTS
                 : request.getMaxResults(), 1), MAX_RESULTS_LIMIT);
         String keyword = hasText(request.getKeyword()) ? request.getKeyword().trim() : null;
-        return new DiscoveryPayload(movieId, keyword, source, maxResults);
+        return new DiscoveryPayload(
+                movieId,
+                keyword,
+                source,
+                maxResults,
+                Boolean.TRUE.equals(request.getDeferTransfer()));
     }
 
     private String resolveMovieId(ResourceDiscoveryRequest request) {
@@ -415,7 +518,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
     private DiscoveryPayload readPayload(ResourceHubTask task) {
         if (!hasText(task.getPayload())) {
-            return new DiscoveryPayload(task.getMovieId(), task.getKeyword(), task.getSource(), DEFAULT_MAX_RESULTS);
+            return new DiscoveryPayload(
+                    task.getMovieId(),
+                    task.getKeyword(),
+                    task.getSource(),
+                    DEFAULT_MAX_RESULTS,
+                    false);
         }
         try {
             Map<String, Object> payload = objectMapper.readValue(task.getPayload(),
@@ -434,6 +542,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             request.setKeyword(keyword);
             request.setSource(source);
             request.setMaxResults(maxResults);
+            request.setDeferTransfer(Boolean.TRUE.equals(payload.get("deferTransfer")));
             return normalizePayload(request);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid discovery task payload");
@@ -447,6 +556,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             value.put("keyword", payload.keyword());
             value.put("source", payload.source());
             value.put("maxResults", payload.maxResults());
+            value.put("deferTransfer", payload.deferTransfer());
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to serialize task payload", e);
@@ -530,6 +640,11 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         return value != null && !value.isBlank();
     }
 
-    private record DiscoveryPayload(String movieId, String keyword, String source, int maxResults) {
+    private record DiscoveryPayload(
+            String movieId,
+            String keyword,
+            String source,
+            int maxResults,
+            boolean deferTransfer) {
     }
 }

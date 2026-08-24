@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class ResourceHubConfigResponse {
     private boolean xunleiAuthorizationConfigured;
+    private String xunleiAuthorizationExpiresAt;
+    private boolean xunleiAuthorizationExpired;
     private boolean xunleiCaptchaConfigured;
     private boolean enabled;
     private boolean autoApprove;
