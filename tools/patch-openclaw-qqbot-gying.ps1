@@ -279,6 +279,15 @@ $content = $content -replace 'if \(!cmd\)\r?\n        return null; // 不是插�
 
 $gatewayPath = $gatewayFile.FullName
 $gatewayContent = Get-Content -Raw -Encoding UTF8 $gatewayPath
+$progressTextBlock = @'
+const progressText = msg.type === "group" && msg.senderId
+                        ? `<@${msg.senderId}> \u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...`
+                        : "\u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...";
+'@
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(?s)const progressText\s*=.*?;',
+        $progressTextBlock)
 if ($gatewayContent -notmatch 'sendC2CImageMessage') {
     $gatewayContent = $gatewayContent -replace 'sendC2CMessage, sendChannelMessage, sendGroupMessage,',
             'sendC2CMessage, sendChannelMessage, sendGroupMessage, sendC2CImageMessage, sendGroupImageMessage,'
