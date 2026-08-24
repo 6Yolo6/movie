@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerService {
+    private static final int MAX_TRANSFER_ATTEMPTS = 3;
     private final ResourceHubProperties properties;
     private final XunleiClient client;
     private final IXunleiTransferTaskService taskService;
@@ -45,7 +46,9 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 .in("status", statuses)
                 .orderByAsc("created_at")
                 .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
-        tasks.forEach(task -> submitGuarded(task, result));
+        tasks.stream()
+                .filter(task -> !hasReachedRetryLimit(task))
+                .forEach(task -> submitGuarded(task, result));
         return result;
     }
 
@@ -69,6 +72,10 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     private void submit(XunleiTransferTask task, QuarkTransferRunResult result) {
         try {
+            if (hasReachedRetryLimit(task)) {
+                result.setSkipped(result.getSkipped() + 1);
+                return;
+            }
             if ("SUCCEEDED".equalsIgnoreCase(task.getStatus()) && task.getShareUrl() != null) {
                 clearLastError(task.getId());
                 result.setSkipped(result.getSkipped() + 1);
@@ -97,6 +104,13 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
             task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
             if ("SUCCEEDED".equalsIgnoreCase(task.getStatus())) clearLastError(task.getId());
         } catch (Exception e) { task.setStatus("FAILED"); task.setLastError(e.getMessage()); task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(e.getMessage()); }
+    }
+
+    private boolean hasReachedRetryLimit(XunleiTransferTask task) {
+        return task != null
+                && task.getAttempts() != null
+                && task.getAttempts() >= MAX_TRANSFER_ATTEMPTS
+                && !"SUCCEEDED".equalsIgnoreCase(task.getStatus());
     }
 
     private void clearLastError(Long taskId) {
