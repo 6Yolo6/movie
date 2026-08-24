@@ -61,6 +61,7 @@
 - `POST /recent/ensure`：请求体为最近更新表格中所选的 `{typeCode,mid}` 数组，最多 60 部。
 - `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
 - `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
+- `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
 - `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
 

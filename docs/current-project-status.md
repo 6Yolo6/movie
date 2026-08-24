@@ -142,6 +142,8 @@
 
 ## 验收
 
+2026-08-24 增加 GYING 数据源“爬取我已发布资源”后台操作：通过当前账号 `/my-resources` 分页读取已发布资源，复用既有影片元数据入库和 `resource_link` 工作流，并按 GYING `source_id` 或 URL 跳过重复记录；页面显示导入、跳过和失败结果。
+
 2026-08-24 修复部署后 QQ 搜索进度与影片元数据未展示：确认 OpenClaw 曾同时加载两份 QQBot runtime，补丁脚本现统一同步和加载 `/home/node/.openclaw-runtime-plugins/qqbot-project`，清理历史重复路径，并支持无空格“搜片名/找片名”；资源候选和最终分享回复均补充年份、类型、地区、TMDB 评分与简介。定向后端测试、runtime JavaScript 语法检查和 Gateway `Runtime module preflight: OK`、`Gateway ready` 已通过。
 
 2026-08-21 已完成迅雷真实分享目录遍历修复并重新部署：根目录与子目录分别使用 `/share`、`/share/detail`，公开分享读取与账户 Authorization 分离，分享 token 作为不透明值原样保留并以 `URI` 发送，避免 HTTP 客户端二次编码；手工指定任务重试可越过 Worker 3 次限制。`mvn -q test`、`git diff --check`、生产 Compose 配置和运维就绪检查通过；backend 镜像 `sha256:967ac9a0…` 与 nginx 已重建，内外片库 API 均返回 200。真实任务 `78` 已从 `illegal base64` 推进到 `/share/restore` 前的账户授权校验，最终仅返回已过期 Authorization 的 `401 unauthenticated`；尚未生成 `saved_path` 或自有 `share_url`，因此未宣称真实转存成功。

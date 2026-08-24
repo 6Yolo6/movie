@@ -463,6 +463,49 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void syncMyPublishedResourcesSkipsExistingSourceAndUrl() {
+        ResourceLink existing = new ResourceLink();
+        existing.setId(77L);
+        existing.setMovieId("EGER");
+        when(gyingSourceClient.get("/my-resources?limit=20")).thenReturn(Map.of("items", List.of(
+                Map.of("source_id", "OWN-1", "type_code", "mv", "mid", "EGER",
+                        "title", "已有资源", "url", "https://pan.quark.cn/s/existing", "provider", "QUARK"))));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(existing);
+
+        Map<String, Object> result = service.syncMyPublishedResources(20);
+
+        assertEquals(1, result.get("checked"));
+        assertEquals(0, result.get("imported"));
+        assertEquals(1, result.get("skipped"));
+        assertEquals("SKIPPED", ((List<Map<String, Object>>) result.get("items")).get(0).get("status"));
+        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        verify(resourceLinkService, never()).save(any());
+    }
+
+    @Test
+    void syncMyPublishedResourcesImportsNewOwnedLinkOnce() {
+        MovieMetadata movie = movie("OWNMOVIE", "我的已发布影片", "mv", "UNKNOWN");
+        String url = "https://pan.quark.cn/s/owned-new";
+        when(gyingSourceClient.get("/my-resources?limit=20")).thenReturn(Map.of("items", List.of(
+                Map.of("source_id", "OWN-2", "type_code", "mv", "mid", "OWNMOVIE",
+                        "title", "我的已发布影片 4K", "url", url, "provider", "QUARK"))));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(gyingSourceClient.get("/movie/mv/OWNMOVIE")).thenReturn(Map.of(
+                "title", movie.getTitleCn(), "year", 2026, "resources", List.of(), "ownResources", List.of()));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+
+        Map<String, Object> result = service.syncMyPublishedResources(20);
+
+        assertEquals(1, result.get("imported"));
+        assertEquals(0, result.get("skipped"));
+        ArgumentCaptor<ResourceLink> resource = ArgumentCaptor.forClass(ResourceLink.class);
+        verify(resourceLinkService).save(resource.capture());
+        assertEquals("GYING_PUBLISHED", resource.getValue().getSource());
+        assertEquals("OWN-2", resource.getValue().getSourceRef());
+        assertEquals(url, resource.getValue().getUrl());
+    }
+
+    @Test
     void ensureMovieResourcesDeduplicatesSelectedRecentCandidates() {
         MovieMetadata movie = movie("EGER", "后室", "mv", "TRAILER");
         when(gyingSourceClient.get("/movie/mv/EGER")).thenReturn(Map.of(

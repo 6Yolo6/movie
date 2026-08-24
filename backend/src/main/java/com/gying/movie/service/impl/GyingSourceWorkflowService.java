@@ -701,6 +701,70 @@ public class GyingSourceWorkflowService {
         return checkPublishedResources(limit, Set.of(), updateLocal);
     }
 
+    public Map<String, Object> syncMyPublishedResources(int limit) {
+        int safeLimit = Math.min(Math.max(limit, 1), 1000);
+        List<Map<String, Object>> published = mapList(
+                gyingSourceClient.get("/my-resources?limit=" + safeLimit).get("items"));
+        Map<String, MovieMetadata> movies = new LinkedHashMap<>();
+        List<Map<String, Object>> items = new ArrayList<>();
+        int imported = 0;
+        int skipped = 0;
+        int failed = 0;
+        List<String> errors = new ArrayList<>();
+
+        for (Map<String, Object> sourceItem : published) {
+            Map<String, Object> item = new LinkedHashMap<>(sourceItem);
+            try {
+                ResourceLink existing = findLocalPublishedResource(item);
+                if (existing != null) {
+                    item.put("status", "SKIPPED");
+                    item.put("resourceId", existing.getId());
+                    item.put("localMovieId", existing.getMovieId());
+                    skipped++;
+                    items.add(item);
+                    continue;
+                }
+                String typeCode = normalizeTypeCode(stringValue(item.get("type_code")));
+                String mid = required(stringValue(item.get("mid")), "GYING movie id");
+                String movieKey = siteKey(typeCode, mid);
+                MovieMetadata movie = movies.get(movieKey);
+                if (movie == null) {
+                    movie = ingestMovieMetadata(typeCode, mid, false).movie();
+                    movies.put(movieKey, movie);
+                }
+                String url = required(stringValue(item.get("url")), "published resource URL");
+                String title = firstText(stringValue(item.get("title")), movie.getTitleCn(), movie.getTitleEn(), mid);
+                String provider = firstText(stringValue(item.get("provider")), "QUARK");
+                ResourceLink resource = new ResourceLink();
+                applyRepairedLink(resource, item, movie, title, url, provider);
+                resource.setCode(trim(stringValue(item.get("code")), 50));
+                resourceLinkService.save(resource);
+                markMovieAvailable(movie);
+                item.put("status", "IMPORTED");
+                item.put("resourceId", resource.getId());
+                item.put("localMovieId", movie.getId());
+                imported++;
+            } catch (Exception error) {
+                failed++;
+                item.put("status", "FAILED");
+                item.put("error", safeText(error.getMessage()));
+                if (errors.size() < 20) {
+                    errors.add(firstText(stringValue(item.get("source_id")), "unknown") + ": "
+                            + safeText(error.getMessage()));
+                }
+            }
+            items.add(item);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("checked", published.size());
+        result.put("imported", imported);
+        result.put("skipped", skipped);
+        result.put("failed", failed);
+        result.put("items", items);
+        result.put("errors", errors);
+        return result;
+    }
+
     public Map<String, Object> checkPublishedResourcesBySourceIds(
             List<String> sourceIds, boolean updateLocal) {
         Set<String> normalizedIds = normalizeSourceIds(sourceIds);

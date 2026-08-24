@@ -60,6 +60,8 @@ GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个�
 
 `gying-source` 复用一个加锁 Session，处理 PoW 和登录。环境变量提供重启后的默认账号；管理员可在 `/admin/gying-source` 临时切换当前账号，密码和 Cookie 不持久化。
 
+“爬取我已发布资源”按钮复用 `gying_crawler.py` 的 `/my-resources` 分页和影片元数据入库链路；同步时按 GYING `source_id` 或 URL 去重，已有资源只计为跳过，不重复插入。
+
 生产验证顺序：健康检查、候选读取、本人资源读取、单条无变更检查，最后才执行真实发布或修复。
 
 ## QQ 群

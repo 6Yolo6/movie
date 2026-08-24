@@ -115,6 +115,7 @@ const resultFieldKeys: Record<string, string> = {
     reshared: 'gyingResultReshared',
     retransferred: 'gyingResultRetransferred',
     skipped: 'gyingResultSkipped',
+    imported: 'gyingResultImported',
     failed: 'gyingResultFailed',
     requested: 'gyingResultRequested',
     notFound: 'gyingResultNotFound',
@@ -343,6 +344,11 @@ export default function GyingSourcePage() {
             } : null);
         }
     };
+
+    const syncPublished = () => startJob(
+        'sync-published',
+        `/api/admin/gying-source/published-resources/sync?limit=${healthLimit}`,
+    );
 
     const parsedHealthSourceIds = Array.from(new Set(
         healthSourceIds.split(/[\s,，;；]+/).map((value) => value.trim()).filter(Boolean),
@@ -656,6 +662,14 @@ export default function GyingSourcePage() {
                     onClick={repairPublished}
                 >
                     {t('gyingSourceRepairPublished')}
+                </Button>
+                <Button
+                    icon={<CloudDownloadOutlined />}
+                    loading={running === 'sync-published'}
+                    disabled={Boolean(running && running !== 'sync-published')}
+                    onClick={syncPublished}
+                >
+                    {t('gyingSourceSyncPublished')}
                 </Button>
             </Space>
             <div className="mb-5 border-t border-gray-200 pt-4 dark:border-gray-800">
