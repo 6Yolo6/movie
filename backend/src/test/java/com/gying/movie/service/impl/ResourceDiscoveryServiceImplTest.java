@@ -125,6 +125,27 @@ class ResourceDiscoveryServiceImplTest {
     }
 
     @Test
+    void supplementsGyingXunleiResultsWithQuarkCandidates() {
+        DiscoveredResource gying = resource(
+                "Movie 4K 迅雷", "https://pan.xunlei.com/s/gying", "GYING");
+        gying.setProvider("XUNLEI");
+        DiscoveredResource quark = resource(
+                "Movie 4K 夸克", "https://pan.quark.cn/s/quark", "PANSOU");
+        quark.setProvider("QUARK");
+        movie.setTitleCn("Movie");
+        movie.setTitleEn("Movie");
+        task.setKeyword("Movie");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(gying));
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(quark));
+
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+
+        assertEquals(2, result.getDiscovered());
+        verify(panSouClient).searchQuark(anyString(), anyInt());
+        verify(quarkTransferTaskService).save(any(QuarkTransferTask.class));
+    }
+
+    @Test
     void fallsBackToPanSouAndCountsUnrelatedResultsWithoutPersistingThem() {
         when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
         when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(resource(

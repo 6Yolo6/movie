@@ -278,14 +278,18 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 List<DiscoveredResource> gyingResources = gyingSourceWorkflowService.discoverResources(
                         movie, payload.maxResults());
                 if (!gyingResources.isEmpty()) {
-                    // GYING is the preferred source, but it commonly returns only
-                    // one provider (usually Quark). Keep the Xunlei branch visible
-                    // to the QQ/resource-center workflows instead of treating a
-                    // partial GYING result as a complete discovery.
                     String keyword = resolveKeyword(payload, movie);
-                    List<DiscoveredResource> xunlei = panSouClient.searchClouds(
-                            keyword, Set.of("XUNLEI"), payload.maxResults());
-                    return mergeProviderResults(gyingResources, xunlei, payload.maxResults());
+                    boolean hasQuark = hasProvider(gyingResources, "QUARK");
+                    boolean hasXunlei = hasProvider(gyingResources, "XUNLEI");
+                    List<DiscoveredResource> supplemental = new java.util.ArrayList<>();
+                    if (!hasQuark) {
+                        supplemental.addAll(panSouClient.searchQuark(keyword, payload.maxResults()));
+                    }
+                    if (!hasXunlei) {
+                        supplemental.addAll(panSouClient.searchClouds(
+                                keyword, Set.of("XUNLEI"), payload.maxResults()));
+                    }
+                    return mergeProviderResults(gyingResources, supplemental, payload.maxResults());
                 }
             } catch (RuntimeException ignored) {
                 // GYING is preferred, but a site outage must not block the PanSou fallback.
@@ -311,6 +315,11 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             addProviderResult(merged, xunlei, index, maxResults);
         }
         return merged.values().stream().limit(maxResults).toList();
+    }
+
+    private boolean hasProvider(List<DiscoveredResource> resources, String provider) {
+        return resources != null && resources.stream().anyMatch(resource -> resource != null
+                && provider.equalsIgnoreCase(resource.getProvider()));
     }
 
     private void addProviderResult(

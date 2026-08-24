@@ -368,6 +368,7 @@
   "resourceHubXunleiCredentialsHelp": "迅雷 Authorization 过期后可直接更新，无需重建后端。凭据仅保存在当前进程内存中，不会写入数据库。",
   "resourceHubXunleiAuthorization": "Authorization",
   "resourceHubXunleiAuthorizationPlaceholder": "粘贴最新的迅雷 Authorization",
+  "resourceHubXunleiAuthorizationExpiresAt": "Token 过期时间：{{value}}",
   "resourceHubXunleiCaptchaToken": "CAPTCHA Token（可选）",
   "resourceHubXunleiCaptchaPlaceholder": "如有需要，粘贴 CAPTCHA Token",
   "resourceHubCredentialConfiguredKeepBlank": "已配置。留空则保留当前值。",

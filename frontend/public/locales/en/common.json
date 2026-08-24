@@ -368,6 +368,7 @@
   "resourceHubXunleiCredentialsHelp": "Update an expired Xunlei Authorization without rebuilding the backend. Values are kept in memory only and are not stored in the database.",
   "resourceHubXunleiAuthorization": "Authorization",
   "resourceHubXunleiAuthorizationPlaceholder": "Paste the latest Xunlei Authorization",
+  "resourceHubXunleiAuthorizationExpiresAt": "Token expires: {{value}}",
   "resourceHubXunleiCaptchaToken": "CAPTCHA token (optional)",
   "resourceHubXunleiCaptchaPlaceholder": "Paste a CAPTCHA token if required",
   "resourceHubCredentialConfiguredKeepBlank": "Configured. Leave blank to keep the current value.",

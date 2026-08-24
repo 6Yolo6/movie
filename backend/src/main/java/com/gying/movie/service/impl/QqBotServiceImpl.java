@@ -1572,25 +1572,38 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private ResourceLink refreshShareLink(ResourceLink link) {
         QuarkTransferTask task = findTransferTask(link);
-        if (task == null || !"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
+        if (task == null || !hasText(task.getOriginalUrl())) {
             return null;
         }
         ResourceDiscoveryResult discovery = findDiscovery(link);
         LocalDateTime now = LocalDateTime.now();
         task.setShareUrl(null);
         task.setShareUrlHash(null);
+        task.setStatus("FAILED");
+        task.setLastError("QQ reply detected an invalid Quark share; re-transfer requested");
+        task.setFinishedAt(now);
         task.setUpdatedAt(now);
         quarkTransferTaskService.updateById(task);
         if (discovery != null) {
             discovery.setShareUrl(null);
             discovery.setShareUrlHash(null);
+            discovery.setStatus("FAILED");
+            discovery.setFailureReason(task.getLastError());
             discovery.setUpdatedAt(now);
             discoveryResultService.updateById(discovery);
         }
-        String shareUrl = quarkShareService.ensureShareUrl(task);
-        if (!hasText(shareUrl)) {
+        try {
+            quarkTransferRunnerService.submitOne(task.getId());
+        } catch (Exception error) {
+            log.warn("Failed to re-transfer invalid Quark resource {}", link.getId(), error);
             return null;
         }
+        QuarkTransferTask refreshed = quarkTransferTaskService.getById(task.getId());
+        if (refreshed == null || !hasText(refreshed.getSavedPath())) {
+            return null;
+        }
+        String shareUrl = quarkShareService.ensureShareUrl(refreshed);
+        if (!hasText(shareUrl)) return null;
         return resourceLinkService.getById(link.getId());
     }
 
@@ -1658,7 +1671,9 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private boolean canRefreshShare(ResourceLink link) {
         return "QUARK".equalsIgnoreCase(link.getProvider())
-                && "RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                && ("RESOURCE_HUB".equalsIgnoreCase(link.getSource())
+                    || "GYING".equalsIgnoreCase(link.getSource())
+                    || "GYING_PUBLISHED".equalsIgnoreCase(link.getSource()))
                 && resourceHubProperties.getQuark().isShareEnabled();
     }
 

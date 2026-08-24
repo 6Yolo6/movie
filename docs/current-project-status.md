@@ -47,7 +47,7 @@
 - 迅雷公开分享读取不发送账户 Authorization；restore、文件列表和自有分享创建仍要求账户 Authorization。restore 递归筛选源分享中的视频文件 ID，只转存视频，不连带广告图片、文档或整个顶层目录；自动失败任务最多尝试 3 次，手工指定任务重试允许越过该上限。
 - “发现结果”的重试分享与发布按 provider 分流：迅雷记录调用迅雷 runner，夸克记录调用 quark runner，避免迅雷链接误送至 quark-auto-save。
 - 迅雷分享文件解析兼容真实 API 的 `file_id`/`fid`、`filename`、`items`、camelCase MIME/扩展名等字段，并可从文件名后缀识别视频，避免链接内有视频却误报“contains no video files”。
-- `AUTO` 发现即使 GYING 已返回夸克候选，也会继续补充搜索迅雷候选；QQ 资源列表会同时读取系统自有夸克、迅雷和待选择的迅雷发现结果，不再因夸克先命中而跳过迅雷。
+- `AUTO` 发现会检查 GYING 已返回的 provider：只有夸克时补搜迅雷，只有迅雷时补搜夸克；QQ 资源列表会同时读取系统自有夸克、迅雷和待选择的发现结果，不再因单一 provider 先命中而跳过另一种网盘。
 - 发现结果支持标题/影片 ID/链接筛选、时间排序、可点击来源/自有分享和复选批量操作。
 - 空目录或分享失败先重跑原转存，仍失败时重新搜索、转存和发布。
 - “缺资源影片”按实际可用 `DISK` 链接口径检查，可选择 GYING 或 PanSou 补全。
@@ -93,6 +93,7 @@
 - 群内直回消息会 @ 发起用户；未知或空 AT 消息返回使用帮助。OpenClaw 补丁通过 `qrcode` 为回复中的夸克分享生成二维码图片。
 - `/admin/automation` 管理搜索日志、频道发帖日志和自动化配置。
 - QQ 搜索看板统计搜索总量、近 24 小时搜索、成功率、无结果和需处理记录。
+- QQ 资源候选遇到失效的夸克自有分享时，会清空旧分享并重新执行原夸克 URL 的转存与自有分享创建，成功后原位回写影片资源；夸克来源为 `RESOURCE_HUB`、`GYING` 或 `GYING_PUBLISHED` 的自有链接均适用。
 - 资源中心手动发 QQ 通过受内部令牌保护的宿主机桥接立即执行；失败时保留 `PENDING` 供定时任务处理。
 - 频道帖子模板支持 `{{title}}`、`{{year}}`、`{{type}}`、`{{link}}`、`{{intro}}`；自动候选按站内热度、TMDB 热度和资源录入时间排序，同一影片只取一条。
 - 频道帖子使用 UTF-8 内容文件、可点击资源链接和影片海报，并用全局互斥锁避免并发发帖。
@@ -114,6 +115,7 @@
 - 密钥、Cookie、密码、Token 只放 `.env`、外部服务配置或进程内存，不提交到 Git。
 - Resource Hub 和 QQ 自动化的非敏感运行参数保存在 `sys_config`。
 - Resource Hub 管理页可在迅雷 Authorization 或 CAPTCHA Token 过期后直接更新当前后端进程内的凭据；接口只返回是否已配置，不回显或入库敏感值，容器重启后仍以 `.env` 为默认来源。
+- Resource Hub 迅雷凭据卡片会从当前 Authorization JWT 的 `exp` 声明显示本地过期时间，并明确标记已过期状态；非 JWT 或无 `exp` 的凭据不推断过期时间。
 - 迅雷 Authorization 当前是短时 OIDC access token，项目只保存运行时 access token，没有 refresh token 或官方设备续期凭据；浏览器网页登录 Cookie/Session 不等于 Drive API Bearer token，Resource Hub 也不会读取浏览器 Cookie、存储或请求头自动导入凭据。收到 401 时必须取得新的 Authorization 并在 Resource Hub 页面更新；代码不会尝试猜测或伪造续期接口。
 - “系统设置”按键名前缀展示、搜索和编辑 `sys_config` 全部现有配置，支持布尔、数字、单行和多行值；新增数据库配置不需要再修改前端固定键名列表。
 - 数据库新增表和字段默认使用中文 `COMMENT`。
@@ -141,6 +143,8 @@
 - 删除核心数据、重复清理和标题匹配不确定时先 dry-run，不执行物理删除。
 
 ## 验收
+
+2026-08-24 修复 QQ 资源候选的单一 provider 缺口：`AUTO` 发现现在按 GYING 实际返回的 provider 动态补搜缺失的夸克或迅雷；失效夸克自有分享会原位清空旧分享、重跑原 URL 转存并创建新自有分享。增加迅雷 JWT `exp` 过期时间展示。`mvn -q test`、前端 `npm run lint`/`npm run build`、Compose 配置和生产 backend/frontend 重建后健康接口 200 已通过；未执行真实夸克转存副作用操作。
 
 2026-08-24 增加 GYING 数据源“爬取我已发布资源”后台操作：通过当前账号 `/my-resources` 分页读取已发布资源，复用既有影片元数据入库和 `resource_link` 工作流，并按 GYING `source_id` 或 URL 跳过重复记录；页面显示导入、跳过和失败结果。
 
