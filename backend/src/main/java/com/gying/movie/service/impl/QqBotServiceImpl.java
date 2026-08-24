@@ -68,6 +68,8 @@ public class QqBotServiceImpl implements IQqBotService {
     private static final Logger log = LoggerFactory.getLogger(QqBotServiceImpl.class);
     private static final int MAX_REPLY_RESOURCES = 5;
     private static final int MAX_SELECTABLE_RESOURCES = 10;
+    private static final int MAX_DISCOVERED_RESOURCE_CANDIDATES = 30;
+    private static final int PREFERRED_QUARK_RESOURCE_COUNT = 7;
     private static final int MAX_CANDIDATE_SUGGESTIONS = 10;
     private static final int MAX_GYING_CANDIDATE_SUGGESTIONS = 4;
     private static final Set<String> OWNED_SHARE_PROVIDERS = Set.of("QUARK", "XUNLEI");
@@ -241,7 +243,6 @@ public class QqBotServiceImpl implements IQqBotService {
                         "invalid resource selection");
             }
             ResourceChoice selected = activeResources.resources().get(index);
-            resourceCandidates.remove(candidateUserKey(userKey));
             return completeResourceSelection(userKey, requestedKeyword, activeResources, selected);
         }
         if (!candidateSelection) {
@@ -465,7 +466,7 @@ public class QqBotServiceImpl implements IQqBotService {
                             .in("status", List.of("DISCOVERED", "FAILED"))
                             .orderByDesc("confidence")
                             .orderByDesc("created_at")
-                            .last("LIMIT " + MAX_SELECTABLE_RESOURCES));
+                            .last("LIMIT " + MAX_DISCOVERED_RESOURCE_CANDIDATES));
             if (discoveries == null) {
                 discoveries = List.of();
             }
@@ -476,12 +477,9 @@ public class QqBotServiceImpl implements IQqBotService {
                 if (hasText(choice.name()) && identities.add(choice.identity())) {
                     choices.add(choice);
                 }
-                if (choices.size() >= MAX_SELECTABLE_RESOURCES) {
-                    break;
-                }
             }
         }
-        return List.copyOf(choices);
+        return prioritizeResourceChoices(choices);
     }
 
     private void discoverResourceCandidates(MovieMetadata movie, String keyword, List<String> searchNotes) {
@@ -492,7 +490,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 request.setMovieId(movie.getId());
                 request.setKeyword(searchKeyword);
                 request.setSource("AUTO");
-                request.setMaxResults(MAX_SELECTABLE_RESOURCES);
+                request.setMaxResults(MAX_DISCOVERED_RESOURCE_CANDIDATES);
                 request.setDeferTransfer(true);
                 ResourceHubTask task = resourceDiscoveryService.enqueue(request);
                 ResourceDiscoveryRunResult result = resourceDiscoveryService.runTask(task.getId());
@@ -517,20 +515,51 @@ public class QqBotServiceImpl implements IQqBotService {
             ResourceCandidates candidates,
             ResourceChoice choice) {
         if (choice.resourceLink() != null) {
+            ResourceLink ready = prepareResourceForReply(choice.resourceLink());
+            if (ready == null) {
+                rememberFailedResourceSelection(userKey, candidates);
+                return finishSearch(userKey, requestedKeyword, "INVALID_RESOURCE", candidates.movieId(), 0,
+                        invalidResourceSelectionReply(candidates), "selected owned share is invalid");
+            }
+            resourceCandidates.remove(candidateUserKey(userKey));
             return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
-                    buildSelectedResourceReply(candidates.movieTitle(), choice.resourceLink()), null);
+                    buildSelectedResourceReply(candidates.movieTitle(), ready), null);
         }
         List<String> transferNotes = new ArrayList<>();
         ResourceLink transferred = transferSelectedDiscovery(choice.discoveryId(), transferNotes);
         if (transferred != null) {
+            resourceCandidates.remove(candidateUserKey(userKey));
             return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
                     buildSelectedResourceReply(candidates.movieTitle(), transferred), null);
         }
         String detail = transferNotes.isEmpty()
                 ? "所选资源多次转存后仍失败，可能无资源、违规或分享内没有视频文件。"
                 : String.join("；", transferNotes);
-        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0,
-                "所选资源转存失败：" + detail + "\n请重新搜索影片并选择其他资源。", detail);
+        rememberFailedResourceSelection(userKey, candidates);
+        String reply = containsInvalidShareError(transferNotes)
+                ? invalidResourceSelectionReply(candidates)
+                : "所选资源处理失败：" + detail + "\n请继续回复其他资源序号（1-"
+                        + candidates.resources().size() + "），无需重新搜索。";
+        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, detail);
+    }
+
+    private void rememberFailedResourceSelection(String userKey, ResourceCandidates candidates) {
+        resourceCandidates.put(candidateUserKey(userKey), new ResourceCandidates(
+                now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
+                candidates.movieId(),
+                candidates.movieTitle(),
+                candidates.allResources(),
+                candidates.resources()));
+    }
+
+    private String invalidResourceSelectionReply(ResourceCandidates candidates) {
+        return "该分享已失效，不可访问。\n请继续回复其他资源序号（1-"
+                + candidates.resources().size() + "），无需重新搜索。";
+    }
+
+    private boolean containsInvalidShareError(List<String> notes) {
+        return notes != null && notes.stream().anyMatch(note ->
+                "该分享已失效，不可访问".equals(note) || isInvalidShareError(note));
     }
 
     private ResourceLink transferSelectedDiscovery(Long discoveryId, List<String> transferNotes) {
@@ -1255,6 +1284,30 @@ public class QqBotServiceImpl implements IQqBotService {
         return List.copyOf(result);
     }
 
+    private List<ResourceChoice> prioritizeResourceChoices(List<ResourceChoice> candidates) {
+        Map<String, ResourceChoice> unique = new LinkedHashMap<>();
+        for (ResourceChoice candidate : candidates) {
+            if (candidate != null && hasText(candidate.identity())) {
+                unique.putIfAbsent(candidate.identity().trim().toLowerCase(Locale.ROOT), candidate);
+            }
+        }
+        List<ResourceChoice> quark = unique.values().stream()
+                .filter(choice -> "QUARK".equalsIgnoreCase(choice.provider()))
+                .toList();
+        List<ResourceChoice> other = unique.values().stream()
+                .filter(choice -> !"QUARK".equalsIgnoreCase(choice.provider()))
+                .toList();
+        List<ResourceChoice> result = new ArrayList<>();
+        quark.stream().limit(PREFERRED_QUARK_RESOURCE_COUNT).forEach(result::add);
+        other.stream().limit(Math.max(MAX_SELECTABLE_RESOURCES - result.size(), 0)).forEach(result::add);
+        if (result.size() < MAX_SELECTABLE_RESOURCES) {
+            quark.stream().skip(PREFERRED_QUARK_RESOURCE_COUNT)
+                    .limit(MAX_SELECTABLE_RESOURCES - result.size())
+                    .forEach(result::add);
+        }
+        return List.copyOf(result);
+    }
+
     private String resourceIdentity(ResourceLink link) {
         if (link != null && hasText(link.getUrl())) {
             return link.getUrl().trim().toLowerCase();
@@ -1928,6 +1981,9 @@ public class QqBotServiceImpl implements IQqBotService {
     private String userFacingTransferError(String message) {
         String detail = safeError(message);
         String lower = detail.toLowerCase(Locale.ROOT);
+        if (isInvalidShareError(detail)) {
+            return "该分享已失效，不可访问";
+        }
         if (lower.contains("no video")
                 || lower.contains("no transferred media")
                 || lower.contains("no new matching")
@@ -1950,6 +2006,19 @@ public class QqBotServiceImpl implements IQqBotService {
             return "转存失败：资源无效或已无资源";
         }
         return "转存失败：" + detail;
+    }
+
+    private boolean isInvalidShareError(String message) {
+        String lower = firstText(message, "").toLowerCase(Locale.ROOT);
+        return lower.contains("read quark share directory failed")
+                || lower.contains("share detail request failed")
+                || lower.contains("好友已取消")
+                || lower.contains("分享已取消")
+                || lower.contains("分享已失效")
+                || lower.contains("分享不存在")
+                || lower.contains("分享已过期")
+                || lower.contains("share expired")
+                || lower.contains("invalid share");
     }
 
     private void trySend(Long groupId, Long userId, String message) {

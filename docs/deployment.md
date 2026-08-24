@@ -51,6 +51,11 @@ docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
 
 先保持定时 Worker 关闭，通过后台手动跑一条计划保留资源，确认搜索、转存、自有分享和入库后再启用调度。quark-auto-save API Token 不等于夸克 Cookie；两者都要有效。
 
+生产 `quark-auto-save` 使用 `/app/config/quark_config.json` 持久卷，当前全局计划为 `0 8,18,20 * * *`。
+GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个时段执行）自动检查来源更新并周转存；正常任务缺省配置可通过管理 API `/update?token=...` 批量补齐。
+迁移前必须备份配置，只修改 `/GYing Resource Hub/tv/`、`/GYing Resource Hub/anime/` 下没有 `shareurl_ban` 且没有 `runweek` 的任务，保留 `runweek: []` 禁用任务和封禁任务不变。
+首次转存仍由 Resource Hub 手动任务直接执行，不受 `runweek` 过滤；更新来源后由周计划负责后续追更。API token 由 quark-auto-save WebUI 凭据派生，不能与夸克 Cookie 混用，也不得写入日志或文档。
+
 ## GYING
 
 `gying-source` 复用一个加锁 Session，处理 PoW 和登录。环境变量提供重启后的默认账号；管理员可在 `/admin/gying-source` 临时切换当前账号，密码和 Cookie 不持久化。
