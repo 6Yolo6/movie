@@ -526,7 +526,12 @@ class QqBotServiceImplTest {
     void createsAndRunsOnlySelectedQuarkTransferTask() {
         resourceHubProperties.setEnabled(true);
         MovieMetadata movie = movie("movie_quark_choice", "夸克候选测试", 2026);
+        movie.setGenres(List.of("剧情", "悬疑"));
+        movie.setRegions(List.of("中国大陆"));
+        movie.setTmdbVoteAverage(new java.math.BigDecimal("8.6"));
+        movie.setSummary("这是一段用于验证资源回复包含影片元数据的简介。");
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
         when(resourceDiscoveryService.enqueue(any())).thenReturn(task(301L));
         ResourceDiscoveryRunResult run = emptyDiscovery(301L);
         run.setDiscovered(1);
@@ -567,6 +572,16 @@ class QqBotServiceImplTest {
 
         assertTrue(candidates.contains("夸克候选测试 REMUX · 4K HDR"));
         assertFalse(candidates.contains(discovery.getOriginalUrl()));
+        assertTrue(candidates.contains("片名：夸克候选测试 (2026)"));
+        assertTrue(candidates.contains("类型：剧情 / 悬疑"));
+        assertTrue(candidates.contains("地区：中国大陆"));
+        assertTrue(candidates.contains("评分：TMDB 8.6"));
+        assertTrue(candidates.contains("简介：这是一段用于验证资源回复包含影片元数据的简介。"));
+        assertTrue(selected.contains("片名：夸克候选测试 (2026)"));
+        assertTrue(selected.contains("类型：剧情 / 悬疑"));
+        assertTrue(selected.contains("地区：中国大陆"));
+        assertTrue(selected.contains("评分：TMDB 8.6"));
+        assertTrue(selected.contains("简介：这是一段用于验证资源回复包含影片元数据的简介。"));
         assertTrue(selected.contains(ready.getName()));
         assertTrue(selected.contains(ready.getUrl()));
         verify(resourceDiscoveryService).ensureTransferTask(discovery.getId());

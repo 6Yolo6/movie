@@ -523,14 +523,14 @@ public class QqBotServiceImpl implements IQqBotService {
             }
             resourceCandidates.remove(candidateUserKey(userKey));
             return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
-                    buildSelectedResourceReply(candidates.movieTitle(), ready), null);
+                    buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), ready), null);
         }
         List<String> transferNotes = new ArrayList<>();
         ResourceLink transferred = transferSelectedDiscovery(choice.discoveryId(), transferNotes);
         if (transferred != null) {
             resourceCandidates.remove(candidateUserKey(userKey));
             return finishSearch(userKey, requestedKeyword, "SUCCEEDED", candidates.movieId(), 1,
-                    buildSelectedResourceReply(candidates.movieTitle(), transferred), null);
+                    buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), transferred), null);
         }
         String detail = transferNotes.isEmpty()
                 ? "所选资源多次转存后仍失败，可能无资源、违规或分享内没有视频文件。"
@@ -1729,7 +1729,14 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private String buildResourceSelectionReply(MovieMetadata movie, List<ResourceChoice> links, List<String> transferNotes) {
-        StringBuilder reply = new StringBuilder("影片：").append(title(movie));
+        StringBuilder reply = new StringBuilder("片名：").append(title(movie));
+        if (movie.getYear() != null) {
+            reply.append(" (").append(movie.getYear()).append(")");
+        }
+        appendLine(reply, "类型", join(movie.getGenres()));
+        appendLine(reply, "地区", join(movie.getRegions()));
+        appendLine(reply, "评分", rating(movie));
+        appendLine(reply, "简介", trim(movie.getSummary(), 180));
         reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
         int index = 1;
         for (ResourceChoice choice : links) {
@@ -1759,8 +1766,20 @@ public class QqBotServiceImpl implements IQqBotService {
                 "网盘");
     }
 
-    private String buildSelectedResourceReply(String movieTitle, ResourceLink link) {
-        StringBuilder reply = new StringBuilder("已选择资源：").append(firstText(link.getName(), movieTitle));
+    private String buildSelectedResourceReply(String movieId, String movieTitle, ResourceLink link) {
+        MovieMetadata movie = hasText(movieId) ? movieService.getById(movieId) : null;
+        String resolvedTitle = movie != null ? title(movie) : firstText(movieTitle, "未知影片");
+        StringBuilder reply = new StringBuilder("片名：").append(resolvedTitle);
+        if (movie != null && movie.getYear() != null) {
+            reply.append(" (").append(movie.getYear()).append(")");
+        }
+        if (movie != null) {
+            appendLine(reply, "类型", join(movie.getGenres()));
+            appendLine(reply, "地区", join(movie.getRegions()));
+            appendLine(reply, "评分", rating(movie));
+            appendLine(reply, "简介", trim(movie.getSummary(), 180));
+        }
+        reply.append("\n\n已选择资源：").append(firstText(link.getName(), resolvedTitle));
         reply.append("\n网盘：").append(firstText(link.getProvider(), "未知"));
         if (hasText(link.getUrl())) {
             reply.append("\n").append(link.getUrl());

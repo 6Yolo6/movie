@@ -68,8 +68,8 @@ GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个�
 - NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
 - 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。
 - OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/候选选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。搜索收到后先回复“正在搜索资源，请稍后...”。
-- Docker 部署会把 Windows 可维护源同步到 `/home/node/.openclaw-runtime-plugins` 的非 world-writable Linux 运行副本，并自动重启 Gateway，以满足 OpenClaw 插件安全检查。
-- 群机器人先展示影片候选，用户选定影片后再展示资源名称/画质候选；回复单个资源序号后才执行所选夸克或迅雷转存。可用“夸克”或“迅雷”筛选，但不支持“夸克10”等数量批量转存。多次失败、无视频文件或违规/平台拦截会及时返回明确提示；群回复会 @ 对应用户，上下文有效期为 5 分钟。
+- Docker 部署会把 Windows 可维护源同步到唯一的非 world-writable Linux 运行副本 `/home/node/.openclaw-runtime-plugins/qqbot-project`，同时从 `plugins.load.paths` 清理历史 QQBot runtime 路径并自动重启 Gateway。不得同时加载多份 `@tencent-connect/openclaw-qqbot`，否则旧副本可能抢先拦截消息，使搜索进度和指令补丁失效。
+- 群机器人先展示影片候选，用户选定影片后会展示年份、类型、地区、评分、简介和资源名称/画质候选；回复单个资源序号后才执行所选夸克或迅雷转存，成功回复也会带完整影片元数据。可用“夸克”或“迅雷”筛选，但不支持“夸克10”等数量批量转存。多次失败、无视频文件或违规/平台拦截会及时返回明确提示；群回复会 @ 对应用户，上下文有效期为 5 分钟。
 
 ## 腾讯频道
 

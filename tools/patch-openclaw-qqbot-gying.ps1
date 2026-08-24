@@ -122,7 +122,7 @@ function extractGyingTextCommand(content) {
         if (normalized === prefix) {
             return "";
         }
-        if (normalized.startsWith(`${prefix} `)) {
+        if (normalized.startsWith(prefix)) {
             return normalized.slice(prefix.length).trim();
         }
     }
@@ -206,7 +206,7 @@ function extractGyingTextCommand(content) {
         if (normalized === prefix) {
             return "";
         }
-        if (normalized.startsWith(`${prefix} `)) {
+        if (normalized.startsWith(prefix)) {
             return normalized.slice(prefix.length).trim();
         }
     }
@@ -294,7 +294,7 @@ if ($gatewayContent -notmatch "const isGyingSearchStartCommand") {
             "`$1    const isGyingSearchStartCommand = (text) => /^(?:(?:\\/movie|\\/search)\\s+.+|(?:\\u641c|\\u627e)\\s+.+)$/iu.test(String(text ?? `"`").trim());`n"
 }
 
-$gatewayContent = $gatewayContent -replace 'const isGyingSearchStartCommand = .*', '    const isGyingSearchStartCommand = (text) => /^(?:(?:\/movie|\/search)\s+.+|(?:\u641c|\u627e)\s+.+)$/iu.test(String(text ?? "").trim());'
+$gatewayContent = $gatewayContent -replace 'const isGyingSearchStartCommand = .*', '    const isGyingSearchStartCommand = (text) => /^(?:(?:\/movie|\/search)\s+.+|(?:\u641c|\u627e)\s*.+)$/iu.test(String(text ?? "").trim());'
 
 if ($gatewayContent -match 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}') {
     $gatewayContent = $gatewayContent -replace 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}', "if (!content.startsWith(`"/`") && !isGyingMovieSearchCommand(content) && !isGyingMentionFallback(msg)) {`n            msgQueue.enqueue(msg);`n            return;`n        }"
@@ -376,7 +376,10 @@ if ($OpenClawContainer -and (Get-Command docker -ErrorAction SilentlyContinue)) 
 }
 if ($containerRunning) {
     $containerProject = "/home/node/.openclaw/npm/projects/$($projectDir.Name)"
-    $runtimeProject = "/home/node/.openclaw-runtime-plugins/$($projectDir.Name)"
+    # Keep one canonical secured runtime path. OpenClaw may have stale copies from
+    # previous installs; loading more than one QQBot package makes patch behavior
+    # nondeterministic because the first loaded plugin wins message interception.
+    $runtimeProject = "/home/node/.openclaw-runtime-plugins/qqbot-project"
     $runtimePluginPath = "$runtimeProject/node_modules/@tencent-connect/openclaw-qqbot"
     docker exec -u 0 $OpenClawContainer mkdir -p $runtimeProject | Out-Null
     docker exec -u 0 $OpenClawContainer cp -a "$containerProject/." "$runtimeProject/" | Out-Null
@@ -404,10 +407,10 @@ if (Test-Path $configPath) {
         if (-not $config.plugins.load) {
             $config.plugins | Add-Member -NotePropertyName load -NotePropertyValue ([pscustomobject]@{})
         }
-        $paths = @($config.plugins.load.paths)
-        if ($paths -notcontains $runtimePluginPath) {
-            $paths += $runtimePluginPath
+        $paths = @($config.plugins.load.paths) | Where-Object {
+            $_ -notlike '/home/node/.openclaw-runtime-plugins/*/node_modules/@tencent-connect/openclaw-qqbot'
         }
+        $paths = @(@($paths + $runtimePluginPath) | Select-Object -Unique)
         $config.plugins.load | Add-Member -NotePropertyName paths -NotePropertyValue $paths -Force
     }
     $config | ConvertTo-Json -Depth 12 | Set-Content -Encoding UTF8 $configPath
