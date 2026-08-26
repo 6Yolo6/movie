@@ -831,6 +831,23 @@ public class XunleiClient {
         String separator = normalized.contains("?") ? "&" : "?";
         return normalized + separator + "pwd=" + code.trim();
     }
+
+    /**
+     * Extracts the password from a Xunlei share URL. The value is read from
+     * the final URL rather than inherited from the source candidate, because
+     * creating a new share can assign a different password (or no password).
+     */
+    public static String extractShareCode(String url) {
+        if (!hasTextStatic(url)) return null;
+        try {
+            return firstTextStatic(UriComponentsBuilder.fromUriString(url.trim())
+                    .build()
+                    .getQueryParams()
+                    .getFirst("pwd"));
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
     public record ShareInfo(
             String shareId,
             String passCode,

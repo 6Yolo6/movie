@@ -80,6 +80,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
             }
             if ("SUCCEEDED".equalsIgnoreCase(task.getStatus()) && task.getShareUrl() != null) {
                 clearLastError(task.getId());
+                updatePublishedLink(task);
                 result.setSkipped(result.getSkipped() + 1);
                 return;
             }
@@ -143,8 +144,10 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     private void updatePublishedLink(XunleiTransferTask task) {
         if (task.getDiscoveryResultId() == null || task.getShareUrl() == null) return;
         ResourceDiscoveryResult discovery = discoveryService.getById(task.getDiscoveryResultId()); if (discovery == null) return;
-        discovery.setShareUrl(task.getShareUrl()); discovery.setShareUrlHash(task.getShareUrlHash()); discovery.setStatus("DISCOVERED"); discovery.setFailureReason(null); discovery.setUpdatedAt(LocalDateTime.now());
-        if (discovery.getResourceLinkId() != null) { ResourceLink link = linkService.getById(discovery.getResourceLinkId()); if (link != null) { link.setUrl(task.getShareUrl()); link.setUrlHash(task.getShareUrlHash()); link.setProvider("XUNLEI"); link.setStatus("ACTIVE"); link.setLinkStatus("NORMAL"); link.setValidatedAt(LocalDateTime.now()); link.setUpdatedAt(LocalDateTime.now()); linkService.updateById(link); linkService.update(new UpdateWrapper<ResourceLink>().eq("id", link.getId()).set("last_check_error", null)); discovery.setStatus("SAVED"); } }
+        String finalCode = XunleiClient.extractShareCode(task.getShareUrl());
+        discovery.setShareUrl(task.getShareUrl()); discovery.setShareUrlHash(task.getShareUrlHash());
+        discovery.setCode(finalCode); discovery.setStatus("DISCOVERED"); discovery.setFailureReason(null); discovery.setUpdatedAt(LocalDateTime.now());
+        if (discovery.getResourceLinkId() != null) { ResourceLink link = linkService.getById(discovery.getResourceLinkId()); if (link != null) { link.setUrl(task.getShareUrl()); link.setUrlHash(task.getShareUrlHash()); link.setCode(finalCode); link.setProvider("XUNLEI"); link.setStatus("ACTIVE"); link.setLinkStatus("NORMAL"); link.setValidatedAt(LocalDateTime.now()); link.setUpdatedAt(LocalDateTime.now()); linkService.updateById(link); linkService.update(new UpdateWrapper<ResourceLink>().eq("id", link.getId()).set("last_check_error", null)); discovery.setStatus("SAVED"); } }
         discoveryService.updateById(discovery);
         discoveryService.update(new UpdateWrapper<ResourceDiscoveryResult>()
                 .eq("id", discovery.getId())

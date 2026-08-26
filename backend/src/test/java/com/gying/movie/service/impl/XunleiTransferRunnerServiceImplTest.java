@@ -12,6 +12,7 @@ import com.gying.movie.client.XunleiClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
@@ -83,6 +84,42 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals(1, result.getSubmitted());
         assertEquals("SUCCEEDED", task.getStatus());
         verify(taskService).update(any());
+    }
+
+    @Test
+    void propagatesPasswordFromFinalShareUrlToDiscoveryAndResourceLink() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
+        IResourceLinkService linkService = mock(IResourceLinkService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(30L);
+        task.setDiscoveryResultId(300L);
+        task.setStatus("WAITING_SHARE");
+        task.setSavedPath("saved-file-id");
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(300L);
+        discovery.setCode("old-code");
+        discovery.setResourceLinkId(301L);
+        ResourceLink link = new ResourceLink();
+        link.setId(301L);
+        link.setCode("old-code");
+        when(taskService.getById(30L)).thenReturn(task);
+        when(discoveryService.getById(300L)).thenReturn(discovery);
+        when(linkService.getById(301L)).thenReturn(link);
+        when(client.createShare("saved-file-id"))
+                .thenReturn("https://pan.xunlei.com/s/owned?pwd=new-code");
+
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties, client, taskService, discoveryService, linkService);
+
+        QuarkTransferRunResult result = service.submitOne(30L);
+
+        assertEquals(1, result.getSubmitted());
+        assertEquals("new-code", discovery.getCode());
+        assertEquals("new-code", link.getCode());
+        assertEquals("https://pan.xunlei.com/s/owned?pwd=new-code", link.getUrl());
     }
 
     @Test

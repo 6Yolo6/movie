@@ -268,6 +268,77 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         return quarkTransferTaskService.save(task);
     }
 
+    @Override
+    public int reconcileDiscoveredTransferTasks(int limit) {
+        if (!resourceHubProperties.isEnabled()) {
+            return 0;
+        }
+        int effectiveLimit = Math.min(Math.max(limit, 1), 200);
+        List<ResourceDiscoveryResult> candidates = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("status", "DISCOVERED")
+                .isNull("resource_link_id")
+                .in("provider", List.of("QUARK", "XUNLEI"))
+                .orderByAsc("created_at")
+                .orderByAsc("id")
+                .last("LIMIT 1000"));
+        if (candidates == null || candidates.isEmpty()) {
+            return 0;
+        }
+        int created = 0;
+        Set<String> scheduledMovies = new LinkedHashSet<>();
+        for (ResourceDiscoveryResult discovery : candidates) {
+            if (discovery == null || discovery.getId() == null || !hasText(discovery.getMovieId())
+                    || !hasText(discovery.getOriginalUrl())) {
+                continue;
+            }
+            String provider = hasText(discovery.getProvider()) ? discovery.getProvider().trim().toUpperCase() : "";
+            if (!Set.of("QUARK", "XUNLEI").contains(provider)) {
+                continue;
+            }
+            String movieProvider = discovery.getMovieId() + "|" + provider;
+            if (scheduledMovies.contains(movieProvider)
+                    || hasTransferTask(discovery, provider)
+                    || hasMovieProviderResource(discovery.getMovieId(), provider)
+                    || hasMovieTransferTask(discovery.getMovieId(), provider)) {
+                continue;
+            }
+            if (ensureTransferTask(discovery.getId())) {
+                scheduledMovies.add(movieProvider);
+                created++;
+                if (created >= effectiveLimit) {
+                    break;
+                }
+            }
+        }
+        return created;
+    }
+
+    private boolean hasTransferTask(ResourceDiscoveryResult discovery, String provider) {
+        String urlHash = firstText(discovery.getOriginalUrlHash(),
+                ResourceHubHashUtils.sha256(discovery.getOriginalUrl()));
+        if ("XUNLEI".equals(provider)) {
+            return xunleiTransferTaskService != null && xunleiTransferTaskService.count(
+                    new QueryWrapper<XunleiTransferTask>()
+                            .and(query -> query.eq("discovery_result_id", discovery.getId())
+                                    .or(nested -> nested.eq("movie_id", discovery.getMovieId())
+                                            .eq("original_url_hash", urlHash)))) > 0;
+        }
+        return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
+                .and(query -> query.eq("discovery_result_id", discovery.getId())
+                        .or(nested -> nested.eq("movie_id", discovery.getMovieId())
+                                .eq("original_url_hash", urlHash)))) > 0;
+    }
+
+    private boolean hasMovieProviderResource(String movieId, String provider) {
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("provider", provider)
+                .eq("type", "DISK")
+                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID"))) > 0;
+    }
+
     private List<DiscoveredResource> discover(DiscoveryPayload payload, MovieMetadata movie) {
         String source = payload.source().toUpperCase();
         if ("GYING".equals(source)) {

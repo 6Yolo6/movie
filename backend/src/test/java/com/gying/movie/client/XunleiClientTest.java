@@ -137,6 +137,14 @@ class XunleiClientTest {
     }
 
     @Test
+    void extractsPasswordFromFinalShareUrl() {
+        assertEquals("new9", XunleiClient.extractShareCode(
+                "https://pan.xunlei.com/s/owned?pwd=new9#ignored"));
+        assertEquals(null, XunleiClient.extractShareCode("https://pan.xunlei.com/s/owned"));
+        assertEquals(null, XunleiClient.extractShareCode(null));
+    }
+
+    @Test
     void normalizesBase64UrlPagingTokensForTheDriveApi() {
         assertEquals("YWJjZA==", XunleiClient.normalizeBase64Token("YWJjZA"));
         assertEquals("YWJjZA==", XunleiClient.normalizeBase64Token("YWJjZA=="));

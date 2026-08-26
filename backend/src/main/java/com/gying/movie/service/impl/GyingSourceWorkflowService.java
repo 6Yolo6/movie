@@ -221,6 +221,8 @@ public class GyingSourceWorkflowService {
         int linked = 0;
         int failed = 0;
         Set<String> movieIds = new LinkedHashSet<>();
+        Set<String> resourceDiscoveryMovieIds = new LinkedHashSet<>();
+        Set<String> insertedMovieIds = new LinkedHashSet<>();
         List<String> errors = new ArrayList<>();
 
         for (Map<String, Object> candidate : candidates) {
@@ -240,6 +242,9 @@ public class GyingSourceWorkflowService {
                     saveIdentity(existing.getId(), "GYING", typeCode, required(mid, "GYING movie id"), season,
                             evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
                     movieIds.add(existing.getId());
+                    if (!hasActiveDiskResource(existing.getId())) {
+                        resourceDiscoveryMovieIds.add(existing.getId());
+                    }
                     linked++;
                     continue;
                 }
@@ -255,6 +260,8 @@ public class GyingSourceWorkflowService {
                     throw new IllegalStateException("GYING metadata was not saved: " + targetMovieId);
                 }
                 movieIds.add(targetMovieId);
+                insertedMovieIds.add(targetMovieId);
+                resourceDiscoveryMovieIds.add(targetMovieId);
                 inserted++;
             } catch (Exception error) {
                 failed++;
@@ -271,9 +278,21 @@ public class GyingSourceWorkflowService {
         result.put("inserted", inserted);
         result.put("linked", linked);
         result.put("movieIds", List.copyOf(movieIds));
+        result.put("insertedMovieIds", List.copyOf(insertedMovieIds));
+        result.put("resourceDiscoveryMovieIds", List.copyOf(resourceDiscoveryMovieIds));
         result.put("failed", failed);
         result.put("errors", errors);
         return result;
+    }
+
+    private boolean hasActiveDiskResource(String movieId) {
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId)
+                .eq("type", "DISK")
+                .eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status")
+                        .or().notIn("link_status", List.of("INVALID", "SUSPECTED_INVALID")))) > 0;
     }
 
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
@@ -656,6 +675,31 @@ public class GyingSourceWorkflowService {
                             + firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
         }
         return ensureMovieResource(identity.getSourceType(), identity.getExternalId());
+    }
+
+    /** Publishes an already stored Resource Hub share to its mapped GYING movie. */
+    public boolean publishResourceToGying(ResourceLink resource) {
+        if (resource == null || resource.getId() == null || !hasText(resource.getUrl())
+                || !"DISK".equalsIgnoreCase(resource.getType())
+                || !Set.of("QUARK", "XUNLEI").contains(firstText(resource.getProvider(), "").toUpperCase(Locale.ROOT))) {
+            return false;
+        }
+        MovieSourceIdentity identity = findGyingIdentity(resource.getMovieId());
+        if (identity == null) {
+            return false;
+        }
+        Map<String, Object> snapshot = gyingSourceClient.get(
+                "/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
+        boolean alreadyPublished = mapList(snapshot.get("ownResources")).stream()
+                .anyMatch(item -> normalizedUrl(resource.getUrl()).equals(normalizedUrl(stringValue(item.get("url")))));
+        if (!alreadyPublished) {
+            Map<String, Object> published = publishLocalResource(
+                    identity.getSourceType(), identity.getExternalId(),
+                    movieService.getById(resource.getMovieId()), resource);
+            String sourceId = required(stringValue(published.get("sourceId")), "published GYING source id");
+            verifyPublishedUpdate(identity.getSourceType(), identity.getExternalId(), sourceId, resource.getUrl());
+        }
+        return true;
     }
 
     public Map<String, Object> ensureTrailerResources(int limit) {
@@ -1149,7 +1193,8 @@ public class GyingSourceWorkflowService {
                         "mid", mid,
                         "title", title,
                         "panurl", newUrl,
-                        "panpw", "",
+                        "panpw", "XUNLEI".equalsIgnoreCase(provider)
+                                ? firstText(XunleiClient.extractShareCode(newUrl), "") : "",
                         "is", integerValue(item.get("login_visible")) == null
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
@@ -1352,7 +1397,10 @@ public class GyingSourceWorkflowService {
         payload.put("mid", required(siteMid, "GYING movie id"));
         payload.put("title", buildResourceTitle(movie, resource.getName(), resource.getProvider()));
         payload.put("panurl", resource.getUrl());
-        payload.put("panpw", firstText(resource.getCode(), ""));
+        String provider = firstText(resource.getProvider(), "").toUpperCase(Locale.ROOT);
+        payload.put("panpw", "XUNLEI".equals(provider)
+                ? firstText(XunleiClient.extractShareCode(resource.getUrl()), "")
+                : firstText(resource.getCode(), ""));
         payload.put("is", 0);
         return gyingSourceClient.post("/publish", payload);
     }
@@ -1507,7 +1555,8 @@ public class GyingSourceWorkflowService {
         link.setProvider(firstText(provider, "QUARK").toUpperCase(Locale.ROOT));
         link.setUrl(newUrl);
         link.setUrlHash(ResourceHubHashUtils.sha256(newUrl));
-        link.setCode(null);
+        link.setCode("XUNLEI".equalsIgnoreCase(provider)
+                ? XunleiClient.extractShareCode(newUrl) : null);
         link.setAuditStatus(1);
         link.setStatus("ACTIVE");
         link.setLinkStatus("NORMAL");
