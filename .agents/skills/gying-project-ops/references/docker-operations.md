@@ -9,7 +9,7 @@
 | `backend` | Spring Boot API | 主机 `BACKEND_PORT`，默认 `8880` |
 | `gying-source` | GYING 会话、搜索、采集和资源修复 | Compose 网络内部 `8091` |
 | `social-publisher` | 多 QQ 账号和新浪微博发布 | Compose 网络内部 `8093` |
-| `napcat` | 可选 OneBot QQ 接入 | 启用时为 `3000`、`3001`、`6099` |
+| `napcat` | 历史遗留 OneBot QQ 接入，当前停用 | 不启动、不验收、不迁移 |
 | `redis` | 缓存和运行依赖 | embedded profile 或外部服务 |
 | `pansou` | 资源搜索 | embedded profile 或外部 `8888` |
 | `quark-auto-save` | 夸克转存 | embedded profile 或外部 `5005` |
@@ -92,7 +92,8 @@ Resource Hub 内部状态优先通过管理概览或带认证的内部 health �
 
 ## 持久化状态
 
-命名卷包含 backend 日志、`social-publisher-qq-accounts` QQ 凭据和可选 embedded 依赖数据。独立容器可能挂载检出目录外的路径。
+命名卷包含 backend 日志、`social-publisher-qq-accounts` QQ 凭据、`social-publisher-weibo` 会话和可选 embedded 依赖数据。独立容器可能挂载检出目录外的路径。
+`napcat-data` 是历史遗留卷，当前迁移不要导出或恢复；发现旧卷时只记录其存在，不把它列为上线依赖。
 迁移前记录每个挂载的源、目标、所有者和备份方法。
 
 存在独立容器或共享网络时，不能假定 `docker compose down` 无害。日常恢复禁止增加 `-v`。
@@ -113,4 +114,4 @@ Compose 操作必须通过 shell 显式传入 `-f docker-compose.prod.yml`。
 - 浏览器 API 正常但详情页失败：检查 `INTERNAL_API_URL`。
 - nginx `504`：确认是否仍调用旧同步接口；长任务应返回 `jobId` 并轮询。
 - 时间偏移：检查 `TZ=Asia/Shanghai`、JVM 时区、JDBC 时区和 MySQL 时间。
-- NapCat 重启或登录循环：保留账号专属配置，并预期手机验证或扫码。
+- NapCat 容器存在或退出：按历史遗留项处理，不重启；QQ 机器人故障应检查 OpenClaw Gateway 和后端 QQ 接口。
