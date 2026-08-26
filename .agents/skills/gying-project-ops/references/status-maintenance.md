@@ -79,7 +79,7 @@ Windows PowerShell 5.1 必须使用 `Get-Content -Encoding UTF8`。默认解码�
 - `.env.example` 与在线配置键是否一致；
 - GYING 当前账号状态、共享 Session、PoW 和内部 token；
 - Resource Hub 主开关、Worker、PanSou/Panso、quark-auto-save 和自有分享；
-- OpenClaw、NapCat、原 QQ 频道桥接、多平台发布账号、凭据卷、微博会话和计划任务；
+- OpenClaw、原 QQ 频道桥接、多平台发布账号、凭据卷、微博会话和计划任务；NapCat 只记录是否为历史遗留，不作为现役健康项；
 - 未解决事故、迁移任务和长期不变量。
 
 纯格式调整不更新时间；只有复核或改变了运维事实时才更新时间。

@@ -219,7 +219,9 @@ if (-not $docker) {
     Add-Line $zh.containerHeader
     Add-Line "| --- | --- | --- | --- |"
     $containers = @(& docker ps -a --format "{{.Names}}|{{.Image}}|{{.Status}}|{{.Ports}}" 2>$null)
-    $relevant = @($containers | Where-Object { $_ -match '(?i)gying|openclaw|minio|pansou|quark|napcat' })
+    $relevant = @($containers | Where-Object {
+        $_ -match '(?i)gying|openclaw|minio|pansou|quark' -and $_ -notmatch '(?i)napcat'
+    })
     if ($relevant.Count -eq 0) {
         Add-Line $zh.noneDetected
     } else {

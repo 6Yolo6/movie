@@ -11,8 +11,7 @@
    - 根目录 `.env`；
    - MinIO 对象数据或云端 Bucket；
    - quark-auto-save 配置目录，其中包含 Cookie 和插件凭据；
-   - OpenClaw 配置与认证目录，其中包含机器人密钥和搜索 token；
-   - 使用 NapCat 时的配置卷；
+   - OpenClaw 配置与认证目录，其中包含机器人密钥和搜索 token；NapCat 已停用，不备份或恢复 `napcat-data`；
    - QQ 频道计划任务定义和本地发帖状态；
    - `social-publisher-qq-accounts` 卷及多平台发布表；
    - 微博网页会话键的受保护来源，不记录其值。
@@ -58,7 +57,7 @@ docker compose -f docker-compose.prod.yml ps
 5. 明确 MySQL、Redis、MinIO、PanSou、quark-auto-save 使用托管服务、已有容器，
    还是 `embedded-deps`，不能无意混用。
 6. 启动自动化前恢复 MySQL 和对象存储。
-7. 仅在需要对应集成的主机恢复 quark-auto-save、OpenClaw 和 NapCat 配置。
+7. 仅在需要对应集成的主机恢复 quark-auto-save 和 OpenClaw 配置；NapCat 不恢复、不启动。
 8. 逐项启动并独立验证依赖。
 9. 启动 `gying-source`，只验证健康、账号状态和候选读取。
 10. 恢复 QQ 凭据卷并启动 `social-publisher`，保持所有自动发布关闭。
@@ -93,7 +92,7 @@ mysqldump --single-transaction --routines --triggers \
 8. 在自动化关闭状态启动 backend。
 9. 启动 frontend 和 nginx。
 10. 启用 Worker 前处理遗留的 `RUNNING`、`SUBMITTED` 等任务状态。
-11. 恢复 OpenClaw、NapCat 和频道自动化。
+11. 恢复 OpenClaw 和频道自动化；NapCat 保持停用。
 12. 分目标手工验证多平台发布，再执行完整验收并更新项目状态。
 
 不能直接重跑遗留任务。先检查其外部副作用，避免重复转存、分享或发帖。
@@ -119,5 +118,5 @@ mysqldump --single-transaction --routines --triggers \
 - `social-publisher` 健康、QQ 凭据卷已挂载、微博 readiness 与目标默认关闭状态正确；
 - Resource Hub 依赖和配置概览正确；
 - 启用调度前，受控手工 Resource Hub 操作成功；
-- 仅在启用时测试 OpenClaw、NapCat 和 QQ 频道；
+- 仅在启用时测试 OpenClaw 和 QQ 频道；NapCat 不纳入验收；
 - 已记录备份、回滚材料、部署提交和剩余任务。

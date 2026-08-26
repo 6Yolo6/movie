@@ -58,6 +58,8 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
   [状态文档维护](references/status-maintenance.md)。
 - 部署、回滚、迁移、恢复、备份和新服务器验收：阅读
   [部署与恢复](references/deployment-recovery.md)。
+- Windows 到 Windows、Windows 到 Linux 的完整迁移、数据搬迁、卷恢复、切换和回滚：先阅读仓库根目录
+  `MIGRATION.md`，再阅读 [Windows 与 Linux 迁移](references/windows-migration.md)。
 - Compose、容器、卷、网络、健康检查、日志和端口冲突：阅读
   [Docker 运维](references/docker-operations.md)。
 - 新库初始化、增量 SQL、MCP/CLI 选择、备份恢复和安全清理：阅读

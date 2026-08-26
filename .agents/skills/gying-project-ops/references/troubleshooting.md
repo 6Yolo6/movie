@@ -33,7 +33,7 @@
 | 发现或修复出现 nginx `504` | 调用了旧同步接口 | 确认返回 `jobId` 并轮询 |
 | 修复后产生重复资源 | 重放或 canonical 匹配错误 | source URL/hash、旧失效行、发布行为 |
 | 官方 QQ 主动消息返回 `40034105` | 平台权限或消息模式 | 使用带 `msg_id` 的被动回复或授权 |
-| NapCat 换号后不能收发 | 账号专属配置或登录 | 配置文件、HTTP server/client、扫码 |
+| NapCat 容器存在或退出 | 历史遗留服务仍被误启动 | 不重启 NapCat；检查 OpenClaw Gateway、后端 QQ 接口和 QQBot 配置 |
 | OpenClaw 重启循环 | gateway 配置 | `gateway.mode=local`、`gateway.bind=lan` 并重建 |
 | OpenClaw 升级后搜索失效 | 本地插件补丁被覆盖 | 重新应用脚本或部署正式插件 |
 | QQ 频道帖子乱码 | Windows CLI 编码 | UTF-8 content file，避免 stdin JSON |
