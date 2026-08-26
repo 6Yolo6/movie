@@ -29,6 +29,7 @@ import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
+import com.gying.movie.utils.ResourceHubHashUtils;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -201,6 +202,56 @@ public class ResourceLinkController {
         return ResponseEntity.ok(message);
     }
 
+    @PostMapping("/admin")
+    public ResponseEntity<?> createAdminResource(
+            @RequestBody ResourceSubmissionDTO dto,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser admin = authHelper.requireAdmin(token);
+        if (dto == null || dto.getMovieId() == null || dto.getMovieId().isBlank()
+                || dto.getUrl() == null || dto.getUrl().isBlank()) {
+            return ResponseEntity.badRequest().body("movieId and url are required");
+        }
+        MovieMetadata movie = movieService.getById(dto.getMovieId().trim());
+        if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+            return ResponseEntity.badRequest().body("Movie not found");
+        }
+        String type = dto.getType() == null || dto.getType().isBlank() ? "DISK" : dto.getType().trim().toUpperCase();
+        if (!Set.of("DISK", "MAGNET", "TORRENT", "ONLINE").contains(type)) {
+            return ResponseEntity.badRequest().body("Invalid resource type");
+        }
+        String url = dto.getUrl().trim();
+        String urlError = validateResourceUrl(type, url);
+        if (urlError != null) return ResponseEntity.badRequest().body(urlError);
+        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
+                ? "OTHER" : dto.getProvider().trim().toUpperCase();
+        if ("DISK".equals(type) && "OTHER".equals(provider)) {
+            return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
+        }
+        if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("url", url).eq("status", "ACTIVE")) > 0) {
+            return ResponseEntity.status(409).body("This resource URL has already been submitted.");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        ResourceLink link = new ResourceLink();
+        link.setMovieId(movie.getId());
+        link.setName(cleanOptional(dto.getName(), 255));
+        link.setUrl(url);
+        link.setUrlHash(ResourceHubHashUtils.sha256(url));
+        link.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
+        link.setProvider(provider);
+        link.setType(type);
+        link.setUploaderId(admin.getId());
+        link.setAuditStatus(1);
+        link.setStatus("ACTIVE");
+        link.setLinkStatus("NORMAL");
+        link.setReportCount(0);
+        link.setSource("ADMIN_MANUAL");
+        link.setAutoCollected(false);
+        link.setCreatedAt(now);
+        link.setUpdatedAt(now);
+        applyQualityFields(link, dto);
+        resourceLinkService.addResource(link);
+        return ResponseEntity.ok(link);
+    }
     @PostMapping("/{id}/report")
     public ResponseEntity<?> reportInvalidResource(
             @PathVariable Long id,
@@ -301,16 +352,28 @@ public class ResourceLinkController {
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
-        long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                .eq("url", resourceUrl)
-                .eq("status", "ACTIVE")
-                .ne("id", id));
+        long duplicateCount = Objects.equals(resourceUrl, resource.getUrl())
+                ? 0
+                : resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                        .eq("url", resourceUrl)
+                        .eq("status", "ACTIVE")
+                        .isNull("deleted_at")
+                        .ne("id", id));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
 
+        if (isAdmin && dto.getMovieId() != null && !dto.getMovieId().isBlank()
+                && !Objects.equals(resource.getMovieId(), dto.getMovieId().trim())) {
+            MovieMetadata movie = movieService.getById(dto.getMovieId().trim());
+            if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+                return ResponseEntity.badRequest().body("Movie not found");
+            }
+            resource.setMovieId(movie.getId());
+        }
         resource.setName(cleanOptional(dto.getName(), 255));
         resource.setUrl(resourceUrl);
+        resource.setUrlHash(ResourceHubHashUtils.sha256(resourceUrl));
         resource.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
         resource.setProvider(provider);
         resource.setType(type);
@@ -318,6 +381,7 @@ public class ResourceLinkController {
         resource.setReportCount(0);
         applyQualityFields(resource, dto);
         resource.setRejectReason(null);
+        resource.setUpdatedAt(LocalDateTime.now());
         if (!isAdmin) {
             String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
             resource.setAuditStatus("true".equals(auditEnabled) ? 0 : 1);
@@ -901,7 +965,8 @@ public class ResourceLinkController {
         }
         QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         ResourceDiscoveryResult discovery = findDiscovery(link);
         LocalDateTime now = LocalDateTime.now();

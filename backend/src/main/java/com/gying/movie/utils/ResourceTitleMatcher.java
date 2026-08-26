@@ -13,13 +13,39 @@ public final class ResourceTitleMatcher {
             "(?:\\r?\\n|📜\\s*介绍|[【\\[]?简介[】\\]]?\\s*[：:]|[【\\[]?介绍[】\\]]?\\s*[：:])",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern TRAILING_NUMBER = Pattern.compile("([0-9]+)$");
+    private static final Pattern RESOURCE_METADATA_MARKER = Pattern.compile(
+            "\\s*(?:[\\[【]|(?=\\d+\\s*[~\\-至到]\\s*\\d+\\s*季))",
+            Pattern.CASE_INSENSITIVE);
 
     private ResourceTitleMatcher() {
     }
 
     public static boolean isRelevant(MovieMetadata movie, String resourceTitle, String keyword) {
         String normalizedResourceTitle = normalizeTitle(extractHeadline(resourceTitle));
+        String normalizedResourceCoreTitle = normalizeTitle(extractResourceCoreTitle(resourceTitle));
         if (!hasText(normalizedResourceTitle) || movie == null) {
+            return false;
+        }
+
+        boolean seasonAware = isSeasonAware(movie);
+        SeasonSearchUtils.SeasonQuery requestedSeason = seasonAware
+                ? SeasonSearchUtils.parse(keyword)
+                : null;
+        SeasonSearchUtils.SeasonQuery titleSeason = seasonAware
+                ? SeasonSearchUtils.parse(movie.getTitleCn())
+                : null;
+        Integer movieSeason = movie.getSeason() != null
+                && seasonAware ? movie.getSeason()
+                : titleSeason == null ? null : titleSeason.season();
+        if (requestedSeason != null && movieSeason != null
+                && movieSeason != requestedSeason.season()) {
+            return false;
+        }
+        int targetSeason = requestedSeason != null
+                ? requestedSeason.season()
+                : movieSeason == null ? 0 : movieSeason;
+        if (targetSeason > 0 && SeasonSearchUtils.hasSeasonMarker(resourceTitle)
+                && !SeasonSearchUtils.coversSeason(resourceTitle, targetSeason)) {
             return false;
         }
 
@@ -32,6 +58,9 @@ public final class ResourceTitleMatcher {
 
         Set<String> expectedTitles = new LinkedHashSet<>();
         addCandidate(expectedTitles, normalizedKeyword);
+        if (requestedSeason != null) {
+            addCandidate(expectedTitles, normalizeTitle(requestedSeason.baseTitle()));
+        }
         addCandidate(expectedTitles, normalizeTitle(movie.getTitleCn()));
         addCandidate(expectedTitles, normalizeTitle(movie.getTitleEn()));
         addCandidate(expectedTitles, normalizeTitle(movie.getSeriesName()));
@@ -45,8 +74,25 @@ public final class ResourceTitleMatcher {
             if (normalizedResourceTitle.length() >= 4 && expected.contains(normalizedResourceTitle)) {
                 return true;
             }
+            if (normalizedResourceCoreTitle.length() >= 4 && expected.contains(normalizedResourceCoreTitle)) {
+                return true;
+            }
         }
         return false;
+    }
+
+    private static boolean isSeasonAware(MovieMetadata movie) {
+        return movie != null && ("tv".equalsIgnoreCase(movie.getCategory())
+                || "ac".equalsIgnoreCase(movie.getCategory()));
+    }
+
+    private static String extractResourceCoreTitle(String value) {
+        String headline = extractHeadline(value);
+        Matcher matcher = RESOURCE_METADATA_MARKER.matcher(headline);
+        if (matcher.find() && matcher.start() > 0) {
+            return headline.substring(0, matcher.start()).trim();
+        }
+        return headline;
     }
 
     static String extractHeadline(String value) {
@@ -74,7 +120,11 @@ public final class ResourceTitleMatcher {
             return null;
         }
         Matcher matcher = TRAILING_NUMBER.matcher(value);
-        return matcher.find() ? matcher.group(1) : null;
+        if (!matcher.find()) {
+            return null;
+        }
+        String number = matcher.group(1);
+        return number.length() <= 2 ? number : null;
     }
 
     private static boolean containsSequencedTitle(String resourceTitle, String keyword, String sequelNumber) {

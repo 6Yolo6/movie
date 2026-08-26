@@ -18,11 +18,28 @@ public final class MovieTitleMatcher {
                 || matches(expected, movie.getSeriesName())) {
             return true;
         }
+        SeasonSearchUtils.SeasonQuery requestedSeason = SeasonSearchUtils.parse(keyword);
+        SeasonSearchUtils.SeasonQuery titleSeason = SeasonSearchUtils.parse(movie.getTitleCn());
+        Integer candidateSeason = movie.getSeason() != null
+                ? movie.getSeason()
+                : titleSeason == null ? null : titleSeason.season();
+        if (requestedSeason != null
+                && candidateSeason != null
+                && candidateSeason != requestedSeason.season()) {
+            return false;
+        }        String baseTitle = SeasonSearchUtils.baseTitle(keyword);
+        if (!normalizedEquals(baseTitle, keyword)
+                && (matches(normalize(baseTitle), movie.getTitleCn())
+                        || matches(normalize(baseTitle), movie.getTitleEn())
+                        || matches(normalize(baseTitle), movie.getSeriesName()))) {
+            return true;
+        }
         if (!hasText(movie.getAliases())) {
             return false;
         }
         return Arrays.stream(movie.getAliases().split("[/|,，;；]+"))
-                .anyMatch(alias -> matches(expected, alias));
+                .anyMatch(alias -> matches(expected, alias)
+                        || (!normalizedEquals(baseTitle, keyword) && matches(normalize(baseTitle), alias)));
     }
 
     public static boolean normalizedEquals(String left, String right) {

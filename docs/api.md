@@ -1,64 +1,107 @@
 # 接口文档
 
-## 影片
+所有管理接口要求管理员 JWT；普通用户接口要求登录 JWT。响应主要使用 `{ code, message, data }`。
 
-- `GET /api/movies/list?page=1&size=30&category=mv&keyword=&genre=&region=&language=&year=&sort=`：影片分页列表。
-- `GET /api/movies/filters?category=mv`：动态筛选项。
+## 影片与用户内容
+
+- `GET /api/movies/list`：影片分页、分类、筛选和排序。
+- `GET /api/movies/filters?category=`：动态筛选项。
 - `GET /api/movies/{id}`：影片详情和已审核资源。
 - `GET /api/movies/series?name=`：剧集季信息。
+- `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
+- `GET /api/favorites/hot?period=day|week|month|all`：站内收藏热门。
+- `GET /api/comments/{relateId}`、`POST /api/comments`：评论和回复。
+- `POST /api/comments/{id}/upvote`、`DELETE /api/comments/{id}`：点赞、隐藏评论。
+- `GET /api/notifications`、`PUT /api/notifications/read-all`：站内通知。
 
 ## 资源
 
-- `POST /api/resources`：登录用户提交资源。
-- `GET /api/resources/mine?page=1&size=20`：我的投稿。
-- `PUT /api/resources/{id}`：编辑自己的资源，普通用户编辑后按审核开关重新审核。
+- `POST /api/resources`：提交网盘、磁力、种子或在线播放资源。
+- `GET /api/resources/mine`：我的投稿。
+- `PUT /api/resources/{id}`：编辑自己的资源。
 - `DELETE /api/resources/{id}`：软删除自己的资源。
-- `POST /api/resources/{id}/report`：登录用户举报失效链接，可传 `{ "reason": "..." }`。
+- `POST /api/resources/{id}/report`：举报失效链接。
+- `GET /api/resources/admin/all`：管理列表。
+- `PUT /api/resources/{id}/audit`、`PUT /api/resources/batch/audit`：审核。
+- `PUT /api/resources/admin/{id}/link-status`：更新链接健康状态。
+- `POST /api/resources/admin/invalid-checks/scan`：实时检测候选。
+- `POST /api/resources/admin/repair-invalid`：后台修复失效资源。
 
-资源字段支持：`quality`、`subtitle`、`fileSize`、`versionNote`。
+资源质量字段包括 `quality`、`subtitle`、`fileSize`、`versionNote`。
 
-## 管理接口
+## Resource Hub
 
-- `GET /api/resources/admin/all`：资源审核/管理列表。
-- `PUT /api/resources/{id}/audit?status=1|2&reason=`：审核资源，拒绝可带原因。
-- `PUT /api/resources/batch/audit`：批量审核。
-- `PUT /api/resources/admin/{id}/link-status?status=NORMAL|SUSPECTED_INVALID|INVALID`：更新链接状态。
-- `GET /api/admin/resource-reports`：资源举报列表。
-- `PUT /api/admin/resource-reports/{id}/status?status=HANDLED|FALSE_REPORT|INVALID|PENDING`：处理举报。
-- `GET /api/admin/comments`：评论管理列表。
-- `PUT /api/admin/comments/{id}/status`：隐藏或恢复评论。
-- `GET /api/admin/users`：用户管理列表。
-- `PUT /api/admin/users/{id}/enabled`：启用/禁用用户。
-- `GET /api/admin/resource-hub/overview`：Resource Hub 概览。
-- `GET /api/admin/resource-hub/config`：查看 Resource Hub 运行时配置。
-- `PUT /api/admin/resource-hub/config`：更新 Resource Hub 运行时配置，例如 TMDB 自动采集间隔、条数、Worker 批量限制等。
-- `GET /api/admin/resource-hub/tasks?page=1&size=20&taskType=&status=`：Resource Hub 任务列表。
-- `POST /api/admin/resource-hub/tmdb/metadata-sync`：创建 TMDB 元数据同步任务，可传 `{ "source": "TRENDING_MOVIE_DAY", "page": 1, "maxItems": 20, "runNow": false }`。
-- `POST /api/admin/resource-hub/tmdb/metadata-sync/{taskId}/run`：运行已创建的 TMDB 元数据同步任务。
-- TMDB 同步成功后会按配置自动生成 PanSou 资源发现任务；返回结果中的 `discoveryTasksCreated` 和 `discoveryTasksSkipped` 可用于观察去重效果。
-- `POST /api/admin/resource-hub/discover`：创建资源发现任务，可传 `{ "movieId": "xxx", "keyword": "片名 年份", "source": "PANSOU", "maxResults": 10, "runNow": false }`。
-- `POST /api/admin/resource-hub/discover/{taskId}/run`：运行已创建的资源发现任务，当前会写入发现结果并生成夸克转存待办。
-- `GET /api/admin/resource-hub/discoveries?movieId=&status=&source=&page=1&size=20`：分页查看资源发现结果。
-- `POST /api/admin/resource-hub/discoveries/publish?limit=20`：批量发布待入库发现结果到正式资源列表。
-- `POST /api/admin/resource-hub/discoveries/{discoveryResultId}/publish`：发布单条发现结果到正式资源列表。
-- `POST /api/admin/resource-hub/quark/transfers/submit?limit=5`：批量提交待转存任务到 quark-auto-save。
-- `POST /api/admin/resource-hub/quark/transfers/{taskId}/submit`：提交单个待转存任务到 quark-auto-save。
-- `GET /api/admin/resource-hub/worker/status`：查看 Resource Hub Worker 开关、运行状态和批量限制。
-- `POST /api/admin/resource-hub/worker/run-once?force=false`：手动运行一次 Worker。`force=true` 可在定时 Worker 关闭时手动触发。
-- `GET /api/qq-bot/health`：查看 QQ Bot 开关、回复通道、NapCat 和官方 QQBot 配置状态。
-- `POST /api/qq-bot/onebot?token=`：OneBot/NapCat HTTP 上报入口，接收群消息并异步搜索资源。
-- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：返回 QQ 群影视搜索回复文本，不主动发送消息；用于 OpenClaw QQBot 被动回复桥接。`userKey` 用于后端频率限制。
+基础路径：`/api/admin/resource-hub`。
 
-QQ Bot 查询会先读取 `resource_link` 已发布资源；只有库内没有可用链接时才触发外部搜索、转存和发布。库内没有影视元数据时会先通过 TMDB 补全，未上映/无可信元数据时不会触发 PanSou。搜索词会受 `QQ_BOT_BLOCKED_KEYWORDS` 敏感词限制。群回复只展示影片信息和正式资源链接，不展示转存状态或内部分享任务信息。
+- `GET /overview`、`GET|PUT /config`：概览和运行配置。
+- `GET /tasks`：任务分页，可按类型和状态筛选。
+- `POST /tmdb/metadata-sync`、`POST /tmdb/metadata-sync/{taskId}/run`：TMDB 同步。
+- `POST /discover`、`GET /discover/jobs/{jobId}`、`POST /discover/{taskId}/run`：资源发现。
+- `GET /discoveries?keyword=&movieId=&status=&source=&sortOrder=&page=&size=`：发现结果。
+- `POST /discoveries/{id}/publish`、`POST /discoveries/publish`：单条/待发布批量入库。
+- `POST /discoveries/{id}/retry-share-publish`：重跑转存，必要时重新搜索后发布。
+- `POST /discoveries/batch/publish`、`POST /discoveries/batch/retry-share-publish`：处理请求体中的发现 ID 数组。
+- `POST /discoveries/reconcile?dryRun=true&limit=2000`：重评历史标题误判/任务冲突并同步失败任务状态。
+- `POST /discoveries/{id}/qq-channel-post?runNow=true`、`POST /discoveries/batch/qq-channel-post?runNow=true`：立即或排队发 QQ。
+- `POST /quark/transfers/submit`、`POST /quark/transfers/{taskId}/submit`：转存。
+- `POST /api/internal/resource-hub/quark-transfers/{taskId}/run`：使用 internal token 定向执行一条夸克转存任务，不扫描其他队列。
+- `POST /api/internal/resource-hub/discoveries/{discoveryResultId}/publish`：使用 internal token 定向发布一条已有自有分享的发现结果。
+- `POST /api/internal/resource-hub/xunlei-transfers/{taskId}/run`：使用 internal token 定向执行一条迅雷转存任务，不扫描其他队列。
+- `GET /missing-resources`、`POST /missing-resources/{movieId}/resolve?source=GYING|PANSOU`：缺网盘资源检查和补全。
+- `POST /missing-resources/batch/resolve?source=GYING|PANSOU`：按请求体中的影片 ID 数组批量补全，最多 20 部。
+- `GET /worker/status`、`POST /worker/run-once?force=true`：Worker。
+- `POST /cleanup/duplicate-tmdb?dryRun=true`、`POST /cleanup/mismatched-resources?dryRun=true`：清理预览/执行。
 
-## 评论、收藏、通知
+## GYING
 
-- `GET /api/comments/{relateId}`：评论分页，包含回复。
-- `POST /api/comments`：发布评论或回复。
-- `POST /api/comments/{id}/upvote`：点赞/取消点赞。
-- `DELETE /api/comments/{id}`：作者或管理员删除评论。
-- `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
-- `GET /api/favorites/hot?period=day|week|month|all`：站内收藏热门榜，按 `user_favorite` 聚合计数。
-- `GET /api/favorites/tmdb-hot?limit=30`：Resource Hub 导入的 TMDB 热门榜，按 `movie_metadata.tmdb_popularity` 排序。
-- `GET /api/notifications`：站内通知。
-- `PUT /api/notifications/read-all`：全部标为已读。
+基础路径：`/api/admin/gying-source`。
+
+- `GET|PUT /account`：读取凭据配置状态或切换当前运行时账号。
+- `GET /candidates/recent`、`GET /candidates/trailers`：候选。
+- `POST /recent/ensure`：请求体为最近更新表格中所选的 `{typeCode,mid}` 数组，最多 60 部。
+- `POST /movies/{typeCode}/{mid}/ensure`、`POST /trailers/ensure`：确保资源。
+- `POST /published-resources/check`、`POST /published-resources/repair`：检查和修复本人资源。
+- `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
+- `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
+- `GET /jobs/{jobId}`：后台任务状态。
+
+内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
+GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
+没有可靠结果时才回退到片库目录扫描。
+
+向 GYING 发布网盘资源使用 `POST /res/pan/add`；表单中的 `binds[0][dir]` 传递
+`mv|tv|ac` 类型，`binds[0][id]` 传递 GYING 影片 ID。不得再把类型和 ID 拼入请求路径。
+
+## QQ 自动化
+
+- `GET /api/qq-bot/health`：机器人配置状态。
+- `POST /api/qq-bot/onebot?token=`：NapCat/OneBot 上报。
+- `GET /api/qq-bot/search-reply?keyword=&userKey=&token=`：OpenClaw 被动回复文本；`userKey` 维持 5 分钟影片和资源候选上下文。机器人收到 `/movie`、`/search`、`搜` 或 `找` 搜索后先回“正在搜索资源，请稍后...”，也支持无空格的“搜片名/找片名”。完成后先返回影片候选；用户选定影片后再返回包含片名、年份、类型、地区、TMDB 评分和简介的影片元数据，以及最多 10 条资源名称/画质候选，其中优先展示夸克资源。只有用户回复单个资源序号时才创建并执行对应的夸克或迅雷转存任务；成功回复会再次附带影片元数据和最终自有分享。可回复“夸克”或“迅雷”筛选候选，不支持“夸克10”等按数量批量转存指令。若所选分享失效，统一回复“该分享已失效，不可访问”，并保留候选上下文，用户可继续回复其他序号，无需重新搜索；无视频文件或平台违规/拦截时也会保留候选并提示继续选择。
+- `/api/admin/qq-automation/*`：配置、群搜索日志和频道发帖日志。
+
+查询先读取本地正式资源。无法精确命中时优先请求 GYING 搜索并返回带来源的影片候选；用户回复影片序号后只导入对应元数据，再返回资源名称/画质候选。用户继续回复单个资源序号后，才按选中的资源和提供方创建、执行转存并发布自有分享；GYING 无可用资源时再进入本地 PanSou、外部 Panso API 的候选发现流程。模糊影片结果和资源候选在用户确认前都不会触发转存。
+
+## 多平台发布
+
+基础路径：`/api/admin/social-publishing`。
+
+- `GET /overview`：目标列表、发布统计和独立发布容器的 QQ/微博网页会话状态。
+- `GET /qq-accounts`：列出独立发布器中的 QQ 账号及授权状态。
+- `POST /qq-accounts/login`：为新的账号标识生成 QQ 授权二维码并启动后台轮询。
+- `GET /qq-accounts/{accountKey}/login-status`：查询扫码授权结果。
+- `DELETE /qq-accounts/{accountKey}`：删除 QQ 账号凭据并停用其发布目标，保留历史日志。
+- `POST /targets`：为已授权 QQ 账号或微博 `default` 网页会话添加发布目标。
+- `PUT /targets/{id}`：更新目标名称、频道号、版块、启用状态、每日时间、每次条数、间隔和模板。
+- `POST /targets/{id}/publish-next?runNow=true`：对单个目标发布下一条热度候选。
+- `POST /publish-next?runNow=true`：对请求体中的目标 ID 批量发布；空数组表示全部启用目标。
+- `GET /logs?status=&platform=&page=&size=`：发布审计日志。
+- `POST /logs/{id}/retry`：重试失败日志。
+
+独立发布容器内部提供 `GET /health` 和受 `X-Internal-Token` 保护的 `POST /posts/{logId}`。原 QQ 机器人、原频道账号和原频道定时任务保持独立。
+
+## 其他管理接口
+
+- `/api/admin/resource-reports`：举报处理。
+- `/api/admin/comments`：评论管理。
+- `/api/admin/users`：用户管理和启用状态。
+- `/api/config`：系统配置管理。

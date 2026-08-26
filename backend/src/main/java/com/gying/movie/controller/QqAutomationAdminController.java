@@ -9,6 +9,7 @@ import com.gying.movie.service.IQqAutomationConfigService;
 import com.gying.movie.service.IQqBotSearchLogService;
 import com.gying.movie.service.IQqChannelPostLogService;
 import com.gying.movie.utils.AuthHelper;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,8 +46,14 @@ public class QqAutomationAdminController {
         authHelper.requireAdmin(token);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("config", configService.getConfig());
-        result.put("botStatusCounts", countByStatus("bot"));
-        result.put("channelStatusCounts", countByStatus("channel"));
+        Map<String, Long> botStatusCounts = countByStatus("bot", null);
+        Map<String, Long> channelStatusCounts = countByStatus("channel", null);
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        result.put("botStatusCounts", botStatusCounts);
+        result.put("botRecentStatusCounts", countByStatus("bot", since));
+        result.put("botSummary", botSummary(botStatusCounts, since));
+        result.put("channelStatusCounts", channelStatusCounts);
+        result.put("channelRecentStatusCounts", countByStatus("channel", since));
         return ApiResponse.ok(result);
     }
 
@@ -111,18 +118,51 @@ public class QqAutomationAdminController {
                 new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)), query));
     }
 
-    private Map<String, Long> countByStatus(String type) {
+    private Map<String, Long> countByStatus(String type, LocalDateTime since) {
         Map<String, Long> result = new LinkedHashMap<>();
         if ("bot".equals(type)) {
-            for (String status : new String[] {"SUCCEEDED", "NO_RESOURCE", "NO_METADATA", "TRAILER", "BLOCKED", "RATE_LIMITED", "REJECTED"}) {
-                result.put(status, qqBotSearchLogService.count(new QueryWrapper<QqBotSearchLog>().eq("status", status)));
+            for (String status : new String[] {
+                    "SUCCEEDED", "NO_RESOURCE", "NO_METADATA", "TRAILER", "AMBIGUOUS",
+                    "BLOCKED", "RATE_LIMITED", "REJECTED", "FAILED"
+            }) {
+                QueryWrapper<QqBotSearchLog> query = new QueryWrapper<QqBotSearchLog>().eq("status", status);
+                if (since != null) {
+                    query.ge("created_at", since);
+                }
+                result.put(status, qqBotSearchLogService.count(query));
             }
         } else {
             for (String status : new String[] {"POSTED", "FAILED", "SKIPPED"}) {
-                result.put(status, qqChannelPostLogService.count(new QueryWrapper<QqChannelPostLog>().eq("status", status)));
+                QueryWrapper<QqChannelPostLog> query = new QueryWrapper<QqChannelPostLog>().eq("status", status);
+                if (since != null) {
+                    query.ge("created_at", since);
+                }
+                result.put(status, qqChannelPostLogService.count(query));
             }
         }
         return result;
+    }
+
+    private Map<String, Object> botSummary(Map<String, Long> statusCounts, LocalDateTime since) {
+        long total = qqBotSearchLogService.count();
+        long recent = qqBotSearchLogService.count(new QueryWrapper<QqBotSearchLog>().ge("created_at", since));
+        long succeeded = count(statusCounts, "SUCCEEDED");
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total", total);
+        result.put("last24Hours", recent);
+        result.put("succeeded", succeeded);
+        result.put("successRate", total == 0 ? 0D : Math.round(succeeded * 1000D / total) / 10D);
+        result.put("noResult", count(statusCounts, "NO_RESOURCE")
+                + count(statusCounts, "NO_METADATA")
+                + count(statusCounts, "TRAILER"));
+        result.put("ambiguous", count(statusCounts, "AMBIGUOUS"));
+        result.put("blocked", count(statusCounts, "BLOCKED") + count(statusCounts, "RATE_LIMITED"));
+        result.put("failed", count(statusCounts, "FAILED") + count(statusCounts, "REJECTED"));
+        return result;
+    }
+
+    private long count(Map<String, Long> counts, String status) {
+        return counts.getOrDefault(status, 0L);
     }
 
     private boolean hasText(String value) {

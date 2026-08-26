@@ -1,6 +1,8 @@
 export interface MovieMetadata {
     category: string;
     id: string;
+    tmdbId?: number;
+    tmdbType?: string;
     titleCn: string;
     titleEn: string;
     year: number;
@@ -24,6 +26,10 @@ export interface MovieMetadata {
     popularity?: number;
     seriesName?: string;
     season?: number;
+    tmdbLastSyncAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
 }
 
 export interface ResourceLink {
@@ -38,6 +44,8 @@ export interface ResourceLink {
     remark: string;
     auditStatus: number;
     createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
     status?: string;
     linkStatus?: string;
     reportCount?: number;

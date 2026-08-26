@@ -1,13 +1,17 @@
-﻿import requests
+import requests
 import re
 import json
 import time
 import os
+import argparse
+import html as html_lib
+import threading
 import pymysql
 from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
-from urllib.parse import urlparse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -23,7 +27,7 @@ MINIO_SECRET_KEY = os.getenv("GYING_MINIO_SECRET_KEY", "")
 MINIO_BUCKET = os.getenv("GYING_MINIO_BUCKET", "gying")
 
 # Crawler Configuration
-TARGET_USER = "救星小窝"
+TARGET_USER = os.getenv("GYING_TARGET_USER", "救星小窝")
 COOKIE_STR = os.getenv("GYING_COOKIE", "")
 LOGIN_USERNAME = os.getenv("GYING_USERNAME", "")
 LOGIN_PASSWORD = os.getenv("GYING_PASSWORD", "")
@@ -34,10 +38,23 @@ HEADERS = {
     "Referer": "https://www.xn--wcv59z.com/"
 }
 
-BASE_URL = "https://www.xn--wcv59z.com"
+BASE_URL = os.getenv("GYING_BASE_URL", "https://www.xn--wcv59z.com").rstrip("/")
 SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
 POW_MIN_SECONDS = 3
 _SITE_SESSION = None
+_SITE_SESSION_LOCK = threading.RLock()
+_SITE_LAST_REQUEST_AT = 0.0
+_ACCOUNT_SOURCE = "ENV"
+_ACCOUNT_UPDATED_AT = None
+API_TOKEN = os.getenv("GYING_SOURCE_API_TOKEN", "")
+API_HOST = os.getenv("GYING_SOURCE_API_HOST", "0.0.0.0")
+API_PORT = int(os.getenv("GYING_SOURCE_API_PORT", "8091"))
+IMAGE_CONNECT_TIMEOUT = float(os.getenv("GYING_IMAGE_CONNECT_TIMEOUT", "5"))
+IMAGE_READ_TIMEOUT = float(os.getenv("GYING_IMAGE_READ_TIMEOUT", "30"))
+IMAGE_MAX_ATTEMPTS = max(int(os.getenv("GYING_IMAGE_MAX_ATTEMPTS", "3")), 1)
+SITE_REQUEST_INTERVAL_SECONDS = max(float(os.getenv("GYING_REQUEST_INTERVAL_MS", "1000")) / 1000.0, 0.0)
+IMAGE_SIZES = tuple(value.strip() for value in os.getenv("GYING_IMAGE_SIZES", "384,256").split(",")
+                    if value.strip().isdigit())
 
 # ================= Services =================
 
@@ -55,7 +72,7 @@ def upload_image_to_minio(url, movie_id):
         # User mentioned: https://s.tutu.pm/img/mv/31z0/384.avif
         # But url provided in _obj.d might be different?
         # Actually _obj.d doesn't seem to have the full image URL.
-        # User said: "请求都是384.avif... https://s.tutu.pm/img/mv/{id}/384.avif"
+        # https://s.tutu.pm/img/mv/{id}/384.avif"
         
         # We construct the URL if it's not present, or if we know the pattern.
         # Let's assume the pattern based on user input:
@@ -72,34 +89,76 @@ def upload_image_to_minio(url, movie_id):
         print(f"Image upload failed: {e}")
         return None
 
+def detect_image_content_type(body, content_type=""):
+    if not body:
+        return None
+    if body[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if body[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if len(body) >= 12 and body[:4] == b"RIFF" and body[8:12] == b"WEBP":
+        return "image/webp"
+    if len(body) >= 12 and body[4:8] == b"ftyp" and body[8:12] in (b"avif", b"avis"):
+        return "image/avif"
+    normalized = (content_type or "").split(";", 1)[0].strip().lower()
+    return normalized if normalized in ("image/jpeg", "image/png", "image/webp", "image/avif") else None
+
+
 def upload_image_by_pattern(type_code, movie_id):
-    target_url = f"https://s.tutu.pm/img/{type_code}/{movie_id}/384.avif"
-    object_name = f"{type_code}/{movie_id}/384.avif" # Removed leading slash for minio key
-    
+    client = get_minio_client()
+    sizes = IMAGE_SIZES or ("384",)
+    for size in sizes:
+        for extension in ("avif", "webp", "jpg", "png"):
+            object_name = f"{type_code}/{movie_id}/{size}.{extension}"
+            try:
+                client.stat_object(MINIO_BUCKET, object_name)
+                print(f"   图片已存在 (MinIO): {object_name}")
+                return object_name
+            except Exception:
+                pass
+
     try:
-        client = get_minio_client()
         if not client.bucket_exists(MINIO_BUCKET):
             client.make_bucket(MINIO_BUCKET)
-            
-        # Check if exists
-        try:
-            client.stat_object(MINIO_BUCKET, object_name)
-            print(f"   图片已存在 (MinIO): {object_name}")
-            return object_name
-        except:
-            # Not found, proceed to upload
-            pass
+    except Exception as error:
+        print(f"   ⚠️ Image storage warning: {error}")
+        return None
 
-        print(f"   下载图片: {target_url}")
-        resp = requests.get(target_url, headers=HEADERS, timeout=10)
-        if resp.status_code == 200:
-            data = BytesIO(resp.content)
-            length = len(resp.content)
-            client.put_object(MINIO_BUCKET, object_name, data, length, content_type="image/avif")
-            return object_name # Return relative path for DB
-    except Exception as e:
-        print(f"   ⚠️ Image upload warning: {e}")
-        
+    failures = []
+    for size in sizes:
+        target_url = f"https://s.tutu.pm/img/{type_code}/{movie_id}/{size}.avif"
+        for attempt in range(1, IMAGE_MAX_ATTEMPTS + 1):
+            try:
+                print(f"   下载图片: {target_url} (attempt {attempt}/{IMAGE_MAX_ATTEMPTS})")
+                resp = requests.get(
+                    target_url,
+                    headers={**HEADERS, "Referer": f"{BASE_URL}/{type_code}/{movie_id}"},
+                    timeout=(IMAGE_CONNECT_TIMEOUT, IMAGE_READ_TIMEOUT),
+                )
+                if resp.status_code != 200:
+                    failures.append(f"{size}: HTTP {resp.status_code}")
+                    break
+                content_type = detect_image_content_type(resp.content, resp.headers.get("Content-Type"))
+                if not content_type:
+                    failures.append(f"{size}: invalid image response")
+                    break
+                extension = {
+                    "image/jpeg": "jpg", "image/png": "png",
+                    "image/webp": "webp", "image/avif": "avif",
+                }[content_type]
+                object_name = f"{type_code}/{movie_id}/{size}.{extension}"
+                client.put_object(MINIO_BUCKET, object_name, BytesIO(resp.content),
+                                  len(resp.content), content_type=content_type)
+                return object_name
+            except (requests.Timeout, requests.ConnectionError) as error:
+                failures.append(f"{size}/{attempt}: {error}")
+                if attempt < IMAGE_MAX_ATTEMPTS:
+                    time.sleep(min(2 ** (attempt - 1), 4))
+            except Exception as error:
+                failures.append(f"{size}/{attempt}: {error}")
+                break
+
+    print(f"   ⚠️ Image upload warning: {'; '.join(failures[-5:])}")
     return None
 
 # ================= Core Logic =================
@@ -108,8 +167,10 @@ def upload_image_by_pattern(type_code, movie_id):
 
 CN_MAP = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
 
-def parse_season(text):
+def parse_season(text, type_code=None):
     if not text: return None, None
+    if type_code == "mv":
+        return None, None
     # 1. Digits: "第4季"
     match = re.search(r'^(.*?)\s*第(\d+)季', text)
     if match:
@@ -209,10 +270,60 @@ def get_site_session():
         load_cookie_string(_SITE_SESSION, COOKIE_STR)
     return _SITE_SESSION
 
+def account_status():
+    return {
+        "username": LOGIN_USERNAME,
+        "targetUser": TARGET_USER,
+        "passwordConfigured": bool(LOGIN_PASSWORD),
+        "cookieConfigured": bool(COOKIE_STR),
+        "source": _ACCOUNT_SOURCE,
+        "updatedAt": _ACCOUNT_UPDATED_AT,
+    }
+
+def configure_site_account(payload):
+    global TARGET_USER, COOKIE_STR, LOGIN_USERNAME, LOGIN_PASSWORD
+    global HEADERS, SESSION_HEADERS, _SITE_SESSION, _ACCOUNT_SOURCE, _ACCOUNT_UPDATED_AT
+
+    username = str(payload.get("username") or "").strip()
+    target_user = str(payload.get("targetUser") or "").strip()
+    if not username:
+        raise ValueError("username is required")
+    if not target_user:
+        raise ValueError("targetUser is required")
+
+    with _SITE_SESSION_LOCK:
+        LOGIN_USERNAME = username
+        TARGET_USER = target_user
+        if "password" in payload and payload.get("password") is not None:
+            password = str(payload.get("password") or "")
+            if password:
+                LOGIN_PASSWORD = password
+        if payload.get("clearCookie"):
+            COOKIE_STR = ""
+        elif "cookie" in payload and payload.get("cookie") is not None:
+            COOKIE_STR = str(payload.get("cookie") or "").strip()
+        HEADERS = {
+            **HEADERS,
+            "Cookie": COOKIE_STR,
+        }
+        SESSION_HEADERS = {k: v for k, v in HEADERS.items() if k.lower() != "cookie"}
+        if _SITE_SESSION is not None:
+            _SITE_SESSION.close()
+        _SITE_SESSION = None
+        _ACCOUNT_SOURCE = "RUNTIME"
+        _ACCOUNT_UPDATED_AT = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    return account_status()
+
 def is_pow_challenge_response(resp):
     text = resp.text if resp is not None else ""
+    if resp is not None:
+        try:
+            payload = resp.json()
+            if isinstance(payload, dict) and payload.get("code") == 419:
+                return True
+        except ValueError:
+            pass
     return "powSolve" in text or ("/res/pow" in text and any(flag in text for flag in ("浏览器验证", "浏览器安全验证", "安全验证")))
-
 def is_login_required_response(resp):
     text = resp.text if resp is not None else ""
     return (
@@ -307,22 +418,76 @@ def login_site_session(session):
 
     return False
 
+def wait_for_site_request_slot():
+    global _SITE_LAST_REQUEST_AT
+    if SITE_REQUEST_INTERVAL_SECONDS <= 0:
+        return
+    remaining = SITE_REQUEST_INTERVAL_SECONDS - (time.monotonic() - _SITE_LAST_REQUEST_AT)
+    if remaining > 0:
+        time.sleep(remaining)
+    _SITE_LAST_REQUEST_AT = time.monotonic()
+
+
 def site_get(url, *, timeout=10, headers=None, **kwargs):
-    session = get_site_session()
-    request_headers = headers or {}
-    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+    with _SITE_SESSION_LOCK:
+        session = get_site_session()
+        request_headers = headers or {}
+        wait_for_site_request_slot()
+        resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
-    if is_pow_challenge_response(resp):
-        if solve_browser_pow(session, url):
-            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-
-    if is_login_required_response(resp):
-        if login_site_session(session):
-            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-            if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+        if is_pow_challenge_response(resp):
+            if solve_browser_pow(session, url):
+                wait_for_site_request_slot()
                 resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
 
-    return resp
+        if is_login_required_response(resp):
+            if login_site_session(session):
+                wait_for_site_request_slot()
+                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+                if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                    wait_for_site_request_slot()
+                    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+
+        return resp
+
+def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
+    with _SITE_SESSION_LOCK:
+        session = get_site_session()
+        request_headers = headers or {}
+        referer = request_headers.get("Referer", BASE_URL + "/")
+
+        wait_for_site_request_slot()
+        warmup = session.get(referer, timeout=timeout)
+        if is_pow_challenge_response(warmup) and solve_browser_pow(session, referer):
+            wait_for_site_request_slot()
+            warmup = session.get(referer, timeout=timeout)
+        if is_login_required_response(warmup) and not login_site_session(session):
+            raise RuntimeError("Gying login is required")
+
+        wait_for_site_request_slot()
+        resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+        if is_pow_challenge_response(resp) and solve_browser_pow(session, referer):
+            wait_for_site_request_slot()
+            resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+        if is_login_required_response(resp) and login_site_session(session):
+            wait_for_site_request_slot()
+            resp = session.post(url, data=data or {}, timeout=timeout, headers=request_headers, **kwargs)
+        return resp
+
+def parse_site_action_response(resp):
+    try:
+        data = resp.json()
+    except ValueError:
+        raise RuntimeError(f"Gying returned non-JSON response (HTTP {resp.status_code})")
+
+    success = resp.ok and (
+        data.get("success") is True
+        or data.get("code") in (0, 1, 200)
+        or data.get("status") in ("success", "ok")
+    )
+    if not success:
+        raise RuntimeError(str(data.get("msg") or data.get("message") or data))
+    return data
 
 def extract_js_assignment_json(text, assignment):
     marker = re.search(rf"{re.escape(assignment)}\s*=", text)
@@ -434,7 +599,7 @@ def normalize_download_item(item):
         "tname": str(provider_raw),
     }
 
-def normalize_download_section(section, target_user):
+def normalize_download_section(section, target_user=None):
     if isinstance(section, list):
         normalized = [normalize_download_item(item) for item in section]
         return [item for item in normalized if item]
@@ -446,17 +611,17 @@ def normalize_download_section(section, target_user):
     urls = section.get("url", [])
     passwords = section.get("p", section.get("pwd", []))
     users = section.get("user", [])
+    ids = section.get("id", [])
     type_indexes = section.get("type", [])
     type_names = section.get("tname", [])
 
     iterable_fields = (names, urls, passwords, users, type_indexes)
     count = max((len(v) for v in iterable_fields if isinstance(v, list)), default=0)
-    has_target_user = any(user == target_user for user in users) if isinstance(users, list) else False
     resources = []
 
     for i in range(count):
         uploader = list_get(users, i)
-        if has_target_user and uploader != target_user:
+        if target_user and uploader != target_user:
             continue
 
         url = str(list_get(urls, i)).strip()
@@ -479,15 +644,59 @@ def normalize_download_section(section, target_user):
             name = "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url
 
         resources.append({
+            "source_id": str(list_get(ids, i)).strip(),
             "title": name,
             "url": url,
             "code": extract_share_code(url, list_get(passwords, i)),
             "provider": provider,
             "type": link_type,
             "tname": provider_raw,
+            "uploader": uploader,
+            "is_own": bool(target_user and uploader == target_user),
         })
 
     return resources
+
+def publish_pan_resource(type_code, mid, title, panurl, panpw="", login_visible=0):
+    endpoint = f"{BASE_URL}/res/pan/add"
+    payload = {
+        "title": title,
+        "panurl": panurl,
+        "panpw": panpw or "",
+        "is": str(int(login_visible)),
+        "binds[0][dir]": type_code,
+        "binds[0][id]": mid,
+    }
+    resp = site_post(
+        endpoint,
+        data=payload,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": f"{BASE_URL}/{type_code}/{mid}",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    return parse_site_action_response(resp)
+
+def update_pan_resource(source_id, title, panurl, panpw="", login_visible=0, type_code=None, mid=None):
+    endpoint = f"{BASE_URL}/res/pan/edit/{source_id}"
+    referer = f"{BASE_URL}/{type_code}/{mid}" if type_code and mid else f"{BASE_URL}/user/content_list"
+    payload = {
+        "title": title,
+        "panurl": panurl,
+        "panpw": panpw or "",
+        "is": str(int(login_visible)),
+    }
+    resp = site_post(
+        endpoint,
+        data=payload,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": referer,
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    return parse_site_action_response(resp)
 
 def normalize_content_list_resources(resources):
     normalized = []
@@ -507,7 +716,8 @@ def normalize_content_list_resources(resources):
         })
     return normalized
 
-def fetch_download_resources(type_code, mid, fallback_resources):
+def fetch_download_resources(type_code, mid, fallback_resources, target_user=None):
+    resolved_target_user = TARGET_USER if target_user is None else target_user
     url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
     try:
         resp = site_get(
@@ -535,9 +745,758 @@ def fetch_download_resources(type_code, mid, fallback_resources):
 
     resources = []
     for key in ("panlist", "downlist", "magnetlist", "btlist"):
-        resources.extend(normalize_download_section(data.get(key), TARGET_USER))
+        resources.extend(normalize_download_section(data.get(key), resolved_target_user))
 
     return resources or normalize_content_list_resources(fallback_resources)
+
+def fetch_movie_resource_snapshot(type_code, mid):
+    metadata = fetch_movie_metadata(type_code, mid) or {}
+    resources = fetch_download_resources(type_code, mid, [], target_user="")
+    for resource in resources:
+        resource["is_own"] = resource.get("uploader") == TARGET_USER
+    # /res/downurl may omit an already-published item or return stale public data.
+    # The authenticated content list is authoritative for duplicate prevention.
+    owned = list_my_pan_resources(limit=1000, max_pages=50, type_code=type_code, mid=mid)
+    by_source = {item.get("source_id"): item for item in resources if item.get("source_id")}
+    by_url = {item.get("url"): item for item in resources if item.get("url")}
+    for item in owned:
+        existing = by_source.get(item.get("source_id")) or by_url.get(item.get("url"))
+        if existing is None:
+            resources.append(item)
+        else:
+            existing.update(item)
+        if item.get("url"):
+            by_url[item.get("url")] = existing or item
+        if item.get("source_id"):
+            by_source[item.get("source_id")] = existing or item
+    title = metadata.get("title") or metadata.get("name") or metadata.get("ename")
+    series_name, season = parse_season(title, type_code)
+    return {
+        "typeCode": type_code,
+        "mid": mid,
+        "title": title,
+        "titleEn": metadata.get("name") or metadata.get("ename"),
+        "year": metadata.get("year"),
+        "aliases": metadata.get("aliases") or metadata.get("aka"),
+        "directors": metadata.get("daoyan") or [],
+        "actors": metadata.get("zhuyan") or [],
+        "genres": metadata.get("leixing") or [],
+        "regions": metadata.get("diqu") or [],
+        "seriesName": series_name,
+        "season": season,
+        "resources": resources,
+        "ownResources": [item for item in resources if item.get("is_own")],
+    }
+def fetch_user_content_page(page=1):
+    url = f"{BASE_URL}/res/user/content_list?page={page}"
+    resp = site_get(
+        url,
+        timeout=15,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": f"{BASE_URL}/user/content_list",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying user content HTTP {resp.status_code}")
+    try:
+        data = resp.json()
+    except ValueError as error:
+        raise RuntimeError("Gying user content returned non-JSON response") from error
+
+    inlist = data.get("inlist") or {}
+    titles = inlist.get("title") or []
+    passwords = inlist.get("p") or inlist.get("pwd") or []
+    visibilities = inlist.get("is") or []
+    resources = []
+    for index in range(len(titles)):
+        raw_provider = str(list_get(inlist.get("tname") or [], index))
+        resource_url = str(list_get(inlist.get("url") or [], index)).strip()
+        if not resource_url:
+            continue
+        provider = detect_provider(raw_provider)
+        resources.append({
+            "source_id": str(list_get(inlist.get("id") or [], index)).strip(),
+            "mid": str(list_get(inlist.get("id2") or [], index)).strip(),
+            "type_code": str(list_get(inlist.get("dir") or [], index)).strip(),
+            "title": str(list_get(titles, index)).strip(),
+            "movie_title": str(list_get(inlist.get("atitle") or [], index)).strip(),
+            "url": resource_url,
+            "code": extract_share_code(resource_url, list_get(passwords, index)),
+            "login_visible": 1 if str(list_get(visibilities, index)).strip() == "1" else 0,
+            "provider": provider,
+            "type": detect_resource_type(resource_url, provider),
+            "tname": raw_provider,
+            "uploader": TARGET_USER,
+            "is_own": True,
+        })
+    return {"resources": resources, "page": data.get("page") or {}}
+
+def list_my_pan_resources(limit=200, max_pages=50, source_ids=None, type_code=None, mid=None):
+    safe_limit = min(max(int(limit), 1), 1000)
+    target_ids = {str(value).strip() for value in (source_ids or []) if str(value).strip()}
+    resources = []
+    for page in range(1, max_pages + 1):
+        result = fetch_user_content_page(page)
+        page_resources = result["resources"]
+        matching = page_resources
+        if type_code or mid:
+            matching = [item for item in matching
+                        if (not type_code or item.get("type_code") == type_code)
+                        and (not mid or item.get("mid") == mid)]
+        if target_ids:
+            resources.extend(item for item in matching if item.get("source_id") in target_ids)
+        else:
+            resources.extend(matching)
+        found_ids = {item.get("source_id") for item in resources}
+        if (target_ids and target_ids.issubset(found_ids)) or len(resources) >= safe_limit or not page_resources:
+            break
+        page_info = result.get("page") or {}
+        current = int(page_info.get("curr") or page)
+        pages = int(page_info.get("pages") or current)
+        if current >= pages:
+            break
+    return resources[:safe_limit]
+
+def fetch_recent_movies(limit=30):
+    safe_limit = min(max(int(limit), 1), 100)
+    resp = site_get(BASE_URL + "/", timeout=15)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying home page HTTP {resp.status_code}")
+    marker = "_obj.inlist="
+    start = resp.text.find(marker)
+    end = resp.text.find(";_obj.footer", start + len(marker))
+    if start < 0 or end < 0:
+        return []
+    groups = json.loads(resp.text[start + len(marker):end])
+    items = []
+    seen = set()
+    for group in groups if isinstance(groups, list) else []:
+        type_code = str(group.get("ty") or "").lower()
+        if type_code not in ("mv", "tv", "ac"):
+            continue
+        titles = group.get("t") or []
+        ids = group.get("i") or []
+        attributes = group.get("a") or []
+        qualities = group.get("q") or []
+        for index, mid in enumerate(ids):
+            key = f"{type_code}:{mid}"
+            if key in seen:
+                continue
+            seen.add(key)
+            raw_attributes = list_get(attributes, index)
+            year = list_get(raw_attributes, 0) if isinstance(raw_attributes, list) else None
+            items.append({
+                "typeCode": type_code,
+                "mid": str(mid),
+                "title": html_lib.unescape(str(list_get(titles, index))).strip(),
+                "year": year if isinstance(year, int) and year > 1800 else None,
+                "qualities": list_get(qualities, index) if isinstance(list_get(qualities, index), list) else [],
+                "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+            })
+            if len(items) >= safe_limit:
+                return items
+    return items
+
+def split_search_people(value):
+    values = value if isinstance(value, list) else [value]
+    people = []
+    for raw in values:
+        if not raw:
+            continue
+        for name in re.split(r"\s*(?:/|,|，|;|；)\s*", str(raw)):
+            normalized = html_lib.unescape(name).strip()
+            if normalized and normalized not in people:
+                people.append(normalized)
+    return people
+
+
+def search_year(value):
+    try:
+        year = int(value)
+        return year if year > 1800 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def normalize_search_items(payload, type_code=None, limit=30):
+    section = payload.get("l") if isinstance(payload, dict) else None
+    if not isinstance(section, dict):
+        return []
+
+    fields = ("title", "name", "ename", "year", "d", "i", "daoyan", "zhuyan", "info")
+    count = max((len(section.get(field) or []) for field in fields
+                 if isinstance(section.get(field), list)), default=0)
+    items = []
+    for index in range(count):
+        candidate_type = str(list_get(section.get("d") or [], index)).strip().lower()
+        mid = str(list_get(section.get("i") or [], index)).strip()
+        title = html_lib.unescape(str(list_get(section.get("title") or [], index))).strip()
+        if candidate_type not in ("mv", "tv", "ac") or not mid or not title:
+            continue
+        if type_code and candidate_type != type_code:
+            continue
+
+        title_en = html_lib.unescape(
+            str(list_get(section.get("name") or [], index))).strip()
+        aliases = html_lib.unescape(
+            str(list_get(section.get("ename") or [], index))).strip()
+        series_name, season = parse_season(title, candidate_type)
+        items.append({
+            "typeCode": candidate_type,
+            "mid": mid,
+            "title": title,
+            "titleEn": title_en,
+            "aliases": aliases,
+            "year": search_year(list_get(section.get("year") or [], index, None)),
+            "directors": split_search_people(
+                list_get(section.get("daoyan") or [], index, "")),
+            "actors": split_search_people(
+                list_get(section.get("zhuyan") or [], index, "")),
+            "info": html_lib.unescape(
+                str(list_get(section.get("info") or [], index))).strip(),
+            "seriesName": series_name,
+            "season": season,
+            "detailUrl": f"{BASE_URL}/{candidate_type}/{mid}",
+        })
+        if len(items) >= limit:
+            break
+    return items
+
+
+def gying_search_type(type_code=None):
+    """Translate local type codes to the site's search category values."""
+    return {"mv": 1, "tv": 2, "ac": 3}.get(str(type_code or "").strip().lower(), 0)
+
+
+def normalize_search_mode(mode=3):
+    try:
+        return min(max(int(mode), 1), 3)
+    except (TypeError, ValueError):
+        return 3
+
+
+def search_movies(query, type_code=None, limit=30, mode=3):
+    safe_query = str(query or "").strip()
+    if not safe_query:
+        raise ValueError("search query is required")
+    if type_code and type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid search type")
+    safe_limit = min(max(int(limit), 1), 100)
+    resp = site_get(
+        f"{BASE_URL}/search",
+        params={
+            "q": safe_query,
+            "type": gying_search_type(type_code),
+            "mode": normalize_search_mode(mode),
+        },
+        timeout=20,
+        headers={"Referer": f"{BASE_URL}/"},
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying search HTTP {resp.status_code}")
+
+    payload = None
+    try:
+        data = resp.json()
+        if isinstance(data, dict):
+            payload = data.get("search") or data
+    except ValueError:
+        payload = extract_js_assignment_json(resp.text, "_obj.search")
+    if not isinstance(payload, dict):
+        raise RuntimeError("Gying search response did not contain _obj.search")
+    return normalize_search_items(payload, type_code, safe_limit)
+
+
+def normalize_catalog_items(type_code, payload):
+    section = payload.get("inlist") or payload.get("list") or payload.get("items") or payload.get("data") or []
+    if isinstance(section, dict) and isinstance(section.get("items"), list):
+        section = section.get("items")
+    items = []
+    if isinstance(section, list):
+        for raw in section:
+            if not isinstance(raw, dict):
+                continue
+            mid = raw.get("mid") or raw.get("id") or raw.get("i") or raw.get("id2")
+            title = raw.get("title") or raw.get("name") or raw.get("t") or raw.get("atitle")
+            if not mid or not title:
+                continue
+            series_name, season = parse_season(html_lib.unescape(str(title)).strip(), type_code)
+            items.append({
+                "typeCode": type_code, "mid": str(mid), "title": html_lib.unescape(str(title)).strip(),
+                "year": raw.get("year"), "score": raw.get("score") or raw.get("s"),
+                "qualities": raw.get("qualities") or raw.get("q") or [],
+                "seriesName": series_name, "season": season,
+                "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+            })
+        return items
+    if not isinstance(section, dict):
+        return []
+    titles = section.get("title") or section.get("t") or section.get("atitle") or section.get("name") or []
+    ids = section.get("id2") or section.get("mid") or section.get("i") or section.get("id") or []
+    years = section.get("year") or section.get("y") or []
+    scores = section.get("score") or section.get("s") or []
+    qualities = section.get("q") or section.get("quality") or []
+    attributes = section.get("a") or []
+    for index in range(max(len(titles), len(ids))):
+        mid = list_get(ids, index)
+        title = html_lib.unescape(str(list_get(titles, index))).strip()
+        if not mid or not title:
+            continue
+        raw_attributes = list_get(attributes, index)
+        year = list_get(years, index, None)
+        if year is None and isinstance(raw_attributes, list):
+            year = list_get(raw_attributes, 0, None)
+        series_name, season = parse_season(title, type_code)
+        items.append({
+            "typeCode": type_code, "mid": str(mid), "title": title,
+            "year": year if isinstance(year, int) and year > 1800 else None,
+            "score": list_get(scores, index, None),
+            "qualities": list_get(qualities, index) if isinstance(list_get(qualities, index), list) else [],
+            "seriesName": series_name, "season": season,
+            "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+        })
+    return items
+
+
+def fetch_catalog_movies(type_code, sort="score", page=1, limit=30):
+    if type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid catalog type")
+    safe_sort = sort if sort in ("score", "time", "hits") else "score"
+    safe_page = min(max(int(page), 1), 500)
+    safe_limit = min(max(int(limit), 1), 100)
+    site_get(f"{BASE_URL}/{type_code}", timeout=15)
+    resp = site_get(
+        f"{BASE_URL}/res/{type_code}?sort={safe_sort}&page={safe_page}",
+        timeout=20,
+        headers={
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": f"{BASE_URL}/{type_code}",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"Gying catalog HTTP {resp.status_code}")
+    payload = resp.json()
+    if payload.get("code") == 419:
+        raise RuntimeError(payload.get("msg") or "Gying browser verification expired")
+    return normalize_catalog_items(type_code, payload)[:safe_limit]
+
+
+def find_series_seasons(type_code, mid, max_pages=20):
+    anchor = fetch_movie_metadata(type_code, mid) or {}
+    anchor_title = anchor.get("title") or anchor.get("name") or anchor.get("ename") or mid
+    base_title, anchor_season = parse_season(anchor_title)
+    expected = re.sub(r"[\s\W_]+", "", base_title or anchor_title).lower()
+    found = {}
+    for page in range(1, min(max(int(max_pages), 1), 50) + 1):
+        rows = fetch_catalog_movies(type_code, "score", page, 100)
+        if not rows:
+            break
+        for row in rows:
+            candidate_base = re.sub(r"[\s\W_]+", "", row.get("seriesName") or row.get("title") or "").lower()
+            if candidate_base == expected and row.get("season"):
+                found[int(row["season"])] = row
+    if anchor_season and anchor_season not in found:
+        found[anchor_season] = {
+            "typeCode": type_code, "mid": mid, "title": anchor_title,
+            "year": anchor.get("year"), "seriesName": base_title, "season": anchor_season,
+            "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+        }
+    return [found[key] for key in sorted(found)]
+
+
+def repair_movie_poster(db, type_code, mid, target_movie_id):
+    poster_url = upload_image_by_pattern(type_code, mid)
+    if not poster_url:
+        return {"movieId": target_movie_id, "typeCode": type_code, "mid": mid, "status": "FAILED"}
+    with db.cursor() as cursor:
+        cursor.execute(
+            "UPDATE movie_metadata SET poster_url=%s, updated_at=NOW() WHERE id=%s",
+            (poster_url, target_movie_id),
+        )
+        updated = cursor.rowcount
+    db.commit()
+    return {
+        "movieId": target_movie_id, "typeCode": type_code, "mid": mid,
+        "posterUrl": poster_url, "status": "UPDATED" if updated else "NOT_FOUND",
+    }
+
+
+def save_source_identity(db, movie_id, source, source_type, external_id, season=0,
+                         confidence=100, match_method="SOURCE_ID", match_status="CONFIRMED", evidence=None):
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO movie_source_identity (
+                    movie_id, source, source_type, external_id, season, confidence,
+                    match_method, match_status, evidence_json, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE movie_id=VALUES(movie_id), confidence=VALUES(confidence),
+                    match_method=VALUES(match_method), match_status=VALUES(match_status),
+                    evidence_json=VALUES(evidence_json), updated_at=NOW()
+                """,
+                (movie_id, source, source_type, str(external_id), int(season or 0), confidence,
+                 match_method, match_status, json.dumps(evidence or {}, ensure_ascii=False)),
+            )
+    except pymysql.MySQLError as error:
+        if error.args and error.args[0] == 1146:
+            print("   ⚠️ movie_source_identity migration has not been applied yet")
+            return
+        raise
+
+
+def preserve_existing_resource_source(source):
+    value = str(source or "").strip()
+    return value or "GYING"
+
+
+def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, include_resources=True):
+    global _SITE_SESSION
+    movie_id = str(target_movie_id or mid).strip()
+    if not movie_id:
+        raise ValueError("target movie id is required")
+    meta = None
+    for attempt in range(3):
+        meta = fetch_movie_metadata(type_code, mid)
+        if meta:
+            break
+        with _SITE_SESSION_LOCK:
+            _SITE_SESSION = None
+        if attempt < 2:
+            time.sleep(1)
+    if not meta:
+        raise RuntimeError(f"No metadata found for {type_code}/{mid}")
+
+    title = meta.get("title") or meta.get("name") or meta.get("ename")
+    series_name, season = parse_season(title, type_code)
+    poster_url = upload_image_by_pattern(type_code, mid) if upload_poster else None
+    pf = meta.get("pf") or {}
+    db_score = (pf.get("db") or {}).get("s") or 0
+    im_score = (pf.get("im") or {}).get("s") or 0
+
+    sql_movie = """
+        INSERT INTO movie_metadata (
+            id, title_cn, title_en, year, runtime, directors, actors, genres,
+            regions, languages, release_dates, aliases, poster_url,
+            douban_score, imdb_score, summary, category, series_name, season,
+            status, resource_status, created_at, updated_at
+        ) VALUES (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, 'ACTIVE', 'UNKNOWN', NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            title_cn=VALUES(title_cn), title_en=VALUES(title_en), year=VALUES(year),
+            runtime=VALUES(runtime), directors=VALUES(directors), actors=VALUES(actors),
+            genres=VALUES(genres), regions=VALUES(regions), languages=VALUES(languages),
+            release_dates=VALUES(release_dates), aliases=VALUES(aliases),
+            poster_url=COALESCE(VALUES(poster_url), poster_url),
+            douban_score=VALUES(douban_score), imdb_score=VALUES(imdb_score),
+            summary=VALUES(summary), category=VALUES(category),
+            series_name=VALUES(series_name), season=VALUES(season),
+            status='ACTIVE', deleted_at=NULL, updated_at=NOW()
+    """
+    values = (
+        movie_id,
+        title,
+        meta.get("name") or meta.get("ename"),
+        meta.get("year"),
+        meta.get("times"),
+        json.dumps(meta.get("daoyan", []), ensure_ascii=False),
+        json.dumps(meta.get("zhuyan", []), ensure_ascii=False),
+        json.dumps(meta.get("leixing", []), ensure_ascii=False),
+        json.dumps(meta.get("diqu", []), ensure_ascii=False),
+        json.dumps(meta.get("yuyan", []), ensure_ascii=False),
+        meta.get("stime"),
+        meta.get("aliases") or meta.get("aka"),
+        poster_url,
+        db_score,
+        im_score,
+        meta.get("introduce") or meta.get("summary"),
+        type_code,
+        series_name,
+        season,
+    )
+    resources = fetch_download_resources(type_code, mid, []) if include_resources else []
+    inserted = 0
+    updated = 0
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(sql_movie, values)
+        for resource in resources:
+            resource_url = (resource.get("url") or "").strip()
+            if not resource_url:
+                continue
+            provider = resource.get("provider") or detect_provider(resource.get("tname", ""))
+            link_type = resource.get("type") or detect_resource_type(resource_url, provider)
+            source_id = resource.get("source_id") or None
+            with db.cursor() as cursor:
+                cursor.execute(
+                    "SELECT id, source FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1",
+                    (movie_id, resource_url),
+                )
+                existing = cursor.fetchone()
+                if existing:
+                    cursor.execute(
+                        """
+                        UPDATE resource_link
+                        SET name=%s, type=%s, provider=%s, code=%s, audit_status=1,
+                            status='ACTIVE', link_status='NORMAL', source=%s,
+                            source_ref=%s, source_url=%s, auto_collected=1,
+                            deleted_at=NULL, updated_at=NOW()
+                        WHERE id=%s
+                        """,
+                        (
+                            resource.get("title"),
+                            link_type,
+                            provider,
+                            resource.get("code") or "",
+                            preserve_existing_resource_source(existing.get("source")),
+                            source_id,
+                            f"{BASE_URL}/{type_code}/{mid}",
+                            existing["id"],
+                        ),
+                    )
+                    updated += 1
+                else:
+                    cursor.execute(
+                        """
+                        INSERT INTO resource_link (
+                            movie_id, name, type, provider, url, code, uploader_id,
+                            audit_status, status, link_status, report_count, source,
+                            source_ref, source_url, auto_collected, created_at, updated_at
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, 1, 1, 'ACTIVE', 'NORMAL', 0,
+                            'GYING', %s, %s, 1, NOW(), NOW()
+                        )
+                        """,
+                        (
+                            movie_id,
+                            resource.get("title"),
+                            link_type,
+                            provider,
+                            resource_url,
+                            resource.get("code") or "",
+                            source_id,
+                            f"{BASE_URL}/{type_code}/{mid}",
+                        ),
+                    )
+                    inserted += 1
+        with db.cursor() as cursor:
+            cursor.execute(
+                "UPDATE movie_metadata SET resource_status=%s, updated_at=NOW() WHERE id=%s",
+                ("AVAILABLE" if resources else "TRAILER", movie_id),
+            )
+        save_source_identity(
+            db, movie_id, "GYING", type_code, mid, season,
+            evidence={"title": title, "year": meta.get("year"), "seriesName": series_name},
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return {
+        "movieId": movie_id,
+        "siteMovieId": mid,
+        "typeCode": type_code,
+        "title": title,
+        "resourcesFound": len(resources),
+        "resourcesInserted": inserted,
+        "resourcesUpdated": updated,
+        "posterStored": bool(poster_url),
+        "posterUrl": poster_url,
+    }
+
+def find_pan_resource(type_code, mid, panurl):
+    resources = fetch_download_resources(type_code, mid, [])
+    return next((item for item in resources if item.get("url") == panurl), None)
+
+def mark_resource_published(db, resource_id, source_id, type_code, mid):
+    if not resource_id:
+        return
+    with db.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE resource_link
+            SET source='GYING_PUBLISHED', source_ref=%s, source_url=%s, updated_at=NOW()
+            WHERE id=%s
+            """,
+            (source_id, f"{BASE_URL}/{type_code}/{mid}", resource_id),
+        )
+    db.commit()
+
+class GyingSourceApiHandler(BaseHTTPRequestHandler):
+    server_version = "GyingSource/1.0"
+
+    def log_message(self, fmt, *args):
+        print("[gying-source] " + fmt % args)
+
+    def send_json(self, status, payload):
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def authorized(self):
+        return not API_TOKEN or self.headers.get("X-Internal-Token") == API_TOKEN
+
+    def read_json(self):
+        if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
+            chunks = []
+            while True:
+                size_line = self.rfile.readline().strip()
+                size = int(size_line.split(b";", 1)[0], 16)
+                if size == 0:
+                    self.rfile.readline()
+                    break
+                chunks.append(self.rfile.read(size))
+                self.rfile.read(2)
+            raw = b"".join(chunks)
+        else:
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length) if length else b""
+        return json.loads(raw.decode("utf-8")) if raw else {}
+
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        query = parse_qs(parsed.query)
+        if path == "/health":
+            self.send_json(200, {"ok": True})
+            return
+        if not self.authorized():
+            self.send_json(401, {"error": "Unauthorized"})
+            return
+        try:
+            if path == "/recent":
+                limit = int((query.get("limit") or ["30"])[0])
+                self.send_json(200, {"items": fetch_recent_movies(limit)})
+                return
+            if path == "/catalog":
+                type_code = (query.get("typeCode") or ["mv"])[0]
+                sort = (query.get("sort") or ["score"])[0]
+                page = int((query.get("page") or ["1"])[0])
+                limit = int((query.get("limit") or ["30"])[0])
+                self.send_json(200, {"items": fetch_catalog_movies(type_code, sort, page, limit)})
+                return
+            if path == "/search":
+                query_text = (query.get("q") or [""])[0]
+                type_code = (query.get("typeCode") or [""])[0].strip().lower() or None
+                mode = normalize_search_mode((query.get("mode") or ["3"])[0])
+                limit = int((query.get("limit") or ["30"])[0])
+                self.send_json(200, {"items": search_movies(query_text, type_code, limit, mode)})
+                return
+            if path == "/series":
+                type_code = (query.get("typeCode") or ["tv"])[0]
+                mid = (query.get("mid") or [""])[0]
+                max_pages = int((query.get("maxPages") or ["20"])[0])
+                self.send_json(200, {"items": find_series_seasons(type_code, mid, max_pages)})
+                return
+            if path == "/my-resources":
+                limit = int((query.get("limit") or ["200"])[0])
+                source_ids = {
+                    value.strip()
+                    for value in (query.get("sourceIds") or [""])[0].split(",")
+                    if value.strip()
+                }
+                self.send_json(200, {"items": list_my_pan_resources(
+                    limit,
+                    max_pages=100 if source_ids else 50,
+                    source_ids=source_ids,
+                )})
+                return
+            if path == "/account":
+                self.send_json(200, account_status())
+                return
+            match = re.fullmatch(r"/movie/(mv|tv|ac)/([A-Za-z0-9]+)", path)
+            if match:
+                self.send_json(200, fetch_movie_resource_snapshot(match.group(1), match.group(2)))
+                return
+            self.send_json(404, {"error": "Not found"})
+        except ValueError as error:
+            self.send_json(400, {"error": f"Invalid request: {error}"})
+        except Exception as error:
+            self.send_json(502, {"error": str(error)})
+
+    def do_POST(self):
+        if not self.authorized():
+            self.send_json(401, {"error": "Unauthorized"})
+            return
+        try:
+            payload = self.read_json()
+            print(f"[gying-source] {self.path} payload keys: {sorted(payload.keys())}", flush=True)
+            if self.path == "/account":
+                result = configure_site_account(payload)
+            elif self.path == "/ingest":
+                db = get_db_connection()
+                try:
+                    result = ingest_movie(
+                        db,
+                        payload["typeCode"],
+                        payload["mid"],
+                        bool(payload.get("uploadPoster", True)),
+                        payload.get("targetMovieId"),
+                        bool(payload.get("includeResources", True)),
+                    )
+                finally:
+                    db.close()
+            elif self.path == "/poster":
+                db = get_db_connection()
+                try:
+                    result = repair_movie_poster(
+                        db, payload["typeCode"], payload["mid"], payload["targetMovieId"]
+                    )
+                finally:
+                    db.close()
+            elif self.path == "/publish":
+                result = publish_pan_resource(
+                    payload["typeCode"],
+                    payload["mid"],
+                    payload["title"],
+                    payload["panurl"],
+                    payload.get("panpw", ""),
+                    payload.get("is", 0),
+                )
+                item = find_pan_resource(payload["typeCode"], payload["mid"], payload["panurl"])
+                source_id = (item or {}).get("source_id") or result.get("id")
+                if payload.get("resourceId"):
+                    db = get_db_connection()
+                    try:
+                        mark_resource_published(
+                            db,
+                            payload["resourceId"],
+                            source_id,
+                            payload["typeCode"],
+                            payload["mid"],
+                        )
+                    finally:
+                        db.close()
+                result = {"action": "published", "sourceId": source_id, "site": result}
+            elif self.path == "/update":
+                result = update_pan_resource(
+                    payload["sourceId"],
+                    payload["title"],
+                    payload["panurl"],
+                    payload.get("panpw", ""),
+                    payload.get("is", 0),
+                    payload.get("typeCode"),
+                    payload.get("mid"),
+                )
+                result = {"action": "updated", "sourceId": payload["sourceId"], "site": result}
+            else:
+                self.send_json(404, {"error": "Not found"})
+                return
+            self.send_json(200, result)
+        except (KeyError, ValueError) as error:
+            self.send_json(400, {"error": f"Invalid request: {error}"})
+        except Exception as error:
+            self.send_json(502, {"error": str(error)})
 
 def crawl_user_content(db):
     page = 1
@@ -613,7 +1572,7 @@ def crawl_user_content(db):
                 atitle = first["atitle"]
                 
                 # Parse Series/Season
-                series_name, season = parse_season(atitle)
+                series_name, season = parse_season(atitle, type_code)
                 
                 print(f"   🎬 Processing {atitle} ({mid})... Season: {season}")
 
@@ -729,13 +1688,64 @@ def crawl_user_content(db):
             print(f"❌ Page Error: {e}")
             break
 
-if __name__ == "__main__":
-    print("=== Enhanced User Content Crawler ===")
+def build_cli():
+    parser = argparse.ArgumentParser(description="Gying source crawler and publisher")
+    sub = parser.add_subparsers(dest="command")
+
+    sub.add_parser("crawl-user", help="Crawl the configured user's content list")
+    ingest = sub.add_parser("ingest", help="Ingest one Gying movie and its resources")
+    ingest.add_argument("type_code", choices=("mv", "tv", "ac"))
+    ingest.add_argument("mid")
+    ingest.add_argument("--no-poster", action="store_true")
+
+    publish = sub.add_parser("publish", help="Publish one pan resource to Gying")
+    publish.add_argument("type_code", choices=("mv", "tv", "ac"))
+    publish.add_argument("mid")
+    publish.add_argument("title")
+    publish.add_argument("panurl")
+    publish.add_argument("--panpw", default="")
+    publish.add_argument("--login-visible", type=int, choices=(0, 1), default=0)
+
+    update = sub.add_parser("update", help="Update one Gying pan resource")
+    update.add_argument("source_id")
+    update.add_argument("title")
+    update.add_argument("panurl")
+    update.add_argument("--panpw", default="")
+    update.add_argument("--login-visible", type=int, choices=(0, 1), default=0)
+
+    serve = sub.add_parser("serve", help="Start the internal project integration API")
+    serve.add_argument("--host", default=API_HOST)
+    serve.add_argument("--port", type=int, default=API_PORT)
+    return parser
+
+def main():
+    args = build_cli().parse_args()
+    command = args.command or "crawl-user"
+    if command == "serve":
+        server = ThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
+        print(f"Gying source API listening on {args.host}:{args.port}")
+        server.serve_forever()
+        return
+    if command == "publish":
+        print(json.dumps(publish_pan_resource(
+            args.type_code, args.mid, args.title, args.panurl, args.panpw, args.login_visible
+        ), ensure_ascii=False))
+        return
+    if command == "update":
+        print(json.dumps(update_pan_resource(
+            args.source_id, args.title, args.panurl, args.panpw, args.login_visible
+        ), ensure_ascii=False))
+        return
+
+    db = get_db_connection()
     try:
-        db = get_db_connection()
-        print("✅ DB Connected.")
-        crawl_user_content(db)
+        if command == "ingest":
+            result = ingest_movie(db, args.type_code, args.mid, not args.no_poster)
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            crawl_user_content(db)
+    finally:
         db.close()
-    except Exception as e:
-        print(f"❌ Fatal: {e}")
-    print("=== Finished ===")
+
+if __name__ == "__main__":
+    main()

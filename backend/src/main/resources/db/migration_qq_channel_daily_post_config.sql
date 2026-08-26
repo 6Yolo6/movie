@@ -12,5 +12,5 @@ SELECT 'qq.channel.auto_post.post_interval_seconds', '60', 'QQ channel interval 
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.channel.auto_post.post_interval_seconds');
 
 INSERT INTO sys_config (config_key, config_value, description)
-SELECT 'qq.channel.auto_post.template', '标题：{{title}}\n链接：{{link}}\n简介：{{intro}}', 'QQ channel post template'
+SELECT 'qq.channel.auto_post.template', '标题：{{title}}\n年份：{{year}}\n类型：{{type}}\n链接：{{link}}\n简介：{{intro}}', 'QQ channel post template'
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.channel.auto_post.template');

@@ -1,5 +1,6 @@
 package com.gying.movie.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.client.QuarkShareClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkShareResult;
@@ -13,6 +14,7 @@ import com.gying.movie.service.IQuarkShareService;
 import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
@@ -45,24 +47,45 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
             return null;
         }
-        if (!"SUBMITTED".equalsIgnoreCase(task.getStatus()) || !hasText(task.getSavedPath())) {
+        if (!hasText(task.getSavedPath())
+                || (!"SUBMITTED".equalsIgnoreCase(task.getStatus())
+                        && !"FAILED".equalsIgnoreCase(task.getStatus()))) {
             return null;
         }
-        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.checkFolderContent(task.getSavedPath());
+        QuarkShareClient.FolderContentCheck contentCheck = quarkShareClient.waitForFolderContent(
+                task.getSavedPath(),
+                resourceHubProperties.getQuark().getSharePollAttempts(),
+                resourceHubProperties.getQuark().getSharePollIntervalMs());
         if (!contentCheck.hasContent()) {
-            throw new IllegalStateException("Saved Quark folder is empty: " + task.getSavedPath());
+            throw new IllegalStateException(
+                    "Saved Quark folder has no transferred media files: " + task.getSavedPath());
         }
         if (hasText(task.getShareUrl())) {
+            markShareReady(task);
+            updateDiscoveryShare(task);
             return task.getShareUrl();
         }
         MovieMetadata movie = movieService.getById(task.getMovieId());
         QuarkShareResult result = quarkShareClient.createShareForPath(task.getSavedPath(), buildShareTitle(movie, task));
         task.setShareUrl(result.getShareUrl());
         task.setShareUrlHash(ResourceHubHashUtils.sha256(result.getShareUrl()));
-        task.setUpdatedAt(LocalDateTime.now());
-        quarkTransferTaskService.updateById(task);
+        markShareReady(task);
         updateDiscoveryShare(task);
         return task.getShareUrl();
+    }
+
+    private void markShareReady(QuarkTransferTask task) {
+        task.setStatus("SUBMITTED");
+        task.setLastError(null);
+        task.setUpdatedAt(LocalDateTime.now());
+        quarkTransferTaskService.updateById(task);
+        quarkTransferTaskService.update(new UpdateWrapper<QuarkTransferTask>()
+                .eq("id", task.getId())
+                .set("status", "SUBMITTED")
+                .set("last_error", null)
+                .set("share_url", task.getShareUrl())
+                .set("share_url_hash", task.getShareUrlHash())
+                .set("updated_at", task.getUpdatedAt()));
     }
 
     private void updateDiscoveryShare(QuarkTransferTask task) {
@@ -81,6 +104,13 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         }
         discovery.setUpdatedAt(LocalDateTime.now());
         discoveryResultService.updateById(discovery);
+        discoveryResultService.update(new UpdateWrapper<ResourceDiscoveryResult>()
+                .eq("id", discovery.getId())
+                .set("status", discovery.getStatus())
+                .set("share_url", discovery.getShareUrl())
+                .set("share_url_hash", discovery.getShareUrlHash())
+                .set("failure_reason", null)
+                .set("updated_at", discovery.getUpdatedAt()));
         updateResourceLink(discovery, task);
     }
 
@@ -106,6 +136,18 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
     }
 
     private String buildShareTitle(MovieMetadata movie, QuarkTransferTask task) {
+        if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
+            String title = SeasonSearchUtils.seasonQualifiedTitle(
+                    firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
+                    movie.getSeason());
+            return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+        }
+        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                ? null
+                : discoveryResultService.getById(task.getDiscoveryResultId());
+        if (discovery != null && hasText(discovery.getTitle())) {
+            return discovery.getTitle().trim();
+        }
         if (movie == null) {
             return "GYing-" + task.getMovieId();
         }

@@ -12,6 +12,7 @@ public class ResourceDiscoveryRunResult {
     private String keyword;
     private int discovered;
     private int duplicate;
+    private int rejected;
     private int transferTasksCreated;
     private int failed;
     private String status;

@@ -56,6 +56,61 @@ services:
     networks:
       - gying-net
 
+  gying-source:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - GYING_DB_HOST=${DB_HOST:-host.docker.internal}
+      - GYING_DB_USER=${DB_USER:-root}
+      - GYING_DB_PASSWORD=${DB_PASSWORD:-}
+      - GYING_DB_NAME=${DB_NAME:-gying}
+      - GYING_MINIO_ENDPOINT=${MINIO_ENDPOINT:-host.docker.internal:9000}
+      - GYING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-admin}
+      - GYING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
+      - GYING_MINIO_BUCKET=${MINIO_BUCKET:-gying}
+      - GYING_BASE_URL=${GYING_BASE_URL:-https://www.xn--wcv59z.com}
+      - GYING_TARGET_USER=${GYING_TARGET_USER:-救星小窝}
+      - GYING_USERNAME=${GYING_USERNAME:-}
+      - GYING_PASSWORD=${GYING_PASSWORD:-}
+      - GYING_COOKIE=${GYING_COOKIE:-}
+      - GYING_SOURCE_API_TOKEN=${GYING_SOURCE_API_TOKEN:-}
+      - GYING_REQUEST_INTERVAL_MS=${GYING_REQUEST_INTERVAL_MS:-1000}
+      - TZ=Asia/Shanghai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - gying-net
+
+  social-publisher:
+    build:
+      context: ./social-publisher
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - SOCIAL_PUBLISHER_PORT=8093
+      - SOCIAL_PUBLISHER_TOKEN=${SOCIAL_PUBLISHER_TOKEN:-}
+      - QQ_CHANNEL_ACCOUNTS_ROOT=/data/qq-accounts
+      - WEIBO_WEB_COOKIE=${WEIBO_WEB_COOKIE:-}
+      - WEIBO_WEB_XSRF_TOKEN=${WEIBO_WEB_XSRF_TOKEN:-}
+      - WEIBO_WEB_FINGERPRINT=${WEIBO_WEB_FINGERPRINT:-}
+      - WEIBO_WEB_CLIENT_VERSION=${WEIBO_WEB_CLIENT_VERSION:-v1.1.237}
+      - WEIBO_WEB_USER_AGENT=${WEIBO_WEB_USER_AGENT:-}
+      - WEIBO_PROFILE_ROOT=/data/weibo
+      - TZ=Asia/Shanghai
+    volumes:
+      - social-publisher-qq-accounts:/data/qq-accounts
+      - social-publisher-weibo:/data/weibo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - gying-net
+
   redis:
     profiles:
       - embedded-deps
@@ -114,6 +169,8 @@ volumes:
   pansou-data:
   quark-auto-save-data:
   napcat-data:
+  social-publisher-qq-accounts:
+  social-publisher-weibo:
 
 networks:
   gying-net:

@@ -304,6 +304,106 @@ CREATE TABLE `quark_transfer_task` (
   KEY `idx_quark_status_created` (`status`, `created_at`),
   KEY `idx_quark_original_hash` (`movie_id`, `original_url_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Quark Transfer Tasks';
+
+-- ----------------------------
+-- Table structure for xunlei_transfer_task
+-- ----------------------------
+DROP TABLE IF EXISTS `xunlei_transfer_task`;
+CREATE TABLE `xunlei_transfer_task` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `discovery_result_id` bigint DEFAULT NULL,
+  `movie_id` varchar(64) NOT NULL,
+  `original_url` text NOT NULL,
+  `original_url_hash` char(64) DEFAULT NULL,
+  `saved_path` varchar(500) DEFAULT NULL,
+  `share_url` text,
+  `share_url_hash` char(64) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'PENDING' COMMENT 'PENDING, RUNNING, SUBMITTED, SUCCEEDED, WAITING_SHARE, FAILED, CANCELED',
+  `attempts` int DEFAULT '0',
+  `last_error` varchar(1000) DEFAULT NULL,
+  `request_payload` json DEFAULT NULL,
+  `response_payload` json DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `finished_at` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_xunlei_discovery` (`discovery_result_id`),
+  KEY `idx_xunlei_movie_status` (`movie_id`, `status`),
+  KEY `idx_xunlei_status_created` (`status`, `created_at`),
+  KEY `idx_xunlei_original_hash` (`movie_id`, `original_url_hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='迅雷转存任务';
+
+-- ----------------------------
+-- Table structure for movie_source_identity
+-- ----------------------------
+DROP TABLE IF EXISTS `movie_source_identity`;
+CREATE TABLE `movie_source_identity` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '来源身份关联主键',
+  `movie_id` varchar(64) NOT NULL COMMENT '本站影片 ID',
+  `source` varchar(20) NOT NULL COMMENT '数据来源：TMDB、GYING',
+  `source_type` varchar(20) NOT NULL COMMENT '来源类型：movie、tv、mv、ac',
+  `external_id` varchar(100) NOT NULL COMMENT '来源站点影片 ID',
+  `season` int NOT NULL DEFAULT '0' COMMENT '季号，电影或未知为 0',
+  `confidence` decimal(5,2) NOT NULL DEFAULT '100.00' COMMENT '匹配置信度',
+  `match_method` varchar(50) NOT NULL COMMENT '匹配方式',
+  `match_status` varchar(20) NOT NULL DEFAULT 'CONFIRMED' COMMENT '状态：AUTO、CONFIRMED、REVIEW、REJECTED',
+  `evidence_json` json DEFAULT NULL COMMENT '匹配证据',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_source_identity` (`source`, `source_type`, `external_id`, `season`),
+  KEY `idx_movie_source` (`movie_id`, `source`, `season`),
+  KEY `idx_match_status` (`match_status`, `confidence`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='影片外部数据源身份关联';
+
+-- ----------------------------
+-- Table structure for social_publish_target
+-- ----------------------------
+DROP TABLE IF EXISTS `social_publish_target`;
+CREATE TABLE `social_publish_target` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '发布目标主键',
+  `platform` varchar(30) NOT NULL COMMENT '平台：QQ_CHANNEL、WEIBO',
+  `account_key` varchar(60) NOT NULL COMMENT '独立账号标识',
+  `name` varchar(120) NOT NULL COMMENT '后台显示名称',
+  `target_ref` varchar(120) NOT NULL DEFAULT '' COMMENT '频道号或平台目标标识',
+  `channel_ref` varchar(120) DEFAULT NULL COMMENT 'QQ 版块 ID，留空自动选择全部或帖子广场',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '目标是否启用',
+  `auto_post_enabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否启用每日定时发布',
+  `schedule_time` varchar(5) NOT NULL DEFAULT '10:00' COMMENT '每日发布时间，HH:mm',
+  `posts_per_run` int NOT NULL DEFAULT '1' COMMENT '每次发布条数',
+  `post_interval_seconds` int NOT NULL DEFAULT '60' COMMENT '同一批次每条间隔秒数',
+  `template` text COMMENT '发布正文模板',
+  `last_auto_run_at` datetime DEFAULT NULL COMMENT '最近一次自动调度时间',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_social_publish_target` (`platform`, `account_key`, `target_ref`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='多平台发布目标';
+
+-- ----------------------------
+-- Table structure for social_post_log
+-- ----------------------------
+DROP TABLE IF EXISTS `social_post_log`;
+CREATE TABLE `social_post_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '发布日志主键',
+  `target_id` bigint NOT NULL COMMENT '发布目标 ID',
+  `platform` varchar(30) NOT NULL COMMENT '平台：QQ_CHANNEL、WEIBO',
+  `resource_link_id` bigint NOT NULL COMMENT '资源链接 ID',
+  `movie_id` varchar(100) NOT NULL COMMENT '影片 ID',
+  `title` varchar(500) DEFAULT NULL COMMENT '发布时影片标题',
+  `status` varchar(30) NOT NULL COMMENT '状态：PENDING、POSTED、FAILED',
+  `external_url` varchar(1000) DEFAULT NULL COMMENT '外部帖子地址',
+  `error_message` varchar(1000) DEFAULT NULL COMMENT '发布失败原因',
+  `posted_at` datetime DEFAULT NULL COMMENT '成功发布时间',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_social_post_target_resource` (`target_id`, `resource_link_id`),
+  KEY `idx_social_post_status` (`status`),
+  KEY `idx_social_post_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='多平台发布审计日志';
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Initial Data
@@ -331,3 +431,9 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.hub.worker.quark_limit', '5', 'Quark transfers submitted per worker run'),
 ('resource.hub.worker.publish_limit', '20', 'Discoveries published per worker run')
 ON DUPLICATE KEY UPDATE config_value = config_value;
+
+INSERT INTO social_publish_target
+  (platform, account_key, name, target_ref, channel_ref, enabled, auto_post_enabled, schedule_time, posts_per_run, post_interval_seconds, template)
+VALUES
+  ('WEIBO', 'default', '新浪微博', 'default', NULL, 1, 0, '11:00', 1, 60, '{{title}}（{{year}}）\n{{type}}\n{{intro}}\n{{link}}')
+ON DUPLICATE KEY UPDATE name = VALUES(name);

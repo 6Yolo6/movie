@@ -8,6 +8,10 @@ spring:
       - optional:file:../.env[.properties]
   application:
     name: gying-movie
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 9MB
   jackson:
     time-zone: Asia/Shanghai
   datasource:
@@ -34,10 +38,15 @@ app:
   cors:
     allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
 
+gying-source:
+  base-url: ${GYING_SOURCE_BASE_URL:http://localhost:8091}
+  token: ${GYING_SOURCE_API_TOKEN:}
+
 resource-hub:
   enabled: ${RESOURCE_HUB_ENABLED:false}
   auto-approve: ${RESOURCE_HUB_AUTO_APPROVE:true}
   tmdb:
+    base-url: ${TMDB_API_BASE_URL:https://api.themoviedb.org/3}
     api-key: ${TMDB_API_KEY:}
     auto-sync-enabled: ${RESOURCE_HUB_TMDB_AUTO_SYNC_ENABLED:false}
     auto-sync-sources: ${RESOURCE_HUB_TMDB_AUTO_SYNC_SOURCES:TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV}
@@ -47,9 +56,20 @@ resource-hub:
     auto-discovery-enabled: ${RESOURCE_HUB_TMDB_AUTO_DISCOVERY_ENABLED:true}
     discovery-max-results: ${RESOURCE_HUB_TMDB_DISCOVERY_MAX_RESULTS:10}
     discovery-cooldown-hours: ${RESOURCE_HUB_TMDB_DISCOVERY_COOLDOWN_HOURS:24}
+    request-interval-ms: ${TMDB_REQUEST_INTERVAL_MS:250}
+    max-retries: ${TMDB_MAX_RETRIES:2}
+  gying:
+    discovery-enabled: ${RESOURCE_HUB_GYING_DISCOVERY_ENABLED:true}
+    auto-sync-enabled: ${RESOURCE_HUB_GYING_AUTO_SYNC_ENABLED:false}
+    auto-sync-sources: ${RESOURCE_HUB_GYING_AUTO_SYNC_SOURCES:HITS_MOVIE,HITS_TV,HITS_ANIME}
+    auto-sync-page: ${RESOURCE_HUB_GYING_AUTO_SYNC_PAGE:1}
+    auto-sync-max-items: ${RESOURCE_HUB_GYING_AUTO_SYNC_MAX_ITEMS:10}
+    auto-sync-interval-hours: ${RESOURCE_HUB_GYING_AUTO_SYNC_INTERVAL_HOURS:24}
   pansou:
     base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://localhost:8888}
     token: ${RESOURCE_HUB_PANSOU_TOKEN:}
+    api-base-url: ${PANSOU_API_BASE_URL:https://www.panso.best}
+    api-key: ${PANSOU_API_KEY:${PANSO_API_KEY:}}
   quark:
     base-url: ${QUARK_AUTO_SAVE_BASE_URL:http://localhost:5005}
     token: ${QUARK_AUTO_SAVE_TOKEN:}
@@ -61,25 +81,48 @@ resource-hub:
     share-url-type: ${QUARK_SHARE_URL_TYPE:1}
     share-expired-type: ${QUARK_SHARE_EXPIRED_TYPE:1}
     share-passcode: ${QUARK_SHARE_PASSCODE:}
-    share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:12}
-    share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:500}
+    share-poll-attempts: ${QUARK_SHARE_POLL_ATTEMPTS:30}
+    share-poll-interval-ms: ${QUARK_SHARE_POLL_INTERVAL_MS:1000}
+  xunlei:
+      enabled: ${XUNLEI_ENABLED:false}
+      base-url: ${XUNLEI_BASE_URL:https://api-pan.xunlei.com/drive/v1}
+      authorization: ${XUNLEI_AUTHORIZATION:}
+      client-id: ${XUNLEI_CLIENT_ID:}
+      device-id: ${XUNLEI_DEVICE_ID:}
+      client-version: ${XUNLEI_CLIENT_VERSION:1.82.0}
+      captcha-token: ${XUNLEI_CAPTCHA_TOKEN:}
+      save-path: ${XUNLEI_SAVE_PATH:/GYing Resource Hub}
+      share-enabled: ${XUNLEI_SHARE_ENABLED:false}
+      share-create-path: ${XUNLEI_SHARE_CREATE_PATH:/share}
+      poll-attempts: ${XUNLEI_POLL_ATTEMPTS:20}
+      poll-interval-ms: ${XUNLEI_POLL_INTERVAL_MS:1000}
   worker:
     enabled: ${RESOURCE_HUB_WORKER_ENABLED:false}
     fixed-delay-ms: ${RESOURCE_HUB_WORKER_FIXED_DELAY_MS:60000}
     task-limit: ${RESOURCE_HUB_WORKER_TASK_LIMIT:5}
     quark-limit: ${RESOURCE_HUB_WORKER_QUARK_LIMIT:5}
+    xunlei-limit: ${RESOURCE_HUB_WORKER_XUNLEI_LIMIT:5}
     publish-limit: ${RESOURCE_HUB_WORKER_PUBLISH_LIMIT:20}
+  qq-channel-publisher:
+    base-url: ${QQ_CHANNEL_PUBLISHER_BASE_URL:http://localhost:8092}
+    token: ${QQ_CHANNEL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}
+
+social-publisher:
+  base-url: ${SOCIAL_PUBLISHER_BASE_URL:http://localhost:8093}
+  token: ${SOCIAL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}
+  scheduler-delay-ms: ${SOCIAL_PUBLISHER_SCHEDULER_DELAY_MS:60000}
 
 qq-bot:
   enabled: ${QQ_BOT_ENABLED:false}
   webhook-token: ${QQ_BOT_WEBHOOK_TOKEN:}
   allowed-groups: ${QQ_BOT_ALLOWED_GROUPS:}
-  command-prefixes: ${QQ_BOT_COMMAND_PREFIXES:找,搜,/movie,/search}
+  command-prefixes: "${QQ_BOT_COMMAND_PREFIXES:搜索,搜,找,/movie,/search}"
   max-results: ${QQ_BOT_MAX_RESULTS:3}
   min-keyword-length: ${QQ_BOT_MIN_KEYWORD_LENGTH:2}
   rate-limit-per-minute: ${QQ_BOT_RATE_LIMIT_PER_MINUTE:5}
   blocked-keywords: ${QQ_BOT_BLOCKED_KEYWORDS:}
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
+  default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟；先选择影片，再从资源名称/画质候选中回复单个序号。可回复“夸克”或“迅雷”筛选；不支持按数量批量转存。}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
   napcat:
     base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://localhost:3000}

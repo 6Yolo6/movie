@@ -1,5 +1,6 @@
 package com.gying.movie.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.entity.SysConfig;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.utils.AuthHelper;
@@ -23,7 +24,7 @@ public class SysConfigController {
     @GetMapping
     public ResponseEntity<?> getAllConfigs(@RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        List<SysConfig> configs = sysConfigService.list();
+        List<SysConfig> configs = sysConfigService.list(new QueryWrapper<SysConfig>().orderByAsc("config_key"));
         return ResponseEntity.ok(configs);
     }
 
@@ -42,10 +43,10 @@ public class SysConfigController {
     @PutMapping("/{key}")
     public ResponseEntity<?> updateConfig(
             @PathVariable String key,
-            @RequestBody String value,
+            @RequestBody(required = false) String value,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        boolean updated = sysConfigService.updateConfig(key, value);
+        boolean updated = sysConfigService.updateConfig(key, value == null ? "" : value);
         if (updated) {
             return ResponseEntity.ok("Configuration updated");
         }

@@ -1,0 +1,13 @@
+{
+  "name": "gying-social-publisher",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "mysql2": "^3.14.3",
+    "playwright-core": "^1.55.0"
+  }
+}

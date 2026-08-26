@@ -30,7 +30,12 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
     private static final String KEY_CHANNEL_GUILD_ID = "qq.channel.guild_id";
     private static final String KEY_CHANNEL_MOVIE_ID = "qq.channel.movie_channel_id";
     private static final String KEY_CHANNEL_TV_ID = "qq.channel.tv_channel_id";
+    private static final String LEGACY_CHANNEL_POST_TEMPLATE = "\u6807\u9898\uff1a{{title}}\n"
+            + "\u94fe\u63a5\uff1a{{link}}\n"
+            + "\u7b80\u4ecb\uff1a{{intro}}";
     private static final String DEFAULT_CHANNEL_POST_TEMPLATE = "\u6807\u9898\uff1a{{title}}\n"
+            + "\u5e74\u4efd\uff1a{{year}}\n"
+            + "\u7c7b\u578b\uff1a{{type}}\n"
             + "\u94fe\u63a5\uff1a{{link}}\n"
             + "\u7b80\u4ecb\uff1a{{intro}}";
 
@@ -172,7 +177,8 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         if (value == null || value.isBlank()) {
             return defaultText(defaultValue);
         }
-        if (KEY_CHANNEL_POST_TEMPLATE.equals(key) && looksLikeMojibake(value)) {
+        if (KEY_CHANNEL_POST_TEMPLATE.equals(key)
+                && (looksLikeMojibake(value) || LEGACY_CHANNEL_POST_TEMPLATE.equals(value))) {
             upsert(key, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ channel post template");
             return DEFAULT_CHANNEL_POST_TEMPLATE;
         }

@@ -9,12 +9,16 @@ public class ResourceHubProperties {
     private boolean enabled = false;
     private boolean autoApprove = true;
     private Tmdb tmdb = new Tmdb();
+    private Gying gying = new Gying();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
+    private Xunlei xunlei = new Xunlei();
     private Worker worker = new Worker();
+    private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
 
     @Data
     public static class Tmdb {
+        private String baseUrl = "https://api.themoviedb.org/3";
         private String apiKey;
         private boolean autoSyncEnabled = false;
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
@@ -24,12 +28,26 @@ public class ResourceHubProperties {
         private boolean autoDiscoveryEnabled = true;
         private int discoveryMaxResults = 10;
         private int discoveryCooldownHours = 24;
+        private long requestIntervalMs = 250;
+        private int maxRetries = 2;
+    }
+
+    @Data
+    public static class Gying {
+        private boolean discoveryEnabled = true;
+        private boolean autoSyncEnabled = false;
+        private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME";
+        private int autoSyncPage = 1;
+        private int autoSyncMaxItems = 10;
+        private int autoSyncIntervalHours = 24;
     }
 
     @Data
     public static class Pansou {
         private String baseUrl = "http://localhost:8888";
         private String token;
+        private String apiBaseUrl = "https://www.panso.best";
+        private String apiKey;
     }
 
     @Data
@@ -44,8 +62,24 @@ public class ResourceHubProperties {
         private int shareUrlType = 1;
         private int shareExpiredType = 1;
         private String sharePasscode = "";
-        private int sharePollAttempts = 12;
-        private long sharePollIntervalMs = 500;
+        private int sharePollAttempts = 30;
+        private long sharePollIntervalMs = 1000;
+    }
+
+    @Data
+    public static class Xunlei {
+        private boolean enabled = false;
+        private String baseUrl = "https://api-pan.xunlei.com/drive/v1";
+        private String authorization;
+        private String clientId;
+        private String deviceId;
+        private String clientVersion = "1.82.0";
+        private String captchaToken;
+        private String savePath = "/GYing Resource Hub";
+        private boolean shareEnabled = false;
+        private String shareCreatePath = "/share";
+        private int pollAttempts = 20;
+        private long pollIntervalMs = 1000;
     }
 
     @Data
@@ -54,6 +88,13 @@ public class ResourceHubProperties {
         private long fixedDelayMs = 60000;
         private int taskLimit = 5;
         private int quarkLimit = 5;
+        private int xunleiLimit = 5;
         private int publishLimit = 20;
+    }
+
+    @Data
+    public static class QqChannelPublisher {
+        private String baseUrl = "http://localhost:8092";
+        private String token;
     }
 }
