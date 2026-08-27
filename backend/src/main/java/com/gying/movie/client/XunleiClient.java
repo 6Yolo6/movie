@@ -289,6 +289,29 @@ public class XunleiClient {
         return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
     }
 
+    /**
+     * The Drive restore endpoint returns the actual destination ids in
+     * params.trace_file_ids.  The top-level file_id is only the My Transfers
+     * root and must not be used as the restored movie folder.
+     */
+    public List<String> extractRestoredFileIds(String responsePayload) {
+        if (!hasText(responsePayload)) return List.of();
+        try {
+            JsonNode response = objectMapper.readTree(responsePayload);
+            JsonNode trace = response.path("params").path("trace_file_ids");
+            if (trace.isTextual()) trace = objectMapper.readTree(trace.asText());
+            if (!trace.isObject()) return List.of();
+            List<String> ids = new ArrayList<>();
+            trace.fields().forEachRemaining(entry -> {
+                String id = entry.getValue().asText(null);
+                if (hasTextStatic(id) && !ids.contains(id)) ids.add(id);
+            });
+            return List.copyOf(ids);
+        } catch (Exception ignored) {
+            return List.of();
+        }
+    }
+
     private JsonNode requestSharePage(
             String shareId, String passCode, String passCodeToken, String parentId, String pageToken) {
         return request(HttpMethod.GET, sharePageUri(shareId, passCode, passCodeToken, parentId, pageToken), null);
@@ -371,9 +394,11 @@ public class XunleiClient {
     private DirectoryInfo ensureDirectory(String path) {
         String restoreRootId = findRestoreRootId();
         String parentId = restoreRootId;
+        List<String> ancestorIds = new ArrayList<>();
         if (!hasText(path) || "/".equals(path.trim())) return new DirectoryInfo(restoreRootId, List.of());
         for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
             if (!hasText(segment)) continue;
+            ancestorIds.add(parentId);
             JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
             String folderId = findChildFolderId(files, segment);
             if (!hasText(folderId)) {
@@ -396,7 +421,7 @@ public class XunleiClient {
             }
             parentId = folderId;
         }
-        return new DirectoryInfo(parentId, List.of());
+        return new DirectoryInfo(parentId, List.copyOf(ancestorIds));
     }
 
     static String findChildFolderId(JsonNode response, String expectedName) {

@@ -101,6 +101,40 @@ class XunleiTransferRunnerServiceImplTest {
     }
 
     @Test
+    void fallsBackToRestoredTraceIdsWhenLegacyTargetFolderIsEmpty() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(13L);
+        task.setMovieId("legacy-movie");
+        task.setStatus("PENDING");
+        task.setOriginalUrl("https://pan.xunlei.com/s/source");
+        when(taskService.getById(13L)).thenReturn(task);
+        when(client.restore(eq(task.getOriginalUrl()), any()))
+                .thenReturn(new XunleiClient.RestoreResult(
+                        "restore-task", "restore-response", "stable-folder-id", "root-id",
+                        java.util.List.of("movie.mkv"), 1L));
+        when(client.await("restore-task"))
+                .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.extractRestoredFileIds("restore-response"))
+                .thenReturn(java.util.List.of("restored-video-id"));
+        when(client.awaitContent("stable-folder-id"))
+                .thenThrow(new IllegalStateException("empty target folder"));
+        when(client.createShare(java.util.List.of("restored-video-id")))
+                .thenReturn("https://pan.xunlei.com/s/owned?pwd=code");
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties, client, taskService, mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult result = service.submitOne(13L);
+
+        assertEquals(1, result.getSubmitted());
+        assertEquals("stable-folder-id", task.getSavedPath());
+        verify(client).createShare(java.util.List.of("restored-video-id"));
+    }
+
+    @Test
     void skipsAlreadySucceededTask() {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);

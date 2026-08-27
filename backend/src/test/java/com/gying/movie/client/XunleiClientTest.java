@@ -53,6 +53,17 @@ class XunleiClientTest {
     }
 
     @Test
+    void preservesAncestorIdsForNestedRestorePath() {
+        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo(
+                "movie-folder", List.of("restore-root", "hub-folder"));
+        Map<String, Object> payload = XunleiClient.restorePayload(
+                new XunleiClient.ShareInfo("share", "", "", List.of("video"), List.of("video.mkv")),
+                directory);
+        assertEquals("movie-folder", payload.get("parent_id"));
+        assertEquals(List.of("restore-root", "hub-folder"), payload.get("ancestor_ids"));
+    }
+
+    @Test
     void findsExistingFolderAcrossRealDriveApiFieldVariants() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         var response = mapper.readTree("""
@@ -148,6 +159,15 @@ class XunleiClientTest {
                 "https://pan.xunlei.com/s/share-id?pwd=kept",
                 XunleiClient.normalizeShareUrl(
                         "https://pan.xunlei.com/s/share-id?pwd=kept###", "other"));
+    }
+
+    @Test
+    void extractsDestinationIdsFromRestoreTraceMapping() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(
+                "{\"file_id\":\"root\",\"params\":{\"trace_file_ids\":\"{\\\"src-1\\\":\\\"dest-1\\\",\\\"src-2\\\":\\\"dest-2\\\"}\"}}"));
     }
 
     @Test
