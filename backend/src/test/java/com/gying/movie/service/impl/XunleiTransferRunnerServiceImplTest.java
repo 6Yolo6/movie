@@ -3,6 +3,7 @@ package com.gying.movie.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -24,14 +25,79 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void isolatesEachTransferInItsOwnFolder() {
         ResourceHubProperties properties = new ResourceHubProperties();
-        properties.getXunlei().setSavePath("/GYing Resource Hub");
+        properties.getXunlei().setSavePath("/影视剧资源分享(先转存后再查看)/GYing Resource Hub");
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(42L);
         task.setMovieId("tmdb:movie/123");
 
         assertEquals(
-                "/GYing Resource Hub",
+                "/影视剧资源分享(先转存后再查看)/GYing Resource Hub/tmdb_movie_123",
                 XunleiTransferRunnerServiceImpl.transferPath(properties, task));
+    }
+
+    @Test
+    void automaticRunnerSkipsCappedFailuresWithoutStarvingPendingTasks() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask capped = new XunleiTransferTask();
+        capped.setId(10L);
+        capped.setStatus("FAILED");
+        capped.setAttempts(100);
+        XunleiTransferTask pending = new XunleiTransferTask();
+        pending.setId(11L);
+        pending.setMovieId("movie-11");
+        pending.setStatus("PENDING");
+        pending.setAttempts(0);
+        pending.setOriginalUrl("https://pan.xunlei.com/s/pending");
+        when(client.isConfigured()).thenReturn(true);
+        when(taskService.list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class)))
+                .thenReturn(java.util.List.of(capped, pending));
+        when(client.restore(eq(pending.getOriginalUrl()), any()))
+                .thenThrow(new IllegalStateException("pending task reached client"));
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties, client, taskService, mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult result = service.submitPending(1);
+
+        assertEquals(1, result.getFailed());
+        assertEquals("pending task reached client", pending.getLastError());
+        verify(client).restore(eq(pending.getOriginalUrl()), any());
+    }
+
+    @Test
+    void sharesStableMovieFolderAfterRestoringFilteredVideos() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(12L);
+        task.setMovieId("gying_tv_demo");
+        task.setStatus("PENDING");
+        task.setAttempts(0);
+        task.setOriginalUrl("https://pan.xunlei.com/s/source");
+        when(taskService.getById(12L)).thenReturn(task);
+        when(client.restore(eq(task.getOriginalUrl()),
+                eq("/影视剧资源分享(先转存后再查看)/GYing Resource Hub/gying_tv_demo")))
+                .thenReturn(new XunleiClient.RestoreResult(
+                        "restore-task", "{}", "stable-folder-id", null,
+                        java.util.List.of("episode-01.mkv", "episode-02.mp4"), 1L));
+        when(client.await("restore-task"))
+                .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.awaitContent("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(1, 3, 2));
+        when(client.createShare("stable-folder-id"))
+                .thenReturn("https://pan.xunlei.com/s/owned?pwd=code");
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties, client, taskService, mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult result = service.submitOne(12L);
+
+        assertEquals(1, result.getSubmitted());
+        assertEquals("stable-folder-id", task.getSavedPath());
+        verify(client).createShare("stable-folder-id");
     }
 
     @Test
@@ -67,6 +133,7 @@ class XunleiTransferRunnerServiceImplTest {
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(3L);
         task.setStatus("WAITING_SHARE");
+        task.setAttempts(100);
         task.setSavedPath("saved-file-id");
         task.setLastError("old authorization error");
         when(taskService.getById(3L)).thenReturn(task);

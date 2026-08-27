@@ -53,6 +53,20 @@ class XunleiClientTest {
     }
 
     @Test
+    void findsExistingFolderAcrossRealDriveApiFieldVariants() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {"data":{"file_list":[
+                  {"fileId":"folder-id","fileName":"gying_tv_demo","type":"folder"},
+                  {"fileId":"video-id","fileName":"episode.mp4","type":"file"}
+                ]}}
+                """);
+
+        assertEquals("folder-id", XunleiClient.findChildFolderId(response, "gying_tv_demo"));
+        assertEquals(null, XunleiClient.findChildFolderId(response, "missing"));
+    }
+
+    @Test
     void extractsOnlyVideoFilesFromNestedShareItems() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         var response = mapper.readTree("""

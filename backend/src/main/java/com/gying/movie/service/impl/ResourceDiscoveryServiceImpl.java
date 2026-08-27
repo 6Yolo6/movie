@@ -298,7 +298,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             String movieProvider = discovery.getMovieId() + "|" + provider;
             if (scheduledMovies.contains(movieProvider)
                     || hasTransferTask(discovery, provider)
-                    || hasMovieProviderResource(discovery.getMovieId(), provider)
+                    || ("QUARK".equals(provider)
+                            && hasMovieProviderResource(discovery.getMovieId(), provider))
                     || hasMovieTransferTask(discovery.getMovieId(), provider)) {
                 continue;
             }

@@ -283,6 +283,9 @@ public class XunleiClient {
             } while (hasText(pageToken));
         }
         if (fileIds.isEmpty() && traversalError != null) throw traversalError;
+        if (fileIds.isEmpty()) {
+            throw new IllegalStateException("Xunlei share contains no video files");
+        }
         return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
     }
 
@@ -372,28 +375,50 @@ public class XunleiClient {
         for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
             if (!hasText(segment)) continue;
             JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
-            String folderId = null;
-            for (JsonNode item : files.path("files")) {
-                if (segment.equals(item.path("name").asText())
-                        && item.path("kind").asText("").contains("folder")) {
-                    folderId = item.path("id").asText(null);
-                    break;
-                }
-            }
+            String folderId = findChildFolderId(files, segment);
             if (!hasText(folderId)) {
-                JsonNode created = request(HttpMethod.POST, "/files",
-                        Map.of("name", segment, "parent_id", parentId, "kind", "drive#folder"));
-                folderId = firstText(
-                        created.path("id").asText(null),
-                        created.path("file").path("id").asText(null),
-                        created.path("data").path("id").asText(null));
+                try {
+                    JsonNode created = request(HttpMethod.POST, "/files",
+                            Map.of("name", segment, "parent_id", parentId, "kind", "drive#folder"));
+                    folderId = firstText(
+                            created.path("id").asText(null),
+                            created.path("file").path("id").asText(null),
+                            created.path("data").path("id").asText(null));
+                } catch (IllegalStateException error) {
+                    if (!isDuplicateFolderError(error)) throw error;
+                    JsonNode refreshed = request(HttpMethod.GET,
+                            "/files?parent_id=" + parentId + "&limit=100", null);
+                    folderId = findChildFolderId(refreshed, segment);
+                }
             }
             if (!hasText(folderId)) {
                 throw new IllegalStateException("Xunlei folder creation did not return an id");
             }
             parentId = folderId;
         }
-        return new DirectoryInfo(restoreRootId, List.of());
+        return new DirectoryInfo(parentId, List.of());
+    }
+
+    static String findChildFolderId(JsonNode response, String expectedName) {
+        JsonNode files = firstArray(
+                response.path("files"), response.path("file_list"),
+                response.path("data").path("files"), response.path("data").path("file_list"));
+        if (files == null) return null;
+        for (JsonNode item : files) {
+            String name = firstTextStatic(
+                    item.path("name").asText(null), item.path("file_name").asText(null),
+                    item.path("filename").asText(null), item.path("fileName").asText(null));
+            if (expectedName.equals(name) && isFolder(item)) {
+                return firstTextStatic(
+                        item.path("id").asText(null), item.path("file_id").asText(null),
+                        item.path("fileId").asText(null), item.path("fid").asText(null));
+            }
+        }
+        return null;
+    }
+
+    private static boolean isDuplicateFolderError(IllegalStateException error) {
+        return error.getMessage() != null && error.getMessage().contains("file_duplicated_name");
     }
 
     private String findRestoreRootId() {

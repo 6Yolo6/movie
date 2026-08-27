@@ -45,9 +45,10 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
         List<XunleiTransferTask> tasks = taskService.list(new QueryWrapper<XunleiTransferTask>()
                 .in("status", statuses)
                 .orderByAsc("created_at")
-                .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
+                .last("LIMIT 200"));
         tasks.stream()
                 .filter(task -> !hasReachedRetryLimit(task))
+                .limit(Math.min(Math.max(limit, 1), 20))
                 .forEach(task -> submitGuarded(task, result, false));
         return result;
     }
@@ -91,7 +92,10 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
             }
             if ("WAITING_SHARE".equalsIgnoreCase(task.getStatus()) && task.getSavedPath() != null) {
                 client.awaitContent(task.getSavedPath());
-                String share = client.createShare(task.getSavedPath());
+                String share = existingMovieFolderShare(task);
+                if (share == null) {
+                    share = client.createShare(task.getSavedPath());
+                }
                 if (share == null) {
                     task.setLastError("Xunlei transfer succeeded but share API did not return a URL");
                     task.setUpdatedAt(LocalDateTime.now());
@@ -122,7 +126,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
             task.setResponsePayload(restore.response()); task.setStatus("SUBMITTED"); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
             XunleiClient.RestoreStatus status = client.await(restore.taskId());
             if (!status.success()) { task.setStatus("FAILED"); task.setLastError("Xunlei restore " + status.status()); result.setFailed(result.getFailed() + 1); }
-            else { task.setStatus("WAITING_SHARE"); XunleiClient.RestoredSelection restored = client.awaitRestoredFiles(restore.restoredFileId(), restore.expectedNames(), restore.startedAt()); task.setSavedPath(restored.fileIds().get(0)); String share = client.createShare(restored.fileIds()); if (share != null) { task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share)); task.setStatus("SUCCEEDED"); task.setLastError(null); updatePublishedLink(task); result.setSubmitted(result.getSubmitted() + 1); } else { task.setLastError("Xunlei restore succeeded but share API did not return a URL"); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(task.getLastError()); } }
+            else { task.setStatus("WAITING_SHARE"); client.awaitContent(restore.parentId()); task.setSavedPath(restore.parentId()); String share = existingMovieFolderShare(task); if (share == null) share = client.createShare(restore.parentId()); if (share != null) { task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share)); task.setStatus("SUCCEEDED"); task.setLastError(null); updatePublishedLink(task); result.setSubmitted(result.getSubmitted() + 1); } else { task.setLastError("Xunlei restore succeeded but share API did not return a URL"); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(task.getLastError()); } }
             task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
             if ("SUCCEEDED".equalsIgnoreCase(task.getStatus())) clearLastError(task.getId());
         } catch (Exception e) { task.setStatus("FAILED"); task.setLastError(e.getMessage()); task.setFinishedAt(LocalDateTime.now()); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(e.getMessage()); }
@@ -130,15 +134,29 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     private boolean hasReachedRetryLimit(XunleiTransferTask task) {
         return task != null
+                && "FAILED".equalsIgnoreCase(task.getStatus())
                 && task.getAttempts() != null
-                && task.getAttempts() >= MAX_TRANSFER_ATTEMPTS
-                && !"SUCCEEDED".equalsIgnoreCase(task.getStatus());
+                && task.getAttempts() >= MAX_TRANSFER_ATTEMPTS;
     }
 
     private void clearLastError(Long taskId) {
         if (taskId != null) taskService.update(new UpdateWrapper<XunleiTransferTask>()
                 .eq("id", taskId)
                 .set("last_error", null));
+    }
+
+    private String existingMovieFolderShare(XunleiTransferTask task) {
+        if (task == null || task.getMovieId() == null || task.getSavedPath() == null) {
+            return null;
+        }
+        XunleiTransferTask existing = taskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", task.getMovieId())
+                .eq("saved_path", task.getSavedPath())
+                .eq("status", "SUCCEEDED")
+                .isNotNull("share_url")
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+        return existing == null ? null : existing.getShareUrl();
     }
 
     private void updatePublishedLink(XunleiTransferTask task) {
@@ -156,9 +174,11 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     static String transferPath(ResourceHubProperties properties, XunleiTransferTask task) {
         String base = properties.getXunlei().getSavePath() == null
-                ? "/GYing Resource Hub"
+                ? "/影视剧资源分享(先转存后再查看)/GYing Resource Hub"
                 : properties.getXunlei().getSavePath().replaceAll("/+$", "");
-        return base;
+        String movieId = task == null || task.getMovieId() == null || task.getMovieId().isBlank()
+                ? "unknown" : task.getMovieId().trim();
+        return base + "/" + movieId.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
     private String transferPath(XunleiTransferTask task) {

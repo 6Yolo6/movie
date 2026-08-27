@@ -75,7 +75,7 @@ public class ResourceHubProperties {
         private String deviceId;
         private String clientVersion = "1.82.0";
         private String captchaToken;
-        private String savePath = "/GYing Resource Hub";
+        private String savePath = "/影视剧资源分享(先转存后再查看)/GYing Resource Hub";
         private boolean shareEnabled = false;
         private String shareCreatePath = "/share";
         private int pollAttempts = 20;

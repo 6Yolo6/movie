@@ -91,7 +91,7 @@ resource-hub:
       device-id: ${XUNLEI_DEVICE_ID:}
       client-version: ${XUNLEI_CLIENT_VERSION:1.82.0}
       captcha-token: ${XUNLEI_CAPTCHA_TOKEN:}
-      save-path: ${XUNLEI_SAVE_PATH:/GYing Resource Hub}
+      save-path: ${XUNLEI_SAVE_PATH:/影视剧资源分享(先转存后再查看)/GYing Resource Hub}
       share-enabled: ${XUNLEI_SHARE_ENABLED:false}
       share-create-path: ${XUNLEI_SHARE_CREATE_PATH:/share}
       poll-attempts: ${XUNLEI_POLL_ATTEMPTS:20}
