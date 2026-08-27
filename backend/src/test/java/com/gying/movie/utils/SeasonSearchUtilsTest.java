@@ -48,6 +48,9 @@ class SeasonSearchUtilsTest {
         assertTrue(SeasonSearchUtils.explicitlyMatchesSeason("S01\u30102018\u3011", 1));
         assertFalse(SeasonSearchUtils.explicitlyMatchesSeason("S08\u30102026\u3011", 1));
         assertTrue(SeasonSearchUtils.hasSeasonCollection("\u7b2c\u516b\u5b63 \u96441-7\u5b63"));
+        assertTrue(SeasonSearchUtils.isCollectionResource("\u6743\u529b\u7684\u6e38\u620f 1-8\u5b63\u5408\u96c6"));
+        assertTrue(SeasonSearchUtils.isCollectionResource("\u6743\u529b\u7684\u6e38\u620f \u5168\u96c6"));
+        assertFalse(SeasonSearchUtils.isCollectionResource("\u6743\u529b\u7684\u6e38\u620f \u7b2c1\u5b63"));
         assertTrue(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 更至63集 4K合集 最新"));
         assertFalse(SeasonSearchUtils.canUseRootForFirstSeason("鬼灭之刃 第二季 全11集"));
 

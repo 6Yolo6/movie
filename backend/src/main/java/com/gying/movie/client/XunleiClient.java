@@ -90,7 +90,11 @@ public class XunleiClient {
         body.put("pass_code_token", share.passCodeToken());
         body.put("file_ids", share.fileIds());
         body.put("parent_id", directory.id());
-        body.put("ancestor_ids", directory.ancestorIds());
+        // `ancestor_ids` belongs to the source share's file ancestry.  We only
+        // collect playable source file ids here and do not retain that source
+        // tree, so sending the destination folder's ancestry is invalid and is
+        // rejected by /share/restore as "invalid file ancestors".  parent_id
+        // is the complete destination selector for this restore operation.
         return body;
     }
 
@@ -394,11 +398,9 @@ public class XunleiClient {
     private DirectoryInfo ensureDirectory(String path) {
         String restoreRootId = findRestoreRootId();
         String parentId = restoreRootId;
-        List<String> ancestorIds = new ArrayList<>();
-        if (!hasText(path) || "/".equals(path.trim())) return new DirectoryInfo(restoreRootId, List.of());
+        if (!hasText(path) || "/".equals(path.trim())) return new DirectoryInfo(restoreRootId);
         for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
             if (!hasText(segment)) continue;
-            ancestorIds.add(parentId);
             JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
             String folderId = findChildFolderId(files, segment);
             if (!hasText(folderId)) {
@@ -421,7 +423,7 @@ public class XunleiClient {
             }
             parentId = folderId;
         }
-        return new DirectoryInfo(parentId, List.copyOf(ancestorIds));
+        return new DirectoryInfo(parentId);
     }
 
     static String findChildFolderId(JsonNode response, String expectedName) {
@@ -909,7 +911,7 @@ public class XunleiClient {
             String passCodeToken,
             List<String> fileIds,
             List<String> fileNames) {}
-    public record DirectoryInfo(String id, List<String> ancestorIds) {}
+    public record DirectoryInfo(String id) {}
     public record RestoreResult(
             String taskId,
             String response,

@@ -29,7 +29,7 @@ class XunleiClientTest {
     }
 
     @Test
-    void restoresOnlyTopLevelShareItemsIntoExplicitAncestorPath() throws Exception {
+    void restoresOnlyVideoShareItemsIntoExplicitParent() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         List<String> ids = XunleiClient.extractTopLevelFileIds(mapper.readTree("""
                 {
@@ -42,25 +42,23 @@ class XunleiClientTest {
                 """));
         XunleiClient.ShareInfo share = new XunleiClient.ShareInfo(
                 "share-id", "code", "token", ids, List.of("Movie", "Movie.srt"));
-        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo(
-                "my-transfers-id", List.of());
+        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo("my-transfers-id");
 
         Map<String, Object> payload = XunleiClient.restorePayload(share, directory);
 
         assertEquals(List.of("folder-id", "subtitle-id"), payload.get("file_ids"));
         assertEquals("my-transfers-id", payload.get("parent_id"));
-        assertEquals(List.of(), payload.get("ancestor_ids"));
+        assertEquals(false, payload.containsKey("ancestor_ids"));
     }
 
     @Test
-    void preservesAncestorIdsForNestedRestorePath() {
-        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo(
-                "movie-folder", List.of("restore-root", "hub-folder"));
+    void omitsDestinationAncestorIdsForNestedRestorePath() {
+        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo("movie-folder");
         Map<String, Object> payload = XunleiClient.restorePayload(
                 new XunleiClient.ShareInfo("share", "", "", List.of("video"), List.of("video.mkv")),
                 directory);
         assertEquals("movie-folder", payload.get("parent_id"));
-        assertEquals(List.of("restore-root", "hub-folder"), payload.get("ancestor_ids"));
+        assertEquals(false, payload.containsKey("ancestor_ids"));
     }
 
     @Test

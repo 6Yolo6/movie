@@ -121,12 +121,14 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             String transferShareUrl = task.getOriginalUrl();
             boolean seasonTransfer = isSeasonTransfer(movie);
             boolean recursiveTransfer = seasonTransfer;
-            if (seasonTransfer) {
+            boolean collectionTransfer = seasonTransfer && discovery != null
+                    && SeasonSearchUtils.isCollectionResource(discovery.getTitle());
+            if (seasonTransfer && !collectionTransfer) {
                 transferShareUrl = quarkAutoSaveClient.resolveSeasonShareUrl(
                         transferShareUrl,
                         movie.getSeason(),
                         discovery == null ? null : discovery.getTitle());
-            } else if (movie != null) {
+            } else if (movie != null && !seasonTransfer) {
                 QuarkAutoSaveClient.MovieShareSelection selection = quarkAutoSaveClient.resolveMovieShareUrl(
                         transferShareUrl,
                         movie.getTitleCn(),
@@ -289,15 +291,16 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildTaskName(MovieMetadata movie, QuarkTransferTask task) {
-        if (isSeasonTransfer(movie)) {
+        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                ? null
+                : discoveryResultService.getById(task.getDiscoveryResultId());
+        if (isSeasonTransfer(movie)
+                && (discovery == null || !SeasonSearchUtils.isCollectionResource(discovery.getTitle()))) {
             String title = SeasonSearchUtils.seasonQualifiedTitle(
                     firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
                     movie.getSeason());
             return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
         }
-        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
-                ? null
-                : discoveryResultService.getById(task.getDiscoveryResultId());
         if (discovery != null && discovery.getTitle() != null && !discovery.getTitle().isBlank()) {
             return discovery.getTitle().trim();
         }
@@ -321,7 +324,11 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                 : firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId());
         String path = trimTrailingSlash(basePath) + "/" + category + "/"
                 + sanitizePathSegment(SeasonSearchUtils.baseTitle(rawTitle));
-        if (isSeasonTransfer(movie)) {
+        ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
+                ? null
+                : discoveryResultService.getById(task.getDiscoveryResultId());
+        if (isSeasonTransfer(movie)
+                && (discovery == null || !SeasonSearchUtils.isCollectionResource(discovery.getTitle()))) {
             return path + "/" + sanitizePathSegment(SeasonSearchUtils.seasonLabel(movie.getSeason()));
         }
         return path;

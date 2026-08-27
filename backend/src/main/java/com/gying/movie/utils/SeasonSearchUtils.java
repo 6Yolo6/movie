@@ -98,6 +98,13 @@ public final class SeasonSearchUtils {
                 && (SEASON_RANGE.matcher(value).find() || COMPLETE_SEASONS.matcher(value).find());
     }
 
+    /** A source title explicitly advertises a whole-series or multi-season set. */
+    public static boolean isCollectionResource(String value) {
+        return hasText(value) && (hasSeasonCollection(value)
+                || Pattern.compile("(?:合集|全季|全集|多季|全\\s*[0-9]+\\s*季|[0-9]+\\s*[-~至到]\\s*[0-9]+\\s*季)", Pattern.CASE_INSENSITIVE)
+                        .matcher(value).find());
+    }
+
     public static boolean canUseRootForFirstSeason(String value) {
         return hasText(value)
                 && !hasSeasonMarker(value)
