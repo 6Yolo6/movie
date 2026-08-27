@@ -452,16 +452,16 @@ public class QuarkAutoSaveClient {
         String cookie = cookies.isArray() && !cookies.isEmpty() ? cookies.get(0).asText(null) : null;
         if (!hasUsableCookie(cookie)) {
             String fallbackCookie = firstUsableCookie(System.getenv("QUARK_COOKIE"), System.getenv("quark_cookie"));
-            if (fallbackCookie != null && data instanceof ObjectNode objectData) {
+            if (fallbackCookie != null) {
                 ArrayNode cookieArray = objectMapper.createArrayNode();
                 cookieArray.add(fallbackCookie);
-                objectData.set("cookie", cookieArray);
-                synchronizeRuntimeConfig(objectData);
+                ObjectNode cookieUpdate = objectMapper.createObjectNode();
+                cookieUpdate.set("cookie", cookieArray);
+                synchronizeRuntimeConfig(cookieUpdate);
                 return fallbackCookie;
             }
             throw new IllegalStateException("quark-auto-save cookie is not configured");
         }
-        synchronizeRuntimeConfig(data);
         return cookie.trim();
     }
 
@@ -473,7 +473,7 @@ public class QuarkAutoSaveClient {
         RestClientException lastRequestError = null;
         for (int attempt = 1; attempt <= CONFIG_CHECK_ATTEMPTS; attempt++) {
             try {
-                ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+                ResponseEntity<byte[]> response = restTemplate.getForEntity(url, byte[].class);
                 JsonNode body = objectMapper.readTree(response.getBody());
                 if (!body.path("success").asBoolean(false)) {
                     throw new IllegalStateException(body.path("message").asText("quark-auto-save is not logged in"));
