@@ -60,4 +60,17 @@ class SeasonSearchUtilsTest {
         assertTrue(pattern.matcher("\u7b2c\u4e00\u5b63").find());
         assertFalse(pattern.matcher("S07\u30102025\u3011").find());
     }
+
+    @Test
+    void matchesTitleAnchoredNumericSeasonDirectoriesWithoutTreatingMetadataAsSeason() {
+        assertTrue(SeasonSearchUtils.matchesSeasonDirectory("wW问@@X心2", "问心", 2));
+        assertTrue(SeasonSearchUtils.matchesSeasonDirectory("问心 第2季", "问心", 2));
+        assertTrue(SeasonSearchUtils.matchesSeasonDirectory("S02", "问心", 2));
+        assertTrue(SeasonSearchUtils.matchesSeasonDirectory("wW问@@X心2", "问心2", 2));
+
+        assertFalse(SeasonSearchUtils.matchesSeasonDirectory("问心2023", "问心", 2));
+        assertFalse(SeasonSearchUtils.matchesSeasonDirectory("问心2160P", "问心", 2));
+        assertFalse(SeasonSearchUtils.matchesSeasonDirectory("问心12集", "问心", 2));
+        assertFalse(SeasonSearchUtils.matchesSeasonDirectory("2", "问心", 2));
+    }
 }

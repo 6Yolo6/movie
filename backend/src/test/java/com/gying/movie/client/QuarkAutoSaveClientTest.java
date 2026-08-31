@@ -215,6 +215,33 @@ class QuarkAutoSaveClientTest {
     }
 
     @Test
+    void selectsObfuscatedTitleAnchoredNumericSeasonDirectory() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        when(restTemplate.postForEntity(
+                contains("/get_share_detail"),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok("""
+                        {"success":true,"data":{"list":[
+                          {"fid":"year","file_name":"问心2023","dir":true},
+                          {"fid":"season-2","file_name":"wW问@@X心2","dir":true}
+                        ]}}
+                        """));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+        String shareUrl = "https://pan.quark.cn/s/heart";
+
+        assertEquals(shareUrl + "#/list/share/season-2", client.resolveSeasonShareUrl(
+                shareUrl,
+                2,
+                "问心2",
+                "问心"));
+    }
+
+    @Test
     void selectsExactMovieDirectoryFromCollection() {
         ResourceHubProperties properties = new ResourceHubProperties();
         properties.getQuark().setToken("test-token");

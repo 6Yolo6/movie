@@ -127,7 +127,8 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                 transferShareUrl = quarkAutoSaveClient.resolveSeasonShareUrl(
                         transferShareUrl,
                         movie.getSeason(),
-                        discovery == null ? null : discovery.getTitle());
+                        discovery == null ? null : discovery.getTitle(),
+                        firstText(movie.getSeriesName(), movie.getTitleCn(), movie.getTitleEn()));
             } else if (movie != null && !seasonTransfer) {
                 QuarkAutoSaveClient.MovieShareSelection selection = quarkAutoSaveClient.resolveMovieShareUrl(
                         transferShareUrl,

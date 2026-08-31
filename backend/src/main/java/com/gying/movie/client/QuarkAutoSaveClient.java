@@ -67,12 +67,26 @@ public class QuarkAutoSaveClient {
     }
 
     public String resolveSeasonShareUrl(String shareUrl, int season, String sourceTitle) {
+        return resolveSeasonShareUrl(shareUrl, season, sourceTitle, sourceTitle);
+    }
+
+    public String resolveSeasonShareUrl(
+            String shareUrl,
+            int season,
+            String sourceTitle,
+            String seriesTitle) {
         if (season < 1 || season > 99) {
             return shareUrl;
         }
         requireConfigured();
         String baseShareUrl = stripDirectoryFragment(shareUrl);
-        String resolved = findSeasonDirectory(baseShareUrl, shareUrl, season, 0, new HashSet<>());
+        String resolved = findSeasonDirectory(
+                baseShareUrl,
+                shareUrl,
+                season,
+                seriesTitle,
+                0,
+                new HashSet<>());
         if (resolved != null) {
             return resolved;
         }
@@ -211,6 +225,7 @@ public class QuarkAutoSaveClient {
             String baseShareUrl,
             String currentShareUrl,
             int season,
+            String seriesTitle,
             int depth,
             Set<String> visited) {
         JsonNode list = getShareDetailData(currentShareUrl).path("list");
@@ -222,7 +237,7 @@ public class QuarkAutoSaveClient {
             String name = item.path("file_name").asText(null);
             if (item.path("dir").asBoolean(false)
                     && fid != null
-                    && SeasonSearchUtils.explicitlyMatchesSeason(name, season)) {
+                    && SeasonSearchUtils.matchesSeasonDirectory(name, seriesTitle, season)) {
                 return baseShareUrl + "#/list/share/" + fid;
             }
         }
@@ -238,6 +253,7 @@ public class QuarkAutoSaveClient {
                     baseShareUrl,
                     baseShareUrl + "#/list/share/" + fid,
                     season,
+                    seriesTitle,
                     depth + 1,
                     visited);
             if (resolved != null) {
