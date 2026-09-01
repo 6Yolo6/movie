@@ -93,27 +93,38 @@ public class XunleiClient {
         ShareInfo share = inspectShare(shareUrl);
         DirectoryInfo directory = ensureDirectory(savePath);
         long startedAt = System.currentTimeMillis();
-        ContentSummary existing = inspectContent(directory.id());
-        if (existing.videoCount() > 0) {
-            return new RestoreResult(null, null, directory.id(), directory.restoreRootId(),
-                    share.fileNames(), startedAt, true);
+        List<RestorePlacement> placements = new ArrayList<>();
+        for (RestoreGroup group : share.groups()) {
+            DirectoryInfo target = directory;
+            if (!group.pathSegments().isEmpty()) {
+                target = ensureDirectory(savePath + "/" + String.join("/", group.pathSegments()));
+            }
+            if (directContentSummary(target.id()).videoCount() > 0) {
+                placements.add(new RestorePlacement(null, target.id(), target.restoreRootId(), null, null,
+                        group.fileNames(), startedAt, true, group.pathSegments()));
+                continue;
+            }
+            ShareInfo groupedShare = new ShareInfo(share.shareId(), share.passCode(), share.passCodeToken(),
+                    group.fileIds(), group.fileNames(), List.of(group));
+            JsonNode response = request(HttpMethod.POST, "/share/restore", restorePayload(groupedShare, target));
+            String taskId = firstText(response.path("restore_task_id").asText(null), response.path("task_id").asText(null), response.path("data").path("restore_task_id").asText(null));
+            if (!hasText(taskId)) {
+                throw new IllegalStateException("Xunlei restore response did not include task id");
+            }
+            String restoredFileId = firstText(
+                    response.path("file_id").asText(null),
+                    response.path("data").path("file_id").asText(null));
+            placements.add(new RestorePlacement(taskId, target.id(), target.restoreRootId(), response.toString(),
+                    firstText(restoredFileId, target.restoreRootId()), group.fileNames(), startedAt, false,
+                    group.pathSegments()));
         }
-        JsonNode response = request(HttpMethod.POST, "/share/restore", restorePayload(share, directory));
-        String taskId = firstText(response.path("restore_task_id").asText(null), response.path("task_id").asText(null), response.path("data").path("restore_task_id").asText(null));
-        if (!hasText(taskId)) {
-            throw new IllegalStateException("Xunlei restore response did not include task id");
+        if (placements.isEmpty()) {
+            throw new IllegalStateException("Xunlei share contains no video files");
         }
-        String restoredFileId = firstText(
-                response.path("file_id").asText(null),
-                response.path("data").path("file_id").asText(null));
-        return new RestoreResult(
-                taskId,
-                response.toString(),
-                directory.id(),
-                firstText(restoredFileId, directory.restoreRootId()),
-                share.fileNames(),
-                startedAt,
-                false);
+        RestorePlacement first = placements.get(0);
+        boolean reused = placements.stream().allMatch(RestorePlacement::reused);
+        return new RestoreResult(first.taskId(), first.response(), directory.id(), first.restoredFileId(),
+                share.fileNames(), startedAt, reused, List.copyOf(placements));
     }
 
     static Map<String, Object> restorePayload(ShareInfo share, DirectoryInfo directory) {
@@ -160,6 +171,23 @@ public class XunleiClient {
 
     public ContentSummary contentSummary(String parentId) {
         return inspectContent(parentId);
+    }
+
+    /** Counts only immediate children; nested season folders do not satisfy a root-level group. */
+    public ContentSummary directContentSummary(String parentId) {
+        if (!hasText(parentId)) return new ContentSummary(0, 0, 0);
+        List<JsonNode> children = listFolderChildren(parentId);
+        int folders = 0;
+        int files = 0;
+        int videos = 0;
+        for (JsonNode child : children) {
+            if (isFolder(child)) folders++;
+            else {
+                files++;
+                if (isVideo(child)) videos++;
+            }
+        }
+        return new ContentSummary(folders, files, videos);
     }
 
     public RestoredSelection awaitRestoredFiles(
@@ -288,22 +316,22 @@ public class XunleiClient {
         ShareSelection selection = inspectShareFiles(shareId, passCode);
         List<String> fileIds = selection.fileIds();
         if (fileIds.isEmpty()) throw new IllegalStateException("Xunlei share contains no video files");
-        return new ShareInfo(shareId, passCode, selection.passCodeToken(), fileIds, selection.fileNames());
+        return new ShareInfo(shareId, passCode, selection.passCodeToken(), fileIds, selection.fileNames(), selection.groups());
     }
 
     private ShareSelection inspectShareFiles(String shareId, String passCode) {
-        ArrayDeque<String> folders = new ArrayDeque<>();
+        ArrayDeque<FolderEntry> folders = new ArrayDeque<>();
         Set<String> visitedFolders = new HashSet<>();
+        Set<String> seenFolders = new HashSet<>();
         Set<String> seenFiles = new HashSet<>();
         Set<String> seenNames = new HashSet<>();
-        List<String> fileIds = new ArrayList<>();
-        List<String> fileNames = new ArrayList<>();
+        Map<List<String>, GroupBuilder> groups = new LinkedHashMap<>();
         String passCodeToken = null;
         IllegalStateException traversalError = null;
 
         JsonNode root = requestSharePage(shareId, passCode, null, null, null);
         passCodeToken = sharePassCodeToken(root, passCodeToken);
-        collectSharePage(root, folders, fileIds, fileNames, seenFiles, seenNames);
+        collectSharePage(root, List.of(), folders, groups, seenFiles, seenNames, seenFolders);
         String rootPageToken = shareNextPageToken(root);
         while (hasText(rootPageToken)) {
             JsonNode page;
@@ -315,14 +343,15 @@ public class XunleiClient {
                 break;
             }
             passCodeToken = sharePassCodeToken(page, passCodeToken);
-            collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+            collectSharePage(page, List.of(), folders, groups, seenFiles, seenNames, seenFolders);
             String next = shareNextPageToken(page);
             if (rootPageToken.equals(next)) break;
             rootPageToken = next;
         }
 
         while (!folders.isEmpty() && visitedFolders.size() < 500) {
-            String parentId = folders.removeFirst();
+            FolderEntry folder = folders.removeFirst();
+            String parentId = folder.id();
             if (!hasText(parentId) || !visitedFolders.add(parentId)) continue;
             String pageToken = null;
             do {
@@ -335,17 +364,23 @@ public class XunleiClient {
                     break;
                 }
                 passCodeToken = sharePassCodeToken(page, passCodeToken);
-                collectSharePage(page, folders, fileIds, fileNames, seenFiles, seenNames);
+                collectSharePage(page, folder.pathSegments(), folders, groups, seenFiles, seenNames, seenFolders);
                 String next = shareNextPageToken(page);
                 if (hasText(pageToken) && pageToken.equals(next)) break;
                 pageToken = next;
             } while (hasText(pageToken));
         }
+        List<RestoreGroup> resultGroups = groups.values().stream()
+                .map(GroupBuilder::build)
+                .filter(group -> !group.fileIds().isEmpty())
+                .toList();
+        List<String> fileIds = resultGroups.stream().flatMap(group -> group.fileIds().stream()).toList();
+        List<String> fileNames = resultGroups.stream().flatMap(group -> group.fileNames().stream()).toList();
         if (fileIds.isEmpty() && traversalError != null) throw traversalError;
         if (fileIds.isEmpty()) {
             throw new IllegalStateException("Xunlei share contains no video files");
         }
-        return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames));
+        return new ShareSelection(passCodeToken, List.copyOf(fileIds), List.copyOf(fileNames), resultGroups);
     }
 
     /**
@@ -376,6 +411,45 @@ public class XunleiClient {
         } catch (Exception error) {
             throw new IllegalStateException("Xunlei restored file ids could not be serialized", error);
         }
+    }
+
+    public String restoreRecoveryPayload(List<RestoreRecovery> recoveries) {
+        try {
+            List<Map<String, Object>> values = new ArrayList<>();
+            for (RestoreRecovery recovery : recoveries == null ? List.<RestoreRecovery>of() : recoveries) {
+                if (recovery == null || !hasText(recovery.parentId()) || recovery.fileIds() == null
+                        || recovery.fileIds().isEmpty()) continue;
+                values.add(Map.of("parent_id", recovery.parentId(), "file_ids", recovery.fileIds()));
+            }
+            return objectMapper.writeValueAsString(Map.of("restore_recoveries", values));
+        } catch (Exception error) {
+            throw new IllegalStateException("Xunlei restore recovery could not be serialized", error);
+        }
+    }
+
+    public List<RestoreRecovery> extractRestoreRecoveries(String responsePayload) {
+        if (!hasText(responsePayload)) return List.of();
+        try {
+            JsonNode root = objectMapper.readTree(responsePayload);
+            JsonNode values = root.path("restore_recoveries");
+            if (values.isArray()) {
+                List<RestoreRecovery> result = new ArrayList<>();
+                for (JsonNode value : values) {
+                    String parentId = value.path("parent_id").asText(null);
+                    List<String> ids = new ArrayList<>();
+                    JsonNode fileIds = value.path("file_ids");
+                    if (fileIds.isArray()) fileIds.forEach(id -> {
+                        if (hasText(id.asText(null))) ids.add(id.asText());
+                    });
+                    if (hasText(parentId) && !ids.isEmpty()) result.add(new RestoreRecovery(parentId, ids));
+                }
+                return List.copyOf(result);
+            }
+        } catch (Exception ignored) {
+            // Fall back to the legacy trace_file_ids payload below.
+        }
+        List<String> ids = extractRestoredFileIds(responsePayload);
+        return ids.isEmpty() ? List.of() : List.of(new RestoreRecovery(null, ids));
     }
 
     private void collectTraceFileIds(JsonNode node, List<String> ids) throws Exception {
@@ -441,22 +515,28 @@ public class XunleiClient {
 
     private static void collectSharePage(
             JsonNode response,
-            ArrayDeque<String> folders,
-            List<String> fileIds,
-            List<String> fileNames,
+            List<String> pathSegments,
+            ArrayDeque<FolderEntry> folders,
+            Map<List<String>, GroupBuilder> groups,
             Set<String> seenFiles,
-            Set<String> seenNames) {
-        extractVideoFileIds(response).stream().filter(seenFiles::add).forEach(fileIds::add);
-        extractVideoFileNames(response).stream()
-                .filter(name -> seenNames.add(name.toLowerCase(Locale.ROOT)))
-                .forEach(fileNames::add);
-        collectFolderIds(response, folders, new HashSet<>());
+            Set<String> seenNames,
+            Set<String> seenFolders) {
+        collectShareNodes(response, pathSegments, folders, groups, seenFiles, seenNames, seenFolders);
     }
 
-    private static void collectFolderIds(JsonNode node, ArrayDeque<String> folders, Set<String> seen) {
+    private static void collectShareNodes(
+            JsonNode node,
+            List<String> pathSegments,
+            ArrayDeque<FolderEntry> folders,
+            Map<List<String>, GroupBuilder> groups,
+            Set<String> seenFiles,
+            Set<String> seenNames,
+            Set<String> seenFolders) {
         if (node == null || node.isMissingNode() || node.isNull()) return;
         if (node.isArray()) {
-            for (JsonNode item : node) collectFolderIds(item, folders, seen);
+            for (JsonNode item : node) {
+                collectShareNodes(item, pathSegments, folders, groups, seenFiles, seenNames, seenFolders);
+            }
             return;
         }
         if (!node.isObject()) return;
@@ -464,9 +544,37 @@ public class XunleiClient {
             String id = firstTextStatic(
                     node.path("id").asText(null), node.path("file_id").asText(null),
                     node.path("fileId").asText(null), node.path("fid").asText(null));
-            if (hasTextStatic(id) && seen.add(id)) folders.addLast(id);
+            String name = firstTextStatic(
+                    node.path("name").asText(null), node.path("file_name").asText(null),
+                    node.path("filename").asText(null), node.path("fileName").asText(null));
+            List<String> childPath = hasTextStatic(name)
+                    ? appendPath(pathSegments, name) : pathSegments;
+            if (hasTextStatic(id) && seenFolders.add(id)) folders.addLast(new FolderEntry(id, childPath));
+            JsonNode children = firstArray(node.path("children"), node.path("items"), node.path("files"), node.path("file_list"));
+            if (children != null) {
+                collectShareNodes(children, childPath, folders, groups, seenFiles, seenNames, seenFolders);
+            }
+            return;
         }
-        node.fields().forEachRemaining(entry -> collectFolderIds(entry.getValue(), folders, seen));
+        String id = firstTextStatic(
+                node.path("id").asText(null), node.path("file_id").asText(null),
+                node.path("fileId").asText(null), node.path("fid").asText(null));
+        String name = firstTextStatic(
+                node.path("name").asText(null), node.path("file_name").asText(null),
+                node.path("filename").asText(null), node.path("fileName").asText(null));
+        if (hasTextStatic(id) && isVideo(node) && seenFiles.add(id)) {
+            GroupBuilder group = groups.computeIfAbsent(List.copyOf(pathSegments), GroupBuilder::new);
+            group.add(id, name);
+            return;
+        }
+        node.fields().forEachRemaining(entry -> collectShareNodes(
+                entry.getValue(), pathSegments, folders, groups, seenFiles, seenNames, seenFolders));
+    }
+
+    private static List<String> appendPath(List<String> path, String segment) {
+        List<String> result = new ArrayList<>(path == null ? List.of() : path);
+        if (hasTextStatic(segment)) result.add(segment.trim());
+        return List.copyOf(result);
     }
 
     private static String sharePassCodeToken(JsonNode response, String fallback) {
@@ -636,6 +744,13 @@ public class XunleiClient {
         Set<String> seen = new HashSet<>();
         collectVideoNames(response, names, seen);
         return List.copyOf(names);
+    }
+
+    static List<RestoreGroup> groupVideoFiles(JsonNode response) {
+        Map<List<String>, GroupBuilder> groups = new LinkedHashMap<>();
+        collectShareNodes(response, List.of(), new ArrayDeque<>(), groups,
+                new HashSet<>(), new HashSet<>(), new HashSet<>());
+        return groups.values().stream().map(GroupBuilder::build).toList();
     }
 
     private static void collectVideoFiles(JsonNode node, List<String> ids, Set<String> seen) {
@@ -1442,12 +1557,35 @@ public class XunleiClient {
             String passCode,
             String passCodeToken,
             List<String> fileIds,
-            List<String> fileNames) {}
+            List<String> fileNames,
+            List<RestoreGroup> groups) {
+        public ShareInfo(
+                String shareId,
+                String passCode,
+                String passCodeToken,
+                List<String> fileIds,
+                List<String> fileNames) {
+            this(shareId, passCode, passCodeToken, fileIds, fileNames,
+                    List.of(new RestoreGroup(List.of(), fileIds, fileNames)));
+        }
+    }
+
+    public record RestoreGroup(
+            List<String> pathSegments,
+            List<String> fileIds,
+            List<String> fileNames) {
+        public RestoreGroup {
+            pathSegments = pathSegments == null ? List.of() : List.copyOf(pathSegments);
+            fileIds = fileIds == null ? List.of() : List.copyOf(fileIds);
+            fileNames = fileNames == null ? List.of() : List.copyOf(fileNames);
+        }
+    }
 
     private record ShareSelection(
             String passCodeToken,
             List<String> fileIds,
-            List<String> fileNames) {}
+            List<String> fileNames,
+            List<RestoreGroup> groups) {}
     public record DirectoryInfo(String id, String restoreRootId) {
         public DirectoryInfo(String id) {
             this(id, null);
@@ -1460,7 +1598,8 @@ public class XunleiClient {
             String restoredFileId,
             List<String> expectedNames,
             long startedAt,
-            boolean reused) {
+            boolean reused,
+            List<RestorePlacement> placements) {
         public RestoreResult(
                 String taskId,
                 String response,
@@ -1468,13 +1607,66 @@ public class XunleiClient {
                 String restoredFileId,
                 List<String> expectedNames,
                 long startedAt) {
-            this(taskId, response, parentId, restoredFileId, expectedNames, startedAt, false);
+            this(taskId, response, parentId, restoredFileId, expectedNames, startedAt, false,
+                    taskId == null ? List.of() : List.of(new RestorePlacement(taskId, parentId, null,
+                            response, restoredFileId, expectedNames, startedAt, false, List.of())));
+        }
+
+        public RestoreResult(
+                String taskId,
+                String response,
+                String parentId,
+                String restoredFileId,
+                List<String> expectedNames,
+                long startedAt,
+                boolean reused) {
+            this(taskId, response, parentId, restoredFileId, expectedNames, startedAt, reused,
+                    taskId == null && reused ? List.of() : List.of(new RestorePlacement(taskId, parentId, null,
+                            response, restoredFileId, expectedNames, startedAt, reused, List.of())));
+        }
+    }
+    public record RestorePlacement(
+            String taskId,
+            String parentId,
+            String restoreRootId,
+            String response,
+            String restoredFileId,
+            List<String> expectedNames,
+            long startedAt,
+            boolean reused,
+            List<String> pathSegments) {
+        public RestorePlacement {
+            expectedNames = expectedNames == null ? List.of() : List.copyOf(expectedNames);
+            pathSegments = pathSegments == null ? List.of() : List.copyOf(pathSegments);
+        }
+    }
+    public record RestoreRecovery(String parentId, List<String> fileIds) {
+        public RestoreRecovery {
+            fileIds = fileIds == null ? List.of() : List.copyOf(fileIds);
         }
     }
     public record RestoreStatus(boolean success, String status, String response) {}
     public record ContentSummary(int folderCount, int fileCount, int videoCount) {}
     public record RestoredSelection(List<String> fileIds, ContentSummary content) {}
-    private record FolderEntry(String id, int depth) {}
+    private record FolderEntry(String id, List<String> pathSegments, int depth) {
+        private FolderEntry(String id, int depth) { this(id, List.of(), depth); }
+        private FolderEntry(String id, List<String> pathSegments) { this(id, pathSegments, 0); }
+    }
+    private static final class GroupBuilder {
+        private final List<String> pathSegments;
+        private final List<String> fileIds = new ArrayList<>();
+        private final List<String> fileNames = new ArrayList<>();
+        private final Set<String> names = new HashSet<>();
+
+        private GroupBuilder(List<String> pathSegments) { this.pathSegments = pathSegments; }
+
+        private void add(String id, String name) {
+            fileIds.add(id);
+            if (hasTextStatic(name) && names.add(name.toLowerCase(Locale.ROOT))) fileNames.add(name);
+        }
+
+        private RestoreGroup build() { return new RestoreGroup(pathSegments, fileIds, fileNames); }
+    }
     private record CaptchaEntry(String token, long expiresAt) {}
     private record AuthIdentity(
             String clientId,

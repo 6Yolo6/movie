@@ -160,6 +160,29 @@ class XunleiClientTest {
     }
 
     @Test
+    void preservesNestedSeasonDirectoriesWhileFilteringNonVideoFiles() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var groups = XunleiClient.groupVideoFiles(mapper.readTree("""
+                {"files":[
+                  {"id":"s1","name":"第1季","kind":"drive#folder","children":[
+                    {"id":"v1","name":"S01E01.mp4"},
+                    {"id":"p1","name":"poster.jpg"}]},
+                  {"id":"s2","name":"第2季","kind":"drive#folder","children":[
+                    {"id":"v2","name":"S02E01.mkv"},
+                    {"id":"t2","name":"说明.txt"}]},
+                  {"id":"root-v","name":"special.mp4"}
+                ]}
+                """));
+
+        assertEquals(3, groups.size());
+        var byPath = groups.stream().collect(java.util.stream.Collectors.toMap(
+                XunleiClient.RestoreGroup::pathSegments, group -> group));
+        assertEquals(List.of("root-v"), byPath.get(List.of()).fileIds());
+        assertEquals(List.of("v1"), byPath.get(List.of("第1季")).fileIds());
+        assertEquals(List.of("v2"), byPath.get(List.of("第2季")).fileIds());
+    }
+
+    @Test
     void extractsDestinationIdsFromRestoreTraceMapping() {
         XunleiClient client = new XunleiClient(
                 new org.springframework.boot.web.client.RestTemplateBuilder(),
