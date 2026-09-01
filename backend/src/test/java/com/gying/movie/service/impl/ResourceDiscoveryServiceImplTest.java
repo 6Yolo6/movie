@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -277,6 +278,30 @@ class ResourceDiscoveryServiceImplTest {
 
         verify(quarkTransferTaskService, never()).save(any());
         verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @Test
+    void reconcilesDeferredDiscoveredCandidateWithoutCreatingProviderDuplicates() {
+        ResourceDiscoveryResult first = discovery(201L, "XUNLEI", "https://pan.xunlei.com/s/first");
+        ResourceDiscoveryResult second = discovery(202L, "XUNLEI", "https://pan.xunlei.com/s/second");
+        when(discoveryService.list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class)))
+                .thenReturn(List.of(first, second));
+        when(discoveryService.getById(201L)).thenReturn(first);
+        when(xunleiTransferTaskService.save(any(XunleiTransferTask.class))).thenReturn(true);
+
+        assertEquals(1, service.reconcileDiscoveredTransferTasks(10));
+        verify(xunleiTransferTaskService).save(any(XunleiTransferTask.class));
+    }
+
+    @Test
+    void reconciliationSkipsCandidateWhenMovieProviderAlreadyHasActiveTask() {
+        ResourceDiscoveryResult candidate = discovery(203L, "QUARK", "https://pan.quark.cn/s/existing-task");
+        when(discoveryService.list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class)))
+                .thenReturn(List.of(candidate));
+        when(quarkTransferTaskService.count(any())).thenReturn(1L);
+
+        assertEquals(0, service.reconcileDiscoveredTransferTasks(10));
+        verify(quarkTransferTaskService, never()).save(any(QuarkTransferTask.class));
     }
 
     private ResourceDiscoveryResult discovery(long id, String provider, String url) {

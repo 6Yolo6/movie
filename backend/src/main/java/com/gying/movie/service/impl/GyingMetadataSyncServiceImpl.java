@@ -89,7 +89,9 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             result.setUpdated(number(synced.get("linked")));
             result.setFailed(number(synced.get("failed")));
             addErrors(result, synced.get("errors"));
-            enqueueDiscoveryTasks(result, synced.get("movieIds"));
+            Object discoveryMovieIds = synced.containsKey("resourceDiscoveryMovieIds")
+                    ? synced.get("resourceDiscoveryMovieIds") : synced.get("movieIds");
+            enqueueDiscoveryTasks(result, discoveryMovieIds);
             String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
             finishTask(task, status, result.getFailed() > 0
                     ? result.getFailed() + " GYING item(s) failed during sync"
@@ -202,6 +204,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         return taskService.count(new QueryWrapper<ResourceHubTask>()
                 .eq("task_type", "RESOURCE_DISCOVERY")
                 .eq("movie_id", movieId)
+                .in("status", List.of("PENDING", "RUNNING", "SUCCEEDED", "FAILED"))
                 .ge("created_at", LocalDateTime.now().minusHours(cooldownHours))) > 0;
     }
 

@@ -110,11 +110,16 @@ resource-hub:
       enabled: ${XUNLEI_ENABLED:false}
       base-url: ${XUNLEI_BASE_URL:https://api-pan.xunlei.com/drive/v1}
       authorization: ${XUNLEI_AUTHORIZATION:}
+      account: ${XUNLEI_ACCOUNT:}
+      password: ${XUNLEI_PASSWORD:}
+      refresh-token: ${XUNLEI_REFRESH_TOKEN:}
       client-id: ${XUNLEI_CLIENT_ID:}
+      client-secret: ${XUNLEI_CLIENT_SECRET:}
       device-id: ${XUNLEI_DEVICE_ID:}
       client-version: ${XUNLEI_CLIENT_VERSION:1.82.0}
       captcha-token: ${XUNLEI_CAPTCHA_TOKEN:}
-      save-path: ${XUNLEI_SAVE_PATH:/GYing Resource Hub}
+      token-state-path: ${XUNLEI_TOKEN_STATE_PATH:/app/data/xunlei-auth.json}
+      save-path: ${XUNLEI_SAVE_PATH:/影视剧资源分享(先转存后再查看)/GYing Resource Hub}
       share-enabled: ${XUNLEI_SHARE_ENABLED:false}
       share-create-path: ${XUNLEI_SHARE_CREATE_PATH:/share}
       poll-attempts: ${XUNLEI_POLL_ATTEMPTS:20}

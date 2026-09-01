@@ -9,6 +9,7 @@ import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
+import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.service.IGyingMetadataSyncService;
@@ -17,6 +18,7 @@ import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceHubWorkerService;
+import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +43,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubConfigService resourceHubConfigService;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
+    private final IResourceLinkService resourceLinkService;
 
     @Autowired
     public ResourceHubWorkerServiceImpl(
@@ -52,7 +56,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             IQuarkTransferRunnerService quarkTransferRunnerService,
             IXunleiTransferRunnerService xunleiTransferRunnerService,
             IResourceHubPublishService resourceHubPublishService,
-            IResourceHubConfigService resourceHubConfigService) {
+            IResourceHubConfigService resourceHubConfigService,
+            GyingSourceWorkflowService gyingSourceWorkflowService,
+            IResourceLinkService resourceLinkService) {
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
@@ -62,6 +68,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         this.xunleiTransferRunnerService = xunleiTransferRunnerService;
         this.resourceHubPublishService = resourceHubPublishService;
         this.resourceHubConfigService = resourceHubConfigService;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
+        this.resourceLinkService = resourceLinkService;
     }
 
     @Override
@@ -87,14 +95,25 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             enqueueTmdbAutoSyncTasks(result);
             enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
+            reconcileDiscoveredTransferTasks(result);
             runXunleiTransfers(result);
             runQuarkTransfers(result);
             publishResources(result);
+            retryPendingGyingPublications(result);
         } finally {
             result.setFinishedAt(LocalDateTime.now());
             running.set(false);
         }
         return result;
+    }
+
+    private void reconcileDiscoveredTransferTasks(ResourceHubWorkerResult result) {
+        try {
+            resourceDiscoveryService.reconcileDiscoveredTransferTasks(
+                    resourceHubProperties.getWorker().getTaskLimit());
+        } catch (Exception e) {
+            addError(result, "discovery reconciliation: " + e.getMessage());
+        }
     }
 
     @Override
@@ -132,7 +151,14 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
             ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
             IQuarkTransferRunnerService q, IResourceHubPublishService pub, IResourceHubConfigService c) {
-        this(p, t, tm, gm, d, q, null, pub, c);
+        this(p, t, tm, gm, d, q, null, pub, c, null, null);
+    }
+
+    public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
+            ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
+            IQuarkTransferRunnerService q, IXunleiTransferRunnerService xl,
+            IResourceHubPublishService pub, IResourceHubConfigService c) {
+        this(p, t, tm, gm, d, q, xl, pub, c, null, null);
     }
 
     private boolean hasActiveMetadataSyncTask(List<String> sources) {
@@ -318,12 +344,50 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             for (String error : publishResult.getErrors()) {
                 addError(result, error);
             }
+            publishToGying(publishResult);
         } catch (Exception e) {
             ResourceHubPublishResult failed = new ResourceHubPublishResult();
             failed.setFailed(1);
             addError(failed, e.getMessage());
             result.setPublishedResources(failed);
             addError(result, "publish resources: " + e.getMessage());
+        }
+    }
+
+    private void publishToGying(ResourceHubPublishResult publishResult) {
+        if (gyingSourceWorkflowService == null || resourceLinkService == null
+                || publishResult == null || publishResult.getResourceIds() == null) {
+            return;
+        }
+        for (Long resourceId : publishResult.getResourceIds()) {
+            try {
+                ResourceLink link = resourceLinkService.getById(resourceId);
+                gyingSourceWorkflowService.publishResourceToGying(link);
+            } catch (Exception ignored) {
+                // Local publication remains successful; next worker cycle can retry GYING.
+            }
+        }
+    }
+
+    private void retryPendingGyingPublications(ResourceHubWorkerResult result) {
+        if (gyingSourceWorkflowService == null || resourceLinkService == null) {
+            return;
+        }
+        List<ResourceLink> links = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .eq("source", "RESOURCE_HUB")
+                .eq("type", "DISK")
+                .eq("status", "ACTIVE")
+                .eq("audit_status", 1)
+                .in("provider", List.of("QUARK", "XUNLEI"))
+                .isNull("deleted_at")
+                .orderByAsc("updated_at")
+                .last("LIMIT " + result.getPublishLimit()));
+        for (ResourceLink link : links) {
+            try {
+                gyingSourceWorkflowService.publishResourceToGying(link);
+            } catch (Exception e) {
+                addError(result, "GYING publish resource " + link.getId() + ": " + e.getMessage());
+            }
         }
     }
 

@@ -147,9 +147,9 @@ class QuarkTransferRunnerServiceImplTest {
 
         var result = service.submitOne(506L);
 
-        assertEquals(1, result.getSubmitted());
+        assertEquals(1, result.getSubmitted(), result.getErrors().toString());
         assertEquals(0, result.getFailed());
-        assertEquals("/GYing Resource Hub/movie/揭秘日", task.getSavedPath());
+        assertEquals("/GYing Resource Hub/movie/揭秘日（tmdb_movie_1275779）", task.getSavedPath());
         assertFalse(task.getRequestPayload().contains("第1季"));
         assertFalse(task.getRequestPayload().contains("\"update_subdir\":\".*\""));
         assertFalse(task.getRequestPayload().contains("\"update_subdir\":null"));
@@ -219,6 +219,64 @@ class QuarkTransferRunnerServiceImplTest {
         assertEquals(1, result.getSubmitted());
         assertEquals(0, result.getFailed());
         assertTrue(task.getRequestPayload().contains(selectedUrl));
+        assertTrue(task.getRequestPayload().contains("\"update_subdir\":\".*\""));
+        verify(autoSaveClient, never()).resolveSeasonShareUrl(anyString(), anyInt(), any());
+    }
+
+    @Test
+    void seasonCollectionKeepsWholeShareAndUsesSeriesFolder() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true);
+        properties.getQuark().setRunImmediately(false);
+        QuarkAutoSaveClient autoSaveClient = mock(QuarkAutoSaveClient.class);
+        IQuarkShareService shareService = mock(IQuarkShareService.class);
+        IQuarkTransferTaskService taskService = mock(IQuarkTransferTaskService.class);
+        IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
+        IMovieMetadataService movieService = mock(IMovieMetadataService.class);
+        QuarkTransferRunnerServiceImpl service = new QuarkTransferRunnerServiceImpl(
+                properties, autoSaveClient, shareService, taskService, discoveryService,
+                mock(IResourceHubTaskService.class), movieService, new ObjectMapper());
+
+        QuarkTransferTask task = new QuarkTransferTask();
+        task.setId(9001L);
+        task.setMovieId("gying_tv_game_of_thrones_s8");
+        task.setDiscoveryResultId(9002L);
+        task.setOriginalUrl("https://pan.quark.cn/s/all-seasons");
+        task.setStatus("PENDING");
+
+        MovieMetadata movie = new MovieMetadata();
+        movie.setId(task.getMovieId());
+        movie.setTitleCn("权力的游戏 第八季");
+        movie.setCategory("tv");
+        movie.setSeason(8);
+
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(task.getDiscoveryResultId());
+        discovery.setTitle("权力的游戏 1-8季合集 4K");
+
+        when(taskService.getById(task.getId())).thenReturn(task);
+        when(movieService.getById(task.getMovieId())).thenReturn(movie);
+        when(discoveryService.getById(task.getDiscoveryResultId())).thenReturn(discovery);
+        when(autoSaveClient.buildTaskPayload(anyString(), anyString(), anyString(), any()))
+                .thenAnswer(invocation -> {
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put("taskname", invocation.getArgument(0));
+                    payload.put("shareurl", invocation.getArgument(1));
+                    payload.put("savepath", invocation.getArgument(2));
+                    payload.put("update_subdir", invocation.getArgument(3));
+                    return payload;
+                });
+        when(autoSaveClient.addTask(any()))
+                .thenReturn(new ObjectMapper().createObjectNode().put("code", 200));
+        when(shareService.ensureShareUrl(task))
+                .thenReturn("https://pan.quark.cn/s/owned-collection");
+
+        var result = service.submitOne(task.getId());
+
+        assertEquals(1, result.getSubmitted(), result.getErrors().toString());
+        assertEquals("/GYing Resource Hub/tv/权力的游戏（gying_tv_game_of_thrones_s8）", task.getSavedPath());
+        assertTrue(task.getRequestPayload().contains(task.getOriginalUrl()));
+        assertTrue(task.getRequestPayload().contains("权力的游戏 1-8季合集 4K"));
         assertTrue(task.getRequestPayload().contains("\"update_subdir\":\".*\""));
         verify(autoSaveClient, never()).resolveSeasonShareUrl(anyString(), anyInt(), any());
     }
