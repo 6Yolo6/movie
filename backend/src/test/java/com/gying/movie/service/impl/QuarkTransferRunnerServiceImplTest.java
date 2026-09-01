@@ -149,7 +149,7 @@ class QuarkTransferRunnerServiceImplTest {
 
         assertEquals(1, result.getSubmitted(), result.getErrors().toString());
         assertEquals(0, result.getFailed());
-        assertEquals("/GYing Resource Hub/movie/揭秘日", task.getSavedPath());
+        assertEquals("/GYing Resource Hub/movie/揭秘日（tmdb_movie_1275779）", task.getSavedPath());
         assertFalse(task.getRequestPayload().contains("第1季"));
         assertFalse(task.getRequestPayload().contains("\"update_subdir\":\".*\""));
         assertFalse(task.getRequestPayload().contains("\"update_subdir\":null"));
@@ -274,7 +274,7 @@ class QuarkTransferRunnerServiceImplTest {
         var result = service.submitOne(task.getId());
 
         assertEquals(1, result.getSubmitted(), result.getErrors().toString());
-        assertEquals("/GYing Resource Hub/tv/权力的游戏", task.getSavedPath());
+        assertEquals("/GYing Resource Hub/tv/权力的游戏（gying_tv_game_of_thrones_s8）", task.getSavedPath());
         assertTrue(task.getRequestPayload().contains(task.getOriginalUrl()));
         assertTrue(task.getRequestPayload().contains("权力的游戏 1-8季合集 4K"));
         assertTrue(task.getRequestPayload().contains("\"update_subdir\":\".*\""));

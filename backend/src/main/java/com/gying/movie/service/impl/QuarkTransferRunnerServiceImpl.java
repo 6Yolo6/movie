@@ -321,10 +321,13 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
             basePath = "/GYing Resource Hub";
         }
         String category = movie == null ? "unknown" : categoryDir(movie.getCategory());
-        String rawTitle = movie == null ? task.getMovieId()
-                : firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getId());
-        String path = trimTrailingSlash(basePath) + "/" + category + "/"
-                + sanitizePathSegment(SeasonSearchUtils.baseTitle(rawTitle));
+        String movieId = task == null ? null : task.getMovieId();
+        String rawTitle = movie == null ? movieId
+                : firstText(movie.getTitleCn(), movie.getSeriesName(), movie.getTitleEn(), movie.getId());
+        String safeTitle = sanitizePathSegment(SeasonSearchUtils.baseTitle(rawTitle));
+        String safeId = sanitizePathSegment(movieId);
+        String folderName = safeTitle + "（" + safeId + "）";
+        String path = trimTrailingSlash(basePath) + "/" + category + "/" + folderName;
         ResourceDiscoveryResult discovery = task.getDiscoveryResultId() == null
                 ? null
                 : discoveryResultService.getById(task.getDiscoveryResultId());
