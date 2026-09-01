@@ -141,7 +141,7 @@ TMDB 元数据或本地 canonical 影片
 ## 外部集成
 
 - OpenClaw 是独立部署，使用主机本地配置和插件状态。
-- NapCat 配置按 QQ 账号隔离，切换账号不会继承 OneBot 配置。
+- NapCat 已停用。历史 Compose 配置和卷仅用于兼容与审计；新部署、迁移和验收不启动、不恢复 `napcat-data`，也不把 NapCat 当作 QQ 故障排查依赖。
 - 原 QQ 频道发帖通过受内部 token 保护的宿主机桥接和 `tencent-channel-cli` 执行，
   审计记录在数据库，计划任务位于 Compose 之外。桥接失败时保留 `PENDING`。
 - 独立多平台发布由 `social-publisher` 执行，使用单独目标和日志表；详见多平台发布运维参考。

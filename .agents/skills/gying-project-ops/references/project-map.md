@@ -35,12 +35,12 @@
         -> social-publisher :8093
            -> 独立 QQ 账号目录 / 新浪微博网页会话
 
-QQ/OpenClaw/NapCat
+QQ/OpenClaw
   -> 后端 QQ 接口
   -> 共用 Resource Hub 与 resource_link 流水线
 ```
 
-Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-source` 和 `social-publisher`；`napcat` 为可选 QQ 接入。
+Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-source` 和 `social-publisher`。QQ 机器人当前由独立 OpenClaw Gateway 承载；`napcat` 为停用的历史 Compose 服务，不参与新部署、迁移和验收。
 `redis`、`pansou`、`quark-auto-save` 位于 `embedded-deps` profile。
 现有部署通常将 PanSou、quark-auto-save、MinIO 和 OpenClaw 作为独立容器运行。
 不能因为 profile 中存在这些服务就重复启动依赖。
@@ -52,6 +52,7 @@ Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-sourc
 - `resource_hub_task` 保存元数据和发现任务。
 - `resource_discovery_result` 保存发布前的外部发现结果。
 - `quark_transfer_task` 保存夸克转存和分享任务。
+- `xunlei_transfer_task` 保存迅雷 Drive 转存、等待分享和失败状态。
 - `movie_source_identity` 连接 TMDB、GYING 外部身份与本地 canonical 影片，电影或未知季号使用 `0`。
 - `sys_config` 保存运行时可调整的非敏感开关和限制。
 - `qq_bot_search_log` 与 `qq_channel_post_log` 保存机器人和原频道审计记录。
@@ -73,10 +74,10 @@ Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-sourc
 
 ## 分支同步基线
 
-`origin/codex/gying-script` 的 `06cc627b`（2026-08-06）提供当前文档基线：
+`origin/master` 的 `525ae17f`（2026-08-26）是当前已合并代码和运维文档基线；`origin/codex/gying-script` 的历史提交只用于追溯来源，不替代 master：
 
 - Compose 增加 `gying-source`，内部端口 `8091`，backend 通过内部 token 调用。
-- `schema.sql` 定义 15 张核心表，并包含 `movie_source_identity`、`social_publish_target` 和 `social_post_log`；已有数据库使用对应增量 SQL。
+- `schema.sql` 定义 16 张核心表，并包含 `xunlei_transfer_task`、`movie_source_identity`、`social_publish_target` 和 `social_post_log`；已有数据库使用对应增量 SQL。
 - Resource Hub 同时使用本地 PanSou、外部 Panso API、GYING 来源身份和 quark-auto-save。
 - 缺资源批量补全每批最多 20 部；发现状态可 dry-run 校准；分享失败需要区分重跑、重建任务和重新搜索。
 - 电影合集与多季剧集必须定位目标子目录并收窄分享范围，不能把整套合集发布到单片或单季。
@@ -84,7 +85,7 @@ Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-sourc
 - Compose 增加 `social-publisher` 和持久化 QQ 账号卷；微博会话只从部署环境注入。
 - 数据库新增多平台发布目标/日志表，以及 GYING 自有分享来源和频道模板校准迁移。
 
-这些是分支代码和文档能力，不自动证明当前服务器已经部署。容器、表数量、任务数量、登录状态和健康结果都必须重新采集。
+这些是分支代码和文档能力，不自动证明当前服务器已经部署。容器、表数量、任务数量、登录状态和健康结果都必须重新采集。NapCat 已停用，不作为基线服务。
 
 ## 证据命令
 
