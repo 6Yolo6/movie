@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,7 +40,19 @@ import org.springframework.web.util.UriUtils;
 public class XunleiClient {
     private static final Pattern SHARE_PATTERN = Pattern.compile("https?://[^/]+/s/([^/?#]+)(?:[/?#].*)?", Pattern.CASE_INSENSITIVE);
     private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
+    private static final String AUTH_TOKEN_URL = "https://xluser-ssl.xunlei.com/v1/auth/token";
+    private static final String SIGNIN_TOKEN_URL = "https://xluser-ssl.xunlei.com/v1/auth/signin/token";
+    private static final String CORE_LOGIN_URL = "https://xluser-ssl.xunlei.com/xluser.core.login/v3/login";
     private static final String PACKAGE_NAME = "pan.xunlei.com";
+    private static final String ANDROID_CLIENT_ID = "Xp6vsxz_7IYVw2BB";
+    private static final String ANDROID_CLIENT_SECRET = "Xp6vsy4tN9toTVdMSpomVdXpRmES";
+    private static final String ANDROID_CLIENT_VERSION = "8.31.0.9726";
+    private static final String ANDROID_PACKAGE_NAME = "com.xunlei.downloadprovider";
+    private static final String ANDROID_USER_AGENT = "ANDROID-com.xunlei.downloadprovider/8.31.0.9726 "
+            + "netWorkType/5G appid/40 deviceName/Xiaomi_M2004j7ac deviceModel/M2004J7AC "
+            + "OSVersion/12 protocolVersion/301 platformVersion/10 sdkVersion/512000 "
+            + "Oauth2Client/0.9 (Linux 4_14_186-perf-gddfs8vbb238b) (JAVA 0)";
+    private static final String CORE_LOGIN_USER_AGENT = "android-ok-http-client/xl-acc-sdk/version-5.0.12.512000";
     private static final Set<String> VIDEO_EXTENSIONS = Set.of(
             "mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "m4v", "ts", "m2ts",
             "mpg", "mpeg", "mpe", "vob", "3gp", "3g2", "rm", "rmvb", "asf", "ogv");
@@ -45,10 +60,19 @@ public class XunleiClient {
             + "Fmx27GlNbrIxiPSQVm.crlPVriPRAiuCEKZvK4yihP55gTRvLd7qDVLsDtWzhkXt5Iqs7TpoP."
             + "E2toogseEdgXmlfnz1ppUhUvD9B2jgSA+YG.a2f3L0AioU+0PvTeCtk.6d6w1xX9j95GEPNpd+T4HmbTceZNEF310ppRe."
             + "BvsJ+CSS7i.Rv").split("\\.");
+    private static final String[] ANDROID_ALGORITHMS = {
+            "9uJNVj/wLmdwKrJaVj/omlQ", "Oz64Lp0GigmChHMf/6TNfxx7O9PyopcczMsnf",
+            "Eb+L7Ce+Ej48u", "jKY0", "ASr0zCl6v8W4aidjPK5KHd1Lq3t+vBFf41dqv5+fnOd",
+            "wQlozdg6r1qxh0eRmt3QgNXOvSZO6q/GXK", "gmirk+ciAvIgA/cxUUCema47jr/YToixTT+Q6O",
+            "5IiCoM9B1/788ntB", "P07JH0h6qoM6TSUAK2aL9T5s2QBVeY9JWvalf", "+oK0AN"
+    };
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ResourceHubProperties properties;
     private final Map<String, CaptchaEntry> captchaCache = new ConcurrentHashMap<>();
+    private final Object authLock = new Object();
+    private volatile AuthState authState;
+    private volatile boolean authStateLoaded;
 
     public XunleiClient(RestTemplateBuilder builder, ObjectMapper objectMapper, ResourceHubProperties properties) {
         this.restTemplate = builder.setConnectTimeout(Duration.ofSeconds(15)).setReadTimeout(Duration.ofSeconds(30)).build();
@@ -58,7 +82,10 @@ public class XunleiClient {
 
     public boolean isConfigured() {
         ResourceHubProperties.Xunlei x = properties.getXunlei();
-        return x != null && x.isEnabled() && hasText(x.getAuthorization()) && hasText(x.getBaseUrl());
+        return x != null && x.isEnabled() && hasText(x.getBaseUrl())
+                && (hasText(x.getAuthorization())
+                        || hasText(x.getRefreshToken())
+                        || (hasText(x.getAccount()) && hasText(x.getPassword())));
     }
 
     public RestoreResult restore(String shareUrl, String savePath) {
@@ -66,6 +93,11 @@ public class XunleiClient {
         ShareInfo share = inspectShare(shareUrl);
         DirectoryInfo directory = ensureDirectory(savePath);
         long startedAt = System.currentTimeMillis();
+        ContentSummary existing = inspectContent(directory.id());
+        if (existing.videoCount() > 0) {
+            return new RestoreResult(null, null, directory.id(), directory.restoreRootId(),
+                    share.fileNames(), startedAt, true);
+        }
         JsonNode response = request(HttpMethod.POST, "/share/restore", restorePayload(share, directory));
         String taskId = firstText(response.path("restore_task_id").asText(null), response.path("task_id").asText(null), response.path("data").path("restore_task_id").asText(null));
         if (!hasText(taskId)) {
@@ -78,9 +110,10 @@ public class XunleiClient {
                 taskId,
                 response.toString(),
                 directory.id(),
-                restoredFileId,
+                firstText(restoredFileId, directory.restoreRootId()),
                 share.fileNames(),
-                startedAt);
+                startedAt,
+                false);
     }
 
     static Map<String, Object> restorePayload(ShareInfo share, DirectoryInfo directory) {
@@ -125,6 +158,10 @@ public class XunleiClient {
                 + " (folders=" + latest.folderCount() + ", files=" + latest.fileCount() + ")");
     }
 
+    public ContentSummary contentSummary(String parentId) {
+        return inspectContent(parentId);
+    }
+
     public RestoredSelection awaitRestoredFiles(
             String restoreFolderId,
             List<String> expectedNames,
@@ -134,10 +171,10 @@ public class XunleiClient {
         }
         ResourceHubProperties.Xunlei x = properties.getXunlei();
         for (int attempt = 0; attempt < Math.max(1, x.getPollAttempts()); attempt++) {
-            JsonNode response = request(HttpMethod.GET,
-                    "/files?parent_id=" + restoreFolderId + "&usage=DISPLAY&limit=100", null);
+            var children = objectMapper.createArrayNode();
+            listFolderChildren(restoreFolderId).forEach(children::add);
             List<JsonNode> restored = selectRestoredFiles(
-                    response.path("files"), expectedNames, restoreStartedAt);
+                    children, expectedNames, restoreStartedAt);
             if (!restored.isEmpty()) {
                 int folders = 0;
                 int files = 0;
@@ -166,6 +203,24 @@ public class XunleiClient {
         }
         throw new IllegalStateException(
                 "Xunlei restore completed but no new matching video files were found in My Transfers");
+    }
+
+    public void moveFiles(List<String> fileIds, String parentId) {
+        List<String> ids = fileIds == null ? List.of() : fileIds.stream()
+                .filter(XunleiClient::hasTextStatic)
+                .distinct()
+                .toList();
+        if (ids.isEmpty() || !hasText(parentId)) {
+            throw new IllegalArgumentException("Xunlei move requires file ids and a destination folder");
+        }
+        for (int offset = 0; offset < ids.size(); offset += 100) {
+            request(HttpMethod.POST, "/files:batchMove",
+                    movePayload(ids.subList(offset, Math.min(ids.size(), offset + 100)), parentId));
+        }
+    }
+
+    static Map<String, Object> movePayload(List<String> fileIds, String parentId) {
+        return Map.of("to", Map.of("parent_id", parentId), "ids", List.copyOf(fileIds));
     }
 
     public String createShare(String parentId) {
@@ -302,18 +357,58 @@ public class XunleiClient {
         if (!hasText(responsePayload)) return List.of();
         try {
             JsonNode response = objectMapper.readTree(responsePayload);
-            JsonNode trace = response.path("params").path("trace_file_ids");
-            if (trace.isTextual()) trace = objectMapper.readTree(trace.asText());
-            if (!trace.isObject()) return List.of();
             List<String> ids = new ArrayList<>();
-            trace.fields().forEachRemaining(entry -> {
-                String id = entry.getValue().asText(null);
-                if (hasTextStatic(id) && !ids.contains(id)) ids.add(id);
-            });
+            collectTraceFileIds(response, ids);
             return List.copyOf(ids);
         } catch (Exception ignored) {
             return List.of();
         }
+    }
+
+    public String restoredFileIdsPayload(List<String> fileIds) {
+        try {
+            Map<String, String> trace = new LinkedHashMap<>();
+            int index = 0;
+            for (String id : fileIds == null ? List.<String>of() : fileIds) {
+                if (hasText(id) && !trace.containsValue(id)) trace.put("restored-" + index++, id);
+            }
+            return objectMapper.writeValueAsString(Map.of("params", Map.of("trace_file_ids", trace)));
+        } catch (Exception error) {
+            throw new IllegalStateException("Xunlei restored file ids could not be serialized", error);
+        }
+    }
+
+    private void collectTraceFileIds(JsonNode node, List<String> ids) throws Exception {
+        if (node == null || node.isNull() || node.isMissingNode()) return;
+        if (node.isObject()) {
+            var fields = node.fields();
+            while (fields.hasNext()) {
+                var field = fields.next();
+                if ("trace_file_ids".equals(field.getKey())) {
+                    JsonNode trace = field.getValue();
+                    if (trace.isTextual()) trace = objectMapper.readTree(trace.asText());
+                    collectTraceValues(trace, ids);
+                } else {
+                    collectTraceFileIds(field.getValue(), ids);
+                }
+            }
+        } else if (node.isArray()) {
+            for (JsonNode item : node) collectTraceFileIds(item, ids);
+        }
+    }
+
+    private void collectTraceValues(JsonNode node, List<String> ids) {
+        if (node == null || node.isNull() || node.isMissingNode()) return;
+        if (node.isValueNode()) {
+            String id = node.asText(null);
+            if (hasText(id) && !ids.contains(id)) ids.add(id);
+            return;
+        }
+        if (node.isArray()) {
+            for (JsonNode item : node) collectTraceValues(item, ids);
+            return;
+        }
+        node.elements().forEachRemaining(item -> collectTraceValues(item, ids));
     }
 
     private JsonNode requestSharePage(
@@ -398,7 +493,9 @@ public class XunleiClient {
     private DirectoryInfo ensureDirectory(String path) {
         String restoreRootId = findRestoreRootId();
         String parentId = restoreRootId;
-        if (!hasText(path) || "/".equals(path.trim())) return new DirectoryInfo(restoreRootId);
+        if (!hasText(path) || "/".equals(path.trim())) {
+            return new DirectoryInfo(restoreRootId, restoreRootId);
+        }
         for (String segment : path.trim().replaceFirst("^/+", "").split("/+")) {
             if (!hasText(segment)) continue;
             JsonNode files = request(HttpMethod.GET, "/files?parent_id=" + parentId + "&limit=100", null);
@@ -423,7 +520,7 @@ public class XunleiClient {
             }
             parentId = folderId;
         }
-        return new DirectoryInfo(parentId);
+        return new DirectoryInfo(parentId, restoreRootId);
     }
 
     static String findChildFolderId(JsonNode response, String expectedName) {
@@ -458,6 +555,31 @@ public class XunleiClient {
             }
         }
         throw new IllegalStateException("Xunlei system restore folder was not found");
+    }
+
+    private List<JsonNode> listFolderChildren(String parentId) {
+        List<JsonNode> result = new ArrayList<>();
+        String pageToken = null;
+        for (int page = 0; page < 100; page++) {
+            UriComponentsBuilder uri = UriComponentsBuilder.fromPath("/files")
+                    .queryParam("parent_id", parentId)
+                    .queryParam("usage", "DISPLAY")
+                    .queryParam("limit", 100);
+            if (hasText(pageToken)) {
+                uri.queryParam("page_token", UriUtils.encode(pageToken, StandardCharsets.UTF_8));
+            }
+            JsonNode response = request(HttpMethod.GET, uri.build(true).toUriString(), null);
+            JsonNode files = firstArray(
+                    response.path("files"), response.path("file_list"),
+                    response.path("data").path("files"), response.path("data").path("file_list"));
+            if (files != null) files.forEach(result::add);
+            String next = firstText(
+                    response.path("next_page_token").asText(null),
+                    response.path("data").path("next_page_token").asText(null));
+            if (!hasText(next) || next.equals(pageToken)) break;
+            pageToken = next;
+        }
+        return List.copyOf(result);
     }
 
     static List<String> extractTopLevelFileIds(JsonNode response) {
@@ -578,20 +700,24 @@ public class XunleiClient {
     }
 
     private static boolean createdAfter(JsonNode item, long earliestEpochMs) {
+        return itemEpochMs(item) >= earliestEpochMs;
+    }
+
+    private static long itemEpochMs(JsonNode item) {
         for (String field : List.of("created_time", "user_modified_time", "modified_time")) {
             String value = item.path(field).asText(null);
             if (!hasTextStatic(value)) continue;
             try {
-                if (OffsetDateTime.parse(value).toInstant().toEpochMilli() >= earliestEpochMs) return true;
+                return OffsetDateTime.parse(value).toInstant().toEpochMilli();
             } catch (Exception ignored) {
                 try {
-                    if (Instant.parse(value).toEpochMilli() >= earliestEpochMs) return true;
+                    return Instant.parse(value).toEpochMilli();
                 } catch (Exception ignoredAgain) {
                     // Try the remaining timestamp fields.
                 }
             }
         }
-        return false;
+        return 0;
     }
 
     private static String normalizeFileName(String value) {
@@ -637,52 +763,99 @@ public class XunleiClient {
     }
 
     private JsonNode request(HttpMethod method, String path, Object body) {
+        boolean authorizationRequired = requiresAuthorization(method, path);
+        String action = action(method, path);
+        boolean forceAuthorizationRefresh = false;
+        boolean forceCaptchaRefresh = false;
+        org.springframework.web.client.HttpStatusCodeException latestHttpError = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            AuthState state = authorizationRequired
+                    ? authorizedState(forceAuthorizationRefresh)
+                    : optionalAuthState();
+            AuthIdentity identity = state == null ? configuredWebIdentity() : state.identity();
+            HttpHeaders headers = requestHeaders(
+                    authorizationRequired, state, identity, action, forceCaptchaRefresh);
+            try {
+                URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
+                ResponseEntity<String> response = restTemplate.exchange(
+                        url, method, new HttpEntity<>(body, headers), String.class);
+                JsonNode root = objectMapper.readTree(response.getBody());
+                if (response.getStatusCode().isError() || root.path("error").isObject()) {
+                    throw new IllegalStateException("Xunlei API request failed: HTTP "
+                            + response.getStatusCode().value());
+                }
+                return root;
+            } catch (org.springframework.web.client.HttpStatusCodeException error) {
+                latestHttpError = error;
+                if (authorizationRequired && !forceAuthorizationRefresh
+                        && isAuthorizationError(error) && hasAutomaticAuthorization()) {
+                    forceAuthorizationRefresh = true;
+                    forceCaptchaRefresh = false;
+                    continue;
+                }
+                if (!forceCaptchaRefresh && isCaptchaError(error)) {
+                    forceCaptchaRefresh = true;
+                    continue;
+                }
+                break;
+            } catch (RestClientException error) {
+                throw new IllegalStateException("Xunlei API request failed", error);
+            } catch (Exception error) {
+                throw new IllegalStateException("Xunlei API response parse failed", error);
+            }
+        }
+        if (latestHttpError == null) {
+            throw new IllegalStateException("Xunlei API request failed");
+        }
+        String prefix = isAuthorizationError(latestHttpError)
+                ? (hasAutomaticAuthorization()
+                        ? "Xunlei automatic authorization refresh failed"
+                        : "Xunlei Authorization expired or invalid; configure XUNLEI_ACCOUNT/XUNLEI_PASSWORD")
+                : "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path);
+        throw new IllegalStateException(
+                prefix + " HTTP " + latestHttpError.getStatusCode().value()
+                        + apiErrorSuffix(latestHttpError)
+                        + shareTokenProfile(path, latestHttpError.getResponseBodyAsString()),
+                latestHttpError);
+    }
+
+    private HttpHeaders requestHeaders(
+            boolean authorizationRequired,
+            AuthState state,
+            AuthIdentity identity,
+            String action,
+            boolean refreshCaptcha) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
-        if (requiresAuthorization(method, path)) {
-            headers.set(HttpHeaders.AUTHORIZATION, bearer(properties.getXunlei().getAuthorization()));
-        }
-        headers.set("X-Device-Id", firstText(properties.getXunlei().getDeviceId(), deviceId()));
-        headers.set("X-Client-Id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "xunlei-open-api"));
-        headers.set("X-Client-Version", properties.getXunlei().getClientVersion());
-        String action = action(method, path);
-        headers.set("X-Captcha-Token", captchaToken(action, false));
-        try {
-            URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
-            ResponseEntity<String> response = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
-            JsonNode root = objectMapper.readTree(response.getBody());
-            if (response.getStatusCode().isError() || root.path("error").isObject()) throw new IllegalStateException("Xunlei API request failed: HTTP " + response.getStatusCode().value());
-            return root;
-        } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            String response = e.getResponseBodyAsString();
-            if (response.contains("captcha_invalid") || response.contains("\"error_code\":9")) {
-                headers.set("X-Captcha-Token", captchaToken(action, true));
-                URI url = requestUri(properties.getXunlei().getBaseUrl(), path);
-                try {
-                    ResponseEntity<String> retried = restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
-                    return objectMapper.readTree(retried.getBody());
-                } catch (org.springframework.web.client.HttpStatusCodeException retryError) {
-                    throw new IllegalStateException(
-                            "Xunlei API request failed after CAPTCHA refresh: "
-                                    + method.name() + " " + safeEndpoint(path)
-                                    + " HTTP " + retryError.getStatusCode().value()
-                                    + apiErrorSuffix(retryError)
-                                    + shareTokenProfile(path, retryError.getResponseBodyAsString()),
-                            retryError);
-                } catch (Exception retryError) {
-                    throw new IllegalStateException("Xunlei API request failed after CAPTCHA refresh", retryError);
-                }
+        if (hasText(identity.userAgent())) headers.set(HttpHeaders.USER_AGENT, identity.userAgent());
+        if (authorizationRequired) {
+            if (state == null || !hasText(state.accessToken())) {
+                throw new IllegalStateException("Xunlei authorization is unavailable");
             }
-            throw new IllegalStateException(
-                    (e.getStatusCode().value() == 401
-                            ? "Xunlei Authorization expired or invalid; update XUNLEI_AUTHORIZATION in Resource Hub settings"
-                            : "Xunlei API request failed: " + method.name() + " " + safeEndpoint(path))
-                            + " HTTP " + e.getStatusCode().value() + apiErrorSuffix(e)
-                            + shareTokenProfile(path, e.getResponseBodyAsString()),
-                    e);
-        } catch (RestClientException e) { throw new IllegalStateException("Xunlei API request failed", e); }
-        catch (Exception e) { throw new IllegalStateException("Xunlei API response parse failed", e); }
+            headers.set(HttpHeaders.AUTHORIZATION,
+                    firstText(state.tokenType(), "Bearer") + " " + state.accessToken());
+        }
+        headers.set("X-Device-Id", identity.deviceId());
+        headers.set("X-Client-Id", identity.clientId());
+        headers.set("X-Client-Version", identity.clientVersion());
+        headers.set("X-Captcha-Token", captchaToken(action, state, identity, refreshCaptcha, null));
+        return headers;
+    }
+
+    private boolean isAuthorizationError(org.springframework.web.client.HttpStatusCodeException error) {
+        if (error.getStatusCode().value() == 401) return true;
+        String response = error.getResponseBodyAsString();
+        return response != null && (response.contains("\"error_code\":10")
+                || response.contains("\"error_code\":16")
+                || response.contains("\"error_code\":4121")
+                || response.contains("\"error_code\":4122"));
+    }
+
+    private boolean isCaptchaError(org.springframework.web.client.HttpStatusCodeException error) {
+        String response = error.getResponseBodyAsString();
+        return response != null && (response.contains("captcha_invalid")
+                || response.contains("\"error_code\":9"));
     }
 
     private static JsonNode firstArray(JsonNode... values) {
@@ -739,49 +912,413 @@ public class XunleiClient {
         return kind != null && kind.toLowerCase(Locale.ROOT).contains("video");
     }
 
-    private String findUrl(JsonNode node) { if (node == null || node.isMissingNode()) return null; if (node.isTextual() && node.asText().startsWith("http")) return node.asText(); if (node.isObject()) { for (var it = node.fields(); it.hasNext();) { String v = findUrl(it.next().getValue()); if (v != null) return v; } } else if (node.isArray()) for (JsonNode item : node) { String v = findUrl(item); if (v != null) return v; } return null; }
-    private String bearer(String token) { return token.trim().toLowerCase().startsWith("bearer ") ? token.trim() : "Bearer " + token.trim(); }
-    private String jwtClaim(String claim) { try { String[] p = properties.getXunlei().getAuthorization().replaceFirst("(?i)^Bearer ", "").split("\\."); if (p.length < 2) return null; return objectMapper.readTree(new String(Base64.getUrlDecoder().decode(p[1]), StandardCharsets.UTF_8)).path(claim).asText(null); } catch (Exception ignored) { return null; } }
-    private String deviceId() {
-        try {
-            String userId = jwtClaim("sub");
-            byte[] digest = MessageDigest.getInstance("MD5").digest(("pan-web-" + userId).getBytes(StandardCharsets.UTF_8));
-            StringBuilder value = new StringBuilder();
-            for (byte item : digest) value.append(String.format("%02x", item));
-            return value.toString();
-        } catch (Exception e) { throw new IllegalStateException("Failed to derive Xunlei device id", e); }
-    }
-    private String captchaToken(String action, boolean refresh) {
-        if (!refresh) {
-            CaptchaEntry cached = captchaCache.get(action);
-            if (cached != null && cached.expiresAt() > System.currentTimeMillis()) return cached.token();
+    private AuthState authorizedState(boolean forceRefresh) {
+        synchronized (authLock) {
+            loadAuthState();
+            AuthState latestConfigured = configuredAuthState();
+            if (authState != null && !hasText(authState.refreshToken()) && latestConfigured != null
+                    && !latestConfigured.accessToken().equals(authState.accessToken())) {
+                authState = latestConfigured;
+            }
+            if (!forceRefresh && isUsable(authState)) return authState;
+            IllegalStateException refreshFailure = null;
+            String refreshToken = firstText(
+                    authState == null ? null : authState.refreshToken(),
+                    properties.getXunlei().getRefreshToken());
+            AuthIdentity identity = authState != null && hasText(authState.refreshToken())
+                    && authState.identity() != null ? authState.identity() : automaticIdentity();
+            if (hasText(refreshToken)) {
+                try {
+                    authState = refreshAuthorization(refreshToken, identity);
+                    persistAuthState(authState);
+                    return authState;
+                } catch (IllegalStateException error) {
+                    refreshFailure = error;
+                }
+            }
+            AuthState configured = configuredAuthState();
+            if (!forceRefresh && isUsable(configured)) {
+                authState = configured;
+                return authState;
+            }
+            if (hasText(properties.getXunlei().getAccount())
+                    && hasText(properties.getXunlei().getPassword())) {
+                authState = loginAuthorization(automaticIdentity());
+                persistAuthState(authState);
+                return authState;
+            }
+            if (configured != null) {
+                authState = configured;
+                return authState;
+            }
+            if (refreshFailure != null) throw refreshFailure;
+            throw new IllegalStateException(
+                    "Xunlei authorization is not configured; set XUNLEI_ACCOUNT/XUNLEI_PASSWORD");
         }
-        String configured = properties.getXunlei().getCaptchaToken();
-        if (!refresh && hasText(configured)) return configured.trim();
-        String token = initializeCaptcha(action);
-        captchaCache.put(action, new CaptchaEntry(token, System.currentTimeMillis() + 240_000));
+    }
+
+    private AuthState optionalAuthState() {
+        synchronized (authLock) {
+            loadAuthState();
+            AuthState latestConfigured = configuredAuthState();
+            if (authState != null && !hasText(authState.refreshToken()) && latestConfigured != null
+                    && !latestConfigured.accessToken().equals(authState.accessToken())) {
+                authState = latestConfigured;
+            }
+            if (authState != null) return authState;
+            return latestConfigured;
+        }
+    }
+
+    private boolean hasAutomaticAuthorization() {
+        synchronized (authLock) {
+            loadAuthState();
+            return hasText(properties.getXunlei().getRefreshToken())
+                    || (authState != null && hasText(authState.refreshToken()))
+                    || (hasText(properties.getXunlei().getAccount())
+                            && hasText(properties.getXunlei().getPassword()));
+        }
+    }
+
+    private boolean isUsable(AuthState state) {
+        return state != null && hasText(state.accessToken())
+                && (state.expiresAt() <= 0 || state.expiresAt() > System.currentTimeMillis() + 60_000);
+    }
+
+    private AuthState configuredAuthState() {
+        String authorization = properties.getXunlei().getAuthorization();
+        if (!hasText(authorization)) return null;
+        String value = authorization.trim();
+        String tokenType = value.regionMatches(true, 0, "Bearer ", 0, 7) ? "Bearer" : "Bearer";
+        String accessToken = value.replaceFirst("(?i)^Bearer\\s+", "");
+        long expiresAt = jwtLongClaim(accessToken, "exp") * 1000;
+        AuthIdentity identity = configuredWebIdentity(accessToken);
+        return new AuthState(tokenType, accessToken, null, expiresAt,
+                jwtTextClaim(accessToken, "sub"), properties.getXunlei().getCaptchaToken(), identity);
+    }
+
+    private AuthIdentity configuredWebIdentity() {
+        AuthState configured = configuredAuthState();
+        return configured == null ? configuredWebIdentity(null) : configured.identity();
+    }
+
+    private AuthIdentity configuredWebIdentity(String accessToken) {
+        String userId = jwtTextClaim(accessToken, "sub");
+        String clientId = firstText(properties.getXunlei().getClientId(),
+                jwtTextClaim(accessToken, "aud"), "xunlei-open-api");
+        String deviceId = firstText(properties.getXunlei().getDeviceId(),
+                md5("pan-web-" + firstText(userId, properties.getXunlei().getAccount(), "anonymous")));
+        return new AuthIdentity(clientId, properties.getXunlei().getClientSecret(), deviceId,
+                firstText(properties.getXunlei().getClientVersion(), "1.82.0"),
+                PACKAGE_NAME, null, WEB_ALGORITHMS);
+    }
+
+    private AuthIdentity automaticIdentity() {
+        boolean customClient = hasText(properties.getXunlei().getClientId())
+                && hasText(properties.getXunlei().getClientSecret());
+        String clientId = customClient ? properties.getXunlei().getClientId().trim() : ANDROID_CLIENT_ID;
+        String clientSecret = customClient
+                ? properties.getXunlei().getClientSecret().trim() : ANDROID_CLIENT_SECRET;
+        String deviceId = firstText(properties.getXunlei().getDeviceId(),
+                md5("gying-xunlei-" + firstText(properties.getXunlei().getAccount(), "account")));
+        return new AuthIdentity(clientId, clientSecret, deviceId, ANDROID_CLIENT_VERSION,
+                ANDROID_PACKAGE_NAME, ANDROID_USER_AGENT, ANDROID_ALGORITHMS);
+    }
+
+    private AuthState refreshAuthorization(String refreshToken, AuthIdentity identity) {
+        JsonNode response = authRequest(AUTH_TOKEN_URL, HttpMethod.POST, identity,
+                Map.of("grant_type", "refresh_token", "refresh_token", refreshToken,
+                        "client_id", identity.clientId(), "client_secret", identity.clientSecret()),
+                null);
+        return tokenState(response, identity, refreshToken,
+                authState == null ? null : authState.captchaToken());
+    }
+
+    private AuthState loginAuthorization(AuthIdentity identity) {
+        JsonNode core = authRequest(CORE_LOGIN_URL, HttpMethod.POST, identity,
+                coreLoginPayload(properties.getXunlei().getAccount(), properties.getXunlei().getPassword(), identity),
+                CORE_LOGIN_USER_AGENT);
+        String sessionId = firstText(core.path("sessionID").asText(null), core.path("session_id").asText(null));
+        if (!hasText(sessionId)) {
+            if (hasText(core.path("reviewurl").asText(null))) {
+                throw new IllegalStateException("Xunlei account login requires interactive verification");
+            }
+            throw new IllegalStateException("Xunlei account login did not return a session id");
+        }
+        String loginCaptcha = captchaToken(
+                "POST:/v1/auth/signin/token", null, identity, true, properties.getXunlei().getAccount());
+        JsonNode token = authRequest(SIGNIN_TOKEN_URL, HttpMethod.POST, identity,
+                Map.of("client_id", identity.clientId(), "client_secret", identity.clientSecret(),
+                        "provider", "access_end_point_token", "signin_token", sessionId),
+                null, loginCaptcha);
+        return tokenState(token, identity, null, loginCaptcha);
+    }
+
+    static Map<String, Object> coreLoginPayload(
+            String account, String password, AuthIdentity identity) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("protocolVersion", "301");
+        body.put("sequenceNo", "1000012");
+        body.put("platformVersion", "10");
+        body.put("isCompressed", "0");
+        body.put("appid", "40");
+        body.put("clientVersion", ANDROID_CLIENT_VERSION);
+        body.put("peerID", "00000000000000000000000000000000");
+        body.put("appName", "ANDROID-com.xunlei.downloadprovider");
+        body.put("sdkVersion", "512000");
+        body.put("devicesign", generateDeviceSign(identity.deviceId(), identity.packageName()));
+        body.put("netWorkType", "WIFI");
+        body.put("providerName", "NONE");
+        body.put("deviceModel", "M2004J7AC");
+        body.put("deviceName", "Xiaomi_M2004j7ac");
+        body.put("OSVersion", "12");
+        body.put("creditkey", "");
+        body.put("hl", "zh-CN");
+        body.put("userName", account);
+        body.put("passWord", password);
+        body.put("verifyKey", "");
+        body.put("verifyCode", "");
+        body.put("isMd5Pwd", "0");
+        return body;
+    }
+
+    private AuthState tokenState(
+            JsonNode response,
+            AuthIdentity identity,
+            String previousRefreshToken,
+            String captchaToken) {
+        String accessToken = response.path("access_token").asText(null);
+        if (!hasText(accessToken)) throw new IllegalStateException("Xunlei authorization returned no access token");
+        String refreshToken = firstText(response.path("refresh_token").asText(null), previousRefreshToken);
+        long expiresIn = response.path("expires_in").asLong(0);
+        long expiresAt = expiresIn > 0
+                ? System.currentTimeMillis() + expiresIn * 1000
+                : jwtLongClaim(accessToken, "exp") * 1000;
+        String tokenType = firstText(response.path("token_type").asText(null), "Bearer");
+        properties.getXunlei().setAuthorization(tokenType + " " + accessToken);
+        return new AuthState(tokenType,
+                accessToken, refreshToken, expiresAt,
+                firstText(response.path("user_id").asText(null), response.path("sub").asText(null),
+                        jwtTextClaim(accessToken, "sub")),
+                captchaToken, identity);
+    }
+
+    private JsonNode authRequest(
+            String url, HttpMethod method, AuthIdentity identity, Object body, String userAgent) {
+        return authRequest(url, method, identity, body, userAgent, null);
+    }
+
+    private JsonNode authRequest(
+            String url,
+            HttpMethod method,
+            AuthIdentity identity,
+            Object body,
+            String userAgent,
+            String captchaToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.USER_AGENT, firstText(userAgent, identity.userAgent(), "gying-movie"));
+        headers.set("X-Device-Id", identity.deviceId());
+        headers.set("X-Client-Id", identity.clientId());
+        headers.set("X-Client-Version", identity.clientVersion());
+        if (hasText(captchaToken)) headers.set("X-Captcha-Token", captchaToken);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    URI.create(url), method, new HttpEntity<>(body, headers), String.class);
+            JsonNode root = objectMapper.readTree(response.getBody());
+            String error = root.path("error").asText(null);
+            long errorCode = root.path("error_code").asLong(0);
+            if ((hasText(error) && !"success".equalsIgnoreCase(error)) || errorCode != 0) {
+                if ("review_panel".equalsIgnoreCase(error)) {
+                    throw new IllegalStateException("Xunlei account login requires interactive verification");
+                }
+                throw new IllegalStateException("Xunlei authorization request failed"
+                        + (errorCode == 0 ? "" : " (code=" + errorCode + ")"));
+            }
+            return root;
+        } catch (org.springframework.web.client.HttpStatusCodeException error) {
+            throw new IllegalStateException("Xunlei authorization request failed HTTP "
+                    + error.getStatusCode().value(), error);
+        } catch (RestClientException error) {
+            throw new IllegalStateException("Xunlei authorization request failed", error);
+        } catch (Exception error) {
+            if (error instanceof IllegalStateException stateError) throw stateError;
+            throw new IllegalStateException("Xunlei authorization response parse failed", error);
+        }
+    }
+
+    private String captchaToken(
+            String action,
+            AuthState state,
+            AuthIdentity identity,
+            boolean refresh,
+            String loginAccount) {
+        String cacheKey = identity.clientId() + ":" + action;
+        if (!refresh) {
+            CaptchaEntry cached = captchaCache.get(cacheKey);
+            if (cached != null && cached.expiresAt() > System.currentTimeMillis()) return cached.token();
+            boolean automaticState = state != null && hasText(state.refreshToken());
+            String available = automaticState
+                    ? firstText(state.captchaToken(), properties.getXunlei().getCaptchaToken())
+                    : firstText(properties.getXunlei().getCaptchaToken(),
+                            state == null ? null : state.captchaToken());
+            if (hasText(available)) return available;
+        }
+        String token = initializeCaptcha(action, state, identity, loginAccount);
+        properties.getXunlei().setCaptchaToken(token);
+        captchaCache.put(cacheKey, new CaptchaEntry(token, System.currentTimeMillis() + 240_000));
+        if (state != null) {
+            synchronized (authLock) {
+                if (authState == state) {
+                    authState = new AuthState(state.tokenType(), state.accessToken(), state.refreshToken(),
+                            state.expiresAt(), state.userId(), token, state.identity());
+                    persistAuthState(authState);
+                }
+            }
+        }
         return token;
     }
-    private String initializeCaptcha(String action) {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String source = firstText(properties.getXunlei().getClientId(), jwtClaim("aud"), "Xqp0kJBXWhwaTpB6")
-                + properties.getXunlei().getClientVersion() + PACKAGE_NAME
-                + firstText(properties.getXunlei().getDeviceId(), deviceId()) + timestamp;
-        for (String algorithm : WEB_ALGORITHMS) source = md5(source + algorithm);
+
+    private String initializeCaptcha(
+            String action, AuthState state, AuthIdentity identity, String loginAccount) {
         Map<String, Object> meta = new LinkedHashMap<>();
-        meta.put("client_version", properties.getXunlei().getClientVersion()); meta.put("package_name", PACKAGE_NAME);
-        meta.put("user_id", jwtClaim("sub")); meta.put("timestamp", timestamp); meta.put("captcha_sign", "1." + source);
+        if (hasText(loginAccount)) {
+            if (loginAccount.matches("\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*")) {
+                meta.put("email", loginAccount);
+            } else if (loginAccount.matches("\\d{11,18}")) {
+                meta.put("phone_number", loginAccount);
+            } else {
+                meta.put("username", loginAccount);
+            }
+        } else {
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String source = identity.clientId() + identity.clientVersion()
+                    + identity.packageName() + identity.deviceId() + timestamp;
+            for (String algorithm : identity.algorithms()) source = md5(source + algorithm);
+            meta.put("client_version", identity.clientVersion());
+            meta.put("package_name", identity.packageName());
+            meta.put("user_id", state == null ? null : state.userId());
+            meta.put("timestamp", timestamp);
+            meta.put("captcha_sign", "1." + source);
+        }
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("action", action); body.put("captcha_token", ""); body.put("client_id", firstText(properties.getXunlei().getClientId(), jwtClaim("aud")));
-        body.put("device_id", firstText(properties.getXunlei().getDeviceId(), deviceId())); body.put("redirect_uri", "xlaccsdk01://xunlei.com/callback?state=harbor"); body.put("meta", meta);
+        body.put("action", action);
+        String currentCaptcha = firstText(
+                state == null ? null : state.captchaToken(), properties.getXunlei().getCaptchaToken());
+        body.put("captcha_token", currentCaptcha == null ? "" : currentCaptcha);
+        body.put("client_id", identity.clientId());
+        body.put("device_id", identity.deviceId());
+        body.put("redirect_uri", "xlaccsdk01://xunlei.com/callback?state=harbor");
+        body.put("meta", meta);
+        JsonNode root = authRequest(CAPTCHA_URL, HttpMethod.POST, identity, body, null);
+        if (hasText(root.path("url").asText(null))) {
+            throw new IllegalStateException("Xunlei CAPTCHA requires interactive verification");
+        }
+        String token = root.path("captcha_token").asText(null);
+        if (!hasText(token)) throw new IllegalStateException("Xunlei CAPTCHA initialization returned no token");
+        return token;
+    }
+
+    private void loadAuthState() {
+        if (authStateLoaded) return;
+        authStateLoaded = true;
+        String statePath = properties.getXunlei().getTokenStatePath();
+        if (!hasText(statePath)) return;
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(CAPTCHA_URL, body, String.class);
-            JsonNode root = objectMapper.readTree(response.getBody());
-            String token = root.path("captcha_token").asText(null);
-            if (!hasText(token)) throw new IllegalStateException("Xunlei CAPTCHA initialization requires interactive verification");
-            return token;
-        } catch (RestClientException e) { throw new IllegalStateException("Xunlei CAPTCHA initialization failed", e); }
-        catch (Exception e) { throw new IllegalStateException("Xunlei CAPTCHA response parse failed", e); }
+            Path path = Path.of(statePath);
+            if (!Files.isRegularFile(path)) return;
+            JsonNode root = objectMapper.readTree(Files.readString(path, StandardCharsets.UTF_8));
+            String clientId = root.path("client_id").asText(null);
+            String packageName = root.path("package_name").asText(null);
+            String deviceId = root.path("device_id").asText(null);
+            if (!hasText(clientId) || !hasText(packageName) || !hasText(deviceId)) return;
+            AuthIdentity identity = new AuthIdentity(clientId,
+                    firstText(properties.getXunlei().getClientSecret(), ANDROID_CLIENT_SECRET),
+                    deviceId,
+                    firstText(root.path("client_version").asText(null), ANDROID_CLIENT_VERSION),
+                    packageName,
+                    ANDROID_PACKAGE_NAME.equals(packageName) ? ANDROID_USER_AGENT : null,
+                    ANDROID_PACKAGE_NAME.equals(packageName) ? ANDROID_ALGORITHMS : WEB_ALGORITHMS);
+            authState = new AuthState(root.path("token_type").asText("Bearer"),
+                    root.path("access_token").asText(null), root.path("refresh_token").asText(null),
+                    root.path("expires_at").asLong(0), root.path("user_id").asText(null),
+                    root.path("captcha_token").asText(null), identity);
+            if (hasText(authState.accessToken())) {
+                properties.getXunlei().setAuthorization(
+                        firstText(authState.tokenType(), "Bearer") + " " + authState.accessToken());
+            }
+        } catch (Exception ignored) {
+            authState = null;
+        }
+    }
+
+    private void persistAuthState(AuthState state) {
+        if (state == null || !hasText(properties.getXunlei().getTokenStatePath())) return;
+        try {
+            Path path = Path.of(properties.getXunlei().getTokenStatePath());
+            Path parent = path.getParent();
+            if (parent != null) Files.createDirectories(parent);
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("token_type", state.tokenType());
+            payload.put("access_token", state.accessToken());
+            payload.put("refresh_token", state.refreshToken());
+            payload.put("expires_at", state.expiresAt());
+            payload.put("user_id", state.userId());
+            payload.put("captcha_token", state.captchaToken());
+            payload.put("client_id", state.identity().clientId());
+            payload.put("device_id", state.identity().deviceId());
+            payload.put("client_version", state.identity().clientVersion());
+            payload.put("package_name", state.identity().packageName());
+            Path temporary = path.resolveSibling(path.getFileName() + ".tmp");
+            Files.writeString(temporary, objectMapper.writeValueAsString(payload), StandardCharsets.UTF_8);
+            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception error) {
+            throw new IllegalStateException("Xunlei token state could not be persisted", error);
+        }
+    }
+
+    private String jwtTextClaim(String token, String claim) {
+        try {
+            if (!hasText(token)) return null;
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return null;
+            return objectMapper.readTree(new String(
+                    Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8))
+                    .path(claim).asText(null);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private long jwtLongClaim(String token, String claim) {
+        try {
+            if (!hasText(token)) return 0;
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return 0;
+            return objectMapper.readTree(new String(
+                    Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8))
+                    .path(claim).asLong(0);
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    static String generateDeviceSign(String deviceId, String packageName) {
+        String sha1 = digest("SHA-1", deviceId + packageName + "40" + "34a062aaa22f906fca4fefe9fb3a3021");
+        return "div101." + deviceId + digest("MD5", sha1);
+    }
+
+    private static String digest(String algorithm, String value) {
+        try {
+            byte[] bytes = MessageDigest.getInstance(algorithm)
+                    .digest(value.getBytes(StandardCharsets.UTF_8));
+            StringBuilder result = new StringBuilder();
+            for (byte item : bytes) result.append(String.format("%02x", item));
+            return result.toString();
+        } catch (Exception error) {
+            throw new IllegalStateException("Failed to create Xunlei device signature", error);
+        }
     }
     private String action(HttpMethod method, String path) {
         String clean = path.split("\\?", 2)[0].replaceAll("/tasks/[^/]+$", "/tasks/{task_id}");
@@ -911,17 +1448,48 @@ public class XunleiClient {
             String passCodeToken,
             List<String> fileIds,
             List<String> fileNames) {}
-    public record DirectoryInfo(String id) {}
+    public record DirectoryInfo(String id, String restoreRootId) {
+        public DirectoryInfo(String id) {
+            this(id, null);
+        }
+    }
     public record RestoreResult(
             String taskId,
             String response,
             String parentId,
             String restoredFileId,
             List<String> expectedNames,
-            long startedAt) {}
+            long startedAt,
+            boolean reused) {
+        public RestoreResult(
+                String taskId,
+                String response,
+                String parentId,
+                String restoredFileId,
+                List<String> expectedNames,
+                long startedAt) {
+            this(taskId, response, parentId, restoredFileId, expectedNames, startedAt, false);
+        }
+    }
     public record RestoreStatus(boolean success, String status, String response) {}
     public record ContentSummary(int folderCount, int fileCount, int videoCount) {}
     public record RestoredSelection(List<String> fileIds, ContentSummary content) {}
     private record FolderEntry(String id, int depth) {}
     private record CaptchaEntry(String token, long expiresAt) {}
+    private record AuthIdentity(
+            String clientId,
+            String clientSecret,
+            String deviceId,
+            String clientVersion,
+            String packageName,
+            String userAgent,
+            String[] algorithms) {}
+    private record AuthState(
+            String tokenType,
+            String accessToken,
+            String refreshToken,
+            long expiresAt,
+            String userId,
+            String captchaToken,
+            AuthIdentity identity) {}
 }

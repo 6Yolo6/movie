@@ -71,10 +71,15 @@ public class ResourceHubProperties {
         private boolean enabled = false;
         private String baseUrl = "https://api-pan.xunlei.com/drive/v1";
         private String authorization;
+        private String account;
+        private String password;
+        private String refreshToken;
         private String clientId;
+        private String clientSecret;
         private String deviceId;
         private String clientVersion = "1.82.0";
         private String captchaToken;
+        private String tokenStatePath = "/app/data/xunlei-auth.json";
         private String savePath = "/影视剧资源分享(先转存后再查看)/GYing Resource Hub";
         private boolean shareEnabled = false;
         private String shareCreatePath = "/share";

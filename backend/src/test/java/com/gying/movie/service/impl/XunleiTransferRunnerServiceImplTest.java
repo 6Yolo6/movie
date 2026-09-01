@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -85,6 +88,8 @@ class XunleiTransferRunnerServiceImplTest {
                         java.util.List.of("episode-01.mkv", "episode-02.mp4"), 1L));
         when(client.await("restore-task"))
                 .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.contentSummary("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(1, 3, 2));
         when(client.awaitContent("stable-folder-id"))
                 .thenReturn(new XunleiClient.ContentSummary(1, 3, 2));
         when(client.createShare("stable-folder-id"))
@@ -101,7 +106,7 @@ class XunleiTransferRunnerServiceImplTest {
     }
 
     @Test
-    void fallsBackToRestoredTraceIdsWhenLegacyTargetFolderIsEmpty() {
+    void movesRestoredTraceIdsIntoStableFolderBeforeSharing() {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
@@ -119,9 +124,11 @@ class XunleiTransferRunnerServiceImplTest {
                 .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
         when(client.extractRestoredFileIds("restore-response"))
                 .thenReturn(java.util.List.of("restored-video-id"));
+        when(client.contentSummary("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 0, 0));
         when(client.awaitContent("stable-folder-id"))
-                .thenThrow(new IllegalStateException("empty target folder"));
-        when(client.createShare(java.util.List.of("restored-video-id")))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.createShare("stable-folder-id"))
                 .thenReturn("https://pan.xunlei.com/s/owned?pwd=code");
         XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
                 properties, client, taskService, mock(IResourceDiscoveryResultService.class),
@@ -131,7 +138,55 @@ class XunleiTransferRunnerServiceImplTest {
 
         assertEquals(1, result.getSubmitted());
         assertEquals("stable-folder-id", task.getSavedPath());
-        verify(client).createShare(java.util.List.of("restored-video-id"));
+        verify(client).moveFiles(java.util.List.of("restored-video-id"), "stable-folder-id");
+        verify(client).createShare("stable-folder-id");
+    }
+
+    @Test
+    void retriesMoveAndShareWithoutRestoringAgain() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(14L);
+        task.setMovieId("retry-movie");
+        task.setStatus("PENDING");
+        task.setOriginalUrl("https://pan.xunlei.com/s/source");
+        when(taskService.getById(14L)).thenReturn(task);
+        when(client.restore(eq(task.getOriginalUrl()), any()))
+                .thenReturn(new XunleiClient.RestoreResult(
+                        "restore-task", "restore-response", "stable-folder-id", "root-id",
+                        java.util.List.of("episode.mp4"), 1L));
+        when(client.await("restore-task"))
+                .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.extractRestoredFileIds("restore-response"))
+                .thenReturn(java.util.List.of("restored-video-id"));
+        when(client.restoredFileIdsPayload(java.util.List.of("restored-video-id")))
+                .thenReturn("recovery-payload");
+        when(client.extractRestoredFileIds("recovery-payload"))
+                .thenReturn(java.util.List.of("restored-video-id"));
+        when(client.contentSummary("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 0, 0));
+        doThrow(new IllegalStateException("move failed"))
+                .doNothing()
+                .when(client).moveFiles(java.util.List.of("restored-video-id"), "stable-folder-id");
+        when(client.awaitContent("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.createShare("stable-folder-id"))
+                .thenReturn("https://pan.xunlei.com/s/owned?pwd=code");
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
+                properties, client, taskService, mock(IResourceDiscoveryResultService.class),
+                mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult first = service.submitOne(14L);
+        QuarkTransferRunResult second = service.submitOne(14L);
+
+        assertEquals(1, first.getFailed());
+        assertEquals(1, second.getSubmitted());
+        assertEquals("SUCCEEDED", task.getStatus());
+        verify(client, times(1)).restore(eq(task.getOriginalUrl()), any());
+        verify(client, times(2)).moveFiles(
+                java.util.List.of("restored-video-id"), "stable-folder-id");
     }
 
     @Test
@@ -171,6 +226,10 @@ class XunleiTransferRunnerServiceImplTest {
         task.setSavedPath("saved-file-id");
         task.setLastError("old authorization error");
         when(taskService.getById(3L)).thenReturn(task);
+        when(client.contentSummary("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.awaitContent("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
         when(client.createShare("saved-file-id"))
                 .thenReturn("https://pan.xunlei.com/s/share?pwd=code");
         XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
@@ -209,6 +268,10 @@ class XunleiTransferRunnerServiceImplTest {
         when(taskService.getById(30L)).thenReturn(task);
         when(discoveryService.getById(300L)).thenReturn(discovery);
         when(linkService.getById(301L)).thenReturn(link);
+        when(client.contentSummary("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.awaitContent("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
         when(client.createShare("saved-file-id"))
                 .thenReturn("https://pan.xunlei.com/s/owned?pwd=new-code");
 
@@ -233,6 +296,10 @@ class XunleiTransferRunnerServiceImplTest {
         task.setStatus("WAITING_SHARE");
         task.setSavedPath("saved-file-id");
         when(taskService.getById(4L)).thenReturn(task);
+        when(client.contentSummary("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.awaitContent("saved-file-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
         when(client.createShare("saved-file-id")).thenReturn(null);
         XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(
                 properties,

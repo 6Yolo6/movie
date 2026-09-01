@@ -169,6 +169,49 @@ class XunleiClientTest {
     }
 
     @Test
+    void extractsDestinationIdsFromNestedTaskResponse() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(
+                "{\"data\":{\"task\":{\"params\":{\"trace_file_ids\":"
+                        + "{\"src-1\":\"dest-1\",\"src-2\":\"dest-2\"}}}}}"));
+    }
+
+    @Test
+    void serializesRestoredIdsForMoveRetryRecovery() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+
+        String payload = client.restoredFileIdsPayload(List.of("dest-1", "dest-2"));
+
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(payload));
+    }
+
+    @Test
+    void buildsBatchMovePayloadForStableMovieFolder() {
+        Map<String, Object> payload = XunleiClient.movePayload(
+                List.of("video-1", "video-2"), "movie-folder");
+
+        assertEquals(List.of("video-1", "video-2"), payload.get("ids"));
+        assertEquals(Map.of("parent_id", "movie-folder"), payload.get("to"));
+    }
+
+    @Test
+    void acceptsAccountCredentialsWithoutManualAuthorization() {
+        var properties = new com.gying.movie.config.ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
+        properties.getXunlei().setAccount("configured-account");
+        properties.getXunlei().setPassword("configured-password");
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), properties);
+
+        assertEquals(true, client.isConfigured());
+    }
+
+    @Test
     void extractsPasswordFromFinalShareUrl() {
         assertEquals("new9", XunleiClient.extractShareCode(
                 "https://pan.xunlei.com/s/owned?pwd=new9#ignored"));
