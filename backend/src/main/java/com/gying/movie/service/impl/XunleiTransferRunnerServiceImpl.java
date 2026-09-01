@@ -10,13 +10,16 @@ import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.service.IXunleiTransferTaskService;
+import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.entity.MovieMetadata;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,6 +30,8 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     private final IXunleiTransferTaskService taskService;
     private final IResourceDiscoveryResultService discoveryService;
     private final IResourceLinkService linkService;
+    @Autowired(required = false)
+    private IMovieMetadataService movieService;
     private final Set<Long> runningTaskIds = ConcurrentHashMap.newKeySet();
 
     public XunleiTransferRunnerServiceImpl(ResourceHubProperties properties, XunleiClient client,
@@ -124,7 +129,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                     task.setOriginalUrlHash(ResourceHubHashUtils.sha256(sourceUrl));
                 }
             }
-            XunleiClient.RestoreResult restore = client.restore(sourceUrl, transferPath(task));
+            XunleiClient.RestoreResult restore = client.restore(sourceUrl, transferPath(task, discovery));
             task.setResponsePayload(restore.response()); task.setStatus("SUBMITTED"); task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
             XunleiClient.RestoreStatus status = restore.reused()
                     ? new XunleiClient.RestoreStatus(true, "REUSED", null)
@@ -210,7 +215,39 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
         return base + "/" + movieId.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
-    private String transferPath(XunleiTransferTask task) {
-        return transferPath(properties, task);
+    private String transferPath(XunleiTransferTask task, ResourceDiscoveryResult discovery) {
+        String title = null;
+        if (movieService != null && task != null && task.getMovieId() != null) {
+            MovieMetadata movie = movieService.getById(task.getMovieId());
+            if (movie != null) {
+                title = firstText(movie.getTitleCn(), movie.getSeriesName(), movie.getTitleEn());
+            }
+        }
+        if (!hasText(title) && discovery != null) {
+            title = discovery.getTitle();
+        }
+        return transferPath(properties, task, title);
+    }
+
+    static String transferPath(ResourceHubProperties properties, XunleiTransferTask task, String title) {
+        String base = properties.getXunlei().getSavePath() == null
+                ? "/影视剧资源分享(先转存后再查看)/GYing Resource Hub"
+                : properties.getXunlei().getSavePath().replaceAll("/+$", "");
+        String movieId = task == null || task.getMovieId() == null || task.getMovieId().isBlank()
+                ? "unknown" : task.getMovieId().trim();
+        String safeId = movieId.replaceAll("[\\\\/:*?\"<>|]", "_");
+        String safeTitle = hasText(title) ? title.trim().replaceAll("[\\\\/:*?\"<>|]", "_") : safeId;
+        return base + "/" + safeTitle + "（" + safeId + "）";
+    }
+
+    private static String firstText(String... values) {
+        for (String value : values) {
+            if (hasText(value)) return value.trim();
+        }
+        return null;
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

@@ -39,6 +39,28 @@ class XunleiTransferRunnerServiceImplTest {
     }
 
     @Test
+    void namesTransferFolderWithMovieTitleAndResourceId() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setMovieId("tmdb_tv_93088");
+
+        assertEquals(
+                "/影视剧资源分享(先转存后再查看)/GYing Resource Hub/问心（tmdb_tv_93088）",
+                XunleiTransferRunnerServiceImpl.transferPath(properties, task, "问心"));
+    }
+
+    @Test
+    void sanitizesMovieTitleButKeepsResourceIdInTransferFolderName() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setMovieId("tmdb:tv/93088");
+
+        assertEquals(
+                "/影视剧资源分享(先转存后再查看)/GYing Resource Hub/Example_Season（tmdb_tv_93088）",
+                XunleiTransferRunnerServiceImpl.transferPath(properties, task, "Example/Season"));
+    }
+
+    @Test
     void automaticRunnerSkipsCappedFailuresWithoutStarvingPendingTasks() {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
@@ -82,7 +104,7 @@ class XunleiTransferRunnerServiceImplTest {
         task.setOriginalUrl("https://pan.xunlei.com/s/source");
         when(taskService.getById(12L)).thenReturn(task);
         when(client.restore(eq(task.getOriginalUrl()),
-                eq("/影视剧资源分享(先转存后再查看)/GYing Resource Hub/gying_tv_demo")))
+                eq("/影视剧资源分享(先转存后再查看)/GYing Resource Hub/gying_tv_demo（gying_tv_demo）")))
                 .thenReturn(new XunleiClient.RestoreResult(
                         "restore-task", "{}", "stable-folder-id", null,
                         java.util.List.of("episode-01.mkv", "episode-02.mp4"), 1L));
