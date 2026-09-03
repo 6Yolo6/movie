@@ -292,6 +292,26 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void repairMoviePosterDoesNotReportSuccessWhenGyingReturnsNoPoster() {
+        MovieMetadata movie = movie("gying_mv_vPW8", "钢铁侠", "mv", "AVAILABLE");
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setMovieId(movie.getId());
+        identity.setSource("GYING");
+        identity.setSourceType("mv");
+        identity.setExternalId("vPW8");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(gyingSourceClient.post(eq("/poster"), any()))
+                .thenReturn(Map.of("status", "FAILED", "reason", "image unavailable"));
+
+        Map<String, Object> result = service.repairMoviePoster(movie.getId());
+
+        assertEquals("FAILED", result.get("status"));
+        assertEquals("image unavailable", result.get("reason"));
+        verify(movieService, never()).updateById(any());
+    }
+
+    @Test
     void ensureLocalMovieUsesStrictSearchMatchBeforeCatalogFallback() {
         MovieMetadata movie = movie("tmdb_movie_1275779", "揭秘日", "mv", "TRAILER");
         movie.setTitleEn("Disclosure Day");

@@ -52,6 +52,7 @@ API_PORT = int(os.getenv("GYING_SOURCE_API_PORT", "8091"))
 IMAGE_CONNECT_TIMEOUT = float(os.getenv("GYING_IMAGE_CONNECT_TIMEOUT", "5"))
 IMAGE_READ_TIMEOUT = float(os.getenv("GYING_IMAGE_READ_TIMEOUT", "30"))
 IMAGE_MAX_ATTEMPTS = max(int(os.getenv("GYING_IMAGE_MAX_ATTEMPTS", "3")), 1)
+IMAGE_EXTENSIONS = ("avif", "webp", "jpg", "png")
 SITE_REQUEST_INTERVAL_SECONDS = max(float(os.getenv("GYING_REQUEST_INTERVAL_MS", "1000")) / 1000.0, 0.0)
 IMAGE_SIZES = tuple(value.strip() for value in os.getenv("GYING_IMAGE_SIZES", "384,256").split(",")
                     if value.strip().isdigit())
@@ -126,37 +127,38 @@ def upload_image_by_pattern(type_code, movie_id):
 
     failures = []
     for size in sizes:
-        target_url = f"https://s.tutu.pm/img/{type_code}/{movie_id}/{size}.avif"
-        for attempt in range(1, IMAGE_MAX_ATTEMPTS + 1):
-            try:
-                print(f"   下载图片: {target_url} (attempt {attempt}/{IMAGE_MAX_ATTEMPTS})")
-                resp = requests.get(
-                    target_url,
-                    headers={**HEADERS, "Referer": f"{BASE_URL}/{type_code}/{movie_id}"},
-                    timeout=(IMAGE_CONNECT_TIMEOUT, IMAGE_READ_TIMEOUT),
-                )
-                if resp.status_code != 200:
-                    failures.append(f"{size}: HTTP {resp.status_code}")
+        for requested_extension in IMAGE_EXTENSIONS:
+            target_url = f"https://s.tutu.pm/img/{type_code}/{movie_id}/{size}.{requested_extension}"
+            for attempt in range(1, IMAGE_MAX_ATTEMPTS + 1):
+                try:
+                    print(f"   下载图片: {target_url} (attempt {attempt}/{IMAGE_MAX_ATTEMPTS})")
+                    resp = requests.get(
+                        target_url,
+                        headers={**HEADERS, "Referer": f"{BASE_URL}/{type_code}/{movie_id}"},
+                        timeout=(IMAGE_CONNECT_TIMEOUT, IMAGE_READ_TIMEOUT),
+                    )
+                    if resp.status_code != 200:
+                        failures.append(f"{size}.{requested_extension}: HTTP {resp.status_code}")
+                        break
+                    content_type = detect_image_content_type(resp.content, resp.headers.get("Content-Type"))
+                    if not content_type:
+                        failures.append(f"{size}.{requested_extension}: invalid image response")
+                        break
+                    extension = {
+                        "image/jpeg": "jpg", "image/png": "png",
+                        "image/webp": "webp", "image/avif": "avif",
+                    }[content_type]
+                    object_name = f"{type_code}/{movie_id}/{size}.{extension}"
+                    client.put_object(MINIO_BUCKET, object_name, BytesIO(resp.content),
+                                      len(resp.content), content_type=content_type)
+                    return object_name
+                except (requests.Timeout, requests.ConnectionError) as error:
+                    failures.append(f"{size}.{requested_extension}/{attempt}: {error}")
+                    if attempt < IMAGE_MAX_ATTEMPTS:
+                        time.sleep(min(2 ** (attempt - 1), 4))
+                except Exception as error:
+                    failures.append(f"{size}.{requested_extension}/{attempt}: {error}")
                     break
-                content_type = detect_image_content_type(resp.content, resp.headers.get("Content-Type"))
-                if not content_type:
-                    failures.append(f"{size}: invalid image response")
-                    break
-                extension = {
-                    "image/jpeg": "jpg", "image/png": "png",
-                    "image/webp": "webp", "image/avif": "avif",
-                }[content_type]
-                object_name = f"{type_code}/{movie_id}/{size}.{extension}"
-                client.put_object(MINIO_BUCKET, object_name, BytesIO(resp.content),
-                                  len(resp.content), content_type=content_type)
-                return object_name
-            except (requests.Timeout, requests.ConnectionError) as error:
-                failures.append(f"{size}/{attempt}: {error}")
-                if attempt < IMAGE_MAX_ATTEMPTS:
-                    time.sleep(min(2 ** (attempt - 1), 4))
-            except Exception as error:
-                failures.append(f"{size}/{attempt}: {error}")
-                break
 
     print(f"   ⚠️ Image upload warning: {'; '.join(failures[-5:])}")
     return None

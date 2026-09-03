@@ -433,10 +433,26 @@ public class GyingSourceWorkflowService {
                     "status", "SKIPPED",
                     "reason", "No TMDB poster or exact GYING match found");
         }
-        return gyingSourceClient.post("/poster", Map.of(
+        Map<String, Object> result = gyingSourceClient.post("/poster", Map.of(
                 "typeCode", identity.getSourceType(),
                 "mid", identity.getExternalId(),
                 "targetMovieId", movie.getId()));
+        if ("UPDATED".equalsIgnoreCase(stringValue(result.get("status")))
+                && hasText(stringValue(result.get("posterUrl")))) {
+            return result;
+        }
+        Map<String, Object> failed = new LinkedHashMap<>();
+        failed.put("movieId", movie.getId());
+        failed.put("source", "GYING");
+        failed.put("typeCode", identity.getSourceType());
+        failed.put("mid", identity.getExternalId());
+        failed.put("status", "FAILED");
+        String reason = stringValue(result.get("reason"));
+        if (!hasText(reason)) {
+            reason = stringValue(result.get("error"));
+        }
+        failed.put("reason", hasText(reason) ? reason : "GYING poster repair returned no poster");
+        return failed;
     }
 
     public Map<String, Object> repairMissingPosters(int limit) {

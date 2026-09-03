@@ -159,6 +159,8 @@
 - 失效修复原位更新原资源；临时新资源成功后应归并，避免同片多条活动自有分享。
 - 删除核心数据、重复清理和标题匹配不确定时先 dry-run，不执行物理删除。
 
+2026-09-03 修复 GYING 影片元数据“自动补图”偶发不生效：海报下载按 `avif`、`webp`、`jpg`、`png` 依次回退并保留重试；后端仅在上游返回 `UPDATED` 且包含 `posterUrl` 时计为成功，避免源站超时或空结果被误报。已重建 `gying-source`、`backend`、`nginx`，实测 `vPW8`（钢铁侠）补图成功，`movie_metadata.poster_url=mv/vPW8/384.avif`，公开影片接口返回 MinIO 海报地址。
+
 ## 验收
 
 2026-08-24 修复 QQ 资源候选的单一 provider 缺口：`AUTO` 发现现在按 GYING 实际返回的 provider 动态补搜缺失的夸克或迅雷；失效夸克自有分享会原位清空旧分享、重跑原 URL 转存并创建新自有分享。增加迅雷 JWT `exp` 过期时间展示。`mvn -q test`、前端 `npm run lint`/`npm run build`、Compose 配置和生产 backend/frontend 重建后健康接口 200 已通过；未执行真实夸克转存副作用操作。
