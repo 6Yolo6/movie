@@ -28,7 +28,7 @@
 - 对外入口：nginx `80/443`，反向代理 Next.js 前端和 Spring Boot 后端。
 - 核心服务：`frontend`、`backend`、`gying-source`。
 - 数据依赖：MySQL、Redis、MinIO；资源搜索和转存连接现有 PanSou、quark-auto-save 服务。
-- QQ 集成：NapCat/官方 QQBot 用于群聊；宿主机 `tencent-channel-cli` 保留原频道账号，独立 `social-publisher` 容器承载第二 QQ 账号和新浪微博。
+- QQ 集成：当前使用 OpenClaw 官方 QQBot；宿主机 `tencent-channel-cli` 保留原频道账号，独立 `social-publisher` 容器承载第二 QQ 账号和新浪微博。NapCat 已停用，不参与新部署、迁移、健康检查和验收；仓库中的 Compose 服务、环境变量和历史卷仅保留兼容与审计用途。
 - 生产容器和 JVM 使用 `Asia/Shanghai`。
 - 微博网页会话通过 social-publisher 独立持久化浏览器会话支持管理员扫码更新，会话文件只保存在运行时卷。
 
@@ -134,6 +134,7 @@
 - 数据库新增表和字段默认使用中文 `COMMENT`。
 - 外部结果必须通过标题相关性、链接状态和重复检查后才能发布。
 - 不重复启动已有 Redis、PanSou、quark-auto-save 或 MinIO 容器；生产 compose 默认连接现有依赖。
+- 当前本机审计显示核心应用、OpenClaw、PanSou、quark-auto-save 和 MinIO 正在运行；NapCat 容器已退出，不应作为恢复目标重新启动。
 
 ## 仍需处理
 
@@ -162,6 +163,8 @@
 2026-09-03 修复 GYING 影片元数据“自动补图”偶发不生效：海报下载按 `avif`、`webp`、`jpg`、`png` 依次回退并保留重试；后端仅在上游返回 `UPDATED` 且包含 `posterUrl` 时计为成功，避免源站超时或空结果被误报。已重建 `gying-source`、`backend`、`nginx`，实测 `vPW8`（钢铁侠）补图成功，`movie_metadata.poster_url=mv/vPW8/384.avif`，公开影片接口返回 MinIO 海报地址。
 
 ## 验收
+
+2026-08-26 完成项目运维基线复核：当前分支代码已合并至 `origin/master` 的 `525ae17f`（2026-08-26），工作树对应 `1ed2a30`；核心 `backend`、`frontend`、`nginx`、`gying-source`、`social-publisher`，以及独立 OpenClaw、PanSou、quark-auto-save、MinIO 容器均在运行。NapCat 容器处于退出状态，已确认不再作为现役依赖。仓库运维就绪检查通过，Docker Server 为 28.4.0；本次未执行数据库写入、转存、分享或外部发帖副作用操作。
 
 2026-08-24 修复 QQ 资源候选的单一 provider 缺口：`AUTO` 发现现在按 GYING 实际返回的 provider 动态补搜缺失的夸克或迅雷；失效夸克自有分享会原位清空旧分享、重跑原 URL 转存并创建新自有分享。增加迅雷 JWT `exp` 过期时间展示。`mvn -q test`、前端 `npm run lint`/`npm run build`、Compose 配置和生产 backend/frontend 重建后健康接口 200 已通过；未执行真实夸克转存副作用操作。
 
