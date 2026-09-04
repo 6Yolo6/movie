@@ -25,4 +25,13 @@ public class ResourceHubScheduler {
             log.warn("Resource Hub worker run failed", e);
         }
     }
+
+    @Scheduled(cron = "${resource-hub.worker.discovered-retry-cron:0 30 8 * * *}", zone = "Asia/Shanghai")
+    public void retryDiscoveredTransfers() {
+        try {
+            workerService.retryDiscoveredTransfers(false);
+        } catch (Exception e) {
+            log.warn("Discovered transfer retry run failed", e);
+        }
+    }
 }

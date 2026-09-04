@@ -2,6 +2,7 @@ package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.client.XunleiClient;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
@@ -10,6 +11,12 @@ import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.entity.ResourceDiscoveryResult;
+import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.XunleiTransferTask;
+import com.gying.movie.service.IQuarkTransferTaskService;
+import com.gying.movie.service.IXunleiTransferTaskService;
+import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IQuarkTransferRunnerService;
 import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.service.IGyingMetadataSyncService;
@@ -21,7 +28,10 @@ import com.gying.movie.service.IResourceHubWorkerService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +55,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IResourceHubConfigService resourceHubConfigService;
     private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final IResourceLinkService resourceLinkService;
+    private final IQuarkTransferTaskService quarkTransferTaskService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
+    private final IResourceDiscoveryResultService discoveryResultService;
+    private final XunleiClient xunleiClient;
 
     @Autowired
     public ResourceHubWorkerServiceImpl(
@@ -58,7 +72,11 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             IResourceHubPublishService resourceHubPublishService,
             IResourceHubConfigService resourceHubConfigService,
             GyingSourceWorkflowService gyingSourceWorkflowService,
-            IResourceLinkService resourceLinkService) {
+            IResourceLinkService resourceLinkService,
+            IQuarkTransferTaskService quarkTransferTaskService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
+            IResourceDiscoveryResultService discoveryResultService,
+            XunleiClient xunleiClient) {
         this.resourceHubProperties = resourceHubProperties;
         this.taskService = taskService;
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
@@ -70,6 +88,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         this.resourceHubConfigService = resourceHubConfigService;
         this.gyingSourceWorkflowService = gyingSourceWorkflowService;
         this.resourceLinkService = resourceLinkService;
+        this.quarkTransferTaskService = quarkTransferTaskService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
+        this.discoveryResultService = discoveryResultService;
+        this.xunleiClient = xunleiClient;
     }
 
     @Override
@@ -151,14 +173,116 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
             ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
             IQuarkTransferRunnerService q, IResourceHubPublishService pub, IResourceHubConfigService c) {
-        this(p, t, tm, gm, d, q, null, pub, c, null, null);
+        this(p, t, tm, gm, d, q, null, pub, c, null, null, null, null, null, null);
     }
 
     public ResourceHubWorkerServiceImpl(ResourceHubProperties p, IResourceHubTaskService t,
             ITmdbMetadataSyncService tm, IGyingMetadataSyncService gm, IResourceDiscoveryService d,
             IQuarkTransferRunnerService q, IXunleiTransferRunnerService xl,
             IResourceHubPublishService pub, IResourceHubConfigService c) {
-        this(p, t, tm, gm, d, q, xl, pub, c, null, null);
+        this(p, t, tm, gm, d, q, xl, pub, c, null, null, null, null, null, null);
+    }
+
+    @Override
+    public Map<String, Object> retryDiscoveredTransfers(boolean force) {
+        resourceHubConfigService.reload();
+        ResourceHubProperties.Worker worker = resourceHubProperties.getWorker();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("enabled", resourceHubProperties.isEnabled() && (force || worker.isEnabled()));
+        if (!resourceHubProperties.isEnabled()) return skippedRetry(result, "Resource Hub is disabled");
+        if (!force && !worker.isEnabled()) return skippedRetry(result, "Resource Hub worker is disabled");
+        if (!worker.isDiscoveredRetryEnabled()) return skippedRetry(result, "Discovered transfer retry is disabled");
+        if (discoveryResultService == null) return skippedRetry(result, "Discovery service is unavailable");
+        if (!running.compareAndSet(false, true)) return skippedRetry(result, "Resource Hub worker is already running");
+        try {
+            int limit = clamp(worker.getDiscoveredRetryLimit(), 1, 100);
+            if (resourceDiscoveryService != null) {
+                try {
+                    resourceDiscoveryService.reconcileDiscoveredTransferTasks(limit);
+                } catch (Exception error) {
+                    result.put("reconcileError", trim(error.getMessage(), 500));
+                }
+            }
+            List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                    .eq("status", "DISCOVERED").isNull("resource_link_id")
+                    .in("provider", List.of("QUARK", "XUNLEI"))
+                    .orderByAsc("updated_at").last("LIMIT " + limit));
+            boolean hasXunlei = discoveries.stream().anyMatch(d -> "XUNLEI".equalsIgnoreCase(d.getProvider()));
+            if (hasXunlei && (xunleiClient == null || !xunleiClient.hasUsableAuthorization())) {
+                result.put("status", "SKIPPED");
+                result.put("reason", "Xunlei authorization is expired or unavailable");
+                result.put("checked", discoveries.size());
+                return result;
+            }
+            int succeeded = 0, failed = 0, skipped = 0;
+            List<Map<String, Object>> items = new ArrayList<>();
+            for (ResourceDiscoveryResult discovery : discoveries) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("discoveryResultId", discovery.getId());
+                try {
+                    String provider = discovery.getProvider() == null ? "" : discovery.getProvider().toUpperCase();
+                    boolean hasShare;
+                    if ("XUNLEI".equals(provider)) {
+                        if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) throw new IllegalStateException("Xunlei transfer service unavailable");
+                        XunleiTransferTask task = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+                        if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Xunlei transfer task"); items.add(item); continue; }
+                        resetFailedXunleiTask(task);
+                        xunleiTransferRunnerService.submitOne(task.getId());
+                        task = xunleiTransferTaskService.getById(task.getId());
+                        hasShare = task != null && hasText(task.getShareUrl());
+                    } else {
+                        if (quarkTransferTaskService == null) throw new IllegalStateException("Quark transfer service unavailable");
+                        QuarkTransferTask task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+                        if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Quark transfer task"); items.add(item); continue; }
+                        resetFailedQuarkTask(task);
+                        quarkTransferRunnerService.submitOne(task.getId());
+                        task = quarkTransferTaskService.getById(task.getId());
+                        hasShare = task != null && hasText(task.getShareUrl());
+                    }
+                    if (!hasShare) throw new IllegalStateException("Transfer did not create an own share");
+                    ResourceHubPublishResult published = resourceHubPublishService.publishDiscovery(discovery.getId());
+                    int saved = published.getPublished() + published.getUpdated();
+                    if (saved <= 0 || published.getFailed() > 0) throw new IllegalStateException(
+                            published.getErrors().isEmpty() ? "Discovery publish failed" : published.getErrors().get(0));
+                    if (gyingSourceWorkflowService != null && resourceLinkService != null) {
+                        for (Long resourceId : published.getResourceIds()) {
+                            gyingSourceWorkflowService.publishResourceToGying(resourceLinkService.getById(resourceId));
+                        }
+                    }
+                    item.put("status", "SUCCEEDED"); item.put("published", saved); succeeded++;
+                } catch (Exception error) {
+                    item.put("status", "FAILED"); item.put("error", trim(error.getMessage(), 500)); failed++;
+                }
+                items.add(item);
+                sleep(worker.getDiscoveredRetryDelayMs());
+            }
+            result.put("status", "COMPLETED"); result.put("checked", discoveries.size());
+            result.put("succeeded", succeeded); result.put("failed", failed); result.put("skipped", skipped); result.put("items", items);
+            return result;
+        } finally { running.set(false); }
+    }
+
+    private Map<String, Object> skippedRetry(Map<String, Object> result, String reason) {
+        result.put("status", "SKIPPED"); result.put("reason", reason); return result;
+    }
+
+    private void resetFailedQuarkTask(QuarkTransferTask task) {
+        if ("FAILED".equalsIgnoreCase(task.getStatus())) {
+            task.setStatus("PENDING"); task.setAttempts(0); task.setLastError(null); task.setUpdatedAt(LocalDateTime.now()); quarkTransferTaskService.updateById(task);
+        }
+    }
+
+    private void resetFailedXunleiTask(XunleiTransferTask task) {
+        if ("FAILED".equalsIgnoreCase(task.getStatus())) {
+            task.setStatus("PENDING"); task.setAttempts(0); task.setLastError(null); task.setUpdatedAt(LocalDateTime.now()); xunleiTransferTaskService.updateById(task);
+        }
+    }
+
+    private void sleep(long ms) {
+        if (ms <= 0) return;
+        try { Thread.sleep(ms); } catch (InterruptedException error) { Thread.currentThread().interrupt(); }
     }
 
     private boolean hasActiveMetadataSyncTask(List<String> sources) {

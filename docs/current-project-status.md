@@ -97,3 +97,9 @@ npm run build
 cd ..
 docker compose -f docker-compose.prod.yml config --quiet
 ```
+
+## 已发现任务重跑
+
+- 影视资源中心支持夸克、迅雷“已发现”转存任务的批量延迟重跑，可在发现结果页手动触发。
+- 定时任务每天 08:30（Asia/Shanghai）运行；本轮存在迅雷任务但 Authorization 已过期或不可用时，整轮跳过，不启动转存。
+- 单条“重试分享并发布”以及批量重跑在本地资源发布成功后，会继续同步发布到 GYING；重跑数量和间隔可通过 `RESOURCE_HUB_DISCOVERED_RETRY_*` 配置。

@@ -1650,6 +1650,24 @@ export default function ResourceHubAdminPage() {
                                             {t('resourceHubBatchRetryShare')}
                                         </Button>
                                         <Button
+                                            icon={<CloudSyncOutlined />}
+                                            loading={runningAction === 'retry-discovered'}
+                                            onClick={() => runResultAction(
+                                                'retry-discovered',
+                                                '/api/admin/resource-hub/discoveries/retry-discovered',
+                                                (data) => data.status === 'SKIPPED'
+                                                    ? `${t('resourceHubRetryDiscoveredSkipped')}: ${String(data.reason || '')}`
+                                                    : t('resourceHubRetryDiscoveredDone', {
+                                                        checked: Number(data.checked || 0),
+                                                        succeeded: Number(data.succeeded || 0),
+                                                        failed: Number(data.failed || 0),
+                                                        skipped: Number(data.skipped || 0),
+                                                    }),
+                                            )}
+                                        >
+                                            {t('resourceHubRetryDiscovered')}
+                                        </Button>
+                                        <Button
                                             type="primary"
                                             icon={<ShareAltOutlined />}
                                             disabled={selectedDiscoveryIds.length === 0}

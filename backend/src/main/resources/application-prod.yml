@@ -131,6 +131,10 @@ resource-hub:
     quark-limit: ${RESOURCE_HUB_WORKER_QUARK_LIMIT:5}
     xunlei-limit: ${RESOURCE_HUB_WORKER_XUNLEI_LIMIT:5}
     publish-limit: ${RESOURCE_HUB_WORKER_PUBLISH_LIMIT:20}
+    discovered-retry-enabled: ${RESOURCE_HUB_DISCOVERED_RETRY_ENABLED:true}
+    discovered-retry-limit: ${RESOURCE_HUB_DISCOVERED_RETRY_LIMIT:20}
+    discovered-retry-delay-ms: ${RESOURCE_HUB_DISCOVERED_RETRY_DELAY_MS:5000}
+    discovered-retry-cron: ${RESOURCE_HUB_DISCOVERED_RETRY_CRON:0 30 8 * * *}
   qq-channel-publisher:
     base-url: ${QQ_CHANNEL_PUBLISHER_BASE_URL:http://host.docker.internal:8092}
     token: ${QQ_CHANNEL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}

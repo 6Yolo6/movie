@@ -368,6 +368,13 @@ public class ResourceHubAdminController {
         return ApiResponse.ok(runDiscoveryBatch(discoveryResultIds, this::retryShareAndPublishOne));
     }
 
+    @PostMapping("/discoveries/retry-discovered")
+    public ApiResponse<Map<String, Object>> retryDiscoveredTransfers(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        return ApiResponse.ok(resourceHubWorkerService.retryDiscoveredTransfers(true));
+    }
+
     @PostMapping("/discoveries/reconcile")
     public ApiResponse<Map<String, Object>> reconcileDiscoveries(
             @RequestParam(defaultValue = "true") boolean dryRun,
@@ -904,6 +911,11 @@ public class ResourceHubAdminController {
                     : publishResult.getErrors().get(0));
         }
         requirePublishedResource(discovery.getMovieId());
+        ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryResultId);
+        if (refreshed != null && refreshed.getResourceLinkId() != null && gyingSourceWorkflowService != null) {
+            ResourceLink link = resourceLinkService.getById(refreshed.getResourceLinkId());
+            result.put("gyingPublished", link != null && gyingSourceWorkflowService.publishResourceToGying(link));
+        }
         return result;
     }
 
@@ -920,6 +932,11 @@ public class ResourceHubAdminController {
                     ? "Discovery publish failed" : publishResult.getErrors().get(0));
         }
         requirePublishedResource(discovery.getMovieId());
+        ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryResultId);
+        if (refreshed != null && refreshed.getResourceLinkId() != null && gyingSourceWorkflowService != null) {
+            ResourceLink link = resourceLinkService.getById(refreshed.getResourceLinkId());
+            result.put("gyingPublished", link != null && gyingSourceWorkflowService.publishResourceToGying(link));
+        }
         return result;
     }
 
