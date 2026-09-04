@@ -76,6 +76,10 @@ interface ResourceHubConfig {
     workerTaskLimit: number;
     workerQuarkLimit: number;
     workerPublishLimit: number;
+    discoveredRetryEnabled: boolean;
+    discoveredRetryLimit: number;
+    discoveredRetryDelayMs: number;
+    discoveredRetryCron: string;
 }
 
 type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources'> & {
@@ -288,6 +292,7 @@ export default function ResourceHubAdminPage() {
     const [discoveryStatus, setDiscoveryStatus] = useState<string | undefined>();
     const [discoverySortOrder, setDiscoverySortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedDiscoveryIds, setSelectedDiscoveryIds] = useState<React.Key[]>([]);
+    const [retryDiscoveredItems, setRetryDiscoveredItems] = useState<Record<string, unknown>[]>([]);
     const [missingResources, setMissingResources] = useState<MissingResourceMovie[]>([]);
     const [missingLoading, setMissingLoading] = useState(false);
     const [missingPage, setMissingPage] = useState(1);
@@ -505,6 +510,9 @@ export default function ResourceHubAdminPage() {
         setRunningAction(key);
         try {
             const data = await requestJson<Record<string, unknown>>(path, { method: 'POST' });
+            if (key === 'retry-discovered' && Array.isArray(data.items)) {
+                setRetryDiscoveredItems(data.items.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object'));
+            }
             message.success(successText(data));
             await refreshAll();
         } catch (error) {
@@ -1390,6 +1398,26 @@ export default function ResourceHubAdminPage() {
                                                             <InputNumber min={1} max={100} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
+                                                    <Col xs={24} md={6}>
+                                                        <Form.Item name="discoveredRetryEnabled" label={t('resourceHubRetryDiscoveredEnabled')} valuePropName="checked">
+                                                            <Switch />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={6}>
+                                                        <Form.Item name="discoveredRetryLimit" label={t('resourceHubRetryDiscoveredLimit')}>
+                                                            <InputNumber min={1} max={100} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={6}>
+                                                        <Form.Item name="discoveredRetryDelayMs" label={t('resourceHubRetryDiscoveredDelay')}>
+                                                            <InputNumber min={0} max={3600000} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={24} md={6}>
+                                                        <Form.Item name="discoveredRetryCron" label={t('resourceHubRetryDiscoveredCron')}>
+                                                            <Input />
+                                                        </Form.Item>
+                                                    </Col>
                                                 </Row>
                                                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
                                                     {t('resourceHubSaveSettings')}
@@ -1700,6 +1728,20 @@ export default function ResourceHubAdminPage() {
                                             showTotal: (total) => t('resourceHubTotalDiscoveries', { count: total }),
                                         }}
                                     />
+                                    {retryDiscoveredItems.length > 0 && (
+                                        <Table
+                                            className="mt-4"
+                                            size="small"
+                                            rowKey={(record) => String(record.discoveryResultId)}
+                                            pagination={{ pageSize: 10 }}
+                                            dataSource={retryDiscoveredItems}
+                                            columns={[
+                                                { title: 'ID', dataIndex: 'discoveryResultId', width: 100 },
+                                                { title: t('resourceHubStatus'), dataIndex: 'status', width: 120 },
+                                                { title: t('resourceHubError'), render: (_, record) => String(record.error || record.reason || '') },
+                                            ]}
+                                        />
+                                    )}
                                 </Card>
                             ),
                         },

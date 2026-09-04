@@ -27,6 +27,7 @@ import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceHubWorkerService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
+import com.gying.movie.utils.ResourceHubHashUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -203,10 +204,19 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                     result.put("reconcileError", trim(error.getMessage(), 500));
                 }
             }
-            List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+            List<ResourceDiscoveryResult> rawDiscoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
                     .eq("status", "DISCOVERED").isNull("resource_link_id")
                     .in("provider", List.of("QUARK", "XUNLEI"))
                     .orderByAsc("updated_at").last("LIMIT " + limit));
+            Map<Long, ResourceDiscoveryResult> uniqueDiscoveries = new LinkedHashMap<>();
+            if (rawDiscoveries != null) {
+                for (ResourceDiscoveryResult discovery : rawDiscoveries) {
+                    if (discovery != null && discovery.getId() != null) {
+                        uniqueDiscoveries.putIfAbsent(discovery.getId(), discovery);
+                    }
+                }
+            }
+            List<ResourceDiscoveryResult> discoveries = new ArrayList<>(uniqueDiscoveries.values());
             boolean hasXunlei = discoveries.stream().anyMatch(d -> "XUNLEI".equalsIgnoreCase(d.getProvider()));
             if (hasXunlei && (xunleiClient == null || !xunleiClient.hasUsableAuthorization())) {
                 result.put("status", "SKIPPED");
@@ -224,8 +234,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                     boolean hasShare;
                     if ("XUNLEI".equals(provider)) {
                         if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) throw new IllegalStateException("Xunlei transfer service unavailable");
-                        XunleiTransferTask task = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
-                                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+                        XunleiTransferTask task = findXunleiTransferTask(discovery);
                         if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Xunlei transfer task"); items.add(item); continue; }
                         resetFailedXunleiTask(task);
                         xunleiTransferRunnerService.submitOne(task.getId());
@@ -233,8 +242,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         hasShare = task != null && hasText(task.getShareUrl());
                     } else {
                         if (quarkTransferTaskService == null) throw new IllegalStateException("Quark transfer service unavailable");
-                        QuarkTransferTask task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
-                                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+                        QuarkTransferTask task = findQuarkTransferTask(discovery);
                         if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Quark transfer task"); items.add(item); continue; }
                         resetFailedQuarkTask(task);
                         quarkTransferRunnerService.submitOne(task.getId());
@@ -266,6 +274,38 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private Map<String, Object> skippedRetry(Map<String, Object> result, String reason) {
         result.put("status", "SKIPPED"); result.put("reason", reason); return result;
+    }
+
+    private XunleiTransferTask findXunleiTransferTask(ResourceDiscoveryResult discovery) {
+        String urlHash = hasText(discovery.getOriginalUrlHash())
+                ? discovery.getOriginalUrlHash() : ResourceHubHashUtils.sha256(discovery.getOriginalUrl());
+        QueryWrapper<XunleiTransferTask> query = new QueryWrapper<XunleiTransferTask>()
+                .eq("discovery_result_id", discovery.getId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1");
+        XunleiTransferTask task = xunleiTransferTaskService.getOne(query, false);
+        if (task != null || !hasText(discovery.getMovieId()) || !hasText(urlHash)) return task;
+        return xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", discovery.getMovieId())
+                .eq("original_url_hash", urlHash)
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
+    }
+
+    private QuarkTransferTask findQuarkTransferTask(ResourceDiscoveryResult discovery) {
+        String urlHash = hasText(discovery.getOriginalUrlHash())
+                ? discovery.getOriginalUrlHash() : ResourceHubHashUtils.sha256(discovery.getOriginalUrl());
+        QueryWrapper<QuarkTransferTask> query = new QueryWrapper<QuarkTransferTask>()
+                .eq("discovery_result_id", discovery.getId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1");
+        QuarkTransferTask task = quarkTransferTaskService.getOne(query, false);
+        if (task != null || !hasText(discovery.getMovieId()) || !hasText(urlHash)) return task;
+        return quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("movie_id", discovery.getMovieId())
+                .eq("original_url_hash", urlHash)
+                .orderByDesc("updated_at")
+                .last("LIMIT 1"), false);
     }
 
     private void resetFailedQuarkTask(QuarkTransferTask task) {

@@ -30,4 +30,8 @@ public class ResourceHubConfigResponse {
     private int workerTaskLimit;
     private int workerQuarkLimit;
     private int workerPublishLimit;
+    private boolean discoveredRetryEnabled;
+    private int discoveredRetryLimit;
+    private long discoveredRetryDelayMs;
+    private String discoveredRetryCron;
 }

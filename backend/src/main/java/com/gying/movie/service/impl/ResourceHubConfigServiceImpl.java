@@ -46,6 +46,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_WORKER_TASK_LIMIT = "resource.hub.worker.task_limit";
     private static final String KEY_WORKER_QUARK_LIMIT = "resource.hub.worker.quark_limit";
     private static final String KEY_WORKER_PUBLISH_LIMIT = "resource.hub.worker.publish_limit";
+    private static final String KEY_DISCOVERED_RETRY_ENABLED = "resource.hub.worker.discovered_retry_enabled";
+    private static final String KEY_DISCOVERED_RETRY_LIMIT = "resource.hub.worker.discovered_retry_limit";
+    private static final String KEY_DISCOVERED_RETRY_DELAY_MS = "resource.hub.worker.discovered_retry_delay_ms";
+    private static final String KEY_DISCOVERED_RETRY_CRON = "resource.hub.worker.discovered_retry_cron";
 
     private final ResourceHubProperties properties;
     private final ISysConfigService sysConfigService;
@@ -99,6 +103,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         worker.setTaskLimit(readInt(KEY_WORKER_TASK_LIMIT, worker.getTaskLimit(), 1, 20));
         worker.setQuarkLimit(readInt(KEY_WORKER_QUARK_LIMIT, worker.getQuarkLimit(), 1, 20));
         worker.setPublishLimit(readInt(KEY_WORKER_PUBLISH_LIMIT, worker.getPublishLimit(), 1, 100));
+        worker.setDiscoveredRetryEnabled(readBoolean(KEY_DISCOVERED_RETRY_ENABLED, worker.isDiscoveredRetryEnabled()));
+        worker.setDiscoveredRetryLimit(readInt(KEY_DISCOVERED_RETRY_LIMIT, worker.getDiscoveredRetryLimit(), 1, 100));
+        worker.setDiscoveredRetryDelayMs(readLong(KEY_DISCOVERED_RETRY_DELAY_MS, worker.getDiscoveredRetryDelayMs(), 0, 3600000));
+        worker.setDiscoveredRetryCron(readString(KEY_DISCOVERED_RETRY_CRON, worker.getDiscoveredRetryCron()));
 
         ensureDefaults();
         return fromProperties();
@@ -226,6 +234,25 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             worker.setPublishLimit(value);
             upsert(KEY_WORKER_PUBLISH_LIMIT, Integer.toString(value), "Discoveries published per worker run");
         }
+        if (request.getDiscoveredRetryEnabled() != null) {
+            worker.setDiscoveredRetryEnabled(request.getDiscoveredRetryEnabled());
+            upsert(KEY_DISCOVERED_RETRY_ENABLED, Boolean.toString(request.getDiscoveredRetryEnabled()), "Enable discovered transfer retry");
+        }
+        if (request.getDiscoveredRetryLimit() != null) {
+            int value = clamp(request.getDiscoveredRetryLimit(), 1, 100);
+            worker.setDiscoveredRetryLimit(value);
+            upsert(KEY_DISCOVERED_RETRY_LIMIT, Integer.toString(value), "Discovered transfer retry limit");
+        }
+        if (request.getDiscoveredRetryDelayMs() != null) {
+            long value = clamp(request.getDiscoveredRetryDelayMs(), 0L, 3600000L);
+            worker.setDiscoveredRetryDelayMs(value);
+            upsert(KEY_DISCOVERED_RETRY_DELAY_MS, Long.toString(value), "Delay between discovered transfer retries in milliseconds");
+        }
+        if (request.getDiscoveredRetryCron() != null && hasText(request.getDiscoveredRetryCron())) {
+            String value = request.getDiscoveredRetryCron().trim();
+            worker.setDiscoveredRetryCron(value);
+            upsert(KEY_DISCOVERED_RETRY_CRON, value, "Discovered transfer retry cron");
+        }
 
         return fromProperties();
     }
@@ -264,6 +291,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setWorkerTaskLimit(worker.getTaskLimit());
         response.setWorkerQuarkLimit(worker.getQuarkLimit());
         response.setWorkerPublishLimit(worker.getPublishLimit());
+        response.setDiscoveredRetryEnabled(worker.isDiscoveredRetryEnabled());
+        response.setDiscoveredRetryLimit(worker.getDiscoveredRetryLimit());
+        response.setDiscoveredRetryDelayMs(worker.getDiscoveredRetryDelayMs());
+        response.setDiscoveredRetryCron(worker.getDiscoveredRetryCron());
         return response;
     }
 
@@ -317,6 +348,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Tasks processed per worker run"));
         defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Quark transfers submitted per worker run"));
         defaults.put(KEY_WORKER_PUBLISH_LIMIT, values(Integer.toString(properties.getWorker().getPublishLimit()), "Discoveries published per worker run"));
+        defaults.put(KEY_DISCOVERED_RETRY_ENABLED, values(Boolean.toString(properties.getWorker().isDiscoveredRetryEnabled()), "Enable discovered transfer retry"));
+        defaults.put(KEY_DISCOVERED_RETRY_LIMIT, values(Integer.toString(properties.getWorker().getDiscoveredRetryLimit()), "Discovered transfer retry limit"));
+        defaults.put(KEY_DISCOVERED_RETRY_DELAY_MS, values(Long.toString(properties.getWorker().getDiscoveredRetryDelayMs()), "Delay between discovered transfer retries in milliseconds"));
+        defaults.put(KEY_DISCOVERED_RETRY_CRON, values(properties.getWorker().getDiscoveredRetryCron(), "Discovered transfer retry cron"));
         defaults.forEach((key, value) -> upsertMissing(key, value[0], value[1]));
     }
 
@@ -332,6 +367,15 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         String value = sysConfigService.getConfigValue(key, Integer.toString(defaultValue));
         try {
             return clamp(Integer.parseInt(value), min, max);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private long readLong(String key, long defaultValue, long min, long max) {
+        String value = sysConfigService.getConfigValue(key, Long.toString(defaultValue));
+        try {
+            return Math.min(Math.max(Long.parseLong(value), min), max);
         } catch (NumberFormatException e) {
             return defaultValue;
         }
@@ -396,6 +440,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     }
 
     private int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    private long clamp(long value, long min, long max) {
         return Math.min(Math.max(value, min), max);
     }
 
