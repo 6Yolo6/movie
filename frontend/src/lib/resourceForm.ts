@@ -4,6 +4,12 @@ export const RESOURCE_QUICK_PARAMS = [
     'WEB-DL', 'BluRay',
 ];
 
+export const RESOURCE_MOVIE_TITLE_PARAM = '\u005b\u5f71\u7247\u540d\u005d';
+
+export function materializeQuickParam(parameter: string, movieTitle?: string): string {
+    return parameter === RESOURCE_MOVIE_TITLE_PARAM ? (movieTitle || '').trim() : parameter;
+}
+
 export function inferResourceProvider(value?: string): string | undefined {
     const url = (value || '').toLowerCase();
     if (url.includes('quark.cn')) return 'QUARK';

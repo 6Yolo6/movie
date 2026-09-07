@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
 import { useTranslation } from 'react-i18next';
-import { inferResourceProvider, insertQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
+import { inferResourceProvider, insertQuickParam, materializeQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -136,7 +136,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const insertParameter = (parameter: string) => {
         const input = nameInputRef.current?.input;
         const current = form.getFieldValue('name') || '';
-        const result = insertQuickParam(current, parameter, input?.selectionStart, input?.selectionEnd);
+        const resolvedParameter = materializeQuickParam(parameter, movie.titleCn);
+        if (!resolvedParameter) return;
+        const result = insertQuickParam(current, resolvedParameter, input?.selectionStart, input?.selectionEnd);
         form.setFieldValue('name', result.value);
         requestAnimationFrame(() => {
             input?.focus();
@@ -844,7 +846,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                             <span className="text-gray-500">{t('resourceQuickParams')}</span>
                             <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
                             {quickParams.map((parameter) => (
-                                <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>{parameter}</Tag>
+                                <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>
+                                    {parameter === '\u005b\u5f71\u7247\u540d\u005d' ? movie.titleCn : parameter}
+                                </Tag>
                             ))}
                         </Space>
                         <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>

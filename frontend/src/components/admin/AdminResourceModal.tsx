@@ -8,7 +8,7 @@ import type { Rule } from 'antd/es/form';
 import { api, readApiError } from '@/lib/api';
 import type { MovieMetadata, ResourceLink } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { inferResourceProvider, insertQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
+import { inferResourceProvider, insertQuickParam, materializeQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 type AdminResource = ResourceLink & { movieTitle?: string };
 
@@ -41,6 +41,7 @@ const PROVIDERS = ['BAIDU', 'QUARK', 'ALIYUN', 'XUNLEI', 'UC', '115', '123PAN', 
 const movieOption = (movie: MovieMetadata) => ({
     value: movie.id,
     label: `${movie.titleCn}${movie.year ? ` (${movie.year})` : ''} - ${movie.id}`,
+    titleCn: movie.titleCn,
 });
 
 export default function AdminResourceModal({
@@ -60,7 +61,7 @@ export default function AdminResourceModal({
     const url = Form.useWatch('url', form);
     const [saving, setSaving] = useState(false);
     const [movieLoading, setMovieLoading] = useState(false);
-    const [movieOptions, setMovieOptions] = useState<{ value: string; label: string }[]>([]);
+    const [movieOptions, setMovieOptions] = useState<{ value: string; label: string; titleCn?: string }[]>([]);
     const [quickParams, setQuickParams] = useState(RESOURCE_QUICK_PARAMS);
     const [bindCandidates, setBindCandidates] = useState<{ value: string; label: string }[]>([]);
     const [bindLoading, setBindLoading] = useState(false);
@@ -109,7 +110,11 @@ export default function AdminResourceModal({
     const insertParameter = (parameter: string) => {
         const input = nameInputRef.current?.input;
         const current = form.getFieldValue('name') || '';
-        const result = insertQuickParam(current, parameter, input?.selectionStart, input?.selectionEnd);
+        const selectedMovieId = form.getFieldValue('movieId');
+        const movieTitle = movieOptions.find(item => item.value === selectedMovieId)?.titleCn;
+        const resolvedParameter = materializeQuickParam(parameter, movieTitle);
+        if (!resolvedParameter) return;
+        const result = insertQuickParam(current, resolvedParameter, input?.selectionStart, input?.selectionEnd);
         form.setFieldValue('name', result.value);
         requestAnimationFrame(() => {
             input?.focus();
@@ -158,6 +163,7 @@ export default function AdminResourceModal({
         setMovieOptions(resource ? [{
             value: resource.movieId,
             label: `${resource.movieTitle || resource.movieId} - ${resource.movieId}`,
+            titleCn: resource.movieTitle,
         }] : []);
         loadMovies();
     }, [form, loadMovies, open, resource]);
@@ -256,7 +262,11 @@ export default function AdminResourceModal({
                     <span className="text-gray-500">{t('resourceQuickParams')}</span>
                     <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
                     {quickParams.map((parameter) => (
-                        <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>{parameter}</Tag>
+                        <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>
+                            {parameter === '\u005b\u5f71\u7247\u540d\u005d'
+                                ? (movieOptions.find(item => item.value === form.getFieldValue('movieId'))?.titleCn || parameter)
+                                : parameter}
+                        </Tag>
                     ))}
                 </Space>
                 <Row gutter={16}>
