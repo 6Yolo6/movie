@@ -19,9 +19,13 @@ import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.MovieSearchCandidate;
+import com.gying.movie.dto.QuarkTransferRunResult;
+import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
+import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
+import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IMovieSourceIdentityService;
 import com.gying.movie.service.IQuarkShareService;
@@ -30,8 +34,11 @@ import com.gying.movie.service.IQuarkTransferTaskService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferTaskService;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +51,11 @@ class GyingSourceWorkflowServiceTest {
     private IMovieMetadataService movieService;
     private IMovieSourceIdentityService sourceIdentityService;
     private IResourceLinkService resourceLinkService;
+    private IResourceDiscoveryResultService discoveryService;
     private IQuarkTransferRunnerService transferRunnerService;
+    private IResourceHubPublishService publishService;
+    private IXunleiTransferTaskService xunleiTransferTaskService;
+    private IXunleiTransferRunnerService xunleiTransferRunnerService;
     private GyingSourceWorkflowService service;
 
     @BeforeEach
@@ -56,11 +67,13 @@ class GyingSourceWorkflowServiceTest {
         movieService = mock(IMovieMetadataService.class);
         sourceIdentityService = mock(IMovieSourceIdentityService.class);
         resourceLinkService = mock(IResourceLinkService.class);
-        IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
+        discoveryService = mock(IResourceDiscoveryResultService.class);
         IQuarkTransferTaskService transferService = mock(IQuarkTransferTaskService.class);
         transferRunnerService = mock(IQuarkTransferRunnerService.class);
-        IResourceHubPublishService publishService = mock(IResourceHubPublishService.class);
+        publishService = mock(IResourceHubPublishService.class);
         IQuarkShareService shareService = mock(IQuarkShareService.class);
+        xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
+        xunleiTransferRunnerService = mock(IXunleiTransferRunnerService.class);
         service = new GyingSourceWorkflowService(
                 gyingSourceClient,
                 tmdbClient,
@@ -73,7 +86,9 @@ class GyingSourceWorkflowServiceTest {
                 transferService,
                 transferRunnerService,
                 publishService,
-                shareService);
+                shareService,
+                xunleiTransferTaskService,
+                xunleiTransferRunnerService);
     }
 
     @Test
@@ -140,6 +155,67 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("PUBLISHED", result.get("status"));
         assertEquals(42L, result.get("resourceId"));
         assertEquals(false, result.get("transferMode"));
+        verify(transferRunnerService, never()).submitOne(any());
+    }
+
+    @Test
+    void ensureMoviePrefersXunleiCandidateWhenOnlyQuarkLocalResourceExists() {
+        MovieMetadata movie = movie("XL1", "测试剧集", "tv", "TRAILER");
+        String quarkUrl = "https://pan.quark.cn/s/public-quark";
+        String xunleiUrl = "https://pan.xunlei.com/s/public-xunlei?pwd=abcd";
+        when(gyingSourceClient.get("/movie/tv/XL1"))
+                .thenReturn(Map.of(
+                        "title", movie.getTitleCn(),
+                        "resources", List.of(
+                                Map.of("source_id", "Q1", "provider", "QUARK", "title", "夸克", "url", quarkUrl),
+                                Map.of("source_id", "X1", "provider", "XUNLEI", "title", "迅雷", "url", xunleiUrl)),
+                        "ownResources", List.of()))
+                .thenReturn(Map.of(
+                        "title", movie.getTitleCn(),
+                        "resources", List.of(),
+                        "ownResources", List.of(Map.of("source_id", "OWN-X1", "url", "https://pan.xunlei.com/s/own"))));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", movie.getId()));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(panSouClient.checkLinksByProvider(any())).thenReturn(Map.of());
+
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(101L);
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(discoveryService.save(any())).thenAnswer(invocation -> {
+            ((ResourceDiscoveryResult) invocation.getArgument(0)).setId(discovery.getId());
+            return true;
+        });
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(202L);
+        AtomicReference<XunleiTransferTask> taskRef = new AtomicReference<>();
+        when(xunleiTransferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(xunleiTransferTaskService.save(any())).thenAnswer(invocation -> {
+            XunleiTransferTask saved = invocation.getArgument(0);
+            saved.setId(task.getId());
+            taskRef.set(saved);
+            return true;
+        });
+        when(xunleiTransferTaskService.getById(task.getId())).thenAnswer(invocation -> taskRef.get());
+        when(xunleiTransferRunnerService.submitOne(task.getId())).thenAnswer(invocation -> {
+            taskRef.get().setShareUrl("https://pan.xunlei.com/s/own");
+            return new QuarkTransferRunResult();
+        });
+        ResourceHubPublishResult publish = new ResourceHubPublishResult();
+        publish.getResourceIds().add(303L);
+        when(publishService.publishDiscovery(discovery.getId())).thenReturn(publish);
+        ResourceLink local = new ResourceLink();
+        local.setId(303L);
+        local.setMovieId(movie.getId());
+        local.setProvider("XUNLEI");
+        local.setUrl("https://pan.xunlei.com/s/own");
+        when(resourceLinkService.getById(303L)).thenReturn(local);
+        when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of("sourceId", "OWN-X1"));
+
+        Map<String, Object> result = service.ensureMovieResource("tv", "XL1");
+
+        assertEquals("PUBLISHED", result.get("status"));
+        verify(xunleiTransferRunnerService).submitOne(task.getId());
         verify(transferRunnerService, never()).submitOne(any());
     }
 
@@ -452,6 +528,7 @@ class GyingSourceWorkflowServiceTest {
         Map<String, Object> result = service.checkPublishedResources(20, true);
 
         assertEquals(1, result.get("invalid"));
+        assertEquals("mv/EGER", ((List<Map<String, Object>>) result.get("items")).get(0).get("gyingResourceId"));
         assertEquals("INVALID", local.getLinkStatus());
         assertFalse(local.getLastCheckError().isBlank());
         verify(resourceLinkService).updateById(local);

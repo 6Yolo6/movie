@@ -568,9 +568,13 @@ public class GyingSourceWorkflowService {
             return result;
         }
 
-        ResourceLink local = findPublishableLocalResource(movie.getId());
+        List<Map<String, Object>> candidates = selectTransferCandidates(allResources);
+        boolean hasXunleiCandidate = candidates.stream()
+                .anyMatch(item -> "XUNLEI".equalsIgnoreCase(
+                        firstText(stringValue(item.get("provider")), "QUARK")));
+        ResourceLink local = findPublishableLocalResource(
+                movie.getId(), hasXunleiCandidate ? "XUNLEI" : null);
         if (local == null) {
-            List<Map<String, Object>> candidates = selectTransferCandidates(allResources);
             if (candidates.isEmpty()) {
                 result.put("status", "NO_TRANSFERABLE_RESOURCE");
                 markMovieTrailer(movie);
@@ -871,13 +875,23 @@ public class GyingSourceWorkflowService {
             item.put("checkStatus", status);
             item.put("checkMessage", check == null ? null : check.message());
             ResourceLink local = findLocalPublishedResource(item);
-            QuarkTransferTask transfer = findRepairTransfer(local, item);
+            String provider = firstText(stringValue(item.get("provider")),
+                    local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
+            QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+            XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider)
+                    ? findRepairXunleiTransfer(local, item) : null;
             boolean canRetransfer = hasText(stringValue(item.get("mid")))
                     && TYPE_CODES.contains(stringValue(item.get("type_code")).toLowerCase(Locale.ROOT));
+            String typeCode = stringValue(item.get("type_code"));
+            String mid = stringValue(item.get("mid"));
+            if (hasText(typeCode) && hasText(mid)) {
+                item.put("gyingResourceId", normalizeTypeCode(typeCode) + "/" + mid);
+            }
             item.put("resourceId", local == null ? null : local.getId());
             item.put("localMovieId", local == null ? null : local.getMovieId());
-            item.put("repairable", transfer != null || canRetransfer);
-            item.put("repairMode", transfer != null ? "RESHARE" : canRetransfer ? "RETRANSFER" : "NONE");
+            item.put("repairable", transfer != null || xunleiTransfer != null || canRetransfer);
+            item.put("repairMode", transfer != null || xunleiTransfer != null
+                    ? "RESHARE" : canRetransfer ? "RETRANSFER" : "NONE");
             if ("VALID".equals(status)) {
                 valid++;
             } else if ("INVALID".equals(status)) {
@@ -1298,7 +1312,10 @@ public class GyingSourceWorkflowService {
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
         String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
-        if ("XUNLEI".equals(provider) && xunleiTransferTaskService != null && xunleiTransferRunnerService != null) {
+        if ("XUNLEI".equals(provider)) {
+            if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) {
+                throw new IllegalStateException("Xunlei transfer service unavailable");
+            }
             return transferXunleiCandidate(movie, candidate, originalUrl);
         }
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
@@ -1426,8 +1443,14 @@ public class GyingSourceWorkflowService {
                 .filter(item -> !Boolean.TRUE.equals(item.get("is_own")))
                 .filter(item -> List.of("QUARK", "XUNLEI").contains(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase()))
                 .filter(item -> hasText(stringValue(item.get("url"))))
-                .sorted((left, right) -> qualityScore(stringValue(right.get("title")))
-                        - qualityScore(stringValue(left.get("title"))))
+                .sorted((left, right) -> {
+                    int providerOrder = providerPriority(stringValue(left.get("provider")))
+                            - providerPriority(stringValue(right.get("provider")));
+                    return providerOrder != 0
+                            ? providerOrder
+                            : qualityScore(stringValue(right.get("title")))
+                                    - qualityScore(stringValue(left.get("title")));
+                })
                 .limit(20)
                 .toList();
         Map<String, String> links = new LinkedHashMap<>();
@@ -1453,16 +1476,24 @@ public class GyingSourceWorkflowService {
     }
 
     private ResourceLink findPublishableLocalResource(String movieId) {
-        return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        return findPublishableLocalResource(movieId, null);
+    }
+
+    private ResourceLink findPublishableLocalResource(String movieId, String preferredProvider) {
+        QueryWrapper<ResourceLink> wrapper = new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .eq("audit_status", 1)
                 .eq("type", "DISK")
                 .isNull("deleted_at")
-                .and(query -> query.isNull("source").or().ne("source", "GYING"))
-                .and(query -> query.isNull("link_status")
-                        .or().in("link_status", List.of("NORMAL", "UNKNOWN")))
-                .last("ORDER BY CASE WHEN provider='QUARK' THEN 0 ELSE 1 END, updated_at DESC LIMIT 1"), false);
+                .and(condition -> condition.isNull("source").or().ne("source", "GYING"))
+                .and(condition -> condition.isNull("link_status")
+                        .or().in("link_status", List.of("NORMAL", "UNKNOWN")));
+        if (hasText(preferredProvider)) {
+            wrapper.eq("provider", preferredProvider.toUpperCase(Locale.ROOT));
+        }
+        return resourceLinkService.getOne(wrapper
+                .last("ORDER BY CASE WHEN provider='XUNLEI' THEN 0 WHEN provider='QUARK' THEN 1 ELSE 2 END, updated_at DESC LIMIT 1"), false);
     }
 
     private ResourceLink findResourceBySourceIds(String movieId, List<String> sourceIds) {
@@ -2049,6 +2080,10 @@ public class GyingSourceWorkflowService {
         if (upper.contains("1080P")) return 3;
         if (upper.contains("720P")) return 2;
         return 1;
+    }
+
+    private int providerPriority(String provider) {
+        return "XUNLEI".equalsIgnoreCase(provider) ? 0 : "QUARK".equalsIgnoreCase(provider) ? 1 : 2;
     }
 
     private int scoreSearchCandidate(String keyword, String title, String originalTitle) {
