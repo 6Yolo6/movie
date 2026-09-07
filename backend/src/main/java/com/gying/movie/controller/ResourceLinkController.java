@@ -140,22 +140,25 @@ public class ResourceLinkController {
             return ResponseEntity.badRequest().body("Movie not found");
         }
         String seriesName = base.getSeriesName();
+        boolean searching = keyword != null && !keyword.isBlank();
         var query = movieService.lambdaQuery()
                 .eq(MovieMetadata::getStatus, "ACTIVE")
                 .ne(MovieMetadata::getId, base.getId());
-        if (seriesName != null && !seriesName.isBlank()) {
+        if (!searching && seriesName != null && !seriesName.isBlank()) {
             query.eq(MovieMetadata::getSeriesName, seriesName);
-        } else if (base.getTmdbId() != null && base.getTmdbType() != null) {
+        } else if (!searching && base.getTmdbId() != null && base.getTmdbType() != null) {
             query.eq(MovieMetadata::getTmdbId, base.getTmdbId())
                     .eq(MovieMetadata::getTmdbType, base.getTmdbType());
-        } else {
+        } else if (!searching) {
             return ResponseEntity.ok(List.of());
         }
         if (keyword != null && !keyword.isBlank()) {
             String text = keyword.trim();
             query.and(w -> w.like(MovieMetadata::getTitleCn, text)
                     .or().like(MovieMetadata::getTitleEn, text)
-                    .or().like(MovieMetadata::getId, text));
+                    .or().like(MovieMetadata::getId, text)
+                    .or().like(MovieMetadata::getSeriesName, text)
+                    .or().like(MovieMetadata::getAliases, text));
         }
         int safeLimit = Math.min(Math.max(limit, 1), 100);
         List<Map<String, Object>> candidates = query.orderByAsc(MovieMetadata::getSeason)
@@ -1208,13 +1211,6 @@ public class ResourceLinkController {
             MovieMetadata candidate = movieService.getById(id);
             if (candidate == null || "DELETED".equalsIgnoreCase(candidate.getStatus())) {
                 throw new IllegalArgumentException("Bound movie not found: " + id);
-            }
-            boolean sameSeries = primary.getSeriesName() != null && !primary.getSeriesName().isBlank()
-                    && primary.getSeriesName().equals(candidate.getSeriesName());
-            boolean sameTmdb = primary.getTmdbId() != null && primary.getTmdbId().equals(candidate.getTmdbId())
-                    && Objects.equals(primary.getTmdbType(), candidate.getTmdbType());
-            if (!sameSeries && !sameTmdb) {
-                throw new IllegalArgumentException("Only movies from the same series can be bound");
             }
             result.add(candidate);
         }
