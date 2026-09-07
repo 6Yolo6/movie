@@ -14,4 +14,5 @@ public class ResourceSubmissionDTO {
     private String subtitle;
     private String fileSize;
     private String versionNote;
+    private Boolean bindSeries;
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm, Checkbox } from 'antd';
 import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
 import { useTranslation } from 'react-i18next';
+import { appendQuickParam, inferResourceProvider, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -36,6 +37,7 @@ interface ResourceFormValues {
     subtitle?: string;
     fileSize?: string;
     versionNote?: string;
+    bindSeries?: boolean;
 }
 
 const RenderLinkList = ({ items, type: _type, limit = 0, labels }: RenderLinkListProps) => {
@@ -81,9 +83,32 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const [submitting, setSubmitting] = useState(false);
     const [form] = Form.useForm();
     const resourceType = Form.useWatch('type', form) || 'DISK';
+    const resourceUrl = Form.useWatch('url', form);
     const [resourceItems, setResourceItems] = useState(resources);
     const [editingResource, setEditingResource] = useState<ResourceLink | null>(null);
     const isP2PType = resourceType === 'MAGNET' || resourceType === 'TORRENT';
+
+    useEffect(() => {
+        if (resourceType === 'DISK') {
+            const provider = inferResourceProvider(resourceUrl);
+            if (provider) form.setFieldValue('provider', provider);
+        }
+    }, [form, resourceType, resourceUrl]);
+
+    const pasteClipboard = async () => {
+        try {
+            const parsed = await readResourceClipboard();
+            form.setFieldsValue({
+                ...(parsed.url ? { url: parsed.url } : {}),
+                ...(parsed.code ? { code: parsed.code } : {}),
+                ...(parsed.name ? { name: parsed.name } : {}),
+                ...(parsed.provider ? { provider: parsed.provider } : {}),
+            });
+            message.success(t('resourceClipboardPasted'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceClipboardFailed'));
+        }
+    };
 
     // Summary Expanded State
     const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -770,6 +795,13 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
                             <Input placeholder="e.g. 4K Remastered Version" className="rounded-md" />
                         </Form.Item>
+                        <Space wrap className="mb-3">
+                            <span className="text-gray-500">{t('resourceQuickParams')}</span>
+                            <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
+                            {RESOURCE_QUICK_PARAMS.map((parameter) => (
+                                <Tag key={parameter} className="cursor-pointer" onClick={() => form.setFieldValue('name', appendQuickParam(form.getFieldValue('name'), parameter))}>{parameter}</Tag>
+                            ))}
+                        </Space>
                         <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
                             <Select className="rounded-md">
                                 <Option value="DISK">{t('cloudDisk')}</Option>
@@ -797,7 +829,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         )}
                         {resourceType === 'DISK' && (
                             <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
-                                <Select className="rounded-md">
+                                <Select className="rounded-md" disabled={!inferResourceProvider(resourceUrl)}>
                                     <Option value="BAIDU">{providers.BAIDU[i18n.language as LanguageKey]}</Option>
                                     <Option value="QUARK">{providers.QUARK[i18n.language as LanguageKey]}</Option>
                                     <Option value="XUNLEI">{providers.XUNLEI[i18n.language as LanguageKey]}</Option>
@@ -819,6 +851,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         </Space>
                         <Form.Item name="versionNote" label={t('versionNote')}>
                             <Input placeholder={t('versionNotePlaceholder')} className="rounded-md" />
+                        </Form.Item>
+                        <Form.Item name="bindSeries" valuePropName="checked">
+                            <Checkbox>{t('resourceBindSeries')}</Checkbox>
                         </Form.Item>
                         <Divider />
                         <div className="flex justify-end gap-3">

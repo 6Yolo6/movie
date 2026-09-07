@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { App, Button, Col, Form, Input, Modal, Row, Select, Space } from 'antd';
-import { PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { App, Button, Checkbox, Col, Form, Input, Modal, Row, Select, Space, Tag } from 'antd';
+import { CopyOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import type { Rule } from 'antd/es/form';
 import { api, readApiError } from '@/lib/api';
 import type { MovieMetadata, ResourceLink } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { appendQuickParam, inferResourceProvider, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 type AdminResource = ResourceLink & { movieTitle?: string };
 
@@ -31,6 +32,7 @@ type FormValues = {
     subtitle?: string;
     fileSize?: string;
     versionNote?: string;
+    bindSeries?: boolean;
 };
 
 const PROVIDERS = ['BAIDU', 'QUARK', 'ALIYUN', 'XUNLEI', 'UC', '115', '123PAN', 'TIANYI', 'MOBILE', 'PIKPAK'];
@@ -53,9 +55,32 @@ export default function AdminResourceModal({
     const { t } = useTranslation();
     const [form] = Form.useForm<FormValues>();
     const type = Form.useWatch('type', form) || 'DISK';
+    const url = Form.useWatch('url', form);
     const [saving, setSaving] = useState(false);
     const [movieLoading, setMovieLoading] = useState(false);
     const [movieOptions, setMovieOptions] = useState<{ value: string; label: string }[]>([]);
+
+    useEffect(() => {
+        if (type === 'DISK') {
+            const provider = inferResourceProvider(url);
+            if (provider) form.setFieldValue('provider', provider);
+        }
+    }, [form, type, url]);
+
+    const pasteClipboard = async () => {
+        try {
+            const parsed = await readResourceClipboard();
+            form.setFieldsValue({
+                ...(parsed.url ? { url: parsed.url } : {}),
+                ...(parsed.code ? { code: parsed.code } : {}),
+                ...(parsed.name ? { name: parsed.name } : {}),
+                ...(parsed.provider ? { provider: parsed.provider } : {}),
+            });
+            message.success(t('resourceClipboardPasted'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceClipboardFailed'));
+        }
+    };
 
     const loadMovies = useCallback(async (keyword = '') => {
         setMovieLoading(true);
@@ -180,6 +205,13 @@ export default function AdminResourceModal({
                 <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
                     <Input />
                 </Form.Item>
+                <Space wrap className="mb-3">
+                    <span className="text-gray-500">{t('resourceQuickParams')}</span>
+                    <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
+                    {RESOURCE_QUICK_PARAMS.map((parameter) => (
+                        <Tag key={parameter} className="cursor-pointer" onClick={() => form.setFieldValue('name', appendQuickParam(form.getFieldValue('name'), parameter))}>{parameter}</Tag>
+                    ))}
+                </Space>
                 <Row gutter={16}>
                     <Col xs={24} md={8}>
                         <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
@@ -189,7 +221,7 @@ export default function AdminResourceModal({
                     {type === 'DISK' && (
                         <Col xs={24} md={8}>
                             <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
-                                <Select showSearch options={PROVIDERS.map((value) => ({ value, label: value }))} />
+                                <Select disabled={!inferResourceProvider(url)} options={PROVIDERS.map((value) => ({ value, label: value }))} />
                             </Form.Item>
                         </Col>
                     )}
@@ -217,6 +249,9 @@ export default function AdminResourceModal({
                 </Row>
                 <Form.Item name="versionNote" label={t('versionNote')}>
                     <Input placeholder={t('versionNotePlaceholder')} />
+                </Form.Item>
+                <Form.Item name="bindSeries" valuePropName="checked">
+                    <Checkbox>{t('resourceBindSeries')}</Checkbox>
                 </Form.Item>
                 <Space className="flex w-full justify-end">
                     <Button onClick={onCancel}>{t('cancel')}</Button>

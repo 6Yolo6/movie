@@ -143,9 +143,7 @@ public class ResourceLinkController {
         if (urlError != null) {
             return ResponseEntity.badRequest().body(urlError);
         }
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER"
-                : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, resourceUrl, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
@@ -174,8 +172,11 @@ public class ResourceLinkController {
             }
         }
 
+        String urlHash = ResourceHubHashUtils.sha256(resourceUrl);
         long duplicateCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("url", resourceUrl).eq("status", "ACTIVE"));
+                new QueryWrapper<ResourceLink>().eq("movie_id", dto.getMovieId().trim())
+                        .eq("status", "ACTIVE").isNull("deleted_at")
+                        .and(w -> w.eq("url_hash", urlHash).or().eq("url", resourceUrl)));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
@@ -184,6 +185,7 @@ public class ResourceLinkController {
         link.setMovieId(dto.getMovieId());
         link.setName(cleanOptional(dto.getName(), 255));
         link.setUrl(resourceUrl);
+        link.setUrlHash(urlHash);
         link.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
         link.setProvider(provider);
         link.setType(type);
@@ -222,12 +224,13 @@ public class ResourceLinkController {
         String url = dto.getUrl().trim();
         String urlError = validateResourceUrl(type, url);
         if (urlError != null) return ResponseEntity.badRequest().body(urlError);
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER" : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, url, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
-        if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("url", url).eq("status", "ACTIVE")) > 0) {
+        if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("movie_id", movie.getId())
+                .eq("status", "ACTIVE").isNull("deleted_at")
+                .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(url)).or().eq("url", url))) > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
         LocalDateTime now = LocalDateTime.now();
@@ -346,18 +349,17 @@ public class ResourceLinkController {
         if (urlError != null) {
             return ResponseEntity.badRequest().body(urlError);
         }
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER"
-                : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, resourceUrl, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
         long duplicateCount = Objects.equals(resourceUrl, resource.getUrl())
                 ? 0
                 : resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                        .eq("url", resourceUrl)
+                        .eq("movie_id", resource.getMovieId())
                         .eq("status", "ACTIVE")
                         .isNull("deleted_at")
+                        .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(resourceUrl)).or().eq("url", resourceUrl))
                         .ne("id", id));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
@@ -1114,6 +1116,21 @@ public class ResourceLinkController {
 
     private boolean isHttpUrl(String url) {
         return url.startsWith("http://") || url.startsWith("https://");
+    }
+
+    private String resolveProvider(String type, String url, String requestedProvider) {
+        if (!"DISK".equals(type)) return "OTHER";
+        String value = url == null ? "" : url.toLowerCase();
+        if (value.contains("pan.quark.cn") || value.contains("quark.cn")) return "QUARK";
+        if (value.contains("pan.xunlei.com") || value.contains("xunlei.com")) return "XUNLEI";
+        if (value.contains("pan.baidu.com") || value.contains("baidu.com")) return "BAIDU";
+        if (value.contains("aliyundrive.com") || value.contains("alipan.com")) return "ALIYUN";
+        if (value.contains("115.com")) return "115";
+        if (value.contains("drive.uc.cn") || value.contains("uc.cn")) return "UC";
+        if (value.contains("123pan.com")) return "123PAN";
+        if (value.contains("tianyiyun.com") || value.contains("189.cn")) return "TIANYI";
+        if (value.contains("pikpak")) return "PIKPAK";
+        return requestedProvider == null || requestedProvider.isBlank() ? "OTHER" : requestedProvider.trim().toUpperCase();
     }
 
     private void applyQualityFields(ResourceLink resource, ResourceSubmissionDTO dto) {
