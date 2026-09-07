@@ -425,6 +425,7 @@
   "resourceClipboardPasted": "Share text recognized and filled",
   "resourceClipboardFailed": "Unable to read clipboard",
   "resourceBindSeries": "Same series resource (bind)",
+  "resourceBindSeriesPlaceholder": "Search and select seasons to bind",
   "resourceQuickParams": "Quick title parameters",
   "resourceHubBatchQqPost": "Post batch to QQ now",
   "resourceHubBatchDone": "Batch complete: {{succeeded}} succeeded, {{failed}} failed",

@@ -19,6 +19,7 @@ import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -398,13 +399,27 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private String resourceTitle(MovieMetadata movie, ResourceDiscoveryResult discovery) {
+        String genrePrefix = genrePrefix(movie);
         if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
             String title = SeasonSearchUtils.seasonQualifiedTitle(
                     firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),
                     movie.getSeason());
-            return movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+            title = movie.getYear() == null ? title : title + " (" + movie.getYear() + ")";
+            return genrePrefix + title;
         }
-        return firstText(discovery.getTitle(), movie.getTitleCn(), movie.getTitleEn(), movie.getId());
+        return genrePrefix + firstText(discovery.getTitle(), movie.getTitleCn(), movie.getTitleEn(), movie.getId());
+    }
+
+    private String genrePrefix(MovieMetadata movie) {
+        if (movie == null || movie.getGenres() == null || movie.getGenres().isEmpty()) return "";
+        String genres = movie.getGenres().stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .distinct()
+                .limit(3)
+                .reduce("", String::concat);
+        return genres.isBlank() ? "" : "【" + genres + "】";
     }
     private String normalizeType(String type) {
         String normalized = hasText(type) ? type.trim().toUpperCase() : "DISK";

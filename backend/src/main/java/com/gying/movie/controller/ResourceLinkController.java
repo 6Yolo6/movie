@@ -120,6 +120,61 @@ public class ResourceLinkController {
         repairInvalidExecutor.shutdownNow();
     }
 
+    @GetMapping("/form-config")
+    public ResponseEntity<?> getResourceFormConfig() {
+        String configured = sysConfigService.getConfigValue(
+                "resource.form.quick_params",
+                "[影片名],REMUX,4K/2160P,1080P,720P,中英字幕,60帧,简体字幕,120帧,HDR杜比视界,繁体字幕,简繁字幕,杜比全景声,H264,H265,AV1,WEB-DL,BluRay");
+        List<String> quickParams = List.of(configured.split("[,，\\r\\n]+"))
+                .stream().map(String::trim).filter(value -> !value.isBlank()).distinct().toList();
+        return ResponseEntity.ok(Map.of("quickParams", quickParams));
+    }
+
+    @GetMapping("/bind-candidates")
+    public ResponseEntity<?> getBindCandidates(
+            @RequestParam String movieId,
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "50") int limit) {
+        MovieMetadata base = movieService.getById(movieId.trim());
+        if (base == null || "DELETED".equalsIgnoreCase(base.getStatus())) {
+            return ResponseEntity.badRequest().body("Movie not found");
+        }
+        String seriesName = base.getSeriesName();
+        var query = movieService.lambdaQuery()
+                .eq(MovieMetadata::getStatus, "ACTIVE")
+                .ne(MovieMetadata::getId, base.getId());
+        if (seriesName != null && !seriesName.isBlank()) {
+            query.eq(MovieMetadata::getSeriesName, seriesName);
+        } else if (base.getTmdbId() != null && base.getTmdbType() != null) {
+            query.eq(MovieMetadata::getTmdbId, base.getTmdbId())
+                    .eq(MovieMetadata::getTmdbType, base.getTmdbType());
+        } else {
+            return ResponseEntity.ok(List.of());
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String text = keyword.trim();
+            query.and(w -> w.like(MovieMetadata::getTitleCn, text)
+                    .or().like(MovieMetadata::getTitleEn, text)
+                    .or().like(MovieMetadata::getId, text));
+        }
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        List<Map<String, Object>> candidates = query.orderByAsc(MovieMetadata::getSeason)
+                .orderByAsc(MovieMetadata::getYear)
+                .last("LIMIT " + safeLimit)
+                .list().stream().map(movie -> {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("id", movie.getId());
+                    item.put("titleCn", movie.getTitleCn());
+                    item.put("titleEn", movie.getTitleEn());
+                    item.put("seriesName", movie.getSeriesName());
+                    item.put("season", movie.getSeason());
+                    item.put("year", movie.getYear());
+                    item.put("category", movie.getCategory());
+                    return item;
+                }).toList();
+        return ResponseEntity.ok(candidates);
+    }
+
     @PostMapping
     public ResponseEntity<?> submitResource(
             @RequestBody ResourceSubmissionDTO dto,
@@ -147,6 +202,12 @@ public class ResourceLinkController {
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
+        List<MovieMetadata> bindMovies;
+        try {
+            bindMovies = resolveBoundMovies(dto.getMovieId(), dto.getBindMovieIds());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
 
         String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
         int auditStatus = "true".equals(auditEnabled) ? 0 : 1;
@@ -154,7 +215,7 @@ public class ResourceLinkController {
         int maxResources = Integer.parseInt(sysConfigService.getConfigValue("resource.max.per.user", "100"));
         long userResourceCount = resourceLinkService.count(
                 new QueryWrapper<ResourceLink>().eq("uploader_id", authUser.getId()).eq("status", "ACTIVE"));
-        if (userResourceCount >= maxResources) {
+        if (userResourceCount + bindMovies.size() >= maxResources) {
             return ResponseEntity.status(403)
                     .body("Resource limit reached. Maximum " + maxResources + " resources per user.");
         }
@@ -199,8 +260,10 @@ public class ResourceLinkController {
         link.setCreatedAt(LocalDateTime.now());
 
         resourceLinkService.addResource(link);
+        int boundCount = createBoundResources(link, bindMovies, resourceUrl, urlHash);
 
         String message = auditStatus == 1 ? "Resource published successfully!" : "Resource submitted for review";
+        if (boundCount > 0) message += " Bound to " + boundCount + " related seasons.";
         return ResponseEntity.ok(message);
     }
 
@@ -228,6 +291,12 @@ public class ResourceLinkController {
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
+        List<MovieMetadata> bindMovies;
+        try {
+            bindMovies = resolveBoundMovies(movie.getId(), dto.getBindMovieIds());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("movie_id", movie.getId())
                 .eq("status", "ACTIVE").isNull("deleted_at")
                 .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(url)).or().eq("url", url))) > 0) {
@@ -253,6 +322,10 @@ public class ResourceLinkController {
         link.setUpdatedAt(now);
         applyQualityFields(link, dto);
         resourceLinkService.addResource(link);
+        int boundCount = createBoundResources(link, bindMovies, url, link.getUrlHash());
+        if (boundCount > 0) {
+            return ResponseEntity.ok(Map.of("resource", link, "boundCount", boundCount));
+        }
         return ResponseEntity.ok(link);
     }
     @PostMapping("/{id}/report")
@@ -1116,6 +1189,61 @@ public class ResourceLinkController {
 
     private boolean isHttpUrl(String url) {
         return url.startsWith("http://") || url.startsWith("https://");
+    }
+
+    private List<MovieMetadata> resolveBoundMovies(String primaryMovieId, List<String> requestedIds) {
+        if (requestedIds == null || requestedIds.isEmpty()) return List.of();
+        MovieMetadata primary = movieService.getById(primaryMovieId.trim());
+        if (primary == null || "DELETED".equalsIgnoreCase(primary.getStatus())) {
+            throw new IllegalArgumentException("Movie not found");
+        }
+        Set<String> ids = requestedIds.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(value -> !value.isBlank() && !value.equals(primary.getId()))
+                .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+        if (ids.isEmpty()) return List.of();
+        List<MovieMetadata> result = new ArrayList<>();
+        for (String id : ids) {
+            MovieMetadata candidate = movieService.getById(id);
+            if (candidate == null || "DELETED".equalsIgnoreCase(candidate.getStatus())) {
+                throw new IllegalArgumentException("Bound movie not found: " + id);
+            }
+            boolean sameSeries = primary.getSeriesName() != null && !primary.getSeriesName().isBlank()
+                    && primary.getSeriesName().equals(candidate.getSeriesName());
+            boolean sameTmdb = primary.getTmdbId() != null && primary.getTmdbId().equals(candidate.getTmdbId())
+                    && Objects.equals(primary.getTmdbType(), candidate.getTmdbType());
+            if (!sameSeries && !sameTmdb) {
+                throw new IllegalArgumentException("Only movies from the same series can be bound");
+            }
+            result.add(candidate);
+        }
+        return result;
+    }
+
+    private int createBoundResources(ResourceLink source, List<MovieMetadata> movies, String url, String urlHash) {
+        int created = 0;
+        for (MovieMetadata movie : movies) {
+            if (resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                    .eq("movie_id", movie.getId())
+                    .eq("status", "ACTIVE")
+                    .isNull("deleted_at")
+                    .and(w -> w.eq("url_hash", urlHash).or().eq("url", url))) > 0) {
+                continue;
+            }
+            ResourceLink copy = new ResourceLink();
+            BeanUtils.copyProperties(source, copy);
+            copy.setId(null);
+            copy.setMovieId(movie.getId());
+            copy.setUrl(url);
+            copy.setUrlHash(urlHash);
+            copy.setCreatedAt(LocalDateTime.now());
+            copy.setUpdatedAt(copy.getCreatedAt());
+            copy.setDeletedAt(null);
+            resourceLinkService.addResource(copy);
+            created++;
+        }
+        return created;
     }
 
     private String resolveProvider(String type, String url, String requestedProvider) {

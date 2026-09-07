@@ -425,6 +425,7 @@
   "resourceClipboardPasted": "已识别并填入分享内容",
   "resourceClipboardFailed": "无法读取剪贴板内容",
   "resourceBindSeries": "同系列资源（加入绑定）",
+  "resourceBindSeriesPlaceholder": "搜索并勾选要一起绑定的剧集资源",
   "resourceQuickParams": "快速添加参数",
   "resourceHubBatchQqPost": "批量立即发 QQ",
   "resourceHubBatchDone": "批量处理完成：成功 {{succeeded}} 条，失败 {{failed}} 条",

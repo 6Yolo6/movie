@@ -1,5 +1,5 @@
 export const RESOURCE_QUICK_PARAMS = [
-    'REMUX', '4K/2160P', '1080P', '720P', '中英字幕', '60帧', '简体字幕', '120帧',
+    '[影片名]', 'REMUX', '4K/2160P', '1080P', '720P', '中英字幕', '60帧', '简体字幕', '120帧',
     'HDR杜比视界', '繁体字幕', '简繁字幕', '杜比全景声', 'H264', 'H265', 'AV1',
     'WEB-DL', 'BluRay',
 ];
@@ -22,6 +22,14 @@ function cleanUrl(value: string): string {
     return value.replace(/[,.!?;:]+$/g, '').replace(/[，。；、）》）】]+$/g, '');
 }
 
+export function normalizeResourceUrlWithCode(url?: string, code?: string): string | undefined {
+    if (!url) return url;
+    const provider = inferResourceProvider(url);
+    if (provider !== 'XUNLEI' || !code?.trim() || /(?:[?&])pwd=/i.test(url)) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}pwd=${encodeURIComponent(code.trim())}`;
+}
+
 export function parseResourceClipboard(text: string): { url?: string; code?: string; name?: string; provider?: string } {
     const links = text.match(/https?:\/\/[^\s"'<>]+/gi) || [];
     const url = links.map(cleanUrl).find((item) => !!inferResourceProvider(item)) || links.map(cleanUrl)[0];
@@ -32,7 +40,8 @@ export function parseResourceClipboard(text: string): { url?: string; code?: str
     if (fileMatch) name = fileMatch[1].trim();
     else if (quarkMatch) name = quarkMatch[1].trim();
     if (name) name = name.replace(/[（(][^（）()]*[）)]\s*$/, '').trim();
-    return { url, code: codeMatch?.[1], name, provider: inferResourceProvider(url) };
+    const code = codeMatch?.[1];
+    return { url: normalizeResourceUrlWithCode(url, code), code, name, provider: inferResourceProvider(url) };
 }
 
 export async function readResourceClipboard(): Promise<ReturnType<typeof parseResourceClipboard>> {
@@ -45,4 +54,30 @@ export function appendQuickParam(current: string | undefined, parameter: string)
     if (!value) return parameter;
     const tokens = value.split(/\s+/);
     return tokens.includes(parameter) ? value : `${value} ${parameter}`;
+}
+
+export function insertQuickParam(
+    current: string | undefined,
+    parameter: string,
+    selectionStart?: number | null,
+    selectionEnd?: number | null,
+): { value: string; cursor: number } {
+    const value = current || '';
+    if (value.split(/\s+/).includes(parameter)) {
+        const cursor = selectionEnd ?? value.length;
+        return { value, cursor };
+    }
+    const start = Math.max(0, Math.min(selectionStart ?? value.length, value.length));
+    const end = Math.max(start, Math.min(selectionEnd ?? start, value.length));
+    const before = value.slice(0, start);
+    const after = value.slice(end);
+    const left = before && !/\s$/.test(before) ? `${before} ` : before;
+    const right = after && !/^\s/.test(after) ? ` ${after}` : after;
+    const inserted = `${left}${parameter}${right}`;
+    return { value: inserted, cursor: left.length + parameter.length };
+}
+
+export function parseResourceQuickParams(value?: string): string[] {
+    const parsed = (value || '').split(/[\n,，]+/).map(item => item.trim()).filter(Boolean);
+    return parsed.length ? parsed : RESOURCE_QUICK_PARAMS;
 }

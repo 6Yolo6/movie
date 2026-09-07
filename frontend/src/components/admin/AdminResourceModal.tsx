@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { App, Button, Checkbox, Col, Form, Input, Modal, Row, Select, Space, Tag } from 'antd';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { App, Button, Col, Form, Input, Modal, Row, Select, Space, Tag } from 'antd';
+import type { InputRef } from 'antd';
 import { CopyOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import type { Rule } from 'antd/es/form';
 import { api, readApiError } from '@/lib/api';
 import type { MovieMetadata, ResourceLink } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { appendQuickParam, inferResourceProvider, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
+import { inferResourceProvider, insertQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 type AdminResource = ResourceLink & { movieTitle?: string };
 
@@ -32,7 +33,7 @@ type FormValues = {
     subtitle?: string;
     fileSize?: string;
     versionNote?: string;
-    bindSeries?: boolean;
+    bindMovieIds?: string[];
 };
 
 const PROVIDERS = ['BAIDU', 'QUARK', 'ALIYUN', 'XUNLEI', 'UC', '115', '123PAN', 'TIANYI', 'MOBILE', 'PIKPAK'];
@@ -54,11 +55,15 @@ export default function AdminResourceModal({
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [form] = Form.useForm<FormValues>();
+    const nameInputRef = useRef<InputRef>(null);
     const type = Form.useWatch('type', form) || 'DISK';
     const url = Form.useWatch('url', form);
     const [saving, setSaving] = useState(false);
     const [movieLoading, setMovieLoading] = useState(false);
     const [movieOptions, setMovieOptions] = useState<{ value: string; label: string }[]>([]);
+    const [quickParams, setQuickParams] = useState(RESOURCE_QUICK_PARAMS);
+    const [bindCandidates, setBindCandidates] = useState<{ value: string; label: string }[]>([]);
+    const [bindLoading, setBindLoading] = useState(false);
 
     useEffect(() => {
         if (type === 'DISK') {
@@ -82,6 +87,36 @@ export default function AdminResourceModal({
         }
     };
 
+    const loadBindCandidates = useCallback(async (keyword = '') => {
+        const movieId = form.getFieldValue('movieId');
+        if (!movieId) return;
+        setBindLoading(true);
+        try {
+            const query = new URLSearchParams({ movieId, limit: '50' });
+            if (keyword.trim()) query.set('keyword', keyword.trim());
+            const response = await api(`/api/resources/bind-candidates?${query}`);
+            if (!response.ok) return;
+            const items = await response.json();
+            setBindCandidates((items || []).map((item: { id: string; titleCn?: string; titleEn?: string; season?: number; year?: number }) => ({
+                value: item.id,
+                label: `${item.titleCn || item.titleEn || item.id}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
+            })));
+        } finally {
+            setBindLoading(false);
+        }
+    }, [form]);
+
+    const insertParameter = (parameter: string) => {
+        const input = nameInputRef.current?.input;
+        const current = form.getFieldValue('name') || '';
+        const result = insertQuickParam(current, parameter, input?.selectionStart, input?.selectionEnd);
+        form.setFieldValue('name', result.value);
+        requestAnimationFrame(() => {
+            input?.focus();
+            input?.setSelectionRange(result.cursor, result.cursor);
+        });
+    };
+
     const loadMovies = useCallback(async (keyword = '') => {
         setMovieLoading(true);
         try {
@@ -100,6 +135,13 @@ export default function AdminResourceModal({
 
     useEffect(() => {
         if (!open) return;
+        api('/api/resources/form-config').then(async response => {
+            if (!response.ok) return;
+            const data = await response.json();
+            if (Array.isArray(data.quickParams) && data.quickParams.length) {
+                setQuickParams(parseResourceQuickParams(data.quickParams.join(',')));
+            }
+        }).catch(() => undefined);
         form.resetFields();
         form.setFieldsValue(resource ? {
             movieId: resource.movieId,
@@ -119,6 +161,10 @@ export default function AdminResourceModal({
         }] : []);
         loadMovies();
     }, [form, loadMovies, open, resource]);
+
+    useEffect(() => {
+        if (open && form.getFieldValue('movieId')) loadBindCandidates();
+    }, [form, loadBindCandidates, open]);
 
     useEffect(() => {
         if (!open || !createdMovie) return;
@@ -154,6 +200,7 @@ export default function AdminResourceModal({
         try {
             const payload = {
                 ...values,
+                url: normalizeResourceUrlWithCode(values.url, values.code) || values.url,
                 provider: values.type === 'DISK' ? values.provider : 'OTHER',
                 code: values.type === 'DISK' ? values.code : '',
             };
@@ -203,13 +250,13 @@ export default function AdminResourceModal({
                     </Button>
                 )}
                 <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
-                    <Input />
+                    <Input ref={nameInputRef} />
                 </Form.Item>
                 <Space wrap className="mb-3">
                     <span className="text-gray-500">{t('resourceQuickParams')}</span>
                     <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
-                    {RESOURCE_QUICK_PARAMS.map((parameter) => (
-                        <Tag key={parameter} className="cursor-pointer" onClick={() => form.setFieldValue('name', appendQuickParam(form.getFieldValue('name'), parameter))}>{parameter}</Tag>
+                    {quickParams.map((parameter) => (
+                        <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>{parameter}</Tag>
                     ))}
                 </Space>
                 <Row gutter={16}>
@@ -236,6 +283,20 @@ export default function AdminResourceModal({
                 <Form.Item name="url" label={t('resourceURL')} rules={urlRules()}>
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
                 </Form.Item>
+                {!resource && (
+                    <Form.Item name="bindMovieIds" label={t('resourceBindSeries')}>
+                        <Select
+                            mode="multiple"
+                            showSearch
+                            filterOption={false}
+                            loading={bindLoading}
+                            options={bindCandidates}
+                            onSearch={loadBindCandidates}
+                            onFocus={() => loadBindCandidates()}
+                            placeholder={t('resourceBindSeriesPlaceholder')}
+                        />
+                    </Form.Item>
+                )}
                 <Row gutter={16}>
                     <Col xs={24} md={8}>
                         <Form.Item name="quality" label={t('quality')}><Input placeholder="4K / 1080P" /></Form.Item>
@@ -249,9 +310,6 @@ export default function AdminResourceModal({
                 </Row>
                 <Form.Item name="versionNote" label={t('versionNote')}>
                     <Input placeholder={t('versionNotePlaceholder')} />
-                </Form.Item>
-                <Form.Item name="bindSeries" valuePropName="checked">
-                    <Checkbox>{t('resourceBindSeries')}</Checkbox>
                 </Form.Item>
                 <Space className="flex w-full justify-end">
                     <Button onClick={onCancel}>{t('cancel')}</Button>
