@@ -111,6 +111,6 @@ docker compose -f docker-compose.prod.yml config --quiet
 - 绑定搜索输入关键词时会跨影片标题、英文名、别名、系列名和影片 ID 检索，避免因历史影片缺少系列字段而无结果；空搜索仍优先展示同系列候选。
 - 快速参数中的 `[影片名]` 是动态占位项：在影片详情页插入当前影片中文名，在管理员表单插入当前选中影片的中文名，不会写入字面量占位符。
 - 迅雷分享文案中的提取码会自动补到 URL 的 `?pwd=`/`&pwd=` 参数；转存发布生成的资源名会带影片类型前缀，例如 `【动作犯罪】`。
-- 2026-09-07: GYING recent-update ensure/publish now prioritizes Xunlei candidates and fails explicitly when Xunlei services are unavailable instead of silently using Quark.
+- 2026-09-07: GYING recent-update ensure/publish now checks Quark and Xunlei independently, publishes each missing provider, and fails explicitly when Xunlei services are unavailable instead of silently using Quark.
 - 2026-09-07: Published-resource health responses expose canonical `gyingResourceId` values such as `mv/<movie-id>` or `tv/<movie-id>`, accepted directly by repair-by-id; legacy panlist IDs remain supported.
 - 2026-09-07: Health repair resolves Quark and Xunlei transfer tasks by provider.

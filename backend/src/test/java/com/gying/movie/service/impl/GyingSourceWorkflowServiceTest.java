@@ -159,7 +159,7 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
-    void ensureMoviePrefersXunleiCandidateWhenOnlyQuarkLocalResourceExists() {
+    void ensureMoviePublishesBothQuarkAndXunleiProviders() {
         MovieMetadata movie = movie("XL1", "测试剧集", "tv", "TRAILER");
         String quarkUrl = "https://pan.quark.cn/s/public-quark";
         String xunleiUrl = "https://pan.xunlei.com/s/public-xunlei?pwd=abcd";
@@ -173,10 +173,29 @@ class GyingSourceWorkflowServiceTest {
                 .thenReturn(Map.of(
                         "title", movie.getTitleCn(),
                         "resources", List.of(),
-                        "ownResources", List.of(Map.of("source_id", "OWN-X1", "url", "https://pan.xunlei.com/s/own"))));
+                        "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
+                .thenReturn(Map.of(
+                        "title", movie.getTitleCn(),
+                        "resources", List.of(
+                                Map.of("source_id", "Q1", "provider", "QUARK", "title", "夸克", "url", quarkUrl),
+                                Map.of("source_id", "X1", "provider", "XUNLEI", "title", "迅雷", "url", xunleiUrl)),
+                        "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
+                .thenReturn(Map.of(
+                        "title", movie.getTitleCn(),
+                        "resources", List.of(),
+                        "ownResources", List.of(
+                                Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"),
+                                Map.of("source_id", "OWN-X1", "url", "https://pan.xunlei.com/s/own", "provider", "XUNLEI"))));
         when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", movie.getId()));
         when(movieService.getById(movie.getId())).thenReturn(movie);
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        ResourceLink localQuark = new ResourceLink();
+        localQuark.setId(302L);
+        localQuark.setMovieId(movie.getId());
+        localQuark.setProvider("QUARK");
+        localQuark.setUrl(quarkUrl);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false)))
+                .thenReturn(localQuark)
+                .thenReturn((ResourceLink) null);
         when(panSouClient.checkLinksByProvider(any())).thenReturn(Map.of());
 
         ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
@@ -204,19 +223,22 @@ class GyingSourceWorkflowServiceTest {
         ResourceHubPublishResult publish = new ResourceHubPublishResult();
         publish.getResourceIds().add(303L);
         when(publishService.publishDiscovery(discovery.getId())).thenReturn(publish);
-        ResourceLink local = new ResourceLink();
-        local.setId(303L);
-        local.setMovieId(movie.getId());
-        local.setProvider("XUNLEI");
-        local.setUrl("https://pan.xunlei.com/s/own");
-        when(resourceLinkService.getById(303L)).thenReturn(local);
-        when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of("sourceId", "OWN-X1"));
+        ResourceLink localXunlei = new ResourceLink();
+        localXunlei.setId(303L);
+        localXunlei.setMovieId(movie.getId());
+        localXunlei.setProvider("XUNLEI");
+        localXunlei.setUrl("https://pan.xunlei.com/s/own");
+        when(resourceLinkService.getById(303L)).thenReturn(localXunlei);
+        when(gyingSourceClient.post(eq("/publish"), any()))
+                .thenReturn(Map.of("sourceId", "OWN-Q1"), Map.of("sourceId", "OWN-X1"));
 
         Map<String, Object> result = service.ensureMovieResource("tv", "XL1");
 
         assertEquals("PUBLISHED", result.get("status"));
+        assertEquals(1, result.get("providersPublished"));
         verify(xunleiTransferRunnerService).submitOne(task.getId());
         verify(transferRunnerService, never()).submitOne(any());
+        verify(gyingSourceClient, times(2)).post(eq("/publish"), any());
     }
 
     @Test
@@ -619,7 +641,7 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(1, result.get("checked"));
         assertEquals(1, result.get("succeeded"));
         assertTrue(((List<?>) result.get("items")).size() == 1);
-        verify(gyingSourceClient, times(1)).get("/movie/mv/EGER");
+        verify(gyingSourceClient, times(2)).get("/movie/mv/EGER");
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {
