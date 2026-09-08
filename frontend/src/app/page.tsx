@@ -240,7 +240,7 @@ const HomePageContent = () => {
                 <Title level={3} className="m-0 border-l-4 border-blue-500 pl-3">{t(cat.labelKey)}</Title>
                 <Link href={`/?category=${cat.value}`} className="text-gray-400 hover:text-blue-400 text-sm">{t('viewAll')} &gt;</Link>
               </div>
-              <MovieGrid params={new URLSearchParams({ category: cat.value || '' })} />
+              <MovieGrid params={new URLSearchParams({ category: cat.value || '', sort: 'featured' })} />
             </section>
           ))}
         </div>

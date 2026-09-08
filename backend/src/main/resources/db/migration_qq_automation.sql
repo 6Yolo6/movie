@@ -49,6 +49,22 @@ SELECT 'qq.bot.blocked_keywords', '', 'QQ bot blocked search keywords'
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.blocked_keywords');
 
 INSERT INTO sys_config (`config_key`, `config_value`, `description`)
+SELECT 'qq.bot.daily_recommendation.enabled', 'true', 'Enable QQ group daily recommendations'
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.enabled');
+
+INSERT INTO sys_config (`config_key`, `config_value`, `description`)
+SELECT 'qq.bot.daily_recommendation.time', '09:00', 'QQ group daily recommendation time HH:mm'
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.time');
+
+INSERT INTO sys_config (`config_key`, `config_value`, `description`)
+SELECT 'qq.bot.daily_recommendation.count', '3', 'QQ group daily recommendation count'
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.count');
+
+INSERT INTO sys_config (`config_key`, `config_value`, `description`)
+SELECT 'qq.bot.daily_recommendation.group_ids', '', 'QQ group IDs for daily recommendations'
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.group_ids');
+
+INSERT INTO sys_config (`config_key`, `config_value`, `description`)
 SELECT 'qq.channel.auto_post.enabled', 'false', 'Enable QQ channel auto posting'
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.channel.auto_post.enabled');
 

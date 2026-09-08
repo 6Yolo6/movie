@@ -35,6 +35,7 @@ minio:
 
 app:
   internal-token: ${APP_INTERNAL_TOKEN:}
+  public-base-url: ${APP_PUBLIC_BASE_URL:${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}}
   cors:
     allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
 
@@ -133,6 +134,7 @@ qq-bot:
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
   default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟；先选择影片，再从资源名称/画质候选中回复单个序号。可回复“夸克”或“迅雷”筛选；不支持按数量批量转存。}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
+  daily-recommendation-check-ms: ${QQ_BOT_DAILY_RECOMMENDATION_CHECK_MS:60000}
   napcat:
     base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://localhost:3000}
     access-token: ${QQ_BOT_NAPCAT_ACCESS_TOKEN:}

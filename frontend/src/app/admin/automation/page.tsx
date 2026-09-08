@@ -60,6 +60,10 @@ interface AutomationConfig {
     botRateLimitPerMinute: number;
     botMaxResults: number;
     botBlockedKeywords: string;
+    botDailyRecommendationEnabled: boolean;
+    botDailyRecommendationTime: string;
+    botDailyRecommendationCount: number;
+    botDailyRecommendationGroupIds: string;
     channelAutoPostEnabled: boolean;
     channelIntervalMinutes: number;
     channelMaxPostsPerRun: number;
@@ -1061,6 +1065,28 @@ export default function QqAutomationAdminPage() {
                                                     <Form.Item name="botBlockedKeywords" label={t('qqAutomationBlockedKeywords')}>
                                                         <Input.TextArea rows={5} placeholder={t('qqAutomationBlockedKeywordsPlaceholder')} />
                                                     </Form.Item>
+                                                    <Row gutter={12}>
+                                                        <Col xs={24} md={8}>
+                                                            <Form.Item name="botDailyRecommendationEnabled" label={t('qqAutomationGroupDailyEnabled')} valuePropName="checked">
+                                                                <Switch />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={12} md={8}>
+                                                            <Form.Item name="botDailyRecommendationTime" label={t('qqAutomationGroupDailyTime')}>
+                                                                <Input placeholder="09:00" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={12} md={8}>
+                                                            <Form.Item name="botDailyRecommendationCount" label={t('qqAutomationGroupDailyCount')}>
+                                                                <InputNumber min={1} max={10} className="w-full" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={24}>
+                                                            <Form.Item name="botDailyRecommendationGroupIds" label={t('qqAutomationGroupDailyGroups')}>
+                                                                <Input placeholder="群号，多个用逗号分隔" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                    </Row>
                                                 </Card>
                                             </Col>
                                             <Col xs={24} lg={12}>
