@@ -501,6 +501,8 @@
   "qqAutomationGroupDailyTime": "Recommendation time",
   "qqAutomationGroupDailyCount": "Recommendation count",
   "qqAutomationGroupDailyGroups": "Target group IDs",
+  "qqAutomationGroupDailyTemplate": "Daily group recommendation template",
+  "qqAutomationGroupDailyTemplateHelp": "Supports {{title}}, {{year}}, {{genres}}, {{rating}}, {{summary}}, {{resources}}, and {{detailUrl}}. The default template omits the detail URL.",
   "qqAutomationGroupDailyTrigger": "Send group recommendations now",
   "qqAutomationGroupDailyTriggered": "Group recommendation send triggered",
   "qqAutomationAutoPost": "Auto post",

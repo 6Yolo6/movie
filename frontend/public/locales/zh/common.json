@@ -501,6 +501,8 @@
   "qqAutomationGroupDailyTime": "推荐时间",
   "qqAutomationGroupDailyCount": "推荐篇数",
   "qqAutomationGroupDailyGroups": "推荐群号",
+  "qqAutomationGroupDailyTemplate": "群每日推荐模板",
+  "qqAutomationGroupDailyTemplateHelp": "支持 {{title}}、{{year}}、{{genres}}、{{rating}}、{{summary}}、{{resources}}、{{detailUrl}}；默认模板不发送详情链接。",
   "qqAutomationGroupDailyTrigger": "立即发送群推荐",
   "qqAutomationGroupDailyTriggered": "已触发群推荐发送",
   "qqAutomationAutoPost": "自动发帖",

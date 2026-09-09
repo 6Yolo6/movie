@@ -65,6 +65,12 @@ SELECT 'qq.bot.daily_recommendation.group_ids', '', 'QQ group IDs for daily reco
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.group_ids');
 
 INSERT INTO sys_config (`config_key`, `config_value`, `description`)
+SELECT 'qq.bot.daily_recommendation.template',
+       '【最近更新】{{title}} ({{year}})\n类型：{{genres}}\n评分：{{rating}}\n简介：{{summary}}\n资源：{{resources}}',
+       'QQ group daily recommendation template'
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.bot.daily_recommendation.template');
+
+INSERT INTO sys_config (`config_key`, `config_value`, `description`)
 SELECT 'qq.channel.auto_post.enabled', 'false', 'Enable QQ channel auto posting'
 WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qq.channel.auto_post.enabled');
 

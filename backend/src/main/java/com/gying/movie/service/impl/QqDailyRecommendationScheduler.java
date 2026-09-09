@@ -8,6 +8,7 @@ import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IQqBotService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.utils.QqResourcePreferenceParser;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,10 +17,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +40,7 @@ public class QqDailyRecommendationScheduler {
     private static final String DAILY_TIME = "qq.bot.daily_recommendation.time";
     private static final String COUNT = "qq.bot.daily_recommendation.count";
     private static final String GROUPS = "qq.bot.daily_recommendation.group_ids";
+    private static final String TEMPLATE = "qq.bot.daily_recommendation.template";
     private static final String LAST_RUN_PREFIX = "qq.bot.daily_recommendation.last_run.";
 
     private final ISysConfigService config;
@@ -121,15 +125,41 @@ public class QqDailyRecommendationScheduler {
     }
 
     private String format(MovieMetadata movie, List<ResourceLink> links) {
-        StringBuilder out = new StringBuilder("【最近更新】").append(first(movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
-        if (movie.getYear() != null) out.append(" (").append(movie.getYear()).append(")");
-        if (movie.getGenres() != null && !movie.getGenres().isEmpty()) out.append("\n类型：").append(String.join(" / ", movie.getGenres()));
-        String rating = rating(movie);
-        if (!rating.isBlank()) out.append("\n评分：").append(rating);
-        if (movie.getSummary() != null && !movie.getSummary().isBlank()) out.append("\n简介：").append(trim(movie.getSummary(), 180));
-        out.append("\n详情：").append(publicBaseUrl).append("/movie/").append(movie.getId());
-        links.stream().limit(3).forEach(link -> out.append("\n资源：").append(first(link.getName(), link.getProvider())).append(" ").append(link.getUrl()));
-        return trim(out.toString(), 1800);
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("title", first(movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
+        values.put("year", movie.getYear() == null ? "" : String.valueOf(movie.getYear()));
+        values.put("genres", movie.getGenres() == null ? "" : String.join(" / ", movie.getGenres()));
+        values.put("rating", rating(movie));
+        values.put("summary", movie.getSummary() == null ? "" : trim(movie.getSummary(), 180));
+        values.put("detailUrl", publicBaseUrl + "/movie/" + movie.getId());
+        values.put("resources", links == null ? "" : links.stream()
+                .limit(3)
+                .map(this::formatResource)
+                .collect(Collectors.joining("\n")));
+        String template = value(TEMPLATE, QqAutomationConfigServiceImpl.DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE);
+        return trim(renderTemplate(template, values), 1800);
+    }
+
+    private String formatResource(ResourceLink link) {
+        String provider = QqResourcePreferenceParser.label(first(link.getProvider(), "未知网盘"));
+        String name = first(link.getName(), "");
+        String url = first(link.getUrl(), "");
+        String suffix = name.isBlank() ? "" : " " + name;
+        return (provider + suffix + " " + url).trim();
+    }
+
+    private String renderTemplate(String template, Map<String, String> values) {
+        String rendered = first(template, QqAutomationConfigServiceImpl.DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE)
+                .replace("\\r\\n", "\n")
+                .replace("\\n", "\n");
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            rendered = rendered.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        }
+        return rendered.lines()
+                .map(String::trim)
+                .filter(line -> !line.isBlank())
+                .filter(line -> !line.matches("^.*[:：]\\s*$"))
+                .collect(Collectors.joining("\n"));
     }
 
     private String rating(MovieMetadata movie) {

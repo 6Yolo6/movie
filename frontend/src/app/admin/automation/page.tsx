@@ -64,6 +64,7 @@ interface AutomationConfig {
     botDailyRecommendationTime: string;
     botDailyRecommendationCount: number;
     botDailyRecommendationGroupIds: string;
+    botDailyRecommendationTemplate: string;
     channelAutoPostEnabled: boolean;
     channelIntervalMinutes: number;
     channelMaxPostsPerRun: number;
@@ -1094,6 +1095,12 @@ export default function QqAutomationAdminPage() {
                                                             <Form.Item name="botDailyRecommendationGroupIds" label={t('qqAutomationGroupDailyGroups')}>
                                                                 <Input placeholder="群号，多个用逗号分隔" />
                                                             </Form.Item>
+                                                        </Col>
+                                                        <Col xs={24}>
+                                                            <Form.Item name="botDailyRecommendationTemplate" label={t('qqAutomationGroupDailyTemplate')}>
+                                                                <Input.TextArea rows={8} />
+                                                            </Form.Item>
+                                                            <Text type="secondary">{t('qqAutomationGroupDailyTemplateHelp')}</Text>
                                                         </Col>
                                                     </Row>
                                                 </Card>
