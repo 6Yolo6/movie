@@ -65,6 +65,7 @@ export default function ResourceManagementPage() {
     const [editingResource, setEditingResource] = useState<AdminResource | null>(null);
     const [movieModalOpen, setMovieModalOpen] = useState(false);
     const [createdMovie, setCreatedMovie] = useState<MovieMetadata | null>(null);
+    const [repairingResourceId, setRepairingResourceId] = useState<number | null>(null);
 
     const fetchResources = useCallback(async () => {
         if (!token) {
@@ -141,6 +142,29 @@ export default function ResourceManagementPage() {
         }
         message.success(t('resourceDeleted'));
         fetchResources();
+    };
+
+    const handleRepairInvalid = async (id: number) => {
+        setRepairingResourceId(id);
+        try {
+            const res = await api(`/api/resources/admin/${id}/repair-invalid`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.success === false) {
+                message.error(data.message || t('repairInvalidResourceFailed'));
+                return;
+            }
+            message.success(data.gyingUpdated
+                ? t('repairInvalidResourceDoneWithGying')
+                : t('repairInvalidResourceDone'));
+            fetchResources();
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setRepairingResourceId(null);
+        }
     };
 
     const handleBatchAudit = (status: number) => {
@@ -331,6 +355,18 @@ export default function ResourceManagementPage() {
                             onClick={() => handleLinkStatus(record.id, 'INVALID')}
                         />
                     </Tooltip>
+                    {(record.linkStatus === 'INVALID' || record.linkStatus === 'SUSPECTED_INVALID') && (
+                        <Tooltip title={t('repairInvalidResource')}>
+                            <Button
+                                type="text"
+                                icon={<ReloadOutlined />}
+                                aria-label={t('repairInvalidResource')}
+                                loading={repairingResourceId === record.id}
+                                disabled={repairingResourceId !== null && repairingResourceId !== record.id}
+                                onClick={() => handleRepairInvalid(record.id)}
+                            />
+                        </Tooltip>
+                    )}
                     <Popconfirm
                         title={t('deleteResourceTitle')}
                         description={t('deleteResourceDescription')}

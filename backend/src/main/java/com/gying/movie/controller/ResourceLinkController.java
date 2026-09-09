@@ -9,6 +9,7 @@ import com.gying.movie.dto.ResourceSubmissionDTO;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QuarkShareClient;
+import com.gying.movie.client.XunleiClient;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
@@ -28,6 +29,10 @@ import com.gying.movie.service.IResourceReportService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferTaskService;
+import com.gying.movie.entity.XunleiTransferTask;
+import com.gying.movie.service.impl.GyingSourceWorkflowService;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import jakarta.annotation.PreDestroy;
@@ -62,7 +67,10 @@ public class ResourceLinkController {
     private final IQuarkShareService quarkShareService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IResourceHubPublishService resourceHubPublishService;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final QuarkShareClient quarkShareClient;
     private final PanSouClient panSouClient;
     private final IResourceReportService resourceReportService;
@@ -87,7 +95,10 @@ public class ResourceLinkController {
             IQuarkShareService quarkShareService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
             IResourceHubPublishService resourceHubPublishService,
+            GyingSourceWorkflowService gyingSourceWorkflowService,
             QuarkShareClient quarkShareClient,
             PanSouClient panSouClient,
             IResourceReportService resourceReportService,
@@ -103,7 +114,10 @@ public class ResourceLinkController {
         this.quarkShareService = quarkShareService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.resourceHubPublishService = resourceHubPublishService;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
         this.quarkShareClient = quarkShareClient;
         this.panSouClient = panSouClient;
         this.resourceReportService = resourceReportService;
@@ -619,6 +633,61 @@ public class ResourceLinkController {
         return ResponseEntity.ok("Resources deleted: " + ids.size());
     }
 
+    /** Recreates a failed cloud share in place and synchronizes the mapped GYING movie when possible. */
+    @PostMapping("/admin/{id}/repair-invalid")
+    public ResponseEntity<?> repairInvalidResource(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || "DELETED".equalsIgnoreCase(resource.getStatus())) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Resource not found"));
+        }
+        if (!"DISK".equalsIgnoreCase(resource.getType())) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "message", "Only cloud disk resources can be re-shared"));
+        }
+        String provider = resource.getProvider() == null ? "" : resource.getProvider().trim().toUpperCase();
+        ResourceLink refreshed;
+        try {
+            refreshed = switch (provider) {
+                case "QUARK" -> refreshShareLink(resource);
+                case "XUNLEI" -> refreshXunleiShareLink(resource);
+                default -> null;
+            };
+        } catch (Exception error) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "reshared", false, "gyingUpdated", false,
+                    "message", repairErrorMessage(error)));
+        }
+        if (refreshed == null || refreshed.getUrl() == null || refreshed.getUrl().isBlank()) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "reshared", false, "gyingUpdated", false,
+                    "message", "Unable to recreate a share link; check the transfer task and saved folder"));
+        }
+        markLinkNormal(refreshed);
+        boolean gyingUpdated = false;
+        String gyingMessage = null;
+        try {
+            gyingUpdated = gyingSourceWorkflowService.publishResourceToGying(refreshed);
+            if (!gyingUpdated) {
+                gyingMessage = "No linked GYING movie found";
+            }
+        } catch (Exception error) {
+            gyingMessage = "GYING update failed: " + repairErrorMessage(error);
+        }
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("resourceId", id);
+        response.put("reshared", true);
+        response.put("gyingUpdated", gyingUpdated);
+        response.put("resource", refreshed);
+        response.put("message", gyingUpdated
+                ? "Resource re-shared and GYING publication updated"
+                : "Resource re-shared" + (gyingMessage == null ? "" : "; " + gyingMessage));
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/admin/repair-invalid")
     public ResponseEntity<?> repairInvalidResources(
             @RequestParam(defaultValue = "20") int limit,
@@ -1065,6 +1134,69 @@ public class ResourceLinkController {
             return null;
         }
         return resourceLinkService.getById(link.getId());
+    }
+
+    private ResourceLink refreshXunleiShareLink(ResourceLink link) {
+        XunleiTransferTask task = findXunleiTransferTask(link);
+        if (task == null) {
+            return null;
+        }
+        task.setShareUrl(null);
+        task.setShareUrlHash(null);
+        task.setLastError(null);
+        task.setStatus(task.getSavedPath() == null || task.getSavedPath().isBlank() ? "FAILED" : "WAITING_SHARE");
+        task.setUpdatedAt(LocalDateTime.now());
+        xunleiTransferTaskService.updateById(task);
+        xunleiTransferRunnerService.submitOne(task.getId());
+        XunleiTransferTask refreshedTask = xunleiTransferTaskService.getById(task.getId());
+        if (refreshedTask == null || refreshedTask.getShareUrl() == null || refreshedTask.getShareUrl().isBlank()) {
+            return null;
+        }
+        ResourceLink refreshed = resourceLinkService.getById(link.getId());
+        if (refreshed == null) {
+            return null;
+        }
+        refreshed.setUrl(refreshedTask.getShareUrl());
+        refreshed.setUrlHash(refreshedTask.getShareUrlHash());
+        refreshed.setCode(XunleiClient.extractShareCode(refreshedTask.getShareUrl()));
+        refreshed.setProvider("XUNLEI");
+        resourceLinkService.updateById(refreshed);
+        return resourceLinkService.getById(link.getId());
+    }
+
+    private XunleiTransferTask findXunleiTransferTask(ResourceLink link) {
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        if (discovery != null && discovery.getId() != null) {
+            XunleiTransferTask byDiscovery = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byDiscovery != null) {
+                return byDiscovery;
+            }
+        }
+        if (link == null) {
+            return null;
+        }
+        QueryWrapper<XunleiTransferTask> query = new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", link.getMovieId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1");
+        if (link.getUrlHash() != null && !link.getUrlHash().isBlank()) {
+            XunleiTransferTask byHash = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("share_url_hash", link.getUrlHash())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byHash != null) {
+                return byHash;
+            }
+        }
+        return xunleiTransferTaskService.getOne(query, false);
+    }
+
+    private String repairErrorMessage(Exception error) {
+        String message = error == null ? null : error.getMessage();
+        return message == null || message.isBlank() ? "Repair failed" : message.trim();
     }
 
     private ResourceDiscoveryResult findDiscovery(ResourceLink link) {
