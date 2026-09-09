@@ -529,6 +529,15 @@ export default function QqAutomationAdminPage() {
         } : current);
     };
 
+    const runDailyRecommendation = async () => {
+        try {
+            await requestJson('/api/admin/qq-automation/daily-recommendation/run', { method: 'POST' });
+            message.success(t('qqAutomationGroupDailyTriggered'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        }
+    };
+
     const saveSocialTarget = async (target: SocialPublishTarget) => {
         setSocialBusyId(target.id);
         try {
@@ -1158,6 +1167,9 @@ export default function QqAutomationAdminPage() {
                                         </Row>
                                         <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving} className="mt-4">
                                             {t('save')}
+                                        </Button>
+                                        <Button className="mt-4 ml-2" icon={<SendOutlined />} onClick={runDailyRecommendation}>
+                                            {t('qqAutomationGroupDailyTrigger')}
                                         </Button>
                                     </Form>
                                 </Card>

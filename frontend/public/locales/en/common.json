@@ -501,6 +501,8 @@
   "qqAutomationGroupDailyTime": "Recommendation time",
   "qqAutomationGroupDailyCount": "Recommendation count",
   "qqAutomationGroupDailyGroups": "Target group IDs",
+  "qqAutomationGroupDailyTrigger": "Send group recommendations now",
+  "qqAutomationGroupDailyTriggered": "Group recommendation send triggered",
   "qqAutomationAutoPost": "Auto post",
   "qqAutomationPostInterval": "Post interval (minutes)",
   "qqAutomationPostsPerRun": "Posts per run",

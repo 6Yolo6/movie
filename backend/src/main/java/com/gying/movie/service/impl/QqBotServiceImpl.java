@@ -222,7 +222,20 @@ public class QqBotServiceImpl implements IQqBotService {
         if (groupId == null || !hasText(message)) {
             return;
         }
-        send(groupId, null, message);
+        try {
+            send(groupId, null, message);
+        } catch (Exception officialError) {
+            if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
+                log.warn("QQBot proactive send failed; trying NapCat fallback for group {}", groupId, officialError);
+                try {
+                    napCatClient.sendGroupMessage(groupId, message);
+                    return;
+                } catch (Exception napcatError) {
+                    officialError.addSuppressed(napcatError);
+                }
+            }
+            throw officialError;
+        }
     }
 
     @Override

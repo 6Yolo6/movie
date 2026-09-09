@@ -501,6 +501,8 @@
   "qqAutomationGroupDailyTime": "推荐时间",
   "qqAutomationGroupDailyCount": "推荐篇数",
   "qqAutomationGroupDailyGroups": "推荐群号",
+  "qqAutomationGroupDailyTrigger": "立即发送群推荐",
+  "qqAutomationGroupDailyTriggered": "已触发群推荐发送",
   "qqAutomationAutoPost": "自动发帖",
   "qqAutomationPostInterval": "发帖间隔（分钟）",
   "qqAutomationPostsPerRun": "每次发帖数",

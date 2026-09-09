@@ -8,6 +8,7 @@ import com.gying.movie.entity.QqChannelPostLog;
 import com.gying.movie.service.IQqAutomationConfigService;
 import com.gying.movie.service.IQqBotSearchLogService;
 import com.gying.movie.service.IQqChannelPostLogService;
+import com.gying.movie.service.impl.QqDailyRecommendationScheduler;
 import com.gying.movie.utils.AuthHelper;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -28,16 +29,19 @@ public class QqAutomationAdminController {
     private final IQqAutomationConfigService configService;
     private final IQqBotSearchLogService qqBotSearchLogService;
     private final IQqChannelPostLogService qqChannelPostLogService;
+    private final QqDailyRecommendationScheduler dailyRecommendationScheduler;
 
     public QqAutomationAdminController(
             AuthHelper authHelper,
             IQqAutomationConfigService configService,
             IQqBotSearchLogService qqBotSearchLogService,
-            IQqChannelPostLogService qqChannelPostLogService) {
+            IQqChannelPostLogService qqChannelPostLogService,
+            QqDailyRecommendationScheduler dailyRecommendationScheduler) {
         this.authHelper = authHelper;
         this.configService = configService;
         this.qqBotSearchLogService = qqBotSearchLogService;
         this.qqChannelPostLogService = qqChannelPostLogService;
+        this.dailyRecommendationScheduler = dailyRecommendationScheduler;
     }
 
     @GetMapping("/overview")
@@ -70,6 +74,14 @@ public class QqAutomationAdminController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         return ApiResponse.ok(configService.updateConfig(request));
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/daily-recommendation/run")
+    public ApiResponse<Map<String, Object>> runDailyRecommendation(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        dailyRecommendationScheduler.runNow();
+        return ApiResponse.ok(Map.of("status", "TRIGGERED"));
     }
 
     @GetMapping("/bot-searches")

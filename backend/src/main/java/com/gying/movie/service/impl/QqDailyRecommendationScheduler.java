@@ -63,14 +63,27 @@ public class QqDailyRecommendationScheduler {
 
     @Scheduled(fixedDelayString = "${qq-bot.daily-recommendation-check-ms:60000}")
     public void runIfDue() {
+        run(false);
+    }
+
+    public void runNow() {
+        run(true);
+    }
+
+    private void run(boolean force) {
         if (!properties.isEnabled() || !Boolean.parseBoolean(value(ENABLED, "true"))) return;
         LocalTime target = parseTime(value(DAILY_TIME, "09:00"));
         LocalTime now = LocalTime.now(ZONE);
-        if (now.getHour() != target.getHour() || now.getMinute() != target.getMinute()) return;
+        if (!force) {
+            int nowMinute = now.getHour() * 60 + now.getMinute();
+            int targetMinute = target.getHour() * 60 + target.getMinute();
+            int elapsed = Math.floorMod(nowMinute - targetMinute, 24 * 60);
+            if (elapsed > 10) return;
+        }
         LocalDate today = LocalDate.now(ZONE);
         int count = clamp(parseInt(value(COUNT, "3"), 3), 1, 10);
         for (Long groupId : groupIds(value(GROUPS, properties.getAllowedGroups()))) {
-            if (alreadyRan(groupId, today)) continue;
+            if (!force && alreadyRan(groupId, today)) continue;
             try {
                 sendDigest(groupId, count);
                 lastRuns.put(groupId, today);

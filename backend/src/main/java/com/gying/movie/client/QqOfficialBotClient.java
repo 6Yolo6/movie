@@ -57,6 +57,11 @@ public class QqOfficialBotClient {
             }
             validateResponse(response.getBody());
         } catch (RestClientException e) {
+            if (e instanceof org.springframework.web.client.HttpStatusCodeException httpError) {
+                String body = httpError.getResponseBodyAsString();
+                String detail = body == null || body.isBlank() ? httpError.getStatusCode().toString() : body;
+                throw new IllegalStateException("QQBot send group message request failed: " + detail, e);
+            }
             throw new IllegalStateException("QQBot send group message request failed", e);
         }
     }
