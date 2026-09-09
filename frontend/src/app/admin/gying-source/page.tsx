@@ -52,6 +52,7 @@ type Candidate = {
 
 type PublishedResource = {
     source_id: string;
+    gyingResourceId?: string;
     mid: string;
     type_code: string;
     title: string;
@@ -451,9 +452,12 @@ export default function GyingSourcePage() {
     const healthColumns: ColumnsType<PublishedResource> = [
         {
             title: t('gyingResourceId'),
-            dataIndex: 'source_id',
-            width: 130,
-            render: (value: string) => <Typography.Text copyable>{value}</Typography.Text>,
+            dataIndex: 'gyingResourceId',
+            width: 150,
+            render: (value: string | undefined, record) => {
+                const resourceId = value || `${record.type_code}/${record.mid}`;
+                return <Typography.Text copyable>{resourceId}</Typography.Text>;
+            },
         },
         {
             title: t('movieTitle'),

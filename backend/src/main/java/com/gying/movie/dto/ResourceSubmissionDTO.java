@@ -1,5 +1,7 @@
 package com.gying.movie.dto;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -14,4 +16,5 @@ public class ResourceSubmissionDTO {
     private String subtitle;
     private String fileSize;
     private String versionNote;
+    private List<String> bindMovieIds;
 }

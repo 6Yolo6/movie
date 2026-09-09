@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gying.movie.entity.SysConfig;
 import com.gying.movie.mapper.SysConfigMapper;
 import com.gying.movie.service.ISysConfigService;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,8 +22,15 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         SysConfig config = getOne(new QueryWrapper<SysConfig>().eq("config_key", key));
         if (config != null) {
             config.setConfigValue(value);
+            config.setUpdatedAt(LocalDateTime.now());
             return updateById(config);
         }
-        return false;
+        SysConfig created = new SysConfig();
+        created.setConfigKey(key);
+        created.setConfigValue(value);
+        created.setDescription("Runtime configuration");
+        created.setCreatedAt(LocalDateTime.now());
+        created.setUpdatedAt(LocalDateTime.now());
+        return save(created);
     }
 }

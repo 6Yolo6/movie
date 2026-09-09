@@ -58,6 +58,7 @@ minio:
 
 app:
   internal-token: ${APP_INTERNAL_TOKEN}
+  public-base-url: ${APP_PUBLIC_BASE_URL:${CORS_ALLOWED_ORIGIN}}
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN}
 
@@ -131,6 +132,10 @@ resource-hub:
     quark-limit: ${RESOURCE_HUB_WORKER_QUARK_LIMIT:5}
     xunlei-limit: ${RESOURCE_HUB_WORKER_XUNLEI_LIMIT:5}
     publish-limit: ${RESOURCE_HUB_WORKER_PUBLISH_LIMIT:20}
+    discovered-retry-enabled: ${RESOURCE_HUB_DISCOVERED_RETRY_ENABLED:true}
+    discovered-retry-limit: ${RESOURCE_HUB_DISCOVERED_RETRY_LIMIT:20}
+    discovered-retry-delay-ms: ${RESOURCE_HUB_DISCOVERED_RETRY_DELAY_MS:5000}
+    discovered-retry-cron: ${RESOURCE_HUB_DISCOVERED_RETRY_CRON:0 30 8 * * *}
   qq-channel-publisher:
     base-url: ${QQ_CHANNEL_PUBLISHER_BASE_URL:http://host.docker.internal:8092}
     token: ${QQ_CHANNEL_PUBLISHER_TOKEN:${APP_INTERNAL_TOKEN:}}
@@ -152,6 +157,7 @@ qq-bot:
   auto-transfer: ${QQ_BOT_AUTO_TRANSFER:true}
   default-reply: ${QQ_BOT_DEFAULT_REPLY:机器人使用方法：@机器人 搜/找 影片名；影片上下文保留 5 分钟；先选择影片，再从资源名称/画质候选中回复单个序号。可回复“夸克”或“迅雷”筛选；不支持按数量批量转存。}
   reply-provider: ${QQ_BOT_REPLY_PROVIDER:napcat}
+  daily-recommendation-check-ms: ${QQ_BOT_DAILY_RECOMMENDATION_CHECK_MS:60000}
   napcat:
     base-url: ${QQ_BOT_NAPCAT_BASE_URL:http://napcat:3000}
     access-token: ${QQ_BOT_NAPCAT_ACCESS_TOKEN:}

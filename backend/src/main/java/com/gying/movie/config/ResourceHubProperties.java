@@ -95,6 +95,10 @@ public class ResourceHubProperties {
         private int quarkLimit = 5;
         private int xunleiLimit = 5;
         private int publishLimit = 20;
+        private boolean discoveredRetryEnabled = true;
+        private int discoveredRetryLimit = 20;
+        private long discoveredRetryDelayMs = 5000;
+        private String discoveredRetryCron = "0 30 8 * * *";
     }
 
     @Data

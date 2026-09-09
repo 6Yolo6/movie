@@ -53,6 +53,7 @@ export default function SystemSettingsPage() {
     const [configs, setConfigs] = useState<ConfigItem[]>([]);
     const [draftValues, setDraftValues] = useState<Record<string, string>>({});
     const [keyword, setKeyword] = useState('');
+    const [quickParamDraft, setQuickParamDraft] = useState('');
 
     const fetchConfig = useCallback(async () => {
         if (!token) return;
@@ -141,6 +142,37 @@ export default function SystemSettingsPage() {
 
     const renderEditor = (config: ConfigItem) => {
         const value = draftValues[config.configKey] ?? '';
+        if (config.configKey === 'resource.form.quick_params') {
+            const params = value.split(/[,，\n]+/).map(item => item.trim()).filter(Boolean);
+            return (
+                <div className="space-y-2">
+                    <Space wrap>
+                        {params.map(param => (
+                            <Tag
+                                key={param}
+                                closable
+                                onClose={() => updateDraft(config.configKey, params.filter(item => item !== param).join(','))}
+                            >
+                                {param}
+                            </Tag>
+                        ))}
+                    </Space>
+                    <Input.Search
+                        allowClear
+                        value={quickParamDraft}
+                        placeholder="添加快速参数"
+                        enterButton="添加"
+                        onChange={event => setQuickParamDraft(event.target.value)}
+                        onSearch={next => {
+                            const param = next.trim();
+                            if (!param || params.includes(param)) return;
+                            updateDraft(config.configKey, [...params, param].join(','));
+                            setQuickParamDraft('');
+                        }}
+                    />
+                </div>
+            );
+        }
         if (isBooleanValue(config.configValue)) {
             return (
                 <Switch

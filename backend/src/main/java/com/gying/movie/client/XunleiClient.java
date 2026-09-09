@@ -88,6 +88,16 @@ public class XunleiClient {
                         || (hasText(x.getAccount()) && hasText(x.getPassword())));
     }
 
+    /** Returns whether a loaded/configured access token is usable without network refresh. */
+    public boolean hasUsableAuthorization() {
+        synchronized (authLock) {
+            loadAuthState();
+            AuthState configured = configuredAuthState();
+            if (configured != null && isUsable(configured)) return true;
+            return isUsable(authState);
+        }
+    }
+
     public RestoreResult restore(String shareUrl, String savePath) {
         requireConfigured();
         ShareInfo share = inspectShare(shareUrl);

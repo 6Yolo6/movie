@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from 'antd';
-import { PlayCircleOutlined, HeartFilled } from '@ant-design/icons';
+import { PlayCircleOutlined, FireFilled } from '@ant-design/icons';
 import Link from 'next/link';
 import { MovieMetadata } from '@/types';
 
@@ -25,13 +25,14 @@ const HighlightText: React.FC<{ text: string; keyword?: string }> = ({ text, key
     );
 };
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPopularityBadge = false }) => {
-    const popularity = movie.popularity || 0;
-    const rating = movie.doubanScore > 0
-        ? { value: movie.doubanScore, label: '豆瓣' }
-        : movie.tmdbVoteAverage && movie.tmdbVoteAverage > 0
-            ? { value: movie.tmdbVoteAverage, label: 'TMDB' }
-            : null;
+const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword }) => {
+    const popularity = Math.max(movie.popularity || 0, Number(movie.tmdbPopularity || 0));
+    const ratings = [
+        movie.doubanScore > 0 ? { value: movie.doubanScore, source: '豆瓣', icon: '豆', color: 'bg-emerald-500 text-white' } : null,
+        movie.imdbScore > 0 ? { value: movie.imdbScore, source: 'IMDb', icon: 'IMDb', color: 'bg-yellow-400 text-black' } : null,
+        movie.tmdbVoteAverage && movie.tmdbVoteAverage > 0 ? { value: movie.tmdbVoteAverage, source: 'TMDB', icon: 'T', color: 'bg-sky-500 text-white' } : null,
+    ].filter(Boolean).slice(0, 2) as { value: number; source: string; icon: string; color: string }[];
+    const compactNumber = (value: number) => value >= 10000 ? `${(value / 10000).toFixed(1)}万` : value >= 1000 ? `${(value / 1000).toFixed(1)}千` : String(Math.round(value * 10) / 10);
 
     return (
         <Link href={`/movie/${movie.id}`}>
@@ -49,28 +50,11 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPo
                             <PlayCircleOutlined className="text-5xl text-white/90 drop-shadow-lg" />
                         </div>
 
-                        {/* Top Right: Douban Score */}
-                        <div className="absolute top-2 right-2">
-                            <span className="bg-black/60 backdrop-blur-md text-white text-xs px-2 py-1 rounded border border-white/20">
-                                {rating ? `${rating.label} ${rating.value}` : 'N/A'}
-                            </span>
-                        </div>
-
-                        {/* Top Left: Popularity (if > 0) */}
-                        {popularity > 0 && (
-                            <div className={`absolute top-2 ${offsetPopularityBadge ? 'left-10' : 'left-2'}`}>
-                                <span className="bg-red-500/80 backdrop-blur-md text-white text-xs px-2 py-1 rounded-full border border-white/20 flex items-center gap-1">
-                                    <HeartFilled className="text-[10px]" />
-                                    {popularity}
-                                </span>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black via-black/80 to-transparent pt-9">
+                            <div className="flex items-center gap-2 text-[11px] text-white/95">
+                                {ratings.map(rating => <span key={rating.source} title={rating.source} className="inline-flex items-center gap-1"><span className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-sm px-0.5 text-[8px] font-bold leading-none ${rating.color}`}>{rating.icon}</span><span className="font-semibold">{rating.value.toFixed(1)}</span></span>)}
+                                {popularity > 0 && <span className="inline-flex items-center gap-0.5 text-orange-300"><FireFilled className="text-[10px]" />{compactNumber(popularity)}</span>}
                             </div>
-                        )}
-
-                        {/* Bottom Info Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black via-black/80 to-transparent pt-8">
-                            <h3 className="text-white text-sm font-bold truncate">
-                                <HighlightText text={movie.titleCn} keyword={highlightKeyword} />
-                            </h3>
                         </div>
                     </div>
                 }
@@ -79,6 +63,9 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, highlightKeyword, offsetPo
             />
             {/* External Info Line: Year / Region / Genres */}
             <div className="mt-2 text-center">
+                <div className="text-gray-700 dark:text-gray-300 text-sm font-medium truncate px-1">
+                    <HighlightText text={movie.titleCn} keyword={highlightKeyword} />
+                </div>
                 <div className="text-gray-400 text-xs truncate px-1">
                     {[
                         movie.year,

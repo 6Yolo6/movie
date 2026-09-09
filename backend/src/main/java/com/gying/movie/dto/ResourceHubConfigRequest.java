@@ -27,4 +27,8 @@ public class ResourceHubConfigRequest {
     private Integer workerTaskLimit;
     private Integer workerQuarkLimit;
     private Integer workerPublishLimit;
+    private Boolean discoveredRetryEnabled;
+    private Integer discoveredRetryLimit;
+    private Long discoveredRetryDelayMs;
+    private String discoveredRetryCron;
 }

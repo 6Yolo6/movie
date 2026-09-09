@@ -60,6 +60,11 @@ interface AutomationConfig {
     botRateLimitPerMinute: number;
     botMaxResults: number;
     botBlockedKeywords: string;
+    botDailyRecommendationEnabled: boolean;
+    botDailyRecommendationTime: string;
+    botDailyRecommendationCount: number;
+    botDailyRecommendationGroupIds: string;
+    botDailyRecommendationTemplate: string;
     channelAutoPostEnabled: boolean;
     channelIntervalMinutes: number;
     channelMaxPostsPerRun: number;
@@ -523,6 +528,15 @@ export default function QqAutomationAdminPage() {
             ...current,
             targets: current.targets.map(target => target.id === id ? { ...target, [field]: value } : target),
         } : current);
+    };
+
+    const runDailyRecommendation = async () => {
+        try {
+            await requestJson('/api/admin/qq-automation/daily-recommendation/run', { method: 'POST' });
+            message.success(t('qqAutomationGroupDailyTriggered'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('operationFailed'));
+        }
     };
 
     const saveSocialTarget = async (target: SocialPublishTarget) => {
@@ -1061,6 +1075,34 @@ export default function QqAutomationAdminPage() {
                                                     <Form.Item name="botBlockedKeywords" label={t('qqAutomationBlockedKeywords')}>
                                                         <Input.TextArea rows={5} placeholder={t('qqAutomationBlockedKeywordsPlaceholder')} />
                                                     </Form.Item>
+                                                    <Row gutter={12}>
+                                                        <Col xs={24} md={8}>
+                                                            <Form.Item name="botDailyRecommendationEnabled" label={t('qqAutomationGroupDailyEnabled')} valuePropName="checked">
+                                                                <Switch />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={12} md={8}>
+                                                            <Form.Item name="botDailyRecommendationTime" label={t('qqAutomationGroupDailyTime')}>
+                                                                <Input placeholder="09:00" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={12} md={8}>
+                                                            <Form.Item name="botDailyRecommendationCount" label={t('qqAutomationGroupDailyCount')}>
+                                                                <InputNumber min={1} max={10} className="w-full" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={24}>
+                                                            <Form.Item name="botDailyRecommendationGroupIds" label={t('qqAutomationGroupDailyGroups')}>
+                                                                <Input placeholder="群号，多个用逗号分隔" />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={24}>
+                                                            <Form.Item name="botDailyRecommendationTemplate" label={t('qqAutomationGroupDailyTemplate')}>
+                                                                <Input.TextArea rows={8} />
+                                                            </Form.Item>
+                                                            <Text type="secondary">{t('qqAutomationGroupDailyTemplateHelp')}</Text>
+                                                        </Col>
+                                                    </Row>
                                                 </Card>
                                             </Col>
                                             <Col xs={24} lg={12}>
@@ -1132,6 +1174,9 @@ export default function QqAutomationAdminPage() {
                                         </Row>
                                         <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving} className="mt-4">
                                             {t('save')}
+                                        </Button>
+                                        <Button className="mt-4 ml-2" icon={<SendOutlined />} onClick={runDailyRecommendation}>
+                                            {t('qqAutomationGroupDailyTrigger')}
                                         </Button>
                                     </Form>
                                 </Card>
