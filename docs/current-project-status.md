@@ -63,6 +63,8 @@
 
 - Cookie、Authorization、JWT、refresh token、密码和 API Key 只允许存在于 `.env`、外部服务配置或进程内存，不提交到 Git 或写入业务日志。
 - 浏览器登录态不等同于迅雷 Drive API Bearer token；Resource Hub 不读取浏览器 Cookie。收到 401 时更新官方 Authorization 或 refresh token。
+- OpenClaw QQBot 已配置命令 owner/elevated 白名单为 `3929013344`，关闭聊天侧 bash/config/mcp/plugins/debug/restart 命令，全局拒绝 `exec/read/write/edit/apply_patch` 工具并禁用 elevated 工具执行；agent 默认沙箱已设为 `all`。插件入口会在 `/bot-*`、`/stop`、`/approve` 执行前再次校验白名单，未授权请求直接拒绝，不进入 AI 或执行队列；影视搜索命令保持可用。QQ 群事件实际使用 `member_openid`，若该值不是普通 QQ 号，需在运行态将白名单替换为对应 OpenID。
+- OpenClaw 网关已重启并通过健康检查；QQBot 插件目录的 world-writable 权限已修复。当前仅保留旧插件 manifest 缺少 `channelConfigs`、以及显式运行时插件覆盖全局插件的非阻断警告。
 - 生产操作前后检查 `git status --short`；涉及数据库或卷的高风险操作必须先备份并保留回滚点。
 - 不执行 `docker compose down -v`、删除卷、`DROP`、`TRUNCATE` 或物理删除核心历史数据作为日常维护手段。
 - 自动采集只有在生成并校验自有分享后才允许发布，第三方原始链接不得直接写入正式资源。

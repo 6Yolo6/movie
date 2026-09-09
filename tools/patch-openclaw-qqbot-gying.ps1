@@ -295,6 +295,52 @@ if ($gatewayContent -notmatch 'sendC2CImageMessage') {
 $gatewayContent = $gatewayContent -replace 'const isGyingMovieSearchCommand = \(text\) => .*?;\r?\n', ""
 $gatewayContent = $gatewayContent -replace '\s*const isGyingSearchStartCommand = \(text\) => .*?;\r?\n', "`n"
 $gatewayContent = $gatewayContent -replace '\s*const isGyingMentionFallback = \(msg\) => .*?;\r?\n', "`n"
+$authorizationBlock = @'
+    const getAdminAllowFrom = () => {
+        const accountAllowFrom = Array.isArray(account.config?.allowFrom) ? account.config.allowFrom : [];
+        const ownerAllowFrom = Array.isArray(cfg?.commands?.ownerAllowFrom) ? cfg.commands.ownerAllowFrom : [];
+        const commandAllowFrom = Array.isArray(cfg?.commands?.allowFrom?.qqbot) ? cfg.commands.allowFrom.qqbot : [];
+        return [...accountAllowFrom, ...ownerAllowFrom, ...commandAllowFrom]
+            .map((entry) => String(entry).trim().replace(/^qqbot:/i, "").toUpperCase())
+            .filter(Boolean);
+    };
+    const isAdminCommandAuthorized = (msg) => {
+        const senderId = String(msg?.senderId ?? "").trim().toUpperCase();
+        return Boolean(senderId) && getAdminAllowFrom().includes(senderId);
+    };
+    const isAdminSlashCommand = (content) => {
+        const command = String(content ?? "").trim().split(/\s+/, 1)[0].toLowerCase();
+        return command === "/stop" || command === "/approve" || command.startsWith("/bot-");
+    };
+    const sendUnauthorizedCommandReply = async (msg) => {
+        const token = await getAccessToken(account.appId, account.clientSecret);
+        const text = "\u65e0\u6743\u6267\u884c\u7ba1\u7406\u547d\u4ee4\u3002";
+        if (msg.type === "group" && msg.groupOpenid) {
+            await sendGroupMessage(token, msg.groupOpenid, msg.senderId ? `<@${msg.senderId}> ${text}` : text, msg.messageId);
+        }
+        else if (msg.type === "c2c" || msg.type === "dm") {
+            await sendC2CMessage(token, msg.senderId, text, msg.messageId);
+        }
+    };
+'@
+if ($gatewayContent -notmatch 'const isAdminCommandAuthorized') {
+    $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', ('const URGENT_COMMANDS = ["/stop", "/approve"];' + [Environment]::NewLine + [Environment]::NewLine + $authorizationBlock.TrimStart().TrimEnd())
+}
+if ($gatewayContent -notmatch 'isAdminSlashCommand\(content\) && !isAdminCommandAuthorized\(msg\)') {
+    $authorizationGuard = @'
+        if (isAdminSlashCommand(content) && !isAdminCommandAuthorized(msg)) {
+            log?.warn?.(`[qqbot:${account.accountId}] Blocked unauthorized admin command: sender=${String(msg.senderId ?? "").slice(0, 80)}, command=${content.slice(0, 40)}`);
+            try {
+                await sendUnauthorizedCommandReply(msg);
+            }
+            catch (err) {
+                log?.warn?.(`[qqbot:${account.accountId}] Failed to send unauthorized-command reply: ${err}`);
+            }
+            return;
+        }
+'@
+    $gatewayContent = $gatewayContent -replace '(if \(!content\.startsWith\("/"\) && !isGyingMovieSearchCommand\(content\) && !isGyingMentionFallback\(msg\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \})', ('$1' + "`n" + $authorizationGuard.TrimEnd())
+}
 if ($gatewayContent -notmatch "const isGyingMovieSearchCommand") {
     $gatewayContent = $gatewayContent -replace 'const URGENT_COMMANDS = \["/stop", "/approve"\];', "const URGENT_COMMANDS = [`"/stop`", `"/approve`"];`n    const isGyingMovieSearchCommand = (text) => /^(?:(?:\u641c|\u627e)(?:\s+.+)?|(?:[1-9]|10)|(?:(?:\u7f51\u76d8|\u4e91\u76d8)?\s*(?:\u5938\u514b|\u767e\u5ea6(?:\u7f51\u76d8|\u4e91\u76d8|\u4e91)?|\u963f\u91cc(?:\u4e91\u76d8|\u7f51\u76d8|\u4e91)?|uc(?:\u7f51\u76d8|\u4e91\u76d8)?|\u8fc5\u96f7(?:\u7f51\u76d8)?|115(?:\u7f51\u76d8|\u4e91\u76d8)?|123(?:\u7f51\u76d8|\u4e91\u76d8)?|pikpak|\u5929\u7ffc(?:\u7f51\u76d8|\u4e91\u76d8)?|(?:\u4e2d\u56fd)?\u79fb\u52a8(?:\u7f51\u76d8|\u4e91\u76d8)?|\u5168\u90e8|\u6240\u6709|\u4efb\u610f|\u7efc\u5408)(?:\s*\d{1,2}\s*(?:\u6761|\u4e2a)?)?|(?:\u8d44\u6e90|\u66f4\u591a)\s*\d{1,2}\s*(?:\u6761|\u4e2a)?))$/iu.test(String(text ?? `"`").trim());`n    const isGyingMentionFallback = (msg) => msg?.type === `"group`" && (msg?.eventType === `"GROUP_AT_MESSAGE_CREATE`" || msg?.mentions?.some((mention) => mention?.is_you));"
 }
@@ -303,7 +349,10 @@ if ($gatewayContent -notmatch "const isGyingSearchStartCommand") {
             "`$1    const isGyingSearchStartCommand = (text) => /^(?:(?:\\/movie|\\/search)\\s+.+|(?:\\u641c|\\u627e)\\s+.+)$/iu.test(String(text ?? `"`").trim());`n"
 }
 
-$gatewayContent = $gatewayContent -replace 'const isGyingSearchStartCommand = .*', '    const isGyingSearchStartCommand = (text) => /^(?:(?:\/movie|\/search)\s+.+|(?:\u641c|\u627e)\s*.+)$/iu.test(String(text ?? "").trim());'
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(?m)^\s*const isGyingSearchStartCommand = .*?;\s*$',
+        '    const isGyingSearchStartCommand = (text) => /^(?:(?:\/movie|\/search)\s+.+|(?:\u641c|\u627e)\s*.+)$/iu.test(String(text ?? "").trim());')
 
 if ($gatewayContent -match 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}') {
     $gatewayContent = $gatewayContent -replace 'if \(!content\.startsWith\("/"\)\) \{\r?\n            msgQueue\.enqueue\(msg\);\r?\n            return;\r?\n        \}', "if (!content.startsWith(`"/`") && !isGyingMovieSearchCommand(content) && !isGyingMentionFallback(msg)) {`n            msgQueue.enqueue(msg);`n            return;`n        }"
