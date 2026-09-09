@@ -369,8 +369,8 @@ if ($gatewayContent -notmatch 'Gying search progress sent') {
                 try {
                     gyingProgressToken = await getAccessToken(account.appId, account.clientSecret);
                     const progressText = msg.type === "group" && msg.senderId
-                        ? `<@${msg.senderId}> 正在搜索资源，请稍后...`
-                        : "正在搜索资源，请稍后...";
+                        ? `<@${msg.senderId}> \u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...`
+                        : "\u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...";
                     if (msg.type === "group" && msg.groupOpenid) {
                         await sendGroupMessage(gyingProgressToken, msg.groupOpenid, progressText, msg.messageId);
                     }
@@ -387,6 +387,12 @@ if ($gatewayContent -notmatch 'Gying search progress sent') {
     $gatewayContent = $gatewayContent -replace '(?m)^\s*const reply = await matchSlashCommand\(cmdCtx\);$',
             ($progressHandler + "`n            const reply = await matchSlashCommand(cmdCtx);")
 }
+$gatewayContent = [regex]::Replace(
+        $gatewayContent,
+        '(?s)const progressText = msg\.type === "group" && msg\.senderId\s*\? `<@\$\{msg\.senderId\}>.*?\s*: ".*?";',
+        'const progressText = msg.type === "group" && msg.senderId
+                        ? `<@${msg.senderId}> \u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...`
+                        : "\u6b63\u5728\u641c\u7d22\u8d44\u6e90\uff0c\u8bf7\u7a0d\u540e...";')
 $gatewayContent = $gatewayContent -replace 'const token = await getAccessToken\(account\.appId, account\.clientSecret\);',
         'const token = gyingProgressToken ?? await getAccessToken(account.appId, account.clientSecret);'
 $gatewayContent = [regex]::Replace(
