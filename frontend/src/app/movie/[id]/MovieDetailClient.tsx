@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
+import type { InputRef } from 'antd';
 import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
@@ -10,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
 import { useTranslation } from 'react-i18next';
+import { inferResourceProvider, insertQuickParam, materializeQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -36,6 +38,7 @@ interface ResourceFormValues {
     subtitle?: string;
     fileSize?: string;
     versionNote?: string;
+    bindMovieIds?: string[];
 }
 
 const RenderLinkList = ({ items, type: _type, limit = 0, labels }: RenderLinkListProps) => {
@@ -80,10 +83,78 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [form] = Form.useForm();
+    const nameInputRef = useRef<InputRef>(null);
     const resourceType = Form.useWatch('type', form) || 'DISK';
+    const resourceUrl = Form.useWatch('url', form);
     const [resourceItems, setResourceItems] = useState(resources);
     const [editingResource, setEditingResource] = useState<ResourceLink | null>(null);
+    const [quickParams, setQuickParams] = useState(RESOURCE_QUICK_PARAMS);
+    const [bindCandidates, setBindCandidates] = useState<{ value: string; label: string }[]>([]);
+    const [bindLoading, setBindLoading] = useState(false);
     const isP2PType = resourceType === 'MAGNET' || resourceType === 'TORRENT';
+
+    useEffect(() => {
+        if (resourceType === 'DISK') {
+            const provider = inferResourceProvider(resourceUrl);
+            if (provider) form.setFieldValue('provider', provider);
+        }
+    }, [form, resourceType, resourceUrl]);
+
+    const pasteClipboard = async () => {
+        try {
+            const parsed = await readResourceClipboard();
+            form.setFieldsValue({
+                ...(parsed.url ? { url: parsed.url } : {}),
+                ...(parsed.code ? { code: parsed.code } : {}),
+                ...(parsed.name ? { name: parsed.name } : {}),
+                ...(parsed.provider ? { provider: parsed.provider } : {}),
+            });
+            message.success(t('resourceClipboardPasted'));
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : t('resourceClipboardFailed'));
+        }
+    };
+
+    const loadBindCandidates = useCallback(async (keyword = '') => {
+        if (!movie.seriesName && !movie.tmdbId) return;
+        setBindLoading(true);
+        try {
+            const query = new URLSearchParams({ movieId: movie.id, limit: '50' });
+            if (keyword.trim()) query.set('keyword', keyword.trim());
+            const response = await api(`/api/resources/bind-candidates?${query}`);
+            if (!response.ok) return;
+            const items = await response.json();
+            setBindCandidates((items || []).map((item: { id: string; titleCn?: string; titleEn?: string; season?: number; year?: number }) => ({
+                value: item.id,
+                label: `${item.titleCn || item.titleEn || item.id}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
+            })));
+        } finally {
+            setBindLoading(false);
+        }
+    }, [movie.id, movie.seriesName, movie.tmdbId]);
+
+    const insertParameter = (parameter: string) => {
+        const input = nameInputRef.current?.input;
+        const current = form.getFieldValue('name') || '';
+        const resolvedParameter = materializeQuickParam(parameter, movie.titleCn);
+        if (!resolvedParameter) return;
+        const result = insertQuickParam(current, resolvedParameter, input?.selectionStart, input?.selectionEnd);
+        form.setFieldValue('name', result.value);
+        requestAnimationFrame(() => {
+            input?.focus();
+            input?.setSelectionRange(result.cursor, result.cursor);
+        });
+    };
+
+    useEffect(() => {
+        api('/api/resources/form-config').then(async response => {
+            if (!response.ok) return;
+            const data = await response.json();
+            if (Array.isArray(data.quickParams) && data.quickParams.length) {
+                setQuickParams(parseResourceQuickParams(data.quickParams.join(',')));
+            }
+        }).catch(() => undefined);
+    }, []);
 
     // Summary Expanded State
     const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -258,6 +329,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
             const payload = {
                 movieId: movie.id,
                 ...values,
+                url: normalizeResourceUrlWithCode(values.url, values.code) || values.url,
                 type: values.type || 'DISK',
                 provider: values.type === 'DISK' ? (values.provider || 'OTHER') : 'OTHER',
                 code: values.type === 'DISK' ? (values.code || '') : '',
@@ -768,8 +840,17 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         initialValues={{ type: 'DISK', provider: 'BAIDU' }}
                     >
                         <Form.Item name="name" label={t('resourceName')} rules={[{ required: true }]}>
-                            <Input placeholder="e.g. 4K Remastered Version" className="rounded-md" />
+                            <Input ref={nameInputRef} placeholder="e.g. 4K Remastered Version" className="rounded-md" />
                         </Form.Item>
+                        <Space wrap className="mb-3">
+                            <span className="text-gray-500">{t('resourceQuickParams')}</span>
+                            <Button icon={<CopyOutlined />} onClick={pasteClipboard}>{t('resourcePasteAll')}</Button>
+                            {quickParams.map((parameter) => (
+                                <Tag key={parameter} className="cursor-pointer" onClick={() => insertParameter(parameter)}>
+                                    {parameter === '\u005b\u5f71\u7247\u540d\u005d' ? movie.titleCn : parameter}
+                                </Tag>
+                            ))}
+                        </Space>
                         <Form.Item name="type" label={t('resourceType')} rules={[{ required: true }]}>
                             <Select className="rounded-md">
                                 <Option value="DISK">{t('cloudDisk')}</Option>
@@ -790,6 +871,20 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         >
                             <Input placeholder={getLinkPlaceholder()} className="rounded-md" />
                         </Form.Item>
+                        {!editingResource && (
+                            <Form.Item name="bindMovieIds" label={t('resourceBindSeries')}>
+                                <Select
+                                    mode="multiple"
+                                    showSearch
+                                    filterOption={false}
+                                    loading={bindLoading}
+                                    options={bindCandidates}
+                                    onSearch={loadBindCandidates}
+                                    onFocus={() => loadBindCandidates()}
+                                    placeholder={t('resourceBindSeriesPlaceholder')}
+                                />
+                            </Form.Item>
+                        )}
                         {resourceType === 'DISK' && (
                             <Form.Item name="code" label={t('accessCode')}>
                                 <Input placeholder={t('optional')} className="rounded-md" />
@@ -797,7 +892,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         )}
                         {resourceType === 'DISK' && (
                             <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
-                                <Select className="rounded-md">
+                                <Select className="rounded-md" disabled={!inferResourceProvider(resourceUrl)}>
                                     <Option value="BAIDU">{providers.BAIDU[i18n.language as LanguageKey]}</Option>
                                     <Option value="QUARK">{providers.QUARK[i18n.language as LanguageKey]}</Option>
                                     <Option value="XUNLEI">{providers.XUNLEI[i18n.language as LanguageKey]}</Option>

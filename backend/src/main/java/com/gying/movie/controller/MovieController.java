@@ -75,7 +75,19 @@ public class MovieController {
                 .like(language != null && !language.isEmpty(), MovieMetadata::getLanguages, language)
                 .eq(year != null, MovieMetadata::getYear, year);
 
-        if ("rating".equals(sort)) {
+        if ("featured".equalsIgnoreCase(sort) || "recent_hot".equalsIgnoreCase(sort)) {
+            // Keep recently refreshed titles ahead of the archive, then rank by
+            // site/TMDB heat and finally by the best available score.
+            query.last("ORDER BY CASE WHEN COALESCE((SELECT MAX(rl.updated_at) FROM resource_link rl "
+                    + "WHERE rl.movie_id = movie_metadata.id AND rl.status = 'ACTIVE' AND rl.deleted_at IS NULL "
+                    + "AND COALESCE(rl.link_status, 'NORMAL') <> 'INVALID'), updated_at, created_at) "
+                    + ">= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 0 ELSE 1 END, "
+                    + "COALESCE(popularity, 0) DESC, COALESCE(tmdb_popularity, 0) DESC, "
+                    + "GREATEST(COALESCE(douban_score, 0), COALESCE(imdb_score, 0), COALESCE(tmdb_vote_average, 0)) DESC, "
+                    + "COALESCE((SELECT MAX(rl.updated_at) FROM resource_link rl WHERE rl.movie_id = movie_metadata.id "
+                    + "AND rl.status = 'ACTIVE' AND rl.deleted_at IS NULL AND COALESCE(rl.link_status, 'NORMAL') <> 'INVALID'), "
+                    + "updated_at, created_at) DESC, created_at DESC");
+        } else if ("rating".equals(sort)) {
             query.orderByDesc(MovieMetadata::getDoubanScore)
                     .orderByDesc(MovieMetadata::getTmdbVoteAverage);
         } else if ("popular".equals(sort)) {

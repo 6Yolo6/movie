@@ -218,6 +218,27 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     @Override
+    public void sendGroupMessage(Long groupId, String message) {
+        if (groupId == null || !hasText(message)) {
+            return;
+        }
+        try {
+            send(groupId, null, message);
+        } catch (Exception officialError) {
+            if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
+                log.warn("QQBot proactive send failed; trying NapCat fallback for group {}", groupId, officialError);
+                try {
+                    napCatClient.sendGroupMessage(groupId, message);
+                    return;
+                } catch (Exception napcatError) {
+                    officialError.addSuppressed(napcatError);
+                }
+            }
+            throw officialError;
+        }
+    }
+
+    @Override
     public String buildSearchReply(String keyword, String userKey) {
         String requestedKeyword = trim(keyword, 80);
         if (!hasText(requestedKeyword)) {
@@ -2057,14 +2078,18 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void trySend(Long groupId, Long userId, String message) {
         try {
-            if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
-                String mention = userId == null ? "" : "<@" + userId + "> ";
-                qqOfficialBotClient.sendGroupMessage(groupId, mention + trim(message, 1800));
-            } else {
-                napCatClient.sendGroupMessage(groupId, userId, trim(message, 1800));
-            }
+            send(groupId, userId, message);
         } catch (Exception e) {
             log.warn("Failed to send QQ group message to {}", groupId, e);
+        }
+    }
+
+    private void send(Long groupId, Long userId, String message) {
+        if ("qqbot".equalsIgnoreCase(qqBotProperties.getReplyProvider())) {
+            String mention = userId == null ? "" : "<@" + userId + "> ";
+            qqOfficialBotClient.sendGroupMessage(groupId, mention + trim(message, 1800));
+        } else {
+            napCatClient.sendGroupMessage(groupId, userId, trim(message, 1800));
         }
     }
 

@@ -67,12 +67,26 @@ public class QuarkAutoSaveClient {
     }
 
     public String resolveSeasonShareUrl(String shareUrl, int season, String sourceTitle) {
+        return resolveSeasonShareUrl(shareUrl, season, sourceTitle, sourceTitle);
+    }
+
+    public String resolveSeasonShareUrl(
+            String shareUrl,
+            int season,
+            String sourceTitle,
+            String seriesTitle) {
         if (season < 1 || season > 99) {
             return shareUrl;
         }
         requireConfigured();
         String baseShareUrl = stripDirectoryFragment(shareUrl);
-        String resolved = findSeasonDirectory(baseShareUrl, shareUrl, season, 0, new HashSet<>());
+        String resolved = findSeasonDirectory(
+                baseShareUrl,
+                shareUrl,
+                season,
+                seriesTitle,
+                0,
+                new HashSet<>());
         if (resolved != null) {
             return resolved;
         }
@@ -211,6 +225,7 @@ public class QuarkAutoSaveClient {
             String baseShareUrl,
             String currentShareUrl,
             int season,
+            String seriesTitle,
             int depth,
             Set<String> visited) {
         JsonNode list = getShareDetailData(currentShareUrl).path("list");
@@ -222,7 +237,7 @@ public class QuarkAutoSaveClient {
             String name = item.path("file_name").asText(null);
             if (item.path("dir").asBoolean(false)
                     && fid != null
-                    && SeasonSearchUtils.explicitlyMatchesSeason(name, season)) {
+                    && SeasonSearchUtils.matchesSeasonDirectory(name, seriesTitle, season)) {
                 return baseShareUrl + "#/list/share/" + fid;
             }
         }
@@ -238,6 +253,7 @@ public class QuarkAutoSaveClient {
                     baseShareUrl,
                     baseShareUrl + "#/list/share/" + fid,
                     season,
+                    seriesTitle,
                     depth + 1,
                     visited);
             if (resolved != null) {
@@ -452,16 +468,16 @@ public class QuarkAutoSaveClient {
         String cookie = cookies.isArray() && !cookies.isEmpty() ? cookies.get(0).asText(null) : null;
         if (!hasUsableCookie(cookie)) {
             String fallbackCookie = firstUsableCookie(System.getenv("QUARK_COOKIE"), System.getenv("quark_cookie"));
-            if (fallbackCookie != null && data instanceof ObjectNode objectData) {
+            if (fallbackCookie != null) {
                 ArrayNode cookieArray = objectMapper.createArrayNode();
                 cookieArray.add(fallbackCookie);
-                objectData.set("cookie", cookieArray);
-                synchronizeRuntimeConfig(objectData);
+                ObjectNode cookieUpdate = objectMapper.createObjectNode();
+                cookieUpdate.set("cookie", cookieArray);
+                synchronizeRuntimeConfig(cookieUpdate);
                 return fallbackCookie;
             }
             throw new IllegalStateException("quark-auto-save cookie is not configured");
         }
-        synchronizeRuntimeConfig(data);
         return cookie.trim();
     }
 
@@ -473,7 +489,7 @@ public class QuarkAutoSaveClient {
         RestClientException lastRequestError = null;
         for (int attempt = 1; attempt <= CONFIG_CHECK_ATTEMPTS; attempt++) {
             try {
-                ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+                ResponseEntity<byte[]> response = restTemplate.getForEntity(url, byte[].class);
                 JsonNode body = objectMapper.readTree(response.getBody());
                 if (!body.path("success").asBoolean(false)) {
                     throw new IllegalStateException(body.path("message").asText("quark-auto-save is not logged in"));

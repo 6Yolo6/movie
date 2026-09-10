@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.utils.SeasonSearchUtils;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -25,6 +27,29 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 class QuarkAutoSaveClientTest {
+
+    @Test
+    void readsUtf8ConfigWithoutWritingTheWholeConfigBack() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        String response = """
+                {"success":true,"data":{"cookie":["__uid=test"],"tasklist":[
+                  {"taskname":"海军罪案调查处","savepath":"/GYing Resource Hub/tv/海军罪案调查处"}
+                ]}}
+                """;
+        when(restTemplate.getForEntity(contains("/data"), eq(byte[].class)))
+                .thenReturn(ResponseEntity.ok(response.getBytes(StandardCharsets.UTF_8)));
+
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+
+        assertEquals("__uid=test", client.getPrimaryCookie());
+
+        verify(restTemplate, never()).postForEntity(
+                contains("/update"), any(HttpEntity.class), eq(String.class));
+    }
 
     @Test
     void includesSeasonSubdirectoryPatternInTaskPayload() {
@@ -52,7 +77,7 @@ class QuarkAutoSaveClientTest {
         RestTemplate restTemplate = mock(RestTemplate.class);
         RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
         when(builder.build()).thenReturn(restTemplate);
-        when(restTemplate.getForEntity(contains("/data"), eq(String.class)))
+        when(restTemplate.getForEntity(contains("/data"), eq(byte[].class)))
                 .thenThrow(new ResourceAccessException("connection reset"));
         when(restTemplate.postForEntity(
                 contains("/api/add_task"),
@@ -67,7 +92,7 @@ class QuarkAutoSaveClientTest {
                 "savepath", "/GYing Resource Hub/movie/Supergirl"));
 
         assertTrue(result.path("success").asBoolean());
-        verify(restTemplate, times(3)).getForEntity(contains("/data"), eq(String.class));
+        verify(restTemplate, times(3)).getForEntity(contains("/data"), eq(byte[].class));
         verify(restTemplate).postForEntity(
                 contains("/api/add_task"),
                 any(HttpEntity.class),
@@ -187,6 +212,33 @@ class QuarkAutoSaveClientTest {
                 "https://pan.quark.cn/s/multi-season",
                 1,
                 "森林民宿 剧集 HDTV 中字"));
+    }
+
+    @Test
+    void selectsObfuscatedTitleAnchoredNumericSeasonDirectory() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(restTemplate);
+        when(restTemplate.postForEntity(
+                contains("/get_share_detail"),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok("""
+                        {"success":true,"data":{"list":[
+                          {"fid":"year","file_name":"问心2023","dir":true},
+                          {"fid":"season-2","file_name":"wW问@@X心2","dir":true}
+                        ]}}
+                        """));
+        QuarkAutoSaveClient client = new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
+        String shareUrl = "https://pan.quark.cn/s/heart";
+
+        assertEquals(shareUrl + "#/list/share/season-2", client.resolveSeasonShareUrl(
+                shareUrl,
+                2,
+                "问心2",
+                "问心"));
     }
 
     @Test

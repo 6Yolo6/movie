@@ -15,4 +15,11 @@ public interface IResourceDiscoveryService {
      * operation; it must never enqueue a batch for the whole movie.
      */
     boolean ensureTransferTask(Long discoveryResultId);
+
+    /**
+     * Reconciles discovered candidates that were persisted without a transfer
+     * task (for example, deferred discovery results). Returns the number of
+     * newly created transfer tasks.
+     */
+    int reconcileDiscoveredTransferTasks(int limit);
 }

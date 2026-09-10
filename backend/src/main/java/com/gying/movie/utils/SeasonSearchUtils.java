@@ -93,9 +93,33 @@ public final class SeasonSearchUtils {
         return false;
     }
 
+    public static boolean matchesSeasonDirectory(String directoryName, String seriesTitle, int season) {
+        if (explicitlyMatchesSeason(directoryName, season)) {
+            return true;
+        }
+        if (!hasText(directoryName) || !hasText(seriesTitle) || season < 1 || season > 99) {
+            return false;
+        }
+
+        String baseTitle = seasonBaseTitle(seriesTitle, season);
+        String titleAnchor = containsHan(baseTitle) ? hanAndDigits(baseTitle) : compact(baseTitle);
+        String directory = containsHan(titleAnchor) ? hanAndDigits(directoryName) : compact(directoryName);
+        if (!hasText(titleAnchor) || !hasText(directory)) {
+            return false;
+        }
+        return directory.matches(".*" + Pattern.quote(titleAnchor) + "0*" + season + "$");
+    }
+
     public static boolean hasSeasonCollection(String value) {
         return hasText(value)
                 && (SEASON_RANGE.matcher(value).find() || COMPLETE_SEASONS.matcher(value).find());
+    }
+
+    /** A source title explicitly advertises a whole-series or multi-season set. */
+    public static boolean isCollectionResource(String value) {
+        return hasText(value) && (hasSeasonCollection(value)
+                || Pattern.compile("(?:合集|全季|全集|多季|全\\s*[0-9]+\\s*季|[0-9]+\\s*[-~至到]\\s*[0-9]+\\s*季)", Pattern.CASE_INSENSITIVE)
+                        .matcher(value).find());
     }
 
     public static boolean canUseRootForFirstSeason(String value) {
@@ -237,6 +261,26 @@ public final class SeasonSearchUtils {
         return hasText(value)
                 ? value.toLowerCase().replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "")
                 : "";
+    }
+
+    private static String seasonBaseTitle(String value, int season) {
+        SeasonQuery parsed = parse(value);
+        if (parsed != null && parsed.season() == season) {
+            return parsed.baseTitle();
+        }
+        Matcher suffix = Pattern.compile("(?<![0-9])0*" + season + "\\s*$").matcher(value.trim());
+        return suffix.find() && hasText(value.substring(0, suffix.start()))
+                ? value.substring(0, suffix.start()).trim()
+                : value.trim();
+    }
+
+    private static boolean containsHan(String value) {
+        return hasText(value) && value.codePoints().anyMatch(codePoint ->
+                Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN);
+    }
+
+    private static String hanAndDigits(String value) {
+        return hasText(value) ? value.replaceAll("[^\\p{IsHan}0-9]", "") : "";
     }
 
     private static void add(Set<String> values, String value) {

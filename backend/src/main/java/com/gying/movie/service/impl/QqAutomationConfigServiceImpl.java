@@ -19,6 +19,11 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
     private static final String KEY_BOT_RATE_LIMIT_PER_MINUTE = "qq.bot.rate_limit_per_minute";
     private static final String KEY_BOT_MAX_RESULTS = "qq.bot.max_results";
     private static final String KEY_BOT_BLOCKED_KEYWORDS = "qq.bot.blocked_keywords";
+    private static final String KEY_BOT_DAILY_RECOMMENDATION_ENABLED = "qq.bot.daily_recommendation.enabled";
+    private static final String KEY_BOT_DAILY_RECOMMENDATION_TIME = "qq.bot.daily_recommendation.time";
+    private static final String KEY_BOT_DAILY_RECOMMENDATION_COUNT = "qq.bot.daily_recommendation.count";
+    private static final String KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS = "qq.bot.daily_recommendation.group_ids";
+    private static final String KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE = "qq.bot.daily_recommendation.template";
     private static final String KEY_CHANNEL_AUTO_POST_ENABLED = "qq.channel.auto_post.enabled";
     private static final String KEY_CHANNEL_INTERVAL_MINUTES = "qq.channel.auto_post.interval_minutes";
     private static final String KEY_CHANNEL_MAX_POSTS_PER_RUN = "qq.channel.auto_post.max_posts_per_run";
@@ -38,6 +43,11 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
             + "\u7c7b\u578b\uff1a{{type}}\n"
             + "\u94fe\u63a5\uff1a{{link}}\n"
             + "\u7b80\u4ecb\uff1a{{intro}}";
+    static final String DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE = "\u3010\u6700\u8fd1\u66f4\u65b0\u3011{{title}} ({{year}})\n"
+            + "\u7c7b\u578b\uff1a{{genres}}\n"
+            + "\u8bc4\u5206\uff1a{{rating}}\n"
+            + "\u7b80\u4ecb\uff1a{{summary}}\n"
+            + "\u8d44\u6e90\uff1a{{resources}}";
 
     private final QqBotProperties qqBotProperties;
     private final ISysConfigService sysConfigService;
@@ -79,6 +89,12 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         result.put("botRateLimitPerMinute", readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, qqBotProperties.getRateLimitPerMinute(), 0, 100));
         result.put("botMaxResults", readInt(KEY_BOT_MAX_RESULTS, qqBotProperties.getMaxResults(), 1, 5));
         result.put("botBlockedKeywords", readString(KEY_BOT_BLOCKED_KEYWORDS, qqBotProperties.getBlockedKeywords()));
+        result.put("botDailyRecommendationEnabled", readBoolean(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, true));
+        result.put("botDailyRecommendationTime", readString(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00"));
+        result.put("botDailyRecommendationCount", readInt(KEY_BOT_DAILY_RECOMMENDATION_COUNT, 3, 1, 10));
+        result.put("botDailyRecommendationGroupIds", readString(KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, qqBotProperties.getAllowedGroups()));
+        result.put("botDailyRecommendationTemplate", readString(KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE,
+                DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE));
         result.put("channelAutoPostEnabled", readBoolean(KEY_CHANNEL_AUTO_POST_ENABLED, false));
         result.put("channelIntervalMinutes", readInt(KEY_CHANNEL_INTERVAL_MINUTES, 60, 1, 10080));
         result.put("channelMaxPostsPerRun", readInt(KEY_CHANNEL_MAX_POSTS_PER_RUN, 1, 1, 20));
@@ -102,6 +118,11 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 0, 100, "QQ bot per-user search rate limit");
         putInt(request, "botMaxResults", KEY_BOT_MAX_RESULTS, 1, 5, "QQ bot maximum reply resources");
         putString(request, "botBlockedKeywords", KEY_BOT_BLOCKED_KEYWORDS, "QQ bot blocked search keywords");
+        putBoolean(request, "botDailyRecommendationEnabled", KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "Enable QQ group daily recommendations");
+        putString(request, "botDailyRecommendationTime", KEY_BOT_DAILY_RECOMMENDATION_TIME, "QQ group daily recommendation time HH:mm");
+        putInt(request, "botDailyRecommendationCount", KEY_BOT_DAILY_RECOMMENDATION_COUNT, 1, 10, "QQ group daily recommendation count");
+        putString(request, "botDailyRecommendationGroupIds", KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, "QQ group IDs for daily recommendations");
+        putString(request, "botDailyRecommendationTemplate", KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ group daily recommendation template");
         putBoolean(request, "channelAutoPostEnabled", KEY_CHANNEL_AUTO_POST_ENABLED, "Enable QQ channel auto posting");
         putInt(request, "channelIntervalMinutes", KEY_CHANNEL_INTERVAL_MINUTES, 1, 10080, "QQ channel auto post interval in minutes");
         putInt(request, "channelMaxPostsPerRun", KEY_CHANNEL_MAX_POSTS_PER_RUN, 1, 20, "QQ channel posts per run");
@@ -121,6 +142,12 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(qqBotProperties.getRateLimitPerMinute()), "QQ bot per-user search rate limit");
         upsertMissing(KEY_BOT_MAX_RESULTS, Integer.toString(qqBotProperties.getMaxResults()), "QQ bot maximum reply resources");
         upsertMissing(KEY_BOT_BLOCKED_KEYWORDS, defaultText(qqBotProperties.getBlockedKeywords()), "QQ bot blocked search keywords");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "true", "Enable QQ group daily recommendations");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00", "QQ group daily recommendation time HH:mm");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_COUNT, "3", "QQ group daily recommendation count");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, defaultText(qqBotProperties.getAllowedGroups()), "QQ group IDs for daily recommendations");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE, DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE,
+                "QQ group daily recommendation template");
         upsertMissing(KEY_CHANNEL_AUTO_POST_ENABLED, "false", "Enable QQ channel auto posting");
         upsertMissing(KEY_CHANNEL_INTERVAL_MINUTES, "60", "QQ channel auto post interval in minutes");
         upsertMissing(KEY_CHANNEL_MAX_POSTS_PER_RUN, "1", "QQ channel posts per run");
@@ -181,6 +208,10 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
                 && (looksLikeMojibake(value) || LEGACY_CHANNEL_POST_TEMPLATE.equals(value))) {
             upsert(key, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ channel post template");
             return DEFAULT_CHANNEL_POST_TEMPLATE;
+        }
+        if (KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE.equals(key) && looksLikeMojibake(value)) {
+            upsert(key, DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ group daily recommendation template");
+            return DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE;
         }
         return value;
     }

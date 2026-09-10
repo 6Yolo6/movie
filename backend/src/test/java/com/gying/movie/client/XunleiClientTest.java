@@ -29,7 +29,7 @@ class XunleiClientTest {
     }
 
     @Test
-    void restoresOnlyTopLevelShareItemsIntoExplicitAncestorPath() throws Exception {
+    void restoresOnlyVideoShareItemsIntoExplicitParent() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         List<String> ids = XunleiClient.extractTopLevelFileIds(mapper.readTree("""
                 {
@@ -42,14 +42,37 @@ class XunleiClientTest {
                 """));
         XunleiClient.ShareInfo share = new XunleiClient.ShareInfo(
                 "share-id", "code", "token", ids, List.of("Movie", "Movie.srt"));
-        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo(
-                "my-transfers-id", List.of());
+        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo("my-transfers-id");
 
         Map<String, Object> payload = XunleiClient.restorePayload(share, directory);
 
         assertEquals(List.of("folder-id", "subtitle-id"), payload.get("file_ids"));
         assertEquals("my-transfers-id", payload.get("parent_id"));
-        assertEquals(List.of(), payload.get("ancestor_ids"));
+        assertEquals(false, payload.containsKey("ancestor_ids"));
+    }
+
+    @Test
+    void omitsDestinationAncestorIdsForNestedRestorePath() {
+        XunleiClient.DirectoryInfo directory = new XunleiClient.DirectoryInfo("movie-folder");
+        Map<String, Object> payload = XunleiClient.restorePayload(
+                new XunleiClient.ShareInfo("share", "", "", List.of("video"), List.of("video.mkv")),
+                directory);
+        assertEquals("movie-folder", payload.get("parent_id"));
+        assertEquals(false, payload.containsKey("ancestor_ids"));
+    }
+
+    @Test
+    void findsExistingFolderAcrossRealDriveApiFieldVariants() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var response = mapper.readTree("""
+                {"data":{"file_list":[
+                  {"fileId":"folder-id","fileName":"gying_tv_demo","type":"folder"},
+                  {"fileId":"video-id","fileName":"episode.mp4","type":"file"}
+                ]}}
+                """);
+
+        assertEquals("folder-id", XunleiClient.findChildFolderId(response, "gying_tv_demo"));
+        assertEquals(null, XunleiClient.findChildFolderId(response, "missing"));
     }
 
     @Test
@@ -134,6 +157,89 @@ class XunleiClientTest {
                 "https://pan.xunlei.com/s/share-id?pwd=kept",
                 XunleiClient.normalizeShareUrl(
                         "https://pan.xunlei.com/s/share-id?pwd=kept###", "other"));
+    }
+
+    @Test
+    void preservesNestedSeasonDirectoriesWhileFilteringNonVideoFiles() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        var groups = XunleiClient.groupVideoFiles(mapper.readTree("""
+                {"files":[
+                  {"id":"s1","name":"第1季","kind":"drive#folder","children":[
+                    {"id":"v1","name":"S01E01.mp4"},
+                    {"id":"p1","name":"poster.jpg"}]},
+                  {"id":"s2","name":"第2季","kind":"drive#folder","children":[
+                    {"id":"v2","name":"S02E01.mkv"},
+                    {"id":"t2","name":"说明.txt"}]},
+                  {"id":"root-v","name":"special.mp4"}
+                ]}
+                """));
+
+        assertEquals(3, groups.size());
+        var byPath = groups.stream().collect(java.util.stream.Collectors.toMap(
+                XunleiClient.RestoreGroup::pathSegments, group -> group));
+        assertEquals(List.of("root-v"), byPath.get(List.of()).fileIds());
+        assertEquals(List.of("v1"), byPath.get(List.of("第1季")).fileIds());
+        assertEquals(List.of("v2"), byPath.get(List.of("第2季")).fileIds());
+    }
+
+    @Test
+    void extractsDestinationIdsFromRestoreTraceMapping() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(
+                "{\"file_id\":\"root\",\"params\":{\"trace_file_ids\":\"{\\\"src-1\\\":\\\"dest-1\\\",\\\"src-2\\\":\\\"dest-2\\\"}\"}}"));
+    }
+
+    @Test
+    void extractsDestinationIdsFromNestedTaskResponse() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(
+                "{\"data\":{\"task\":{\"params\":{\"trace_file_ids\":"
+                        + "{\"src-1\":\"dest-1\",\"src-2\":\"dest-2\"}}}}}"));
+    }
+
+    @Test
+    void serializesRestoredIdsForMoveRetryRecovery() {
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), new com.gying.movie.config.ResourceHubProperties());
+
+        String payload = client.restoredFileIdsPayload(List.of("dest-1", "dest-2"));
+
+        assertEquals(List.of("dest-1", "dest-2"), client.extractRestoredFileIds(payload));
+    }
+
+    @Test
+    void buildsBatchMovePayloadForStableMovieFolder() {
+        Map<String, Object> payload = XunleiClient.movePayload(
+                List.of("video-1", "video-2"), "movie-folder");
+
+        assertEquals(List.of("video-1", "video-2"), payload.get("ids"));
+        assertEquals(Map.of("parent_id", "movie-folder"), payload.get("to"));
+    }
+
+    @Test
+    void acceptsAccountCredentialsWithoutManualAuthorization() {
+        var properties = new com.gying.movie.config.ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
+        properties.getXunlei().setAccount("configured-account");
+        properties.getXunlei().setPassword("configured-password");
+        XunleiClient client = new XunleiClient(
+                new org.springframework.boot.web.client.RestTemplateBuilder(),
+                new ObjectMapper(), properties);
+
+        assertEquals(true, client.isConfigured());
+    }
+
+    @Test
+    void extractsPasswordFromFinalShareUrl() {
+        assertEquals("new9", XunleiClient.extractShareCode(
+                "https://pan.xunlei.com/s/owned?pwd=new9#ignored"));
+        assertEquals(null, XunleiClient.extractShareCode("https://pan.xunlei.com/s/owned"));
+        assertEquals(null, XunleiClient.extractShareCode(null));
     }
 
     @Test

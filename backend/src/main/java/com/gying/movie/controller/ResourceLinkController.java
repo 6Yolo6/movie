@@ -9,6 +9,7 @@ import com.gying.movie.dto.ResourceSubmissionDTO;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QuarkShareClient;
+import com.gying.movie.client.XunleiClient;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
@@ -28,6 +29,10 @@ import com.gying.movie.service.IResourceReportService;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
+import com.gying.movie.service.IXunleiTransferRunnerService;
+import com.gying.movie.service.IXunleiTransferTaskService;
+import com.gying.movie.entity.XunleiTransferTask;
+import com.gying.movie.service.impl.GyingSourceWorkflowService;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import jakarta.annotation.PreDestroy;
@@ -62,7 +67,10 @@ public class ResourceLinkController {
     private final IQuarkShareService quarkShareService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
+    private final IXunleiTransferRunnerService xunleiTransferRunnerService;
+    private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IResourceHubPublishService resourceHubPublishService;
+    private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final QuarkShareClient quarkShareClient;
     private final PanSouClient panSouClient;
     private final IResourceReportService resourceReportService;
@@ -87,7 +95,10 @@ public class ResourceLinkController {
             IQuarkShareService quarkShareService,
             IResourceDiscoveryService resourceDiscoveryService,
             IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
             IResourceHubPublishService resourceHubPublishService,
+            GyingSourceWorkflowService gyingSourceWorkflowService,
             QuarkShareClient quarkShareClient,
             PanSouClient panSouClient,
             IResourceReportService resourceReportService,
@@ -103,7 +114,10 @@ public class ResourceLinkController {
         this.quarkShareService = quarkShareService;
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.quarkTransferRunnerService = quarkTransferRunnerService;
+        this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+        this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.resourceHubPublishService = resourceHubPublishService;
+        this.gyingSourceWorkflowService = gyingSourceWorkflowService;
         this.quarkShareClient = quarkShareClient;
         this.panSouClient = panSouClient;
         this.resourceReportService = resourceReportService;
@@ -118,6 +132,64 @@ public class ResourceLinkController {
     @PreDestroy
     public void shutdownRepairInvalidExecutor() {
         repairInvalidExecutor.shutdownNow();
+    }
+
+    @GetMapping("/form-config")
+    public ResponseEntity<?> getResourceFormConfig() {
+        String configured = sysConfigService.getConfigValue(
+                "resource.form.quick_params",
+                "[影片名],REMUX,4K/2160P,1080P,720P,中英字幕,60帧,简体字幕,120帧,HDR杜比视界,繁体字幕,简繁字幕,杜比全景声,H264,H265,AV1,WEB-DL,BluRay");
+        List<String> quickParams = List.of(configured.split("[,，\\r\\n]+"))
+                .stream().map(String::trim).filter(value -> !value.isBlank()).distinct().toList();
+        return ResponseEntity.ok(Map.of("quickParams", quickParams));
+    }
+
+    @GetMapping("/bind-candidates")
+    public ResponseEntity<?> getBindCandidates(
+            @RequestParam String movieId,
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "50") int limit) {
+        MovieMetadata base = movieService.getById(movieId.trim());
+        if (base == null || "DELETED".equalsIgnoreCase(base.getStatus())) {
+            return ResponseEntity.badRequest().body("Movie not found");
+        }
+        String seriesName = base.getSeriesName();
+        boolean searching = keyword != null && !keyword.isBlank();
+        var query = movieService.lambdaQuery()
+                .eq(MovieMetadata::getStatus, "ACTIVE")
+                .ne(MovieMetadata::getId, base.getId());
+        if (!searching && seriesName != null && !seriesName.isBlank()) {
+            query.eq(MovieMetadata::getSeriesName, seriesName);
+        } else if (!searching && base.getTmdbId() != null && base.getTmdbType() != null) {
+            query.eq(MovieMetadata::getTmdbId, base.getTmdbId())
+                    .eq(MovieMetadata::getTmdbType, base.getTmdbType());
+        } else if (!searching) {
+            return ResponseEntity.ok(List.of());
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String text = keyword.trim();
+            query.and(w -> w.like(MovieMetadata::getTitleCn, text)
+                    .or().like(MovieMetadata::getTitleEn, text)
+                    .or().like(MovieMetadata::getId, text)
+                    .or().like(MovieMetadata::getSeriesName, text)
+                    .or().like(MovieMetadata::getAliases, text));
+        }
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        List<Map<String, Object>> candidates = query.orderByAsc(MovieMetadata::getSeason)
+                .orderByAsc(MovieMetadata::getYear)
+                .last("LIMIT " + safeLimit)
+                .list().stream().map(movie -> {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("id", movie.getId());
+                    item.put("titleCn", movie.getTitleCn());
+                    item.put("titleEn", movie.getTitleEn());
+                    item.put("seriesName", movie.getSeriesName());
+                    item.put("season", movie.getSeason());
+                    item.put("year", movie.getYear());
+                    item.put("category", movie.getCategory());
+                    return item;
+                }).toList();
+        return ResponseEntity.ok(candidates);
     }
 
     @PostMapping
@@ -143,11 +215,15 @@ public class ResourceLinkController {
         if (urlError != null) {
             return ResponseEntity.badRequest().body(urlError);
         }
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER"
-                : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, resourceUrl, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
+        }
+        List<MovieMetadata> bindMovies;
+        try {
+            bindMovies = resolveBoundMovies(dto.getMovieId(), dto.getBindMovieIds());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
@@ -156,7 +232,7 @@ public class ResourceLinkController {
         int maxResources = Integer.parseInt(sysConfigService.getConfigValue("resource.max.per.user", "100"));
         long userResourceCount = resourceLinkService.count(
                 new QueryWrapper<ResourceLink>().eq("uploader_id", authUser.getId()).eq("status", "ACTIVE"));
-        if (userResourceCount >= maxResources) {
+        if (userResourceCount + bindMovies.size() >= maxResources) {
             return ResponseEntity.status(403)
                     .body("Resource limit reached. Maximum " + maxResources + " resources per user.");
         }
@@ -174,8 +250,11 @@ public class ResourceLinkController {
             }
         }
 
+        String urlHash = ResourceHubHashUtils.sha256(resourceUrl);
         long duplicateCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("url", resourceUrl).eq("status", "ACTIVE"));
+                new QueryWrapper<ResourceLink>().eq("movie_id", dto.getMovieId().trim())
+                        .eq("status", "ACTIVE").isNull("deleted_at")
+                        .and(w -> w.eq("url_hash", urlHash).or().eq("url", resourceUrl)));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
@@ -184,6 +263,7 @@ public class ResourceLinkController {
         link.setMovieId(dto.getMovieId());
         link.setName(cleanOptional(dto.getName(), 255));
         link.setUrl(resourceUrl);
+        link.setUrlHash(urlHash);
         link.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
         link.setProvider(provider);
         link.setType(type);
@@ -197,8 +277,10 @@ public class ResourceLinkController {
         link.setCreatedAt(LocalDateTime.now());
 
         resourceLinkService.addResource(link);
+        int boundCount = createBoundResources(link, bindMovies, resourceUrl, urlHash);
 
         String message = auditStatus == 1 ? "Resource published successfully!" : "Resource submitted for review";
+        if (boundCount > 0) message += " Bound to " + boundCount + " related seasons.";
         return ResponseEntity.ok(message);
     }
 
@@ -222,12 +304,19 @@ public class ResourceLinkController {
         String url = dto.getUrl().trim();
         String urlError = validateResourceUrl(type, url);
         if (urlError != null) return ResponseEntity.badRequest().body(urlError);
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER" : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, url, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
-        if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("url", url).eq("status", "ACTIVE")) > 0) {
+        List<MovieMetadata> bindMovies;
+        try {
+            bindMovies = resolveBoundMovies(movie.getId(), dto.getBindMovieIds());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        if (resourceLinkService.count(new QueryWrapper<ResourceLink>().eq("movie_id", movie.getId())
+                .eq("status", "ACTIVE").isNull("deleted_at")
+                .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(url)).or().eq("url", url))) > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
         LocalDateTime now = LocalDateTime.now();
@@ -250,6 +339,10 @@ public class ResourceLinkController {
         link.setUpdatedAt(now);
         applyQualityFields(link, dto);
         resourceLinkService.addResource(link);
+        int boundCount = createBoundResources(link, bindMovies, url, link.getUrlHash());
+        if (boundCount > 0) {
+            return ResponseEntity.ok(Map.of("resource", link, "boundCount", boundCount));
+        }
         return ResponseEntity.ok(link);
     }
     @PostMapping("/{id}/report")
@@ -346,18 +439,17 @@ public class ResourceLinkController {
         if (urlError != null) {
             return ResponseEntity.badRequest().body(urlError);
         }
-        String provider = dto.getProvider() == null || dto.getProvider().isBlank()
-                ? "OTHER"
-                : dto.getProvider().trim().toUpperCase();
+        String provider = resolveProvider(type, resourceUrl, dto.getProvider());
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
         long duplicateCount = Objects.equals(resourceUrl, resource.getUrl())
                 ? 0
                 : resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                        .eq("url", resourceUrl)
+                        .eq("movie_id", resource.getMovieId())
                         .eq("status", "ACTIVE")
                         .isNull("deleted_at")
+                        .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(resourceUrl)).or().eq("url", resourceUrl))
                         .ne("id", id));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
@@ -539,6 +631,61 @@ public class ResourceLinkController {
             }
         }
         return ResponseEntity.ok("Resources deleted: " + ids.size());
+    }
+
+    /** Recreates a failed cloud share in place and synchronizes the mapped GYING movie when possible. */
+    @PostMapping("/admin/{id}/repair-invalid")
+    public ResponseEntity<?> repairInvalidResource(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || "DELETED".equalsIgnoreCase(resource.getStatus())) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Resource not found"));
+        }
+        if (!"DISK".equalsIgnoreCase(resource.getType())) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "message", "Only cloud disk resources can be re-shared"));
+        }
+        String provider = resource.getProvider() == null ? "" : resource.getProvider().trim().toUpperCase();
+        ResourceLink refreshed;
+        try {
+            refreshed = switch (provider) {
+                case "QUARK" -> refreshShareLink(resource);
+                case "XUNLEI" -> refreshXunleiShareLink(resource);
+                default -> null;
+            };
+        } catch (Exception error) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "reshared", false, "gyingUpdated", false,
+                    "message", repairErrorMessage(error)));
+        }
+        if (refreshed == null || refreshed.getUrl() == null || refreshed.getUrl().isBlank()) {
+            return ResponseEntity.ok(Map.of("success", false, "resourceId", id,
+                    "reshared", false, "gyingUpdated", false,
+                    "message", "Unable to recreate a share link; check the transfer task and saved folder"));
+        }
+        markLinkNormal(refreshed);
+        boolean gyingUpdated = false;
+        String gyingMessage = null;
+        try {
+            gyingUpdated = gyingSourceWorkflowService.publishResourceToGying(refreshed);
+            if (!gyingUpdated) {
+                gyingMessage = "No linked GYING movie found";
+            }
+        } catch (Exception error) {
+            gyingMessage = "GYING update failed: " + repairErrorMessage(error);
+        }
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("resourceId", id);
+        response.put("reshared", true);
+        response.put("gyingUpdated", gyingUpdated);
+        response.put("resource", refreshed);
+        response.put("message", gyingUpdated
+                ? "Resource re-shared and GYING publication updated"
+                : "Resource re-shared" + (gyingMessage == null ? "" : "; " + gyingMessage));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/admin/repair-invalid")
@@ -989,6 +1136,69 @@ public class ResourceLinkController {
         return resourceLinkService.getById(link.getId());
     }
 
+    private ResourceLink refreshXunleiShareLink(ResourceLink link) {
+        XunleiTransferTask task = findXunleiTransferTask(link);
+        if (task == null) {
+            return null;
+        }
+        task.setShareUrl(null);
+        task.setShareUrlHash(null);
+        task.setLastError(null);
+        task.setStatus(task.getSavedPath() == null || task.getSavedPath().isBlank() ? "FAILED" : "WAITING_SHARE");
+        task.setUpdatedAt(LocalDateTime.now());
+        xunleiTransferTaskService.updateById(task);
+        xunleiTransferRunnerService.submitOne(task.getId());
+        XunleiTransferTask refreshedTask = xunleiTransferTaskService.getById(task.getId());
+        if (refreshedTask == null || refreshedTask.getShareUrl() == null || refreshedTask.getShareUrl().isBlank()) {
+            return null;
+        }
+        ResourceLink refreshed = resourceLinkService.getById(link.getId());
+        if (refreshed == null) {
+            return null;
+        }
+        refreshed.setUrl(refreshedTask.getShareUrl());
+        refreshed.setUrlHash(refreshedTask.getShareUrlHash());
+        refreshed.setCode(XunleiClient.extractShareCode(refreshedTask.getShareUrl()));
+        refreshed.setProvider("XUNLEI");
+        resourceLinkService.updateById(refreshed);
+        return resourceLinkService.getById(link.getId());
+    }
+
+    private XunleiTransferTask findXunleiTransferTask(ResourceLink link) {
+        ResourceDiscoveryResult discovery = findDiscovery(link);
+        if (discovery != null && discovery.getId() != null) {
+            XunleiTransferTask byDiscovery = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byDiscovery != null) {
+                return byDiscovery;
+            }
+        }
+        if (link == null) {
+            return null;
+        }
+        QueryWrapper<XunleiTransferTask> query = new QueryWrapper<XunleiTransferTask>()
+                .eq("movie_id", link.getMovieId())
+                .orderByDesc("updated_at")
+                .last("LIMIT 1");
+        if (link.getUrlHash() != null && !link.getUrlHash().isBlank()) {
+            XunleiTransferTask byHash = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("share_url_hash", link.getUrlHash())
+                    .orderByDesc("updated_at")
+                    .last("LIMIT 1"), false);
+            if (byHash != null) {
+                return byHash;
+            }
+        }
+        return xunleiTransferTaskService.getOne(query, false);
+    }
+
+    private String repairErrorMessage(Exception error) {
+        String message = error == null ? null : error.getMessage();
+        return message == null || message.isBlank() ? "Repair failed" : message.trim();
+    }
+
     private ResourceDiscoveryResult findDiscovery(ResourceLink link) {
         if (link == null || link.getId() == null) {
             return null;
@@ -1114,6 +1324,69 @@ public class ResourceLinkController {
 
     private boolean isHttpUrl(String url) {
         return url.startsWith("http://") || url.startsWith("https://");
+    }
+
+    private List<MovieMetadata> resolveBoundMovies(String primaryMovieId, List<String> requestedIds) {
+        if (requestedIds == null || requestedIds.isEmpty()) return List.of();
+        MovieMetadata primary = movieService.getById(primaryMovieId.trim());
+        if (primary == null || "DELETED".equalsIgnoreCase(primary.getStatus())) {
+            throw new IllegalArgumentException("Movie not found");
+        }
+        Set<String> ids = requestedIds.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(value -> !value.isBlank() && !value.equals(primary.getId()))
+                .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+        if (ids.isEmpty()) return List.of();
+        List<MovieMetadata> result = new ArrayList<>();
+        for (String id : ids) {
+            MovieMetadata candidate = movieService.getById(id);
+            if (candidate == null || "DELETED".equalsIgnoreCase(candidate.getStatus())) {
+                throw new IllegalArgumentException("Bound movie not found: " + id);
+            }
+            result.add(candidate);
+        }
+        return result;
+    }
+
+    private int createBoundResources(ResourceLink source, List<MovieMetadata> movies, String url, String urlHash) {
+        int created = 0;
+        for (MovieMetadata movie : movies) {
+            if (resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                    .eq("movie_id", movie.getId())
+                    .eq("status", "ACTIVE")
+                    .isNull("deleted_at")
+                    .and(w -> w.eq("url_hash", urlHash).or().eq("url", url))) > 0) {
+                continue;
+            }
+            ResourceLink copy = new ResourceLink();
+            BeanUtils.copyProperties(source, copy);
+            copy.setId(null);
+            copy.setMovieId(movie.getId());
+            copy.setUrl(url);
+            copy.setUrlHash(urlHash);
+            copy.setCreatedAt(LocalDateTime.now());
+            copy.setUpdatedAt(copy.getCreatedAt());
+            copy.setDeletedAt(null);
+            resourceLinkService.addResource(copy);
+            created++;
+        }
+        return created;
+    }
+
+    private String resolveProvider(String type, String url, String requestedProvider) {
+        if (!"DISK".equals(type)) return "OTHER";
+        String value = url == null ? "" : url.toLowerCase();
+        if (value.contains("pan.quark.cn") || value.contains("quark.cn")) return "QUARK";
+        if (value.contains("pan.xunlei.com") || value.contains("xunlei.com")) return "XUNLEI";
+        if (value.contains("pan.baidu.com") || value.contains("baidu.com")) return "BAIDU";
+        if (value.contains("aliyundrive.com") || value.contains("alipan.com")) return "ALIYUN";
+        if (value.contains("115.com")) return "115";
+        if (value.contains("drive.uc.cn") || value.contains("uc.cn")) return "UC";
+        if (value.contains("123pan.com")) return "123PAN";
+        if (value.contains("tianyiyun.com") || value.contains("189.cn")) return "TIANYI";
+        if (value.contains("pikpak")) return "PIKPAK";
+        return requestedProvider == null || requestedProvider.isBlank() ? "OTHER" : requestedProvider.trim().toUpperCase();
     }
 
     private void applyQualityFields(ResourceLink resource, ResourceSubmissionDTO dto) {

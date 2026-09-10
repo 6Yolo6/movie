@@ -37,6 +37,7 @@ services:
       - "${BACKEND_PORT:-8880}:8880"
     volumes:
       - backend-logs:/app/logs
+      - backend-data:/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -166,6 +167,7 @@ services:
 volumes:
   redis-data:
   backend-logs:
+  backend-data:
   pansou-data:
   quark-auto-save-data:
   napcat-data:
