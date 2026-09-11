@@ -66,6 +66,11 @@ GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个�
 
 ## QQ 群
 
+- QQ 群每日推荐由 backend 调度器负责，不由 `social-publisher` 发送。启用后默认按 `09:00`（`Asia/Shanghai`）运行，管理端可配置 `qq.bot.daily_recommendation.enabled`、`time`、`count`、`group_ids` 和 `template`；保存配置后会在检查周期内补发，也可通过 `POST /api/admin/qq-automation/daily-recommendation/run` 立即触发。
+- 推荐模板支持 `{{title}}`、`{{year}}`、`{{genres}}`、`{{rating}}`、`{{summary}}`、`{{resources}}`、`{{detailUrl}}`。生产环境先设置 `APP_PUBLIC_BASE_URL`，默认模板不应把本地 `localhost` 地址发到群里。
+- QQ 官方主动群消息可能返回 `40034105`。这表示平台权限/消息模式尚未满足；后端会按配置尝试 NapCat 备用通道，但 NapCat 登录态不是新部署的默认依赖。验收必须包含真实群消息，而不只看接口返回或任务日志。
+- OpenClaw 补丁脚本会同步唯一安全运行时副本、清理旧插件加载路径、写入 Unicode 转义的搜索进度文本，并在 `/bot-*`、`/stop`、`/approve` 入口复核管理员白名单。升级插件或 Gateway 后重新执行：`tools/patch-openclaw-qqbot-gying.ps1`。
+
 - `QQ_BOT_*` 配置命令、限流、敏感词、回复通道和自动转存。
 - NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
 - 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。

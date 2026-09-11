@@ -26,6 +26,7 @@
 - `PUT /api/resources/admin/{id}/link-status`：更新链接健康状态。
 - `POST /api/resources/admin/invalid-checks/scan`：实时检测候选。
 - `POST /api/resources/admin/repair-invalid`：后台修复失效资源。
+- `POST /api/resources/admin/{id}/repair-invalid`：管理员单条修复失效或疑似失效的夸克/迅雷云盘资源；成功后原位更新分享，并在存在 GYING 映射时尝试同步发布。
 
 资源质量字段包括 `quality`、`subtitle`、`fileSize`、`versionNote`。
 

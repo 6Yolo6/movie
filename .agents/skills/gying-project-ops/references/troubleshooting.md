@@ -70,6 +70,14 @@ docker logs --tail 200 openclaw-openclaw-gateway-1
 - 失效链接要区分验证器不可用、疑似失效、保存目录为空和确认失效。
 - 不能把可观测性问题变成删除或无限重试循环。
 
+## 近期功能专项排查
+
+- 单条失效资源修复返回成功但链接不可用：检查对应 `quark_transfer_task`/`xunlei_transfer_task`、`saved_path`、新 URL 验证结果和 `resource_link.link_status`；确认 provider 没有被错误地按另一网盘处理。
+- 资源已重分享但 GYING 未同步：查看接口返回的 `gyingUpdated` 和消息，核对 `movie_source_identity` 映射、GYING 账号和 `/res/pan/add` 审计；没有明确映射时这是预期结果。
+- QQ 每日推荐保存后未出站：先在 `/api/admin/qq-automation/daily-recommendation/run` 手动触发，检查目标群配置、后端日志和官方错误码；`40034105` 表示主动消息权限/模式问题，不应只靠重启后端解决。
+- QQ 搜索进度提示乱码：重新执行 `tools/patch-openclaw-qqbot-gying.ps1`，确认运行时副本使用 JavaScript Unicode 转义并重启 Gateway。
+- OpenClaw 管理命令被普通成员执行：核对 QQ 号与群 `member_openid` 是否同时进入 `allowFrom`、`ownerAllowFrom` 或 `commands.allowFrom.qqbot`；确认 `/bot-*`、`/stop`、`/approve` 在插件入口二次校验并拒绝未授权请求。
+
 ## 编码
 
 Markdown、SQL、JSON 和 PowerShell 文件操作都显式使用 UTF-8。

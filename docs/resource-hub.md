@@ -32,6 +32,12 @@ Resource Hub 在现有片库模型上补充元数据采集、资源发现、转�
 
 ## 恢复与去重
 
+### 失效资源单条修复
+
+管理员可调用 `POST /api/resources/admin/{id}/repair-invalid` 修复单条 `INVALID` 或 `SUSPECTED_INVALID` 的云盘资源。后端按资源 `provider` 分流夸克和迅雷，优先复用已有转存目录/任务原位生成新分享，更新原 `resource_link`，并在存在明确 GYING 影片映射时继续同步发布。
+
+修复验收至少检查：新 URL 可访问、`url_hash` 已更新、`link_status=NORMAL`、对应转存任务状态和 GYING 返回结果。没有 GYING 映射时允许资源修复成功但 `gyingUpdated=false`；不得把第三方原始链接直接写入正式资源。批量 `POST /api/resources/admin/repair-invalid` 仍返回 `jobId`，必须轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`。
+
 - 空目录或分享失败先重跑原转存，仍失败时重新搜索并创建替代发现。
 - 同一影片避免重复原始 URL、自有分享和并行转存任务。
 - 失效资源优先原位更新；替代资源成功后归并关系并软停用重复行。

@@ -80,6 +80,8 @@ TMDB 元数据或本地 canonical 影片
 - 缺资源影片查询及 GYING/PanSou 单条或最多 20 部批量补全；
 - `discoveries/reconcile?dryRun=true` 历史状态校准；
 - 失效资源检查和修复 job；
+- 管理员可对单条 `INVALID` 或 `SUSPECTED_INVALID` 云盘资源执行 `POST /api/resources/admin/{id}/repair-invalid`；接口按 `provider` 分流夸克/迅雷，优先复用原 `saved_path` 或已有转存任务原位重建分享，成功后更新原 `resource_link`。
+- 单条修复在生成有效自有分享后会尝试调用 GYING 来源工作流同步映射影片；没有明确影片映射时只报告 `gyingUpdated=false`，不得把第三方原始链接直接写回正式资源。
 - 重复 TMDB 与标题不匹配资源的 dry-run 清理。
 
 管理接口需要管理员认证。`/api/internal/resource-hub` 下的内部接口需要 internal token。
@@ -119,6 +121,8 @@ TMDB 元数据或本地 canonical 影片
 
 - 分享失败：先重跑原转存；任务缺失或已取消时重建任务；没有生成自有分享和活动资源时必须返回失败。
 - 失效链接：优先复用 `saved_path` 原位重分享，失败后再尝试同片其他候选；只有目录为空或验证失败时重新发现。
+- 单条修复入口只接受管理员认证，已删除资源返回 404，非 `DISK` 类型不执行重分享；迅雷会按发现结果 ID、分享 URL hash、影片 ID 的顺序定位 `xunlei_transfer_task`，夸克按对应转存任务定位。
+- 修复成功后必须复核 `resource_link.url`、`url_hash`、`link_status=NORMAL`、转存任务状态及 GYING 发布结果；“接口返回成功”不等于外部分享可访问。
 - 状态漂移：先运行 `discoveries/reconcile?dryRun=true`，人工复核标题误判、旧任务冲突和季号冲突后再执行。
 - 电影合集或多季剧集：递归定位明确的目标片名、年份或季目录，收窄 `fid`；找不到时尝试下一候选。
 - 重复 TMDB 影片：先 `dryRun=true`，保留既有片库行为 canonical，
