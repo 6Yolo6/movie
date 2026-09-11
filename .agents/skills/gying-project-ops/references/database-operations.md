@@ -37,6 +37,7 @@
 5. `migration_qq_channel_post_pending_status.sql`
 6. `migration_fix_qq_channel_template_mojibake.sql`
 7. `migration_qq_channel_template_year_type.sql`
+8. `migration_resource_form.sql`
 
 就绪脚本会报告 `docs/database.md` 没有列出的迁移，但不能仅凭仓库文件判断在线数据库已执行哪些 SQL。
 
@@ -60,11 +61,13 @@
 14. `migration_qq_channel_template_year_type.sql`
 15. `migration_gying_owned_share_source.sql`
 16. `migration_social_publishing.sql`
+17. `migration_resource_form.sql`
 
 `migration_governance.sql`、`migration_favorites.sql` 和
 `migration_resource_reports.sql` 并非完全幂等，执行前检查字段、索引和表。
 `migration_gying_owned_share_source.sql` 是数据校准脚本，只把同时具备已保存目录和自有分享证据的活动资源标记为 `GYING_PUBLISHED`，执行前后必须核对影响数量。
 `migration_social_publishing.sql` 创建 `social_publish_target` 和 `social_post_log`，并预置自动发布关闭的微博目标。
+`migration_qq_automation.sql` 创建 `qq_bot_search_log`、`qq_channel_post_log` 和 QQ 每日推荐默认配置；`migration_resource_form.sql` 创建资源表单快速参数配置。执行前仍需按表、索引和配置键逐项预检。
 `migration_resource_hub.sql` 包含存储过程和 `DELIMITER`，应通过 MySQL CLI 整文件执行，
 不能拆给 MCP。
 

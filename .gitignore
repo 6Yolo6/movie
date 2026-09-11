@@ -36,6 +36,9 @@ node_modules/
 tmp/
 %SystemDrive%/
 
+# Production migration snapshots contain secrets and database data
+migration-data/
+
 # Docker volumes
 data/
 

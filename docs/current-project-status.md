@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-09-09
+更新时间：2026-09-10
 
 本文只记录生产环境当前能力、运行约束、待处理事项和少量可复核的验收证据。一次性任务编号、重复部署过程和基础接口状态不在这里长期保留，详细操作以 `docs/api.md`、`docs/deployment.md` 及运维参考文档为准。
 
@@ -53,7 +53,7 @@
 - 夸克或迅雷分享失效时统一提示“该分享已失效，不可访问”，并保留当前候选上下文，用户可继续选择其他序号。
 - 搜索、转存、分享和失败结果写入自动化日志，便于管理员审计和重试。
 - OpenClaw QQBot 的搜索进度提示使用 JavaScript Unicode 转义写入运行时插件，避免 Windows PowerShell 代码页导致“正在搜索资源，请稍后...”乱码；补丁脚本已覆盖旧运行时副本并重启网关。
-- 原 QQ 群机器人支持按管理端配置每天 09:00（Asia/Shanghai）发送近期更新影片及有效资源推荐；目标群号、篇数、时间和消息模板均可在 `/admin/automation` 配置，默认模板不发送本地 `localhost` 详情地址，后续部署到服务器时可通过 `{{detailUrl}}` 自行加回。支持 `{{title}}`、`{{year}}`、`{{genres}}`、`{{rating}}`、`{{summary}}`、`{{resources}}` 和 `{{detailUrl}}` 占位符。保存时间后 10 分钟内会自动补发，也支持管理员立即触发。QQ 官方接口若返回“主动消息失败，无权限”，会自动尝试 NapCat；NapCat 需要保持 QQ 登录态。当前生产日志已确认官方接口对该群返回 `40034105`，因此需要恢复 NapCat 登录态或为 QQBot 开通主动群消息权限后才能真正出站。QQ 频道发帖仍由独立发布器负责。
+- 原 QQ 群机器人支持按管理端配置每天 09:00（Asia/Shanghai）发送近期更新影片及有效资源推荐；目标群号、篇数、时间和消息模板均可在 `/admin/automation` 配置，默认模板不发送本地 `localhost` 详情地址，后续部署到服务器时可通过 `{{detailUrl}}` 自行加回。支持 `{{title}}`、`{{year}}`、`{{genres}}`、`{{rating}}`、`{{summary}}`、`{{resources}}` 和 `{{detailUrl}}` 占位符。保存时间后 10 分钟内会自动补发，也支持管理员立即触发。当前 QQ 官方接口对该群曾返回 `40034105` 主动消息权限错误；NapCat 已无使用，不再作为备用通道恢复，后续应通过 QQ 官方接口权限或新的受支持通道解决。QQ 频道发帖仍由独立发布器负责。
 
 ### 多平台发布
 
@@ -71,6 +71,14 @@
 - 不执行 `docker compose down -v`、删除卷、`DROP`、`TRUNCATE` 或物理删除核心历史数据作为日常维护手段。
 - 自动采集只有在生成并校验自有分享后才允许发布，第三方原始链接不得直接写入正式资源。
 
+### 迁移与恢复基线
+
+- 当前生产目录为 `D:\lide_expert_manage\gying-movie`，部署分支为 `codex/gying-publish`，本次已核对的部署提交为 `c95d9e6afaa05ec79e202e5869db5b257cb774f4`。
+- 2026-09-10 已生成正式迁移快照 `migration-data\20260910-102117`，包含 MySQL 完整逻辑备份、实际 Docker 持久化数据、MinIO、OpenClaw、MCP、夸克自动转存配置、social-publisher 凭据卷和计划任务资料。
+- 该快照的 MySQL 导出成功，`mysql\gying.sql` 约 10.5 MB；快照 SHA-256 清单包含 2365 条记录，总体积约 192 MB。快照目录含敏感凭据，不提交 Git、不上传公共网盘。
+- 本次快照是在服务在线状态下导出，只能作为迁移基线；正式切换前必须暂停 Worker、自动转存、QQ/频道/多平台发布调度，在维护窗口重新导出并完成恢复验证。
+- NapCat 已无使用，不迁移、不恢复、不作为健康检查或回滚依赖；Redis 和 PanSou 仅作为可重建缓存处理。
+
 ## 仍需处理
 
 - 迅雷官方凭据仍受短期 Authorization 和账户交互验证影响；需要持续维护 refresh token 或在管理端更新新凭据后再做真实转存验收。
@@ -81,6 +89,7 @@
 
 ## 验收
 
+- 2026-09-10：完成当前生产迁移数据快照、SHA-256 清单和可重复导出脚本；验证 Windows 宿主机 MySQL 导出使用 `127.0.0.1`，Docker 数据导出保留 `docker cp -L`，并将迁移数据目录加入 Git 忽略。
 - 2026-09-03：修复 GYING 自动补图并重建 `gying-source`、`backend`、`nginx`；实测钢铁侠 `vPW8` 写入 `movie_metadata.poster_url=mv/vPW8/384.avif`，MinIO 地址返回 200。
 - 2026-08-26：完成生产运维基线复核，Compose 服务、数据库依赖和核心入口可按运维脚本检查；未执行破坏性数据操作。
 
@@ -118,6 +127,6 @@ docker compose -f docker-compose.prod.yml config --quiet
 - 绑定搜索输入关键词时会跨影片标题、英文名、别名、系列名和影片 ID 检索，避免因历史影片缺少系列字段而无结果；空搜索仍优先展示同系列候选。
 - 快速参数中的 `[影片名]` 是动态占位项：在影片详情页插入当前影片中文名，在管理员表单插入当前选中影片的中文名，不会写入字面量占位符。
 - 迅雷分享文案中的提取码会自动补到 URL 的 `?pwd=`/`&pwd=` 参数；转存发布生成的资源名会带影片类型前缀，例如 `【动作犯罪】`。
-- 2026-09-07: GYING recent-update ensure/publish now checks Quark and Xunlei independently, publishes each missing provider, and fails explicitly when Xunlei services are unavailable instead of silently using Quark.
-- 2026-09-07: Published-resource health responses expose canonical `gyingResourceId` values such as `mv/<movie-id>` or `tv/<movie-id>`, accepted directly by repair-by-id; legacy panlist IDs remain supported.
-- 2026-09-07: Health repair resolves Quark and Xunlei transfer tasks by provider.
+- 2026-09-07：GYING 最近更新的确保/发布流程已独立检查夸克和迅雷，分别发布缺失 provider；迅雷服务不可用时明确失败，不再静默使用夸克代替。
+- 2026-09-07：已发布资源健康接口提供 `mv/<movie-id>` 或 `tv/<movie-id>` 形式的 canonical `gyingResourceId`，可直接用于按 ID 修复，同时兼容旧 panlist ID。
+- 2026-09-07：健康修复会按 provider 分别解析夸克和迅雷转存任务。

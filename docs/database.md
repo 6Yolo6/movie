@@ -30,6 +30,7 @@ mysql -uroot -p gying < backend/src/main/resources/db/schema.sql
 14. `migration_qq_channel_template_year_type.sql`
 15. `migration_gying_owned_share_source.sql`
 16. `migration_social_publishing.sql`
+17. `migration_resource_form.sql`
 
 `migration_resource_reports.sql` 会增加资源质量字段、拒绝原因字段和 `resource_report` 举报表。
 `migration_resource_hub.sql` 会增加 Resource Hub 所需的 TMDB 标识、资源追踪字段和任务表。
@@ -39,5 +40,7 @@ mysql -uroot -p gying < backend/src/main/resources/db/schema.sql
 `migration_qq_channel_template_year_type.sql` 只把仍使用旧默认值的 QQ 频道模板升级为包含年份和类型的版本，不覆盖管理员自定义模板。
 `migration_gying_owned_share_source.sql` 是数据校准脚本，只标记同时具备保存目录和自有分享证据的活动资源；执行前后必须核对影响数量。
 `migration_social_publishing.sql` 会创建多平台发布目标和审计日志，并预置 1 个新浪微博目标；QQ 账号扫码授权后再由管理员添加频道目标，所有自动发布默认关闭。
+
+`migration_qq_automation.sql` 创建 QQBot 搜索/频道审计表及每日推荐配置默认值；`migration_resource_form.sql` 创建资源表单快速参数配置。两者都应在已有数据库中先检查表、索引和默认值，再执行。
 
 项目没有 Flyway/Liquibase 和可靠迁移历史表。已有数据库必须先比较表、字段、索引、默认值和中文注释，再按需执行增量 SQL；不能按文件名盲目重放。`migration_resource_hub.sql` 含存储过程和 `DELIMITER`，应通过 MySQL CLI 整文件执行。

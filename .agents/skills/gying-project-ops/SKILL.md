@@ -10,6 +10,10 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 
 ## 强制规则
 
+- 资源修复必须区分夸克与迅雷 provider：单条失效资源使用 `/api/resources/admin/{id}/repair-invalid`，批量修复使用异步 job 并轮询结果；成功后复核自有分享可访问、`resource_link.link_status=NORMAL` 及可选的 GYING 同步结果。
+- QQ 每日推荐属于 backend QQBot 链路，不属于 `social-publisher`；变更或验收时核对 `sys_config` 中的启用开关、时间、篇数、目标群和模板，并确认 QQ 官方主动消息权限。NapCat 已无使用，不作为备用通道、迁移依赖或验收项。
+- OpenClaw 补丁同时涉及源插件、唯一安全运行时副本和 Gateway 配置；升级后必须重新应用补丁，验证 UTF-8 搜索进度文本、管理员白名单和未授权命令拒绝行为。
+
 - 使用 `git rev-parse --show-toplevel` 定位仓库根目录，不假定固定盘符或检出路径。
 - 制定运维方案前，以 UTF-8 完整读取 `docs/current-project-status.md`。
 - 运维请求只涉及配置、基础设施、数据维护、操作手册和验证。除非用户另行明确要求，
@@ -51,6 +55,12 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 7. 汇报结果。
    - 列出实际操作、验证证据、剩余风险、回滚状态和状态文档变化，不包含敏感值。
 
+## 近期变更验收重点
+
+- 涉及资源修复或发现重跑时，额外阅读 `references/resource-hub-operations.md` 和 `references/troubleshooting.md`，确认 provider 分流、异步 job、最终分享 URL、`resource_link` 状态及 GYING 发布结果。
+- 涉及 QQ 推荐时，区分“调度器触发”“官方接口接受”和“群内真实出站”；官方主动消息失败时记录错误码，不把 NapCat 历史容器误当作默认生产依赖。
+- 涉及 OpenClaw 升级或补丁时，验证唯一运行时插件路径、UTF-8 搜索进度文本、管理员 QQ/member_openid 白名单和未授权管理命令拒绝行为。
+
 ## 参考资料导航
 
 - 仓库边界、系统拓扑、事实来源和审计基线：阅读 [项目地图](references/project-map.md)。
@@ -82,7 +92,10 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 ```powershell
 & .agents/skills/gying-project-ops/scripts/collect-ops-snapshot.ps1
 & .agents/skills/gying-project-ops/scripts/test-ops-readiness.ps1
+& .agents/skills/gying-project-ops/scripts/export-current-migration.ps1 -RepoRoot (git rev-parse --show-toplevel)
 ```
 
 在仓库外调用时传入 `-RepoRoot`。只有本机预期承载这些服务时才给快照脚本增加
 `-ProbeHealth`。脚本默认只读并对配置值脱敏；仅在显式传入 `-OutputPath` 时写入报告文件。
+
+`export-current-migration.ps1` 是迁移数据导出脚本，会创建带时间戳的新快照并生成 SHA-256 清单。它会导出 MySQL、实际 Docker 挂载、OpenClaw、MCP、quark-auto-save 和计划任务；必须在正式切换前的维护窗口重新执行最终导出。脚本不会停止服务，且不导出 NapCat、Redis 缓存或 PanSou 缓存。

@@ -232,3 +232,126 @@ docker compose -f docker-compose.prod.yml ps
 [ ] 目标机自动化保持关闭并完成应用、数据库和外部账号验收
 [ ] 切换、回滚材料和旧机保留窗口已记录到状态文档
 ```
+
+## 10. 当前生产环境迁移快照
+
+当前生产目录为 `D:\lide_expert_manage\gying-movie`。已生成的正式迁移快照为：
+
+```text
+D:\lide_expert_manage\gying-movie\migration-data\20260910-102117
+```
+
+快照中的 `config\gying.env` 是当前 `.env` 的敏感副本，只能通过受保护介质保存，不能提交 Git、上传公共网盘或发送给第三方。快照包含：
+
+- `mysql\gying.sql`：MySQL 完整逻辑备份，包含结构、数据、存储过程、触发器和事件；
+- `docker\backend-data`、`docker\backend-logs`：backend 实际 Docker 卷内容；日志只用于审计，通常不恢复；
+- `docker\minio-data`、`docker\minio-config`：当前 MinIO 容器实际使用的数据和配置；
+- `docker\social-publisher-qq-accounts`、`docker\social-publisher-weibo`：多平台发布凭据卷；
+- `docker\openclaw-home`、`external\openclaw`、`external\openclaw-auth-profile-secrets`：OpenClaw Docker home、宿主机配置、工作区和认证资料；
+- `external\quark-auto-save`：当前宿主机上的夸克自动转存配置；
+- `mcp\codex-config.toml`、计划任务清单、Compose、`.env` 和 Docker 检查清单。
+
+当前快照明确不包含 NapCat、Redis 缓存和 PanSou 缓存。NapCat 已无使用，不迁移、不恢复、不纳入目标机验收；Redis 和 PanSou 按缓存依赖重建。
+
+快照是在服务在线状态下导出的，不等同于最终停写备份。正式切换前必须暂停 Worker、夸克/迅雷自动转存、频道计划任务、QQ 自动化和多平台发布，完成最终数据库导出与对象存储同步后再切换。
+
+校验当前快照：
+
+```powershell
+$latest = Get-Content -Raw -Encoding ASCII `
+  "D:\lide_expert_manage\gying-movie\migration-data\LATEST.txt"
+
+Get-FileHash -Algorithm SHA256 "$latest\mysql\gying.sql"
+Get-Content "$latest\sha256.txt" -Encoding ASCII | Select-Object -First 10
+```
+
+## 11. 后续增量快照
+
+在源机上从项目根目录执行可重复导出脚本。脚本每次创建新的 `yyyyMMdd-HHmmss` 目录，不覆盖旧快照，并在完整成功后更新 `migration-data\LATEST.txt`：
+
+```powershell
+Set-Location "D:\lide_expert_manage\gying-movie"
+& ".\.agents\skills\gying-project-ops\scripts\export-current-migration.ps1" `
+  -RepoRoot (Get-Location).Path
+```
+
+生产目录的 `migration-data\export-current-migration.ps1` 是便于离线直接执行的副本；从 Git 拉取新项目后，应优先使用 Skill 目录中的版本。也可以显式指定仓库根目录执行：
+
+```powershell
+& "D:\lide_expert_manage\gying-movie\.agents\skills\gying-project-ops\scripts\export-current-migration.ps1" `
+  -RepoRoot "D:\lide_expert_manage\gying-movie"
+```
+
+脚本会：
+
+1. 复制当前 `.env`、`.env.example`、Compose 和迁移手册；
+2. 使用宿主机 `127.0.0.1:3306` 导出 `gying` 完整逻辑备份；
+3. 导出 backend、MinIO、social-publisher 和 OpenClaw 的实际挂载数据；
+4. 复制 quark-auto-save、OpenClaw 宿主机目录和 Codex MCP 配置；
+5. 记录 Docker 容器、版本、挂载检查和计划任务；
+6. 生成 `sha256.txt`，失败时写入 `manifest\export-errors.txt`，只有完整成功才更新 `LATEST.txt`。
+
+脚本不会停止或重启容器，也不会删除旧快照。在线导出期间数据库和任务仍可能变化；正式迁移仍需在维护窗口执行最终导出。MySQL 密码通过临时 `MYSQL_PWD` 环境变量传给 `mysqldump`，不会出现在命令行参数中。
+
+## 12. 当前快照恢复说明
+
+目标机先复制项目仓库，再将快照目录放到目标机受保护的备份位置。恢复前先校验：
+
+```powershell
+Get-FileHash -Algorithm SHA256 "<快照目录>\mysql\gying.sql"
+Get-Content "<快照目录>\sha256.txt" -Encoding ASCII | ForEach-Object { $_ }
+```
+
+Windows 恢复顺序：
+
+1. 安装 Docker Desktop、Compose v2、Git、MySQL CLI，并确认 WSL2、虚拟化、磁盘和 `Asia/Shanghai` 时区；
+2. 检出与源机一致的提交，复制脱敏前需保护的 `.env`，补齐新版本配置键；
+3. 创建目标 MySQL 数据库并导入 `mysql\gying.sql`；已有完整 dump 时不要先执行包含 `DROP TABLE` 的 `schema.sql`；
+4. 恢复 MinIO 数据和配置，保持数据库中的对象键不变，并确认 `MINIO_URL_PREFIX`；
+5. 按目标机的真实卷名恢复 backend data、social-publisher、OpenClaw 和 quark-auto-save；
+6. 先保持 `RESOURCE_HUB_WORKER_ENABLED=false`、`QQ_BOT_ENABLED=false`、频道和发布计划关闭，运行 `docker compose -f docker-compose.prod.yml config`；
+7. 依次启动数据库/依赖、`gying-source`、`social-publisher`、backend、frontend、nginx 和 OpenClaw，完成真实入口和数据抽查后再逐项启用自动化。
+
+Linux 恢复时将项目放在 `/opt/gying-movie`，把快照和持久化数据放在 `/srv/gying-backup`、`/srv/gying-data` 等仓库外目录。使用 Docker Engine/Compose v2，处理 bind mount 的 UID/GID、目录权限、SELinux/AppArmor、systemd 环境文件、日志轮转和防火墙。公网通常只开放 `80/443` 及经过评审的管理端口，禁止直接暴露 MySQL、Redis 和 MinIO 管理端口。
+
+Linux 导入数据库示例：
+
+```bash
+mysql -h 127.0.0.1 -u root -p \
+  -e "CREATE DATABASE IF NOT EXISTS gying CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql --default-character-set=utf8mb4 -h 127.0.0.1 -u root -p gying \
+  < /srv/gying-backup/<快照目录>/mysql/gying.sql
+```
+
+## 13. Windows 宿主机数据库导出注意事项
+
+项目容器内的 `.env` 通常使用 `DB_HOST=host.docker.internal` 访问 Windows 宿主机。这个地址只适用于容器网络；在 Windows 宿主机直接执行 `mysqldump` 时必须改用 `127.0.0.1`，否则可能无法解析或连接错误的网络路径。
+
+手工导出时使用临时环境变量：
+
+```powershell
+$env:MYSQL_PWD = $dbPassword
+mysqldump `
+  --single-transaction `
+  --routines `
+  --triggers `
+  --events `
+  --set-gtid-purged=OFF `
+  --default-character-set=utf8mb4 `
+  --host=127.0.0.1 `
+  --port=3306 `
+  --user=root `
+  --result-file="D:\gying-migration\mysql\gying.sql" `
+  gying
+Remove-Item Env:MYSQL_PWD
+```
+
+不要把密码写入命令行、脚本参数、日志或状态文档。若 MySQL 仅绑定 Docker 网络或外部托管地址，应在目标网络上使用实际可达地址，并先验证端口和账号权限。
+
+## 14. Docker Desktop 卷导出注意事项
+
+先用 `docker inspect` 确认真实容器、卷名和 bind mount，不要根据 Compose 中的短名称猜测。当前关键挂载包括：backend 的 `/app/data`、MinIO 的 `/home/minio/data` 与 `/home/minio/config`、OpenClaw 的 `/home/node`，以及 social-publisher 的两个凭据目录。
+
+导出容器目录时必须保留 `docker cp -L`（或 `--follow-link`）。`social-publisher-weibo` 中存在符号链接，省略该参数可能在 Windows Docker Desktop 上出现 `A required privilege is not held by the client`，导致快照看似完成但实际缺失数据。
+
+恢复 Docker 命名卷时，不要执行 `docker compose down -v`。使用目标 Compose 实际创建的卷名，先创建临时恢复容器，再把快照内容解包到目标卷；恢复后通过 `docker inspect`、目录清单和服务日志确认数据已进入正确挂载点。MinIO 运行中直接复制底层数据目录只能作为应急取证，不应替代停写后的对象层同步或一致性备份。

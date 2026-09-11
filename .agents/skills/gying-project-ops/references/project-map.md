@@ -59,6 +59,12 @@ Compose 核心应用服务包括 `nginx`、`backend`、`frontend`、`gying-sourc
 - `social_publish_target` 与 `social_post_log` 保存独立多平台发布目标和审计记录。
 - 历史清理必须非破坏性：将关联数据迁移到 canonical 记录，再用状态和时间戳软删除旧记录。
 
+## 最近代码变化的运维边界
+
+- 首页 `featured`/`recent_hot` 排序会优先近 30 天有有效资源更新的影片，再综合站内热度、TMDB 热度和可用评分；这是查询排序能力，不代表资源已重新发布。
+- QQ 每日推荐由 backend `QqDailyRecommendationScheduler` 负责，配置存放在 `sys_config`，与 `social-publisher` 的频道/微博自动发布链路分离；管理员手动触发入口为 `/api/admin/qq-automation/daily-recommendation/run`。
+- `tools/patch-openclaw-qqbot-gying.ps1` 同时维护宿主机插件源文件、唯一安全运行时副本和 `openclaw.json` 加载路径；升级或重新安装 OpenClaw 后必须重新执行并检查 Gateway 重启结果。
+
 ## 配置层级
 
 判断实际行为时按以下优先级核实：
