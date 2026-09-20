@@ -14,6 +14,7 @@ import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.QqTransferMarker;
 import com.gying.movie.entity.MovieMetadata;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -247,6 +248,11 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     }
 
     private String transferPath(XunleiTransferTask task, ResourceDiscoveryResult discovery) {
+        String temporaryPath = task == null ? null : QqTransferMarker.targetPath(task.getRequestPayload());
+        if (QqTransferMarker.isTemporary(task == null ? null : task.getRequestPayload())
+                && temporaryPath != null && !temporaryPath.isBlank()) {
+            return temporaryPath;
+        }
         String title = null;
         if (movieService != null && task != null && task.getMovieId() != null) {
             MovieMetadata movie = movieService.getById(task.getMovieId());

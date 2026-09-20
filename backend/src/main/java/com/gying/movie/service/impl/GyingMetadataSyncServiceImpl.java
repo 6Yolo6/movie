@@ -25,7 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
 
-    private static final Set<String> SOURCES = Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+    private static final Set<String> SOURCES = Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
 
     private final ResourceHubProperties properties;
     private final IResourceHubTaskService taskService;

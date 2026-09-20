@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, Suspense } from 'react';
-import { Typography, Spin, Row, Col, Empty, Button } from 'antd';
+import { Typography, Spin, Row, Col, Empty, Button, Carousel } from 'antd';
+import { FireFilled, RightOutlined, StarFilled } from '@ant-design/icons';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import { MovieMetadata } from '@/types';
@@ -28,6 +29,14 @@ interface FilterOptions {
   regions: string[];
   languages: string[];
   years: string[];
+}
+
+interface PaginatedResult<T> {
+  records: T[];
+  total: number;
+  current: number;
+  size: number;
+  pages: number;
 }
 
 const FilterRow = ({
@@ -60,13 +69,136 @@ const FilterRow = ({
   </div>
 );
 
-interface PaginatedResult<T> {
-  records: T[];
-  total: number;
-  current: number;
-  size: number;
-  pages: number;
-}
+const compactNumber = (value: number) => {
+  if (value >= 10000) return `${(value / 10000).toFixed(1)}万`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}千`;
+  return String(Math.round(value * 10) / 10);
+};
+
+const RecentHotCarousel = () => {
+  const { t } = useTranslation();
+  const [movies, setMovies] = useState<MovieMetadata[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    api('/api/movies/list?page=1&size=8&sort=recent_hot')
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`Recent hot request failed: ${response.status}`);
+        return response.json() as Promise<PaginatedResult<MovieMetadata>>;
+      })
+      .then((data) => {
+        if (active) setMovies(data.records || []);
+      })
+      .catch(() => {
+        if (active) setMovies([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading) {
+    return <div className="mb-10 h-[300px] sm:h-[360px] animate-pulse rounded-3xl bg-gray-200 dark:bg-zinc-900" />;
+  }
+  if (movies.length === 0) return null;
+
+  return (
+    <section className="mb-10 min-w-0 max-w-full overflow-hidden" aria-labelledby="recent-hot-title">
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <Title id="recent-hot-title" level={2} className="!mb-1 !text-xl sm:!text-2xl">
+            <FireFilled className="mr-2 text-orange-500" />
+            {t('recentHot')}
+          </Title>
+          <p className="m-0 text-xs text-gray-500 sm:text-sm dark:text-gray-400">{t('recentHotHint')}</p>
+        </div>
+        <Link href="/hot" className="shrink-0 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
+          {t('viewHot')} <RightOutlined className="text-xs" />
+        </Link>
+      </div>
+
+      <Carousel
+        autoplay={movies.length > 1}
+        autoplaySpeed={5000}
+        arrows={movies.length > 1}
+        dots={movies.length > 1}
+        pauseOnHover
+        className="max-w-full overflow-hidden rounded-3xl shadow-xl"
+      >
+        {movies.map((movie) => {
+          const heat = Math.max(movie.popularity || 0, Number(movie.tmdbPopularity || 0));
+          const score = Math.max(movie.doubanScore || 0, movie.imdbScore || 0, movie.tmdbVoteAverage || 0);
+          return (
+            <div key={movie.id}>
+              <Link href={`/movie/${movie.id}`} className="group block">
+                <article className="relative h-[300px] w-full max-w-full overflow-hidden rounded-3xl bg-zinc-950 sm:h-[360px]">
+                  <div
+                    className="absolute inset-0 scale-105 bg-cover bg-center opacity-45 blur-xl transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${movie.posterUrl || 'https://via.placeholder.com/300x450'})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                  <div className="relative z-10 flex h-full min-w-0 items-center gap-5 px-5 py-7 sm:gap-10 sm:px-10 lg:px-14">
+                    <img
+                      src={movie.posterUrl || 'https://via.placeholder.com/300x450'}
+                      alt={movie.titleCn}
+                      className="hidden h-[280px] w-[187px] shrink-0 rounded-xl object-cover shadow-2xl ring-1 ring-white/20 transition-transform duration-500 group-hover:scale-[1.03] sm:block"
+                    />
+                    <div className="min-w-0 max-w-3xl text-white">
+                      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                        <span className="rounded-full bg-orange-500/90 px-3 py-1 font-semibold">{t('recentHotBadge')}</span>
+                        {movie.category && (
+                          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur">
+                            {movie.category === 'mv' ? t('movies') : movie.category === 'tv' ? t('tvShows') : t('anime')}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="mb-1 line-clamp-2 text-2xl font-bold leading-tight drop-shadow sm:text-4xl lg:text-5xl">{movie.titleCn}</h2>
+                      <p className="mb-4 truncate text-sm text-white/65 sm:text-base">
+                        {[movie.titleEn, movie.year, movie.regions?.slice(0, 2).join('/')].filter(Boolean).join(' · ')}
+                      </p>
+                      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+                        {score > 0 && (
+                          <span className="inline-flex items-center gap-1 font-semibold text-yellow-300">
+                            <StarFilled /> {score.toFixed(1)}
+                          </span>
+                        )}
+                        {heat > 0 && (
+                          <span className="inline-flex items-center gap-1 text-orange-300">
+                            <FireFilled /> {compactNumber(heat)}
+                          </span>
+                        )}
+                        {movie.genres?.slice(0, 3).map((genre) => (
+                          <span key={genre} className="rounded border border-white/15 bg-white/10 px-2 py-0.5 text-white/80">{genre}</span>
+                        ))}
+                      </div>
+                      {movie.summary && (
+                        <p
+                          className="hidden max-w-2xl overflow-hidden text-sm leading-6 text-white/70 sm:block"
+                          style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+                        >
+                          {movie.summary}
+                        </p>
+                      )}
+                      <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold shadow-lg transition-colors group-hover:bg-blue-500">
+                        {t('viewDetails')} <RightOutlined />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            </div>
+          );
+        })}
+      </Carousel>
+    </section>
+  );
+};
 
 const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; highlightKeyword?: string }) => {
   const { t } = useTranslation();
@@ -175,6 +307,7 @@ const HomePageContent = () => {
   };
 
   const showFilters = !!category || !!keyword || !!genre || !!region || !!language || !!year;
+  const isLandingPage = !showFilters && !category && !keyword;
 
   if (!filterOptions) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
 
@@ -185,22 +318,7 @@ const HomePageContent = () => {
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-      <div className="flex justify-center mb-8">
-        <div className="bg-gray-200 dark:bg-[#1f1f1f] p-1 rounded-full inline-flex overflow-x-auto">
-          {categories.map(cat => (
-            <Link
-              key={cat.key}
-              href={cat.value ? `/?category=${cat.value}` : '/'}
-              className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${(cat.value === category || (cat.value === null && !category && !keyword))
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'
-                }`}
-            >
-              {t(cat.labelKey)}
-            </Link>
-          ))}
-        </div>
-      </div>
+      {isLandingPage && <RecentHotCarousel />}
 
       {keyword && (
         <div className="mb-6 text-center">
@@ -232,7 +350,7 @@ const HomePageContent = () => {
         </div>
       )}
 
-      {!showFilters && !category && !keyword ? (
+      {isLandingPage ? (
         <div className="flex flex-col gap-12">
           {categories.slice(1).map(cat => (
             <section key={cat.key}>

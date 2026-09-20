@@ -1,5 +1,6 @@
 import requests
 import re
+import hashlib
 import json
 import time
 import os
@@ -11,7 +12,7 @@ from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urljoin
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -248,6 +249,151 @@ def extract_share_code(url, explicit_code=""):
         return match.group(1)
 
     return ""
+
+def bt_detail_id(url):
+    if not url:
+        return ""
+    match = re.search(r"/(?:bt|torrent)/([A-Za-z0-9]+)(?:[/?#]|$)", str(url), re.IGNORECASE)
+    return match.group(1) if match else ""
+
+
+def is_bt_detail_url(url):
+    return bool(bt_detail_id(url))
+
+
+def is_torrent_url(url):
+    return bool(re.search(r"\.torrent(?:[?#]|$)", str(url or ""), re.IGNORECASE))
+
+
+def _absolute_site_url(value, base_url):
+    value = html_lib.unescape(str(value or "")).strip()
+    if not value:
+        return ""
+    return urljoin(base_url, value)
+
+
+def _collect_bt_resource_urls(value, base_url, key_hint="", result=None):
+    """Collect only actual magnet/torrent URLs, never a BT detail page URL."""
+    if result is None:
+        result = []
+
+    if isinstance(value, str):
+        text = html_lib.unescape(value).strip()
+        if text.lower().startswith("magnet:") or is_torrent_url(text):
+            absolute = _absolute_site_url(text, base_url)
+            if absolute and absolute not in result:
+                result.append(absolute)
+        elif key_hint in ("magnet", "magnet_url", "torrent", "torrent_url", "download_url"):
+            absolute = _absolute_site_url(text, base_url)
+            if absolute and (absolute.lower().startswith("magnet:") or is_torrent_url(absolute)):
+                if absolute not in result:
+                    result.append(absolute)
+        return result
+
+    if isinstance(value, list):
+        for item in value:
+            _collect_bt_resource_urls(item, base_url, key_hint, result)
+        return result
+
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _collect_bt_resource_urls(item, base_url, str(key).lower(), result)
+        return result
+
+    return result
+
+
+def _collect_bt_resource_urls_from_html(text, base_url):
+    decoded = html_lib.unescape(text or "")
+    result = []
+    for match in re.findall(r"magnet:\?[^\s\"'<>]+", decoded, re.IGNORECASE):
+        value = match.rstrip("),;]")
+        if value not in result:
+            result.append(value)
+    for match in re.findall(r"(?:https?://|/)[^\s\"'<>]+\.torrent(?:\?[^\s\"'<>]+)?", decoded, re.IGNORECASE):
+        value = _absolute_site_url(match.rstrip("),;]"), base_url)
+        if value not in result:
+            result.append(value)
+    return result
+
+
+def fetch_bt_resources(bt_id, title_hint=""):
+    """Fetch a GYING BT detail page and return only actual magnet/torrent links."""
+    safe_id = str(bt_id or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9]+", safe_id):
+        raise ValueError("invalid GYING BT id")
+    detail_url = f"{BASE_URL}/bt/{safe_id}"
+    resp = site_get(
+        detail_url,
+        timeout=15,
+        headers={
+            "Accept": "application/json, text/html, */*; q=0.01",
+            "Referer": f"{BASE_URL}/",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+    )
+    if is_login_required_response(resp) or resp.status_code in (401, 403):
+        raise RuntimeError("GYING authentication required for BT resource")
+    if is_pow_challenge_response(resp):
+        raise RuntimeError("GYING browser verification required for BT resource")
+    if resp.status_code != 200:
+        raise RuntimeError(f"GYING BT HTTP {resp.status_code}")
+
+    title = title_hint or ""
+    urls = []
+    try:
+        payload = resp.json()
+        urls = _collect_bt_resource_urls(payload, detail_url)
+        if isinstance(payload, dict):
+            data = payload.get("d") or payload.get("data") or payload
+            if isinstance(data, dict):
+                title = str(data.get("title") or data.get("name") or title).strip()
+    except ValueError:
+        pass
+    if not urls:
+        urls = _collect_bt_resource_urls_from_html(resp.text, detail_url)
+    if not urls:
+        if any(flag in resp.text for flag in ("未登录", "访问受限", "登录")):
+            raise RuntimeError("GYING authentication required for BT resource")
+        return []
+
+    resources = []
+    for index, url in enumerate(urls, 1):
+        link_type = "MAGNET" if url.lower().startswith("magnet:") else "TORRENT"
+        resources.append({
+            "source_id": safe_id,
+            "source_ref": safe_id,
+            "source_url": detail_url,
+            "title": title or f"GYING BT {safe_id} #{index}",
+            "url": url,
+            "code": "",
+            "provider": "P2P",
+            "type": link_type,
+            "tname": "BT",
+            "uploader": "",
+            "is_own": False,
+        })
+    return resources
+
+
+def expand_bt_resources(resources, fallback_source_url=None):
+    expanded = []
+    for resource in resources or []:
+        url = str(resource.get("url") or "").strip()
+        bt_id = bt_detail_id(url)
+        if not bt_id:
+            item = dict(resource)
+            item.setdefault("source_url", fallback_source_url)
+            expanded.append(item)
+            continue
+        try:
+            bt_items = fetch_bt_resources(bt_id, resource.get("title") or "")
+            if bt_items:
+                expanded.extend(bt_items)
+        except Exception as error:
+            print(f"      ⚠️ BT resource {bt_id} unavailable: {error}")
+    return expanded
+
 
 def load_cookie_string(session, cookie_str):
     if not cookie_str or cookie_str == "***":
@@ -583,7 +729,9 @@ def normalize_download_item(item):
     if not isinstance(item, dict):
         return None
 
-    url = str(item.get("url") or item.get("link") or item.get("magnet") or item.get("magnet_url") or "").strip()
+    url = str(item.get("url") or item.get("link") or item.get("magnet")
+              or item.get("magnet_url") or item.get("torrent")
+              or item.get("torrent_url") or item.get("download_url") or "").strip()
     if not url:
         return None
 
@@ -593,7 +741,10 @@ def normalize_download_item(item):
     name = item.get("name") or item.get("title") or ("Magnet Link" if link_type in ("MAGNET", "TORRENT") else url)
 
     return {
-        "title": name,
+        "source_id": str(item.get("source_id") or item.get("sourceId") or item.get("id") or "").strip(),
+        "source_ref": str(item.get("source_ref") or item.get("sourceRef") or "").strip(),
+        "source_url": str(item.get("source_url") or item.get("sourceUrl") or "").strip(),
+        "title": str(name).strip(),
         "url": url,
         "code": extract_share_code(url, item.get("p") or item.get("pwd") or item.get("code") or ""),
         "provider": provider,
@@ -608,6 +759,24 @@ def normalize_download_section(section, target_user=None):
 
     if not isinstance(section, dict):
         return []
+
+    # Some GYING responses expose P2P links directly as magnet/torrent arrays
+    # rather than using the parallel name/url/type arrays used by panlist.
+    direct = []
+    for key in ("magnet", "magnet_url", "torrent", "torrent_url", "download_url", "link", "url"):
+        value = section.get(key)
+        values = value if isinstance(value, list) else [value] if isinstance(value, str) else []
+        for raw in values:
+            item = normalize_download_item({
+                "url": raw,
+                "title": section.get("title") or section.get("name") or "",
+                "provider": "P2P",
+                "type": "MAGNET" if str(raw).lower().startswith("magnet:") else "TORRENT",
+            })
+            if item:
+                direct.append(item)
+    if direct:
+        return direct
 
     names = section.get("name", [])
     urls = section.get("url", [])
@@ -647,6 +816,8 @@ def normalize_download_section(section, target_user=None):
 
         resources.append({
             "source_id": str(list_get(ids, i)).strip(),
+            "source_ref": str(list_get(ids, i)).strip(),
+            "source_url": f"{BASE_URL}/bt/{bt_detail_id(url)}" if bt_detail_id(url) else "",
             "title": name,
             "url": url,
             "code": extract_share_code(url, list_get(passwords, i)),
@@ -709,9 +880,12 @@ def normalize_content_list_resources(resources):
 
         provider = detect_provider(res.get("tname", ""))
         normalized.append({
-            "title": res.get("title", ""),
+            "source_id": str(res.get("source_id") or res.get("id") or "").strip(),
+            "source_ref": str(res.get("source_ref") or res.get("source_id") or "").strip(),
+            "source_url": str(res.get("source_url") or res.get("sourceUrl") or "").strip(),
+            "title": str(res.get("title", "")).strip(),
             "url": r_url,
-            "code": extract_share_code(r_url),
+            "code": extract_share_code(r_url, res.get("code", "")),
             "provider": provider,
             "type": detect_resource_type(r_url, provider),
             "tname": res.get("tname", ""),
@@ -746,10 +920,19 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
         return normalize_content_list_resources(fallback_resources)
 
     resources = []
-    for key in ("panlist", "downlist", "magnetlist", "btlist"):
+    for key in ("panlist", "downlist", "magnetlist", "btlist", "p2plist", "torrentlist"):
         resources.extend(normalize_download_section(data.get(key), resolved_target_user))
+    for key in ("magnet", "magnet_url", "torrent", "torrent_url", "download_url"):
+        value = data.get(key)
+        if isinstance(value, (str, list, dict)):
+            resources.extend(normalize_download_section(value, resolved_target_user))
 
-    return resources or normalize_content_list_resources(fallback_resources)
+    fallback = normalize_content_list_resources(fallback_resources)
+    expanded = expand_bt_resources(resources or fallback, f"{BASE_URL}/{type_code}/{mid}")
+    for resource in expanded:
+        resource.setdefault("source_url", f"{BASE_URL}/{type_code}/{mid}")
+        resource.setdefault("source_ref", resource.get("source_id") or "")
+    return expanded
 
 def fetch_movie_resource_snapshot(type_code, mid):
     metadata = fetch_movie_metadata(type_code, mid) or {}
@@ -1065,7 +1248,7 @@ def normalize_catalog_items(type_code, payload):
 def fetch_catalog_movies(type_code, sort="score", page=1, limit=30):
     if type_code not in ("mv", "tv", "ac"):
         raise ValueError("invalid catalog type")
-    safe_sort = sort if sort in ("score", "time", "hits") else "score"
+    safe_sort = sort if sort in ("score", "time", "hits", "cscore") else "score"
     safe_page = min(max(int(page), 1), 500)
     safe_limit = min(max(int(limit), 1), 100)
     site_get(f"{BASE_URL}/{type_code}", timeout=15)
@@ -1387,6 +1570,19 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 limit = int((query.get("limit") or ["30"])[0])
                 self.send_json(200, {"items": fetch_catalog_movies(type_code, sort, page, limit)})
                 return
+            match = re.fullmatch(r"/resources/(mv|tv|ac)/([A-Za-z0-9]+)", path)
+            if match:
+                resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="")
+                self.send_json(200, {"resources": resources})
+                return
+            match = re.fullmatch(r"/bt/([A-Za-z0-9]+)", path)
+            if match:
+                self.send_json(200, {
+                    "btId": match.group(1),
+                    "sourceUrl": f"{BASE_URL}/bt/{match.group(1)}",
+                    "resources": fetch_bt_resources(match.group(1)),
+                })
+                return
             if path == "/search":
                 query_text = (query.get("q") or [""])[0]
                 type_code = (query.get("typeCode") or [""])[0].strip().lower() or None
@@ -1646,7 +1842,10 @@ def crawl_user_content(db):
 
                         link_type = res.get("type") or detect_resource_type(r_url, provider)
                         r_code = res.get("code") or extract_share_code(r_url)
-                        r_name = res.get("title") or ("Magnet Link" if link_type in ("MAGNET", "TORRENT") else r_url)
+                        r_name = res.get("title") or ("Magnet Link" if link_type == "MAGNET" else "Torrent File" if link_type == "TORRENT" else r_url)
+                        r_source_ref = str(res.get("source_ref") or res.get("source_id") or "").strip() or None
+                        r_source_url = str(res.get("source_url") or f"{BASE_URL}/{type_code}/{mid}").strip()
+                        r_url_hash = hashlib.sha256(r_url.encode("utf-8")).hexdigest()
 
                         check_sql = "SELECT id FROM resource_link WHERE movie_id=%s AND url=%s LIMIT 1"
                         with db.cursor() as cursor:
@@ -1656,19 +1855,27 @@ def crawl_user_content(db):
                         if existing_row:
                             resid = existing_row['id']
                             update_sql = """
-                                UPDATE resource_link 
-                                SET code=%s, provider=%s, name=%s, type=%s, uploader_id=1, audit_status=1
+                                UPDATE resource_link
+                                SET code=%s, provider=%s, name=%s, type=%s, url_hash=%s,
+                                    uploader_id=1, audit_status=1, status='ACTIVE', link_status='NORMAL',
+                                    source='GYING', source_ref=%s, source_url=%s, auto_collected=1,
+                                    validated_at=NOW(), last_check_error=NULL, updated_at=NOW()
                                 WHERE id=%s
                             """
                             with db.cursor() as cursor:
-                                cursor.execute(update_sql, (r_code, provider, r_name, link_type, resid))
+                                cursor.execute(update_sql, (r_code, provider, r_name, link_type, r_url_hash,
+                                                             r_source_ref, r_source_url, resid))
                         else:
                             insert_sql = """
-                                INSERT INTO resource_link (movie_id, type, provider, url, code, uploader_id, audit_status, name)
-                                VALUES (%s, %s, %s, %s, %s, 1, 1, %s)
+                                INSERT INTO resource_link (movie_id, name, type, provider, url, url_hash, code,
+                                    uploader_id, audit_status, status, link_status, source, source_ref, source_url,
+                                    auto_collected, validated_at, created_at, updated_at)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, 1, 1, 'ACTIVE', 'NORMAL',
+                                    'GYING', %s, %s, 1, NOW(), NOW(), NOW())
                             """
                             with db.cursor() as cursor:
-                                cursor.execute(insert_sql, (mid, link_type, provider, r_url, r_code, r_name))
+                                cursor.execute(insert_sql, (mid, r_name, link_type, provider, r_url, r_url_hash,
+                                                             r_code, r_source_ref, r_source_url))
                     db.commit()
                     print(f"      ✅ Saved.")
                     

@@ -19,6 +19,8 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
     private static final String KEY_BOT_RATE_LIMIT_PER_MINUTE = "qq.bot.rate_limit_per_minute";
     private static final String KEY_BOT_MAX_RESULTS = "qq.bot.max_results";
     private static final String KEY_BOT_BLOCKED_KEYWORDS = "qq.bot.blocked_keywords";
+    private static final String KEY_BOT_TRANSFER_CLEANUP_ENABLED = "qq.bot.transfer_cleanup.enabled";
+    private static final String KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES = "qq.bot.transfer_cleanup.delay_minutes";
     private static final String KEY_BOT_DAILY_RECOMMENDATION_ENABLED = "qq.bot.daily_recommendation.enabled";
     private static final String KEY_BOT_DAILY_RECOMMENDATION_TIME = "qq.bot.daily_recommendation.time";
     private static final String KEY_BOT_DAILY_RECOMMENDATION_COUNT = "qq.bot.daily_recommendation.count";
@@ -89,6 +91,8 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         result.put("botRateLimitPerMinute", readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, qqBotProperties.getRateLimitPerMinute(), 0, 100));
         result.put("botMaxResults", readInt(KEY_BOT_MAX_RESULTS, qqBotProperties.getMaxResults(), 1, 5));
         result.put("botBlockedKeywords", readString(KEY_BOT_BLOCKED_KEYWORDS, qqBotProperties.getBlockedKeywords()));
+        result.put("botTransferCleanupEnabled", readBoolean(KEY_BOT_TRANSFER_CLEANUP_ENABLED, true));
+        result.put("botTransferCleanupDelayMinutes", readInt(KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, 10, 1, 10080));
         result.put("botDailyRecommendationEnabled", readBoolean(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, true));
         result.put("botDailyRecommendationTime", readString(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00"));
         result.put("botDailyRecommendationCount", readInt(KEY_BOT_DAILY_RECOMMENDATION_COUNT, 3, 1, 10));
@@ -114,51 +118,55 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         if (request == null) {
             return getConfig();
         }
-        putInt(request, "botMinKeywordLength", KEY_BOT_MIN_KEYWORD_LENGTH, 1, 20, "QQ bot minimum search keyword length");
-        putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 0, 100, "QQ bot per-user search rate limit");
-        putInt(request, "botMaxResults", KEY_BOT_MAX_RESULTS, 1, 5, "QQ bot maximum reply resources");
-        putString(request, "botBlockedKeywords", KEY_BOT_BLOCKED_KEYWORDS, "QQ bot blocked search keywords");
-        putBoolean(request, "botDailyRecommendationEnabled", KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "Enable QQ group daily recommendations");
-        putString(request, "botDailyRecommendationTime", KEY_BOT_DAILY_RECOMMENDATION_TIME, "QQ group daily recommendation time HH:mm");
-        putInt(request, "botDailyRecommendationCount", KEY_BOT_DAILY_RECOMMENDATION_COUNT, 1, 10, "QQ group daily recommendation count");
-        putString(request, "botDailyRecommendationGroupIds", KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, "QQ group IDs for daily recommendations");
-        putString(request, "botDailyRecommendationTemplate", KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ group daily recommendation template");
-        putBoolean(request, "channelAutoPostEnabled", KEY_CHANNEL_AUTO_POST_ENABLED, "Enable QQ channel auto posting");
-        putInt(request, "channelIntervalMinutes", KEY_CHANNEL_INTERVAL_MINUTES, 1, 10080, "QQ channel auto post interval in minutes");
-        putInt(request, "channelMaxPostsPerRun", KEY_CHANNEL_MAX_POSTS_PER_RUN, 1, 20, "QQ channel posts per run");
-        putString(request, "channelDailyTime", KEY_CHANNEL_DAILY_TIME, "QQ channel daily post time HH:mm");
-        putInt(request, "channelPostTotal", KEY_CHANNEL_POST_TOTAL, 1, 100, "QQ channel total posts per day");
-        putInt(request, "channelPostIntervalSeconds", KEY_CHANNEL_POST_INTERVAL_SECONDS, 0, 86400, "QQ channel interval seconds between posts");
-        putString(request, "channelPostTemplate", KEY_CHANNEL_POST_TEMPLATE, "QQ channel post template");
-        putInt(request, "channelCandidateLimit", KEY_CHANNEL_CANDIDATE_LIMIT, 1, 100, "QQ channel candidate resource limit per run");
-        putString(request, "channelGuildId", KEY_CHANNEL_GUILD_ID, "QQ channel guild ID");
-        putString(request, "channelMovieId", KEY_CHANNEL_MOVIE_ID, "QQ channel movie board/channel ID");
-        putString(request, "channelTvId", KEY_CHANNEL_TV_ID, "QQ channel TV board/channel ID");
+        putInt(request, "botMinKeywordLength", KEY_BOT_MIN_KEYWORD_LENGTH, 1, 20, "QQ群机器人接受的最短搜索关键词字数");
+        putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 0, 100, "每个群成员每分钟最多可发起的搜索次数");
+        putInt(request, "botMaxResults", KEY_BOT_MAX_RESULTS, 1, 5, "QQ群机器人单次回复展示的资源候选数量");
+        putString(request, "botBlockedKeywords", KEY_BOT_BLOCKED_KEYWORDS, "QQ群机器人拒绝搜索的关键词");
+        putBoolean(request, "botTransferCleanupEnabled", KEY_BOT_TRANSFER_CLEANUP_ENABLED, "自动清理QQ群搜索产生的临时转存文件");
+        putInt(request, "botTransferCleanupDelayMinutes", KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, 1, 10080, "QQ群临时转存成功后的保留时间（分钟）");
+        putBoolean(request, "botDailyRecommendationEnabled", KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "是否开启QQ群每日影片推荐");
+        putString(request, "botDailyRecommendationTime", KEY_BOT_DAILY_RECOMMENDATION_TIME, "QQ群每日推荐执行时间（HH:mm）");
+        putInt(request, "botDailyRecommendationCount", KEY_BOT_DAILY_RECOMMENDATION_COUNT, 1, 10, "每个群每天推荐的影片数量");
+        putString(request, "botDailyRecommendationGroupIds", KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, "接收每日推荐的 QQ 群号");
+        putString(request, "botDailyRecommendationTemplate", KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ群每日推荐消息模板");
+        putBoolean(request, "channelAutoPostEnabled", KEY_CHANNEL_AUTO_POST_ENABLED, "是否开启 QQ 频道自动发布");
+        putInt(request, "channelIntervalMinutes", KEY_CHANNEL_INTERVAL_MINUTES, 1, 10080, "QQ 频道自动发布批次间隔（分钟）");
+        putInt(request, "channelMaxPostsPerRun", KEY_CHANNEL_MAX_POSTS_PER_RUN, 1, 20, "QQ 频道每轮最多发布的帖子数");
+        putString(request, "channelDailyTime", KEY_CHANNEL_DAILY_TIME, "QQ 频道每日自动发布开始时间（HH:mm）");
+        putInt(request, "channelPostTotal", KEY_CHANNEL_POST_TOTAL, 1, 100, "QQ 频道每天计划发布的帖子总数");
+        putInt(request, "channelPostIntervalSeconds", KEY_CHANNEL_POST_INTERVAL_SECONDS, 0, 86400, "QQ 频道连续两篇帖子之间的等待时间（秒）");
+        putString(request, "channelPostTemplate", KEY_CHANNEL_POST_TEMPLATE, "QQ 频道帖子正文模板");
+        putInt(request, "channelCandidateLimit", KEY_CHANNEL_CANDIDATE_LIMIT, 1, 100, "QQ 频道每轮选取的候选资源数量上限");
+        putString(request, "channelGuildId", KEY_CHANNEL_GUILD_ID, "用于自动发布的 QQ 频道 ID");
+        putString(request, "channelMovieId", KEY_CHANNEL_MOVIE_ID, "电影内容发布到的 QQ 子频道 ID");
+        putString(request, "channelTvId", KEY_CHANNEL_TV_ID, "剧集和动漫内容发布到的 QQ 子频道 ID");
         return reload();
     }
 
     private void ensureDefaults() {
-        upsertMissing(KEY_BOT_MIN_KEYWORD_LENGTH, Integer.toString(qqBotProperties.getMinKeywordLength()), "QQ bot minimum search keyword length");
-        upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(qqBotProperties.getRateLimitPerMinute()), "QQ bot per-user search rate limit");
-        upsertMissing(KEY_BOT_MAX_RESULTS, Integer.toString(qqBotProperties.getMaxResults()), "QQ bot maximum reply resources");
-        upsertMissing(KEY_BOT_BLOCKED_KEYWORDS, defaultText(qqBotProperties.getBlockedKeywords()), "QQ bot blocked search keywords");
-        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "true", "Enable QQ group daily recommendations");
-        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00", "QQ group daily recommendation time HH:mm");
-        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_COUNT, "3", "QQ group daily recommendation count");
-        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, defaultText(qqBotProperties.getAllowedGroups()), "QQ group IDs for daily recommendations");
+        upsertMissing(KEY_BOT_MIN_KEYWORD_LENGTH, Integer.toString(qqBotProperties.getMinKeywordLength()), "QQ群机器人接受的最短搜索关键词字数");
+        upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(qqBotProperties.getRateLimitPerMinute()), "每个群成员每分钟最多可发起的搜索次数");
+        upsertMissing(KEY_BOT_MAX_RESULTS, Integer.toString(qqBotProperties.getMaxResults()), "QQ群机器人单次回复展示的资源候选数量");
+        upsertMissing(KEY_BOT_BLOCKED_KEYWORDS, defaultText(qqBotProperties.getBlockedKeywords()), "QQ群机器人拒绝搜索的关键词");
+        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_ENABLED, "true", "自动清理QQ群搜索产生的临时转存文件");
+        upsertMissing(KEY_BOT_TRANSFER_CLEANUP_DELAY_MINUTES, "10", "QQ群临时转存成功后的保留时间（分钟）");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_ENABLED, "true", "是否开启QQ群每日影片推荐");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TIME, "09:00", "QQ群每日推荐执行时间（HH:mm）");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_COUNT, "3", "每个群每天推荐的影片数量");
+        upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_GROUP_IDS, defaultText(qqBotProperties.getAllowedGroups()), "接收每日推荐的 QQ 群号");
         upsertMissing(KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE, DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE,
-                "QQ group daily recommendation template");
-        upsertMissing(KEY_CHANNEL_AUTO_POST_ENABLED, "false", "Enable QQ channel auto posting");
-        upsertMissing(KEY_CHANNEL_INTERVAL_MINUTES, "60", "QQ channel auto post interval in minutes");
-        upsertMissing(KEY_CHANNEL_MAX_POSTS_PER_RUN, "1", "QQ channel posts per run");
-        upsertMissing(KEY_CHANNEL_DAILY_TIME, "09:00", "QQ channel daily post time HH:mm");
-        upsertMissing(KEY_CHANNEL_POST_TOTAL, "1", "QQ channel total posts per day");
-        upsertMissing(KEY_CHANNEL_POST_INTERVAL_SECONDS, "60", "QQ channel interval seconds between posts");
-        upsertMissing(KEY_CHANNEL_POST_TEMPLATE, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ channel post template");
-        upsertMissing(KEY_CHANNEL_CANDIDATE_LIMIT, "10", "QQ channel candidate resource limit per run");
-        upsertMissing(KEY_CHANNEL_GUILD_ID, defaultGuildId, "QQ channel guild ID");
-        upsertMissing(KEY_CHANNEL_MOVIE_ID, defaultMovieChannelId, "QQ channel movie board/channel ID");
-        upsertMissing(KEY_CHANNEL_TV_ID, defaultTvChannelId, "QQ channel TV board/channel ID");
+                "QQ群每日推荐消息模板");
+        upsertMissing(KEY_CHANNEL_AUTO_POST_ENABLED, "false", "是否开启 QQ 频道自动发布");
+        upsertMissing(KEY_CHANNEL_INTERVAL_MINUTES, "60", "QQ 频道自动发布批次间隔（分钟）");
+        upsertMissing(KEY_CHANNEL_MAX_POSTS_PER_RUN, "1", "QQ 频道每轮最多发布的帖子数");
+        upsertMissing(KEY_CHANNEL_DAILY_TIME, "09:00", "QQ 频道每日自动发布开始时间（HH:mm）");
+        upsertMissing(KEY_CHANNEL_POST_TOTAL, "1", "QQ 频道每天计划发布的帖子总数");
+        upsertMissing(KEY_CHANNEL_POST_INTERVAL_SECONDS, "60", "QQ 频道连续两篇帖子之间的等待时间（秒）");
+        upsertMissing(KEY_CHANNEL_POST_TEMPLATE, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ 频道帖子正文模板");
+        upsertMissing(KEY_CHANNEL_CANDIDATE_LIMIT, "10", "QQ 频道每轮选取的候选资源数量上限");
+        upsertMissing(KEY_CHANNEL_GUILD_ID, defaultGuildId, "用于自动发布的 QQ 频道 ID");
+        upsertMissing(KEY_CHANNEL_MOVIE_ID, defaultMovieChannelId, "电影内容发布到的 QQ 子频道 ID");
+        upsertMissing(KEY_CHANNEL_TV_ID, defaultTvChannelId, "剧集和动漫内容发布到的 QQ 子频道 ID");
     }
 
     private void putBoolean(Map<String, Object> request, String field, String key, String description) {
@@ -206,11 +214,11 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
         }
         if (KEY_CHANNEL_POST_TEMPLATE.equals(key)
                 && (looksLikeMojibake(value) || LEGACY_CHANNEL_POST_TEMPLATE.equals(value))) {
-            upsert(key, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ channel post template");
+            upsert(key, DEFAULT_CHANNEL_POST_TEMPLATE, "QQ 频道帖子正文模板");
             return DEFAULT_CHANNEL_POST_TEMPLATE;
         }
         if (KEY_BOT_DAILY_RECOMMENDATION_TEMPLATE.equals(key) && looksLikeMojibake(value)) {
-            upsert(key, DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ group daily recommendation template");
+            upsert(key, DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE, "QQ群每日推荐消息模板");
             return DEFAULT_BOT_DAILY_RECOMMENDATION_TEMPLATE;
         }
         return value;

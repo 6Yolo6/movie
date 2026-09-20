@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Avatar, Input, Button, Form, message, Spin, Typography, Popconfirm } from 'antd';
+import { Avatar, Input, Button, Form, message, Spin, Typography, Popconfirm, Select } from 'antd';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
@@ -24,6 +24,7 @@ interface CommentItem {
     parentId: number;
     replyToNickname?: string;
     replies?: CommentItem[];
+    type?: string;
 }
 
 interface PaginatedComments {
@@ -36,9 +37,11 @@ interface PaginatedComments {
 
 interface CommentSectionProps {
     relateId: string;
+    commentType?: string;
+    allowTypeSelect?: boolean;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ relateId }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ relateId, commentType, allowTypeSelect = false }) => {
     const [comments, setComments] = useState<CommentItem[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -48,11 +51,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId }) => {
     const { user, token } = useAuthStore();
     const { t, i18n } = useTranslation();
     const [replyTo, setReplyTo] = useState<CommentItem | null>(null);
+    const [selectedType, setSelectedType] = useState(commentType || 'GENERAL');
 
     const fetchComments = useCallback(async (p: number = 1) => {
         setLoading(true);
         try {
-            const res = await api(`/api/comments/${relateId}?page=${p}&size=10`);
+            const query = new URLSearchParams({ page: String(p), size: '10' });
+            if (commentType || selectedType) query.set('type', commentType || selectedType);
+            const res = await api(`/api/comments/${encodeURIComponent(relateId)}?${query.toString()}`);
             if (res.ok) {
                 const data: PaginatedComments = await res.json();
                 setComments(prev => p === 1 ? data.records : [...prev, ...data.records]);
@@ -67,7 +73,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId }) => {
         } finally {
             setLoading(false);
         }
-    }, [relateId, t]);
+    }, [commentType, relateId, selectedType, t]);
 
     useEffect(() => {
         if (relateId) {
@@ -99,6 +105,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId }) => {
             const body: Record<string, unknown> = {
                 relateId,
                 content: values.content,
+                type: replyTo?.type || commentType || selectedType || 'GENERAL',
             };
             if (replyTo) {
                 body.parentId = replyTo.id;
@@ -260,10 +267,25 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId }) => {
     );
 
     return (
-        <div className="comment-section bg-white dark:bg-zinc-800 p-3 sm:p-4 rounded-lg shadow-md max-h-[640px] overflow-y-auto" onScroll={handleScroll}>
-            <Text className="text-xl font-bold mb-4 block text-gray-800 dark:text-gray-100">
-                {t('comments')} ({total})
-            </Text>
+        <div id="comments" className="comment-section bg-white dark:bg-zinc-800 p-3 sm:p-4 rounded-lg shadow-md max-h-[640px] overflow-y-auto" onScroll={handleScroll}>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <Text className="text-xl font-bold block text-gray-800 dark:text-gray-100">
+                    {t('comments')} ({total})
+                </Text>
+                {allowTypeSelect && (
+                    <Select
+                        value={selectedType}
+                        onChange={(value) => { setSelectedType(value); setPage(1); }}
+                        options={[
+                            { value: 'OTHER', label: t('messageTypeOther') },
+                            { value: 'REQUEST', label: t('messageTypeRequest') },
+                            { value: 'INVALID_RESOURCE', label: t('messageTypeInvalidResource') },
+                            { value: 'SUGGESTION', label: t('messageTypeSuggestion') },
+                        ]}
+                        style={{ minWidth: 150 }}
+                    />
+                )}
+            </div>
             <Spin spinning={loading && comments.length === 0}>
                 <div className="flex flex-col gap-4">
                     {comments.length === 0 && (

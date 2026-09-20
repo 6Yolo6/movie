@@ -7,6 +7,8 @@ import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.PosterUrlUtils;
+import com.gying.movie.service.impl.MonitoringService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,9 @@ public class MovieController {
 
     @Autowired
     private IResourceLinkService resourceService;
+
+    @Autowired
+    private MonitoringService monitoringService;
 
     @org.springframework.beans.factory.annotation.Value("${minio.url-prefix}")
     private String minioUrlPrefix;
@@ -45,7 +50,8 @@ public class MovieController {
             @RequestParam(required = false) String region,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            HttpServletRequest request) {
         int currentPage = Math.max(page, 1);
         int pageSize = Math.min(Math.max(size, 1), 60);
         Page<MovieMetadata> pageParam = new Page<>(currentPage, pageSize);
@@ -98,6 +104,9 @@ public class MovieController {
 
         Page<MovieMetadata> result = query.page(pageParam);
         result.getRecords().forEach(this::processMovieUrl);
+        if (keyword != null && !keyword.isBlank()) {
+            monitoringService.search(keyword, result.getTotal(), request);
+        }
         return result;
     }
 
@@ -115,7 +124,7 @@ public class MovieController {
     }
 
     @GetMapping("/{id}")
-    public MovieDetailDTO getMovieDetail(@PathVariable String id) {
+    public MovieDetailDTO getMovieDetail(@PathVariable String id, HttpServletRequest request) {
         MovieMetadata movie = movieService.getById(id);
         if (movie == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
@@ -127,6 +136,7 @@ public class MovieController {
         MovieDetailDTO dto = new MovieDetailDTO();
         dto.setMovie(movie);
         dto.setResources(links);
+        monitoringService.resourceOperation(id, null, "VIEW", null, "SUCCESS", null, request);
 
         return dto;
     }

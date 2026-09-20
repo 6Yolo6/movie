@@ -26,11 +26,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
+
+    private static final Set<String> ALLOWED_TYPES = Set.of("GENERAL", "REQUEST", "INVALID_RESOURCE", "SUGGESTION", "OTHER");
 
     @Autowired
     private ICommentService commentService;
@@ -54,9 +58,26 @@ public class CommentController {
         if (comment.getRelateId() == null || comment.getRelateId().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "relateId is required");
         }
+        String relateId = comment.getRelateId().trim();
+        if (relateId.length() > 64 || !relateId.matches("[A-Za-z0-9_:/.-]+")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid relateId");
+        }
+        comment.setRelateId(relateId);
         if (comment.getContent() == null || comment.getContent().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content is required");
         }
+        String content = comment.getContent().trim();
+        if (content.length() > 5000) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "content must be at most 5000 characters");
+        }
+        comment.setContent(content);
+        String type = comment.getType() == null || comment.getType().isBlank()
+                ? ("message-board".equals(relateId) ? "OTHER" : "GENERAL")
+                : comment.getType().trim().toUpperCase(Locale.ROOT);
+        if (!ALLOWED_TYPES.contains(type)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid comment type");
+        }
+        comment.setType(type);
         Comment parent = null;
         if (comment.getParentId() != null && comment.getParentId() > 0) {
             parent = commentService.getById(comment.getParentId());
@@ -83,8 +104,13 @@ public class CommentController {
     public Page<CommentDisplayDTO> getCommentsByRelateId(
             @PathVariable String relateId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return commentService.getCommentsPaged(relateId, Math.max(page, 1), Math.min(Math.max(size, 1), 50));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String type) {
+        String normalizedType = type == null || type.isBlank() ? null : type.trim().toUpperCase(Locale.ROOT);
+        if (normalizedType != null && !ALLOWED_TYPES.contains(normalizedType)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid comment type");
+        }
+        return commentService.getCommentsPaged(relateId, normalizedType, Math.max(page, 1), Math.min(Math.max(size, 1), 50));
     }
 
     @PostMapping("/{id}/upvote")

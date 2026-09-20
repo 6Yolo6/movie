@@ -28,7 +28,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
         SysConfig created = new SysConfig();
         created.setConfigKey(key);
         created.setConfigValue(value);
-        created.setDescription("Runtime configuration");
+        created.setDescription("运行时配置");
         created.setCreatedAt(LocalDateTime.now());
         created.setUpdatedAt(LocalDateTime.now());
         return save(created);

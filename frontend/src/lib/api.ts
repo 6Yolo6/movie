@@ -4,15 +4,47 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const AUTH_STORAGE_KEY = 'auth-storage';
 
+function readPersistedAuthToken(): string | null {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) {
+            return null;
+        }
+
+        const persisted = JSON.parse(raw) as { state?: { token?: unknown } };
+        const token = persisted?.state?.token;
+        return typeof token === 'string' && token.trim() ? token : null;
+    } catch {
+        return null;
+    }
+}
+
 export async function api(path: string, options: RequestInit = {}): Promise<Response> {
     const { headers: customHeaders, ...rest } = options;
+    const headers = new Headers(customHeaders);
     const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
+    if (!isFormData && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+    }
+
+    // Callers may still supply an explicit Authorization header. Otherwise, use
+    // the token persisted by the Zustand auth store so new pages cannot
+    // accidentally issue unauthenticated requests after a browser refresh.
+    if (!headers.has('Authorization') && !path.startsWith('/api/auth/login')) {
+        const token = readPersistedAuthToken();
+        if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
+    }
+
     const response = await fetch(`${API_BASE}${path}`, {
-        headers: {
-            ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
-            ...(customHeaders as Record<string, string>),
-        },
         ...rest,
+        headers,
     });
 
     if (response.status === 401 && typeof window !== 'undefined' && !path.startsWith('/api/auth/login')) {

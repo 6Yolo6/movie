@@ -22,7 +22,7 @@ export default function MessagesPage() {
                             <Text type="secondary">{t('messageBoardHint')}</Text>
                         </div>
                     </div>
-                    <CommentSection relateId="message-board" />
+                    <CommentSection relateId="message-board" allowTypeSelect />
                 </Card>
             </div>
         </div>

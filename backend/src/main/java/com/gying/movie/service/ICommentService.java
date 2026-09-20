@@ -7,5 +7,5 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.List;
 
 public interface ICommentService extends IService<Comment> {
-    Page<CommentDisplayDTO> getCommentsPaged(String relateId, int page, int size);
+    Page<CommentDisplayDTO> getCommentsPaged(String relateId, String type, int page, int size);
 }

@@ -1,123 +1,34 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { Form, Input, Button, Card, App, Space } from 'antd';
-import { UserOutlined, LockOutlined, SafetyCertificateOutlined, ReloadOutlined } from '@ant-design/icons';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, App, Button, Card, Form, Input, Space, Typography } from "antd";
+import { LockOutlined, MailOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { api, readApiError } from "@/lib/api";
 
-interface RegisterFormValues {
-    username: string;
-    password: string;
-    confirm: string;
-    captchaCode: string;
-}
+interface Values { username:string; email:string; password:string; confirm:string; emailCode?:string; inviteCode?:string }
+interface Policy { publicRegistrationEnabled:boolean; invitationEnabled:boolean; inviteValid:boolean; registrationAllowed:boolean; emailRequired:boolean; emailVerificationEnabled:boolean }
 
-interface CaptchaResponse {
-    captchaId: string;
-    image: string;
-}
-
-export default function RegisterPage() {
-    const router = useRouter();
-    const { message } = App.useApp();
-    const [captcha, setCaptcha] = useState<CaptchaResponse | null>(null);
-    const [captchaLoading, setCaptchaLoading] = useState(false);
-
-    const loadCaptcha = useCallback(async () => {
-        setCaptchaLoading(true);
-        try {
-            const res = await api('/api/captcha/generate');
-            if (res.ok) {
-                setCaptcha(await res.json());
-            } else {
-                message.error('Failed to load captcha');
-            }
-        } catch {
-            message.error('Network error');
-        } finally {
-            setCaptchaLoading(false);
-        }
-    }, [message]);
-
-    useEffect(() => {
-        loadCaptcha();
-    }, [loadCaptcha]);
-
-    const onFinish = async (values: RegisterFormValues) => {
-        if (!captcha?.captchaId) {
-            message.error('Please refresh the captcha');
-            return;
-        }
-        try {
-            const query = new URLSearchParams({
-                captchaId: captcha.captchaId,
-                captchaCode: values.captchaCode,
-            });
-            const res = await api(`/api/auth/register?${query.toString()}`, {
-                method: 'POST',
-                body: JSON.stringify({ username: values.username, password: values.password }),
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                message.success('Registration successful! Please login.');
-                router.push('/login');
-            } else {
-                message.error(data.error || 'Registration failed');
-                loadCaptcha();
-            }
-        } catch {
-            message.error('Network error');
-        }
-    };
-
-    return (
-        <div className="flex justify-center items-center min-h-[80vh] px-4">
-            <Card title="Sign Up" className="w-full max-w-md shadow-xl">
-                <Form onFinish={onFinish} size="large" layout="vertical">
-                    <Form.Item name="username" rules={[{ required: true, message: 'Please choose a Username!' }]}>
-                        <Input prefix={<UserOutlined />} placeholder="Username" />
-                    </Form.Item>
-                    <Form.Item name="password" rules={[{ required: true, min: 6, message: 'Password must be at least 6 characters' }]}>
-                        <Input.Password prefix={<LockOutlined />} placeholder="Password" />
-                    </Form.Item>
-                    <Form.Item name="confirm" dependencies={['password']} hasFeedback rules={[
-                        { required: true, message: 'Please confirm your password!' },
-                        ({ getFieldValue }) => ({
-                            validator(_, value) {
-                                if (!value || getFieldValue('password') === value) {
-                                    return Promise.resolve();
-                                }
-                                return Promise.reject(new Error('Passwords do not match!'));
-                            },
-                        }),
-                    ]}>
-                        <Input.Password prefix={<LockOutlined />} placeholder="Confirm Password" />
-                    </Form.Item>
-                    <Form.Item name="captchaCode" rules={[{ required: true, message: 'Please enter the captcha!' }]}>
-                        <Space.Compact className="w-full">
-                            <Input prefix={<SafetyCertificateOutlined />} placeholder="Captcha" />
-                            <Button onClick={loadCaptcha} loading={captchaLoading} icon={<ReloadOutlined />} />
-                        </Space.Compact>
-                    </Form.Item>
-                    {captcha?.image && (
-                        <button type="button" onClick={loadCaptcha} className="mb-4 block rounded border border-gray-200 dark:border-zinc-700 overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={captcha.image} alt="captcha" className="h-[42px] w-[120px] object-cover bg-white" />
-                        </button>
-                    )}
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" block className="bg-green-600">
-                            Register
-                        </Button>
-                    </Form.Item>
-                    <div className="text-center">
-                        <Link href="/login" className="text-blue-500">Already have an account? Sign In</Link>
-                    </div>
-                </Form>
-            </Card>
-        </div>
-    );
+export default function RegisterPage(){
+ const router=useRouter(); const {message}=App.useApp(); const [form]=Form.useForm<Values>();
+ const [policy,setPolicy]=useState<Policy|null>(null); const [checking,setChecking]=useState(false); const [sending,setSending]=useState(false); const [submitting,setSubmitting]=useState(false);
+ const checkPolicy=useCallback(async(invite?:string)=>{setChecking(true);try{const q=invite?.trim()?`?invite=${encodeURIComponent(invite.trim())}`:"";const r=await api(`/api/auth/registration-policy${q}`);if(r.ok)setPolicy(await r.json());else message.error(await readApiError(r,"无法读取注册策略"));}finally{setChecking(false);}},[message]);
+ useEffect(()=>{const code=new URLSearchParams(window.location.search).get("invite")||"";if(code)form.setFieldValue("inviteCode",code);checkPolicy(code);},[checkPolicy,form]);
+ const sendCode=async()=>{try{const email=await form.validateFields(["email"]);setSending(true);const r=await api("/api/auth/email-code",{method:"POST",body:JSON.stringify({email:email.email,inviteCode:form.getFieldValue("inviteCode")})});if(r.ok)message.success("验证码已发送，请检查邮箱");else message.error(await readApiError(r,"发送失败"));}finally{setSending(false);}};
+ const submit=async(v:Values)=>{setSubmitting(true);try{const r=await api("/api/auth/register",{method:"POST",body:JSON.stringify({username:v.username,email:v.email,password:v.password,emailCode:v.emailCode,inviteCode:v.inviteCode})});if(r.ok){message.success("注册成功，请登录");router.push("/login");}else message.error(await readApiError(r,"注册失败"));}finally{setSubmitting(false);}};
+ const inviteOnly=policy&&!policy.publicRegistrationEnabled;
+ return <div className="flex min-h-[80vh] items-center justify-center px-4"><Card title="注册 GYing Movie" className="w-full max-w-md shadow-xl">
+  {inviteOnly&&<Alert className="mb-4" type={policy.registrationAllowed?"success":"info"} showIcon message={policy.registrationAllowed?"邀请码有效":"当前已关闭公开注册"} description={policy.registrationAllowed?"可继续完成注册。":"请输入老用户提供的邀请码或打开邀请链接。"}/>}
+  {policy&&!policy.emailVerificationEnabled&&<Alert className="mb-4" type="warning" showIcon message="邮箱验证码暂未启用" description="系统尚未配置邮件发送服务；仍会校验邮箱格式和邮箱唯一性。"/>}
+  <Form form={form} onFinish={submit} size="large" layout="vertical">
+   <Form.Item name="username" label="用户名" rules={[{required:true,message:"请输入用户名"},{min:3,max:50}]}><Input prefix={<UserOutlined/>} autoComplete="username"/></Form.Item>
+   <Form.Item name="email" label="邮箱" rules={[{required:true,message:"请输入邮箱"},{type:"email",message:"邮箱格式不正确"}]}><Input prefix={<MailOutlined/>} autoComplete="email"/></Form.Item>
+   {policy?.emailVerificationEnabled&&<Form.Item name="emailCode" label="邮箱验证码" rules={[{required:true,message:"请输入邮箱验证码"}]}><Space.Compact className="w-full"><Input prefix={<SafetyCertificateOutlined/>}/><Button loading={sending} onClick={sendCode}>发送验证码</Button></Space.Compact></Form.Item>}
+   <Form.Item name="password" label="密码" rules={[{required:true},{min:6,max:100}]}><Input.Password prefix={<LockOutlined/>} autoComplete="new-password"/></Form.Item>
+   <Form.Item name="confirm" label="确认密码" dependencies={["password"]} rules={[{required:true},({getFieldValue})=>({validator(_,v){return !v||v===getFieldValue("password")?Promise.resolve():Promise.reject(new Error("两次密码不一致"));}})]}><Input.Password prefix={<LockOutlined/>}/></Form.Item>
+   {policy?.invitationEnabled&&<Form.Item name="inviteCode" label="邀请码" rules={inviteOnly?[{required:true,message:"当前必须提供邀请码"}]:[]}><Space.Compact className="w-full"><Input placeholder="邀请码或邀请链接中的 invite 参数"/><Button loading={checking} onClick={()=>checkPolicy(form.getFieldValue("inviteCode"))}>校验</Button></Space.Compact></Form.Item>}
+   <Button block type="primary" htmlType="submit" loading={submitting} disabled={!policy?.registrationAllowed}>注册</Button>
+  </Form><Typography.Paragraph className="mt-4 text-center" type="secondary">已有账号？ <Link href="/login">登录</Link></Typography.Paragraph>
+ </Card></div>;
 }

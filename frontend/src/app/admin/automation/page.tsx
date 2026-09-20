@@ -60,6 +60,8 @@ interface AutomationConfig {
     botRateLimitPerMinute: number;
     botMaxResults: number;
     botBlockedKeywords: string;
+    botTransferCleanupEnabled: boolean;
+    botTransferCleanupDelayMinutes: number;
     botDailyRecommendationEnabled: boolean;
     botDailyRecommendationTime: string;
     botDailyRecommendationCount: number;
@@ -1075,6 +1077,27 @@ export default function QqAutomationAdminPage() {
                                                     <Form.Item name="botBlockedKeywords" label={t('qqAutomationBlockedKeywords')}>
                                                         <Input.TextArea rows={5} placeholder={t('qqAutomationBlockedKeywordsPlaceholder')} />
                                                     </Form.Item>
+                                                    <Row gutter={12}>
+                                                        <Col xs={24} md={12}>
+                                                            <Form.Item
+                                                                name="botTransferCleanupEnabled"
+                                                                label={t('qqAutomationTransferCleanupEnabled')}
+                                                                valuePropName="checked"
+                                                                extra={t('qqAutomationTransferCleanupHelp')}
+                                                            >
+                                                                <Switch />
+                                                            </Form.Item>
+                                                        </Col>
+                                                        <Col xs={24} md={12}>
+                                                            <Form.Item
+                                                                name="botTransferCleanupDelayMinutes"
+                                                                label={t('qqAutomationTransferCleanupDelay')}
+                                                                extra={t('qqAutomationTransferCleanupDelayHelp')}
+                                                            >
+                                                                <InputNumber min={1} max={10080} className="w-full" addonAfter={t('minutes')} />
+                                                            </Form.Item>
+                                                        </Col>
+                                                    </Row>
                                                     <Row gutter={12}>
                                                         <Col xs={24} md={8}>
                                                             <Form.Item name="botDailyRecommendationEnabled" label={t('qqAutomationGroupDailyEnabled')} valuePropName="checked">

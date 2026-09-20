@@ -34,6 +34,7 @@ export default function CommentManagementPage() {
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const [statusFilter, setStatusFilter] = useState<number | undefined>();
+    const [typeFilter, setTypeFilter] = useState<string | undefined>();
     const [relateId, setRelateId] = useState('');
     const [keyword, setKeyword] = useState('');
 
@@ -46,6 +47,7 @@ export default function CommentManagementPage() {
                 size: '20',
             });
             if (statusFilter !== undefined) query.set('status', String(statusFilter));
+            if (typeFilter) query.set('type', typeFilter);
             if (relateId) query.set('relateId', relateId);
             if (keyword) query.set('keyword', keyword);
             const res = await api(`/api/admin/comments?${query.toString()}`, {
@@ -65,7 +67,7 @@ export default function CommentManagementPage() {
         } finally {
             setLoading(false);
         }
-    }, [keyword, message, page, relateId, statusFilter, t, token]);
+    }, [keyword, message, page, relateId, statusFilter, t, token, typeFilter]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -109,7 +111,14 @@ export default function CommentManagementPage() {
 
     const columns: ColumnsType<AdminComment> = [
         { title: t('id'), dataIndex: 'id', key: 'id', width: 80 },
-        { title: t('relateId'), dataIndex: 'relateId', key: 'relateId', width: 160 },
+        {
+            title: t('relateId'),
+            dataIndex: 'relateId',
+            key: 'relateId',
+            width: 180,
+            render: (value: string) => value === 'message-board' ? value : <a href={`/movie/${encodeURIComponent(value)}#comments`} className="text-blue-600 hover:underline">{value}</a>,
+        },
+        { title: t('messageType'), dataIndex: 'type', key: 'type', width: 150, render: (value?: string) => value ? ({ GENERAL: t('messageTypeGeneral'), OTHER: t('messageTypeOther'), REQUEST: t('messageTypeRequest'), INVALID_RESOURCE: t('messageTypeInvalidResource'), SUGGESTION: t('messageTypeSuggestion') }[value] || value) : '-' },
         { title: t('nickname'), dataIndex: 'nickname', key: 'nickname', width: 140 },
         {
             title: t('commentContent'),
@@ -163,6 +172,22 @@ export default function CommentManagementPage() {
                         <Option value={0}>{t('pending')}</Option>
                         <Option value={1}>{t('published')}</Option>
                         <Option value={2}>{t('hidden')}</Option>
+                    </Select>
+                    <Select
+                        placeholder={t('filterByMessageType')}
+                        allowClear
+                        value={typeFilter}
+                        onChange={(value) => {
+                            setTypeFilter(value);
+                            setPage(1);
+                        }}
+                        style={{ width: 180 }}
+                    >
+                        <Option value="OTHER">{t('messageTypeOther')}</Option>
+                        <Option value="REQUEST">{t('messageTypeRequest')}</Option>
+                        <Option value="INVALID_RESOURCE">{t('messageTypeInvalidResource')}</Option>
+                        <Option value="SUGGESTION">{t('messageTypeSuggestion')}</Option>
+                        <Option value="GENERAL">{t('messageTypeGeneral')}</Option>
                     </Select>
                     <Search
                         placeholder={t('filterByRelateId')}

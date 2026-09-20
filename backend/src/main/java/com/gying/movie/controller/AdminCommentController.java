@@ -8,11 +8,15 @@ import com.gying.movie.utils.AuthHelper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/admin/comments")
 public class AdminCommentController {
+
+    private static final Set<String> ALLOWED_TYPES = Set.of("GENERAL", "REQUEST", "INVALID_RESOURCE", "SUGGESTION", "OTHER");
 
     private final ICommentService commentService;
     private final AuthHelper authHelper;
@@ -27,6 +31,7 @@ public class AdminCommentController {
             @RequestParam(required = false) String relateId,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String type,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -43,8 +48,19 @@ public class AdminCommentController {
         if (status != null) {
             query.eq("status", status);
         }
+        if (type != null && !type.isBlank()) {
+            String normalizedType = type.trim().toUpperCase(Locale.ROOT);
+            if (!ALLOWED_TYPES.contains(normalizedType)) {
+                return ResponseEntity.badRequest().body("Invalid comment type");
+            }
+            query.eq("comment_type", normalizedType);
+        }
         if (keyword != null && !keyword.isBlank()) {
-            query.like("content", keyword).or().like("nickname", keyword);
+            String safeKeyword = keyword.trim();
+            if (safeKeyword.length() > 100) {
+                return ResponseEntity.badRequest().body("Keyword is too long");
+            }
+            query.and(wrapper -> wrapper.like("content", safeKeyword).or().like("nickname", safeKeyword).or().like("relate_id", safeKeyword));
         }
         query.orderByDesc("created_at");
         return ResponseEntity.ok(commentService.page(new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)), query));

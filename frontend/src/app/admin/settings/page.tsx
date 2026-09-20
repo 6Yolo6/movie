@@ -22,6 +22,81 @@ import { api } from '@/lib/api';
 
 const { Title, Text } = Typography;
 
+const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
+    'auth.register.enabled': '是否允许访客自行注册账号；关闭后仅管理员可创建用户。',
+    'resource.audit.enabled': '用户提交的资源是否需要管理员审核后才公开。',
+    'resource.max.per.user': '每个有发布权限的账号最多可保留的有效资源数量。',
+    'resource.report.threshold': '同一资源达到该举报次数后标记为疑似失效。',
+    'resource.submit.interval.seconds': '同一发布账号两次提交资源之间的最短间隔（秒）。',
+    'resource.form.quick_params': '资源标题表单可一键插入的快捷参数，支持逗号或换行分隔。',
+    'resource.hub.enabled': '影视资源中心总开关；关闭后停止发现、转存和发布流水线。',
+    'resource.hub.auto_approve': '影视资源中心自动入库的资源是否直接通过审核。',
+    'resource.hub.discovery.max_attempts': '单个资源发现任务允许重试的最大次数。',
+    'resource.hub.validation.enabled': '是否定期检查已入库网盘链接的有效性。',
+    'resource.hub.gying.discovery_enabled': '自动发现资源时是否优先从 GYING 获取候选。',
+    'resource.hub.gying.auto_sync_enabled': '是否按计划从 GYING 自动同步影片元数据。',
+    'resource.hub.gying.auto_sync_interval_hours': 'GYING 自动同步任务之间的最小间隔（小时）。',
+    'resource.hub.gying.auto_sync_max_items': '每轮 GYING 自动同步最多处理的影片数。',
+    'resource.hub.gying.auto_sync_page': 'GYING 自动同步读取的目录页码。',
+    'resource.hub.gying.auto_sync_sources': 'GYING 自动同步的数据源类型列表。',
+    'resource.hub.tmdb.auto_sync_enabled': '是否按计划从 TMDB 自动同步影片元数据。',
+    'resource.hub.tmdb.auto_sync_interval_hours': 'TMDB 自动同步任务之间的最小间隔（小时）。',
+    'resource.hub.tmdb.auto_sync_max_items': '每轮 TMDB 自动同步最多处理的影片数。',
+    'resource.hub.tmdb.auto_sync_page': 'TMDB 自动同步读取的目录页码。',
+    'resource.hub.tmdb.auto_sync_sources': 'TMDB 自动同步的数据源类型列表。',
+    'resource.hub.tmdb.auto_discovery_enabled': 'TMDB 同步影片后是否自动创建资源发现任务。',
+    'resource.hub.tmdb.discovery_cooldown_hours': '同一影片再次自动发现资源前的冷却时间（小时）。',
+    'resource.hub.tmdb.discovery_max_results': '单次 PanSou 资源发现最多保留的候选数量。',
+    'resource.hub.worker.enabled': '影视资源中心后台 Worker 开关。',
+    'resource.hub.worker.task_limit': 'Worker 每轮最多执行的资源发现任务数。',
+    'resource.hub.worker.quark_limit': 'Worker 每轮最多提交的夸克转存任务数。',
+    'resource.hub.worker.xunlei_limit': 'Worker 每轮最多提交的迅雷转存任务数。',
+    'resource.hub.worker.publish_limit': 'Worker 每轮最多发布到正式资源库的发现结果数。',
+    'resource.hub.worker.discovered_retry_enabled': '是否启用已发现但未完成转存资源的定时重试。',
+    'resource.hub.worker.discovered_retry_cron': '已发现资源定时重试的 Cron 表达式。',
+    'resource.hub.worker.discovered_retry_delay_ms': '批量重试每条资源之间的等待时间（毫秒）。',
+    'resource.hub.worker.discovered_retry_limit': '每轮定时重试最多处理的发现结果数。',
+    'qq.bot.min_keyword_length': 'QQ群机器人接受的最短搜索关键词字数。',
+    'qq.bot.rate_limit_per_minute': '每个群成员每分钟最多可发起的搜索次数；0 表示不限制。',
+    'qq.bot.max_results': 'QQ群机器人单次回复展示的资源候选数量。',
+    'qq.bot.blocked_keywords': 'QQ群机器人拒绝搜索的关键词，支持逗号、分号或换行分隔。',
+    'qq.bot.transfer_cleanup.enabled': '是否自动清理QQ群用户搜索后临时转存的网盘文件；不影响正式资源库。',
+    'qq.bot.transfer_cleanup.delay_minutes': 'QQ群临时转存成功后延迟多少分钟删除文件和临时资源链接。',
+    'qq.bot.transfer_cleanup.quark_root': 'QQ群夸克临时转存专用根目录；安全清理只允许发生在此目录下。',
+    'qq.bot.transfer_cleanup.xunlei_root': 'QQ群迅雷临时转存专用根目录；安全清理只允许发生在此目录下。',
+    'qq.bot.daily_recommendation.enabled': '是否开启QQ群每日影片推荐。',
+    'qq.bot.daily_recommendation.time': 'QQ群每日推荐的执行时间，格式为 HH:mm。',
+    'qq.bot.daily_recommendation.count': '每个群每天推荐的影片数量。',
+    'qq.bot.daily_recommendation.group_ids': '接收每日推荐的 QQ 群号，多个群用逗号分隔。',
+    'qq.bot.daily_recommendation.template': 'QQ群每日推荐消息模板，支持模板变量。',
+    'qq.channel.auto_post.enabled': '是否开启 QQ 频道自动发布。',
+    'qq.channel.auto_post.interval_minutes': 'QQ 频道自动发布批次之间的间隔（分钟）。',
+    'qq.channel.auto_post.max_posts_per_run': 'QQ 频道每轮最多发布的帖子数。',
+    'qq.channel.auto_post.daily_time': 'QQ 频道每日自动发布的开始时间，格式为 HH:mm。',
+    'qq.channel.auto_post.post_total': 'QQ 频道每天计划发布的帖子总数。',
+    'qq.channel.auto_post.post_interval_seconds': 'QQ 频道连续两篇帖子之间的等待时间（秒）。',
+    'qq.channel.auto_post.template': 'QQ 频道帖子正文模板，支持标题、链接和简介等变量。',
+    'qq.channel.auto_post.candidate_limit': 'QQ 频道每轮选取的候选资源数量上限。',
+    'qq.channel.guild_id': '用于自动发布的 QQ 频道（Guild）ID。',
+    'qq.channel.movie_channel_id': '电影内容发布到的 QQ 频道子频道 ID。',
+    'qq.channel.tv_channel_id': '剧集和动漫内容发布到的 QQ 频道子频道 ID。',
+};
+
+const GROUP_LABELS_ZH: Record<string, string> = {
+    auth: '注册与账号',
+    resource: '资源与自动化',
+    qq: 'QQ 自动化',
+};
+
+const configDescription = (config: ConfigItem) => {
+    if (config.configKey.startsWith('qq.bot.daily_recommendation.last_run.')) {
+        return '指定 QQ 群每日推荐最近一次成功执行日期，由系统自动维护。';
+    }
+    return CONFIG_DESCRIPTIONS_ZH[config.configKey]
+        || config.description
+        || `系统配置项 ${config.configKey}，修改前请确认对应功能用途。`;
+};
+
 interface ConfigItem {
     id: number;
     configKey: string;
@@ -97,7 +172,7 @@ export default function SystemSettingsPage() {
         const filtered = normalizedKeyword
             ? configs.filter(config => (
                 config.configKey.toLowerCase().includes(normalizedKeyword)
-                || (config.description || '').toLowerCase().includes(normalizedKeyword)
+                || configDescription(config).toLowerCase().includes(normalizedKeyword)
             ))
             : configs;
 
@@ -244,7 +319,7 @@ export default function SystemSettingsPage() {
                         {Object.entries(groupedConfigs).map(([group, items]) => (
                             <section key={group}>
                                 <div className="mb-3 flex items-center gap-2">
-                                    <Title level={4} className="!m-0">{group.toUpperCase()}</Title>
+                                    <Title level={4} className="!m-0">{GROUP_LABELS_ZH[group] || group.toUpperCase()}</Title>
                                     <Tag>{items.length}</Tag>
                                 </div>
                                 <div className="divide-y rounded-lg border">
@@ -259,7 +334,7 @@ export default function SystemSettingsPage() {
                                                     <Text code className="break-all">{config.configKey}</Text>
                                                     <div className="mt-1">
                                                         <Text type="secondary">
-                                                            {config.description || t('systemConfigNoDescription')}
+                                                            {configDescription(config)}
                                                         </Text>
                                                     </div>
                                                 </div>

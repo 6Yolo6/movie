@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
 import {
     BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
-    LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined,
+    LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined, MoonOutlined, SunOutlined, TranslationOutlined,
     NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -171,6 +171,11 @@ export default function Navbar() {
             icon: <UserOutlined />,
         },
         {
+            key: 'devices',
+            label: <Link href="/devices" onClick={closeDrawer}>{t('loginDevices')}</Link>,
+            icon: <UserOutlined />,
+        },
+        {
             key: 'notifications',
             label: (
                 <Link href="/notifications" onClick={closeDrawer} className="flex items-center gap-2">
@@ -185,10 +190,15 @@ export default function Navbar() {
             label: <Link href="/favorites" onClick={closeDrawer}>{t('myFavorites')}</Link>,
             icon: <HeartOutlined />,
         },
-        {
+        ...((user?.role === 'ADMIN' || user?.role === 'PUBLISHER') ? [{
             key: 'myResources',
             label: <Link href="/my-resources" onClick={closeDrawer}>{t('myResources')}</Link>,
             icon: <CloudUploadOutlined />,
+        }] : []),
+        {
+            key: 'invitations',
+            label: <Link href="/invitations" onClick={closeDrawer}>邀请注册</Link>,
+            icon: <UserOutlined />,
         },
         ...(hasAdminBackup ? [{
             key: 'returnAdmin',
@@ -242,6 +252,11 @@ export default function Navbar() {
                 key: 'automation',
                 label: <Link href="/admin/automation" onClick={closeDrawer}>{t('qqAutomationMenu')}</Link>,
                 icon: <NotificationOutlined />,
+            },
+            {
+                key: 'monitoring',
+                label: <Link href="/admin/monitoring" onClick={closeDrawer}>后台监控</Link>,
+                icon: <DatabaseOutlined />,
             },
             {
                 key: 'comments',
@@ -304,7 +319,7 @@ export default function Navbar() {
                         />
                     </div>
 
-                    {/* Theme toggle */}
+                    {/* Theme toggle: keep a compact, visible control on phones. */}
                     <span className="hidden sm:inline-flex">
                         <Switch
                             checkedChildren={t('darkMode')}
@@ -314,8 +329,16 @@ export default function Navbar() {
                             size="small"
                         />
                     </span>
+                    <Button
+                        type="text"
+                        className="sm:hidden !px-1"
+                        aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
+                        title={theme === 'dark' ? t('lightMode') : t('darkMode')}
+                        icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+                        onClick={toggleTheme}
+                    />
 
-                    {/* Language toggle */}
+                    {/* Language toggle: keep a compact, visible control on phones. */}
                     <span className="hidden sm:inline-flex">
                         <Switch
                             checkedChildren="中"
@@ -325,6 +348,14 @@ export default function Navbar() {
                             size="small"
                         />
                     </span>
+                    <Button
+                        type="text"
+                        className="sm:hidden !px-1"
+                        aria-label={t('language')}
+                        title={t('language')}
+                        icon={<TranslationOutlined />}
+                        onClick={() => i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')}
+                    />
 
                     {/* User area */}
                     {user ? (
@@ -406,6 +437,14 @@ export default function Navbar() {
                             <Badge count={unreadCount} size="small" />
                         </Link>
                         <Link
+                            href="/devices"
+                            onClick={closeDrawer}
+                            className="flex items-center gap-3 px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-base"
+                        >
+                            <UserOutlined />
+                            <span>{t('loginDevices')}</span>
+                        </Link>
+                        <Link
                             href="/favorites"
                             onClick={closeDrawer}
                             className="flex items-center gap-3 px-6 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-base"
@@ -413,14 +452,16 @@ export default function Navbar() {
                             <HeartOutlined />
                             <span>{t('myFavorites')}</span>
                         </Link>
-                        <Link
-                            href="/my-resources"
-                            onClick={closeDrawer}
-                            className="flex items-center gap-3 px-6 py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-base"
-                        >
-                            <CloudUploadOutlined />
-                            <span>{t('myResources')}</span>
-                        </Link>
+                        {(user.role === 'ADMIN' || user.role === 'PUBLISHER') && (
+                            <Link
+                                href="/my-resources"
+                                onClick={closeDrawer}
+                                className="flex items-center gap-3 px-6 py-3 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-base"
+                            >
+                                <CloudUploadOutlined />
+                                <span>{t('myResources')}</span>
+                            </Link>
+                        )}
                         {user.role === 'ADMIN' && (
                             <button
                                 type="button"

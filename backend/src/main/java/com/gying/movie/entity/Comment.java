@@ -2,6 +2,7 @@ package com.gying.movie.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -16,6 +17,10 @@ public class Comment implements Serializable {
     private Long id;
 
     private String relateId;
+
+    /** GENERAL for movie comments; REQUEST, INVALID_RESOURCE, SUGGESTION or OTHER for message-board posts. */
+    @TableField("comment_type")
+    private String type;
 
     private Long userId;
 

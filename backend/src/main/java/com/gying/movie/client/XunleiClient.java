@@ -73,6 +73,7 @@ public class XunleiClient {
     private final Object authLock = new Object();
     private volatile AuthState authState;
     private volatile boolean authStateLoaded;
+    private volatile long authStateLastModified = Long.MIN_VALUE;
 
     public XunleiClient(RestTemplateBuilder builder, ObjectMapper objectMapper, ResourceHubProperties properties) {
         this.restTemplate = builder.setConnectTimeout(Duration.ofSeconds(15)).setReadTimeout(Duration.ofSeconds(30)).build();
@@ -96,6 +97,26 @@ public class XunleiClient {
             if (configured != null && isUsable(configured)) return true;
             return isUsable(authState);
         }
+    }
+
+    /** Returns token state metadata for the admin UI without exposing the token value. */
+    public AuthorizationStatus authorizationStatus() {
+        synchronized (authLock) {
+            loadAuthState();
+            AuthState effective = authState;
+            if (effective == null || !hasText(effective.accessToken())) {
+                effective = configuredAuthState();
+            }
+            if (effective == null || !hasText(effective.accessToken())) {
+                return new AuthorizationStatus(false, 0L, false);
+            }
+            long expiresAt = effective.expiresAt();
+            boolean expired = expiresAt > 0L && expiresAt <= System.currentTimeMillis();
+            return new AuthorizationStatus(true, expiresAt, expired);
+        }
+    }
+
+    public record AuthorizationStatus(boolean configured, long expiresAt, boolean expired) {
     }
 
     public RestoreResult restore(String shareUrl, String savePath) {
@@ -241,6 +262,13 @@ public class XunleiClient {
         }
         throw new IllegalStateException(
                 "Xunlei restore completed but no new matching video files were found in My Transfers");
+    }
+
+    public void trashFile(String fileId) {
+        if (!hasText(fileId)) {
+            throw new IllegalArgumentException("Xunlei temporary folder id is required");
+        }
+        request(HttpMethod.POST, "/files:batchTrash", Map.of("ids", List.of(fileId.trim())));
     }
 
     public void moveFiles(List<String> fileIds, String parentId) {
@@ -1346,13 +1374,15 @@ public class XunleiClient {
     }
 
     private void loadAuthState() {
-        if (authStateLoaded) return;
-        authStateLoaded = true;
         String statePath = properties.getXunlei().getTokenStatePath();
         if (!hasText(statePath)) return;
         try {
             Path path = Path.of(statePath);
-            if (!Files.isRegularFile(path)) return;
+            long modified = Files.isRegularFile(path) ? Files.getLastModifiedTime(path).toMillis() : -1L;
+            if (authStateLoaded && modified == authStateLastModified) return;
+            authStateLoaded = true;
+            authStateLastModified = modified;
+            if (modified < 0) return;
             JsonNode root = objectMapper.readTree(Files.readString(path, StandardCharsets.UTF_8));
             String clientId = root.path("client_id").asText(null);
             String packageName = root.path("package_name").asText(null);
@@ -1398,6 +1428,8 @@ public class XunleiClient {
             Path temporary = path.resolveSibling(path.getFileName() + ".tmp");
             Files.writeString(temporary, objectMapper.writeValueAsString(payload), StandardCharsets.UTF_8);
             Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
+            authStateLastModified = Files.getLastModifiedTime(path).toMillis();
+            authStateLoaded = true;
         } catch (Exception error) {
             throw new IllegalStateException("Xunlei token state could not be persisted", error);
         }

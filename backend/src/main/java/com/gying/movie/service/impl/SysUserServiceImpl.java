@@ -18,8 +18,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private LoginDeviceService loginDeviceService;
+
     @Override
     public String login(String username, String password) {
+        return login(username, password, null, null);
+    }
+
+    @Override
+    public String login(String username, String password, String ipAddress, String userAgent) {
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
@@ -30,11 +38,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (Boolean.FALSE.equals(user.getEnabled())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account disabled");
         }
-        return jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
+        loginDeviceService.record(token, user.getId(), ipAddress, userAgent);
+        return token;
     }
 
     @Override
-    public void register(String username, String password) {
+    public SysUser register(String username, String password, String email, Long invitedByUserId) {
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is required");
         }
@@ -50,13 +60,26 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (this.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username)) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
+        if (email == null || email.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
+        if (this.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, email)) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
         SysUser user = new SysUser();
         user.setUsername(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+        user.setEmail(email);
+        user.setInvitedByUserId(invitedByUserId);
         user.setRole("USER");
         user.setScore(0);
         user.setEnabled(true);
-        this.save(user);
+        try {
+            this.save(user);
+        } catch (org.springframework.dao.DuplicateKeyException error) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or email already exists");
+        }
+        return user;
     }
 
     @Override

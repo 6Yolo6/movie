@@ -60,6 +60,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -95,6 +96,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IQqBotSearchLogService qqBotSearchLogService;
     private final GyingSourceWorkflowService gyingSourceWorkflowService;
+    private final QqTransferCleanupService transferCleanupService;
     private final Map<String, Deque<Instant>> searchRateLimits = new ConcurrentHashMap<>();
     private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
     private final Map<String, ResourceSearchContext> resourceSearchContexts = new ConcurrentHashMap<>();
@@ -124,6 +126,34 @@ public class QqBotServiceImpl implements IQqBotService {
             ITmdbMetadataSyncService tmdbMetadataSyncService,
             IQqBotSearchLogService qqBotSearchLogService,
             GyingSourceWorkflowService gyingSourceWorkflowService) {
+        this(qqBotProperties, resourceHubProperties, napCatClient, panSouClient, qqOfficialBotClient,
+                movieService, resourceLinkService, resourceDiscoveryService, discoveryResultService,
+                quarkShareService, quarkTransferTaskService, quarkTransferRunnerService,
+                xunleiTransferTaskService, xunleiTransferRunnerService, resourceHubPublishService,
+                tmdbMetadataSyncService, qqBotSearchLogService, gyingSourceWorkflowService, null);
+    }
+
+    @Autowired
+    public QqBotServiceImpl(
+            QqBotProperties qqBotProperties,
+            ResourceHubProperties resourceHubProperties,
+            NapCatClient napCatClient,
+            PanSouClient panSouClient,
+            QqOfficialBotClient qqOfficialBotClient,
+            IMovieMetadataService movieService,
+            IResourceLinkService resourceLinkService,
+            IResourceDiscoveryService resourceDiscoveryService,
+            IResourceDiscoveryResultService discoveryResultService,
+            IQuarkShareService quarkShareService,
+            IQuarkTransferTaskService quarkTransferTaskService,
+            IQuarkTransferRunnerService quarkTransferRunnerService,
+            IXunleiTransferTaskService xunleiTransferTaskService,
+            IXunleiTransferRunnerService xunleiTransferRunnerService,
+            IResourceHubPublishService resourceHubPublishService,
+            ITmdbMetadataSyncService tmdbMetadataSyncService,
+            IQqBotSearchLogService qqBotSearchLogService,
+            GyingSourceWorkflowService gyingSourceWorkflowService,
+            QqTransferCleanupService transferCleanupService) {
         this.qqBotProperties = qqBotProperties;
         this.resourceHubProperties = resourceHubProperties;
         this.napCatClient = napCatClient;
@@ -142,6 +172,7 @@ public class QqBotServiceImpl implements IQqBotService {
         this.tmdbMetadataSyncService = tmdbMetadataSyncService;
         this.qqBotSearchLogService = qqBotSearchLogService;
         this.gyingSourceWorkflowService = gyingSourceWorkflowService;
+        this.transferCleanupService = transferCleanupService;
     }
 
     @Override
@@ -452,12 +483,15 @@ public class QqBotServiceImpl implements IQqBotService {
                             + "资源候选，请回复“资源”查看全部候选，或重新搜索影片。",
                     "no matching provider candidate");
         }
+        List<ResourceChoice> selectableFiltered = filtered.stream()
+                .filter(choice -> choice != null && choice.resourceLink() == null)
+                .toList();
         ResourceCandidates filteredCandidates = new ResourceCandidates(
                 now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
                 candidates.movieId(),
                 candidates.movieTitle(),
                 candidates.allResources(),
-                filtered);
+                selectableFiltered.isEmpty() ? filtered : selectableFiltered);
         resourceCandidates.put(candidateUserKey(userKey), filteredCandidates);
         String note = QqResourcePreferenceParser.hasExplicitCount(requestedCommand)
                 ? "已忽略数量指令，仅展示候选；请回复单个资源序号，避免重复转存。"
@@ -510,7 +544,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 ResourceDiscoveryRequest request = new ResourceDiscoveryRequest();
                 request.setMovieId(movie.getId());
                 request.setKeyword(searchKeyword);
-                request.setSource("AUTO");
+                request.setSource(transferCleanupService == null ? "AUTO" : "QQ_BOT");
                 request.setMaxResults(MAX_DISCOVERED_RESOURCE_CANDIDATES);
                 request.setDeferTransfer(true);
                 ResourceHubTask task = resourceDiscoveryService.enqueue(request);
@@ -595,57 +629,17 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         try {
             if ("XUNLEI".equalsIgnoreCase(discovery.getProvider())) {
-                XunleiTransferTask task = xunleiTransferTaskService.getOne(
-                        new QueryWrapper<XunleiTransferTask>()
-                                .eq("discovery_result_id", discoveryId)
-                                .orderByDesc("created_at")
-                                .last("LIMIT 1"), false);
+                XunleiTransferTask task = findOrCreateQqXunleiTask(discovery);
                 if (task == null) {
-                    resourceDiscoveryService.ensureTransferTask(discoveryId);
-                    task = xunleiTransferTaskService.getOne(
-                            new QueryWrapper<XunleiTransferTask>()
-                                    .eq("discovery_result_id", discoveryId)
-                                    .orderByDesc("created_at")
-                                    .last("LIMIT 1"), false);
-                }
-                if (task == null && hasText(discovery.getOriginalUrlHash())) {
-                    task = xunleiTransferTaskService.getOne(
-                            new QueryWrapper<XunleiTransferTask>()
-                                    .eq("movie_id", discovery.getMovieId())
-                                    .eq("original_url_hash", discovery.getOriginalUrlHash())
-                                    .orderByDesc("updated_at")
-                                    .last("LIMIT 1"), false);
-                }
-                if (task == null) {
-                    transferNotes.add("未创建迅雷转存任务，请稍后重试");
+                    transferNotes.add("未创建迅雷临时转存任务，请稍后重试");
                     return null;
                 }
                 submitXunleiTransferTask(task, transferNotes);
                 syncTaskShareToDiscovery(discovery, xunleiTransferTaskService.getById(task.getId()));
             } else {
-                QuarkTransferTask task = quarkTransferTaskService.getOne(
-                        new QueryWrapper<QuarkTransferTask>()
-                                .eq("discovery_result_id", discoveryId)
-                                .orderByDesc("created_at")
-                                .last("LIMIT 1"), false);
+                QuarkTransferTask task = findOrCreateQqQuarkTask(discovery);
                 if (task == null) {
-                    resourceDiscoveryService.ensureTransferTask(discoveryId);
-                    task = quarkTransferTaskService.getOne(
-                            new QueryWrapper<QuarkTransferTask>()
-                                    .eq("discovery_result_id", discoveryId)
-                                    .orderByDesc("created_at")
-                                    .last("LIMIT 1"), false);
-                }
-                if (task == null && hasText(discovery.getOriginalUrlHash())) {
-                    task = quarkTransferTaskService.getOne(
-                            new QueryWrapper<QuarkTransferTask>()
-                                    .eq("movie_id", discovery.getMovieId())
-                                    .eq("original_url_hash", discovery.getOriginalUrlHash())
-                                    .orderByDesc("updated_at")
-                                    .last("LIMIT 1"), false);
-                }
-                if (task == null) {
-                    transferNotes.add("未创建夸克转存任务，请稍后重试");
+                    transferNotes.add("未创建夸克临时转存任务，请稍后重试");
                     return null;
                 }
                 submitTransferTask(task, transferNotes);
@@ -662,6 +656,8 @@ public class QqBotServiceImpl implements IQqBotService {
                 ResourceLink ready = prepareResourceForReply(link);
                 if (ready == null) {
                     transferNotes.add("分享链接校验失败，可能违规或分享内没有视频文件");
+                } else if (transferCleanupService != null) {
+                    transferCleanupService.scheduleForDiscovery(discoveryId, ready.getId());
                 }
                 return ready;
             }
@@ -672,6 +668,62 @@ public class QqBotServiceImpl implements IQqBotService {
             transferNotes.add(userFacingTransferError(error.getMessage()));
         }
         return null;
+    }
+
+    private XunleiTransferTask findOrCreateQqXunleiTask(ResourceDiscoveryResult discovery) {
+        XunleiTransferTask task = xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                .eq("discovery_result_id", discovery.getId())
+                .like("request_payload", "QQ_BOT")
+                .orderByDesc("created_at")
+                .last("LIMIT 1"), false);
+        if (task != null) return task;
+        if (transferCleanupService == null) {
+            resourceDiscoveryService.ensureTransferTask(discovery.getId());
+            return xunleiTransferTaskService.getOne(new QueryWrapper<XunleiTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("created_at").last("LIMIT 1"), false);
+        }
+        LocalDateTime now = LocalDateTime.now();
+        task = new XunleiTransferTask();
+        task.setDiscoveryResultId(discovery.getId());
+        task.setMovieId(discovery.getMovieId());
+        task.setOriginalUrl(discovery.getOriginalUrl());
+        task.setOriginalUrlHash(discovery.getOriginalUrlHash());
+        task.setStatus("PENDING");
+        task.setAttempts(0);
+        task.setCreatedAt(now);
+        task.setUpdatedAt(now);
+        if (!xunleiTransferTaskService.save(task)) return null;
+        if (transferCleanupService != null) transferCleanupService.prepareTemporaryTask(task);
+        return task;
+    }
+
+    private QuarkTransferTask findOrCreateQqQuarkTask(ResourceDiscoveryResult discovery) {
+        QuarkTransferTask task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                .eq("discovery_result_id", discovery.getId())
+                .like("request_payload", "QQ_BOT")
+                .orderByDesc("created_at")
+                .last("LIMIT 1"), false);
+        if (task != null) return task;
+        if (transferCleanupService == null) {
+            resourceDiscoveryService.ensureTransferTask(discovery.getId());
+            return quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
+                    .eq("discovery_result_id", discovery.getId())
+                    .orderByDesc("created_at").last("LIMIT 1"), false);
+        }
+        LocalDateTime now = LocalDateTime.now();
+        task = new QuarkTransferTask();
+        task.setDiscoveryResultId(discovery.getId());
+        task.setMovieId(discovery.getMovieId());
+        task.setOriginalUrl(discovery.getOriginalUrl());
+        task.setOriginalUrlHash(discovery.getOriginalUrlHash());
+        task.setStatus("PENDING");
+        task.setAttempts(0);
+        task.setCreatedAt(now);
+        task.setUpdatedAt(now);
+        if (!quarkTransferTaskService.save(task)) return null;
+        if (transferCleanupService != null) transferCleanupService.prepareTemporaryTask(task);
+        return task;
     }
 
     private void syncTaskShareToDiscovery(ResourceDiscoveryResult discovery, Object task) {
@@ -1028,12 +1080,15 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         String key = candidateUserKey(userKey);
         suggestedCandidates.remove(key);
+        List<ResourceChoice> selectable = links.stream()
+                .filter(choice -> choice != null && choice.resourceLink() == null)
+                .toList();
         resourceCandidates.put(key, new ResourceCandidates(
                 now().plusSeconds(RESOURCE_CONTEXT_TTL_SECONDS),
                 movie.getId(),
                 title(movie),
                 List.copyOf(links),
-                List.copyOf(links)));
+                List.copyOf(selectable.isEmpty() ? links : selectable)));
     }
 
     private boolean removeExpiredResourceCandidates(String userKey) {
@@ -1773,7 +1828,26 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "地区", join(movie.getRegions()));
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
-        reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
+        List<ResourceChoice> ownedChoices = links == null ? List.of() : links.stream()
+                .filter(choice -> choice != null && choice.resourceLink() != null)
+                .toList();
+        if (!ownedChoices.isEmpty()) {
+            reply.append("\n\n资源库已有资源（可直接使用）：");
+            for (ResourceChoice choice : ownedChoices) {
+                ResourceLink link = choice.resourceLink();
+                reply.append("\n- ").append(displayResourceChoiceName(choice, title(movie)))
+                        .append(" [").append(resourceProviderLabel(choice.provider())).append("]");
+                if (hasText(link.getUrl())) {
+                    reply.append("\n  ").append(link.getUrl());
+                }
+                if (hasText(link.getCode())) {
+                    reply.append("\n  提取码：").append(link.getCode());
+                }
+            }
+            reply.append("\n\n如需其他版本或网盘，请继续回复下面的资源序号：");
+        } else {
+            reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
+        }
         int index = 1;
         for (ResourceChoice choice : links) {
             reply.append("\n").append(index++).append(". ")

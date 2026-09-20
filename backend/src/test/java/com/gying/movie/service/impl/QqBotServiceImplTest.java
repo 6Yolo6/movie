@@ -177,7 +177,7 @@ class QqBotServiceImplTest {
         String selected = service.buildSearchReply("1", "gying-candidate-user");
 
         assertTrue(selected.contains(published.getName()));
-        assertFalse(selected.contains(published.getUrl()));
+        assertTrue(selected.contains(published.getUrl()));
         verify(gyingSourceWorkflowService).ensureMovieMetadata("tv", "test-mid");
         verify(gyingSourceWorkflowService, never())
                 .ensureMovieResource(anyString(), anyString());
@@ -273,7 +273,7 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("蜘蛛侠英雄无归", "gying-first-user");
 
         assertTrue(reply.contains(published.getName()));
-        assertFalse(reply.contains("https://pan.quark.cn/s/gying-share"));
+        assertTrue(reply.contains("https://pan.quark.cn/s/gying-share"));
         verify(gyingSourceWorkflowService, org.mockito.Mockito.never()).ensureLocalMovieResource(movie.getId());
     }
 
@@ -344,7 +344,8 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("超级少女", "gying-published-user");
 
         assertTrue(reply.contains(published.getName()));
-        assertFalse(reply.contains(published.getUrl()));
+        assertTrue(reply.contains(published.getUrl()));
+        assertTrue(reply.contains("资源库已有资源（可直接使用）"));
         verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
     }
 
@@ -371,7 +372,7 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("伦敦生活 第一季", "legacy-gying-owned-user");
 
         assertTrue(reply.contains(published.getName()));
-        assertFalse(reply.contains(published.getUrl()));
+        assertTrue(reply.contains(published.getUrl()));
         verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
     }
 
@@ -391,7 +392,7 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("超级少女", "validation-timeout-user");
 
         assertTrue(reply.contains(published.getName()));
-        assertFalse(reply.contains(published.getUrl()));
+        assertTrue(reply.contains(published.getUrl()));
         assertEquals("NORMAL", published.getLinkStatus());
         assertTrue(published.getLastCheckError().contains("service timeout"));
         verify(resourceLinkService).updateById(published);
@@ -448,7 +449,7 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("迅雷 2", "preference-user");
 
         assertTrue(reply.contains(ownedXunlei.getName()));
-        assertFalse(reply.contains("https://pan.xunlei.com/s/context-share"));
+        assertTrue(reply.contains("https://pan.xunlei.com/s/context-share"));
         assertFalse(reply.contains("https://pan.baidu.com"));
         assertTrue(service.buildSearchReply("1", "preference-user")
                 .contains("https://pan.xunlei.com/s/context-share"));
@@ -485,7 +486,7 @@ class QqBotServiceImplTest {
         assertTrue(filtered.contains("已忽略数量指令"));
         assertTrue(filtered.contains(quark.getName()));
         assertFalse(filtered.contains(xunlei.getName()));
-        assertFalse(filtered.contains(quark.getUrl()));
+        assertTrue(filtered.contains(quark.getUrl()));
         assertTrue(switched.contains(xunlei.getName()));
         assertFalse(switched.contains(quark.getName()));
         assertTrue(restored.contains(quark.getName()));
@@ -731,10 +732,10 @@ class QqBotServiceImplTest {
         String quarkReply = service.buildSearchReply("夸克 2", "library-user");
 
         assertTrue(initialReply.contains(ownedQuark.getName()));
-        assertFalse(initialReply.contains("https://pan.quark.cn/s/owned-share"));
+        assertTrue(initialReply.contains("https://pan.quark.cn/s/owned-share"));
         assertFalse(initialReply.contains("https://pan.baidu.com/s/library"));
         assertTrue(quarkReply.contains(ownedQuark.getName()));
-        assertFalse(quarkReply.contains("https://pan.quark.cn/s/owned-share"));
+        assertTrue(quarkReply.contains("https://pan.quark.cn/s/owned-share"));
         ArgumentCaptor<ResourceDiscoveryRequest> request = ArgumentCaptor.forClass(ResourceDiscoveryRequest.class);
         verify(resourceDiscoveryService).enqueue(request.capture());
         assertEquals("权力的游戏 2011", request.getAllValues().get(0).getKeyword());
@@ -849,8 +850,8 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("\u6743\u529b\u7684\u6e38\u620f \u7b2c\u516b\u5b63", "season-eight-user");
 
         assertTrue(reply.contains(completeSeries.getName()));
-        assertFalse(reply.contains(completeSeries.getUrl()));
-        assertFalse(reply.contains(singleEpisode.getUrl()));
+        assertTrue(reply.contains(completeSeries.getUrl()));
+        assertTrue(reply.contains(singleEpisode.getUrl()));
         verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
     }
 
@@ -876,7 +877,7 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("权力的游戏 第一季", "series-user");
 
         assertTrue(reply.contains(completeSeries.getName()));
-        assertFalse(reply.contains("https://pan.quark.cn/s/complete-series"));
+        assertTrue(reply.contains("https://pan.quark.cn/s/complete-series"));
         assertFalse(reply.contains("https://pan.quark.cn/s/unrelated-prequel"));
         verify(resourceDiscoveryService, org.mockito.Mockito.never()).enqueue(any());
     }

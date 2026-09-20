@@ -36,7 +36,7 @@ public class ResourceHubProperties {
     public static class Gying {
         private boolean discoveryEnabled = true;
         private boolean autoSyncEnabled = false;
-        private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME";
+        private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         private int autoSyncPage = 1;
         private int autoSyncMaxItems = 10;
         private int autoSyncIntervalHours = 24;

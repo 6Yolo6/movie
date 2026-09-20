@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Card, Tag, Typography, Descriptions, Button, Space, Switch, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
+import { Card, Tag, Typography, Descriptions, Button, Space, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
 import type { InputRef } from 'antd';
 import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
@@ -291,8 +291,18 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
 
     const p2pResources = useMemo(() => sortedResourceItems.filter(r => r.type !== 'DISK'), [sortedResourceItems]);
 
-    const handleCopy = (text: string) => {
+    const logResourceOperation = (item: ResourceLink, operationType: 'COPY' | 'SHARE') => {
+        fetch('/api/monitoring/resource-operation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ movieId: movie.id, resourceLinkId: item.id, provider: item.provider, operationType }),
+            keepalive: true,
+        }).catch(() => undefined);
+    };
+
+    const handleCopy = (text: string, item?: ResourceLink) => {
         navigator.clipboard.writeText(text);
+        if (item) logResourceOperation(item, 'COPY');
         message.success(t('copy') + " Success");
     };
 
@@ -451,6 +461,15 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         return <Tag color={color} className="m-0">{label}{item.reportCount ? ` ${item.reportCount}` : ''}</Tag>;
     };
 
+    const resourceDisplayName = (item: ResourceLink) => {
+        const name = item.name?.trim();
+        const generic = !name || ['Magnet Link', 'Torrent File'].includes(name);
+        if (!generic) return name;
+        const label = item.type === 'MAGNET' ? '磁力资源' : item.type === 'TORRENT' ? '种子资源' : t('resource');
+        const quality = item.quality ? ` [${item.quality}]` : '（分辨率未知）';
+        return `《${movie.titleCn || movie.titleEn || movie.id}》${label}${quality}`;
+    };
+
     // Render Resource Card
     const renderResourceCard = (item: ResourceLink, index: number) => (
         <Card key={index} size="small" className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-gray-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all shadow-sm">
@@ -462,7 +481,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         </Tag>
                         {renderLinkStatusTag(item)}
                         <Text className="text-gray-800 dark:text-gray-200 font-medium truncate text-base">
-                            {item.name || t('resource')}
+                            {resourceDisplayName(item)}
                         </Text>
                     </div>
                     <Space className="text-gray-500 dark:text-gray-400 text-xs truncate w-full pl-1" separator="|">
@@ -483,7 +502,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                     {item.versionNote && <Text type="secondary" className="text-xs pl-1">{item.versionNote}</Text>}
                 </div>
                 <Space>
-                    {user?.id === item.uploaderId && (
+                    {(user?.role === 'ADMIN' || user?.role === 'PUBLISHER') && user?.id === item.uploaderId && (
                         <Tooltip title={t('editResource')}>
                             <Button size="small" type="text" icon={<EditOutlined />} onClick={() => openEditResource(item)} />
                         </Tooltip>
@@ -500,9 +519,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         </Tooltip>
                     </Popconfirm>
                     <Tooltip title={t('copy')}>
-                        <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(item.url)} />
+                        <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => handleCopy(item.url, item)} />
                     </Tooltip>
-                    <Button type="primary" size="small" icon={<DownloadOutlined />} href={item.url} target="_blank" className="bg-blue-600">
+                    <Button type="primary" size="small" icon={<DownloadOutlined />} href={item.url} target="_blank" onClick={() => logResourceOperation(item, 'SHARE')} className="bg-blue-600">
                         {t('downloadResources')}
                     </Button>
                 </Space>
@@ -627,13 +646,6 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                         >
                                             {t('favorite')} {favoriteCount > 0 ? favoriteCount : ''}
                                         </Button>
-                                        <Switch
-                                            checkedChildren="中"
-                                            unCheckedChildren="En"
-                                            defaultChecked
-                                            onChange={(checked) => i18n.changeLanguage(checked ? 'cn' : 'en')}
-                                            className="bg-gray-300"
-                                        />
                                     </Space>
                                 </div>
 
@@ -758,7 +770,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                     <div className="w-1 h-6 bg-blue-500 rounded-full" />
                                     <Title level={3} className="!m-0">{t('downloadResources')}</Title>
                                     <Tag className="rounded-full bg-gray-100 dark:bg-zinc-800 border-0">{sortedResourceItems.length} {t('itemsCount')}</Tag>
-                                    {user && (
+                                    {(user?.role === 'ADMIN' || user?.role === 'PUBLISHER') && (
                                         <Button
                                             type="primary"
                                             icon={<CloudUploadOutlined />}

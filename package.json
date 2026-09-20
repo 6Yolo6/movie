@@ -1,0 +1,15 @@
+{
+  "name": "movie",
+  "version": "1.0.0",
+  "description": "Gying Movie 是一个面向电影、剧集、动漫的片库资源管理项目。用户可以浏览片库、筛选影片、收藏影片、提交网盘/磁力/种子/在线播放资源、评论留言求资源；管理员可以审核资源、处理失效举报、管理评论、用户和系统配置。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

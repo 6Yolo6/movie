@@ -196,7 +196,7 @@ public class ResourceLinkController {
     public ResponseEntity<?> submitResource(
             @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        AuthUser authUser = authHelper.requireUser(token);
+        AuthUser authUser = authHelper.requireResourcePublisher(token);
 
         if (dto.getMovieId() == null || dto.getMovieId().isBlank()
                 || dto.getUrl() == null || dto.getUrl().isBlank()) {
@@ -413,7 +413,7 @@ public class ResourceLinkController {
             @PathVariable Long id,
             @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        AuthUser authUser = authHelper.requireUser(token);
+        AuthUser authUser = authHelper.requireResourcePublisher(token);
         ResourceLink resource = resourceLinkService.getById(id);
         if (resource == null || "DELETED".equals(resource.getStatus())) {
             return ResponseEntity.status(404).body("Resource not found");
@@ -486,7 +486,7 @@ public class ResourceLinkController {
     public ResponseEntity<?> deleteOwnResource(
             @PathVariable Long id,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        AuthUser authUser = authHelper.requireUser(token);
+        AuthUser authUser = authHelper.requireResourcePublisher(token);
         ResourceLink resource = resourceLinkService.getById(id);
         if (resource == null || "DELETED".equals(resource.getStatus())) {
             return ResponseEntity.status(404).body("Resource not found");
@@ -551,6 +551,7 @@ public class ResourceLinkController {
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String movieId,
             @RequestParam(required = false) String provider,
+            @RequestParam(required = false) String type,
             @RequestParam(required = false) String linkStatus,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "false") boolean includeDeleted,
@@ -571,6 +572,13 @@ public class ResourceLinkController {
         }
         if (provider != null && !provider.isBlank()) {
             query.eq("provider", provider);
+        }
+        if (type != null && !type.isBlank()) {
+            String normalizedType = type.trim().toUpperCase(java.util.Locale.ROOT);
+            if (!Set.of("DISK", "MAGNET", "TORRENT", "ONLINE").contains(normalizedType)) {
+                return ResponseEntity.badRequest().body("Invalid resource type");
+            }
+            query.eq("type", normalizedType);
         }
         if (linkStatus != null && !linkStatus.isBlank()) {
             query.eq("link_status", linkStatus);

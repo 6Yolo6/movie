@@ -38,10 +38,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public Page<CommentDisplayDTO> getCommentsPaged(String relateId, int page, int size) {
+    public Page<CommentDisplayDTO> getCommentsPaged(String relateId, String type, int page, int size) {
         Page<Comment> commentPage = new Page<>(page, size);
         QueryWrapper<Comment> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("relate_id", relateId)
+                .eq(type != null && !type.isBlank(), "comment_type", type)
                 .eq("status", 1)
                 .eq("parent_id", 0L)
                 .orderByDesc("created_at");
@@ -56,6 +57,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 ? Collections.emptyList()
                 : this.list(new QueryWrapper<Comment>()
                         .eq("relate_id", relateId)
+                        .eq(type != null && !type.isBlank(), "comment_type", type)
                         .eq("status", 1)
                         .ne("parent_id", 0L)
                         .orderByAsc("created_at"));

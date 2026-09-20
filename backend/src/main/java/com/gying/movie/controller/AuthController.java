@@ -3,7 +3,12 @@ package com.gying.movie.controller;
 import com.gying.movie.dto.AuthRequest;
 import com.gying.movie.dto.AuthUser;
 import com.gying.movie.service.ISysUserService;
+import com.gying.movie.service.impl.EmailVerificationService;
+import com.gying.movie.service.impl.RegistrationService;
 import com.gying.movie.utils.AuthHelper;
+import com.gying.movie.utils.JwtUtils;
+import com.gying.movie.service.impl.LoginDeviceService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,55 +31,70 @@ public class AuthController {
     private final ISysUserService sysUserService;
     private final AuthHelper authHelper;
     private final StringRedisTemplate stringRedisTemplate;
+    private final RegistrationService registrationService;
+    private final EmailVerificationService emailVerificationService;
+    private final JwtUtils jwtUtils;
+    private final LoginDeviceService loginDeviceService;
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody AuthRequest request) {
+    public Map<String, Object> login(HttpServletRequest httpRequest, @RequestBody AuthRequest request) {
         if (request == null || request.getUsername() == null || request.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
-        String token = sysUserService.login(request.getUsername(), request.getPassword());
+        String token = sysUserService.login(request.getUsername(), request.getPassword(), getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
         result.put("message", "Login successful");
         return result;
     }
 
+    @GetMapping("/devices")
+    public Map<String, Object> devices(@RequestHeader(value = "Authorization", required = false) String authorization) {
+        AuthUser user = authHelper.requireUser(authorization);
+        Claims claims = jwtUtils.validateToken(authorization.substring(7));
+        return Map.of("devices", loginDeviceService.list(user.getId(), claims == null ? null : claims.getId()));
+    }
+
+    @DeleteMapping("/devices/{id}")
+    public Map<String, Object> revokeDevice(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String authorization) {
+        AuthUser user = authHelper.requireUser(authorization);
+        return Map.of("revoked", loginDeviceService.revoke(user.getId(), id));
+    }
+
+    @GetMapping("/registration-policy")
+    public Map<String, Object> registrationPolicy(@RequestParam(required = false) String invite) {
+        return registrationService.policy(invite);
+    }
+
+    @PostMapping("/email-code")
+    public Map<String, Object> sendEmailCode(HttpServletRequest request, @RequestBody Map<String, String> body) {
+        String email = body == null ? null : body.get("email");
+        String inviteCode = body == null ? null : body.get("inviteCode");
+        RegistrationService.normalizeEmail(email);
+        if (!Boolean.TRUE.equals(registrationService.policy(inviteCode).get("registrationAllowed"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration is invite-only");
+        }
+        try {
+            emailVerificationService.send(email, getClientIp(request));
+        } catch (IllegalStateException error) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
+        }
+        return Map.of("message", "Verification code sent");
+    }
+
     @PostMapping("/register")
-    public Map<String, Object> register(
-            HttpServletRequest request,
-            @RequestBody AuthRequest authRequest,
-            @RequestParam(required = false) String captchaId,
-            @RequestParam(required = false) String captchaCode) {
+    public Map<String, Object> register(HttpServletRequest request, @RequestBody AuthRequest authRequest) {
         if (authRequest == null || authRequest.getUsername() == null || authRequest.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
-
-        if (captchaId == null || captchaId.isBlank() || captchaCode == null || captchaCode.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Verification code is required");
-        }
-        String redisKey = "captcha:" + captchaId;
-        String storedCode = stringRedisTemplate.opsForValue().get(redisKey);
-        if (storedCode == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Captcha expired, please request a new one");
-        }
-        if (!storedCode.equalsIgnoreCase(captchaCode)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification code");
-        }
-        stringRedisTemplate.delete(redisKey);
-
         String rateKey = REGISTER_RATE_LIMIT_KEY + getClientIp(request);
         Long count = stringRedisTemplate.opsForValue().increment(rateKey);
-        if (count != null && count == 1) {
-            stringRedisTemplate.expire(rateKey, 1, TimeUnit.HOURS);
-        }
+        if (count != null && count == 1) stringRedisTemplate.expire(rateKey, 1, TimeUnit.HOURS);
         if (count != null && count > MAX_REGISTRATIONS_PER_HOUR) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Registration limit exceeded. Try again later.");
         }
-
-        sysUserService.register(authRequest.getUsername(), authRequest.getPassword());
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "Registration successful");
-        return result;
+        registrationService.register(authRequest.getUsername(), authRequest.getPassword(), authRequest.getEmail(), authRequest.getEmailCode(), authRequest.getInviteCode());
+        return Map.of("message", "Registration successful");
     }
 
     @PostMapping("/reset-password")

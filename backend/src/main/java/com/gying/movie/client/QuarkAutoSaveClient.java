@@ -46,6 +46,37 @@ public class QuarkAutoSaveClient {
         this.properties = properties;
     }
 
+    public void deletePath(String path) {
+        requireConfigured();
+        if (path == null || path.isBlank() || "/".equals(path.trim())) {
+            throw new IllegalArgumentException("Quark delete path is required");
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String url = UriComponentsBuilder.fromUriString(properties.getQuark().getBaseUrl())
+                .path("/delete_file")
+                .queryParam("token", properties.getQuark().getToken())
+                .toUriString();
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    url, new HttpEntity<>(Map.of("path", path.trim()), headers), String.class);
+            JsonNode body = objectMapper.readTree(response.getBody());
+            if (!body.path("success").asBoolean(false)) {
+                String message = body.path("message").asText("Quark temporary file deletion failed");
+                if (message.contains("未找到文件")) {
+                    return;
+                }
+                throw new IllegalStateException(message);
+            }
+        } catch (RestClientException error) {
+            throw new IllegalStateException("quark-auto-save delete request failed", error);
+        } catch (IllegalStateException error) {
+            throw error;
+        } catch (Exception error) {
+            throw new IllegalStateException("quark-auto-save delete response parse failed", error);
+        }
+    }
+
     public Map<String, Object> buildTaskPayload(String taskName, String shareUrl, String savePath) {
         return buildTaskPayload(taskName, shareUrl, savePath, null);
     }

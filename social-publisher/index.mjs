@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import mysql from 'mysql2/promise';
+import sharp from 'sharp';
 import { publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
 import { restoreWeiboSession, startWeiboLogin, weiboLoginStatus } from './weibo-sso-login.mjs';
 
@@ -298,19 +299,39 @@ async function loadPost(logId) {
   return rows[0];
 }
 
+function posterSourceUrl(posterUrl) {
+  const value = String(posterUrl || '').trim();
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) {
+    return value
+      .replace('://127.0.0.1:', '://host.docker.internal:')
+      .replace('://localhost:', '://host.docker.internal:');
+  }
+  const configured = String(process.env.SOCIAL_POSTER_BASE_URL || process.env.MINIO_URL_PREFIX || '').trim();
+  const base = /^https?:\/\//i.test(configured)
+    ? configured
+        .replace('://127.0.0.1:', '://host.docker.internal:')
+        .replace('://localhost:', '://host.docker.internal:')
+    : 'http://host.docker.internal:9000/gying/';
+  return `${base.replace(/\/$/, '')}/${value.replace(/^\//, '').replace(/^media\//, '')}`;
+}
+
 async function preparePoster(posterUrl) {
-  if (!posterUrl) return null;
-  const prefix = String(process.env.MINIO_URL_PREFIX || '').replace('host.docker.internal', 'host.docker.internal');
-  const url = /^https?:\/\//i.test(posterUrl)
-    ? posterUrl.replace('127.0.0.1', 'host.docker.internal')
-    : `${prefix.replace(/\/$/, '')}/${String(posterUrl).replace(/^\//, '')}`;
+  const url = posterSourceUrl(posterUrl);
   if (!url) return null;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error(`Poster download failed: HTTP ${response.status}`);
-  const contentType = response.headers.get('content-type') || '';
-  const extension = contentType.includes('png') ? '.png' : contentType.includes('webp') ? '.webp' : '.jpg';
-  const file = path.join(os.tmpdir(), `gying-social-${Date.now()}${extension}`);
-  await fs.writeFile(file, Buffer.from(await response.arrayBuffer()));
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (!bytes.length || bytes.length > 15 * 1024 * 1024) {
+    throw new Error(`Poster download returned invalid size: ${bytes.length}`);
+  }
+  const file = path.join(os.tmpdir(), `gying-social-${Date.now()}-${Math.random().toString(16).slice(2)}.jpg`);
+  await sharp(bytes, { failOn: 'error' })
+    .rotate()
+    .resize({ width: 1200, height: 1600, fit: 'inside', withoutEnlargement: true })
+    .flatten({ background: '#ffffff' })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toFile(file);
   return file;
 }
 
@@ -377,10 +398,9 @@ async function publish(logId) {
   let posterPath = null;
   try {
     if (row.platform === 'QQ_CHANNEL') {
-      try {
-        posterPath = await preparePoster(row.poster_url);
-      } catch {
-        posterPath = null;
+      posterPath = await preparePoster(row.poster_url);
+      if (row.poster_url && !posterPath) {
+        throw new Error('QQ channel poster preparation failed');
       }
     }
     const published = row.platform === 'QQ_CHANNEL'

@@ -47,7 +47,7 @@ export default function LoginPage() {
                     message.error('Failed to fetch user info');
                 }
             } else {
-                message.error(data.error || 'Login failed');
+                message.error(data.message || data.error || 'Login failed');
             }
         } catch {
             message.error('Network error');

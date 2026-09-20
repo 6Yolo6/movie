@@ -343,7 +343,12 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             return;
         }
         ResourceHubTask latestTask = latestGyingMetadataSyncTask(sources);
-        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(gying.getAutoSyncIntervalHours(), 1));
+        // The interval configured in the admin page applies to all selected GYING
+        // sources, including CSCORE_* sources.  Source rotation already limits
+        // each individual catalog to one run per selected-source cycle; do not
+        // silently replace the user's configured interval with a hard-coded 72h.
+        int intervalHours = Math.max(gying.getAutoSyncIntervalHours(), 1);
+        LocalDateTime since = LocalDateTime.now().minusHours(intervalHours);
         if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
             return;
         }
@@ -409,9 +414,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private List<String> gyingAutoSyncSources(String raw) {
         if (!hasText(raw)) {
-            return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+            return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
         }
-        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
         return List.of(raw.split(",")).stream()
                 .map(String::trim)
                 .filter(this::hasText)

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import Navbar from '../components/Navbar';
+import SiteTelemetry from '../components/SiteTelemetry';
 
 const RootLayout = ({ children }: React.PropsWithChildren) => (
   <html lang="zh-CN">
@@ -22,6 +23,7 @@ const RootLayout = ({ children }: React.PropsWithChildren) => (
               <AntdApp>
               <React.Suspense fallback={<div className="h-[64px] bg-[#141414] border-b border-[#1f1f1f]" />}>
                 <Navbar />
+                <SiteTelemetry />
               </React.Suspense>
               {children}
           </AntdApp>

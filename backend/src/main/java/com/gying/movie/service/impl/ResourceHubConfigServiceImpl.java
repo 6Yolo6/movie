@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.gying.movie.client.XunleiClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ResourceHubConfigRequest;
 import com.gying.movie.dto.ResourceHubConfigResponse;
@@ -54,6 +55,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private final ResourceHubProperties properties;
     private final ISysConfigService sysConfigService;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private XunleiClient xunleiClient;
 
     public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService) {
         this(properties, sysConfigService, new ObjectMapper());
@@ -140,118 +144,118 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
         if (request.getEnabled() != null) {
             properties.setEnabled(request.getEnabled());
-            upsert(KEY_ENABLED, Boolean.toString(request.getEnabled()), "Enable Resource Hub automation");
+            upsert(KEY_ENABLED, Boolean.toString(request.getEnabled()), "影视资源中心总开关");
         }
         if (request.getAutoApprove() != null) {
             properties.setAutoApprove(request.getAutoApprove());
-            upsert(KEY_AUTO_APPROVE, Boolean.toString(request.getAutoApprove()), "Auto approve Resource Hub resources");
+            upsert(KEY_AUTO_APPROVE, Boolean.toString(request.getAutoApprove()), "影视资源中心自动入库资源是否直接通过审核");
         }
         if (request.getTmdbAutoSyncEnabled() != null) {
             tmdb.setAutoSyncEnabled(request.getTmdbAutoSyncEnabled());
-            upsert(KEY_TMDB_AUTO_SYNC_ENABLED, Boolean.toString(request.getTmdbAutoSyncEnabled()), "Enable TMDB scheduled metadata sync");
+            upsert(KEY_TMDB_AUTO_SYNC_ENABLED, Boolean.toString(request.getTmdbAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据");
         }
         if (request.getTmdbAutoSyncSources() != null) {
             String value = normalizeSources(request.getTmdbAutoSyncSources());
             tmdb.setAutoSyncSources(value);
-            upsert(KEY_TMDB_AUTO_SYNC_SOURCES, value, "TMDB scheduled sync sources");
+            upsert(KEY_TMDB_AUTO_SYNC_SOURCES, value, "TMDB 自动同步的数据源类型列表");
         }
         if (request.getTmdbAutoSyncPage() != null) {
             int value = clamp(request.getTmdbAutoSyncPage(), 1, 20);
             tmdb.setAutoSyncPage(value);
-            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(value), "TMDB scheduled sync page");
+            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(value), "TMDB 自动同步读取的目录页码");
         }
         if (request.getTmdbAutoSyncMaxItems() != null) {
             int value = clamp(request.getTmdbAutoSyncMaxItems(), 1, 100);
             tmdb.setAutoSyncMaxItems(value);
-            upsert(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, Integer.toString(value), "TMDB scheduled sync item limit");
+            upsert(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, Integer.toString(value), "每轮 TMDB 自动同步最多处理的影片数");
         }
         if (request.getTmdbAutoSyncIntervalHours() != null) {
             int value = clamp(request.getTmdbAutoSyncIntervalHours(), 1, 720);
             tmdb.setAutoSyncIntervalHours(value);
-            upsert(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value), "TMDB scheduled sync interval in hours");
+            upsert(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value), "TMDB 自动同步任务之间的最小间隔（小时）");
         }
         if (request.getTmdbAutoDiscoveryEnabled() != null) {
             tmdb.setAutoDiscoveryEnabled(request.getTmdbAutoDiscoveryEnabled());
-            upsert(KEY_TMDB_AUTO_DISCOVERY_ENABLED, Boolean.toString(request.getTmdbAutoDiscoveryEnabled()), "Create discovery tasks after TMDB sync");
+            upsert(KEY_TMDB_AUTO_DISCOVERY_ENABLED, Boolean.toString(request.getTmdbAutoDiscoveryEnabled()), "TMDB 同步完成后是否自动创建资源发现任务");
         }
         if (request.getTmdbDiscoveryMaxResults() != null) {
             int value = clamp(request.getTmdbDiscoveryMaxResults(), 1, 50);
             tmdb.setDiscoveryMaxResults(value);
-            upsert(KEY_TMDB_DISCOVERY_MAX_RESULTS, Integer.toString(value), "PanSou discovery result limit");
+            upsert(KEY_TMDB_DISCOVERY_MAX_RESULTS, Integer.toString(value), "单次 PanSou 资源发现返回的最大候选数");
         }
         if (request.getTmdbDiscoveryCooldownHours() != null) {
             int value = clamp(request.getTmdbDiscoveryCooldownHours(), 1, 720);
             tmdb.setDiscoveryCooldownHours(value);
-            upsert(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, Integer.toString(value), "Discovery retry cooldown in hours");
+            upsert(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, Integer.toString(value), "同一影片再次自动发现资源前的冷却时间（小时）");
         }
         if (request.getGyingDiscoveryEnabled() != null) {
             gying.setDiscoveryEnabled(request.getGyingDiscoveryEnabled());
             upsert(KEY_GYING_DISCOVERY_ENABLED, Boolean.toString(request.getGyingDiscoveryEnabled()),
-                    "Prefer GYING before PanSou resource discovery");
+                    "自动发现资源时是否优先从 GYING 获取候选");
         }
         if (request.getGyingAutoSyncEnabled() != null) {
             gying.setAutoSyncEnabled(request.getGyingAutoSyncEnabled());
             upsert(KEY_GYING_AUTO_SYNC_ENABLED, Boolean.toString(request.getGyingAutoSyncEnabled()),
-                    "Enable scheduled GYING metadata collection");
+                    "是否按计划从 GYING 自动同步影片元数据");
         }
         if (request.getGyingAutoSyncSources() != null) {
             String value = normalizeGyingSources(request.getGyingAutoSyncSources());
             gying.setAutoSyncSources(value);
-            upsert(KEY_GYING_AUTO_SYNC_SOURCES, value, "GYING scheduled metadata sources");
+            upsert(KEY_GYING_AUTO_SYNC_SOURCES, value, "GYING 自动同步的数据源类型列表");
         }
         if (request.getGyingAutoSyncPage() != null) {
             int value = clamp(request.getGyingAutoSyncPage(), 1, 500);
             gying.setAutoSyncPage(value);
-            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(value), "GYING scheduled catalog page");
+            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(value), "GYING 自动同步读取的目录页码");
         }
         if (request.getGyingAutoSyncMaxItems() != null) {
             int value = clamp(request.getGyingAutoSyncMaxItems(), 1, 20);
             gying.setAutoSyncMaxItems(value);
-            upsert(KEY_GYING_AUTO_SYNC_MAX_ITEMS, Integer.toString(value), "GYING scheduled item limit");
+            upsert(KEY_GYING_AUTO_SYNC_MAX_ITEMS, Integer.toString(value), "每轮 GYING 自动同步最多处理的影片数");
         }
         if (request.getGyingAutoSyncIntervalHours() != null) {
             int value = clamp(request.getGyingAutoSyncIntervalHours(), 1, 720);
             gying.setAutoSyncIntervalHours(value);
             upsert(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value),
-                    "GYING source rotation interval in hours");
+                    "GYING 自动同步任务之间的最小间隔（小时）");
         }
         if (request.getWorkerEnabled() != null) {
             worker.setEnabled(request.getWorkerEnabled());
-            upsert(KEY_WORKER_ENABLED, Boolean.toString(request.getWorkerEnabled()), "Enable Resource Hub worker");
+            upsert(KEY_WORKER_ENABLED, Boolean.toString(request.getWorkerEnabled()), "是否启用影视资源中心后台 Worker");
         }
         if (request.getWorkerTaskLimit() != null) {
             int value = clamp(request.getWorkerTaskLimit(), 1, 20);
             worker.setTaskLimit(value);
-            upsert(KEY_WORKER_TASK_LIMIT, Integer.toString(value), "Tasks processed per worker run");
+            upsert(KEY_WORKER_TASK_LIMIT, Integer.toString(value), "Worker 每轮最多执行的资源发现任务数");
         }
         if (request.getWorkerQuarkLimit() != null) {
             int value = clamp(request.getWorkerQuarkLimit(), 1, 20);
             worker.setQuarkLimit(value);
-            upsert(KEY_WORKER_QUARK_LIMIT, Integer.toString(value), "Quark transfers submitted per worker run");
+            upsert(KEY_WORKER_QUARK_LIMIT, Integer.toString(value), "Worker 每轮最多提交的夸克转存任务数");
         }
         if (request.getWorkerPublishLimit() != null) {
             int value = clamp(request.getWorkerPublishLimit(), 1, 100);
             worker.setPublishLimit(value);
-            upsert(KEY_WORKER_PUBLISH_LIMIT, Integer.toString(value), "Discoveries published per worker run");
+            upsert(KEY_WORKER_PUBLISH_LIMIT, Integer.toString(value), "Worker 每轮最多发布到正式资源库的发现结果数");
         }
         if (request.getDiscoveredRetryEnabled() != null) {
             worker.setDiscoveredRetryEnabled(request.getDiscoveredRetryEnabled());
-            upsert(KEY_DISCOVERED_RETRY_ENABLED, Boolean.toString(request.getDiscoveredRetryEnabled()), "Enable discovered transfer retry");
+            upsert(KEY_DISCOVERED_RETRY_ENABLED, Boolean.toString(request.getDiscoveredRetryEnabled()), "是否启用已发现但未完成转存资源的定时重试");
         }
         if (request.getDiscoveredRetryLimit() != null) {
             int value = clamp(request.getDiscoveredRetryLimit(), 1, 100);
             worker.setDiscoveredRetryLimit(value);
-            upsert(KEY_DISCOVERED_RETRY_LIMIT, Integer.toString(value), "Discovered transfer retry limit");
+            upsert(KEY_DISCOVERED_RETRY_LIMIT, Integer.toString(value), "每轮定时重试最多处理的发现结果数");
         }
         if (request.getDiscoveredRetryDelayMs() != null) {
             long value = clamp(request.getDiscoveredRetryDelayMs(), 0L, 3600000L);
             worker.setDiscoveredRetryDelayMs(value);
-            upsert(KEY_DISCOVERED_RETRY_DELAY_MS, Long.toString(value), "Delay between discovered transfer retries in milliseconds");
+            upsert(KEY_DISCOVERED_RETRY_DELAY_MS, Long.toString(value), "批量重试每条资源之间的等待时间（毫秒）");
         }
         if (request.getDiscoveredRetryCron() != null && hasText(request.getDiscoveredRetryCron())) {
             String value = request.getDiscoveredRetryCron().trim();
             worker.setDiscoveredRetryCron(value);
-            upsert(KEY_DISCOVERED_RETRY_CRON, value, "Discovered transfer retry cron");
+            upsert(KEY_DISCOVERED_RETRY_CRON, value, "已发现资源定时重试的 Cron 表达式");
         }
 
         return fromProperties();
@@ -263,11 +267,20 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubConfigResponse response = new ResourceHubConfigResponse();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
-        response.setXunleiAuthorizationConfigured(xunlei != null && hasText(xunlei.getAuthorization()));
-        String expiresAt = xunleiAuthorizationExpiresAt(xunlei == null ? null : xunlei.getAuthorization());
+        XunleiClient.AuthorizationStatus tokenState = xunleiClient == null
+                ? null : xunleiClient.authorizationStatus();
+        boolean configured = tokenState != null
+                ? tokenState.configured()
+                : xunlei != null && hasText(xunlei.getAuthorization());
+        String expiresAt = tokenState != null && tokenState.expiresAt() > 0L
+                ? DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(tokenState.expiresAt()))
+                : xunleiAuthorizationExpiresAt(xunlei == null ? null : xunlei.getAuthorization());
+        boolean expired = tokenState != null
+                ? tokenState.expired()
+                : expiresAt != null && Instant.parse(expiresAt).isBefore(Instant.now());
+        response.setXunleiAuthorizationConfigured(configured);
         response.setXunleiAuthorizationExpiresAt(expiresAt);
-        response.setXunleiAuthorizationExpired(expiresAt != null
-                && Instant.parse(expiresAt).isBefore(Instant.now()));
+        response.setXunleiAuthorizationExpired(expired);
         response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
@@ -319,39 +332,39 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     private void ensureDefaults() {
         Map<String, String[]> defaults = new LinkedHashMap<>();
-        defaults.put(KEY_ENABLED, values(Boolean.toString(properties.isEnabled()), "Enable Resource Hub automation"));
-        defaults.put(KEY_AUTO_APPROVE, values(Boolean.toString(properties.isAutoApprove()), "Auto approve Resource Hub resources"));
-        defaults.put(KEY_TMDB_AUTO_SYNC_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoSyncEnabled()), "Enable TMDB scheduled metadata sync"));
-        defaults.put(KEY_TMDB_AUTO_SYNC_SOURCES, values(properties.getTmdb().getAutoSyncSources(), "TMDB scheduled sync sources"));
-        defaults.put(KEY_TMDB_AUTO_SYNC_PAGE, values(Integer.toString(properties.getTmdb().getAutoSyncPage()), "TMDB scheduled sync page"));
-        defaults.put(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, values(Integer.toString(properties.getTmdb().getAutoSyncMaxItems()), "TMDB scheduled sync item limit"));
-        defaults.put(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, values(Integer.toString(properties.getTmdb().getAutoSyncIntervalHours()), "TMDB scheduled sync interval in hours"));
-        defaults.put(KEY_TMDB_AUTO_DISCOVERY_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoDiscoveryEnabled()), "Create discovery tasks after TMDB sync"));
-        defaults.put(KEY_TMDB_DISCOVERY_MAX_RESULTS, values(Integer.toString(properties.getTmdb().getDiscoveryMaxResults()), "PanSou discovery result limit"));
-        defaults.put(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, values(Integer.toString(properties.getTmdb().getDiscoveryCooldownHours()), "Discovery retry cooldown in hours"));
+        defaults.put(KEY_ENABLED, values(Boolean.toString(properties.isEnabled()), "影视资源中心总开关"));
+        defaults.put(KEY_AUTO_APPROVE, values(Boolean.toString(properties.isAutoApprove()), "影视资源中心自动入库资源是否直接通过审核"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_SOURCES, values(properties.getTmdb().getAutoSyncSources(), "TMDB 自动同步的数据源类型列表"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_PAGE, values(Integer.toString(properties.getTmdb().getAutoSyncPage()), "TMDB 自动同步读取的目录页码"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, values(Integer.toString(properties.getTmdb().getAutoSyncMaxItems()), "每轮 TMDB 自动同步最多处理的影片数"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, values(Integer.toString(properties.getTmdb().getAutoSyncIntervalHours()), "TMDB 自动同步任务之间的最小间隔（小时）"));
+        defaults.put(KEY_TMDB_AUTO_DISCOVERY_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoDiscoveryEnabled()), "TMDB 同步完成后是否自动创建资源发现任务"));
+        defaults.put(KEY_TMDB_DISCOVERY_MAX_RESULTS, values(Integer.toString(properties.getTmdb().getDiscoveryMaxResults()), "单次 PanSou 资源发现返回的最大候选数"));
+        defaults.put(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, values(Integer.toString(properties.getTmdb().getDiscoveryCooldownHours()), "同一影片再次自动发现资源前的冷却时间（小时）"));
         defaults.put(KEY_GYING_DISCOVERY_ENABLED, values(
                 Boolean.toString(properties.getGying().isDiscoveryEnabled()),
-                "Prefer GYING before PanSou resource discovery"));
+                "自动发现资源时是否优先从 GYING 获取候选"));
         defaults.put(KEY_GYING_AUTO_SYNC_ENABLED, values(
                 Boolean.toString(properties.getGying().isAutoSyncEnabled()),
-                "Enable scheduled GYING metadata collection"));
+                "是否按计划从 GYING 自动同步影片元数据"));
         defaults.put(KEY_GYING_AUTO_SYNC_SOURCES, values(
-                properties.getGying().getAutoSyncSources(), "GYING scheduled metadata sources"));
+                properties.getGying().getAutoSyncSources(), "GYING 自动同步的数据源类型列表"));
         defaults.put(KEY_GYING_AUTO_SYNC_PAGE, values(
-                Integer.toString(properties.getGying().getAutoSyncPage()), "GYING scheduled catalog page"));
+                Integer.toString(properties.getGying().getAutoSyncPage()), "GYING 自动同步读取的目录页码"));
         defaults.put(KEY_GYING_AUTO_SYNC_MAX_ITEMS, values(
-                Integer.toString(properties.getGying().getAutoSyncMaxItems()), "GYING scheduled item limit"));
+                Integer.toString(properties.getGying().getAutoSyncMaxItems()), "每轮 GYING 自动同步最多处理的影片数"));
         defaults.put(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, values(
                 Integer.toString(properties.getGying().getAutoSyncIntervalHours()),
-                "GYING source rotation interval in hours"));
-        defaults.put(KEY_WORKER_ENABLED, values(Boolean.toString(properties.getWorker().isEnabled()), "Enable Resource Hub worker"));
-        defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Tasks processed per worker run"));
-        defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Quark transfers submitted per worker run"));
-        defaults.put(KEY_WORKER_PUBLISH_LIMIT, values(Integer.toString(properties.getWorker().getPublishLimit()), "Discoveries published per worker run"));
-        defaults.put(KEY_DISCOVERED_RETRY_ENABLED, values(Boolean.toString(properties.getWorker().isDiscoveredRetryEnabled()), "Enable discovered transfer retry"));
-        defaults.put(KEY_DISCOVERED_RETRY_LIMIT, values(Integer.toString(properties.getWorker().getDiscoveredRetryLimit()), "Discovered transfer retry limit"));
-        defaults.put(KEY_DISCOVERED_RETRY_DELAY_MS, values(Long.toString(properties.getWorker().getDiscoveredRetryDelayMs()), "Delay between discovered transfer retries in milliseconds"));
-        defaults.put(KEY_DISCOVERED_RETRY_CRON, values(properties.getWorker().getDiscoveredRetryCron(), "Discovered transfer retry cron"));
+                "GYING 自动同步任务之间的最小间隔（小时）"));
+        defaults.put(KEY_WORKER_ENABLED, values(Boolean.toString(properties.getWorker().isEnabled()), "是否启用影视资源中心后台 Worker"));
+        defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Worker 每轮最多执行的资源发现任务数"));
+        defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Worker 每轮最多提交的夸克转存任务数"));
+        defaults.put(KEY_WORKER_PUBLISH_LIMIT, values(Integer.toString(properties.getWorker().getPublishLimit()), "Worker 每轮最多发布到正式资源库的发现结果数"));
+        defaults.put(KEY_DISCOVERED_RETRY_ENABLED, values(Boolean.toString(properties.getWorker().isDiscoveredRetryEnabled()), "是否启用已发现但未完成转存资源的定时重试"));
+        defaults.put(KEY_DISCOVERED_RETRY_LIMIT, values(Integer.toString(properties.getWorker().getDiscoveredRetryLimit()), "每轮定时重试最多处理的发现结果数"));
+        defaults.put(KEY_DISCOVERED_RETRY_DELAY_MS, values(Long.toString(properties.getWorker().getDiscoveredRetryDelayMs()), "批量重试每条资源之间的等待时间（毫秒）"));
+        defaults.put(KEY_DISCOVERED_RETRY_CRON, values(properties.getWorker().getDiscoveredRetryCron(), "已发现资源定时重试的 Cron 表达式"));
         defaults.forEach((key, value) -> upsertMissing(key, value[0], value[1]));
     }
 
@@ -426,9 +439,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     private String normalizeGyingSources(String raw) {
         if (!hasText(raw)) {
-            return "HITS_MOVIE,HITS_TV,HITS_ANIME";
+            return "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         }
-        java.util.Set<String> supported = java.util.Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME");
+        java.util.Set<String> supported = java.util.Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
         String normalized = String.join(",", java.util.Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(this::hasText)
@@ -436,7 +449,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 .filter(supported::contains)
                 .distinct()
                 .toList());
-        return hasText(normalized) ? normalized : "HITS_MOVIE,HITS_TV,HITS_ANIME";
+        return hasText(normalized) ? normalized : "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
     }
 
     private int clamp(int value, int min, int max) {

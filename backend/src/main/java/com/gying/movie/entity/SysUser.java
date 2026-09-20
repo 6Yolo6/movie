@@ -18,5 +18,6 @@ public class SysUser {
     private String role;
     private Integer score;
     private Boolean enabled;
+    private Long invitedByUserId;
     private LocalDateTime createdAt;
 }

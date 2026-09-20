@@ -59,6 +59,7 @@ export default function ResourceManagementPage() {
     const [total, setTotal] = useState(0);
     const [statusFilter, setStatusFilter] = useState<number | undefined>();
     const [linkStatusFilter, setLinkStatusFilter] = useState<string | undefined>();
+    const [typeFilter, setTypeFilter] = useState<string | undefined>();
     const [keyword, setKeyword] = useState('');
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [resourceModalOpen, setResourceModalOpen] = useState(false);
@@ -77,6 +78,7 @@ export default function ResourceManagementPage() {
             const query = new URLSearchParams({ page: String(page), size: '20' });
             if (statusFilter !== undefined && statusFilter !== -1) query.set('status', String(statusFilter));
             if (linkStatusFilter) query.set('linkStatus', linkStatusFilter);
+            if (typeFilter) query.set('type', typeFilter);
             if (keyword) query.set('keyword', keyword);
             const res = await api(`/api/resources/admin/all?${query}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -93,7 +95,7 @@ export default function ResourceManagementPage() {
         } finally {
             setLoading(false);
         }
-    }, [keyword, linkStatusFilter, message, page, statusFilter, t, token]);
+    }, [keyword, linkStatusFilter, message, page, statusFilter, t, token, typeFilter]);
 
     useEffect(() => {
         if (!user) return;
@@ -438,6 +440,21 @@ export default function ResourceManagementPage() {
                             <Option value="NORMAL">{t('normal')}</Option>
                             <Option value="SUSPECTED_INVALID">{t('suspectedInvalid')}</Option>
                             <Option value="INVALID">{t('invalid')}</Option>
+                        </Select>
+                        <Select
+                            placeholder={t('filterByResourceType')}
+                            className="w-full sm:!w-[160px]"
+                            allowClear
+                            value={typeFilter}
+                            onChange={(value) => {
+                                setTypeFilter(value);
+                                setPage(1);
+                            }}
+                        >
+                            <Option value="DISK">{t('resourceTypeDisk')}</Option>
+                            <Option value="MAGNET">{t('resourceTypeMagnet')}</Option>
+                            <Option value="TORRENT">{t('resourceTypeTorrent')}</Option>
+                            <Option value="ONLINE">{t('resourceTypeOnline')}</Option>
                         </Select>
                         <Search
                             placeholder={t('searchResources')}

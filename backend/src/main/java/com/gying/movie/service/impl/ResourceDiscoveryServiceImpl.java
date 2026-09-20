@@ -291,6 +291,10 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     || !hasText(discovery.getOriginalUrl())) {
                 continue;
             }
+            ResourceHubTask originTask = discovery.getTaskId() == null ? null : taskService.getById(discovery.getTaskId());
+            if (originTask != null && "QQ_BOT".equalsIgnoreCase(originTask.getSource())) {
+                continue;
+            }
             String provider = hasText(discovery.getProvider()) ? discovery.getProvider().trim().toUpperCase() : "";
             if (!Set.of("QUARK", "XUNLEI").contains(provider)) {
                 continue;
@@ -345,7 +349,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         if ("GYING".equals(source)) {
             return gyingSourceWorkflowService.discoverResources(movie, payload.maxResults());
         }
-        if ("AUTO".equals(source) && resourceHubProperties.getGying().isDiscoveryEnabled()) {
+        if (("AUTO".equals(source) || "QQ_BOT".equals(source)) && resourceHubProperties.getGying().isDiscoveryEnabled()) {
             try {
                 List<DiscoveredResource> gyingResources = gyingSourceWorkflowService.discoverResources(
                         movie, payload.maxResults());
@@ -367,7 +371,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 // GYING is preferred, but a site outage must not block the PanSou fallback.
             }
         }
-        if ("AUTO".equals(source) || "PANSOU".equals(source)) {
+        if ("AUTO".equals(source) || "QQ_BOT".equals(source) || "PANSOU".equals(source)) {
             String keyword = resolveKeyword(payload, movie);
             List<DiscoveredResource> quark = panSouClient.searchQuark(keyword, payload.maxResults());
             List<DiscoveredResource> xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
@@ -521,7 +525,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         }
         String movieId = resolveMovieId(request);
         String source = hasText(request.getSource()) ? request.getSource().trim().toUpperCase() : "AUTO";
-        if (!Set.of("AUTO", "GYING", "PANSOU").contains(source)) {
+        if (!Set.of("AUTO", "QQ_BOT", "GYING", "PANSOU").contains(source)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
         }
         int maxResults = Math.min(Math.max(request.getMaxResults() == null

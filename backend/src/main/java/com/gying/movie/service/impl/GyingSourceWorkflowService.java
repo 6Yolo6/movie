@@ -209,17 +209,19 @@ public class GyingSourceWorkflowService {
     public Map<String, Object> syncCatalogMetadata(String source, int page, int limit) {
         String normalizedSource = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
         String typeCode = switch (normalizedSource) {
-            case "HITS_MOVIE" -> "mv";
-            case "HITS_TV" -> "tv";
-            case "HITS_ANIME" -> "ac";
+            case "HITS_MOVIE", "CSCORE_MOVIE" -> "mv";
+            case "HITS_TV", "CSCORE_TV" -> "tv";
+            case "HITS_ANIME", "CSCORE_ANIME" -> "ac";
             default -> throw new IllegalArgumentException("Unsupported GYING catalog source: " + source);
         };
+        String sort = normalizedSource.startsWith("CSCORE_") ? "cscore" : "hits";
         int safePage = Math.min(Math.max(page, 1), 500);
         int safeLimit = Math.min(Math.max(limit, 1), 20);
-        List<Map<String, Object>> candidates = fetchCatalogCandidates(typeCode, "hits", safePage, safeLimit);
+        List<Map<String, Object>> candidates = fetchCatalogCandidates(typeCode, sort, safePage, safeLimit);
         int inserted = 0;
         int linked = 0;
         int failed = 0;
+        int directResourceLinks = 0;
         Set<String> movieIds = new LinkedHashSet<>();
         Set<String> resourceDiscoveryMovieIds = new LinkedHashSet<>();
         Set<String> insertedMovieIds = new LinkedHashSet<>();
@@ -245,6 +247,14 @@ public class GyingSourceWorkflowService {
                     if (!hasActiveDiskResource(existing.getId())) {
                         resourceDiscoveryMovieIds.add(existing.getId());
                     }
+                    try {
+                        directResourceLinks += syncGyingDirectResources(
+                                existing.getId(), typeCode, mid);
+                    } catch (Exception resourceError) {
+                        if (errors.size() < 10) {
+                            errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
+                        }
+                    }
                     linked++;
                     continue;
                 }
@@ -258,6 +268,13 @@ public class GyingSourceWorkflowService {
                         "includeResources", false));
                 if (movieService.getById(targetMovieId) == null) {
                     throw new IllegalStateException("GYING metadata was not saved: " + targetMovieId);
+                }
+                try {
+                    directResourceLinks += syncGyingDirectResources(targetMovieId, typeCode, mid);
+                } catch (Exception resourceError) {
+                    if (errors.size() < 10) {
+                        errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
+                    }
                 }
                 movieIds.add(targetMovieId);
                 insertedMovieIds.add(targetMovieId);
@@ -280,9 +297,102 @@ public class GyingSourceWorkflowService {
         result.put("movieIds", List.copyOf(movieIds));
         result.put("insertedMovieIds", List.copyOf(insertedMovieIds));
         result.put("resourceDiscoveryMovieIds", List.copyOf(resourceDiscoveryMovieIds));
+        result.put("directResourceLinks", directResourceLinks);
         result.put("failed", failed);
         result.put("errors", errors);
         return result;
+    }
+
+    private int syncGyingDirectResources(String movieId, String typeCode, String mid) {
+        Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
+        int saved = 0;
+        for (Map<String, Object> item : mapList(payload.get("resources"))) {
+            String url = firstText(
+                    stringValue(item.get("url")),
+                    stringValue(item.get("magnet")),
+                    stringValue(item.get("magnet_url")),
+                    stringValue(item.get("torrent")),
+                    stringValue(item.get("torrent_url")),
+                    stringValue(item.get("download_url")));
+            String rawTitle = firstText(
+                    stringValue(item.get("title")),
+                    stringValue(item.get("name")),
+                    stringValue(item.get("filename")),
+                    stringValue(item.get("file_name")),
+                    stringValue(item.get("display_name")));
+            String type = firstText(stringValue(item.get("type")), "").toUpperCase(Locale.ROOT);
+            if (!hasText(type) && hasText(url)) {
+                type = url.toLowerCase(Locale.ROOT).startsWith("magnet:") ? "MAGNET"
+                        : url.toLowerCase(Locale.ROOT).contains(".torrent") ? "TORRENT" : "";
+            }
+            String provider = firstText(stringValue(item.get("provider")), "P2P").toUpperCase(Locale.ROOT);
+            if (!hasText(url) || !("MAGNET".equals(type) || "TORRENT".equals(type))
+                    || !"P2P".equals(provider)) {
+                continue;
+            }
+            String urlHash = ResourceHubHashUtils.sha256(url);
+            ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .eq("movie_id", movieId)
+                    .and(query -> query.eq("url_hash", urlHash).or().eq("url", url))
+                    .isNull("deleted_at")
+                    .last("LIMIT 1"), false);
+            LocalDateTime now = LocalDateTime.now();
+            if (link == null) {
+                link = new ResourceLink();
+                link.setMovieId(movieId);
+                link.setCreatedAt(now);
+            }
+            MovieMetadata movie = movieService.getById(movieId);
+            String movieTitle = movie == null ? movieId : firstText(movie.getTitleCn(), movie.getTitleEn(), movieId);
+            String quality = firstText(
+                    stringValue(item.get("quality")),
+                    stringValue(item.get("resolution")),
+                    extractQuality(rawTitle));
+            String displayTitle = rawTitle;
+            if (!hasText(displayTitle) || displayTitle.equalsIgnoreCase("Magnet Link")
+                    || displayTitle.equalsIgnoreCase("Torrent File")
+                    || displayTitle.toUpperCase(Locale.ROOT).startsWith("GYING BT ")) {
+                String label = "MAGNET".equals(type) ? "磁力资源" : "种子资源";
+                displayTitle = "《" + movieTitle + "》" + label;
+            }
+            if (hasText(quality) && !displayTitle.contains(quality)) {
+                displayTitle = displayTitle + " [" + quality + "]";
+            }
+            String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
+                    stringValue(item.get("source_id")), ""), 100);
+            if (hasText(sourceRef) && (displayTitle.equals("《" + movieTitle + "》磁力资源")
+                    || displayTitle.equals("《" + movieTitle + "》种子资源"))) {
+                displayTitle = displayTitle + " #" + sourceRef;
+            }
+            link.setName(trim(displayTitle, 255));
+            link.setQuality(trim(quality, 50));
+            link.setType(type);
+            link.setProvider("P2P");
+            link.setUrl(url);
+            link.setUrlHash(urlHash);
+            link.setCode(firstText(stringValue(item.get("code")), null));
+            link.setAuditStatus(1);
+            link.setStatus("ACTIVE");
+            link.setLinkStatus("NORMAL");
+            link.setReportCount(0);
+            link.setSource("GYING");
+            link.setSourceRef(trim(firstText(stringValue(item.get("source_ref")),
+                    stringValue(item.get("source_id")), ""), 100));
+            link.setSourceUrl(firstText(stringValue(item.get("source_url")),
+                    "https://www.xn--wcv59z.com/" + typeCode + "/" + mid));
+            link.setAutoCollected(true);
+            link.setValidatedAt(now);
+            link.setLastCheckError(null);
+            link.setUpdatedAt(now);
+            link.setDeletedAt(null);
+            if (link.getId() == null) {
+                resourceLinkService.save(link);
+            } else {
+                resourceLinkService.updateById(link);
+            }
+            saved++;
+        }
+        return saved;
     }
 
     private boolean hasActiveDiskResource(String movieId) {
@@ -297,7 +407,7 @@ public class GyingSourceWorkflowService {
 
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
         String safeType = normalizeTypeCode(typeCode);
-        String safeSort = Set.of("score", "time", "hits").contains(sort) ? sort : "score";
+        String safeSort = Set.of("score", "time", "hits", "cscore").contains(sort) ? sort : "score";
         int safePage = Math.min(Math.max(page, 1), 500);
         int safeLimit = Math.min(Math.max(limit, 1), 60);
         List<Map<String, Object>> items = fetchCatalogCandidates(
