@@ -9,6 +9,21 @@
 # ============================================================
 
 server:
+  forward-headers-strategy: none
+  max-http-request-header-size: 16KB
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  tomcat:
+    max-http-form-post-size: 1MB
+    max-swallow-size: 1MB
+    connection-timeout: 10s
+    threads:
+      max: 80
+      min-spare: 8
+    max-connections: 512
+    accept-count: 64
   port: 8880
   # Graceful shutdown for zero-downtime deployments
   shutdown: graceful
@@ -18,6 +33,7 @@ spring:
     import:
       - optional:file:.env[.properties]
       - optional:file:../.env[.properties]
+      - optional:configtree:/run/secrets/
   application:
     name: gying-movie
   servlet:
@@ -45,18 +61,23 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD}
       timeout: 5000ms
 
 minio:
   endpoint: ${MINIO_ENDPOINT:host.docker.internal:9000}
-  access-key: ${MINIO_ACCESS_KEY:admin}
-  secret-key: ${MINIO_SECRET_KEY:miniopassword}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
   bucket: ${MINIO_BUCKET:gying}
   secure: ${MINIO_SECURE:false}
   url-prefix: ${MINIO_URL_PREFIX}
 
 app:
+  security:
+    # Empty = ignore ALL forwarded client-IP headers. Configure only the audited nginx network/peer.
+    trusted-proxies: ${APP_TRUSTED_PROXIES:}
+    api-per-minute: ${API_RATE_LIMIT_PER_MINUTE:120}
+    global-per-minute: ${API_GLOBAL_RATE_LIMIT_PER_MINUTE:1200}
   internal-token: ${APP_INTERNAL_TOKEN}
   public-base-url: ${APP_PUBLIC_BASE_URL:${CORS_ALLOWED_ORIGIN}}
   cors:
@@ -185,9 +206,8 @@ logging:
   level:
     root: WARN
     com.gying.movie: INFO
-  file:
-    name: /app/logs/gying-movie.log
   logback:
     rollingpolicy:
       max-file-size: 10MB
       max-history: 7
+

@@ -25,6 +25,7 @@ import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.QqOfficialBotClient;
 import com.gying.movie.config.QqBotProperties;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.security.RedisRateLimiter;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.QuarkTransferRunResult;
@@ -78,7 +79,7 @@ class QqBotServiceImplTest {
     @BeforeEach
     void setUp() {
         qqBotProperties = new QqBotProperties();
-        qqBotProperties.setRateLimitPerMinute(0);
+        qqBotProperties.setRateLimitPerMinute(1000);
         resourceHubProperties = new ResourceHubProperties();
         movieService = mock(IMovieMetadataService.class);
         resourceLinkService = mock(IResourceLinkService.class);
@@ -93,6 +94,8 @@ class QqBotServiceImplTest {
         gyingSourceWorkflowService = mock(GyingSourceWorkflowService.class);
         panSouClient = mock(PanSouClient.class);
         napCatClient = mock(NapCatClient.class);
+        RedisRateLimiter rateLimiter = mock(RedisRateLimiter.class);
+        when(rateLimiter.retryAfterMillis(anyString(), anyString(), anyInt(), any())).thenReturn(0L);
         service = new QqBotServiceImpl(
                 qqBotProperties,
                 resourceHubProperties,
@@ -111,7 +114,9 @@ class QqBotServiceImplTest {
                 resourceHubPublishService,
                 tmdbMetadataSyncService,
                 mock(IQqBotSearchLogService.class),
-                gyingSourceWorkflowService);
+                gyingSourceWorkflowService,
+                null,
+                rateLimiter);
         when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of());
     }
 
@@ -932,7 +937,7 @@ class QqBotServiceImplTest {
     }
 
     @Test
-    void returnsAtMostTenResourceChoicesWithQuarkPreferred() {
+    void showsTenResourceChoicesPerPageAndSupportsPagination() {
         resourceHubProperties.setEnabled(true);
         MovieMetadata movie = movie("ten_choices", "十条候选测试", 2026);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
@@ -959,6 +964,11 @@ class QqBotServiceImplTest {
         assertTrue(reply.contains("迅雷候选 3"));
         assertFalse(reply.contains("夸克候选 8"));
         assertFalse(reply.contains("迅雷候选 4"));
+
+        String nextPage = service.buildSearchReply("下一页", "ten-choice-user");
+        assertTrue(nextPage.contains("当前第 2/2 页"));
+        assertTrue(nextPage.contains("夸克候选 8"));
+        assertTrue(nextPage.contains("迅雷候选 4"));
     }
 
     private MovieSearchCandidate candidate(Long tmdbId, String title, int year, int score) {

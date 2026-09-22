@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
     [string]$ComposeProject = 'gying-movie',
     [string]$NodePath = 'D:\nvm\nodejs\node.exe',
@@ -27,7 +27,17 @@ if (-not (Test-Path -LiteralPath $edgePath)) { throw 'Microsoft Edge is not inst
 if (-not (Test-Path -LiteralPath $NodePath)) { throw 'Node.js executable not found' }
 if (-not (Test-Path -LiteralPath $DockerPath)) { throw 'Docker executable not found' }
 
-$container = (& $DockerPath compose -p $ComposeProject -f $composeFile ps -q backend).Trim()
+# Discover the live backend by Compose labels first. This avoids evaluating the
+# entire Compose file (and unrelated required environment variables) during a
+# scheduled token refresh.
+$containerLines = @(& $DockerPath ps --filter "label=com.docker.compose.project=$ComposeProject" --filter "label=com.docker.compose.service=backend" --format '{{.ID}}')
+$container = ($containerLines | Where-Object { $_ -and $_.Trim() } | Select-Object -First 1)
+if ($container) { $container = $container.Trim() }
+if (-not $container) {
+    $composeLines = @(& $DockerPath compose -p $ComposeProject -f $composeFile ps -q backend)
+    $container = ($composeLines | Where-Object { $_ -and $_.Trim() } | Select-Object -First 1)
+    if ($container) { $container = $container.Trim() }
+}
 if (-not $container) { throw 'GYing backend container is not running' }
 
 New-Item -ItemType Directory -Force -Path $helperRoot | Out-Null
@@ -39,7 +49,7 @@ if (Test-Path -LiteralPath $localState) {
 $sourceProfile = Join-Path $liveProfileRoot $liveProfileName
 $targetProfile = Join-Path $profileRoot $profileName
 New-Item -ItemType Directory -Force -Path $targetProfile | Out-Null
-$copyDirs = @('Local Storage','Session Storage','IndexedDB','Network','Extension State')
+$copyDirs = @('Local Storage','Session Storage','IndexedDB','Network')
 $copyFiles = @('Preferences','Secure Preferences','Web Data','Login Data','Login Data For Account')
 foreach ($dir in $copyDirs) {
     $src = Join-Path $sourceProfile $dir

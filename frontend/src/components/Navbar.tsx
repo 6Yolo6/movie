@@ -161,6 +161,7 @@ export default function Navbar() {
         { href: '/?category=tv', label: t('tvShows'), icon: <DesktopOutlined /> },
         { href: '/?category=ac', label: t('anime'), icon: <VideoCameraOutlined /> },
         { href: '/hot', label: t('hot'), icon: <FireOutlined /> },
+        ...(user ? [{ href: '/resource-search', label: '搜索资源', icon: <CloudDownloadOutlined /> }] : []),
         { href: '/messages', label: t('messageBoard'), icon: <MessageOutlined /> },
     ];
 

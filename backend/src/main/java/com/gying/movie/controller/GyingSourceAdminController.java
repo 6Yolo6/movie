@@ -80,6 +80,53 @@ public class GyingSourceAdminController {
                 "uploadPoster", !Boolean.FALSE.equals(request.get("uploadPoster")))));
     }
 
+    @PostMapping("/metadata/ensure")
+    public ResponseEntity<?> ensureMetadata(
+            @RequestBody Map<String, Object> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        String defaultType = text(request.get("typeCode"));
+        if (defaultType == null || !Set.of("mv", "tv", "ac").contains(defaultType)) {
+            return ResponseEntity.badRequest().body("typeCode must be mv, tv or ac");
+        }
+        List<String> rawIds = new ArrayList<>();
+        Object mids = request.get("mids");
+        if (mids instanceof List<?> values) {
+            values.forEach(value -> {
+                String item = text(value);
+                if (item != null) rawIds.add(item);
+            });
+        } else {
+            String value = text(mids);
+            if (value != null) {
+                for (String item : value.split("[\\s,，;；]+")) {
+                    if (!item.isBlank()) rawIds.add(item.trim());
+                }
+            }
+        }
+        if (rawIds.isEmpty()) {
+            return ResponseEntity.badRequest().body("At least one GYING movie id is required");
+        }
+        List<Map<String, String>> requests = new ArrayList<>();
+        for (String rawId : rawIds) {
+            String typeCode = defaultType;
+            String mid = rawId;
+            int slash = rawId.indexOf('/');
+            if (slash > 0 && slash < rawId.length() - 1) {
+                typeCode = rawId.substring(0, slash).trim().toLowerCase();
+                mid = rawId.substring(slash + 1).trim();
+            }
+            if (!Set.of("mv", "tv", "ac").contains(typeCode) || mid.isBlank()) {
+                return ResponseEntity.badRequest().body("Invalid GYING movie id: " + rawId);
+            }
+            requests.add(Map.of("typeCode", typeCode, "mid", mid));
+            if (requests.size() >= 60) break;
+        }
+        return ResponseEntity.ok(startJob(
+                "METADATA_ONLY_BY_IDS",
+                () -> workflowService.ensureMovieMetadataByIds(requests)));
+    }
+
     @PostMapping("/resources/{resourceId}/publish")
     public ResponseEntity<?> publish(
             @PathVariable Long resourceId,

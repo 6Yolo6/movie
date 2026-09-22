@@ -145,6 +145,8 @@ export default function GyingSourcePage() {
     const [accountLoading, setAccountLoading] = useState(false);
     const [selectedRecentKeys, setSelectedRecentKeys] = useState<Key[]>([]);
     const [healthSourceIds, setHealthSourceIds] = useState('');
+    const [metadataType, setMetadataType] = useState('mv');
+    const [metadataIds, setMetadataIds] = useState('');
 
     const renderResultValue = (value: unknown) => {
         if (Array.isArray(value)) {
@@ -283,6 +285,21 @@ export default function GyingSourcePage() {
         } finally {
             setRunning('');
         }
+    };
+
+    const ensureMetadataByIds = () => {
+        const mids = Array.from(new Set(
+            metadataIds.split(/[\s,，;；]+/).map((value) => value.trim()).filter(Boolean),
+        )).slice(0, 60);
+        if (!mids.length) {
+            message.warning(t('gyingSourceMetadataIdsRequired'));
+            return;
+        }
+        return startJob(
+            'metadata-only-by-ids',
+            '/api/admin/gying-source/metadata/ensure',
+            { body: JSON.stringify({ typeCode: metadataType, mids }) },
+        );
     };
 
     const ensureMovie = (candidate: Pick<Candidate, 'typeCode' | 'mid'>) => startJob(
@@ -614,6 +631,50 @@ export default function GyingSourcePage() {
         </div>
     );
 
+    const metadataTab = (
+        <div className="max-w-3xl">
+            <Alert
+                className="mb-5"
+                type="info"
+                showIcon
+                message={t('gyingSourceMetadataTitle')}
+                description={t('gyingSourceMetadataDescription')}
+            />
+            <Space direction="vertical" size="middle" className="w-full">
+                <Space wrap>
+                    <Select
+                        value={metadataType}
+                        style={{ width: 130 }}
+                        options={[
+                            { value: 'mv', label: t('movies') },
+                            { value: 'tv', label: t('tvShows') },
+                            { value: 'ac', label: t('anime') },
+                        ]}
+                        onChange={setMetadataType}
+                    />
+                    <Button
+                        type="primary"
+                        icon={<DatabaseOutlined />}
+                        loading={running === 'metadata-only-by-ids'}
+                        disabled={Boolean(running && running !== 'metadata-only-by-ids')}
+                        onClick={ensureMetadataByIds}
+                    >
+                        {t('gyingSourceMetadataSyncAction')}
+                    </Button>
+                </Space>
+                <Input.TextArea
+                    value={metadataIds}
+                    onChange={(event) => setMetadataIds(event.target.value)}
+                    rows={6}
+                    maxLength={4000}
+                    showCount
+                    placeholder={t('gyingSourceMetadataIdsPlaceholder')}
+                />
+                <Typography.Text type="secondary">{t('gyingSourceMetadataLimit')}</Typography.Text>
+            </Space>
+        </div>
+    );
+
     const trailerTab = (
         <div>
             <Space className="mb-5" wrap>
@@ -774,6 +835,7 @@ export default function GyingSourcePage() {
                         items={[
                             { key: 'recent', label: t('gyingSourceRecentTab'), children: recentTab },
                             { key: 'catalog', label: t('gyingSourceCatalogTab'), children: catalogTab },
+                            { key: 'metadata', label: t('gyingSourceMetadataTab'), children: metadataTab },
                             { key: 'trailers', label: t('gyingSourceTrailerTab'), children: trailerTab },
                             { key: 'health', label: t('gyingSourceHealthTab'), children: healthTab },
                             { key: 'account', label: t('gyingSourceAccountTab'), children: accountTab },

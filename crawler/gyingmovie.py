@@ -12,8 +12,8 @@ OUTPUT_FILE = "影视资源库_救星小窝_扁平版.xlsx"
 TARGET_USER = "救星小窝"
 
 # ⚠️ 你的 Cookie (必填! 否则无法获取数据)
-# 请定期更新这个字符串
-COOKIE_STR = "***"
+# 只从受保护的运行环境注入，不在代码中保存 Cookie
+COOKIE_STR = os.environ["GYING_COOKIE"]
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

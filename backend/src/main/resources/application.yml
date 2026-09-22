@@ -1,4 +1,19 @@
 server:
+  forward-headers-strategy: none
+  max-http-request-header-size: 16KB
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  tomcat:
+    max-http-form-post-size: 1MB
+    max-swallow-size: 1MB
+    connection-timeout: 10s
+    threads:
+      max: 80
+      min-spare: 8
+    max-connections: 512
+    accept-count: 64
   port: ${SERVER_PORT:8880}
 
 spring:
@@ -6,6 +21,7 @@ spring:
     import:
       - optional:file:.env[.properties]
       - optional:file:../.env[.properties]
+      - optional:configtree:/run/secrets/
   application:
     name: gying-movie
   servlet:
@@ -16,24 +32,29 @@ spring:
     time-zone: Asia/Shanghai
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/gying?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:Root@123}
+    username: ${DB_USER:${DB_USERNAME:gying_app}}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD}
 
 minio:
   endpoint: ${MINIO_ENDPOINT:localhost:9000}
-  access-key: ${MINIO_ACCESS_KEY:admin}
-  secret-key: ${MINIO_SECRET_KEY:miniopassword}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
   bucket: ${MINIO_BUCKET:gying}
   secure: ${MINIO_SECURE:false}
   url-prefix: ${MINIO_URL_PREFIX:http://localhost:9000/gying/}
 
 app:
+  security:
+    # Empty = ignore ALL forwarded client-IP headers. Configure only the audited nginx network/peer.
+    trusted-proxies: ${APP_TRUSTED_PROXIES:}
+    api-per-minute: ${API_RATE_LIMIT_PER_MINUTE:120}
+    global-per-minute: ${API_GLOBAL_RATE_LIMIT_PER_MINUTE:1200}
   internal-token: ${APP_INTERNAL_TOKEN:}
   public-base-url: ${APP_PUBLIC_BASE_URL:${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}}
   cors:
@@ -146,7 +167,7 @@ qq-bot:
     token-url: ${QQ_BOT_QQBOT_TOKEN_URL:https://bots.qq.com/app/getAppAccessToken}
 
 jwt:
-  secret: ${JWT_SECRET:gying-movie-dev-secret-change-me-please-32-bytes}
+  secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 mybatis-plus:

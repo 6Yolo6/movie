@@ -1,0 +1,23 @@
+# Never send credentials, local state, Git history, or build outputs to Docker.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+**/*cookie*.json
+**/*credentials*.json
+**/*auth-profile*.json
+**/*.pem
+**/*.key
+.git
+node_modules
+.next
+target
+.venv
+.venv-codex
+__pycache__
+*.log
+*.sql.gz
+data
+migration-data
+backups

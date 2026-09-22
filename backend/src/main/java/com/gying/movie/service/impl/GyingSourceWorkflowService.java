@@ -648,6 +648,37 @@ public class GyingSourceWorkflowService {
         return items;
     }
 
+    public Map<String, Object> ensureMovieMetadataByIds(List<Map<String, String>> requests) {
+        if (requests == null || requests.isEmpty()) {
+            throw new IllegalArgumentException("At least one GYING movie id is required");
+        }
+        List<Map<String, Object>> items = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        int succeeded = 0;
+        int failed = 0;
+        for (Map<String, String> request : requests) {
+            String typeCode = normalizeTypeCode(stringValue(request == null ? null : request.get("typeCode")));
+            String mid = required(stringValue(request == null ? null : request.get("mid")), "GYING movie id");
+            String key = siteKey(typeCode, mid);
+            if (!seen.add(key)) {
+                continue;
+            }
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("typeCode", typeCode);
+            item.put("mid", mid);
+            try {
+                item.putAll(ensureMovieMetadata(typeCode, mid));
+                succeeded++;
+            } catch (Exception error) {
+                item.put("status", "FAILED");
+                item.put("error", safeText(error.getMessage()));
+                failed++;
+            }
+            items.add(item);
+        }
+        return Map.of("requested", seen.size(), "succeeded", succeeded, "failed", failed, "items", items);
+    }
+
     public Map<String, Object> ensureMovieMetadata(String typeCode, String mid) {
         GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, false);
         Map<String, Object> result = movieMetadataResult(ingested);

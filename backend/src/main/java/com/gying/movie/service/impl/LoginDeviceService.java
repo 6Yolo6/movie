@@ -42,7 +42,7 @@ public class LoginDeviceService {
 
     public void touch(Long userId, String jti) {
         if (userId == null || jti == null || jti.isBlank()) return;
-        jdbc.update("UPDATE login_device SET last_seen_at=CURRENT_TIMESTAMP WHERE user_id=? AND jti=? AND revoked_at IS NULL", userId, jti);
+        jdbc.update("UPDATE login_device SET last_seen_at=CURRENT_TIMESTAMP WHERE user_id=? AND jti=? AND revoked_at IS NULL AND last_seen_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE)", userId, jti);
     }
 
     public List<Map<String, Object>> list(Long userId, String currentJti) {
@@ -60,6 +60,10 @@ public class LoginDeviceService {
                     device.put("current", currentJti != null && currentJti.equals(row.get("jti")));
                     return device;
                 }).toList();
+    }
+
+    public void revokeAll(Long userId) {
+        jdbc.update("UPDATE login_device SET revoked_at=CURRENT_TIMESTAMP WHERE user_id=? AND revoked_at IS NULL", userId);
     }
 
     public boolean revoke(Long userId, Long id) {

@@ -45,7 +45,8 @@ public class XunleiClient {
     private static final String CORE_LOGIN_URL = "https://xluser-ssl.xunlei.com/xluser.core.login/v3/login";
     private static final String PACKAGE_NAME = "pan.xunlei.com";
     private static final String ANDROID_CLIENT_ID = "Xp6vsxz_7IYVw2BB";
-    private static final String ANDROID_CLIENT_SECRET = "Xp6vsy4tN9toTVdMSpomVdXpRmES";
+    // Optional Android-client authentication uses XUNLEI_CLIENT_SECRET; never a bundled credential.
+    private static final String ANDROID_CLIENT_SECRET = "";
     private static final String ANDROID_CLIENT_VERSION = "8.31.0.9726";
     private static final String ANDROID_PACKAGE_NAME = "com.xunlei.downloadprovider";
     private static final String ANDROID_USER_AGENT = "ANDROID-com.xunlei.downloadprovider/8.31.0.9726 "

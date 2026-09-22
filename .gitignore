@@ -47,3 +47,21 @@ data/
 
 # Local agent permissions
 .claude/
+
+# Security: local secrets, database dumps, and credential exports
+.env.*
+!.env.example
+!**/.env.example
+secrets/
+backups/
+*.sql.gz
+*.dump
+*.age
+*.p12
+*.pfx
+*.pem
+*.key
+quark_config.json
+*cookie*.json
+*credentials*.json
+xunlei-auth*.json

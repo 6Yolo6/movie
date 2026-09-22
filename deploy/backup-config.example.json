@@ -1,0 +1,23 @@
+{
+  "output_root": "E:/gying-backups",
+  "age_recipient_file": "E:/gying-secrets/backup-recipient.txt",
+  "mysql_defaults_file": "E:/gying-secrets/mysql-backup.cnf",
+  "mysqldump": "C:/Program Files/MySQL/MySQL Server 8.0/bin/mysqldump.exe",
+  "database": "gying",
+  "age": "age",
+  "tar_image": "busybox:1.37",
+  "paths": [
+    {"name": "environment", "path": "D:/gying-movie/movie/.env"},
+    {"name": "cloudflared", "path": "E:/gying-tools/cloudflared"},
+    {"name": "minio-data", "path": "E:/gying-data/minio-data"},
+    {"name": "minio-config", "path": "E:/gying-data/minio-config"}
+  ],
+  "docker_volumes": [
+    {"name": "backend-data", "volume": "gying-movie_backend-data"},
+    {"name": "quark-config", "volume": "gying-movie_quark-auto-save-data"},
+    {"name": "social-qq", "volume": "gying-movie_social-publisher-qq-accounts"},
+    {"name": "social-weibo", "volume": "gying-movie_social-publisher-weibo"},
+    {"name": "openclaw-home", "volume": "openclaw_openclaw_home"},
+    {"name": "openclaw-state", "volume": "openclaw_openclaw_state"}
+  ]
+}

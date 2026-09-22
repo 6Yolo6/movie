@@ -1,0 +1,30 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::gying"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::gying/mv/*",
+        "arn:aws:s3:::gying/tv/*",
+        "arn:aws:s3:::gying/ac/*",
+        "arn:aws:s3:::gying/tmdb/*",
+        "arn:aws:s3:::gying/manual/*"
+      ]
+    }
+  ]
+}

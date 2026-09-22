@@ -1,11 +1,13 @@
+import os
 import pymysql
 import bcrypt
+from getpass import getpass
 
 # 数据库配置
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASS = "`````"
-DB_NAME = "gying"
+DB_HOST = os.environ.get("GYING_DB_HOST", "127.0.0.1")
+DB_USER = os.environ["GYING_DB_USER"]
+DB_PASS = os.environ["GYING_DB_PASSWORD"]
+DB_NAME = os.environ.get("GYING_DB_NAME", "gying")
 
 def reset_admin_password(username, new_password):
     try:
@@ -27,11 +29,12 @@ def reset_admin_password(username, new_password):
         # 更新密码
         update_sql = "UPDATE sys_user SET password = %s WHERE username = %s"
         cursor.execute(update_sql, (password_str, username))
+        cursor.execute("UPDATE login_device SET revoked_at=NOW() WHERE user_id IN (SELECT id FROM sys_user WHERE username=%s) AND revoked_at IS NULL", (username,))
         conn.commit()
         
         if cursor.rowcount > 0:
             print(f"✅ 成功重置用户 '{username}' 的密码")
-            print(f"新密码: {new_password}")
+
         else:
             print(f"❌ 用户 '{username}' 不存在")
         
@@ -44,13 +47,10 @@ def reset_admin_password(username, new_password):
 if __name__ == "__main__":
     print("=== 管理员密码重置工具 ===\n")
     
-    # 重置admin账号密码为 admin123
-    username = "admin"
-    new_password = "admin123"
-    
-    confirm = input(f"确定要重置 '{username}' 的密码为 '{new_password}' 吗？(y/n): ")
-    
-    if confirm.lower() == 'y':
+    username = input("Username: ").strip()
+    new_password = getpass("New password (not displayed): ")
+    if len(new_password) < 12 or len(new_password.encode("utf-8")) > 72:
+        raise SystemExit("Password must contain at least 12 characters and at most 72 UTF-8 bytes")
+    confirm = input("Reset this account password? (y/n): ")
+    if confirm.lower() == "y":
         reset_admin_password(username, new_password)
-    else:
-        print("操作已取消")

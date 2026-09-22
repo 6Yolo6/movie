@@ -194,7 +194,7 @@ public class ResourceLinkController {
 
     @PostMapping
     public ResponseEntity<?> submitResource(
-            @RequestBody ResourceSubmissionDTO dto,
+            @jakarta.validation.Valid @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
         AuthUser authUser = authHelper.requireResourcePublisher(token);
 
@@ -286,7 +286,7 @@ public class ResourceLinkController {
 
     @PostMapping("/admin")
     public ResponseEntity<?> createAdminResource(
-            @RequestBody ResourceSubmissionDTO dto,
+            @jakarta.validation.Valid @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
         AuthUser admin = authHelper.requireAdmin(token);
         if (dto == null || dto.getMovieId() == null || dto.getMovieId().isBlank()
@@ -411,7 +411,7 @@ public class ResourceLinkController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateOwnResource(
             @PathVariable Long id,
-            @RequestBody ResourceSubmissionDTO dto,
+            @jakarta.validation.Valid @RequestBody ResourceSubmissionDTO dto,
             @RequestHeader(value = "Authorization", required = false) String token) {
         AuthUser authUser = authHelper.requireResourcePublisher(token);
         ResourceLink resource = resourceLinkService.getById(id);
@@ -509,7 +509,7 @@ public class ResourceLinkController {
             @RequestParam(required = false) String reason,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        if (status != 1 && status != 2) {
+        if (status == null || (status != 1 && status != 2)) {
             return ResponseEntity.badRequest().body("Status must be 1 (approve) or 2 (reject)");
         }
         ResourceLink resource = resourceLinkService.getById(id);
@@ -529,9 +529,12 @@ public class ResourceLinkController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         List<Long> ids = toLongIds(request.get("ids"));
-        Integer status = (Integer) request.get("status");
+        if (ids.isEmpty() || ids.size() > 100) {
+            return ResponseEntity.badRequest().body("Select between 1 and 100 resources");
+        }
+        Integer status = request.get("status") instanceof Integer value ? value : null;
         String reason = cleanOptional((String) request.get("reason"), 255);
-        if (status != 1 && status != 2) {
+        if (status == null || (status != 1 && status != 2)) {
             return ResponseEntity.badRequest().body("Status must be 1 (approve) or 2 (reject)");
         }
         for (Long id : ids) {

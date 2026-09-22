@@ -29,6 +29,9 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 - 保留工作树中的无关改动。操作前后都检查 `git status --short`。
 - 始终显式使用 `docker-compose.prod.yml`；本仓库没有默认的 `docker-compose.yml`。
 - 通过真实入口或真实依赖链验证操作结果，不能只依赖命令退出码。
+- 进行生产安全审计或加固时，必须先阅读 `references/security-hardening.md` 和根目录 `docker-security-report.md`；严格区分代码/目标配置与在线生产事实。
+- 安全变更不得把数据库、Redis、MinIO、Docker socket、管理后台或内部机器人加入公网 Tunnel；部署前必须完成专用 DB/MinIO 身份、Windows 防火墙、Cloudflare Access 和加密备份/恢复门禁。
+- 安全扫描只输出路径、行号、键名、状态和摘要，不打印或复制密码、Cookie、JWT、API key、Authorization、Tunnel credentials 或完整 `docker inspect`。
 
 ## 标准流程
 
@@ -81,6 +84,7 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 - 多 QQ 账号、微博网页会话、发布目标、凭据卷和审计日志：阅读
   [多平台发布运维](references/social-publishing-operations.md)。
 - 事故排查顺序和已知故障特征：阅读 [故障排查](references/troubleshooting.md)。
+- 安全架构、风险登记、Docker/Cloudflare/数据库/密钥/备份/事故响应和上线门禁：阅读 [安全审计与加固](references/security-hardening.md)，并按 `docs/security/` 下的对应文档执行。
 
 只加载当前任务需要的参考资料；更新状态文件前必须加载
 `status-maintenance.md` 状态维护文档。
@@ -93,6 +97,10 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 & .agents/skills/gying-project-ops/scripts/collect-ops-snapshot.ps1
 & .agents/skills/gying-project-ops/scripts/test-ops-readiness.ps1
 & .agents/skills/gying-project-ops/scripts/export-current-migration.ps1 -RepoRoot (git rev-parse --show-toplevel)
+
+python -X utf8 tools/security/scan_secrets.py
+python -X utf8 tools/security/check_security.py --repo . --probe
+python -X utf8 tools/security/test_nginx.py
 ```
 
 在仓库外调用时传入 `-RepoRoot`。只有本机预期承载这些服务时才给快照脚本增加

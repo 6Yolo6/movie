@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { authenticated, validateConfiguration } from './security.mjs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -9,14 +10,15 @@ import { publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
 import { restoreWeiboSession, startWeiboLogin, weiboLoginStatus } from './weibo-sso-login.mjs';
 
 const port = Number(process.env.SOCIAL_PUBLISHER_PORT || 8093);
-const internalToken = process.env.SOCIAL_PUBLISHER_TOKEN || process.env.APP_INTERNAL_TOKEN || '';
+validateConfiguration(process.env);
+const internalToken = process.env.SOCIAL_PUBLISHER_TOKEN;
 const qqAccountsRoot = path.resolve(process.env.QQ_CHANNEL_ACCOUNTS_ROOT || '/data/qq-accounts');
 const qqAccountKeyPattern = /^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/;
 const qqLoginAttempts = new Map();
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'host.docker.internal',
   port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER,
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'gying',
   charset: 'utf8mb4',
@@ -448,10 +450,10 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', 'http://social-publisher');
     if (req.method === 'GET' && url.pathname === '/health') {
-      writeJson(res, 200, await health());
+      writeJson(res, 200, authenticated(internalToken, req.headers['x-internal-token']) ? await health() : { ok: true });
       return;
     }
-    if (req.headers['x-internal-token'] !== internalToken) {
+    if (!authenticated(internalToken, req.headers['x-internal-token'])) {
       writeJson(res, 401, { error: 'Unauthorized' });
       return;
     }
@@ -490,10 +492,14 @@ const server = http.createServer(async (req, res) => {
     }
     writeJson(res, 404, { error: 'Not found' });
   } catch (error) {
-    writeJson(res, 502, { error: compact(error.message) });
+    console.error('security_event=upstream_error', error?.constructor?.name || 'Error');
+    writeJson(res, 502, { error: 'Upstream request failed' });
   }
 });
 
+server.requestTimeout = 15_000;
+server.headersTimeout = 10_000;
+server.maxHeadersCount = 64;
 server.listen(port, '0.0.0.0', () => {
   void restoreWeiboSession();
   console.log(`social publisher listening on ${port}`);

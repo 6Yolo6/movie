@@ -1,6 +1,7 @@
 import requests
 import re
 import hashlib
+import hmac
 import json
 import time
 import os
@@ -17,13 +18,14 @@ from urllib.parse import parse_qs, urlparse, urljoin
 # ================= Configuration =================
 # MySQL Configuration
 DB_HOST = os.getenv("GYING_DB_HOST", "localhost")
-DB_USER = os.getenv("GYING_DB_USER", "root")
+DB_USER = os.getenv("GYING_DB_USER", "gying_app")
+DB_PORT = int(os.getenv("GYING_DB_PORT", "3306"))
 DB_PASS = os.getenv("GYING_DB_PASSWORD", "")
 DB_NAME = os.getenv("GYING_DB_NAME", "gying")
 
 # MinIO Configuration (Update these credentials)
 MINIO_ENDPOINT = os.getenv("GYING_MINIO_ENDPOINT", "localhost:9000")
-MINIO_ACCESS_KEY = os.getenv("GYING_MINIO_ACCESS_KEY", "admin")
+MINIO_ACCESS_KEY = os.getenv("GYING_MINIO_ACCESS_KEY", "")
 MINIO_SECRET_KEY = os.getenv("GYING_MINIO_SECRET_KEY", "")
 MINIO_BUCKET = os.getenv("GYING_MINIO_BUCKET", "gying")
 
@@ -61,7 +63,7 @@ IMAGE_SIZES = tuple(value.strip() for value in os.getenv("GYING_IMAGE_SIZES", "3
 # ================= Services =================
 
 def get_db_connection():
-    return pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME, cursorclass=pymysql.cursors.DictCursor)
+    return pymysql.connect(host=DB_HOST, port=DB_PORT, user=DB_USER, password=DB_PASS, database=DB_NAME, connect_timeout=5, read_timeout=30, write_timeout=30, cursorclass=pymysql.cursors.DictCursor)
 
 def get_minio_client():
     return Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
@@ -215,15 +217,68 @@ def list_get(values, index, default=""):
     value = values[index]
     return default if value is None else value
 
+def text_value(value, default=""):
+    """Return a bounded scalar string for values coming from loosely-typed GYING JSON."""
+    if value is None:
+        return default
+    if isinstance(value, (list, tuple)):
+        # Parallel-array responses must be indexed by the caller. Never stringify
+        # the complete array into a resource name.
+        return default
+    if isinstance(value, dict):
+        return default
+    text = str(value).strip()
+    return text or default
+
+def bounded_text(value, max_length, default=""):
+    text = text_value(value, default)
+    return text[:max_length] if len(text) > max_length else text
+
 def detect_provider(raw):
     raw = raw or ""
     if "百度" in raw: return "BAIDU"
     if "迅雷" in raw: return "XUNLEI"
     if "夸克" in raw: return "QUARK"
     if "阿里" in raw: return "ALIYUN"
-    if "UC" in raw: return "UC"
+    if "UC" in raw.upper(): return "UC"
     if "磁" in raw or "BT" in raw.upper(): return "P2P"
     return "OTHER"
+
+
+def detect_provider_from_url(url, fallback="OTHER"):
+    """Prefer the share URL host over unreliable parallel type arrays."""
+    value = html_lib.unescape(str(url or "")).strip().lower()
+    if value.startswith("magnet:") or is_torrent_url(value):
+        return "P2P"
+    try:
+        host = (urlparse(value).hostname or "").lower()
+    except ValueError:
+        host = ""
+    if host == "pan.quark.cn" or host.endswith(".pan.quark.cn"):
+        return "QUARK"
+    if host == "pan.xunlei.com" or host.endswith(".pan.xunlei.com"):
+        return "XUNLEI"
+    if host in ("pan.baidu.com", "yun.baidu.com") or host.endswith(".pan.baidu.com"):
+        return "BAIDU"
+    if host in ("www.alipan.com", "www.aliyundrive.com") or host.endswith(".alipan.com"):
+        return "ALIYUN"
+    if host == "drive.uc.cn" or host.endswith(".drive.uc.cn"):
+        return "UC"
+    return fallback or "OTHER"
+
+
+def should_ingest_resource(resource):
+    """Only ingest owned cloud shares; public P2P links remain eligible."""
+    if not isinstance(resource, dict):
+        return False
+    url = str(resource.get("url") or "").strip()
+    provider = detect_provider_from_url(
+        url, resource.get("provider") or detect_provider(resource.get("tname", "")))
+    link_type = resource.get("type") or detect_resource_type(url, provider)
+    if link_type in ("MAGNET", "TORRENT") or provider == "P2P":
+        return True
+    return bool(resource.get("is_own"))
+
 
 def detect_resource_type(url, provider):
     lower_url = (url or "").lower()
@@ -715,7 +770,7 @@ def normalize_download_item(item):
         url = item.strip()
         if not url:
             return None
-        provider = detect_provider("磁力" if url.lower().startswith("magnet:") else "")
+        provider = detect_provider_from_url(url, detect_provider("磁力" if url.lower().startswith("magnet:") else ""))
         link_type = detect_resource_type(url, provider)
         return {
             "title": "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url,
@@ -736,10 +791,15 @@ def normalize_download_item(item):
         return None
 
     provider_raw = item.get("tname") or item.get("type_name") or item.get("provider") or item.get("type") or ""
-    provider = detect_provider(str(provider_raw))
+    provider = detect_provider_from_url(url, detect_provider(str(provider_raw)))
     link_type = detect_resource_type(url, provider)
-    name = item.get("name") or item.get("title") or ("Magnet Link" if link_type in ("MAGNET", "TORRENT") else url)
+    name = bounded_text(
+        item.get("name") or item.get("title"),
+        255,
+        "Magnet Link" if link_type == "MAGNET" else "Torrent File" if link_type == "TORRENT" else url,
+    )
 
+    uploader = text_value(item.get("user") or item.get("uploader") or item.get("username"))
     return {
         "source_id": str(item.get("source_id") or item.get("sourceId") or item.get("id") or "").strip(),
         "source_ref": str(item.get("source_ref") or item.get("sourceRef") or "").strip(),
@@ -750,26 +810,40 @@ def normalize_download_item(item):
         "provider": provider,
         "type": link_type,
         "tname": str(provider_raw),
+        "uploader": uploader,
     }
 
 def normalize_download_section(section, target_user=None):
     if isinstance(section, list):
-        normalized = [normalize_download_item(item) for item in section]
-        return [item for item in normalized if item]
+        resources = []
+        for raw in section:
+            item = normalize_download_item(raw)
+            if not item:
+                continue
+            uploader = item.get("uploader") or ""
+            if target_user and uploader and uploader != target_user:
+                continue
+            item["is_own"] = bool(target_user and uploader == target_user)
+            resources.append(item)
+        return resources
 
     if not isinstance(section, dict):
         return []
 
-    # Some GYING responses expose P2P links directly as magnet/torrent arrays
-    # rather than using the parallel name/url/type arrays used by panlist.
+    # Some GYING responses expose P2P links directly as magnet/torrent arrays.
+    # Do not treat a normal parallel `url` array as a direct scalar value: doing
+    # so used to stringify the whole title array and caused MySQL name overflow.
     direct = []
-    for key in ("magnet", "magnet_url", "torrent", "torrent_url", "download_url", "link", "url"):
+    direct_keys = ("magnet", "magnet_url", "torrent", "torrent_url", "download_url")
+    for key in direct_keys:
         value = section.get(key)
         values = value if isinstance(value, list) else [value] if isinstance(value, str) else []
-        for raw in values:
+        raw_names = section.get("title") or section.get("name")
+        for index, raw in enumerate(values):
+            label = list_get(raw_names, index, "") if isinstance(raw_names, list) else raw_names
             item = normalize_download_item({
                 "url": raw,
-                "title": section.get("title") or section.get("name") or "",
+                "title": label,
                 "provider": "P2P",
                 "type": "MAGNET" if str(raw).lower().startswith("magnet:") else "TORRENT",
             })
@@ -786,41 +860,56 @@ def normalize_download_section(section, target_user=None):
     type_indexes = section.get("type", [])
     type_names = section.get("tname", [])
 
-    iterable_fields = (names, urls, passwords, users, type_indexes)
-    count = max((len(v) for v in iterable_fields if isinstance(v, list)), default=0)
+    # Parallel download payloads may occasionally expose a scalar URL alongside
+    # list-valued metadata. A scalar URL is exactly one resource; iterating by
+    # the longest metadata array previously duplicated that URL and stringified
+    # the whole title list into every resource name.
+    parallel_fields = (names, urls, passwords, users, ids, type_indexes)
+    list_fields = [value for value in parallel_fields if isinstance(value, list)]
+    count = max((len(value) for value in list_fields), default=0)
+    if isinstance(urls, str):
+        count = 1
+    elif not isinstance(urls, list):
+        count = 0
     resources = []
 
     for i in range(count):
-        uploader = list_get(users, i)
-        if target_user and uploader != target_user:
+        uploader = list_get(users, i) if isinstance(users, list) else text_value(users)
+        # Only filter by owner when the API actually identifies the uploader.
+        # P2P sections commonly omit it and must remain available.
+        if target_user and uploader and uploader != target_user:
             continue
 
-        url = str(list_get(urls, i)).strip()
+        url_value = list_get(urls, i) if isinstance(urls, list) else urls if i == 0 else ""
+        url = str(url_value or "").strip()
         if not url or url in ("#", "暂无"):
             continue
 
-        type_index = list_get(type_indexes, i)
+        type_index = list_get(type_indexes, i) if isinstance(type_indexes, list) else type_indexes
         provider_raw = ""
-        if isinstance(type_index, int):
+        if isinstance(type_index, int) and isinstance(type_names, list):
             provider_raw = list_get(type_names, type_index)
-        elif isinstance(type_index, str) and type_index.isdigit():
+        elif isinstance(type_index, str) and type_index.isdigit() and isinstance(type_names, list):
             provider_raw = list_get(type_names, int(type_index))
         if not provider_raw:
-            provider_raw = list_get(type_names, i) or str(type_index or "")
+            provider_raw = (list_get(type_names, i) if isinstance(type_names, list) else text_value(type_names))                            or str(type_index or "")
 
-        provider = detect_provider(provider_raw)
+        provider = detect_provider_from_url(url, detect_provider(provider_raw))
         link_type = detect_resource_type(url, provider)
-        name = str(list_get(names, i)).strip()
-        if not name:
-            name = "Magnet Link" if link_type in ("MAGNET", "TORRENT") else url
+        raw_name = list_get(names, i) if isinstance(names, list) else names
+        name = bounded_text(
+            raw_name,
+            255,
+            "Magnet Link" if link_type == "MAGNET" else "Torrent File" if link_type == "TORRENT" else url,
+        )
 
         resources.append({
-            "source_id": str(list_get(ids, i)).strip(),
-            "source_ref": str(list_get(ids, i)).strip(),
+            "source_id": str(list_get(ids, i) if isinstance(ids, list) else ids or "").strip(),
+            "source_ref": str(list_get(ids, i) if isinstance(ids, list) else ids or "").strip(),
             "source_url": f"{BASE_URL}/bt/{bt_detail_id(url)}" if bt_detail_id(url) else "",
             "title": name,
             "url": url,
-            "code": extract_share_code(url, list_get(passwords, i)),
+            "code": extract_share_code(url, list_get(passwords, i) if isinstance(passwords, list) else passwords),
             "provider": provider,
             "type": link_type,
             "tname": provider_raw,
@@ -878,17 +967,19 @@ def normalize_content_list_resources(resources):
         if not r_url:
             continue
 
-        provider = detect_provider(res.get("tname", ""))
+        provider = detect_provider_from_url(r_url, detect_provider(res.get("tname", "")))
         normalized.append({
             "source_id": str(res.get("source_id") or res.get("id") or "").strip(),
             "source_ref": str(res.get("source_ref") or res.get("source_id") or "").strip(),
             "source_url": str(res.get("source_url") or res.get("sourceUrl") or "").strip(),
-            "title": str(res.get("title", "")).strip(),
+            "title": bounded_text(res.get("title"), 255, r_url),
             "url": r_url,
             "code": extract_share_code(r_url, res.get("code", "")),
             "provider": provider,
             "type": detect_resource_type(r_url, provider),
             "tname": res.get("tname", ""),
+            "uploader": TARGET_USER,
+            "is_own": True,
         })
     return normalized
 
@@ -1413,9 +1504,10 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
             cursor.execute(sql_movie, values)
         for resource in resources:
             resource_url = (resource.get("url") or "").strip()
-            if not resource_url:
+            if not resource_url or not should_ingest_resource(resource):
                 continue
-            provider = resource.get("provider") or detect_provider(resource.get("tname", ""))
+            provider = detect_provider_from_url(
+                resource_url, resource.get("provider") or detect_provider(resource.get("tname", "")))
             link_type = resource.get("type") or detect_resource_type(resource_url, provider)
             source_id = resource.get("source_id") or None
             with db.cursor() as cursor:
@@ -1435,7 +1527,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
                         WHERE id=%s
                         """,
                         (
-                            resource.get("title"),
+                            bounded_text(resource.get("title"), 255, resource_url),
                             link_type,
                             provider,
                             resource.get("code") or "",
@@ -1460,7 +1552,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
                         """,
                         (
                             movie_id,
-                            resource.get("title"),
+                            bounded_text(resource.get("title"), 255, resource_url),
                             link_type,
                             provider,
                             resource_url,
@@ -1514,11 +1606,33 @@ def mark_resource_published(db, resource_id, source_id, type_code, mid):
         )
     db.commit()
 
+class BoundedThreadingHTTPServer(ThreadingHTTPServer):
+    daemon_threads = True
+    request_queue_size = 32
+    _slots = threading.BoundedSemaphore(32)
+
+    def process_request(self, request, client_address):
+        if not self._slots.acquire(blocking=False):
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self._slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._slots.release()
+
+
 class GyingSourceApiHandler(BaseHTTPRequestHandler):
     server_version = "GyingSource/1.0"
 
     def log_message(self, fmt, *args):
-        print("[gying-source] " + fmt % args)
+        print("[gying-source] event=http_response method=" + self.command)
 
     def send_json(self, status, payload):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -1529,24 +1643,45 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def authorized(self):
-        return not API_TOKEN or self.headers.get("X-Internal-Token") == API_TOKEN
+        supplied = self.headers.get("X-Internal-Token", "")
+        return bool(API_TOKEN) and hmac.compare_digest(API_TOKEN.encode(), supplied.encode())
+
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(10)
 
     def read_json(self):
+        limit = 1024 * 1024
         if self.headers.get("Transfer-Encoding", "").lower() == "chunked":
-            chunks = []
+            chunks, total = [], 0
             while True:
-                size_line = self.rfile.readline().strip()
-                size = int(size_line.split(b";", 1)[0], 16)
+                line = self.rfile.readline(128)
+                if not line.endswith(b"\r\n"):
+                    raise ValueError("Invalid chunk header")
+                size = int(line.strip().split(b";", 1)[0], 16)
+                if size < 0 or total + size > limit:
+                    raise ValueError("Request body too large")
                 if size == 0:
-                    self.rfile.readline()
+                    if self.rfile.readline(8192) != b"\r\n":
+                        raise ValueError("Trailers are not supported")
                     break
-                chunks.append(self.rfile.read(size))
-                self.rfile.read(2)
+                data = self.rfile.read(size)
+                if len(data) != size or self.rfile.read(2) != b"\r\n":
+                    raise ValueError("Invalid chunk")
+                chunks.append(data)
+                total += size
             raw = b"".join(chunks)
         else:
             length = int(self.headers.get("Content-Length", "0"))
+            if length < 0 or length > limit:
+                raise ValueError("Request body too large")
             raw = self.rfile.read(length) if length else b""
-        return json.loads(raw.decode("utf-8")) if raw else {}
+            if len(raw) != length:
+                raise ValueError("Incomplete body")
+        payload = json.loads(raw.decode("utf-8")) if raw else {}
+        if not isinstance(payload, dict):
+            raise ValueError("JSON object required")
+        return payload
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -1618,9 +1753,10 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             self.send_json(404, {"error": "Not found"})
         except ValueError as error:
-            self.send_json(400, {"error": f"Invalid request: {error}"})
+            self.send_json(400, {"error": "Invalid request parameters"})
         except Exception as error:
-            self.send_json(502, {"error": str(error)})
+            print("[gying-source] event=upstream_error type=" + type(error).__name__)
+            self.send_json(502, {"error": "Upstream request failed"})
 
     def do_POST(self):
         if not self.authorized():
@@ -1692,9 +1828,10 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             self.send_json(200, result)
         except (KeyError, ValueError) as error:
-            self.send_json(400, {"error": f"Invalid request: {error}"})
+            self.send_json(400, {"error": "Invalid request parameters"})
         except Exception as error:
-            self.send_json(502, {"error": str(error)})
+            print("[gying-source] event=upstream_error type=" + type(error).__name__)
+            self.send_json(502, {"error": "Upstream request failed"})
 
 def crawl_user_content(db):
     page = 1
@@ -1716,14 +1853,14 @@ def crawl_user_content(db):
             )
             if resp.status_code != 200:
                 print(f"❌ Request failed: HTTP {resp.status_code}")
-                print(f"   Response preview: {resp.text[:250]!r}")
+                print("Upstream response body omitted for security")
                 break
 
             try:
                 data = resp.json()
             except ValueError as e:
                 print(f"❌ JSON decode failed: {e}")
-                print(f"   Response preview: {resp.text[:500]!r}")
+                print("Upstream response body omitted for security")
                 break
             
             # Validation
@@ -1835,14 +1972,18 @@ def crawl_user_content(db):
                     # Insert resources from the new downurl endpoint. Fall back to content_list if needed.
                     resources_to_save = fetch_download_resources(type_code, mid, resources)
                     for res in resources_to_save:
-                        provider = res.get("provider") or detect_provider(res.get("tname", ""))
                         r_url = (res.get("url") or "").strip()
-                        if not r_url:
+                        if not r_url or not should_ingest_resource(res):
                             continue
-
+                        provider = detect_provider_from_url(
+                            r_url, res.get("provider") or detect_provider(res.get("tname", "")))
                         link_type = res.get("type") or detect_resource_type(r_url, provider)
                         r_code = res.get("code") or extract_share_code(r_url)
-                        r_name = res.get("title") or ("Magnet Link" if link_type == "MAGNET" else "Torrent File" if link_type == "TORRENT" else r_url)
+                        r_name = bounded_text(
+                            res.get("title"),
+                            255,
+                            "Magnet Link" if link_type == "MAGNET" else "Torrent File" if link_type == "TORRENT" else r_url,
+                        )
                         r_source_ref = str(res.get("source_ref") or res.get("source_id") or "").strip() or None
                         r_source_url = str(res.get("source_url") or f"{BASE_URL}/{type_code}/{mid}").strip()
                         r_url_hash = hashlib.sha256(r_url.encode("utf-8")).hexdigest()
@@ -1931,7 +2072,11 @@ def main():
     args = build_cli().parse_args()
     command = args.command or "crawl-user"
     if command == "serve":
-        server = ThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
+        if len(API_TOKEN.encode()) < 32:
+            raise SystemExit("GYING_SOURCE_API_TOKEN must contain at least 32 bytes")
+        if DB_USER.strip().lower() == "root" or not DB_PASS:
+            raise SystemExit("Configure non-root GYING_DB_USER and GYING_DB_PASSWORD")
+        server = BoundedThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
         print(f"Gying source API listening on {args.host}:{args.port}")
         server.serve_forever()
         return

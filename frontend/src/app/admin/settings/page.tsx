@@ -57,7 +57,7 @@ const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
     'resource.hub.worker.discovered_retry_delay_ms': '批量重试每条资源之间的等待时间（毫秒）。',
     'resource.hub.worker.discovered_retry_limit': '每轮定时重试最多处理的发现结果数。',
     'qq.bot.min_keyword_length': 'QQ群机器人接受的最短搜索关键词字数。',
-    'qq.bot.rate_limit_per_minute': '每个群成员每分钟最多可发起的搜索次数；0 表示不限制。',
+    'qq.bot.rate_limit_per_minute': '每个群成员每分钟最多可发起的搜索次数；至少为 1。',
     'qq.bot.max_results': 'QQ群机器人单次回复展示的资源候选数量。',
     'qq.bot.blocked_keywords': 'QQ群机器人拒绝搜索的关键词，支持逗号、分号或换行分隔。',
     'qq.bot.transfer_cleanup.enabled': '是否自动清理QQ群用户搜索后临时转存的网盘文件；不影响正式资源库。',
@@ -103,9 +103,11 @@ interface ConfigItem {
     configValue: string;
     description?: string;
     updatedAt?: string;
+    sensitive?: boolean;
 }
 
 const isBooleanValue = (value: string) => value === 'true' || value === 'false';
+const isSensitiveConfig = (config: ConfigItem) => config.sensitive === true || config.configValue === '[REDACTED]';
 
 const isNumericConfig = (config: ConfigItem) => {
     if (!/^-?\d+(\.\d+)?$/.test(config.configValue)) return false;
@@ -188,6 +190,10 @@ export default function SystemSettingsPage() {
     };
 
     const updateConfig = async (config: ConfigItem) => {
+        if (isSensitiveConfig(config)) {
+            message.warning('敏感配置只能通过受保护的环境变量或 Docker Secret 管理。');
+            return;
+        }
         const value = draftValues[config.configKey] ?? '';
         setSaving(config.configKey);
         try {
@@ -217,6 +223,13 @@ export default function SystemSettingsPage() {
 
     const renderEditor = (config: ConfigItem) => {
         const value = draftValues[config.configKey] ?? '';
+        if (isSensitiveConfig(config)) {
+            return (
+                <Text type="secondary">
+                    由受保护的环境变量或 Docker Secret 管理，不在后台展示或修改。
+                </Text>
+            );
+        }
         if (config.configKey === 'resource.form.quick_params') {
             const params = value.split(/[,，\n]+/).map(item => item.trim()).filter(Boolean);
             return (
@@ -324,7 +337,8 @@ export default function SystemSettingsPage() {
                                 </div>
                                 <div className="divide-y rounded-lg border">
                                     {items.map(config => {
-                                        const changed = (draftValues[config.configKey] ?? '') !== config.configValue;
+                                        const sensitive = isSensitiveConfig(config);
+                                        const changed = !sensitive && (draftValues[config.configKey] ?? '') !== config.configValue;
                                         return (
                                             <div
                                                 key={config.configKey}
@@ -343,7 +357,7 @@ export default function SystemSettingsPage() {
                                                     aria-label={t('save')}
                                                     type={changed ? 'primary' : 'default'}
                                                     icon={<SaveOutlined />}
-                                                    disabled={!changed}
+                                                    disabled={sensitive || !changed}
                                                     loading={saving === config.configKey}
                                                     onClick={() => updateConfig(config)}
                                                 />

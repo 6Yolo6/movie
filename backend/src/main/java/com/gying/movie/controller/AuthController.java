@@ -11,36 +11,39 @@ import com.gying.movie.service.impl.LoginDeviceService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.util.Locale;
+import com.gying.movie.security.ClientIpResolver;
+import com.gying.movie.security.RedisRateLimiter;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final String REGISTER_RATE_LIMIT_KEY = "register:rate:";
     private static final int MAX_REGISTRATIONS_PER_HOUR = 3;
 
     private final ISysUserService sysUserService;
     private final AuthHelper authHelper;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisRateLimiter rateLimiter;
     private final RegistrationService registrationService;
     private final EmailVerificationService emailVerificationService;
     private final JwtUtils jwtUtils;
     private final LoginDeviceService loginDeviceService;
 
     @PostMapping("/login")
-    public Map<String, Object> login(HttpServletRequest httpRequest, @RequestBody AuthRequest request) {
+    public Map<String, Object> login(HttpServletRequest httpRequest, @Valid @RequestBody AuthRequest request) {
         if (request == null || request.getUsername() == null || request.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
+        rateLimiter.require("login-account", request.getUsername().trim().toLowerCase(Locale.ROOT), 10, Duration.ofMinutes(5));
         String token = sysUserService.login(request.getUsername(), request.getPassword(), getClientIp(httpRequest), httpRequest.getHeader("User-Agent"));
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -83,16 +86,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Map<String, Object> register(HttpServletRequest request, @RequestBody AuthRequest authRequest) {
+    public Map<String, Object> register(HttpServletRequest request, @Valid @RequestBody AuthRequest authRequest) {
         if (authRequest == null || authRequest.getUsername() == null || authRequest.getPassword() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
-        String rateKey = REGISTER_RATE_LIMIT_KEY + getClientIp(request);
-        Long count = stringRedisTemplate.opsForValue().increment(rateKey);
-        if (count != null && count == 1) stringRedisTemplate.expire(rateKey, 1, TimeUnit.HOURS);
-        if (count != null && count > MAX_REGISTRATIONS_PER_HOUR) {
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Registration limit exceeded. Try again later.");
-        }
+        rateLimiter.require("register", getClientIp(request), MAX_REGISTRATIONS_PER_HOUR, Duration.ofHours(1));
         registrationService.register(authRequest.getUsername(), authRequest.getPassword(), authRequest.getEmail(), authRequest.getEmailCode(), authRequest.getInviteCode());
         return Map.of("message", "Registration successful");
     }
@@ -120,14 +118,6 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.split(",")[0].trim();
-        }
-        ip = request.getHeader("X-Real-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-        return request.getRemoteAddr();
+        return ClientIpResolver.resolved(request);
     }
 }

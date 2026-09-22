@@ -5,6 +5,8 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import com.gying.movie.security.RedisRateLimiter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ public class EmailVerificationService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private final StringRedisTemplate redis;
     private final ISysConfigService config;
+    private final RedisRateLimiter rateLimiter;
     private final RestClient brevoClient = RestClient.builder().baseUrl("https://api.brevo.com/v3").build();
     private final RestClient resendClient = RestClient.builder().baseUrl("https://api.resend.com").build();
 
@@ -25,9 +28,10 @@ public class EmailVerificationService {
     @Value("${mail.from-address:${MAIL_FROM_ADDRESS:}}") private String fromAddress;
     @Value("${mail.from-name:${MAIL_FROM_NAME:GYing Movie}}") private String fromName;
 
-    public EmailVerificationService(StringRedisTemplate redis, ISysConfigService config) {
+    public EmailVerificationService(StringRedisTemplate redis, ISysConfigService config, RedisRateLimiter rateLimiter) {
         this.redis = redis;
         this.config = config;
+        this.rateLimiter = rateLimiter;
     }
 
     public boolean enabled() {
@@ -38,10 +42,7 @@ public class EmailVerificationService {
     public void send(String email, String clientKey) {
         if (!enabled()) throw new IllegalStateException("Email verification is not configured");
         String normalized = RegistrationService.normalizeEmail(email);
-        String ipRateKey = "register:email:ip:" + RegistrationService.sha256(clientKey == null ? "unknown" : clientKey);
-        Long ipCount = redis.opsForValue().increment(ipRateKey);
-        if (ipCount != null && ipCount == 1) redis.expire(ipRateKey, 1, TimeUnit.HOURS);
-        if (ipCount != null && ipCount > 10) throw new IllegalStateException("Email verification request limit exceeded");
+        rateLimiter.require("email-send", clientKey, 10, Duration.ofHours(1));
         String cooldownKey = "register:email:cooldown:" + RegistrationService.sha256(normalized);
         Boolean allowed = redis.opsForValue().setIfAbsent(cooldownKey, "1", 60, TimeUnit.SECONDS);
         if (!Boolean.TRUE.equals(allowed)) throw new IllegalStateException("Please wait before requesting another code");
@@ -67,6 +68,7 @@ public class EmailVerificationService {
         if (!enabled()) return;
         if (!hasText(code)) throw new IllegalArgumentException("Email verification code is required");
         String key = "register:email:code:" + RegistrationService.sha256(normalize(email));
+        rateLimiter.require("email-verify", normalize(email), 5, Duration.ofMinutes(5));
         String stored = redis.opsForValue().get(key);
         if (stored == null) throw new IllegalArgumentException("Email verification code expired");
         if (!stored.equals(code.trim())) throw new IllegalArgumentException("Invalid email verification code");

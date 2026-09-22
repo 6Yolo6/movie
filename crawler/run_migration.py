@@ -1,10 +1,11 @@
+import os
 import pymysql
 
 # 数据库配置
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASS = "``````"
-DB_NAME = "gying"
+DB_HOST = os.environ.get("GYING_DB_HOST", "127.0.0.1")
+DB_USER = os.environ["GYING_DB_USER"]
+DB_PASS = os.environ["GYING_DB_PASSWORD"]
+DB_NAME = os.environ.get("GYING_DB_NAME", "gying")
 
 def run_migration():
     try:

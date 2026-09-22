@@ -5,6 +5,8 @@ import com.gying.movie.config.QqBotProperties;
 import com.gying.movie.service.IQqBotService;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,16 +31,7 @@ public class QqBotController {
 
     @GetMapping("/health")
     public Map<String, Object> health() {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("enabled", qqBotProperties.isEnabled());
-        result.put("napcatConfigured", hasText(qqBotProperties.getNapcat().getBaseUrl()));
-        result.put("replyProvider", qqBotProperties.getReplyProvider());
-        result.put("qqbotConfigured", hasText(qqBotProperties.getQqbot().getAppId())
-                && hasText(qqBotProperties.getQqbot().getClientSecret())
-                && hasText(qqBotProperties.getQqbot().getGroupOpenids()));
-        result.put("allowedGroups", qqBotProperties.getAllowedGroups());
-        result.put("commandPrefixes", qqBotProperties.getCommandPrefixes());
-        return result;
+        return Map.of("status", "ok");
     }
 
     @GetMapping("/search-reply")
@@ -46,9 +39,11 @@ public class QqBotController {
             @RequestParam("keyword") String keyword,
             @RequestParam(value = "userKey", required = false) String userKey,
             @RequestHeader(value = "Authorization", required = false) String authorization,
-            @RequestHeader(value = "X-QQ-Bot-Token", required = false) String headerToken,
-            @RequestParam(value = "token", required = false) String queryToken) {
-        requireWebhookToken(authorization, headerToken, queryToken);
+            @RequestHeader(value = "X-QQ-Bot-Token", required = false) String headerToken) {
+        requireWebhookToken(authorization, headerToken);
+        if (keyword.isBlank() || keyword.length() > 100 || (userKey != null && userKey.length() > 100)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid search parameters");
+        }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
         result.put("reply", qqBotService.buildSearchReply(keyword, userKey));
@@ -59,9 +54,8 @@ public class QqBotController {
     public Map<String, Object> oneBotWebhook(
             @RequestBody JsonNode event,
             @RequestHeader(value = "Authorization", required = false) String authorization,
-            @RequestHeader(value = "X-QQ-Bot-Token", required = false) String headerToken,
-            @RequestParam(value = "token", required = false) String queryToken) {
-        requireWebhookToken(authorization, headerToken, queryToken);
+            @RequestHeader(value = "X-QQ-Bot-Token", required = false) String headerToken) {
+        requireWebhookToken(authorization, headerToken);
         boolean accepted = qqBotService.handleOneBotEvent(event);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", "ok");
@@ -69,20 +63,19 @@ public class QqBotController {
         return result;
     }
 
-    private void requireWebhookToken(String authorization, String headerToken, String queryToken) {
-        String configured = qqBotProperties.getWebhookToken();
-        if (!hasText(configured)) {
-            return;
+    private void requireWebhookToken(String authorization, String headerToken) {
+        String expected = qqBotProperties.getWebhookToken();
+        if (!hasText(expected)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "QQ bot authentication is not configured");
         }
-        String expected = configured.trim();
-        if (expected.equals(headerToken) || expected.equals(queryToken)) {
-            return;
+        String supplied = headerToken;
+        if (supplied == null && authorization != null && authorization.startsWith("Bearer ")) {
+            supplied = authorization.substring(7);
         }
-        if (authorization != null && authorization.startsWith("Bearer ")
-                && expected.equals(authorization.substring(7).trim())) {
-            return;
+        if (supplied == null || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8),
+                supplied.getBytes(StandardCharsets.UTF_8))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid QQ bot token");
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid QQ bot webhook token");
     }
 
     private boolean hasText(String value) {

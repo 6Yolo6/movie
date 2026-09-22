@@ -1,0 +1,48 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "*"
+        ]
+      },
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::gying/mv/*.avif",
+        "arn:aws:s3:::gying/mv/*.webp",
+        "arn:aws:s3:::gying/mv/*.jpg",
+        "arn:aws:s3:::gying/mv/*.jpeg",
+        "arn:aws:s3:::gying/mv/*.png",
+        "arn:aws:s3:::gying/mv/*.gif",
+        "arn:aws:s3:::gying/tv/*.avif",
+        "arn:aws:s3:::gying/tv/*.webp",
+        "arn:aws:s3:::gying/tv/*.jpg",
+        "arn:aws:s3:::gying/tv/*.jpeg",
+        "arn:aws:s3:::gying/tv/*.png",
+        "arn:aws:s3:::gying/tv/*.gif",
+        "arn:aws:s3:::gying/ac/*.avif",
+        "arn:aws:s3:::gying/ac/*.webp",
+        "arn:aws:s3:::gying/ac/*.jpg",
+        "arn:aws:s3:::gying/ac/*.jpeg",
+        "arn:aws:s3:::gying/ac/*.png",
+        "arn:aws:s3:::gying/ac/*.gif",
+        "arn:aws:s3:::gying/tmdb/*.avif",
+        "arn:aws:s3:::gying/tmdb/*.webp",
+        "arn:aws:s3:::gying/tmdb/*.jpg",
+        "arn:aws:s3:::gying/tmdb/*.jpeg",
+        "arn:aws:s3:::gying/tmdb/*.png",
+        "arn:aws:s3:::gying/tmdb/*.gif",
+        "arn:aws:s3:::gying/manual/*.avif",
+        "arn:aws:s3:::gying/manual/*.webp",
+        "arn:aws:s3:::gying/manual/*.jpg",
+        "arn:aws:s3:::gying/manual/*.jpeg",
+        "arn:aws:s3:::gying/manual/*.png",
+        "arn:aws:s3:::gying/manual/*.gif"
+      ]
+    }
+  ]
+}

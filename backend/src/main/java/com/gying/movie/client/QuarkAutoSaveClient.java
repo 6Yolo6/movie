@@ -2,8 +2,6 @@ package com.gying.movie.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.util.Collections;
@@ -498,16 +496,13 @@ public class QuarkAutoSaveClient {
         JsonNode cookies = data.path("cookie");
         String cookie = cookies.isArray() && !cookies.isEmpty() ? cookies.get(0).asText(null) : null;
         if (!hasUsableCookie(cookie)) {
+            // The upstream service owns its authenticated config. A protected environment
+            // fallback may be used in memory, but never POST a Cookie back to /update.
             String fallbackCookie = firstUsableCookie(System.getenv("QUARK_COOKIE"), System.getenv("quark_cookie"));
             if (fallbackCookie != null) {
-                ArrayNode cookieArray = objectMapper.createArrayNode();
-                cookieArray.add(fallbackCookie);
-                ObjectNode cookieUpdate = objectMapper.createObjectNode();
-                cookieUpdate.set("cookie", cookieArray);
-                synchronizeRuntimeConfig(cookieUpdate);
                 return fallbackCookie;
             }
-            throw new IllegalStateException("quark-auto-save cookie is not configured");
+            throw new IllegalStateException("quark-auto-save cookie is not configured; configure the upstream WebUI or QUARK_COOKIE");
         }
         return cookie.trim();
     }
@@ -540,29 +535,6 @@ public class QuarkAutoSaveClient {
         throw new IllegalStateException("quark-auto-save config check request failed", lastRequestError);
     }
 
-    private void synchronizeRuntimeConfig(JsonNode data) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        String url = UriComponentsBuilder.fromUriString(properties.getQuark().getBaseUrl())
-                .path("/update")
-                .queryParam("token", properties.getQuark().getToken())
-                .toUriString();
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, new HttpEntity<>(data, headers),
-                    String.class);
-            JsonNode body = objectMapper.readTree(response.getBody());
-            if (!body.path("success").asBoolean(false)) {
-                throw new IllegalStateException(body.path("message").asText("quark-auto-save config sync failed"));
-            }
-        } catch (RestClientException e) {
-            throw new IllegalStateException("quark-auto-save config sync request failed", e);
-        } catch (IllegalStateException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IllegalStateException("quark-auto-save config sync response parse failed", e);
-        }
-    }
-
     private boolean hasUsableCookie(String cookie) {
         if (cookie == null || cookie.isBlank()) {
             return false;
@@ -585,8 +557,7 @@ public class QuarkAutoSaveClient {
 
     private boolean isTransientConfigRequestFailure(IllegalStateException error) {
         return error.getMessage() != null
-                && (error.getMessage().startsWith("quark-auto-save config check request failed")
-                        || error.getMessage().startsWith("quark-auto-save config sync request failed"));
+                && error.getMessage().startsWith("quark-auto-save config check request failed");
     }
 
     private void sleep(long intervalMs) {

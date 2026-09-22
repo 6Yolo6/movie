@@ -51,11 +51,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (username.length() < 3 || username.length() > 50) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be 3-50 characters");
         }
-        if (password == null || password.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters");
+        if (password == null || password.length() < 12) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 12 characters");
         }
-        if (password.length() > 100) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 100 characters");
+        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 72 UTF-8 bytes");
         }
         if (this.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username)) > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
@@ -83,12 +83,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void resetPassword(Long userId, String newPassword) {
-        if (newPassword == null || newPassword.length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters");
+        if (newPassword == null || newPassword.length() < 12) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 12 characters");
         }
-        if (newPassword.length() > 100) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 100 characters");
+        if (newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 72 UTF-8 bytes");
         }
         SysUser user = this.getById(userId);
         if (user == null) {
@@ -96,5 +97,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         this.updateById(user);
+        loginDeviceService.revokeAll(userId);
     }
 }

@@ -434,7 +434,7 @@ CREATE TABLE IF NOT EXISTS `qq_transfer_cleanup_job` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Initial Data
-INSERT INTO sys_user (username, password, role) VALUES ('admin', '$2a$10$HRsXUOtHmXt8qhrcbLko2uWXa6evM5pHnff1ITMCSEkA6WqMKmKk6', 'ADMIN');
+-- 首个管理员必须使用 tools/security/bootstrap_admin.py 交互创建，禁止预置共享密码。
 INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.audit.enabled', 'true', 'Enable resource submission audit (true/false)'),
 ('resource.max.per.user', '100', 'Maximum resources per user'),

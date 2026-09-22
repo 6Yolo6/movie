@@ -78,7 +78,7 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
     public synchronized Map<String, Object> reload() {
         ensureDefaults();
         qqBotProperties.setMinKeywordLength(readInt(KEY_BOT_MIN_KEYWORD_LENGTH, qqBotProperties.getMinKeywordLength(), 1, 20));
-        qqBotProperties.setRateLimitPerMinute(readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, qqBotProperties.getRateLimitPerMinute(), 0, 100));
+        qqBotProperties.setRateLimitPerMinute(readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, Math.max(1, qqBotProperties.getRateLimitPerMinute()), 1, 100));
         qqBotProperties.setMaxResults(readInt(KEY_BOT_MAX_RESULTS, qqBotProperties.getMaxResults(), 1, 5));
         qqBotProperties.setBlockedKeywords(readString(KEY_BOT_BLOCKED_KEYWORDS, qqBotProperties.getBlockedKeywords()));
         return getConfig();
@@ -88,7 +88,7 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
     public synchronized Map<String, Object> getConfig() {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("botMinKeywordLength", readInt(KEY_BOT_MIN_KEYWORD_LENGTH, qqBotProperties.getMinKeywordLength(), 1, 20));
-        result.put("botRateLimitPerMinute", readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, qqBotProperties.getRateLimitPerMinute(), 0, 100));
+        result.put("botRateLimitPerMinute", readInt(KEY_BOT_RATE_LIMIT_PER_MINUTE, Math.max(1, qqBotProperties.getRateLimitPerMinute()), 1, 100));
         result.put("botMaxResults", readInt(KEY_BOT_MAX_RESULTS, qqBotProperties.getMaxResults(), 1, 5));
         result.put("botBlockedKeywords", readString(KEY_BOT_BLOCKED_KEYWORDS, qqBotProperties.getBlockedKeywords()));
         result.put("botTransferCleanupEnabled", readBoolean(KEY_BOT_TRANSFER_CLEANUP_ENABLED, true));
@@ -119,7 +119,7 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
             return getConfig();
         }
         putInt(request, "botMinKeywordLength", KEY_BOT_MIN_KEYWORD_LENGTH, 1, 20, "QQ群机器人接受的最短搜索关键词字数");
-        putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 0, 100, "每个群成员每分钟最多可发起的搜索次数");
+        putInt(request, "botRateLimitPerMinute", KEY_BOT_RATE_LIMIT_PER_MINUTE, 1, 100, "每个群成员每分钟最多可发起的搜索次数");
         putInt(request, "botMaxResults", KEY_BOT_MAX_RESULTS, 1, 5, "QQ群机器人单次回复展示的资源候选数量");
         putString(request, "botBlockedKeywords", KEY_BOT_BLOCKED_KEYWORDS, "QQ群机器人拒绝搜索的关键词");
         putBoolean(request, "botTransferCleanupEnabled", KEY_BOT_TRANSFER_CLEANUP_ENABLED, "自动清理QQ群搜索产生的临时转存文件");
@@ -145,7 +145,7 @@ public class QqAutomationConfigServiceImpl implements IQqAutomationConfigService
 
     private void ensureDefaults() {
         upsertMissing(KEY_BOT_MIN_KEYWORD_LENGTH, Integer.toString(qqBotProperties.getMinKeywordLength()), "QQ群机器人接受的最短搜索关键词字数");
-        upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(qqBotProperties.getRateLimitPerMinute()), "每个群成员每分钟最多可发起的搜索次数");
+        upsertMissing(KEY_BOT_RATE_LIMIT_PER_MINUTE, Integer.toString(Math.max(1, qqBotProperties.getRateLimitPerMinute())), "每个群成员每分钟最多可发起的搜索次数");
         upsertMissing(KEY_BOT_MAX_RESULTS, Integer.toString(qqBotProperties.getMaxResults()), "QQ群机器人单次回复展示的资源候选数量");
         upsertMissing(KEY_BOT_BLOCKED_KEYWORDS, defaultText(qqBotProperties.getBlockedKeywords()), "QQ群机器人拒绝搜索的关键词");
         upsertMissing(KEY_BOT_TRANSFER_CLEANUP_ENABLED, "true", "自动清理QQ群搜索产生的临时转存文件");

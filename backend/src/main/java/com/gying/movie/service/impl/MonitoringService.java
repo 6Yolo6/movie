@@ -1,6 +1,8 @@
 package com.gying.movie.service.impl;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.gying.movie.security.ClientIpResolver;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +20,7 @@ public class MonitoringService {
 
     public void access(String path,String method,int status,long duration,HttpServletRequest request,String eventType) {
         try { jdbc.update("INSERT INTO site_access_log(request_path,method,status_code,visitor_hash,user_agent_hash,referer,duration_ms,event_type) VALUES (?,?,?,?,?,?,?,?)",
-                cut(path,500),cut(method,10),status,visitorHash(request),RegistrationService.sha256(header(request,"User-Agent")),cut(header(request,"Referer"),500),duration,eventType); }
+                safePath(path),cut(method,10),status,visitorHash(request),RegistrationService.sha256(header(request,"User-Agent")),safePath(header(request,"Referer")),duration,eventType); }
         catch(Exception ignored) { }
     }
     public void search(String keyword,long resultCount,HttpServletRequest request) {
@@ -57,8 +59,13 @@ public class MonitoringService {
         return out;
     }
     public static String visitorHash(HttpServletRequest r){return RegistrationService.sha256(clientIp(r)+"|"+header(r,"User-Agent"));}
-    private static String clientIp(HttpServletRequest r){String v=header(r,"CF-Connecting-IP");if(v.isBlank())v=header(r,"X-Forwarded-For");if(v.contains(","))v=v.split(",",2)[0].trim();if(v.isBlank())v=r.getRemoteAddr();return v;}
+    private static String clientIp(HttpServletRequest r){return ClientIpResolver.resolved(r);}
     private static String header(HttpServletRequest r,String name){String v=r.getHeader(name);return v==null?"":v;}
     private static String normalizeKeyword(String s){if(s==null)return null;String v=s.trim().replaceAll("\\s+"," ");return v.length()<2||v.length()>100?null:v;}
+    private static String safePath(String value) {
+        if (value == null || value.isBlank()) return null;
+        try { return cut(URI.create(value).getPath(), 500); }
+        catch (IllegalArgumentException ignored) { return null; }
+    }
     private static String cut(String s,int n){if(s==null)return null;return s.length()>n?s.substring(0,n):s;}
 }

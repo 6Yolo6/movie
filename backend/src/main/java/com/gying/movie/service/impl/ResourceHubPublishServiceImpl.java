@@ -155,7 +155,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
             ResourceLink link = new ResourceLink();
             link.setMovieId(discovery.getMovieId());
-            link.setName(resourceTitle(movie, discovery));
+            link.setName(trim(resourceTitle(movie, discovery), 255));
             link.setType(type);
             link.setProvider(provider);
             link.setUrl(url);
@@ -357,7 +357,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             String urlHash,
             LocalDateTime now) {
         link.setMovieId(discovery.getMovieId());
-        link.setName(resourceTitle(movie, discovery));
+        link.setName(trim(resourceTitle(movie, discovery), 255));
         link.setType(type);
         link.setProvider(provider);
         link.setUrl(url);

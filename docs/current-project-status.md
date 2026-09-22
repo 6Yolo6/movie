@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-09-19
+更新时间：2026-09-22
 
 本文只记录生产环境当前能力、运行约束、待处理事项和少量可复核的验收证据。一次性任务编号、重复部署过程和基础接口状态不在这里长期保留，详细操作以 `docs/api.md`、`docs/deployment.md` 及运维参考文档为准。
 
@@ -13,7 +13,7 @@
 
 ## 运行架构
 
-- 对外入口：Cloudflare Tunnel `gyinghub.dpdns.org` → 本机 nginx `80/443`，nginx 反向代理 Next.js 前端和 Spring Boot 后端；不直接暴露 MySQL、Redis、MinIO 或 backend 端口。
+- 目标对外入口：Cloudflare Tunnel `gyinghub.dpdns.org` → 本机 loopback nginx → Next.js 前端/Spring Boot backend。**2026-09-21 只读复核仍观测到 nginx `0.0.0.0:80/443`、backend `0.0.0.0:8880`、quark `0.0.0.0:5005`、MinIO `0.0.0.0:9000/9001`；本次安全分支的 loopback/内部网络改动尚未部署。**
 - 核心服务：`frontend`、`backend`、`gying-source`、`social-publisher`。
 - 数据与依赖：MySQL、Redis、MinIO、PanSou、`quark-auto-save`；生产 Compose 文件为 `docker-compose.prod.yml`。
 - 本机 Docker Desktop 数据路径按新机配置位于 `E:\dockerdesktop\wsl\DockerDesktopWSL`；项目代码和 Python 虚拟环境保留在 `D:\gying-movie\movie`。Cloudflare Tunnel 运行文件位于 `E:\gying-tools\cloudflared`。
@@ -41,7 +41,7 @@
 - 失败任务保留状态和错误，重试尽量复用已有转存结果，避免重复调用转存接口。
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供单条“修复并重分享”；成功后原位更新资源链接，并在存在 GYING 影片映射时自动同步发布链接。
 - GYING 目录自动同步支持热门电影/剧集/动漫与综合评分电影/剧集/动漫（`CSCORE_MOVIE`、`CSCORE_TV`、`CSCORE_ANIME`）；综合评分来源按轮换任务采集，每轮上限由 `resource.hub.gying.auto_sync_max_items` 控制；实际间隔直接遵循 `resource.hub.gying.auto_sync_interval_hours`，当前配置为 1 小时。三个来源按轮换方式执行，因此不是每小时同时抓取三类。
-- GYING BT 详情页可解析实际 `magnet` 与 `.torrent` 地址；磁力/种子以 `resource_link.type=MAGNET/TORRENT`、`provider=P2P`、`source=GYING`、`url_hash`、`source_ref` 和 `source_url` 保存，BT 详情页本身不会误存为资源 URL。
+- GYING BT 详情页可解析实际 `magnet` 与 `.torrent` 地址；磁力/种子以 `resource_link.type=MAGNET/TORRENT`、`provider=P2P`、`source=GYING`、`url_hash`、`source_ref` 和 `source_url` 保存，BT 详情页本身不会误存为资源 URL。GYING 网盘并行数组响应会按索引读取资源名称，所有写入 `resource_link.name` 的 GYING 路径统一限制为 255 个字符，避免整列标题数组被误写入导致 `Data too long for column 'name'`。
 - 管理端资源管理支持按 `DISK`、`MAGNET`、`TORRENT`、`ONLINE` 筛选；磁力和种子链路均保留严格类型/URL 校验，不能把 BT 详情页地址误当成种子资源入库。
 - 留言与影片评论支持 `GENERAL`、`REQUEST`、`INVALID_RESOURCE`、`SUGGESTION`、`OTHER` 类型；后台可按类型、状态、影片和关键词筛选，关键词使用参数化条件组合，影片评论可跳转到对应详情页评论区。
 - 登录设备记录登录 IP、User-Agent、登录时间和最近活动时间；用户可在 `/devices` 查看并撤销设备授权，撤销后对应 JWT 立即失效。
@@ -52,7 +52,10 @@
 - “爬取我已发布资源”按账号 `/my-resources` 分页读取，复用现有片库和资源工作流；已存在的来源 ID 或 URL 自动跳过。
 - 数据源请求带有统一间隔限制，图片下载和站点请求均支持超时、重试和失败记录。
 - GYING 资源发布仅使用固定契约 `/res/pan/add`，绑定字段为 `binds[0][dir]` 与 `binds[0][id]`。
-- GYING Source 内部接口新增 `/catalog?sort=cscore` 和 `/bt/{btId}`；请求仍受统一请求间隔、PoW 和登录态约束，认证失败只记录错误类别，不输出 Cookie 或认证材料。
+- GYING Source 内部接口新增 `/catalog?sort=cscore` 和 `/bt/{btId}`；请求仍受统一请求间隔、PoW 和登录态约束，认证失败只记录错误类别，不输出 Cookie 或认证材料。管理端 GYING Source 新增“元数据同步”功能，可按 `mv/ID`、`tv/ID`、`ac/ID` 或默认类型批量同步最多 60 个 GYING 影片元数据，仅同步元数据、海报和来源绑定，不触发转存或发布。
+- GYING 资源入库已增加归属保护：网盘资源只有明确属于 `GYING_TARGET_USER` 的分享才进入正式片库；公共 GYING/PanSou 网盘结果只作为候选，P2P 磁力/种子仍可按实际链接入库。provider 优先由分享 URL 主机识别，避免并行数组错位被写成 `OTHER`；名称按索引读取并限制为 255 字符。
+- 2026-09-22 已对确认错误的 `resource_link` 记录 2560-2564 执行软删除，未物理删除；操作前备份位于 `E:\gying-tools\backups`，文件名以 `gying-pre-gying-resource-fix-20260922-112027.sql` 开头，SHA-256 清单同目录保存。
+- 新增登录用户网页端 `/resource-search`：复用 QQ 的 GYING/PanSou 候选、序号继续选择、夸克/迅雷转存、自有分享返回和二维码展示；使用 Redis/QQ 搜索频控配置，临时转存继续使用专用目录与清理任务，正式 Resource Hub 资源不参与清理。
 
 ### 注册、邀请与后台监控
 
@@ -65,7 +68,7 @@
 ### QQ 自动化
 
 - 搜索先回复“正在搜索资源，请稍后...”，随后展示影片元数据和资源候选。
-- 候选最多 10 条，夸克优先；用户选择单条资源后才创建对应转存任务。
+- 候选内部最多保留 30 条，首屏每页展示 10 条且夸克优先；可用“下一页/上一页”浏览更多，用户选择单条资源后才创建对应转存任务。
 - 夸克或迅雷分享失效时统一提示“该分享已失效，不可访问”，并保留当前候选上下文，用户可继续选择其他序号。
 - 搜索、转存、分享和失败结果写入自动化日志，便于管理员审计和重试。
 - QQ 群搜索并选择后产生的新转存使用 `QQ_BOT` 来源标记和专用临时目录：夸克 `/GYing QQ Temp`、迅雷 `/影视剧资源分享(先转存后再查看)/GYing QQ Temp`；默认在回复成功 10 分钟后清理物理目录并使临时资源链接失效。清理任务同时校验来源标记、精确目标路径和安全根目录，Resource Hub 定时采集及正式库目录不参与清理。
@@ -89,20 +92,32 @@
 - 不执行 `docker compose down -v`、删除卷、`DROP`、`TRUNCATE` 或物理删除核心历史数据作为日常维护手段。
 - 自动采集只有在生成并校验自有分享后才允许发布，第三方原始链接不得直接写入正式资源。
 
+### 2026-09-20 安全审计状态
+
+- 根目录 `docker-security-report.md` 和 `docs/security/` 已建立，覆盖 Docker、Cloudflare Tunnel/Access、Spring Boot/API、MySQL、Redis、MinIO、Quark、QQ Bot、备份、事故响应和部署门禁；静态 Controller 清单位于 `docs/security/api-inventory.md`，共 146 个映射，不等同于动态渗透测试。
+- 已写入但尚未上线的加固包括：loopback/内部 Docker 网络、nginx 路径拒绝与限流、非 root/无 socket、Redis ACL 和 fail-closed 限流、生产凭据启动校验、精确 CORS、JWT 会话校验、QQ/GYING/social 内部 token、MCP 只读门禁、加密备份工具和 secret 扫描。
+- 在线风险仍未闭环：MySQL 应用会话为 `root@localhost`；MySQL 3306/33060 与 MinIO 9000/9001 监听所有地址；Windows Public Firewall Disabled；MinIO 使用 root identity 且匿名策略覆盖全部 `gying/*`；Cloudflare 账号侧 Access/WAF 未审计；Git 历史仍有凭据命中；Quark Cookie 卷权限和备份恢复尚未完成迁移。
+- 本次没有修改生产 `.env`、Windows Firewall、MySQL 用户、MinIO policy/key、Cloudflare 账号策略、OpenClaw 运行配置或生产卷；因此不能把本节的代码能力写成“已部署”。
+
 ### 迁移与恢复基线
 
-- 当前新机生产目录为 `D:\gying-movie\movie`，分支为 `master`，部署提交为 `198a26a92bdeb66931d0d60fc43d4fee4496a43b`；Docker Desktop 数据路径为 `E:\dockerdesktop\wsl\DockerDesktopWSL`。
+- 当前在线生产基线仍记录为 `master` 分支、部署提交 `198a26a92bdeb66931d0d60fc43d4fee4496a43b`；本次审计工作区为 `codex/security`，基线提交 `65d94715d99ebe5a7c3ed288e3c7f65f33ecb100`，未部署到生产。Docker Desktop 数据路径为 `E:\dockerdesktop\wsl\DockerDesktopWSL`。
 - 2026-09-14 已恢复迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 条通过，缺失 0、不匹配 0、错误 0；完整 SQL 及持久化数据均保留在仓库外的受保护目录。
-- MySQL `gying` 已恢复并通过 MCP 复核 18 张表；`movie_metadata=1631`、`resource_link=2165`，中文片名和简介抽样可读。迁移前回滚备份位于 `E:\gying-data\gying-pre-deploy-20260914.sql`。
+- MySQL `gying` 已恢复并通过 MCP 复核 18 张表；`movie_metadata=1631`、`resource_link=2165`，中文片名和简介抽样可读。迁移前回滚备份位于 `E:\gying-data\gying-pre-deploy-20260914.sql`。2026-09-21 已创建数据库范围受限的 `gying_app`（应用 CRUD）和 `gying_readonly`（MCP 只读）账号；本机 MCP 配置已切换到 `gying_readonly`，直连验证可读且写入被拒绝。
 - MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证和 MCP 本机配置均已恢复；backend 日志只归档未恢复。未执行 `docker compose down -v`。
-- `.env` 已补齐示例契约键并通过 `docker compose -f docker-compose.prod.yml config --quiet`；本机 Codex MCP 的 `docker_tools` 与 `mysql_gying` 已分别通过容器列表和只读数据库查询验证。
+- 旧生产配置曾通过 `docker compose -f docker-compose.prod.yml config --quiet`；安全分支新增的必需键（专用 DB/Redis/MinIO/内部 token 等）尚未补齐，因此当前 hardened Compose contract 有意失败，不能在账号和密钥迁移前重建生产。
 - NapCat 仍未恢复、未启动、未纳入验收；Redis 和 PanSou 仅按可重建依赖运行。
 
 ## 仍需处理
 
-- 迅雷短期凭据已改为 Edge 会话自动同步并通过计划任务复验；仍需监控 Edge 登录态、站点风控和接口结构变化，若独立浏览器会话退出或出现交互验证，需要人工重新登录后再恢复无人值守刷新。
+- **安全加固上线门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙和敏感端口收紧、MySQL 专用账号、MinIO scoped key/policy、MinIO 网络 alias、OpenClaw 内部地址、Cloudflare Access/WAF、Quark ACL/Cookie 轮换、加密备份和恢复演练；完成前不得宣称生产已加固。
+- **当前生产与目标配置存在明确差异**：`tools/security/check_security.py --repo . --probe` 在旧容器上仍观测到 backend 8880、nginx 80/443、quark 5005、MinIO 9000/9001 的非 loopback 发布；内部 QQ health 仍可直接返回 200，目标配置应为 nginx 404。
+- **数据库**：在线旧容器仍使用 root；`require_secure_transport=OFF`，密码策略未确认。目标 `.env` 已切换到 `gying_app`，但生产容器尚未重建，需部署后再验证应用链路并保留 root 作为受控 break-glass。
+- **对象存储/网盘**：MinIO 匿名公开范围和 root identity 需收紧；quark-auto-save Cookie 仍持久化在配置/状态，必须 ACL、加密备份和轮换。
+- **凭据历史**：历史扫描 1,278 个 Blob 有 105 条规则命中（跨版本重复）；当前工作区扫描为 0，但所有可能有效凭据仍需 provider 侧轮换，历史重写另行审批。
+- 迅雷短期凭据已改为 Edge 会话自动同步并通过计划任务复验；2026-09-22 手动运行同步脚本退出码为 0，计划任务脚本已避免无关 Compose 环境变量插值失败，并跳过易锁定的非必要 Extension State 目录。仍需监控 Edge 登录态、站点风控和接口结构变化，若独立浏览器会话退出或出现交互验证，需要人工重新登录后再恢复无人值守刷新。
 - GYING 图片源和部分外部网盘接口存在偶发超时、风控或响应结构变化，需保留重试和失败审计，不把单次 HTTP 200 视为业务成功。
-- 综合评分自动采集已写入 `sys_config` 的六来源轮换配置，每轮上限为 15；当前综合评分间隔为 1 小时并按来源轮换。仍需持续观察 GYING BT 页面登录态、PoW 与响应结构变化，遇到认证失效时只更新外部登录态，不降低采集频率。
+- 综合评分自动采集已写入 `sys_config` 的六来源轮换配置，每轮上限为 15；当前综合评分间隔为 1 小时并按来源轮换。代码已增加公共网盘不入正式库和 provider/名称错位防护。仍需持续观察 GYING BT 页面登录态、PoW 与响应结构变化，遇到认证失效时只更新外部登录态，不降低采集频率。
 - 历史遗留的乱码任务、重复目录和无视频分享仍需按资源价值逐批人工确认，优先 dry-run 和软删除。
 - QQ 临时转存清理代码、数据库迁移和安全边界测试已完成；还需由群内实际搜索并选择一个可丢弃资源，复核对应夸克/迅雷临时目录在到期后被删除，同时确认正式 Resource Hub 目录不变。
 - 微博自动发布已启用；social-publisher 健康检查显示微博 configured/authenticated/ready 均为 true。为避免无意重复发帖，本次只验证调度器和凭据状态，未手工触发真实帖子。
@@ -127,11 +142,26 @@
 - 2026-09-03：修复 GYING 自动补图并重建 `gying-source`、`backend`、`nginx`；实测钢铁侠 `vPW8` 写入 `movie_metadata.poster_url=mv/vPW8/384.avif`，MinIO 地址返回 200。
 - 2026-08-26：完成生产运维基线复核，Compose 服务、数据库依赖和核心入口可按运维脚本检查；未执行破坏性数据操作。
 
+### 2026-09-21 变更补充
+
+- 修复 GYING 爬取和补全季资源时的 `Data too long for column 'name'`：并行数组资源名称按同索引读取，不再把整组名称数组转换为字符串；Crawler、GYING 工作流发布和资源入库路径均对 `resource_link.name` 做 255 字符边界保护。已通过 Python 编译和容器内归一化回归验证。
+- QQ 群资源候选上下文在成功选择后继续保留：已选资源从候选页移除，用户可直接回复其他序号继续选择；候选超过 10 条时按每页 10 条展示，可回复“下一页”“上一页”翻页，内部最多保留 30 条候选。
+- 管理端 GYING Source 增加按 GYING ID 批量同步元数据入口，支持最多 60 个 ID，和资源补全流程分离。
+- 本次修改已完成 backend Docker 编译、`QqBotServiceImplTest` 分页/多候选回归和全量 Maven 测试；候选上限调整为 30 条。2026-09-21 已生成本机 backend↔GYING Source 内部 `GYING_SOURCE_API_TOKEN`，并创建/验证非 root 数据库账号；生产部署预检查目前仅剩受保护 `.env` 中 `QUARK_COOKIE` 为空，未替换生产容器。
+
 ### 2026-09-20 验收补充
 
 - 修复综合评分任务被代码硬编码为至少 72 小时的问题；后台 `resource.hub.gying.auto_sync_interval_hours=1` 已真实生效。2026-09-20 10:39 创建的 `CSCORE_ANIME` 轮换任务于 10:41 完成，状态为 `SUCCEEDED`；其中 1 条 GYING 项目失败，已保留在任务错误摘要中。
 - 迅雷自动更新计划任务 `GYing Xunlei Token Sync` 已验证为启用、每 2 小时执行，2026-09-20 10:33 最近一次运行返回成功；同步日志仅记录状态，不记录 Authorization、Cookie 或密码。此前失败原因为自动化 Edge Profile 未继承有效登录态，现已改为复制默认 Edge 会话到临时 Profile 后执行。
-- 生产重建并部署 backend、frontend、gying-source，nginx reload 成功；公网首页和留言接口返回 HTTP 200，`gying-source` `/health` 返回 200，`/bt/VyyO8` 当前可返回 P2P 资源。
+- 生产重建并部署 backend、frontend、gying-source，nginx reload 成功；公网首页和留言接口返回 HTTP 200，`gying-source` `/health` 返回 200，`/bt/VyyO8` 当前可返回 P2P 资源。以上是安全分支之前的业务部署证据，不代表本次安全改动已重建生产。
+
+### 2026-09-20 安全审计验收（工作区/隔离环境）
+
+- 隔离 Maven/Redis 测试 194 项通过（0 failures/errors/skips）；新增 `sys_config` 脱敏/拒绝敏感写入和 QQ 限流下限测试；隔离 nginx 测试验证 UID 101、编码/矩阵路径拒绝、隐藏文件/私有媒体拒绝、媒体 query 丢弃、代理头清洗和 API 限流。
+- 安全分支新增 `sys_config` 脱敏边界：管理员读取 token/cookie/password/secret 类配置只得到 `[REDACTED]`，运行时写入被拒绝；QQ 每用户限流配置在运行时至少钳制为 1 次/分钟。该代码尚未部署到生产。
+- frontend 和 social-publisher `npm audit` 均为 0 findings；当前工作区 secret scan 为 0 findings；历史 secret scan 仍为 105 条跨版本命中。
+- npm audit（frontend/social）为 0，但 Docker Scout 对隔离目标镜像仍发现 frontend 10 条、social 58 条、source 1 条 critical/high；现有 backend 镜像的 SARIF 已发现 17 个受影响包、61 个唯一漏洞（13 Critical、48 High），且其依赖集仍包含 Spring Boot 3.2.0，不能代表工作区 3.5.16 目标镜像。完整 JVM/Python/OS 镜像 CVE triage 和外部攻击面扫描尚未形成闭环，不能把 npm audit 0 当成镜像清洁。公网 Cloudflare Access/WAF、DB grants、MinIO policy、Firewall、加密备份恢复仍待生产维护窗口验证。
+- 验收命令：`python -X utf8 tools/security/check_security.py --repo . --probe`、`python -X utf8 tools/security/test_nginx.py`、`python -X utf8 tools/security/scan_secrets.py`；旧容器上的 `check_security.py` 失败项按预期记录为部署前风险。frontend 使用 `next build --webpack` 通过；默认 Turbopack 构建在 Windows 上因 Next 配置文件 EXDEV rename 环境错误失败，未归因于业务代码。
 
 ### 2026-09-19 验收补充
 
@@ -141,6 +171,13 @@
 - QQ 频道图片链路已在容器内用真实 AVIF 海报完成下载、JPEG 转换并通过 CLI `--image` dry-run；宿主机自己的频道发布任务保持启用，旧 `secondary`、`qq-v3` 目标已软停用。
 - 修复前端 `api()` 未自动读取 Zustand 持久化登录态的问题：现会在未显式提供 Authorization 时自动附加本地登录 Token；生产 Docker 构建通过并重建 frontend，`/invitations`、`/admin/monitoring` 的本地与公网页面入口均返回 HTTP 200。
 - backend 其余测试在完整测试轮次通过，按新的“首轮直接回复片库资源链接”行为更新断言后，`QqBotServiceImplTest` 28 项全部通过；frontend 生产构建与 social-publisher 6 项测试通过。
+
+### 2026-09-21 安全复核（工作区/隔离环境）
+
+- 使用审计专用 Redis 隔离容器重新执行容器内 Maven 全量测试：195 项，0 failures/errors/skips；Redis 原子限流集成通过。测试专用容器和网络已停止并移除，生产容器、生产卷和 Maven 缓存未修改。
+- 重新通过 `git diff --check`、当前工作区 secret scan（0 findings）、历史 secret scan（1,278 个 Blob / 105 条规则命中）、Python 安全工具测试（10 项）、nginx 隔离回归（PASS）、social-publisher 安全测试（3 项）和 Python `compileall`。
+- 使用合成凭据执行 `docker compose -f docker-compose.prod.yml config --quiet` 通过；真实生产 `.env`、外部账号和生产容器未替换。
+- 只读在线探针仍观测到旧部署的非 loopback 端口和内部路由响应；这些 FAIL 保留为部署前证据，不把目标 Compose 或隔离测试写成生产已上线。
 
 ## 长期不变量
 

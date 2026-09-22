@@ -4,14 +4,29 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.entity.SysConfig;
 import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.utils.AuthHelper;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin/config")
 public class SysConfigController {
+
+    static final String REDACTED = "[REDACTED]";
+    private static final Pattern CONFIG_KEY = Pattern.compile("[A-Za-z0-9][A-Za-z0-9_.-]{0,99}");
+    private static final Pattern SENSITIVE_KEY = Pattern.compile(
+            "(?i)(password|passwd|secret|token|cookie|authorization|credential|passcode|"
+                    + "api[_-]?key|access[_-]?key|private[_-]?key)");
 
     private final ISysConfigService sysConfigService;
     private final AuthHelper authHelper;
@@ -24,7 +39,11 @@ public class SysConfigController {
     @GetMapping
     public ResponseEntity<?> getAllConfigs(@RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        List<SysConfig> configs = sysConfigService.list(new QueryWrapper<SysConfig>().orderByAsc("config_key"));
+        List<Map<String, Object>> configs = sysConfigService
+                .list(new QueryWrapper<SysConfig>().orderByAsc("config_key"))
+                .stream()
+                .map(this::view)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(configs);
     }
 
@@ -33,11 +52,14 @@ public class SysConfigController {
             @PathVariable String key,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        if (!validKey(key)) {
+            return ResponseEntity.badRequest().body("Invalid configuration key");
+        }
         String value = sysConfigService.getConfigValue(key, null);
         if (value == null) {
             return ResponseEntity.status(404).body("Configuration not found");
         }
-        return ResponseEntity.ok(value);
+        return ResponseEntity.ok(isSensitiveKey(key) ? REDACTED : value);
     }
 
     @PutMapping("/{key}")
@@ -46,10 +68,40 @@ public class SysConfigController {
             @RequestBody(required = false) String value,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        if (!validKey(key)) {
+            return ResponseEntity.badRequest().body("Invalid configuration key");
+        }
+        if (isSensitiveKey(key)) {
+            return ResponseEntity.badRequest().body("Sensitive configuration must be managed through protected secret storage");
+        }
+        if (value != null && value.length() > 500) {
+            return ResponseEntity.badRequest().body("Configuration value is too long");
+        }
         boolean updated = sysConfigService.updateConfig(key, value == null ? "" : value);
         if (updated) {
             return ResponseEntity.ok("Configuration updated");
         }
         return ResponseEntity.status(404).body("Configuration not found");
+    }
+
+    static boolean isSensitiveKey(String key) {
+        return key != null && SENSITIVE_KEY.matcher(key).find();
+    }
+
+    private boolean validKey(String key) {
+        return key != null && CONFIG_KEY.matcher(key).matches();
+    }
+
+    private Map<String, Object> view(SysConfig config) {
+        boolean sensitive = isSensitiveKey(config.getConfigKey());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("id", config.getId());
+        result.put("configKey", config.getConfigKey());
+        result.put("configValue", sensitive ? REDACTED : config.getConfigValue());
+        result.put("description", config.getDescription());
+        result.put("createdAt", config.getCreatedAt());
+        result.put("updatedAt", config.getUpdatedAt());
+        result.put("sensitive", sensitive);
+        return result;
     }
 }

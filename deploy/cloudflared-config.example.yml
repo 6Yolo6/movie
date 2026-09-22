@@ -1,0 +1,21 @@
+# EXAMPLE ONLY. Do not replace the live external config before configuring Access and a recovery path.
+tunnel: <existing-tunnel-uuid>
+credentials-file: E:/gying-tools/cloudflared/credentials/<existing-tunnel-uuid>.json
+metrics: 127.0.0.1:20241
+loglevel: info
+
+ingress:
+  - hostname: gyinghub.dpdns.org
+    path: ^/api/(internal|qq-bot)(/.*)?$
+    service: http_status:404
+  - hostname: gyinghub.dpdns.org
+    path: ^/(admin(/.*)?|api/admin(/.*)?|api/resources/admin(/.*)?|api/resources/[^/]+/audit)$
+    service: http://127.0.0.1:80
+    originRequest:
+      access:
+        required: true
+        teamName: <your-zero-trust-team>
+        audTag: [<your-access-application-audience>]
+  - hostname: gyinghub.dpdns.org
+    service: http://127.0.0.1:80
+  - service: http_status:404

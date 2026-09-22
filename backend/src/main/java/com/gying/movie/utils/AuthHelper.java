@@ -6,6 +6,8 @@ import com.gying.movie.mapper.SysUserMapper;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import com.gying.movie.service.impl.LoginDeviceService;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,12 +25,19 @@ public class AuthHelper {
     }
 
     public AuthUser requireUser(String authorization) {
+        var attributes = RequestContextHolder.getRequestAttributes();
+        var request = attributes instanceof ServletRequestAttributes servlet ? servlet.getRequest() : null;
+        if (request != null && request.getAttribute(AuthHelper.class.getName()) instanceof CachedAuth cached
+                && java.util.Objects.equals(cached.authorization(), authorization)) return cached.user();
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
         Claims claims = jwtUtils.validateToken(authorization.substring(7));
         if (claims == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        if (!(claims.get("id") instanceof Number) || claims.getId() == null || claims.getId().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please sign in again");
         }
         Long userId = ((Number) claims.get("id")).longValue();
         SysUser user = sysUserMapper.selectById(userId);
@@ -40,8 +49,12 @@ public class AuthHelper {
         if (user == null || Boolean.FALSE.equals(user.getEnabled())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        return new AuthUser(user.getId(), user.getUsername(), user.getRole());
+        AuthUser result = new AuthUser(user.getId(), user.getUsername(), user.getRole());
+        if (request != null) request.setAttribute(AuthHelper.class.getName(), new CachedAuth(authorization, result));
+        return result;
     }
+
+    private record CachedAuth(String authorization, AuthUser user) { }
 
     public AuthUser requireAdmin(String authorization) {
         AuthUser user = requireUser(authorization);
