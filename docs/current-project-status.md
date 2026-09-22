@@ -55,6 +55,7 @@
 - GYING Source 内部接口新增 `/catalog?sort=cscore` 和 `/bt/{btId}`；请求仍受统一请求间隔、PoW 和登录态约束，认证失败只记录错误类别，不输出 Cookie 或认证材料。管理端 GYING Source 新增“元数据同步”功能，可按 `mv/ID`、`tv/ID`、`ac/ID` 或默认类型批量同步最多 60 个 GYING 影片元数据，仅同步元数据、海报和来源绑定，不触发转存或发布。
 - GYING 资源入库已增加归属保护：网盘资源只有明确属于 `GYING_TARGET_USER` 的分享才进入正式片库；公共 GYING/PanSou 网盘结果只作为候选，P2P 磁力/种子仍可按实际链接入库。provider 优先由分享 URL 主机识别，避免并行数组错位被写成 `OTHER`；名称按索引读取并限制为 255 字符。
 - 2026-09-22 已对确认错误的 `resource_link` 记录 2560-2564 执行软删除，未物理删除；操作前备份位于 `E:\gying-tools\backups`，文件名以 `gying-pre-gying-resource-fix-20260922-112027.sql` 开头，SHA-256 清单同目录保存。
+- 2026-09-22 已部署提交 `80d7e4c`：backend、frontend、gying-source、social-publisher 和 nginx 已重建；nginx 与 backend 仅发布到 loopback，公网首页、注册策略和 `/resource-search` 返回 200，公开 `/api/qq-bot/*` 返回 404。backend/gying-source/social-publisher 已使用非 root 数据库账号与非 root 容器用户；MinIO 已创建并验证 scoped 应用身份，旧 root 身份未删除以保留回滚路径。
 - 新增登录用户网页端 `/resource-search`：复用 QQ 的 GYING/PanSou 候选、序号继续选择、夸克/迅雷转存、自有分享返回和二维码展示；使用 Redis/QQ 搜索频控配置，临时转存继续使用专用目录与清理任务，正式 Resource Hub 资源不参与清理。
 
 ### 注册、邀请与后台监控
@@ -111,8 +112,8 @@
 ## 仍需处理
 
 - **安全加固上线门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙和敏感端口收紧、MySQL 专用账号、MinIO scoped key/policy、MinIO 网络 alias、OpenClaw 内部地址、Cloudflare Access/WAF、Quark ACL/Cookie 轮换、加密备份和恢复演练；完成前不得宣称生产已加固。
-- **当前生产与目标配置存在明确差异**：`tools/security/check_security.py --repo . --probe` 在旧容器上仍观测到 backend 8880、nginx 80/443、quark 5005、MinIO 9000/9001 的非 loopback 发布；内部 QQ health 仍可直接返回 200，目标配置应为 nginx 404。
-- **数据库**：在线旧容器仍使用 root；`require_secure_transport=OFF`，密码策略未确认。目标 `.env` 已切换到 `gying_app`，但生产容器尚未重建，需部署后再验证应用链路并保留 root 作为受控 break-glass。
+- **当前生产与目标配置仍有部分差异**：2026-09-22 复核显示 nginx 和 backend 已改为 loopback 发布，内部 QQ/internal 路由经 nginx 返回 404；但旧 quark-auto-save 5005 与独立 MinIO 9000/9001 仍为非 loopback 发布，Redis/PanSou/MinIO/OpenClaw 等旧容器尚未全部具备 `no-new-privileges`，需在不破坏既有卷的前提下继续滚动收紧。
+- **数据库**：backend、gying-source、social-publisher 已切换到非 root 数据库账号并完成在线启动验证；`require_secure_transport=OFF` 和密码策略仍需后续确认，root 仅保留为受控 break-glass。
 - **对象存储/网盘**：MinIO 匿名公开范围和 root identity 需收紧；quark-auto-save Cookie 仍持久化在配置/状态，必须 ACL、加密备份和轮换。
 - **凭据历史**：历史扫描 1,278 个 Blob 有 105 条规则命中（跨版本重复）；当前工作区扫描为 0，但所有可能有效凭据仍需 provider 侧轮换，历史重写另行审批。
 - 迅雷短期凭据已改为 Edge 会话自动同步并通过计划任务复验；2026-09-22 手动运行同步脚本退出码为 0，计划任务脚本已避免无关 Compose 环境变量插值失败，并跳过易锁定的非必要 Extension State 目录。仍需监控 Edge 登录态、站点风控和接口结构变化，若独立浏览器会话退出或出现交互验证，需要人工重新登录后再恢复无人值守刷新。
