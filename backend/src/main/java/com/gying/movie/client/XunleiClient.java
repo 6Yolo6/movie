@@ -3,11 +3,11 @@ package com.gying.movie.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.util.PrivateFileWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
@@ -1413,8 +1413,6 @@ public class XunleiClient {
         if (state == null || !hasText(properties.getXunlei().getTokenStatePath())) return;
         try {
             Path path = Path.of(properties.getXunlei().getTokenStatePath());
-            Path parent = path.getParent();
-            if (parent != null) Files.createDirectories(parent);
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("token_type", state.tokenType());
             payload.put("access_token", state.accessToken());
@@ -1426,9 +1424,7 @@ public class XunleiClient {
             payload.put("device_id", state.identity().deviceId());
             payload.put("client_version", state.identity().clientVersion());
             payload.put("package_name", state.identity().packageName());
-            Path temporary = path.resolveSibling(path.getFileName() + ".tmp");
-            Files.writeString(temporary, objectMapper.writeValueAsString(payload), StandardCharsets.UTF_8);
-            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
+            PrivateFileWriter.writeUtf8(path, objectMapper.writeValueAsString(payload));
             authStateLastModified = Files.getLastModifiedTime(path).toMillis();
             authStateLoaded = true;
         } catch (Exception error) {

@@ -15,7 +15,17 @@ if (-not (Test-Path -LiteralPath $composeFile)) {
 $helperRoot = 'E:\gying-tools\xunlei-auth-helper'
 $liveProfileRoot = 'C:\Users\ASUS\AppData\Local\Microsoft\Edge\User Data'
 $liveProfileName = 'Default'
-$profileRoot = Join-Path $helperRoot 'xunlei-edge-profile-sync'
+$profileRoot = [IO.Path]::GetFullPath((Join-Path $helperRoot 'xunlei-edge-profile-sync'))
+# Fail closed before creating or recursively cleaning the disposable browser profile.
+$resolvedHelperRoot = [IO.Path]::GetFullPath($helperRoot).TrimEnd('\')
+if (-not $profileRoot.StartsWith($resolvedHelperRoot + '\', [StringComparison]::OrdinalIgnoreCase) -or
+    [IO.Path]::GetFileName($profileRoot) -ne 'xunlei-edge-profile-sync') {
+    throw 'Unsafe temporary Edge profile path'
+}
+if ((Test-Path -LiteralPath $profileRoot) -and
+    ((Get-Item -LiteralPath $profileRoot -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    throw 'Temporary Edge profile must not be a reparse point'
+}
 $profileName = 'Default'
 $puppeteerPath = Join-Path $helperRoot 'node_modules\puppeteer-core'
 $edgePath = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
@@ -93,10 +103,22 @@ try {
         return
     }
 
-    & $DockerPath cp $output "${container}:/app/data/xunlei-auth.json.next"
-    if ($LASTEXITCODE -ne 0) { throw 'Failed to copy refreshed Xunlei state into backend-data' }
-    & $DockerPath exec $container sh -lc 'chmod 600 /app/data/xunlei-auth.json.next && mv /app/data/xunlei-auth.json.next /app/data/xunlei-auth.json'
-    if ($LASTEXITCODE -ne 0) { throw 'Failed to activate refreshed Xunlei state' }
+    # Stream through stdin as the backend user. docker cp creates root-owned files,
+    # and even exec --user root cannot repair them when all capabilities are dropped.
+    # A private, same-directory temporary file keeps replacement atomic and rollback-safe.
+    $stateJson = Get-Content -Raw -Encoding UTF8 -LiteralPath $output
+    $parsedState = $stateJson | ConvertFrom-Json
+    if (-not $parsedState.access_token) { throw 'Refreshed Xunlei state has no access token' }
+    $previousOutputEncoding = $OutputEncoding
+    try {
+        $OutputEncoding = New-Object Text.UTF8Encoding($false)
+        $stateJson | & $DockerPath exec -i $container sh -c 'set -eu; umask 077; tmp=$(mktemp /app/data/.xunlei-auth.XXXXXX); trap ''rm -f -- "$tmp"'' EXIT; cat > "$tmp"; test -s "$tmp"; chmod 600 "$tmp"; mv -f -- "$tmp" /app/data/xunlei-auth.json'
+        if ($LASTEXITCODE -ne 0) { throw 'Failed to activate refreshed Xunlei state' }
+    } finally {
+        $OutputEncoding = $previousOutputEncoding
+        $stateJson = $null
+        $parsedState = $null
+    }
     Write-Output 'XUNLEI_TOKEN_SYNC=success'
     Add-Content -LiteralPath $logPath -Value "$(Get-Date -Format s) success" -Encoding UTF8
 } catch {

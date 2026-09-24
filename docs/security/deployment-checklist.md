@@ -2,9 +2,11 @@
 
 > 这是部署门禁，不是“已部署”证明。当前生产尚未完成本清单。
 
+2026-09-24 复核：nginx/backend loopback、应用非 root、MinIO alias 和部分入口已验证；检查项仍按实际证据逐项验收，不把此清单视为全量上线证明。
+
 ## A. 变更前
 
-- [ ] 读取 `docs/current-project-status.md`、`docs/security/docker-security-report.md` 和本清单。
+- [ ] 读取 `docs/current-project-status.md`、根目录 `docker-security-report.md` 和本清单。
 - [ ] 确认分支/提交、维护窗口、回滚点；`git status --short` 已记录。
 - [ ] 备份 MySQL、MinIO、Quark、social/OpenClaw 状态；至少有仓库外受保护目录。
 - [ ] 生产 `.env`、Cloudflare config、MySQL defaults、age 私钥 ACL 已核对；不打印值。
@@ -19,6 +21,7 @@
 - [ ] Redis 密码/ACL、JWT、内部 token、QQ/Quark/第三方 token 已从外部 secret 注入。
 - [ ] GYING Source token 非空且 source 缺 token 时请求拒绝。
 - [ ] Quark Cookie 卷 ACL/文件模式收紧，旧 Cookie 已按需要撤销。
+- [ ] 迅雷状态文件先备份；外部同步与 backend 自身持久化都经实际重复写入验证 owner `10001:10001`、mode `600`，不输出内容。当前新增代码未部署，在线 `644` 不得放行。
 
 ## C. 依赖和网络迁移
 

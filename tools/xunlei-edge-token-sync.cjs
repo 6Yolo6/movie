@@ -50,6 +50,9 @@ function writeMeta(meta) {
     const currentExpiry = normalizeExpiry(current.expires_at);
     let browser;
     const candidates = new Map();
+    let refreshTokenPresent = false;
+    let storageCredentialCount = 0;
+    let refreshHttpStatus = null;
     const remember = (token, claims = {}, fallbackExpiry = 0, source = 'request') => {
         if (typeof token !== 'string' || !token.trim()) return;
         const value = token.trim();
@@ -69,6 +72,16 @@ function writeMeta(meta) {
         });
         const pages = await browser.pages();
         const page = pages[0] || await browser.newPage();
+        page.on('response', response => {
+            try {
+                const url = new URL(response.url());
+                if (url.hostname === 'xluser-ssl.xunlei.com' && url.pathname === '/v1/auth/token') {
+                    refreshHttpStatus = response.status();
+                }
+            } catch {
+                // Only retain the HTTP status; never log request/response authentication data.
+            }
+        });
         page.on('request', request => {
             try {
                 const headers = request.headers();
@@ -102,6 +115,7 @@ function writeMeta(meta) {
             }
             return null;
         });
+        refreshTokenPresent = Boolean(refreshKey);
         if (refreshKey) {
             candidates.clear();
             await page.reload({ waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => undefined);
@@ -131,6 +145,7 @@ function writeMeta(meta) {
             }
             return values;
         });
+        storageCredentialCount = (storageCredentials || []).length;
         for (const value of storageCredentials || []) {
             remember(value.accessToken, jwtPayload(value.accessToken), normalizeExpiry(value.expiresAt), 'storage');
         }
@@ -143,8 +158,9 @@ function writeMeta(meta) {
         .filter(candidate => candidate.expiresAt > now)
         .sort((left, right) => right.expiresAt - left.expiresAt)[0];
     if (!usable) {
-        writeMeta({ status: 'failed', reason: 'no_usable_authenticated_token' });
-        console.log('XUNLEI_EDGE_SYNC=no_usable_authenticated_token');
+        const diagnostics = { candidateCount: candidates.size, storageCredentialCount, refreshTokenPresent, refreshHttpStatus };
+        writeMeta({ status: 'failed', reason: 'no_usable_authenticated_token', ...diagnostics });
+        console.log(`XUNLEI_EDGE_SYNC=no_usable_authenticated_token;CANDIDATES=${diagnostics.candidateCount};STORED=${storageCredentialCount};REFRESH_PRESENT=${refreshTokenPresent};REFRESH_HTTP=${refreshHttpStatus}`);
         process.exit(2);
     }
 

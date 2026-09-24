@@ -14,6 +14,24 @@ def run(command, timeout=30):
     return subprocess.run(command,capture_output=True,text=True,encoding="utf-8",errors="replace",timeout=timeout)
 
 
+def process_user_check(result):
+    """Require numeric PID/UID evidence; never print arguments or daemon errors."""
+    if result.returncode != 0:
+        return "UNKNOWN", []
+    lines = result.stdout.splitlines()
+    if not lines or lines[0].split() != ["PID", "UID", "COMMAND"]:
+        return "UNKNOWN", []
+    processes = [line.split(maxsplit=2) for line in lines[1:] if line.strip()]
+    valid = [row for row in processes
+             if len(row) == 3 and row[0].isdigit() and row[1].isdigit()]
+    roots = [row[2] for row in valid if int(row[1]) == 0]
+    if roots:
+        return "FAIL", roots
+    if not valid or len(valid) != len(processes):
+        return "UNKNOWN", []
+    return "PASS", []
+
+
 def collect(repo, probe=False):
     checks=[]
     def add(name,status,detail): checks.append({"check":name,"status":status,"detail":detail})
@@ -39,10 +57,9 @@ def collect(repo, probe=False):
             add(name+":privileged","FAIL" if host.get("Privileged") else "PASS",bool(host.get("Privileged")))
             add(name+":no_new_privileges","PASS" if any("no-new-privileges" in x for x in host.get("SecurityOpt") or []) else "FAIL",host.get("SecurityOpt") or [])
             # Image Config.User alone is not evidence of PID 1 UID (Redis drops root in its entrypoint).
-            top=run(["docker","top",name,"-eo","user,comm"])
-            processes=[line.split() for line in top.stdout.splitlines()[1:] if line.strip()] if top.returncode==0 else []
-            root_processes=[x[-1] for x in processes if x[0] in ("root","0")]
-            add(name+":root_processes","FAIL" if root_processes else ("PASS" if processes else "UNKNOWN"),root_processes)
+            top=run(["docker","top",name,"-eo","pid,uid,comm"])
+            process_status, root_processes = process_user_check(top)
+            add(name+":root_processes",process_status,root_processes)
             env=dict(item.split("=",1) for item in config.get("Env",[]) if "=" in item)
             if "backend" in name or "gying-source" in name or "social-publisher" in name:
                 user=env.get("GYING_DB_USER",env.get("DB_USER",""))

@@ -42,6 +42,8 @@ docker compose -f docker-compose.prod.yml config --quiet
 - backend 端口收紧前先把 OpenClaw 接入应用网络并验证 `backend:8880` 内部地址。
 - Cloudflare Access 账号侧必须单独创建/核验；origin `originRequest.access` 模板不能替代 Access Application/Policy。
 - 生产 `.env`、Cloudflare credentials、MySQL defaults、Quark/QQ/Weibo/Cookie 只报告路径和键名。
+- 迅雷状态文件必须同时验收同步脚本和 backend 自身写入，POSIX 保持 `600`、Windows 使用 owner-only ACL；确认随机私有临时文件、原子替换、失败清理，不能以一次 chmod 或脚本测试代替持续权限验证。
+- Docker Desktop 进程审计使用 `docker top <container> -eo pid,uid,comm`；缺 PID 会导致查询失败，必须保留 UNKNOWN。只取 UID/进程名，不输出命令参数或完整 inspect。
 
 ## 5. 部署后验收
 
