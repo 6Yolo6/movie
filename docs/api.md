@@ -6,6 +6,7 @@
 
 - `GET /api/movies/list`：影片分页、分类、筛选和排序。
 - `GET /api/movies/filters?category=`：动态筛选项。
+- `GET /api/movies/hot-searches?days=7&limit=8`：顶部搜索框的“最近热门搜索”，公开接口，无需登录，与 `/api/movies` 共用搜索限流。返回 `[{keyword,count}]` 按次数降序，数据取近 N 天 Redis `hot:search:<date>` ZSet 合并求和，Redis 为空或异常时回退 MySQL `site_search_log`；`days` 取值 1-30，`limit` 取值 1-20。
 - `GET /api/movies/{id}`：影片详情和已审核资源。
 - `GET /api/movies/series?name=`：剧集季信息。
 - `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
@@ -16,9 +17,9 @@
 
 ## 资源
 
-- `POST /api/resources`：提交网盘、磁力、种子或在线播放资源。
+- `POST /api/resources`：发布者/管理员提交网盘、磁力、种子或在线播放资源。管理员不受 `resource.max.per.user` 总量限制；发布者仍受限，提交间隔、重复链接及权限校验不变。
 - `GET /api/resources/mine`：我的投稿。
-- `PUT /api/resources/{id}`：编辑自己的资源。
+- `PUT /api/resources/{id}`：发布者编辑自己的资源，管理员可编辑任意资源；可传 `bindMovieIds` 追加最多 50 个影片绑定。更新与追加在同一事务中完成，按影片和 URL 跳过已有资源，不删除旧绑定；返回 `{message, boundCount}`。
 - `DELETE /api/resources/{id}`：软删除自己的资源。
 - `POST /api/resources/{id}/report`：举报失效链接。
 - `GET /api/resources/admin/all`：管理列表。
@@ -29,6 +30,23 @@
 - `POST /api/resources/admin/{id}/repair-invalid`：管理员单条修复失效或疑似失效的夸克/迅雷云盘资源；成功后原位更新分享，并在存在 GYING 映射时尝试同步发布。
 
 资源质量字段包括 `quality`、`subtitle`、`fileSize`、`versionNote`。
+
+## 网页资源搜索（2026-09-24 已部署）
+
+- `POST /api/resource-search/query`：登录用户提交 `{keyword}`（1–80 字符的片名、候选序号或翻页指令），立即返回 HTTP 202 和 `{jobId, status}`，不在连接内等待外部搜索或转存。
+- `GET /api/resource-search/jobs/{jobId}`：仅任务所属用户可查询；不存在、过期、服务重启丢失或其他用户的任务统一返回 404。
+- 状态为 `QUEUED`、`RUNNING`、`SUCCEEDED`、`FAILED`；成功时同时返回 `reply` 和 `links`，失败只返回脱敏 `message`。
+- 建议每 2 秒轮询。同一用户已有进行中任务时复用该任务，不另行执行新指令；全局并发 2、等待队列 8、任务缓存最多 200 条，满载返回 429。完成结果保存 15 分钟，任务保存在内存中，不保证跨后端重启恢复。
+- 网页将进行中的任务 ID 保存在当前标签页的 `sessionStorage`，刷新后继续查询。轮询网络故障只重试查询，不重新启动转存。发布此契约时需要同步更新前后端并刷新旧页面。
+- 输入发送成功后自动清空已发送内容，不清除等待期间输入的新草稿；失败保留草稿。最近 20 轮对话按用户保存在当前标签页，历史候选不可执行；最新影片/资源候选与翻页支持直接点击，分享卡片支持复制、打开和二维码。
+- `resource.search.rate_limit_per_minute` 控制网页每用户每分钟搜索次数，默认 5，范围 1–60，后台保存后即时生效。资源序号选择/翻页不消耗搜索次数；选择影片、重新搜索或“查看其他资源”计入。网页 Redis bucket 与 QQ 独立，不改变 API/边缘防护限流。
+- GYING 读取连接/响应超时分别为 3/20 秒；连接错误、5xx、429 或鉴权失效触发 30 秒短时熔断，之后自动允许重试。AUTO/QQ 搜索继续尝试 PanSou；补充来源失败不会丢弃已有有效候选。显式选择 GYING 的管理任务仍报告来源失败，不伪装为成功。
+
+### 网页搜索：库内资源优先与仅二维码（2026-09-24 21:38 已部署）
+
+- `web:` 用户精确命中本地影片时优先返回已审核、活动、未删除、健康状态正常的片库资源；不受自有转存来源筛选限制，包含人工发布。同名不同年份/类型仍需先确认影片。
+- 库内快路径只读，不等待 GYING/TMDB/PanSou、分享验活或转存；用户发送“资源”/点击“搜索其他资源”后才进入已有外部候选流程。QQ 链路保持原行为。
+- 网页只渲染二维码、资源名称和提取码，移除明文 URL 与复制/打开入口；二维码内容即分享地址，可被解码，不构成强制手机 App 或防提取措施。过长地址显示二维码不可用提示，不回退为明文。
 
 ## Resource Hub
 
@@ -65,6 +83,7 @@
 - `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
 - `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
+- `POST /movies/{movieId}/poster/repair`、`POST /movies/{movieId}/seasons/ensure?maxPages=`、`POST /posters/repair?limit=`：影片元数据页的“自动补图 / 补齐剩余季 / 批量补图”。当 GYING 上游不可用（连接错误、5xx、429、鉴权失效）时不直接报错：补齐剩余季改用 PanSou（夸克 + 迅雷候选，按剧集名或 TMDB ID 匹配同剧集、跳过已有 ACTIVE DISK 资源、按季号升序最多 5 个目标，逐季转存并入库），自动补图回退 TMDB 搜索匹配。任务结果返回 `mode=PANSOU_FALLBACK`、`source`、`gyingUnavailable` 与 `{discovered,completed,skipped,failed,reason,items}`；全部失败记为 `FAILED`，否则记为 `SKIPPED` 并说明原因，不再表现为 GYING 源失败。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
@@ -106,5 +125,7 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 - `/api/admin/resource-reports`：举报处理。
 - `/api/admin/comments`：评论管理。
-- `/api/admin/users`：用户管理和启用状态。
-- `/api/config`：系统配置管理。
+- `GET /api/admin/users`：分页查询用户；角色、启用状态等管理操作保持原契约。
+- `POST /api/admin/users`：仅 ADMIN 可直接新建用户。请求 `{username, email, password, role}`；用户名 3–50 字符、邮箱必填且唯一、密码至少 12 字符且不超过 72 UTF-8 字节；`role` 默认 USER，仅允许 USER/PUBLISHER。独立于公开注册/邀请码/邮箱验证码，不允许访客绕过注册策略；成功 201，返回 `{id, username, email, role, enabled}`，不返回密码。非法输入 400，重复用户名或邮箱 409，未登录/非管理员 401/403。
+- `GET /api/admin/config`：读取系统设置；搜索频率未配置时返回虚拟默认值 5，不在读取时写数据库。
+- `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 仅接受 1–60 的整数，非法值 400；未存在的配置在保存时新增。
