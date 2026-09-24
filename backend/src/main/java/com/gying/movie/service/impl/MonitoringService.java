@@ -48,6 +48,43 @@ public class MonitoringService {
         if(set==null)return List.of();
         return set.stream().map(v->Map.<String,Object>of("keyword",String.valueOf(v.getValue()),"count",v.getScore()==null?0:v.getScore().longValue())).toList();
     }
+    /** Aggregated hot search keywords for the public search box (recent days, Redis first, MySQL fallback). */
+    public List<Map<String,Object>> hotKeywords(int days,int limit) {
+        int safeDays=Math.min(Math.max(days,1),30);
+        int safeLimit=Math.min(Math.max(limit,1),20);
+        Map<String,Double> merged=new LinkedHashMap<>();
+        try {
+            LocalDate today=LocalDate.now();
+            for(int offset=0;offset<safeDays;offset++){
+                var tuples=redis.opsForZSet().reverseRangeWithScores("hot:search:"+today.minusDays(offset),0,49);
+                if(tuples==null)continue;
+                for(var tuple:tuples){
+                    String keyword=tuple.getValue()==null?null:String.valueOf(tuple.getValue()).trim();
+                    if(keyword==null||keyword.isBlank())continue;
+                    merged.merge(keyword,tuple.getScore()==null?0D:tuple.getScore(),Double::sum);
+                }
+            }
+        } catch(Exception ignored) { }
+        if(merged.isEmpty()){
+            try {
+                jdbc.queryForList(
+                        "SELECT keyword,COUNT(*) hits FROM site_search_log WHERE created_at>=? GROUP BY keyword ORDER BY hits DESC LIMIT ?",
+                        java.sql.Date.valueOf(LocalDate.now().minusDays(safeDays-1L)),safeLimit)
+                    .forEach(row->{
+                        Object keyword=row.get("keyword");
+                        if(keyword==null)return;
+                        Object hits=row.get("hits");
+                        merged.put(String.valueOf(keyword).trim(),hits instanceof Number number?number.doubleValue():0D);
+                    });
+            } catch(Exception ignored) { }
+        }
+        return merged.entrySet().stream()
+                .filter(entry->!entry.getKey().isEmpty())
+                .sorted((left,right)->Double.compare(right.getValue(),left.getValue()))
+                .limit(safeLimit)
+                .map(entry->Map.<String,Object>of("keyword",entry.getKey(),"count",entry.getValue().longValue()))
+                .toList();
+    }
     public Map<String,Object> logs(String q,int page,int size) {
         String term=q==null?"":q.trim(); int limit=Math.min(Math.max(size,1),100),offset=(Math.max(page,1)-1)*limit; String like="%"+term+"%";
         Map<String,Object> out=new LinkedHashMap<>();

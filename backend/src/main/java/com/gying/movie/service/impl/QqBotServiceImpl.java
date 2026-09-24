@@ -101,6 +101,13 @@ public class QqBotServiceImpl implements IQqBotService {
     private final GyingSourceWorkflowService gyingSourceWorkflowService;
     private final QqTransferCleanupService transferCleanupService;
     private final RedisRateLimiter rateLimiter;
+    private com.gying.movie.service.ISysConfigService searchLimitConfig;
+
+    @Autowired
+    public void configureSearchLimits(com.gying.movie.service.ISysConfigService config) {
+        this.searchLimitConfig = config;
+    }
+
     private final Map<String, SuggestedCandidates> suggestedCandidates = new ConcurrentHashMap<>();
     private final Map<String, ResourceSearchContext> resourceSearchContexts = new ConcurrentHashMap<>();
     private final Map<String, ResourceCandidates> resourceCandidates = new ConcurrentHashMap<>();
@@ -333,8 +340,14 @@ public class QqBotServiceImpl implements IQqBotService {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
-        MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
+        // Website users can immediately use approved library resources. Do not wait for
+        // metadata providers, live share checks, discovery or transfers on this read-only path.
+        if (userKey != null && userKey.startsWith("web:")) {
+            String libraryReply = tryBuildWebLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
+            if (libraryReply != null) return libraryReply;
+        }
+        MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         if (selectedCandidate != null && movie == null) {
             return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
                     "所选候选无法建立可信影片元数据：" + safeKeyword
@@ -409,6 +422,83 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         return finishSearch(userKey, safeKeyword, "NO_RESOURCE", movie.getId(), 0,
                 buildNoResourceReply(movie, searchNotes), "no resource candidate");
+    }
+
+    private String tryBuildWebLibraryReply(String userKey, String keyword,
+            MovieSearchCandidate selected, List<MovieMetadata> localCandidates) {
+        List<MovieMetadata> matches;
+        if (selected != null && hasText(selected.getLocalMovieId())) {
+            MovieMetadata local = movieService.getById(selected.getLocalMovieId());
+            matches = local == null ? List.of() : List.of(local);
+        } else {
+            matches = localCandidates.stream().filter(movie -> selected == null
+                    ? MovieTitleMatcher.isExactMatch(movie, keyword) : matchesCandidate(movie, selected)).toList();
+        }
+        matches = matches.stream().filter(movie -> "ACTIVE".equalsIgnoreCase(movie.getStatus())
+                && movie.getDeletedAt() == null).toList();
+        if (matches.isEmpty()) return null;
+        Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
+        for (MovieMetadata movie : matches) {
+            List<ResourceLink> links = loadWebLibraryResources(movie.getId());
+            if (!links.isEmpty()) resources.put(movie.getId(), links);
+        }
+        if (resources.isEmpty()) return null;
+        if (matches.size() > 1) {
+            // Same title can refer to different years, films or seasons. Never guess.
+            List<MovieSearchCandidate> candidates = matches.stream()
+                    .sorted(Comparator.comparingInt(movie -> resources.containsKey(movie.getId()) ? 0 : 1))
+                    .limit(MAX_CANDIDATE_SUGGESTIONS)
+                    .map(movie -> new MovieSearchCandidate(movie.getTmdbId(), resolveCandidateMediaType(movie),
+                            title(movie), movie.getTitleEn(), movie.getYear(), scoreMovie(movie, keyword),
+                            "LOCAL", resolveCandidateMediaType(movie), movie.getId(), movie.getId())).toList();
+            rememberSuggestedCandidates(userKey, candidates);
+            return finishSearch(userKey, keyword, "AMBIGUOUS", null, 0,
+                    "片库中有同名影片，请先确认年份或类型：\n"
+                            + MovieSearchCandidateUtils.formatReply(keyword, candidates), "local title ambiguous");
+        }
+        MovieMetadata movie = matches.get(0);
+        List<ResourceLink> links = resources.get(movie.getId());
+        suggestedCandidates.remove(candidateUserKey(userKey));
+        resourceCandidates.remove(candidateUserKey(userKey));
+        rememberResourceSearchContext(userKey, movie, keyword);
+        StringBuilder reply = new StringBuilder("片名：").append(title(movie));
+        if (movie.getYear() != null) reply.append(" (").append(movie.getYear()).append(")");
+        appendLine(reply, "类型", join(movie.getGenres()));
+        appendLine(reply, "地区", join(movie.getRegions()));
+        appendLine(reply, "评分", rating(movie));
+        appendLine(reply, "简介", trim(movie.getSummary(), 180));
+        reply.append("\n\n资源库已有资源（优先展示，无需重新搜索或转存）：");
+        for (ResourceLink link : links) {
+            reply.append("\n- ").append(firstText(link.getName(), title(movie)))
+                    .append(" [").append(resourceProviderLabel(link.getProvider())).append("]")
+                    .append("\n  ").append(link.getUrl());
+            if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
+        }
+        reply.append("\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。");
+        return finishSearch(userKey, keyword, "LIBRARY_RESOURCE", movie.getId(), links.size(), reply.toString(), null);
+    }
+
+    private List<ResourceLink> loadWebLibraryResources(String movieId) {
+        List<ResourceLink> stored = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movieId).eq("audit_status", 1).eq("status", "ACTIVE")
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().eq("link_status", "NORMAL").or().eq("link_status", ""))
+                .orderByDesc("created_at").last("LIMIT 50"));
+        Map<String, ResourceLink> unique = new LinkedHashMap<>();
+        if (stored == null) return List.of();
+        for (ResourceLink link : stored) {
+            if (link == null || !movieId.equals(link.getMovieId()) || !Integer.valueOf(1).equals(link.getAuditStatus())
+                    || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
+                    || !isNormalLink(link) || !hasText(link.getUrl())) continue;
+            try {
+                java.net.URI uri = java.net.URI.create(link.getUrl().trim());
+                String scheme = firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT);
+                if (!("magnet".equals(scheme) || (Set.of("http", "https").contains(scheme) && hasText(uri.getHost())))) continue;
+            } catch (IllegalArgumentException invalidUrl) { continue; }
+            unique.putIfAbsent(link.getUrl().trim(), link);
+            if (unique.size() == 10) break;
+        }
+        return List.copyOf(unique.values());
     }
 
     private String finishSearch(
@@ -1299,9 +1389,19 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private boolean allowSearch(String userKey) {
         int limit = Math.max(1, qqBotProperties.getRateLimitPerMinute());
+        boolean web = userKey != null && userKey.startsWith("web:");
+        if (web) {
+            limit = 5;
+            if (searchLimitConfig != null) {
+                try {
+                    limit = Math.max(1, Math.min(60, Integer.parseInt(searchLimitConfig.getConfigValue(
+                            "resource.search.rate_limit_per_minute", "5"))));
+                } catch (NumberFormatException ignored) { /* Invalid legacy value uses safe default. */ }
+            }
+        }
         if (rateLimiter == null) return false;
         try {
-            return rateLimiter.retryAfterMillis("qq-user", candidateUserKey(userKey), limit, Duration.ofMinutes(1)) == 0;
+            return rateLimiter.retryAfterMillis(web ? "web-search-user" : "qq-user", candidateUserKey(userKey), limit, Duration.ofMinutes(1)) == 0;
         } catch (org.springframework.web.server.ResponseStatusException unavailable) {
             return false;
         }

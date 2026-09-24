@@ -229,12 +229,15 @@ public class ResourceLinkController {
         String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
         int auditStatus = "true".equals(auditEnabled) ? 0 : 1;
 
-        int maxResources = Integer.parseInt(sysConfigService.getConfigValue("resource.max.per.user", "100"));
-        long userResourceCount = resourceLinkService.count(
-                new QueryWrapper<ResourceLink>().eq("uploader_id", authUser.getId()).eq("status", "ACTIVE"));
-        if (userResourceCount + bindMovies.size() >= maxResources) {
-            return ResponseEntity.status(403)
-                    .body("Resource limit reached. Maximum " + maxResources + " resources per user.");
+        // Administrators are exempt from the publisher's total-resource quota on every submission entry.
+        if (!"ADMIN".equalsIgnoreCase(authUser.getRole())) {
+            int maxResources = Integer.parseInt(sysConfigService.getConfigValue("resource.max.per.user", "100"));
+            long userResourceCount = resourceLinkService.count(
+                    new QueryWrapper<ResourceLink>().eq("uploader_id", authUser.getId()).eq("status", "ACTIVE"));
+            if (userResourceCount + bindMovies.size() >= maxResources) {
+                return ResponseEntity.status(403)
+                        .body("Resource limit reached. Maximum " + maxResources + " resources per user.");
+            }
         }
 
         int minInterval = Integer.parseInt(sysConfigService.getConfigValue("resource.submit.interval.seconds", "60"));
@@ -409,6 +412,7 @@ public class ResourceLinkController {
     }
 
     @PutMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateOwnResource(
             @PathVariable Long id,
             @jakarta.validation.Valid @RequestBody ResourceSubmissionDTO dto,
@@ -443,26 +447,29 @@ public class ResourceLinkController {
         if ("DISK".equals(type) && "OTHER".equals(provider)) {
             return ResponseEntity.badRequest().body("provider is required for cloud disk resources");
         }
-        long duplicateCount = Objects.equals(resourceUrl, resource.getUrl())
-                ? 0
-                : resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                        .eq("movie_id", resource.getMovieId())
-                        .eq("status", "ACTIVE")
-                        .isNull("deleted_at")
-                        .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(resourceUrl)).or().eq("url", resourceUrl))
-                        .ne("id", id));
+        String targetMovieId = resource.getMovieId();
+        if (isAdmin && dto.getMovieId() != null && !dto.getMovieId().isBlank()) {
+            targetMovieId = dto.getMovieId().trim();
+        }
+        MovieMetadata movie = movieService.getById(targetMovieId);
+        if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+            return ResponseEntity.badRequest().body("Movie not found");
+        }
+        List<MovieMetadata> bindMovies;
+        try {
+            bindMovies = resolveBoundMovies(targetMovieId, dto.getBindMovieIds());
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.badRequest().body(error.getMessage());
+        }
+        long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", targetMovieId)
+                .eq("status", "ACTIVE").isNull("deleted_at")
+                .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(resourceUrl)).or().eq("url", resourceUrl))
+                .ne("id", id));
         if (duplicateCount > 0) {
             return ResponseEntity.status(409).body("This resource URL has already been submitted.");
         }
-
-        if (isAdmin && dto.getMovieId() != null && !dto.getMovieId().isBlank()
-                && !Objects.equals(resource.getMovieId(), dto.getMovieId().trim())) {
-            MovieMetadata movie = movieService.getById(dto.getMovieId().trim());
-            if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
-                return ResponseEntity.badRequest().body("Movie not found");
-            }
-            resource.setMovieId(movie.getId());
-        }
+        resource.setMovieId(targetMovieId);
         resource.setName(cleanOptional(dto.getName(), 255));
         resource.setUrl(resourceUrl);
         resource.setUrlHash(ResourceHubHashUtils.sha256(resourceUrl));
@@ -478,8 +485,12 @@ public class ResourceLinkController {
             String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
             resource.setAuditStatus("true".equals(auditEnabled) ? 0 : 1);
         }
-        resourceLinkService.updateById(resource);
-        return ResponseEntity.ok("Resource updated");
+        if (!resourceLinkService.updateById(resource)) {
+            throw new IllegalStateException("Resource update failed");
+        }
+        // Append only: existing bindings are preserved and duplicate URLs are skipped.
+        int boundCount = createBoundResources(resource, bindMovies, resourceUrl, resource.getUrlHash());
+        return ResponseEntity.ok(Map.of("message", "Resource updated", "boundCount", boundCount));
     }
 
     @DeleteMapping("/{id}")

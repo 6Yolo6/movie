@@ -43,6 +43,12 @@ type WorkflowJob = {
     jobId: string;
     status: string;
     errors?: string[];
+    result?: {
+        status?: string;
+        reason?: string;
+        mode?: string;
+        gyingUnavailable?: boolean;
+    } | null;
 };
 
 export default function AdminMoviesPage() {
@@ -123,6 +129,19 @@ export default function AdminMoviesPage() {
                 }
                 const job = await jobResponse.json() as WorkflowJob;
                 if (job.status === 'SUCCEEDED') {
+                    if (job.result?.status === 'FAILED') {
+                        message.error(job.result.reason || t('gyingSourceActionFailed'));
+                        await fetchMovies();
+                        return;
+                    }
+                    if (job.result?.status === 'SKIPPED') {
+                        message.warning(job.result.reason || t('gyingSourceActionSkipped'));
+                        await fetchMovies();
+                        return;
+                    }
+                    if (job.result?.reason) {
+                        message.warning(job.result.reason);
+                    }
                     message.success(t('gyingSourceActionSucceeded'));
                     await fetchMovies();
                     return;

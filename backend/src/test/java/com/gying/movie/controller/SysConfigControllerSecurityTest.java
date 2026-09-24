@@ -33,6 +33,24 @@ class SysConfigControllerSecurityTest {
     }
 
     @Test
+    void suppliesEditableWebSearchDefaultWithoutDatabaseWrite() {
+        when(configService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        var response=controller.getAllConfigs("admin");
+        var items=(List<?>)response.getBody();
+        assertEquals("resource.search.rate_limit_per_minute",((Map<?,?>)items.get(0)).get("configKey"));
+        assertEquals("5",((Map<?,?>)items.get(0)).get("configValue"));
+        verify(configService,never()).updateConfig(any(),any());
+    }
+    @Test
+    void validatesWebSearchRateBeforeSaving() {
+        for(String value:List.of("0","61","-1","1.5","", "bad"))
+            assertEquals(400,controller.updateConfig("resource.search.rate_limit_per_minute",value,"admin").getStatusCode().value());
+        verify(configService,never()).updateConfig(any(),any());
+        when(configService.updateConfig("resource.search.rate_limit_per_minute","12")).thenReturn(true);
+        assertEquals(200,controller.updateConfig("resource.search.rate_limit_per_minute","12","admin").getStatusCode().value());
+    }
+
+    @Test
     void listRedactsSensitiveConfigurationValues() {
         SysConfig publicConfig = config("resource.audit.enabled", "true");
         SysConfig secretConfig = config("qq.bot.webhook-token", "fixture-secret");

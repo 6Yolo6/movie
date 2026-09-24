@@ -75,6 +75,7 @@ class QqBotServiceImplTest {
     private PanSouClient panSouClient;
     private NapCatClient napCatClient;
     private QqBotServiceImpl service;
+    private RedisRateLimiter rateLimiter;
 
     @BeforeEach
     void setUp() {
@@ -94,7 +95,7 @@ class QqBotServiceImplTest {
         gyingSourceWorkflowService = mock(GyingSourceWorkflowService.class);
         panSouClient = mock(PanSouClient.class);
         napCatClient = mock(NapCatClient.class);
-        RedisRateLimiter rateLimiter = mock(RedisRateLimiter.class);
+        rateLimiter = mock(RedisRateLimiter.class);
         when(rateLimiter.retryAfterMillis(anyString(), anyString(), anyInt(), any())).thenReturn(0L);
         service = new QqBotServiceImpl(
                 qqBotProperties,
@@ -118,6 +119,21 @@ class QqBotServiceImplTest {
                 null,
                 rateLimiter);
         when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of());
+    }
+
+    @Test
+    void webSearchUsesLiveSettingsAndIndependentRateBucket() {
+        var config=mock(com.gying.movie.service.ISysConfigService.class);
+        service.configureSearchLimits(config);
+        when(config.getConfigValue("resource.search.rate_limit_per_minute","5")).thenReturn("12","2","0","bad");
+        for(int expected:new int[]{12,2,1,5}) {
+            assertEquals(true,org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"allowSearch","web:42"));
+            verify(rateLimiter).retryAfterMillis(eq("web-search-user"),anyString(),eq(expected),any());
+        }
+        org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"allowSearch","qq:42");
+        verify(rateLimiter).retryAfterMillis(eq("qq-user"),anyString(),eq(1000),any());
+        when(rateLimiter.retryAfterMillis(eq("web-search-user"),anyString(),anyInt(),any())).thenReturn(1000L);
+        assertEquals(false,org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"allowSearch","web:42"));
     }
 
     @Test
@@ -973,6 +989,81 @@ class QqBotServiceImplTest {
 
     private MovieSearchCandidate candidate(Long tmdbId, String title, int year, int score) {
         return new MovieSearchCandidate(tmdbId, "tv", title, null, year, score);
+    }
+
+    @Test
+    void webReturnsApprovedLibraryResourcesBeforeAnyExternalSearchOrValidation() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("local-first", "库内优先测试", 2024);
+        local.setTmdbId(null); // Missing external identity must not delay a ready library result.
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink manual = link("QUARK", "人工发布 4K", "https://pan.quark.cn/s/library-first");
+        manual.setMovieId(local.getId()); manual.setSource("MANUAL"); manual.setCode("1234");
+        ResourceLink magnet = link("P2P", "磁力版", "magnet:?xt=urn:btih:fixture");
+        magnet.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual, manual, magnet));
+        String reply = service.buildSearchReply("库内优先测试", "web:201");
+        assertTrue(reply.contains("资源库已有资源"));
+        assertTrue(reply.contains(manual.getUrl())); assertTrue(reply.contains(magnet.getUrl()));
+        assertTrue(reply.contains("提取码：1234")); assertTrue(reply.contains("搜索其他资源"));
+        assertEquals(reply.indexOf(manual.getUrl()), reply.lastIndexOf(manual.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, discoveryResultService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void webLibraryDoesNotExposeUnapprovedDeletedInvalidUnsafeOrOtherMovieResources() {
+        MovieMetadata local = movie("visible-only", "资源可见性测试", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        java.util.ArrayList<ResourceLink> links = new java.util.ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            ResourceLink link = link("QUARK", "资源" + i, "https://pan.quark.cn/s/visibility-" + i);
+            link.setMovieId(local.getId()); links.add(link);
+        }
+        links.get(1).setAuditStatus(0); links.get(2).setStatus("DELETED");
+        links.get(3).setDeletedAt(java.time.LocalDateTime.now()); links.get(4).setLinkStatus("INVALID");
+        links.get(5).setMovieId("different"); links.get(6).setUrl("javascript:alert(1)");
+        links.get(7).setLinkStatus("SUSPECTED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(links);
+        String reply = service.buildSearchReply("资源可见性测试", "web:202");
+        assertTrue(reply.contains(links.get(0).getUrl()));
+        for (int i = 1; i < links.size(); i++) assertFalse(reply.contains(links.get(i).getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void webSameNamedLocalMoviesRequireConfirmationThenReturnLibraryResources() {
+        MovieMetadata first = movie("same-2024", "同名影片测试", 2024);
+        MovieMetadata second = movie("same-2025", "同名影片测试", 2025);
+        ResourceLink firstLink = link("XUNLEI", "旧版", "https://pan.xunlei.com/s/old"); firstLink.setMovieId(first.getId());
+        ResourceLink secondLink = link("QUARK", "新版", "https://pan.quark.cn/s/new"); secondLink.setMovieId(second.getId());
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(first, second));
+        when(movieService.getById(second.getId())).thenReturn(second);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(firstLink, secondLink));
+        String candidates = service.buildSearchReply("同名影片测试", "web:203");
+        assertTrue(candidates.contains("请选择要搜索的影片"));
+        assertFalse(candidates.contains(firstLink.getUrl())); assertFalse(candidates.contains(secondLink.getUrl()));
+        String reply = service.buildSearchReply("2", "web:203");
+        assertTrue(reply.contains(secondLink.getUrl())); assertFalse(reply.contains(firstLink.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService, resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void webOnlySearchesExternalVersionsWhenExplicitlyRequestedAfterLibraryReply() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("explicit-more", "其他版本测试", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink manual = link("QUARK", "已有版本", "https://pan.quark.cn/s/explicit-more");
+        manual.setMovieId(local.getId()); manual.setSource("MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual));
+        service.buildSearchReply("其他版本测试", "web:204");
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9991L));
+        ResourceDiscoveryRunResult found = new ResourceDiscoveryRunResult(); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9991L)).thenReturn(found);
+        service.buildSearchReply("资源", "web:204");
+        verify(resourceDiscoveryService).enqueue(any());
     }
 
     private MovieMetadata movie(String id, String title, int year) {

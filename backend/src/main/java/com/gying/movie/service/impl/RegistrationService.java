@@ -80,10 +80,13 @@ public class RegistrationService {
         if (rows.isEmpty()) return null;
         Map<String, Object> row = rows.get(0);
         String status = String.valueOf(row.get("status"));
-        LocalDateTime expires = ((java.sql.Timestamp) row.get("expires_at")).toLocalDateTime();
+        Object expiryValue = row.get("expires_at");
+        // Connector/J returns DATETIME as LocalDateTime; older drivers use Timestamp.
+        LocalDateTime expires = expiryValue instanceof LocalDateTime local ? local
+                : expiryValue instanceof java.sql.Timestamp timestamp ? timestamp.toLocalDateTime() : null;
         int max = ((Number) row.get("max_uses")).intValue();
         int used = ((Number) row.get("used_count")).intValue();
-        return "ACTIVE".equals(status) && expires.isAfter(LocalDateTime.now()) && used < max ? row : null;
+        return "ACTIVE".equals(status) && expires != null && expires.isAfter(LocalDateTime.now()) && used < max ? row : null;
     }
 
     public static String normalizeEmail(String email) {

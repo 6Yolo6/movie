@@ -27,6 +27,27 @@ public class UserManagementController {
         this.jwtUtils = jwtUtils;
     }
 
+    @PostMapping
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> createUser(
+            @jakarta.validation.Valid @RequestBody com.gying.movie.dto.AdminCreateUserRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        String role = request.getRole();
+        if (!"USER".equals(role) && !"PUBLISHER".equals(role)) {
+            return ResponseEntity.badRequest().body("新用户角色只能为 USER 或 PUBLISHER");
+        }
+        String email = com.gying.movie.service.impl.RegistrationService.normalizeEmail(request.getEmail());
+        // Explicit admin-only path: no public-registration toggle, invitation consumption or email-code bypass for visitors.
+        SysUser user = sysUserService.register(request.getUsername().trim(), request.getPassword(), email, null);
+        if (!role.equals(user.getRole())) {
+            user.setRole(role);
+            if (!sysUserService.updateById(user)) throw new IllegalStateException("Could not assign user role");
+        }
+        return ResponseEntity.status(201).body(Map.of("id", user.getId(), "username", user.getUsername(),
+                "email", user.getEmail(), "role", role, "enabled", true));
+    }
+
     @GetMapping
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,

@@ -246,6 +246,7 @@ export default function AdminResourceModal({
                         loading={movieLoading}
                         options={movieOptions}
                         onSearch={loadMovies}
+                        onChange={() => { form.setFieldValue('bindMovieIds', []); setBindCandidates([]); }}
                         placeholder={t('selectMovie')}
                         notFoundContent={movieLoading ? t('loading') : t('noMoviesFound')}
                     />
@@ -293,20 +294,18 @@ export default function AdminResourceModal({
                 <Form.Item name="url" label={t('resourceURL')} rules={urlRules()}>
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
                 </Form.Item>
-                {!resource && (
-                    <Form.Item name="bindMovieIds" label={t('resourceBindSeries')}>
-                        <Select
-                            mode="multiple"
-                            showSearch
-                            filterOption={false}
-                            loading={bindLoading}
-                            options={bindCandidates}
-                            onSearch={loadBindCandidates}
-                            onFocus={() => loadBindCandidates()}
-                            placeholder={t('resourceBindSeriesPlaceholder')}
-                        />
-                    </Form.Item>
-                )}
+                <Form.Item name="bindMovieIds" label={t('resourceBindSeries')} extra={resource ? "仅追加绑定；已绑定影片保持不变，相同链接自动跳过。" : undefined}>
+                    <Select
+                        mode="multiple"
+                        showSearch
+                        filterOption={false}
+                        loading={bindLoading}
+                        options={bindCandidates}
+                        onSearch={loadBindCandidates}
+                        onFocus={() => loadBindCandidates()}
+                        placeholder={t('resourceBindSeriesPlaceholder')}
+                    />
+                </Form.Item>
                 <Row gutter={16}>
                     <Col xs={24} md={8}>
                         <Form.Item name="quality" label={t('quality')}><Input placeholder="4K / 1080P" /></Form.Item>

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag } from 'antd';
+import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag, Tooltip } from 'antd';
 import {
     BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
     LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined, MoonOutlined, SunOutlined, TranslationOutlined,
@@ -40,6 +40,34 @@ export default function Navbar() {
     const [loadingSwitchUsers, setLoadingSwitchUsers] = useState(false);
     const [hasAdminBackup, setHasAdminBackup] = useState(false);
     const [switchForm] = Form.useForm();
+    const [hotOpen, setHotOpen] = useState(false);
+    const [hotKeywords, setHotKeywords] = useState<string[]>([]);
+    const [hotLoaded, setHotLoaded] = useState(false);
+    const hotBoxRef = React.useRef<HTMLDivElement>(null);
+
+    const loadHotSearches = useCallback(async () => {
+        if (hotLoaded) return;
+        setHotLoaded(true);
+        try {
+            const res = await api('/api/movies/hot-searches?days=7&limit=8');
+            if (!res.ok) throw new Error(`hot search request failed: ${res.status}`);
+            const data = await res.json() as { keyword?: string }[];
+            setHotKeywords((Array.isArray(data) ? data : [])
+                .map((item) => String(item?.keyword || '').trim())
+                .filter(Boolean));
+        } catch {
+            setHotKeywords([]);
+        }
+    }, [hotLoaded]);
+
+    useEffect(() => {
+        if (!hotOpen) return;
+        const onPointerDown = (event: MouseEvent) => {
+            if (hotBoxRef.current && !hotBoxRef.current.contains(event.target as Node)) setHotOpen(false);
+        };
+        document.addEventListener('mousedown', onPointerDown);
+        return () => document.removeEventListener('mousedown', onPointerDown);
+    }, [hotOpen]);
 
     const fetchUnreadCount = useCallback(async () => {
         if (!user || !token) {
@@ -278,6 +306,36 @@ export default function Navbar() {
         router.push(trimmed ? `/?keyword=${encodeURIComponent(trimmed)}` : '/');
     };
 
+    const hotSearchPanel = (
+        <div data-testid="hot-searches" className="w-64">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <FireOutlined className="text-orange-500" />
+                {t('recentHotSearches')}
+            </div>
+            {hotKeywords.length === 0 ? (
+                <p className="mb-0 text-xs text-gray-400 dark:text-gray-500">
+                    {hotLoaded ? t('hotSearchEmpty') : t('loading')}
+                </p>
+            ) : (
+                <div className="flex flex-wrap gap-2">
+                    {hotKeywords.map((term, index) => (
+                        <button
+                            key={term}
+                            type="button"
+                            data-hot-keyword={term}
+                            onClick={() => { setHotOpen(false); onSearch(term); }}
+                            className="max-w-full cursor-pointer truncate rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition-colors hover:border-orange-300 hover:text-orange-500 dark:border-zinc-700 dark:text-gray-300"
+                            title={term}
+                        >
+                            {index + 1}. {term}
+                        </button>
+                    ))}
+                </div>
+            )}
+            <p className="mb-0 mt-2 text-[11px] text-gray-400 dark:text-gray-500">{t('hotSearchHint')}</p>
+        </div>
+    );
+
     return (
         <>
             <nav className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/90 text-gray-900 border-b border-gray-200 dark:bg-[#141414]/90 dark:text-white dark:border-[#1f1f1f] sticky top-0 z-50 backdrop-blur-md">
@@ -286,6 +344,7 @@ export default function Navbar() {
                     <Button
                         type="text"
                         icon={<MenuOutlined />}
+                        aria-label={t('menu')}
                         className="md:hidden !text-lg"
                         onClick={() => setDrawerOpen(true)}
                     />
@@ -308,16 +367,33 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3 sm:gap-6">
-                    {/* Desktop search */}
-                    <div className="hidden md:block">
-                        <Input.Search
-                            key={keyword}
-                            placeholder={t('searchMovies')}
-                            defaultValue={keyword}
-                            onSearch={onSearch}
-                            style={{ width: 250 }}
-                            allowClear
-                        />
+                    {/* Desktop search with recent hot searches */}
+                    <div ref={hotBoxRef} className="relative hidden md:block">
+                        <div className="flex items-center">
+                            <Input.Search
+                                key={keyword}
+                                placeholder={t('searchMovies')}
+                                defaultValue={keyword}
+                                onSearch={onSearch}
+                                onFocus={() => { setHotOpen(true); void loadHotSearches(); }}
+                                style={{ width: 250 }}
+                                allowClear
+                            />
+                            <Tooltip title={t('recentHotSearches')}>
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    aria-label={t('recentHotSearches')}
+                                    onClick={() => { setHotOpen((open) => !open); void loadHotSearches(); }}
+                                    icon={<FireOutlined className="text-orange-500" />}
+                                />
+                            </Tooltip>
+                        </div>
+                        {hotOpen && (
+                            <div className="absolute right-0 top-full z-50 mt-2 rounded-xl border border-gray-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-[#1f1f1f]">
+                                {hotSearchPanel}
+                            </div>
+                        )}
                     </div>
 
                     {/* Theme toggle: keep a compact, visible control on phones. */}
@@ -399,14 +475,18 @@ export default function Navbar() {
                 styles={{ wrapper: { width: 280 }, body: { padding: '8px 0' } }}
                 className="md:hidden"
             >
-                {/* Mobile search */}
+                {/* Mobile search with recent hot searches */}
                 <div className="px-4 mb-4">
                     <Input.Search
                         placeholder={t('searchMovies')}
                         defaultValue={keyword}
                         onSearch={(v) => { onSearch(v); closeDrawer(); }}
+                        onFocus={() => void loadHotSearches()}
                         allowClear
                     />
+                    {hotKeywords.length > 0 && (
+                        <div className="mt-3">{hotSearchPanel}</div>
+                    )}
                 </div>
 
                 {/* Nav links */}

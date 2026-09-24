@@ -54,6 +54,8 @@ export default function ResourceManagementPage() {
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
     const [resources, setResources] = useState<AdminResource[]>([]);
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -385,6 +387,9 @@ export default function ResourceManagementPage() {
             ),
         },
     ];
+
+    // Stored language/auth preferences are only available after hydration.
+    if (!mounted) return <main className="container mx-auto px-4 py-8" aria-busy="true">正在加载资源管理…</main>;
 
     return (
         <div className="min-h-screen bg-[#f5f7fa] dark:bg-black">

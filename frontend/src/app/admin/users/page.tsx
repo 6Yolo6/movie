@@ -1,16 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { App, Button, Card, Input, Select, Space, Table, Tag, Typography } from 'antd';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { App, Button, Card, Form, Input, Modal, Select, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 
 const { Title } = Typography;
 const { Option } = Select;
 const { Search } = Input;
+const subscribeHydration = () => () => {};
+const clientHydration = () => true;
+const serverHydration = () => false;
+interface CreateUserValues { username: string; email: string; password: string; confirm: string; role: 'USER' | 'PUBLISHER'; }
 
 interface User {
     id: number;
@@ -27,6 +31,10 @@ export default function UserManagementPage() {
     const { message } = App.useApp();
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
+    const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [createForm] = Form.useForm<CreateUserValues>();
     const [users, setUsers] = useState<User[]>([]);
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -129,6 +137,21 @@ export default function UserManagementPage() {
         }
     };
 
+    const createUser = async (values: CreateUserValues) => {
+        if (creating) return;
+        setCreating(true);
+        try {
+            const response = await api('/api/admin/users', {
+                method: 'POST', body: JSON.stringify({ username: values.username.trim(), email: values.email.trim(), password: values.password, role: values.role }),
+            });
+            if (!response.ok) { message.error(await readApiError(response, '新建用户失败')); return; }
+            message.success('用户已创建，请安全地向用户交付初始密码');
+            createForm.resetFields(); setCreateOpen(false);
+            await fetchUsers();
+        } catch { message.error('网络异常，请查询用户列表确认是否已创建，勿重复提交'); }
+        finally { setCreating(false); }
+    };
+
     const getRoleColor = (role: string) => {
         switch (role) {
             case 'ADMIN': return 'red';
@@ -196,6 +219,8 @@ export default function UserManagementPage() {
         },
     ];
 
+    if (!mounted) return <main className="p-8" aria-busy="true">正在加载用户管理…</main>;
+
     return (
         <div className="container mx-auto px-4 py-8">
             <Card>
@@ -203,6 +228,7 @@ export default function UserManagementPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">{t('userManagementHint')}</p>
 
                 <Space className="mb-4" wrap>
+                    <Button type="primary" onClick={() => { createForm.resetFields(); setCreateOpen(true); }}>新建用户</Button>
                     <Search
                         placeholder={t('searchUsers')}
                         allowClear
@@ -255,6 +281,18 @@ export default function UserManagementPage() {
                     }}
                 />
             </Card>
+            <Modal title="新建用户" open={createOpen} footer={null} closable={!creating} maskClosable={!creating}
+                onCancel={() => { if (!creating) { setCreateOpen(false); createForm.resetFields(); } }}>
+                <Typography.Paragraph type="secondary">管理员直接创建账号，不受公开注册开关限制，也不消耗邀请码。默认创建普通用户；需要发布资源时选择发布者。</Typography.Paragraph>
+                <Form form={createForm} layout="vertical" initialValues={{ role: 'USER' }} onFinish={createUser}>
+                    <Form.Item name="username" label="用户名" rules={[{ required: true, whitespace: true }, { min: 3, max: 50 }]}><Input autoComplete="off" /></Form.Item>
+                    <Form.Item name="email" label="邮箱" rules={[{ required: true }, { type: 'email' }, { max: 200 }]}><Input autoComplete="off" /></Form.Item>
+                    <Form.Item name="role" label="角色"><Select options={[{ value: 'USER', label: '普通用户（浏览、收藏、评论）' }, { value: 'PUBLISHER', label: '发布者（可发布资源）' }]} /></Form.Item>
+                    <Form.Item name="password" label="初始密码" rules={[{ required: true }, { min: 12, max: 72, message: '至少 12 个字符，最多 72 个 UTF-8 字节' }, { validator: (_, value) => !value || new TextEncoder().encode(value).length <= 72 ? Promise.resolve() : Promise.reject(new Error('密码最多 72 个 UTF-8 字节')) }]}><Input.Password autoComplete="new-password" /></Form.Item>
+                    <Form.Item name="confirm" label="确认密码" dependencies={['password']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator: (_, value) => !value || value === getFieldValue('password') ? Promise.resolve() : Promise.reject(new Error('两次密码不一致')) })]}><Input.Password autoComplete="new-password" /></Form.Item>
+                    <div className="flex justify-end gap-2"><Button disabled={creating} onClick={() => { setCreateOpen(false); createForm.resetFields(); }}>取消</Button><Button type="primary" htmlType="submit" loading={creating}>创建用户</Button></div>
+                </Form>
+            </Modal>
         </div>
     );
 }

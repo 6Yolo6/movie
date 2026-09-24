@@ -315,6 +315,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
 
     const openEditResource = (resource: ResourceLink) => {
         setEditingResource(resource);
+        form.resetFields();
         form.setFieldsValue({
             name: resource.name,
             type: resource.type || 'DISK',
@@ -883,20 +884,18 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         >
                             <Input placeholder={getLinkPlaceholder()} className="rounded-md" />
                         </Form.Item>
-                        {!editingResource && (
-                            <Form.Item name="bindMovieIds" label={t('resourceBindSeries')}>
-                                <Select
-                                    mode="multiple"
-                                    showSearch
-                                    filterOption={false}
-                                    loading={bindLoading}
-                                    options={bindCandidates}
-                                    onSearch={loadBindCandidates}
-                                    onFocus={() => loadBindCandidates()}
-                                    placeholder={t('resourceBindSeriesPlaceholder')}
-                                />
-                            </Form.Item>
-                        )}
+                        <Form.Item name="bindMovieIds" label={t('resourceBindSeries')}>
+                            <Select
+                                mode="multiple"
+                                showSearch
+                                filterOption={false}
+                                loading={bindLoading}
+                                options={bindCandidates}
+                                onSearch={loadBindCandidates}
+                                onFocus={() => loadBindCandidates()}
+                                placeholder={t('resourceBindSeriesPlaceholder')}
+                            />
+                        </Form.Item>
                         {resourceType === 'DISK' && (
                             <Form.Item name="code" label={t('accessCode')}>
                                 <Input placeholder={t('optional')} className="rounded-md" />

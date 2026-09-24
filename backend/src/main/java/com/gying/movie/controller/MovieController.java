@@ -40,6 +40,13 @@ public class MovieController {
         }
     }
 
+    @GetMapping("/hot-searches")
+    public List<Map<String, Object>> getHotSearches(
+            @RequestParam(defaultValue = "7") int days,
+            @RequestParam(defaultValue = "10") int limit) {
+        return monitoringService.hotKeywords(days, limit);
+    }
+
     @GetMapping("/list")
     public Page<MovieMetadata> getMovieList(
             @RequestParam(defaultValue = "1") int page,

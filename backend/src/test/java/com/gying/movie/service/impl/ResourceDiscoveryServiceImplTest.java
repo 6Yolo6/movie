@@ -304,6 +304,25 @@ class ResourceDiscoveryServiceImplTest {
         verify(quarkTransferTaskService, never()).save(any(QuarkTransferTask.class));
     }
 
+    @Test
+    void keepsGyingResultsWhenPanSouSupplementFails() {
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(resource(
+                "肖申克的救赎 1994 4K", "https://pan.quark.cn/s/gying", "GYING")));
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenThrow(new IllegalStateException("unavailable"));
+        assertEquals(1, service.runTask(1L).getDiscovered());
+        verify(panSouClient, never()).searchQuark(anyString(), anyInt());
+    }
+
+    @Test
+    void gyingAndOneProviderFailureStillReturnsOtherProvider() {
+        when(gyingWorkflow.discoverResources(movie, 10)).thenThrow(new IllegalStateException("unavailable"));
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenThrow(new IllegalStateException("unavailable"));
+        DiscoveredResource xunlei = resource("肖申克的救赎 1994", "https://pan.xunlei.com/s/fixture", "PANSOU");
+        xunlei.setProvider("XUNLEI");
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(xunlei));
+        assertEquals(1, service.runTask(1L).getDiscovered());
+    }
+
     private ResourceDiscoveryResult discovery(long id, String provider, String url) {
         ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
         discovery.setId(id);

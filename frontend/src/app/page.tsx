@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, Suspense } from 'react';
-import { Typography, Spin, Row, Col, Empty, Button, Carousel } from 'antd';
-import { FireFilled, RightOutlined, StarFilled } from '@ant-design/icons';
+import { Typography, Spin, Row, Col, Empty, Button, Carousel, Tag } from 'antd';
+import { DownOutlined, FilterOutlined, FireFilled, RightOutlined, StarFilled, UpOutlined } from '@ant-design/icons';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import { MovieMetadata } from '@/types';
@@ -219,7 +219,8 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
       query.set('size', String(pageSize));
       const res = await api(`/api/movies/list?${query.toString()}`);
       const data: PaginatedResult<MovieMetadata> = await res.json();
-      setMovies(prev => p === 1 ? data.records : [...prev, ...data.records]);
+      const records = data.records || [];
+      setMovies(prev => p === 1 ? records : [...prev, ...records]);
       setHasMore(p * pageSize < data.total);
       setPage(p);
       setTotal(data.total);
@@ -282,6 +283,7 @@ const HomePageContent = () => {
   const router = useRouter();
 
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const category = searchParams.get('category');
   const keyword = searchParams.get('keyword');
@@ -306,6 +308,13 @@ const HomePageContent = () => {
     router.push(`/?${sp.toString()}`);
   };
 
+  const activeFilters = [
+    { key: 'genre', label: genre },
+    { key: 'region', label: region },
+    { key: 'language', label: language },
+    { key: 'year', label: year },
+  ].filter((item): item is { key: string; label: string } => Boolean(item.label));
+
   const showFilters = !!category || !!keyword || !!genre || !!region || !!language || !!year;
   const isLandingPage = !showFilters && !category && !keyword;
 
@@ -327,18 +336,29 @@ const HomePageContent = () => {
       )}
 
       {(showFilters || category) && (
-        <div className="mb-8 bg-white p-4 rounded-xl border border-gray-200 shadow-sm dark:bg-[#141414] dark:border-zinc-800">
-          <FilterRow label={t('genre')} options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
-          <FilterRow label={t('region')} options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
-          <FilterRow label={t('language')} options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
-          <FilterRow label={t('year')} options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
+        <div data-testid="movie-filters" className="mb-6 sm:mb-8 bg-white p-3 sm:p-4 rounded-xl border border-gray-200 shadow-sm dark:bg-[#141414] dark:border-zinc-800">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button
+              type="text"
+              size="small"
+              data-testid="movie-filters-toggle"
+              aria-expanded={filtersOpen}
+              onClick={() => setFiltersOpen((open) => !open)}
+              icon={<FilterOutlined />}
+            >
+              <span className="inline-flex items-center gap-2">
+                {t('filters')}
+                {activeFilters.length > 0 && <Tag className="!m-0" color="blue">{activeFilters.length}</Tag>}
+                {filtersOpen ? <UpOutlined className="text-xs" /> : <DownOutlined className="text-xs" />}
+              </span>
+            </Button>
 
-          <div className="flex gap-2 items-center text-sm border-t border-gray-200 dark:border-zinc-800 pt-3 mt-1">
-            <span className="text-gray-500 font-medium min-w-[64px]">{t('sort')}</span>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+              <span className="text-gray-500 font-medium">{t('sort')}</span>
               {sorts.map(s => (
                 <span
                   key={s.value}
+                  data-sort={s.value}
                   onClick={() => updateParam('sort', s.value)}
                   className={`cursor-pointer ${sort === s.value ? 'text-blue-500 font-bold' : 'text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'}`}
                 >
@@ -347,6 +367,33 @@ const HomePageContent = () => {
               ))}
             </div>
           </div>
+
+          {!filtersOpen && activeFilters.length > 0 && (
+            <div data-testid="movie-filters-summary" className="mt-2 flex flex-wrap items-center gap-2">
+              {activeFilters.map(item => (
+                <Tag key={item.key} closable onClose={() => updateParam(item.key, null)} className="!m-0">
+                  {item.label}
+                </Tag>
+              ))}
+              <Button
+                type="link"
+                size="small"
+                className="!px-1"
+                onClick={() => router.push(category ? `/?category=${encodeURIComponent(category)}` : '/')}
+              >
+                {t('clearFilters')}
+              </Button>
+            </div>
+          )}
+
+          {filtersOpen && (
+            <div className="mt-3 border-t border-gray-200 dark:border-zinc-800 pt-3">
+              <FilterRow label={t('genre')} options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
+              <FilterRow label={t('region')} options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
+              <FilterRow label={t('language')} options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
+              <FilterRow label={t('year')} options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
+            </div>
+          )}
         </div>
       )}
 

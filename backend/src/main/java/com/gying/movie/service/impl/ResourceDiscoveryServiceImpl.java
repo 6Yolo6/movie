@@ -349,33 +349,39 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         if ("GYING".equals(source)) {
             return gyingSourceWorkflowService.discoverResources(movie, payload.maxResults());
         }
-        if (("AUTO".equals(source) || "QQ_BOT".equals(source)) && resourceHubProperties.getGying().isDiscoveryEnabled()) {
-            try {
-                List<DiscoveredResource> gyingResources = gyingSourceWorkflowService.discoverResources(
-                        movie, payload.maxResults());
-                if (!gyingResources.isEmpty()) {
-                    String keyword = resolveKeyword(payload, movie);
-                    boolean hasQuark = hasProvider(gyingResources, "QUARK");
-                    boolean hasXunlei = hasProvider(gyingResources, "XUNLEI");
-                    List<DiscoveredResource> supplemental = new java.util.ArrayList<>();
-                    if (!hasQuark) {
-                        supplemental.addAll(panSouClient.searchQuark(keyword, payload.maxResults()));
-                    }
-                    if (!hasXunlei) {
-                        supplemental.addAll(panSouClient.searchClouds(
-                                keyword, Set.of("XUNLEI"), payload.maxResults()));
-                    }
-                    return mergeProviderResults(gyingResources, supplemental, payload.maxResults());
-                }
-            } catch (RuntimeException ignored) {
-                // GYING is preferred, but a site outage must not block the PanSou fallback.
-            }
-        }
         if ("AUTO".equals(source) || "QQ_BOT".equals(source) || "PANSOU".equals(source)) {
+            List<DiscoveredResource> gying = List.of();
+            RuntimeException failure = null;
+            if (!"PANSOU".equals(source) && resourceHubProperties.getGying().isDiscoveryEnabled()) {
+                try {
+                    gying = gyingSourceWorkflowService.discoverResources(movie, payload.maxResults());
+                } catch (RuntimeException error) {
+                    failure = error;
+                }
+            }
+            if (gying == null) gying = List.of();
             String keyword = resolveKeyword(payload, movie);
-            List<DiscoveredResource> quark = panSouClient.searchQuark(keyword, payload.maxResults());
-            List<DiscoveredResource> xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
-            return mergeProviderResults(quark, xunlei, payload.maxResults());
+            List<DiscoveredResource> quark = List.of();
+            List<DiscoveredResource> xunlei = List.of();
+            boolean available = !gying.isEmpty();
+            if (!hasProvider(gying, "QUARK")) {
+                try {
+                    quark = panSouClient.searchQuark(keyword, payload.maxResults());
+                    available = true;
+                } catch (RuntimeException error) { failure = error; }
+            }
+            if (!hasProvider(gying, "XUNLEI")) {
+                try {
+                    xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
+                    available = true;
+                } catch (RuntimeException error) { failure = error; }
+            }
+            if (!available && failure != null) {
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "资源来源暂时不可用，请稍后重试");
+            }
+            // Keep good results even when another provider's supplemental query fails.
+            return mergeProviderResults(gying,
+                    mergeProviderResults(quark, xunlei, payload.maxResults()), payload.maxResults());
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
     }

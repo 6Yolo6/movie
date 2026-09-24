@@ -67,6 +67,9 @@ export async function readApiError(response: Response, fallback = 'Operation fai
             const data = await response.json();
             return data?.message || data?.error || fallback;
         }
+        if (contentType.includes('text/html')) {
+            return response.status >= 500 ? '服务暂时不可用，请稍后重试' : fallback;
+        }
         const text = await response.text();
         return text || fallback;
     } catch {

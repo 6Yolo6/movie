@@ -23,9 +23,10 @@ import { api } from '@/lib/api';
 const { Title, Text } = Typography;
 
 const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
-    'auth.register.enabled': '是否允许访客自行注册账号；关闭后仅管理员可创建用户。',
+    'auth.register.enabled': '是否允许访客自行注册；关闭后仍可使用有效邀请码，管理员也可在用户管理中创建账号。',
     'resource.audit.enabled': '用户提交的资源是否需要管理员审核后才公开。',
-    'resource.max.per.user': '每个有发布权限的账号最多可保留的有效资源数量。',
+    'resource.max.per.user': '每个普通发布者最多可保留的有效资源数量；管理员不受此总数限制。',
+    'resource.search.rate_limit_per_minute': '网页资源搜索：每用户每分钟最多搜索次数（1–60），默认 5；保存后立即生效。资源序号选择和翻页不计入，重新搜索或查看其他资源计入；QQ 频率独立配置。',
     'resource.report.threshold': '同一资源达到该举报次数后标记为疑似失效。',
     'resource.submit.interval.seconds': '同一发布账号两次提交资源之间的最短间隔（秒）。',
     'resource.form.quick_params': '资源标题表单可一键插入的快捷参数，支持逗号或换行分隔。',
@@ -274,6 +275,9 @@ export default function SystemSettingsPage() {
         if (isNumericConfig(config)) {
             return (
                 <InputNumber
+                    min={config.configKey === 'resource.search.rate_limit_per_minute' ? 1 : undefined}
+                    max={config.configKey === 'resource.search.rate_limit_per_minute' ? 60 : undefined}
+                    precision={config.configKey === 'resource.search.rate_limit_per_minute' ? 0 : undefined}
                     value={value === '' ? null : Number(value)}
                     onChange={next => updateDraft(config.configKey, next === null ? '' : String(next))}
                     style={{ width: '100%' }}

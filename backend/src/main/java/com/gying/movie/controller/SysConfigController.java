@@ -44,6 +44,13 @@ public class SysConfigController {
                 .stream()
                 .map(this::view)
                 .collect(Collectors.toList());
+        if (configs.stream().noneMatch(item -> "resource.search.rate_limit_per_minute".equals(item.get("configKey")))) {
+            SysConfig defaultLimit = new SysConfig();
+            defaultLimit.setConfigKey("resource.search.rate_limit_per_minute");
+            defaultLimit.setConfigValue("5");
+            defaultLimit.setDescription("网页资源搜索：每用户每分钟最多搜索次数（1-60），保存后立即生效；资源序号选择与翻页不计入。");
+            configs.add(view(defaultLimit));
+        }
         return ResponseEntity.ok(configs);
     }
 
@@ -76,6 +83,15 @@ public class SysConfigController {
         }
         if (value != null && value.length() > 500) {
             return ResponseEntity.badRequest().body("Configuration value is too long");
+        }
+        if ("resource.search.rate_limit_per_minute".equals(key)) {
+            try {
+                int limit = Integer.parseInt(value == null ? "" : value.trim());
+                if (limit < 1 || limit > 60) throw new NumberFormatException();
+                value = String.valueOf(limit);
+            } catch (NumberFormatException error) {
+                return ResponseEntity.badRequest().body("网页资源搜索频率必须是 1-60 之间的整数");
+            }
         }
         boolean updated = sysConfigService.updateConfig(key, value == null ? "" : value);
         if (updated) {

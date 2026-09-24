@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -19,10 +21,12 @@ import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.MovieSearchCandidate;
+import com.gying.movie.dto.TmdbListItem;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
+import com.gying.movie.entity.QuarkTransferTask;
 import com.gying.movie.entity.ResourceDiscoveryResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.XunleiTransferTask;
@@ -42,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 class GyingSourceWorkflowServiceTest {
     private GyingSourceClient gyingSourceClient;
@@ -52,6 +58,7 @@ class GyingSourceWorkflowServiceTest {
     private IMovieSourceIdentityService sourceIdentityService;
     private IResourceLinkService resourceLinkService;
     private IResourceDiscoveryResultService discoveryService;
+    private IQuarkTransferTaskService transferTaskService;
     private IQuarkTransferRunnerService transferRunnerService;
     private IResourceHubPublishService publishService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
@@ -68,7 +75,7 @@ class GyingSourceWorkflowServiceTest {
         sourceIdentityService = mock(IMovieSourceIdentityService.class);
         resourceLinkService = mock(IResourceLinkService.class);
         discoveryService = mock(IResourceDiscoveryResultService.class);
-        IQuarkTransferTaskService transferService = mock(IQuarkTransferTaskService.class);
+        transferTaskService = mock(IQuarkTransferTaskService.class);
         transferRunnerService = mock(IQuarkTransferRunnerService.class);
         publishService = mock(IResourceHubPublishService.class);
         IQuarkShareService shareService = mock(IQuarkShareService.class);
@@ -83,7 +90,7 @@ class GyingSourceWorkflowServiceTest {
                 sourceIdentityService,
                 resourceLinkService,
                 discoveryService,
-                transferService,
+                transferTaskService,
                 transferRunnerService,
                 publishService,
                 shareService,
@@ -642,6 +649,126 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(1, result.get("succeeded"));
         assertTrue(((List<?>) result.get("items")).size() == 1);
         verify(gyingSourceClient, times(2)).get("/movie/mv/EGER");
+    }
+
+    @Test
+    void ensureRemainingSeasonsFallsBackToPansouWhenGyingUnavailable() {
+        MovieMetadata movie = movie("tmdb_tv_900", "示例剧 第二季", "tv", "TRAILER");
+        movie.setSeason(2);
+        movie.setSeriesName("示例剧");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceClient.get(anyString()))
+                .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "GYING unavailable"));
+
+        DiscoveredResource resource = new DiscoveredResource();
+        resource.setTitle("示例剧 第2季 4K 夸克网盘");
+        resource.setProvider("QUARK");
+        resource.setUrl("https://pan.quark.cn/s/example-season2");
+        resource.setCode("abcd");
+        resource.setSource("PANSOU");
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(resource));
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of());
+
+        AtomicReference<ResourceDiscoveryResult> discoveryRef = new AtomicReference<>();
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(discoveryService.save(any())).thenAnswer(invocation -> {
+            ResourceDiscoveryResult saved = invocation.getArgument(0);
+            saved.setId(901L);
+            discoveryRef.set(saved);
+            return true;
+        });
+        AtomicReference<QuarkTransferTask> transferRef = new AtomicReference<>();
+        when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
+        when(transferTaskService.save(any())).thenAnswer(invocation -> {
+            QuarkTransferTask saved = invocation.getArgument(0);
+            saved.setId(902L);
+            transferRef.set(saved);
+            return true;
+        });
+        when(transferTaskService.getById(902L)).thenAnswer(invocation -> transferRef.get());
+        when(transferRunnerService.submitOne(902L)).thenAnswer(invocation -> {
+            transferRef.get().setShareUrl("https://pan.quark.cn/s/own-share");
+            return new QuarkTransferRunResult();
+        });
+        ResourceHubPublishResult publish = new ResourceHubPublishResult();
+        publish.getResourceIds().add(903L);
+        when(publishService.publishDiscovery(901L)).thenReturn(publish);
+        ResourceLink published = new ResourceLink();
+        published.setId(903L);
+        published.setMovieId(movie.getId());
+        published.setProvider("QUARK");
+        published.setUrl("https://pan.quark.cn/s/own-share");
+        when(resourceLinkService.getById(903L)).thenReturn(published);
+
+        Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
+
+        assertEquals("PANSOU_FALLBACK", result.get("mode"));
+        assertEquals(1, result.get("completed"));
+        assertEquals(0, result.get("failed"));
+        assertEquals(Boolean.TRUE, result.get("gyingUnavailable"));
+        assertEquals("PANSOU", discoveryRef.get().getSource());
+        assertEquals("AVAILABLE", movie.getResourceStatus());
+        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test
+    void ensureRemainingSeasonsReportsSkipWhenPansouFindsNothing() {
+        MovieMetadata movie = movie("tmdb_tv_901", "示例剧 第三季", "tv", "TRAILER");
+        movie.setSeason(3);
+        movie.setSeriesName("示例剧");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceClient.get(anyString()))
+                .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "GYING unavailable"));
+
+        Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
+
+        assertEquals("SKIPPED", result.get("status"));
+        assertEquals(Boolean.TRUE, result.get("gyingUnavailable"));
+        assertEquals(0, result.get("completed"));
+        assertTrue(String.valueOf(result.get("reason")).contains("GYING"));
+        verify(transferRunnerService, never()).submitOne(any());
+    }
+
+    @Test
+    void repairMoviePosterFallsBackToTmdbSearch() throws Exception {
+        MovieMetadata movie = movie("local_mv_777", "钢铁侠2", "mv", "AVAILABLE");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        TmdbListItem item = new TmdbListItem();
+        item.setTmdbId(10138L);
+        item.setMediaType("movie");
+        item.setTitle("钢铁侠2");
+        item.setOriginalTitle("Iron Man 2");
+        when(tmdbClient.searchMulti("钢铁侠2", 5)).thenReturn(List.of(item));
+        when(tmdbClient.fetchDetails("movie", 10138L))
+                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/iron2.jpg\"}"));
+        when(posterStorageService.storeTmdbPoster("movie", 10138L, "/iron2.jpg"))
+                .thenReturn("tmdb/movie/10138/poster.jpg");
+
+        Map<String, Object> result = service.repairMoviePoster(movie.getId());
+
+        assertEquals("UPDATED", result.get("status"));
+        assertEquals("TMDB_SEARCH", result.get("source"));
+        assertEquals("tmdb/movie/10138/poster.jpg", movie.getPosterUrl());
+        verify(movieService).updateById(movie);
+        verify(gyingSourceClient, never()).get(anyString());
+    }
+
+    @Test
+    void repairMoviePosterSkipsWhenGyingUnavailableWithoutOtherPoster() {
+        MovieMetadata movie = movie("local_mv_778", "冷门影片", "mv", "AVAILABLE");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(gyingSourceClient.get(anyString()))
+                .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "GYING unavailable"));
+
+        Map<String, Object> result = service.repairMoviePoster(movie.getId());
+
+        assertEquals("SKIPPED", result.get("status"));
+        assertEquals(Boolean.TRUE, result.get("skipped"));
+        assertTrue(String.valueOf(result.get("reason")).contains("GYING"));
+        verify(movieService, never()).updateById(any());
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {

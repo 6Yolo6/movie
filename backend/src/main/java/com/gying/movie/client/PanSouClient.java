@@ -33,7 +33,10 @@ public class PanSouClient {
 
     public PanSouClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
             ResourceHubProperties properties, PanSouApiClient panSouApiClient) {
-        this.restTemplate = restTemplateBuilder.build();
+        this.restTemplate = restTemplateBuilder
+                .connectTimeout(java.time.Duration.ofSeconds(3))
+                .readTimeout(java.time.Duration.ofSeconds(30))
+                .build();
         this.objectMapper = objectMapper;
         this.properties = properties;
         this.panSouApiClient = panSouApiClient;
