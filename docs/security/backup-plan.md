@@ -4,7 +4,32 @@
 
 - 仓库已加入 `tools/security/backup.py`、`verify_backup.py`、`deploy/backup-config.example.json` 和 Windows 计划任务注册脚本。
 - 备份输出必须在 Git 工作区之外；MySQL dump、路径归档和 Docker 卷归档均通过 age 流式加密，不产生明文归档。
-- 当前任务没有执行真实加密备份、解密恢复或恢复演练；既有迁移/回滚备份位于仓库外，不能替代本方案的持续验证。
+- 2026-09-25 已完成 gying 库完整逻辑备份、选定项目持久数据/配置的冻结快照及隔离 DB/MinIO 恢复；19 个加密文件全部验证。尚未完成 MySQL 系统账号库/整个主机、应用全链路或异机恢复，也未完成离线私钥保管，不能据此宣布整体安全上线门禁通过。
+
+### 当前完整备份与恢复（2026-09-25 11:03–11:06）
+
+- 当前备份：`G:/gying-backups/20260925T030328.719395Z`，manifest=`complete`，19 个文件共 371.76 MiB；`verify_backup.py` 及所有 age 认证解密通过。
+- 用户在本机开通 `gying_backup@localhost`；已复核 gying 库 SELECT/SHOW VIEW/TRIGGER/EVENT、全局 SHOW_ROUTINE，以及仅当前用户/SYSTEM 可访问的 `G:/gying-secrets/mysql-backup.cnf`。没有扩大应用账号权限。
+- 数据库导出使用完整 routines/events/triggers 选项，不再跳过对象；拥有元数据权限后实测 25 张 InnoDB 表，视图/触发器/事件/例程均为 0。不是用缺权限下的“看不到”推断对象不存在。
+- 本地写入冻结：11:03:25–11:03:56 Asia/Shanghai，按原容器 ID 暂停/解冻 OpenClaw、backend、source、social、Quark、MinIO，另有 180 秒独立解冻 watchdog；正常完成，没有触发超时恢复。主机 QQ/迅雷计划任务不与窗口重叠，DB 行数/CHECKSUM 与关键配置哈希前后一致。远端 provider 已提交任务不能被此快照回滚，恢复时须先关闭自动化再核对。
+- 除数据库和六个卷外，归档环境、Compose、实际部署覆盖、Cloudflare、MinIO data/config、OpenClaw 外部认证配置、私有备份客户端配置、防火墙策略导出和加密 Docker 运行配置。私钥不写入归档；没有明文 SQL/tar 文件。
+- 独立原生 MySQL 8.0.28（专用 G 盘数据目录、loopback 13380、随机测试口令、禁用事件调度）成功恢复，25 张表的行数及逐表 CHECKSUM 全部一致，元数据对象数量与 UTF-8 验证通过；进程已关闭。
+- 相同镜像的 MinIO 在 `--network none`、无发布端口的独立恢复目录启动成功：1 张公开图片 SHA-256 一致、私有元数据请求 403，测试容器已移除。不等价于完整 scoped-policy/应用账号验收。
+- 完整证据位于本备份目录：`artifact-verification.json`、`database-restore-verification.json`、`minio-restore-verification.json`；窗口与容器恢复证据在 `G:/gying-tools/security-20260925/full-backup-result.json`。
+- 恢复副本仍在受限 `full-mysql-restore`、`full-minio-restore` 目录。早先递归清理被执行策略拒绝，本轮未绕过重试；离线私钥、跨主机恢复及系统账号重建仍需单独闭环。
+
+### 历史候选与准备（2026-09-25 10:50–10:58，已由上述完整备份补充）
+
+- 工具：`G:/gying-tools/age-v1.3.2`，官方 GitHub 发布的 Windows amd64 SHA-256 校验通过；未修改系统 PATH。
+- 配置：`G:/gying-secrets/backup-config.json`、`backup-recipient.txt`；当时专用 `mysql-backup.cnf` 尚不存在，现已由用户开通。实际库有 25 张 InnoDB 表，当前应用账号缺 SHOW VIEW/TRIGGER/EVENT/SHOW_ROUTINE，不扩大应用账号权限。
+- 候选备份：`G:/gying-backups/security-20260925-partial`，16 个 `.age` 文件共约 371 MiB，覆盖应用表、环境/Compose/当前部署覆盖、Cloudflare、MinIO、backend/Quark/social/OpenClaw 状态及加密 Docker 运行配置。没有生成明文 SQL/tar 归档。
+- 范围限制：数据库导出明确不含触发器、事件和例程元数据；在线路径/卷未停止写入，不能证明跨服务一致性。manifest 的 `status=partial` 保持不变，`verify_backup.py` 按预期拒绝，不放宽工具。
+- 验证：16/16 校验和与 age 认证解密通过；独立原生 MySQL（专用 G 盘数据目录、仅 loopback 13379、随机测试口令、关闭事件调度）恢复 25 张表，行数与导出前后稳定计数全部一致，UTF-8 往返通过；进程已关闭。
+- MinIO：相同镜像、独立解密数据目录、`--network none`、无发布端口，健康通过，1 张公开图片 SHA-256 与源一致，私有元数据 403；测试容器已移除。不是完整 policy/scoped 账号或应用链路验收。
+- 验证报告在候选目录：`artifact-verification.json`、`table-restore-verification.json`、`minio-restore-verification.json`、`cleanup-verification.json`。恢复数据目录仍在 `G:/gying-tools/security-20260925/{mysql-restore,minio-restore}`；清理被执行策略拒绝，没有绕过重试，目录 ACL 仅当前用户/SYSTEM。
+- 私钥暂存 `F:/gying-recovery-keys/gying-age-20260925.txt`，与 G 盘备份分离且 ACL 受限，但仍在线；用户必须完成离线保管，不能把不同盘符当成离线/异机备份。
+- 本机交互入口：`G:/gying-tools/security-20260925/Prepare-BackupAccess.ps1` 默认 dry-run，`-Apply` 要求管理员 PowerShell并本机输入 MySQL 管理员密码；仅新建 `gying_backup@localhost` 与最小备份 grants、保存私有 defaults、导出防火墙。已存在账号/文件会拒绝覆盖，失败后需检查部分创建状态，不自动删除或修改既有账号。
+- 原 E 盘模板路径仍是示例；本机后续使用已准备的 G 盘配置。专用账号、完整逻辑/持久数据备份和隔离恢复现已完成；生产端口/服务重建仍需分别复核 Firewall、Access、身份/policy 等门禁。
 
 ## 2. 目标 RPO/RTO（需业务确认）
 

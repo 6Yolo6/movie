@@ -2,13 +2,16 @@
 
 > 这是部署门禁，不是“已部署”证明。当前生产尚未完成本清单。
 
-2026-09-24 复核：nginx/backend loopback、应用非 root、MinIO alias 和部分入口已验证；检查项仍按实际证据逐项验收，不把此清单视为全量上线证明。
+2026-09-25 复核：nginx/backend loopback、应用非 root、MinIO alias 和部分入口已验证；迅雷补丁已随 backend:20260924c 上线，在线状态文件为 600。检查项仍按实际证据逐项验收，不把此清单视为全量上线证明。Public Firewall 仍关闭，Redis 仍在共享网络，专用备份账号、完整 gying 逻辑/持久数据备份与隔离恢复已通过；Firewall、Access、应用身份/policy 等仍需独立闭环，目前不得批量重建生产。
 
 ## A. 变更前
 
 - [ ] 读取 `docs/current-project-status.md`、根目录 `docker-security-report.md` 和本清单。
 - [ ] 确认分支/提交、维护窗口、回滚点；`git status --short` 已记录。
-- [ ] 备份 MySQL、MinIO、Quark、social/OpenClaw 状态；至少有仓库外受保护目录。
+- [x] 本机使用 G 盘备份配置与便携 age，官方摘要、受限 ACL、`mysql-backup.cnf` 和 `gying_backup@localhost` 的登录/grants 已验证（2026-09-25）。
+- [ ] 不接受 `G:/gying-backups/security-20260925-partial` 替代完整恢复点：已验证 16 个加密文件、25 张表、MinIO 单图；仍缺完整 DB 对象、跨服务静默一致性与离线私钥。
+- [x] 用户已本机执行备份账号开通；只新增 localhost 备份身份并导出防火墙，不改应用/root 账号。账号与私有 defaults 已由本任务复核。
+- [x] 当前完整逻辑/持久数据备份位于 `G:/gying-backups/20260925T030328.719395Z`：19 文件、短时冻结窗口、hash/解密、25 表行数/CHECKSUM、对象数量与隔离 MinIO 抽样均通过；MySQL 系统账号、离线私钥和完整应用/异机验收不在此勾选覆盖范围。
 - [ ] 生产 `.env`、Cloudflare config、MySQL defaults、age 私钥 ACL 已核对；不打印值。
 - [ ] 运行 `python -X utf8 tools/security/scan_secrets.py`，当前工作区无命中。
 - [ ] 现有容器、端口、网络、卷和 Windows Firewall 已截图/脱敏记录。
@@ -21,13 +24,14 @@
 - [ ] Redis 密码/ACL、JWT、内部 token、QQ/Quark/第三方 token 已从外部 secret 注入。
 - [ ] GYING Source token 非空且 source 缺 token 时请求拒绝。
 - [ ] Quark Cookie 卷 ACL/文件模式收紧，旧 Cookie 已按需要撤销。
-- [ ] 迅雷状态文件先备份；外部同步与 backend 自身持久化都经实际重复写入验证 owner `10001:10001`、mode `600`，不输出内容。当前新增代码未部署，在线 `644` 不得放行。
+- [ ] 迅雷状态文件先备份；外部同步与 backend 自身持久化都经实际重复写入验证 owner `10001:10001`、mode `600`，不输出内容。补丁已部署；2026-09-25 09:27、10:33 同步任务均退出 0，两次 stat 均为 `600`，但 backend 自身独立重复写入证据仍缺，保留未完成。
 
 ## C. 依赖和网络迁移
 
 - [ ] MinIO 备份后接入 `gying-net` alias `minio`；9000/9001 不再监听所有接口。
+- [ ] Redis 从共享 `gying-net` 迁入 `cache-net`（internal=true），backend 连接、认证/ACL 和限流验证通过；没有宿主发布不等于网络已隔离。
 - [ ] OpenClaw 接入应用网络，调用 `http://backend:8880/api/qq-bot/search-reply`；不依赖 backend 公网/宿主机端口。
-- [ ] Windows Firewall Public profile 启用；3306/33060/9000/9001/8880/5005 无不必要公网入站规则。
+- [ ] Windows Firewall Public profile 启用；3306/33060/9000/9001/8880/5005 无不必要公网入站规则。已准备 `G:/gying-tools/security-20260925/Apply-FirewallStep.ps1 -Apply`（仅物理网卡入站阻断、不改出站、不重建容器，健康失败/超时自动回退）；自动 UAC 启动未成功，当前仍未执行，需管理员本机运行。
 - [ ] Cloudflare Tunnel 仅指向 `127.0.0.1:80`；Access/WAF/默认 deny 已在账号侧验证。
 
 ## D. Compose 预检和发布
@@ -62,7 +66,7 @@ python -X utf8 tools/security/test_nginx.py
 
 ## F. Cloudflare/外部链路
 
-- [ ] 未登录管理员请求被 Access 拦截；Access 登录后普通 USER 仍不能调用 ADMIN API。
+- [ ] 未登录管理员请求被 Access 拦截（2026-09-25 公网 `/admin/movies` 仍为 200，尚未取得拦截证据）；Access 登录后普通 USER 仍不能调用 ADMIN API。
 - [ ] 直接访问主机公网 IP 的 8880/5005/9000/9001/3306 被防火墙拒绝。
 - [ ] MinIO 控制台未进入 Tunnel；Cloudflare catch-all 返回 404。
 - [ ] OpenClaw QQ 搜索走内部 token；每用户一分钟 5 次限流生效。

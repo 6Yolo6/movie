@@ -29,9 +29,13 @@ docker compose -f docker-compose.prod.yml <command>
 
 ### 已观测在线端口
 
-2026-09-20 只读观测到 nginx `0.0.0.0:80/443`、backend `0.0.0.0:8880`、quark `0.0.0.0:5005`、MinIO `0.0.0.0:9000/9001`。这组结果是待修复基线，不是目标状态。
+2026-09-25 只读复核：nginx 为 `127.0.0.1:80`、backend 为 `127.0.0.1:8880`，已完成 loopback 收紧；quark `0.0.0.0:5005`、MinIO `0.0.0.0:9000/9001` 仍未收紧。
+
+Redis 无宿主发布，但实际仅接入 `gying-movie_gying-net`（internal=false），不是目标 `cache-net`；backend 已接入两个网络。OpenClaw 仍仅在默认 bridge；MinIO 已有应用网络 alias。不能把 Compose 的目标网络写成线上已隔离。
 
 ## 3. 容器权限
+
+2026-09-25 运行态仍有 quark/PanSou/MinIO 的 UID 0 进程，OpenClaw/Redis/quark/PanSou/MinIO 共 5 个容器缺少 `no-new-privileges`；应用/入口已通过相关检查。
 
 目标服务的共同加固：
 

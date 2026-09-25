@@ -1,12 +1,13 @@
 # MySQL 安全方案
 
-## 1. 在线观测
+## 1. 在线观测（区分当前配置与历史查询）
 
-- MySQL 版本：8.0.28。
-- Windows 服务监听 `3306` 和 `33060` 的所有地址；`bind_address=*`、`mysqlx_bind_address=*`。
+- 2026-09-25 实测 MySQL 8.0.28，gying 库有 25 张 InnoDB 表；本轮未重新查询服务器安全变量。
+- 2026-09-25 Windows 监听复核：`3306` 和 `33060` 仍有非 loopback 监听，Public Firewall 关闭；`bind_address=*`、`mysqlx_bind_address=*` 为 2026-09-24 查询结果。
 - `require_secure_transport=OFF`；`local_infile=OFF`；`secure_file_priv=NULL`。
-- 应用数据库会话已验证为 `root@localhost`；`root@%` 只观察到 USAGE，不把它误判为完整远程 root。
-- 当前没有执行账号切换、root 禁用、TLS 开启或防火墙变更。
+- 2026-09-25 三个应用容器配置已均为非 root 的 `gying_app`；本机用现役凭据实测 `CURRENT_USER()=gying_app@%`，grants 为 USAGE 与 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE。这不替代每个容器来源/其他用户的验收；通配 Host 和共用身份仍不符合目标。MCP 为此前只读实测。
+- 应用账号仍缺完整备份权限，未扩大其 grants；用户已创建 `gying_backup@localhost`，实测库级 SELECT/SHOW VIEW/TRIGGER/EVENT 及全局 SHOW_ROUTINE，凭据仅当前用户/SYSTEM 可读。拥有元数据权限后确认视图/触发器/事件/例程均为 0。
+- 2026-09-20 应用使用 root 的记录仅为历史基线，不再作为当前状态；分服务身份、最小 grants、TLS 和防火墙仍待闭环。本轮未变更账号或数据库。
 
 这些结论是本次审计的最高优先级阻断项之一。
 
@@ -66,4 +67,4 @@ TLS 变更必须先在隔离连接器验证，避免一次性让 backend/source/
 
 ## 6. 备份和恢复
 
-MySQL 使用 `tools/security/backup.py` 通过 `mysqldump --single-transaction --quick --no-tablespaces` 产生流并用 age 加密；不要生成明文归档。备份账号和恢复演练要求见 `backup-plan.md`。当前只完成工具和模板，真实加密备份/恢复尚未执行。
+MySQL 使用 `tools/security/backup.py` 通过 `mysqldump --single-transaction --quick --no-tablespaces` 产生流并用 age 加密；不要生成明文归档。备份账号和恢复演练要求见 `backup-plan.md`。2026-09-25 已使用独立 `gying_backup@localhost` 完成 gying 库完整逻辑备份（routines/events/triggers 选项启用）及隔离恢复：25 张表行数和逐表 CHECKSUM 一致，视图/触发器/事件/例程数量匹配；当前备份目录为 `G:/gying-backups/20260925T030328.719395Z`。这不是 MySQL 系统账号库或全主机恢复，仍需离线私钥与异机/应用验收；早先 partial 目录保留为历史候选，详见 `backup-plan.md`。
