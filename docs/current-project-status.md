@@ -32,7 +32,7 @@
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
 - 影片元数据支持缺失海报自动补图；GYING 不可用时自动补图回退 TMDB 搜索、补齐剩余季回退 PanSou，不直接报错。
 - 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；Resend 已接入已验证的 `gyinghub.dpdns.org` 发件域并启用邮箱验证码，163 等邮箱投递正常，Gmail 因免费域声誉暂拒收。
-- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，登录用户在桌面导航与抽屉均可直达「搜索资源」。 首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
+- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，登录用户在抽屉中进入「搜索资源」，顶栏不重复展示该入口；留言页默认类型为「综合留言」，留言频率可在后台配置（`comment.rate_limit_per_minute`，默认 5 次/分钟），内容经 HTML 白名单清洗。首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
 ### 影视资源中心
 
@@ -86,7 +86,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-library-qr-backend:20260925c`、`gying-library-qr-frontend:20260925l`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`nav-drawer-restore-20260925`、`register-mail-hint-20260925`、`registration-limit-invite-20260925`、`registration-resend-20260925`、`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
+- 当前前后端：`gying-library-qr-backend:20260925d`、`gying-library-qr-frontend:20260925m`（2026-09-25 Asia/Shanghai 部署）。最近发布与回滚 override 为 `E:\gying-tools\releases\drawer-comment-rate-20260925`，回滚目标 backend `20260925c` / frontend `20260925l`；更早版本镜像标签保留在本地。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -127,6 +127,7 @@
 - 入口复核：本地与公网 `/`、`/admin/movies`、`/resource-search`、`/api/movies/hot-searches` 均返回 200；匿名管理接口 401，内部 QQ 路径 404。
 - 品牌与首页轮播复核：中文「影窝」/英文「FilmNest」按语言切换且不并排；浅色/深色轮播背景与文字正确切换；375px 手机端轮播内容完整、按钮单行无裁切；768/1024/1200/1440 导航无横向溢出。
 - 首页与分类页结果总数复核：均不显示「N 条结果」，关键词搜索仍显示匹配数量。
+- 留言与抽屉复核（2026-09-25）：1440px 顶栏不再显示「搜索资源」，登录用户抽屉在「留言」之后显示该入口；留言页默认「综合留言」，下拉包含综合留言、求片、失效资源反馈、建议反馈和其他；相关后端测试 15 项通过，前端 `tsc --noEmit`、lint、生产构建通过，部署入口本地/公网 200。
 - 注册上限与邮件复核（2026-09-25）：临时把上限设为当前用户数 `3` 时，无邀请码策略返回 `registrationLimitReached=true`、`registrationAllowed=false`，发码接口 403 `Public registration limit reached; an invite code is required`；带有效邀请码时策略仍返回 `registrationAllowed=true`。清理临时邀请码后上限恢复生产值 `500`。Resend 域名 `gyinghub.dpdns.org` 三条记录 verified、DMARC 已添加，发件地址 `noreply@gyinghub.dpdns.org`；163 邮箱（`yolo136@163.com`）实测 delivered，Gmail 550 拒收；邮箱验证码开关已启用，注册页提示优先使用 QQ/163 邮箱（仅验证开启时显示），Gmail 用户暂收不到验证码。
 - 本轮未创建真实账号、未修改生产搜索频率、未手工触发转存或发布；模拟 API 回归与单测不替代真实扫码转存和外部副作用验收。
 - 安全续审（2026-09-25 防火墙变更前）：只读扫描 53 PASS / 10 FAIL / 0 UNKNOWN，安全工具单测 16 项通过、工作区 secret scan 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL（迁移文档漂移、新库覆盖）。未重跑上述业务全量测试，未重启生产或修改防火墙/生产凭据。

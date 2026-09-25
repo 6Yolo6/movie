@@ -11,7 +11,7 @@
 - `GET /api/movies/series?name=`：剧集季信息。
 - `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
 - `GET /api/favorites/hot?period=day|week|month|all`：站内收藏热门。
-- `GET /api/comments/{relateId}`、`POST /api/comments`：评论和回复。
+- `GET /api/comments/{relateId}`、`POST /api/comments`：评论和回复；提交缺省类型为 `GENERAL`，按账号应用 `comment.rate_limit_per_minute`（默认 5 次/分钟），内容经白名单清洗。
 - `POST /api/comments/{id}/upvote`、`DELETE /api/comments/{id}`：点赞、隐藏评论。
 - `GET /api/notifications`、`PUT /api/notifications/read-all`：站内通知。
 
@@ -127,5 +127,5 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 - `/api/admin/comments`：评论管理。
 - `GET /api/admin/users`：分页查询用户；角色、启用状态等管理操作保持原契约。
 - `POST /api/admin/users`：仅 ADMIN 可直接新建用户。请求 `{username, email, password, role}`；用户名 3–50 字符、邮箱必填且唯一、密码至少 12 字符且不超过 72 UTF-8 字节；`role` 默认 USER，仅允许 USER/PUBLISHER。独立于公开注册/邀请码/邮箱验证码，不允许访客绕过注册策略；成功 201，返回 `{id, username, email, role, enabled}`，不返回密码。非法输入 400，重复用户名或邮箱 409，未登录/非管理员 401/403。
-- `GET /api/admin/config`：读取系统设置；搜索频率未配置时返回虚拟默认值 5，不在读取时写数据库。
-- `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 仅接受 1–60 的整数，非法值 400；未存在的配置在保存时新增。
+- `GET /api/admin/config`：读取系统设置；搜索频率和留言频率未配置时分别返回虚拟默认值 5，不在读取时写数据库。
+- `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 接受 1–60，`comment.rate_limit_per_minute` 接受 1–120；非法值 400，未存在的配置在保存时新增。
