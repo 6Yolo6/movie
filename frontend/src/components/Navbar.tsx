@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { SITE_NAME } from '../lib/site';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag, Tooltip } from 'antd';
 import {
     BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
@@ -175,8 +176,8 @@ export default function Navbar() {
     if (!mounted) {
         return (
             <nav className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/90 text-gray-900 border-b border-gray-200 dark:bg-[#141414]/90 dark:text-white dark:border-[#1f1f1f] sticky top-0 z-50 backdrop-blur-md">
-                <Link href="/" className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">
-                    GYING
+                <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
+                    <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{SITE_NAME}</span>
                 </Link>
                 <div className="h-8 w-28 rounded bg-gray-100 dark:bg-white/10" />
             </nav>
@@ -345,14 +346,14 @@ export default function Navbar() {
                         type="text"
                         icon={<MenuOutlined />}
                         aria-label={t('menu')}
-                        className="md:hidden !text-lg"
+                        className="xl:!hidden !text-lg"
                         onClick={() => setDrawerOpen(true)}
                     />
-                    <Link href="/" className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">
-                        GYING
+                    <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
+                        <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{t('siteName')}</span>
                     </Link>
                     {/* Desktop nav links */}
-                    <div className="hidden md:flex gap-6 text-gray-600 dark:text-gray-400 font-medium">
+                    <div className="hidden xl:flex gap-5 2xl:gap-6 text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">
                         <Link href="/" className="hover:text-blue-600 dark:hover:text-white transition-colors">{t('home')}</Link>
                         <Link href="/?category=mv" className="hover:text-blue-600 dark:hover:text-white transition-colors">{t('movies')}</Link>
                         <Link href="/?category=tv" className="hover:text-blue-600 dark:hover:text-white transition-colors">{t('tvShows')}</Link>
@@ -408,7 +409,7 @@ export default function Navbar() {
                     </span>
                     <Button
                         type="text"
-                        className="sm:hidden !px-1"
+                        className="sm:!hidden !px-1"
                         aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
                         title={theme === 'dark' ? t('lightMode') : t('darkMode')}
                         icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
@@ -427,7 +428,7 @@ export default function Navbar() {
                     </span>
                     <Button
                         type="text"
-                        className="sm:hidden !px-1"
+                        className="sm:!hidden !px-1"
                         aria-label={t('language')}
                         title={t('language')}
                         icon={<TranslationOutlined />}
@@ -454,7 +455,7 @@ export default function Navbar() {
                             <Link href="/login">
                                 <Button type="text" size="small">{t('signIn')}</Button>
                             </Link>
-                            <Link href="/register" className="hidden sm:inline">
+                            <Link href="/register" className="hidden lg:inline">
                                 <Button type="primary" icon={<LoginOutlined />} size="small" className="bg-blue-600">{t('signUp')}</Button>
                             </Link>
                         </Space>
@@ -466,14 +467,14 @@ export default function Navbar() {
             <Drawer
                 title={
                     <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">GYING</span>
+                        <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{t('siteName')}</span>
                     </div>
                 }
                 placement="left"
                 open={drawerOpen}
                 onClose={closeDrawer}
                 styles={{ wrapper: { width: 280 }, body: { padding: '8px 0' } }}
-                className="md:hidden"
+                className="xl:!hidden"
             >
                 {/* Mobile search with recent hot searches */}
                 <div className="px-4 mb-4">

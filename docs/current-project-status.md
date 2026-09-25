@@ -32,6 +32,7 @@
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
 - 影片元数据支持缺失海报自动补图；GYING 不可用时自动补图回退 TMDB 搜索、补齐剩余季回退 PanSou，不直接报错。
 - 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；邮箱验证码按设计关闭。
+- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。 首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
 ### 影视资源中心
 
@@ -83,7 +84,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-library-qr-backend:20260924c`、`gying-library-qr-frontend:20260924g`（2026-09-24 23:20 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
+- 当前前后端：`gying-library-qr-backend:20260924c`、`gying-library-qr-frontend:20260925h`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -117,6 +118,8 @@
 - 后端全量测试 239 项通过（0 failures/errors，1 项 Redis 集成测试按环境跳过）；前端 `tsc --noEmit` 0 错误。
 - 浏览器回归在隔离镜像与公网环境均通过，覆盖热门搜索面板与跳转、筛选默认收起与摘要、资源搜索对话与二维码展示、管理员建号与搜索频率保存、注册与编辑绑定；公网复验无页面运行时错误。
 - 入口复核：本地与公网 `/`、`/admin/movies`、`/resource-search`、`/api/movies/hot-searches` 均返回 200；匿名管理接口 401，内部 QQ 路径 404。
+- 品牌与首页轮播复核：中文「影窝」/英文「FilmNest」按语言切换且不并排；浅色/深色轮播背景与文字正确切换；375px 手机端轮播内容完整、按钮单行无裁切；768/1024/1200/1440 导航无横向溢出。
+- 首页与分类页结果总数复核：均不显示「N 条结果」，关键词搜索仍显示匹配数量。
 - 本轮未创建真实账号、未修改生产搜索频率、未手工触发转存或发布；模拟 API 回归与单测不替代真实扫码转存和外部副作用验收。
 
 可重复执行的验收：

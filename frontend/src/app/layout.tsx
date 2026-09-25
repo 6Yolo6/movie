@@ -5,10 +5,11 @@ import { ThemeProvider } from '../components/ThemeProvider';
 import { I18nProvider } from '../components/I18nProvider';
 import './globals.css';
 import type { Metadata } from 'next';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../lib/site';
 
 export const metadata: Metadata = {
-  title: 'GYING Movie',
-  description: 'High Quality Movie Resources',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
 };
 
 import Navbar from '../components/Navbar';

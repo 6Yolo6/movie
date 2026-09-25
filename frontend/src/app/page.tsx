@@ -135,57 +135,54 @@ const RecentHotCarousel = () => {
           return (
             <div key={movie.id}>
               <Link href={`/movie/${movie.id}`} className="group block">
-                <article className="relative h-[300px] w-full max-w-full overflow-hidden rounded-3xl bg-zinc-950 sm:h-[360px]">
+                <article className="relative h-[400px] w-full max-w-full overflow-hidden rounded-3xl bg-white transition-colors sm:h-[360px] dark:bg-zinc-950">
                   <div
-                    className="absolute inset-0 scale-105 bg-cover bg-center opacity-45 blur-xl transition-transform duration-700 group-hover:scale-110"
+                    className="absolute inset-0 scale-105 bg-cover bg-center opacity-25 blur-xl transition-transform duration-700 group-hover:scale-110 dark:opacity-45"
                     style={{ backgroundImage: `url(${movie.posterUrl || 'https://via.placeholder.com/300x450'})` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/30" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/30 dark:from-black dark:via-black/85 dark:to-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent dark:from-black/80" />
 
-                  <div className="relative z-10 flex h-full min-w-0 items-center gap-5 px-5 py-7 sm:gap-10 sm:px-10 lg:px-14">
+                  <div className="relative z-10 flex h-full min-w-0 items-center gap-5 px-5 py-6 sm:gap-10 sm:px-10 sm:py-7 lg:px-14">
                     <img
                       src={movie.posterUrl || 'https://via.placeholder.com/300x450'}
                       alt={movie.titleCn}
-                      className="hidden h-[280px] w-[187px] shrink-0 rounded-xl object-cover shadow-2xl ring-1 ring-white/20 transition-transform duration-500 group-hover:scale-[1.03] sm:block"
+                      className="!hidden h-[280px] w-[187px] shrink-0 rounded-xl object-cover shadow-2xl ring-1 ring-zinc-900/10 transition-transform duration-500 group-hover:scale-[1.03] sm:!block dark:ring-white/20"
                     />
-                    <div className="min-w-0 max-w-3xl text-white">
-                      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                        <span className="rounded-full bg-orange-500/90 px-3 py-1 font-semibold">{t('recentHotBadge')}</span>
+                    <div className="min-w-0 max-w-3xl text-zinc-900 dark:text-white">
+                      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs sm:mb-3 sm:text-sm">
+                        <span className="rounded-full bg-orange-500/90 px-3 py-1 font-semibold text-white">{t('recentHotBadge')}</span>
                         {movie.category && (
-                          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur">
+                          <span className="rounded-full border border-zinc-300 bg-zinc-900/5 px-3 py-1 backdrop-blur dark:border-white/20 dark:bg-white/10">
                             {movie.category === 'mv' ? t('movies') : movie.category === 'tv' ? t('tvShows') : t('anime')}
                           </span>
                         )}
                       </div>
-                      <h2 className="mb-1 line-clamp-2 text-2xl font-bold leading-tight drop-shadow sm:text-4xl lg:text-5xl">{movie.titleCn}</h2>
-                      <p className="mb-4 truncate text-sm text-white/65 sm:text-base">
+                      <h2 className="mb-1 line-clamp-2 text-xl font-bold leading-tight drop-shadow sm:text-4xl lg:text-5xl">{movie.titleCn}</h2>
+                      <p className="mb-3 truncate text-sm text-zinc-600 sm:mb-4 sm:text-base dark:text-white/65">
                         {[movie.titleEn, movie.year, movie.regions?.slice(0, 2).join('/')].filter(Boolean).join(' · ')}
                       </p>
-                      <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+                      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-3 sm:text-sm">
                         {score > 0 && (
-                          <span className="inline-flex items-center gap-1 font-semibold text-yellow-300">
+                          <span className="inline-flex items-center gap-1 font-semibold text-yellow-600 dark:text-yellow-300">
                             <StarFilled /> {score.toFixed(1)}
                           </span>
                         )}
                         {heat > 0 && (
-                          <span className="inline-flex items-center gap-1 text-orange-300">
+                          <span className="inline-flex items-center gap-1 text-orange-500 dark:text-orange-300">
                             <FireFilled /> {compactNumber(heat)}
                           </span>
                         )}
                         {movie.genres?.slice(0, 3).map((genre) => (
-                          <span key={genre} className="rounded border border-white/15 bg-white/10 px-2 py-0.5 text-white/80">{genre}</span>
+                          <span key={genre} className="rounded border border-zinc-300 bg-zinc-900/5 px-2 py-0.5 text-zinc-700 dark:border-white/15 dark:bg-white/10 dark:text-white/80">{genre}</span>
                         ))}
                       </div>
                       {movie.summary && (
-                        <p
-                          className="hidden max-w-2xl overflow-hidden text-sm leading-6 text-white/70 sm:block"
-                          style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
-                        >
+                        <p className="hidden max-w-2xl text-sm leading-6 text-zinc-600 sm:line-clamp-3 dark:text-white/70">
                           {movie.summary}
                         </p>
                       )}
-                      <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold shadow-lg transition-colors group-hover:bg-blue-500">
+                      <span className="mt-3 inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors group-hover:bg-blue-500 sm:mt-4 sm:px-5">
                         {t('viewDetails')} <RightOutlined />
                       </span>
                     </div>
@@ -251,12 +248,9 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
 
   return (
     <div>
-      {paramString && total > 0 && (
+      {highlightKeyword && total > 0 && (
         <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          {highlightKeyword
-            ? <>{t('found')} <strong className="text-blue-600 dark:text-blue-400">{total}</strong> {t('resultsFor')} &quot;<strong>{highlightKeyword}</strong>&quot;</>
-            : <><strong className="text-blue-600 dark:text-blue-400">{total}</strong> {t('results')}</>
-          }
+          {t('found')} <strong className="text-blue-600 dark:text-blue-400">{total}</strong> {t('resultsFor')} &quot;<strong>{highlightKeyword}</strong>&quot;
         </div>
       )}
       <Row gutter={[12, 16]} className="sm:!ml-0 sm:!mr-0">

@@ -29,3 +29,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Carousel controls: readable on light and dark backgrounds. */
+.slick-prev,
+.slick-next {
+  color: rgba(24, 24, 27, 0.65) !important;
+}
+.dark .slick-prev,
+.dark .slick-next {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.slick-dots li button {
+  background: rgba(24, 24, 27, 0.3) !important;
+}
+.slick-dots li.slick-active button {
+  background: rgba(24, 24, 27, 0.8) !important;
+}
+.dark .slick-dots li button {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+.dark .slick-dots li.slick-active button {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+@media (max-width: 639px) {
+  .slick-prev,
+  .slick-next {
+    display: none !important;
+  }
+}
