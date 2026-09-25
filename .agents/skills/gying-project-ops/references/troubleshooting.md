@@ -45,8 +45,16 @@
 | MySQL MCP 报 `1045` 和 password NO | MCP 缺少密码环境 | `GYING_DB_PASSWORD` 并重启 MCP |
 | MCP Compose 找不到配置 | Compose 文件名非默认 | shell 显式使用 `-f` |
 | Docker 依赖端口冲突 | embedded 与外部服务重复 | `docker ps -a`、profile、映射端口 |
+| 公网 `530`、cloudflared 反复 `failed to dial to edge with quic: timeout` | 本机代理（Clash TUN fake-IP）把 `cfd.argotunnel.com` 解析成 `198.18.0.0/15` 地址，QUIC/UDP 经代理超时 | 计划任务参数加 `--protocol http2`（该参数已从 `--help` 隐藏但仍有效；`config.yml` 可能被 ACL 设为只读），重启任务后用 `http://127.0.0.1:20241/ready` 与 `cloudflared_tunnel_ha_connections` 复核 |
+| `git push` 报 `Connection closed by remote host`（对端 198.18.x.x） | 同一个代理 fake-IP 拦截 22 端口 | 改用 `ssh://git@ssh.github.com:443/<owner>/<repo>.git`，或全局 `insteadOf` 映射 |
 
 ## 日志命令
+
+```powershell
+# cloudflared 隧道连接状态（未显式配置时 metrics 默认监听 20241）
+Invoke-WebRequest http://127.0.0.1:20241/ready -UseBasicParsing
+(Invoke-WebRequest http://127.0.0.1:20241/metrics -UseBasicParsing).Content -split "`n" | Select-String 'ha_connections'
+```
 
 ```powershell
 docker compose -f docker-compose.prod.yml logs --tail=200 backend
