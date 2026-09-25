@@ -441,6 +441,7 @@ INSERT INTO sys_config (config_key, config_value, description) VALUES
 ('resource.submit.interval.seconds', '60', 'Minimum seconds between resource submissions'),
 ('resource.report.threshold', '3', 'Reports needed before a resource is treated as suspected invalid'),
 ('auth.register.enabled', 'true', 'Allow public registration'),
+('auth.register.max_users', '0', '自助注册的最大用户总数；0 表示不限制，达到上限后公开注册与邀请注册均停止，管理员建号不受影响。'),
 ('resource.hub.enabled', 'false', 'Enable Resource Hub automation (true/false)'),
 ('resource.hub.auto_approve', 'true', 'Auto approve Resource Hub imported resources'),
 ('resource.hub.validation.enabled', 'false', 'Enable scheduled Resource Hub link validation'),

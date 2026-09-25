@@ -38,11 +38,16 @@ public class RegistrationService {
         boolean publicEnabled = bool("auth.register.enabled", false);
         boolean invitationEnabled = bool("auth.invite.enabled", true);
         boolean inviteValid = invitationEnabled && validateInvitation(inviteCode, false) != null;
+        int maxUsers = maxRegistrationUsers();
+        long currentUsers = users.count();
+        boolean limitReached = maxUsers > 0 && currentUsers >= maxUsers;
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("publicRegistrationEnabled", publicEnabled);
         result.put("invitationEnabled", invitationEnabled);
         result.put("inviteValid", inviteValid);
-        result.put("registrationAllowed", publicEnabled || inviteValid);
+        result.put("registrationAllowed", (publicEnabled || inviteValid) && !limitReached);
+        result.put("registrationLimitReached", limitReached);
+        result.put("maxUsers", maxUsers);
         result.put("emailRequired", true);
         result.put("emailVerificationEnabled", emailVerification.enabled());
         return result;
@@ -55,6 +60,9 @@ public class RegistrationService {
         Map<String, Object> invitation = bool("auth.invite.enabled", true) ? validateInvitation(inviteCode, true) : null;
         if (!publicEnabled && invitation == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration is invite-only");
+        }
+        if (registrationLimitReached()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration limit reached");
         }
         try {
             emailVerification.verify(normalizedEmail, emailCode);
@@ -100,6 +108,20 @@ public class RegistrationService {
     public static String sha256(String value) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8))); }
         catch (Exception error) { throw new IllegalStateException("SHA-256 unavailable", error); }
+    }
+
+    public boolean registrationLimitReached() {
+        int maxUsers = maxRegistrationUsers();
+        return maxUsers > 0 && users.count() >= maxUsers;
+    }
+
+    private int maxRegistrationUsers() {
+        String raw = config.getConfigValue("auth.register.max_users", "0");
+        try {
+            return Math.max(0, Integer.parseInt(raw == null ? "0" : raw.trim()));
+        } catch (NumberFormatException error) {
+            return 0;
+        }
     }
 
     private boolean bool(String key, boolean fallback) { return Boolean.parseBoolean(config.getConfigValue(key, String.valueOf(fallback))); }

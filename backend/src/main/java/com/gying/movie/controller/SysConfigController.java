@@ -93,6 +93,15 @@ public class SysConfigController {
                 return ResponseEntity.badRequest().body("网页资源搜索频率必须是 1-60 之间的整数");
             }
         }
+        if ("auth.register.max_users".equals(key)) {
+            try {
+                int limit = Integer.parseInt(value == null ? "" : value.trim());
+                if (limit < 0 || limit > 100000) throw new NumberFormatException();
+                value = String.valueOf(limit);
+            } catch (NumberFormatException error) {
+                return ResponseEntity.badRequest().body("注册人数上限必须是 0-100000 之间的整数，0 表示不限制");
+            }
+        }
         boolean updated = sysConfigService.updateConfig(key, value == null ? "" : value);
         if (updated) {
             return ResponseEntity.ok("Configuration updated");

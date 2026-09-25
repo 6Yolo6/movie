@@ -31,7 +31,7 @@
 - 顶部搜索框提供「最近热门搜索」（近 7 天 Redis 热词合并，回退 `site_search_log`，公开接口 `GET /api/movies/hot-searches`）；搜索页与电影/剧集/动漫分类页的筛选项默认收起，仅常显排序，有已选条件时显示可逐个关闭的摘要与「清除全部」。
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
 - 影片元数据支持缺失海报自动补图；GYING 不可用时自动补图回退 TMDB 搜索、补齐剩余季回退 PanSou，不直接报错。
-- 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；邮箱验证码按设计关闭。
+- 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；Resend 邮件通道已接入并完成真实发信测试，受测试发件域限制邮箱验证码仍按设计关闭。
 - 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。 首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
 ### 影视资源中心
@@ -56,6 +56,7 @@
 ### 注册、邀请与后台监控
 
 - 支持邀请码、注册开关与角色策略；邀请码 DATETIME 与 `LocalDateTime`/`Timestamp` 兼容，密码要求与后端一致（至少 12 字符、最多 72 UTF-8 字节）。
+- 公开注册支持人数上限设置 `auth.register.max_users`（0=不限制，上限 0–100000）；达到上限后公开注册与邀请注册均停止并给出明确提示，管理员在 `/admin/users` 建号不受该上限影响。
 - `/resource-search` 提供登录用户网页资源搜索：精确命中片库时优先返回已审核、活动、状态正常的资源，首轮不调用外部来源也不转存；界面只展示资源名称、提取码与二维码，不出现明文 URL 与复制/打开入口。任务异步执行、每 2 秒轮询、刷新续查，发送成功后清空已发送内容。
 - 后台监控页提供统计卡、14 天趋势、响应分布、热门搜索 Top10、发布成功率与多类日志 tab（中文列名与状态筛选）。
 - 系统设置可在线修改 `resource.search.rate_limit_per_minute`（每用户每分钟 1–60，默认 5，保存后即时生效）；资源序号选择与翻页不计入，选择影片、重新搜索或「查看其他资源」计入，QQ 搜索频率独立。
@@ -75,31 +76,37 @@
 
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
-- 生产安全审计（2026-09-24 复核）：`python tools/security/check_security.py --repo . --probe` 为 53 PASS / 10 FAIL / 0 UNKNOWN，失败项集中在未收紧的 quark/MinIO 端口、部分容器缺少 `no-new-privileges` 与 UID 0 进程，未放宽检查标准。
+- 生产安全审计（2026-09-25 复核）：`python tools/security/check_security.py --repo . --probe` 为 53 PASS / 10 FAIL / 0 UNKNOWN，失败项集中在未收紧的 quark/MinIO 端口、部分容器缺少 `no-new-privileges` 与 UID 0 进程，未放宽检查标准。
 - 凭据历史：扫描 1,278 个 Blob 命中 105 条规则（跨版本重复），当前工作区扫描为 0；可能有效的凭据仍需在 provider 侧轮换，历史重写另行审批。
-- 数据中心：`gying` 库 18 张业务表；MCP 使用只读 `gying_readonly@127.0.0.1`（写操作被拒），`require_secure_transport=OFF`、`local_infile=OFF`，MySQL/MySQLX bind address 均为 `*`。
+- 数据中心：2026-09-25 实测 MySQL 8.0.28，`gying` 库 25 张 InnoDB 表；使用现役应用凭据从本机连接匹配 `gying_app@%`，授予 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE，缺少完整备份权限，不能把非 root 等同最小 Host 范围。MCP 只读账号和 `require_secure_transport=OFF`、`local_infile=OFF`、bind address `*` 为此前验收，本轮未重新查询。
 - `docker compose -f docker-compose.prod.yml config --quiet` 已通过；语法与必需键通过不代表 Firewall、Access、MinIO policy 和恢复门禁通过。
-- Redis 与 PanSou 仅作为可重建依赖对待；NapCat 不纳入验收。
+- Redis 与 PanSou 仅作为可重建依赖对待；Redis 实际仅接入非 internal 的共享 `gying-net`，尚未迁入目标 `cache-net`，扫描计数不覆盖这项隔离差异；NapCat 不纳入验收。
+- 2026-09-25 Windows 复核：活跃 WLAN 为 Public，Public Firewall 仍关闭；3306/33060/5005/9000/9001 仍有非 loopback 监听。公网匿名 `/admin/movies` 为 200，尚无 Access 拦截证据，管理员 API 仍要求应用认证。
 - 状态文档、Skill 与安全报告只记录键名、状态与结论，不记录原始日志、密钥或完整 SQL 输出。
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-library-qr-backend:20260924c`、`gying-library-qr-frontend:20260925h`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
+- 当前前后端：`gying-library-qr-backend:20260925b`、`gying-library-qr-frontend:20260925i`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`registration-resend-20260925`、`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
+- 2026-09-25 完整逻辑/持久数据备份为 `G:/gying-backups/20260925T030328.719395Z`：19 个 age 文件、约 372 MiB，manifest=`complete`，hash/认证解密全部通过。使用 `gying_backup@localhost` 导出 gying 库（包含触发器/事件/例程选项；实测这些对象及视图均为 0），归档 MinIO、六个状态卷、当前部署覆盖、受限备份配置、环境、Cloudflare、防火墙导出及加密 Docker 运行配置；不包含 MySQL 系统账号库或远端网盘事务。
+- 备份窗口为 11:03:25–11:03:56 Asia/Shanghai：6 个原始写入容器暂停约 31 秒后全部解冻，主机发布/同步计划不与窗口重叠；数据库行数/校验和及关键配置在窗口前后稳定。未重建生产容器，重启计数未变；早先 `security-20260925-partial` 保留为历史候选，不能混作当前完整备份。
+- 独立 MySQL 完整逻辑恢复的 25 张表行数与逐表 CHECKSUM 均一致，数据库对象数量和中文往返通过；无网络 MinIO 恢复后健康正常、1 张公开图片 SHA-256 一致、私有元数据 403。测试 MySQL 已关闭、MinIO 测试容器已移除；受限恢复目录 `G:/gying-tools/security-20260925/{full-mysql-restore,full-minio-restore}` 保留。早先候选恢复副本清理被执行策略拒绝，本轮没有绕过重试。
 
 ## 仍需处理
 
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙与敏感端口收紧、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
-- **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程，需备份后滚动收紧。
-- **迅雷自动同步未恢复**：最近一次成功为 2026-09-23 20:33，计划任务 2026-09-24 22:33 仍返回退出码 1。脱敏诊断显示官方刷新接口 HTTP 400、无可用候选，状态文件 Authorization 已过期且没有 refresh token，HTTP 400 具体原因未确认。需在本机 Edge 默认 Profile 检查迅雷登录态并重新登录，再运行计划任务验证凭据实际更新；写入补丁通过不等于刷新恢复。
-- **迅雷凭据文件权限待复核**：私有临时文件 + 原子替换 + POSIX `600`/Windows owner-only ACL 的修复已随 `backend:20260924c` 上线（jar 内已含 `PrivateFileWriter`），但在线文件当前仍为 `10001:10001 / 644`，且 mtime（2026-09-24 20:14）早于本次部署，说明尚未发生新写入。需在下次凭据刷新后复核持续保持 600。
-- **Docker 运行目录与磁盘**：完成 Windows 重启后清理 `%LOCALAPPDATA%\docker-secrets-engine` 失效 socket 并恢复默认启动；E 盘空间偏紧（约 14 GiB），建议把 `docker_data.vhdx` 迁往空间充足的磁盘。可清理本次产生的临时目录 `run-stuck-*`、`run-recovery-*`。
+- **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
+- **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
+- **维护权限与身份**：用户已在本机完成备份账号开通，实测 `gying_backup@localhost` 具备 gying 库 SELECT/SHOW VIEW/TRIGGER/EVENT 及全局 SHOW_ROUTINE，未扩大应用账号权限。防火墙初始导出位于 `G:/gying-tools/security-20260925/firewall-before-20260925-105821.wfw`；当前任务进程仍非管理员，自动 UAC 启动返回 InvalidOperationException，未执行防火墙变更。下一步为管理员 PowerShell 手动运行 `G:/gying-tools/security-20260925/Apply-FirewallStep.ps1 -Apply`：仅 Public 防护与物理网卡敏感 TCP 入站阻断，先新导出策略、健康失败或超时则按变更前状态自动回退；不得再次运行备份账号创建。
+- **迅雷持续同步待验收**：计划任务 2026-09-25 09:27、10:33 两次运行均返回 0，状态文件 mtime 对应更新至 10:33:36，旧“自动同步未恢复”的结论已过时；仍需观察后续周期和实际授权有效性，任务退出码/文件更新不替代真实链路验收。本轮未读取凭据内容或手动触发刷新/转存。
+- **迅雷凭据权限持续性待验收**：私有临时文件 + 原子替换补丁已随 `backend:20260924c` 上线（在线 jar 含 `PrivateFileWriter`），2026-09-25 两次同步周期后的 stat 均为 `10001:10001 / 600`。backend 自身独立重复写入始终保持 600 的生产证据仍待补齐，不需重复发布或用一次 chmod 代替验收。
+- **Docker 运行目录与磁盘**：完成 Windows 重启后清理 `%LOCALAPPDATA%\docker-secrets-engine` 失效 socket 并恢复默认启动；E 盘空间偏紧（2026-09-25 约 6.3 GiB；新备份放在 G 盘），建议把 `docker_data.vhdx` 迁往空间充足的磁盘。可清理本次产生的临时目录 `run-stuck-*`、`run-recovery-*`。
 - **数据质量**：历史遗留的乱码任务、重复目录和无视频分享需按资源价值逐批人工确认，优先 dry-run 与软删除。
 - **外部依赖稳定性**：GYING 图片源和部分外部网盘接口存在偶发超时、风控或响应结构变化，需保留重试与失败审计，不把单次 HTTP 200 视为业务成功；持续观察 GYING BT 登录态、PoW 与响应结构变化，认证失效时只更新外部登录态、不降低采集频率。
 - **QQ 临时转存清理**：代码、数据库迁移与安全边界测试已完成，仍需在群内真实搜索并选择一个可丢弃资源，复核到期后夸克/迅雷临时目录被删除且正式目录不变。
-- **邮箱验证码**：按设计关闭；启用前需在宿主机安全配置 `MAIL_PROVIDER`、对应服务 API Key、`MAIL_FROM_ADDRESS`、`MAIL_FROM_NAME` 并先验证发件人。
+- **邮箱验证码**：Resend 通道已接入（`.env` 配置 `MAIL_PROVIDER=resend`、`RESEND_API_KEY`、`MAIL_FROM_ADDRESS=onboarding@resend.dev`、`MAIL_FROM_NAME=影窝`），真实发信返回 HTTP 200；但 `onboarding@resend.dev` 是 Resend 测试发件域，只能发往账号绑定邮箱，故 `auth.email_verification.enabled=false` 保持不变。用户验证自有域名后，把 `MAIL_FROM_ADDRESS` 换成已认证域名地址、在后台开启该开关并重启 backend 即可，无需改代码。
 - 豆瓣评分没有稳定官方 API，不作为生产链路强依赖。
 
 ## 长期不变量
@@ -120,21 +127,22 @@
 - 入口复核：本地与公网 `/`、`/admin/movies`、`/resource-search`、`/api/movies/hot-searches` 均返回 200；匿名管理接口 401，内部 QQ 路径 404。
 - 品牌与首页轮播复核：中文「影窝」/英文「FilmNest」按语言切换且不并排；浅色/深色轮播背景与文字正确切换；375px 手机端轮播内容完整、按钮单行无裁切；768/1024/1200/1440 导航无横向溢出。
 - 首页与分类页结果总数复核：均不显示「N 条结果」，关键词搜索仍显示匹配数量。
+- 注册人数上限与 Resend 复核（2026-09-25）：临时把上限设为当前用户数时，`/api/auth/registration-policy` 返回 `registrationLimitReached=true`，发码接口 403 `Registration limit reached`，注册页显示「注册人数已达上限」并禁用提交；恢复 0 后策略恢复不限。Resend 真实发信 HTTP 200（邮件 ID `01a0d681-bd1d-75cb-9c09-0879d8f1cb1b`），先写验证码后发信、发送失败清理验证码与冷却键的分支由单测覆盖；生产 `auth.register.max_users=0`、`auth.email_verification.enabled=false`。
 - 本轮未创建真实账号、未修改生产搜索频率、未手工触发转存或发布；模拟 API 回归与单测不替代真实扫码转存和外部副作用验收。
+- 安全续审（2026-09-25）：只读扫描 53 PASS / 10 FAIL / 0 UNKNOWN，安全工具单测 16 项通过、工作区 secret scan 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL（迁移文档漂移、新库覆盖）。未重跑上述业务全量测试，未重启生产或修改防火墙/生产凭据。
+- 完整备份阶段：19/19 加密文件 hash/认证解密通过，25/25 表恢复计数与 CHECKSUM 一致，视图/触发器/事件/例程数量匹配；隔离 MinIO 图片与拒绝探针通过。源站/公网首页、公开列表与管理员/内部路径拒绝复测正常；未进行应用全链路/异机恢复，整体安全门禁仍未通过。
 
 可重复执行的验收：
 
 ```powershell
-cd D:\gying-movie\movieackend; mvn test
-cd ..rontend; npx tsc --noEmit; npm run lint; npm run build
-cd D:\gying-movie\movie
+Set-Location -LiteralPath 'D:\gying-movie\movie\backend'; mvn test
+Set-Location -LiteralPath 'D:\gying-movie\movie\frontend'; npx tsc --noEmit; npm run lint; npm run build
+Set-Location -LiteralPath 'D:\gying-movie\movie'
 docker compose -f docker-compose.prod.yml config --quiet
-docker ps --format "{{.Names}}	{{.Image}}	{{.Status}}"
-python tools/security/check_security.py --repo . --probe   # 只读安全扫描
-curl.exe -s -o NUL -w "%{http_code}
-" http://127.0.0.1/
-curl.exe -s -o NUL -w "%{http_code}
-" https://gyinghub.dpdns.org/
+docker ps --format "{{.Names}}\t{{.Image}}\t{{.Status}}"
+python -X utf8 tools/security/check_security.py --repo . --probe   # 只读安全扫描
+curl.exe -s -o NUL -w "%{http_code}\n" http://127.0.0.1/
+curl.exe -s -o NUL -w "%{http_code}\n" https://gyinghub.dpdns.org/
 ```
 
 ## 常用校验

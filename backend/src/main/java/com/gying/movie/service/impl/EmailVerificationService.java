@@ -26,7 +26,7 @@ public class EmailVerificationService {
     @Value("${mail.brevo.api-key:${BREVO_API_KEY:}}") private String brevoApiKey;
     @Value("${mail.resend.api-key:${RESEND_API_KEY:}}") private String resendApiKey;
     @Value("${mail.from-address:${MAIL_FROM_ADDRESS:}}") private String fromAddress;
-    @Value("${mail.from-name:${MAIL_FROM_NAME:GYing Movie}}") private String fromName;
+    @Value("${mail.from-name:${MAIL_FROM_NAME:影窝}}") private String fromName;
 
     public EmailVerificationService(StringRedisTemplate redis, ISysConfigService config, RedisRateLimiter rateLimiter) {
         this.redis = redis;
@@ -47,21 +47,29 @@ public class EmailVerificationService {
         Boolean allowed = redis.opsForValue().setIfAbsent(cooldownKey, "1", 60, TimeUnit.SECONDS);
         if (!Boolean.TRUE.equals(allowed)) throw new IllegalStateException("Please wait before requesting another code");
         String code = String.format("%06d", RANDOM.nextInt(1_000_000));
-        String html = "<p>您的 GYing Movie 注册验证码为：</p><p style=\"font-size:24px;font-weight:bold\">" + code + "</p><p>验证码 5 分钟内有效。若非本人操作请忽略。</p>";
-        if ("resend".equals(activeProvider())) {
-            resendClient.post().uri("/emails")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header("Authorization", "Bearer " + resendApiKey)
-                    .body(Map.of("from", fromName + " <" + fromAddress + ">", "to", List.of(normalized), "subject", "GYing Movie 注册验证码", "html", html))
-                    .retrieve().toBodilessEntity();
-        } else {
-            brevoClient.post().uri("/smtp/email")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header("api-key", brevoApiKey)
-                    .body(Map.of("sender", Map.of("name", fromName, "email", fromAddress), "to", List.of(Map.of("email", normalized)), "subject", "GYing Movie 注册验证码", "htmlContent", html))
-                    .retrieve().toBodilessEntity();
+        String codeKey = "register:email:code:" + RegistrationService.sha256(normalized);
+        String html = "<p>您的影窝注册验证码为：</p><p style=\"font-size:24px;font-weight:bold\">" + code + "</p><p>验证码 5 分钟内有效。若非本人操作请忽略。</p>";
+        // Store the code before sending so a delivered email always has a verifiable code.
+        redis.opsForValue().set(codeKey, code, 5, TimeUnit.MINUTES);
+        try {
+            if ("resend".equals(activeProvider())) {
+                resendClient.post().uri("/emails")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + resendApiKey)
+                        .body(Map.of("from", fromName + " <" + fromAddress + ">", "to", List.of(normalized), "subject", "影窝 注册验证码", "html", html))
+                        .retrieve().toBodilessEntity();
+            } else {
+                brevoClient.post().uri("/smtp/email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("api-key", brevoApiKey)
+                        .body(Map.of("sender", Map.of("name", fromName, "email", fromAddress), "to", List.of(Map.of("email", normalized)), "subject", "影窝 注册验证码", "htmlContent", html))
+                        .retrieve().toBodilessEntity();
+            }
+        } catch (RuntimeException error) {
+            redis.delete(codeKey);
+            redis.delete(cooldownKey);
+            throw new IllegalStateException("Failed to send verification email", error);
         }
-        redis.opsForValue().set("register:email:code:" + RegistrationService.sha256(normalized), code, 5, TimeUnit.MINUTES);
     }
 
     public void verify(String email, String code) {

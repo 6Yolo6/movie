@@ -74,8 +74,11 @@ public class AuthController {
         String email = body == null ? null : body.get("email");
         String inviteCode = body == null ? null : body.get("inviteCode");
         RegistrationService.normalizeEmail(email);
-        if (!Boolean.TRUE.equals(registrationService.policy(inviteCode).get("registrationAllowed"))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration is invite-only");
+        Map<String, Object> policy = registrationService.policy(inviteCode);
+        if (!Boolean.TRUE.equals(policy.get("registrationAllowed"))) {
+            boolean limitReached = Boolean.TRUE.equals(policy.get("registrationLimitReached"));
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    limitReached ? "Registration limit reached" : "Registration is invite-only");
         }
         try {
             emailVerificationService.send(email, getClientIp(request));

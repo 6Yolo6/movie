@@ -45,7 +45,16 @@ class RegistrationServiceTest {
         assertEquals(false, service.policy("fixture").get("inviteValid"));
         assertEquals(403, assertThrows(ResponseStatusException.class,
                 () -> service.register("fixture", "fixture-password", "test@example.com", null, "fixture")).getStatusCode().value());
-        verifyNoInteractions(users);
+        verify(users, never()).register(anyString(), anyString(), anyString(), any());
+    }
+    @Test void rejectsRegistrationWhenUserLimitReached() {
+        when(config.getConfigValue(eq("auth.register.max_users"), anyString())).thenReturn("2");
+        doReturn(2L).when(users).count();
+        assertEquals(true, service.policy("fixture").get("registrationLimitReached"));
+        assertEquals(false, service.policy("fixture").get("registrationAllowed"));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> service.register("fixture", "fixture-password", "test@example.com", null, "fixture"));
+        assertEquals(403, error.getStatusCode().value());
     }
     @Test void validInviteRegistersAndConsumesOneUse() {
         SysUser user = new SysUser(); user.setId(3L);
