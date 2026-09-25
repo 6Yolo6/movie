@@ -16,11 +16,11 @@
 - 对外入口：Cloudflare Tunnel `gyinghub.dpdns.org` → loopback nginx（`127.0.0.1:80`）→ Next.js / Spring Boot（backend `127.0.0.1:8880`）。Tunnel 配置在 `E:\gying-tools\cloudflared\config.yml`，由登录触发的计划任务 `GYing Cloudflare Tunnel` 启动。
 - 核心服务：`frontend`、`backend`、`gying-source`、`social-publisher`、`nginx`；依赖 MySQL、Redis、MinIO、PanSou、`quark-auto-save`、OpenClaw QQBot。
 - 生产 Compose 文件为 `docker-compose.prod.yml`（无默认 `docker-compose.yml`）；容器与 JVM 时区统一 `Asia/Shanghai`。本机 Docker CLI 位于 `C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker.exe`。
-- 代码与 Python 环境在 `D:\gying-movie\movie`；Docker Desktop 数据（`docker_data.vhdx`）位于 `E:\dockerdesktop\wsl\DockerDesktopWSL`。
+- 代码与 Python 环境在 `D:\gying-movie\movie`；Docker Desktop 数据（`docker_data.vhdx`，约 44 GiB）位于 `G:\dockerdesktop\wsl\DockerDesktopWSL`（2026-09-25 由 E 盘迁移）。
 - QQ 频道发帖由宿主机 `tencent-channel-cli` 计划任务执行，不经过 `social-publisher`；NapCat 已停用，不作为备用通道、迁移依赖或验收项。
 - Cloudflare Tunnel 使用 HTTP/2 传输（计划任务参数 `--protocol http2`）：本机代理以 fake-IP 方式解析 `cfd.argotunnel.com`，QUIC/UDP 会被代理丢弃。健康检查用 `http://127.0.0.1:20241/ready` 或公网首页状态码；`E:\gying-tools\cloudflared\config.yml` 的 ACL 对当前用户只读，改配置需提权。
 - 现役开关（2026-09-15 复核，`.env` 与 `sys_config` 一致）：`RESOURCE_HUB_WORKER_ENABLED`、`QQ_BOT_ENABLED`、QQ 频道自动发布、微博自动发布及夸克/迅雷自动转存计划任务均为启用；`QUARK_AUTO_SAVE_RUN_IMMEDIATELY=true` 确保先完成实际转存再创建自有分享；quark-auto-save 定时规则为 `0 8,18,20 * * *`。
-- **Docker Desktop 启动约束**：`%LOCALAPPDATA%\docker-secrets-engine\engine.sock(.stale)` 是内核层失效的 reparse 项，无法删除或改名，按默认路径启动会在 Secrets Engine 初始化时失败。当前以独立运行目录 `G:\gying-tools\docker-runtime-recovery` 启动绕过，镜像与卷位置不变；下次重启 Windows（必要时 `chkdsk C: /f`）后应清理并恢复默认启动方式。
+- **Docker Desktop 启动约束（已解除）**：此前 `%LOCALAPPDATA%\docker-secrets-engine\engine.sock(.stale)` 为内核层失效 reparse 项，导致 Secrets Engine 初始化失败、需以独立运行目录绕过；2026-09-25 重启 Windows 后失效项已清除，`engine.sock` 在默认路径正常重建，独立运行目录已移除，Docker Desktop 回归默认启动。
 
 ## 已具备能力
 
@@ -102,7 +102,7 @@
 - **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。已取得用户报告的同网有线电脑 IPv4 测试：上述 6 端口均 False，网站可打开并可注册。该结论仅覆盖该客户端到 `192.168.1.147` 的不可连接结果，未单独排除路由/客户端隔离，也不是公网直连或 IPv6 测试；后两项继续保留待验收。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
 - **迅雷持续同步待验收**：计划任务 2026-09-25 09:27、10:33 两次运行均返回 0，状态文件 mtime 对应更新至 10:33:36，旧“自动同步未恢复”的结论已过时；仍需观察后续周期和实际授权有效性，任务退出码/文件更新不替代真实链路验收。本轮未读取凭据内容或手动触发刷新/转存。
 - **迅雷凭据权限持续性待验收**：私有临时文件 + 原子替换补丁已随 `backend:20260924c` 上线（在线 jar 含 `PrivateFileWriter`），2026-09-25 两次同步周期后的 stat 均为 `10001:10001 / 600`。backend 自身独立重复写入始终保持 600 的生产证据仍待补齐，不需重复发布或用一次 chmod 代替验收。
-- **Docker 运行目录与磁盘**：完成 Windows 重启后清理 `%LOCALAPPDATA%\docker-secrets-engine` 失效 socket 并恢复默认启动；E 盘空间偏紧（2026-09-25 约 6.3 GiB；新备份放在 G 盘），建议把 `docker_data.vhdx` 迁往空间充足的磁盘。可清理本次产生的临时目录 `run-stuck-*`、`run-recovery-*`。
+- **Docker 运行目录与磁盘**：`docker_data.vhdx` 已于 2026-09-25 由 E 盘迁移至 `G:\dockerdesktop\wsl\DockerDesktopWSL`，E 盘由约 3.1 GiB 恢复至 47.3 GiB、G 盘余约 220 GiB。
 - **数据质量**：历史遗留的乱码任务、重复目录和无视频分享需按资源价值逐批人工确认，优先 dry-run 与软删除。
 - **外部依赖稳定性**：GYING 图片源和部分外部网盘接口存在偶发超时、风控或响应结构变化，需保留重试与失败审计，不把单次 HTTP 200 视为业务成功；持续观察 GYING BT 登录态、PoW 与响应结构变化，认证失效时只更新外部登录态、不降低采集频率。
 - **QQ 临时转存清理**：代码、数据库迁移与安全边界测试已完成，仍需在群内真实搜索并选择一个可丢弃资源，复核到期后夸克/迅雷临时目录被删除且正式目录不变。
