@@ -51,6 +51,18 @@ class SysConfigControllerSecurityTest {
     }
 
     @Test
+    void suppliesEditableCommentRateDefaultAndValidatesIt() {
+        when(configService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        var items=(List<?>)controller.getAllConfigs("admin").getBody();
+        assertTrue(items.stream().anyMatch(item -> "comment.rate_limit_per_minute".equals(((Map<?,?>)item).get("configKey"))));
+        for(String value:List.of("0","121","-1","1.5","", "bad"))
+            assertEquals(400,controller.updateConfig("comment.rate_limit_per_minute",value,"admin").getStatusCode().value());
+        verify(configService,never()).updateConfig(any(),any());
+        when(configService.updateConfig("comment.rate_limit_per_minute","10")).thenReturn(true);
+        assertEquals(200,controller.updateConfig("comment.rate_limit_per_minute","10","admin").getStatusCode().value());
+    }
+
+    @Test
     void listRedactsSensitiveConfigurationValues() {
         SysConfig publicConfig = config("resource.audit.enabled", "true");
         SysConfig secretConfig = config("qq.bot.webhook-token", "fixture-secret");

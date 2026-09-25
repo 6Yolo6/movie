@@ -12,7 +12,9 @@ import com.gying.movie.service.ICommentService;
 import com.gying.movie.utils.Sanitizer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,7 +30,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     public boolean save(Comment comment) {
-        comment.setContent(sanitizer.sanitize(comment.getContent()));
+        String sanitized = sanitizer.sanitize(comment.getContent());
+        if (sanitized == null || sanitized.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Comment content is empty after sanitization");
+        }
+        comment.setContent(sanitized);
         comment.setStatus(1);
         comment.setUpvotes(0);
         if (comment.getParentId() == null) {

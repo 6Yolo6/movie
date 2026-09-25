@@ -28,6 +28,7 @@ const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
     'resource.audit.enabled': '用户提交的资源是否需要管理员审核后才公开。',
     'resource.max.per.user': '每个普通发布者最多可保留的有效资源数量；管理员不受此总数限制。',
     'resource.search.rate_limit_per_minute': '网页资源搜索：每用户每分钟最多搜索次数（1–60），默认 5；保存后立即生效。资源序号选择和翻页不计入，重新搜索或查看其他资源计入；QQ 频率独立配置。',
+    'comment.rate_limit_per_minute': '留言与评论：每个账号每分钟最多提交次数（1–120），默认 5；保存后立即对新留言生效。',
     'resource.report.threshold': '同一资源达到该举报次数后标记为疑似失效。',
     'resource.submit.interval.seconds': '同一发布账号两次提交资源之间的最短间隔（秒）。',
     'resource.form.quick_params': '资源标题表单可一键插入的快捷参数，支持逗号或换行分隔。',
@@ -86,6 +87,7 @@ const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
 
 const GROUP_LABELS_ZH: Record<string, string> = {
     auth: '注册与账号',
+    comment: '留言与评论',
     resource: '资源与自动化',
     qq: 'QQ 自动化',
 };
@@ -115,6 +117,13 @@ const isNumericConfig = (config: ConfigItem) => {
     if (!/^-?\d+(\.\d+)?$/.test(config.configValue)) return false;
     return /(min|max|limit|count|total|page|items|seconds|minutes|hours|interval|per\.user)/i
         .test(config.configKey);
+};
+
+const numericRange = (key: string): [number | undefined, number | undefined] => {
+    if (key === 'auth.register.max_users') return [0, 100000];
+    if (key === 'resource.search.rate_limit_per_minute') return [1, 60];
+    if (key === 'comment.rate_limit_per_minute') return [1, 120];
+    return [undefined, undefined];
 };
 
 const isMultilineConfig = (config: ConfigItem) => (
@@ -274,11 +283,13 @@ export default function SystemSettingsPage() {
             );
         }
         if (isNumericConfig(config)) {
+            const [min, max] = numericRange(config.configKey);
+            const integerOnly = min !== undefined;
             return (
                 <InputNumber
-                    min={config.configKey === 'auth.register.max_users' ? 0 : config.configKey === 'resource.search.rate_limit_per_minute' ? 1 : undefined}
-                    max={config.configKey === 'auth.register.max_users' ? 100000 : config.configKey === 'resource.search.rate_limit_per_minute' ? 60 : undefined}
-                    precision={config.configKey === 'auth.register.max_users' || config.configKey === 'resource.search.rate_limit_per_minute' ? 0 : undefined}
+                    min={min}
+                    max={max}
+                    precision={integerOnly ? 0 : undefined}
                     value={value === '' ? null : Number(value)}
                     onChange={next => updateDraft(config.configKey, next === null ? '' : String(next))}
                     style={{ width: '100%' }}

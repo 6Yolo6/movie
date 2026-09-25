@@ -176,9 +176,12 @@ export default function Navbar() {
     if (!mounted) {
         return (
             <nav className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/90 text-gray-900 border-b border-gray-200 dark:bg-[#141414]/90 dark:text-white dark:border-[#1f1f1f] sticky top-0 z-50 backdrop-blur-md">
-                <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
-                    <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{SITE_NAME}</span>
-                </Link>
+                <div className="flex items-center gap-4 sm:gap-8">
+                    <Button type="text" icon={<MenuOutlined />} aria-label={t('menu')} className="!text-lg !text-gray-400" disabled />
+                    <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
+                        <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{SITE_NAME}</span>
+                    </Link>
+                </div>
                 <div className="h-8 w-28 rounded bg-gray-100 dark:bg-white/10" />
             </nav>
         );
@@ -190,8 +193,8 @@ export default function Navbar() {
         { href: '/?category=tv', label: t('tvShows'), icon: <DesktopOutlined /> },
         { href: '/?category=ac', label: t('anime'), icon: <VideoCameraOutlined /> },
         { href: '/hot', label: t('hot'), icon: <FireOutlined /> },
-        ...(user ? [{ href: '/resource-search', label: '搜索资源', icon: <CloudDownloadOutlined /> }] : []),
         { href: '/messages', label: t('messageBoard'), icon: <MessageOutlined /> },
+        ...(user ? [{ href: '/resource-search', label: t('navSearchResources'), icon: <CloudDownloadOutlined /> }] : []),
     ];
 
     const userMenuItems: MenuProps['items'] = [
@@ -342,13 +345,16 @@ export default function Navbar() {
             <nav className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/90 text-gray-900 border-b border-gray-200 dark:bg-[#141414]/90 dark:text-white dark:border-[#1f1f1f] sticky top-0 z-50 backdrop-blur-md">
                 <div className="flex items-center gap-4 sm:gap-8">
                     {/* Hamburger for mobile */}
-                    <Button
-                        type="text"
-                        icon={<MenuOutlined />}
-                        aria-label={t('menu')}
-                        className="!text-lg"
-                        onClick={() => setDrawerOpen(true)}
-                    />
+                    <Tooltip title={t('menu')}>
+                        <Button
+                            type="text"
+                            icon={<MenuOutlined />}
+                            aria-label={t('menu')}
+                            data-testid="drawer-trigger"
+                            className="!text-lg !text-gray-700 dark:!text-gray-200"
+                            onClick={() => setDrawerOpen(true)}
+                        />
+                    </Tooltip>
                     <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
                         <span className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-teal-400">{t('siteName')}</span>
                     </Link>
@@ -364,11 +370,6 @@ export default function Navbar() {
                         <Link href="/messages" className="hover:text-blue-600 dark:hover:text-white transition-colors inline-flex items-center gap-1">
                             <MessageOutlined /> {t('messageBoard')}
                         </Link>
-                        {user && (
-                            <Link href="/resource-search" className="hover:text-blue-600 dark:hover:text-white transition-colors inline-flex items-center gap-1">
-                                <CloudDownloadOutlined /> 搜索资源
-                            </Link>
-                        )}
                     </div>
                 </div>
 

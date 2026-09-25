@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Avatar, Input, Button, Form, message, Spin, Typography, Popconfirm, Select } from 'antd';
 import { useAuthStore } from '@/store/authStore';
-import { api } from '@/lib/api';
+import { api, readApiError } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { zhCN, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
@@ -124,8 +124,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId, commentType, 
                 setReplyTo(null);
                 form.resetFields();
                 fetchComments(1);
+            } else if (res.status === 429) {
+                const retryAfter = Math.max(1, Number(res.headers.get('Retry-After')) || 1);
+                message.error(t('commentRateLimited', {
+                    seconds: retryAfter,
+                    defaultValue: 'You are posting too quickly. Please try again in {{seconds}} second(s).',
+                }));
             } else {
-                const errorText = await res.text();
+                const errorText = await readApiError(res, t('failedToPostComment'));
                 message.error(`${t('failedToPostComment')}: ${errorText}`);
             }
         } catch (error) {
@@ -277,10 +283,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId, commentType, 
                         value={selectedType}
                         onChange={(value) => { setSelectedType(value); setPage(1); }}
                         options={[
-                            { value: 'OTHER', label: t('messageTypeOther') },
+                            { value: 'GENERAL', label: t('messageTypeDiscussion') },
                             { value: 'REQUEST', label: t('messageTypeRequest') },
                             { value: 'INVALID_RESOURCE', label: t('messageTypeInvalidResource') },
                             { value: 'SUGGESTION', label: t('messageTypeSuggestion') },
+                            { value: 'OTHER', label: t('messageTypeOther') },
                         ]}
                         style={{ minWidth: 150 }}
                     />
@@ -326,7 +333,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ relateId, commentType, 
                     <Text className="text-lg font-semibold mb-2 block text-gray-800 dark:text-gray-100">{t('postComment')}</Text>
                     <Form form={form} onFinish={handleSubmit}>
                         <Form.Item name="content" rules={[{ required: true, message: t('pleaseEnterYourComment') }]}>
-                            <TextArea className="comment-editor" rows={4} placeholder={replyTo ? t('writeReply', { defaultValue: 'Write a reply...' }) : t('writeYourComment')} />
+                            <TextArea className="comment-editor" rows={4} maxLength={5000} showCount placeholder={replyTo ? t('writeReply', { defaultValue: 'Write a reply...' }) : t('writeYourComment')} />
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit" loading={submitting}>

@@ -7,11 +7,12 @@ import com.gying.movie.dto.CommentDisplayDTO;
 import com.gying.movie.entity.Comment;
 import com.gying.movie.entity.CommentVote;
 import com.gying.movie.mapper.CommentVoteMapper;
+import com.gying.movie.security.RedisRateLimiter;
 import com.gying.movie.service.ICommentService;
+import com.gying.movie.service.ISysConfigService;
 import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Map;
@@ -35,18 +37,30 @@ import java.util.Set;
 public class CommentController {
 
     private static final Set<String> ALLOWED_TYPES = Set.of("GENERAL", "REQUEST", "INVALID_RESOURCE", "SUGGESTION", "OTHER");
+    private static final String COMMENT_RATE_LIMIT_CONFIG_KEY = "comment.rate_limit_per_minute";
+    private static final int DEFAULT_COMMENT_RATE_LIMIT_PER_MINUTE = 5;
+    private static final int MAX_COMMENT_RATE_LIMIT_PER_MINUTE = 120;
 
-    @Autowired
-    private ICommentService commentService;
+    private final ICommentService commentService;
+    private final CommentVoteMapper commentVoteMapper;
+    private final AuthHelper authHelper;
+    private final IUserNotificationService notificationService;
+    private final ISysConfigService configService;
+    private final RedisRateLimiter rateLimiter;
 
-    @Autowired
-    private CommentVoteMapper commentVoteMapper;
-
-    @Autowired
-    private AuthHelper authHelper;
-
-    @Autowired
-    private IUserNotificationService notificationService;
+    public CommentController(ICommentService commentService,
+                             CommentVoteMapper commentVoteMapper,
+                             AuthHelper authHelper,
+                             IUserNotificationService notificationService,
+                             ISysConfigService configService,
+                             RedisRateLimiter rateLimiter) {
+        this.commentService = commentService;
+        this.commentVoteMapper = commentVoteMapper;
+        this.authHelper = authHelper;
+        this.notificationService = notificationService;
+        this.configService = configService;
+        this.rateLimiter = rateLimiter;
+    }
 
     @PostMapping
     public Map<String, String> addComment(
@@ -72,12 +86,13 @@ public class CommentController {
         }
         comment.setContent(content);
         String type = comment.getType() == null || comment.getType().isBlank()
-                ? ("message-board".equals(relateId) ? "OTHER" : "GENERAL")
+                ? "GENERAL"
                 : comment.getType().trim().toUpperCase(Locale.ROOT);
         if (!ALLOWED_TYPES.contains(type)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid comment type");
         }
         comment.setType(type);
+        enforceCommentRateLimit(user);
         Comment parent = null;
         if (comment.getParentId() != null && comment.getParentId() > 0) {
             parent = commentService.getById(comment.getParentId());
@@ -160,6 +175,25 @@ public class CommentController {
         comment.setStatus(2);
         commentService.updateById(comment);
         return Map.of("message", "Comment deleted successfully");
+    }
+
+    private void enforceCommentRateLimit(AuthUser user) {
+        int limit = commentRateLimitPerMinute();
+        rateLimiter.require("comment-post", String.valueOf(user.getId()), limit, Duration.ofMinutes(1));
+    }
+
+    static int commentRateLimitPerMinute(String configured) {
+        try {
+            int limit = Integer.parseInt(configured == null ? "" : configured.trim());
+            return Math.min(Math.max(limit, 1), MAX_COMMENT_RATE_LIMIT_PER_MINUTE);
+        } catch (NumberFormatException error) {
+            return DEFAULT_COMMENT_RATE_LIMIT_PER_MINUTE;
+        }
+    }
+
+    private int commentRateLimitPerMinute() {
+        return commentRateLimitPerMinute(configService.getConfigValue(
+                COMMENT_RATE_LIMIT_CONFIG_KEY, String.valueOf(DEFAULT_COMMENT_RATE_LIMIT_PER_MINUTE)));
     }
 
     private void notifyCommentReply(Comment parent, Comment reply, AuthUser replier) {

@@ -44,13 +44,10 @@ public class SysConfigController {
                 .stream()
                 .map(this::view)
                 .collect(Collectors.toList());
-        if (configs.stream().noneMatch(item -> "resource.search.rate_limit_per_minute".equals(item.get("configKey")))) {
-            SysConfig defaultLimit = new SysConfig();
-            defaultLimit.setConfigKey("resource.search.rate_limit_per_minute");
-            defaultLimit.setConfigValue("5");
-            defaultLimit.setDescription("网页资源搜索：每用户每分钟最多搜索次数（1-60），保存后立即生效；资源序号选择与翻页不计入。");
-            configs.add(view(defaultLimit));
-        }
+        addDefaultIfMissing(configs, "resource.search.rate_limit_per_minute", "5",
+                "网页资源搜索：每用户每分钟最多搜索次数（1-60），保存后立即生效；资源序号选择与翻页不计入。");
+        addDefaultIfMissing(configs, "comment.rate_limit_per_minute", "5",
+                "留言与评论：每个账号每分钟最多提交次数（1-120），保存后立即生效。");
         return ResponseEntity.ok(configs);
     }
 
@@ -102,6 +99,15 @@ public class SysConfigController {
                 return ResponseEntity.badRequest().body("注册人数上限必须是 0-100000 之间的整数，0 表示不限制");
             }
         }
+        if ("comment.rate_limit_per_minute".equals(key)) {
+            try {
+                int limit = Integer.parseInt(value == null ? "" : value.trim());
+                if (limit < 1 || limit > 120) throw new NumberFormatException();
+                value = String.valueOf(limit);
+            } catch (NumberFormatException error) {
+                return ResponseEntity.badRequest().body("留言频率必须是 1-120 之间的整数");
+            }
+        }
         boolean updated = sysConfigService.updateConfig(key, value == null ? "" : value);
         if (updated) {
             return ResponseEntity.ok("Configuration updated");
@@ -115,6 +121,16 @@ public class SysConfigController {
 
     private boolean validKey(String key) {
         return key != null && CONFIG_KEY.matcher(key).matches();
+    }
+
+    private void addDefaultIfMissing(List<Map<String, Object>> configs, String key, String value, String description) {
+        if (configs.stream().noneMatch(item -> key.equals(item.get("configKey")))) {
+            SysConfig defaultConfig = new SysConfig();
+            defaultConfig.setConfigKey(key);
+            defaultConfig.setConfigValue(value);
+            defaultConfig.setDescription(description);
+            configs.add(view(defaultConfig));
+        }
     }
 
     private Map<String, Object> view(SysConfig config) {
