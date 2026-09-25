@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, Tag, Typography, Descriptions, Button, Space, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
 import type { InputRef } from 'antd';
-import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined } from '@ant-design/icons';
+import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 import { api, readApiError } from '@/lib/api';
@@ -829,6 +829,19 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                         }
                                     ]}
                                 />
+                                {sortedResourceItems.length === 0 && (
+                                    <div data-testid="search-movie-resource-cta" className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-dashed border-blue-300 bg-blue-50/60 px-4 py-6 text-center dark:border-blue-900 dark:bg-blue-950/20">
+                                        <Text type="secondary">{t('noResourceForMovie')}</Text>
+                                        <Button
+                                            type="primary"
+                                            icon={<SearchOutlined />}
+                                            className="bg-blue-600"
+                                            onClick={() => router.push(`/resource-search?keyword=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`)}
+                                        >
+                                            {t('searchThisMovieResource')}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

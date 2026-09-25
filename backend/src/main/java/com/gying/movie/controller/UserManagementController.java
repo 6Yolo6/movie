@@ -1,10 +1,12 @@
 package com.gying.movie.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gying.movie.dto.AuthUser;
 import com.gying.movie.entity.SysUser;
 import com.gying.movie.service.ISysUserService;
+import com.gying.movie.service.impl.RegistrationService;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.JwtUtils;
 import org.springframework.http.ResponseEntity;
@@ -149,5 +151,99 @@ public class UserManagementController {
         user.setEnabled(enabled);
         sysUserService.updateById(user);
         return ResponseEntity.ok(Map.of("enabled", enabled));
+    }
+
+    @PutMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser admin = authHelper.requireAdmin(token);
+        SysUser user = sysUserService.getById(id);
+        if (user == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        String username = request.get("username");
+        if (username != null) {
+            String value = username.trim();
+            if (value.length() < 3 || value.length() > 50) {
+                return ResponseEntity.badRequest().body("用户名长度必须为 3-50 个字符");
+            }
+            if (!value.equals(user.getUsername())) {
+                boolean taken = sysUserService.count(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getUsername, value).ne(SysUser::getId, id)) > 0;
+                if (taken) return ResponseEntity.status(409).body("用户名已被占用");
+                user.setUsername(value);
+            }
+        }
+
+        String email = request.get("email");
+        if (email != null) {
+            String value;
+            try {
+                value = RegistrationService.normalizeEmail(email);
+            } catch (org.springframework.web.server.ResponseStatusException error) {
+                return ResponseEntity.badRequest().body("邮箱格式不正确");
+            }
+            if (!value.equals(user.getEmail())) {
+                boolean taken = sysUserService.count(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getEmail, value).ne(SysUser::getId, id)) > 0;
+                if (taken) return ResponseEntity.status(409).body("邮箱已被注册");
+                user.setEmail(value);
+            }
+        }
+
+        String role = request.get("role");
+        if (role != null && !role.isBlank()) {
+            if (!"USER".equals(role) && !"PUBLISHER".equals(role)) {
+                return ResponseEntity.badRequest().body("角色只能为 USER 或 PUBLISHER");
+            }
+            if (admin.getId().equals(id)) {
+                return ResponseEntity.badRequest().body("Cannot change your own role");
+            }
+            user.setRole(role);
+        }
+
+        try {
+            sysUserService.updateById(user);
+        } catch (org.springframework.dao.DuplicateKeyException error) {
+            return ResponseEntity.status(409).body("用户名或邮箱已被占用");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", user.getId());
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("role", user.getRole());
+        response.put("enabled", user.getEnabled());
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<?> resetUserPassword(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser admin = authHelper.requireAdmin(token);
+        String newPassword = request == null ? null : request.get("password");
+        if (newPassword == null || newPassword.length() < 12) {
+            return ResponseEntity.badRequest().body("密码至少 12 个字符");
+        }
+        if (newPassword.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            return ResponseEntity.badRequest().body("密码最多 72 个 UTF-8 字节");
+        }
+        if (sysUserService.getById(id) == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+        sysUserService.resetPassword(id, newPassword);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Password reset successfully");
+        response.put("userId", id);
+        response.put("sessionsRevoked", true);
+        response.put("self", admin.getId().equals(id));
+        return ResponseEntity.ok(response);
     }
 }

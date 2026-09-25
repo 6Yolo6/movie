@@ -15,6 +15,8 @@ const subscribeHydration = () => () => {};
 const clientHydration = () => true;
 const serverHydration = () => false;
 interface CreateUserValues { username: string; email: string; password: string; confirm: string; role: 'USER' | 'PUBLISHER'; }
+interface EditUserValues { username: string; email: string; role: string; }
+interface ResetPasswordValues { password: string; confirm: string; }
 
 interface User {
     id: number;
@@ -42,6 +44,12 @@ export default function UserManagementPage() {
     const [keyword, setKeyword] = useState('');
     const [roleFilter, setRoleFilter] = useState<string | undefined>();
     const [enabledFilter, setEnabledFilter] = useState<boolean | undefined>();
+    const [editTarget, setEditTarget] = useState<User | null>(null);
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [editForm] = Form.useForm<EditUserValues>();
+    const [resetTarget, setResetTarget] = useState<User | null>(null);
+    const [resettingPassword, setResettingPassword] = useState(false);
+    const [resetForm] = Form.useForm<ResetPasswordValues>();
 
     const fetchUsers = useCallback(async () => {
         if (!token) return;
@@ -151,6 +159,50 @@ export default function UserManagementPage() {
         } catch { message.error('网络异常，请查询用户列表确认是否已创建，勿重复提交'); }
         finally { setCreating(false); }
     };
+    const openEdit = (record: User) => {
+        setEditTarget(record);
+        editForm.setFieldsValue({ username: record.username, email: record.email, role: record.role });
+    };
+
+    const submitEdit = async (values: EditUserValues) => {
+        if (!editTarget || savingEdit) return;
+        setSavingEdit(true);
+        try {
+            const res = await api(`/api/admin/users/${editTarget.id}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: values.username.trim(), email: values.email.trim(), role: values.role }),
+            });
+            if (!res.ok) { message.error(await readApiError(res, t('editUserFailed'))); return; }
+            message.success(t('userUpdated'));
+            editForm.resetFields();
+            setEditTarget(null);
+            await fetchUsers();
+        } catch { message.error(t('networkError')); }
+        finally { setSavingEdit(false); }
+    };
+
+    const openReset = (record: User) => {
+        setResetTarget(record);
+        resetForm.resetFields();
+    };
+
+    const submitReset = async (values: ResetPasswordValues) => {
+        if (!resetTarget || resettingPassword) return;
+        setResettingPassword(true);
+        try {
+            const res = await api(`/api/admin/users/${resetTarget.id}/password`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: values.password }),
+            });
+            if (!res.ok) { message.error(await readApiError(res, t('resetPasswordFailed'))); return; }
+            message.success(resetTarget.id === user?.id ? t('passwordResetSelf') : t('passwordResetSuccess'));
+            resetForm.resetFields();
+            setResetTarget(null);
+        } catch { message.error(t('networkError')); }
+        finally { setResettingPassword(false); }
+    };
 
     const getRoleColor = (role: string) => {
         switch (role) {
@@ -198,17 +250,22 @@ export default function UserManagementPage() {
         },
         {
             title: t('actions'),
-            key: 'enabledAction',
-            width: 120,
+            key: 'actions',
+            width: 250,
             render: (_: unknown, record: User) => (
-                <Button
-                    danger={record.enabled}
-                    disabled={updating === record.id || record.id === user?.id}
-                    loading={updating === record.id}
-                    onClick={() => handleEnabledChange(record.id, !record.enabled)}
-                >
-                    {record.enabled ? t('disable') : t('enable')}
-                </Button>
+                <Space size="small" wrap>
+                    <Button size="small" onClick={() => openEdit(record)}>{t('edit')}</Button>
+                    <Button size="small" onClick={() => openReset(record)}>{t('resetPassword')}</Button>
+                    <Button
+                        size="small"
+                        danger={record.enabled}
+                        disabled={updating === record.id || record.id === user?.id}
+                        loading={updating === record.id}
+                        onClick={() => handleEnabledChange(record.id, !record.enabled)}
+                    >
+                        {record.enabled ? t('disable') : t('enable')}
+                    </Button>
+                </Space>
             ),
         },
         {
@@ -291,6 +348,43 @@ export default function UserManagementPage() {
                     <Form.Item name="password" label="初始密码" rules={[{ required: true }, { min: 12, max: 72, message: '至少 12 个字符，最多 72 个 UTF-8 字节' }, { validator: (_, value) => !value || new TextEncoder().encode(value).length <= 72 ? Promise.resolve() : Promise.reject(new Error('密码最多 72 个 UTF-8 字节')) }]}><Input.Password autoComplete="new-password" /></Form.Item>
                     <Form.Item name="confirm" label="确认密码" dependencies={['password']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator: (_, value) => !value || value === getFieldValue('password') ? Promise.resolve() : Promise.reject(new Error('两次密码不一致')) })]}><Input.Password autoComplete="new-password" /></Form.Item>
                     <div className="flex justify-end gap-2"><Button disabled={creating} onClick={() => { setCreateOpen(false); createForm.resetFields(); }}>取消</Button><Button type="primary" htmlType="submit" loading={creating}>创建用户</Button></div>
+                </Form>
+            </Modal>
+            <Modal title={t('editUser')} open={!!editTarget} footer={null} closable={!savingEdit} maskClosable={!savingEdit}
+                onCancel={() => { if (!savingEdit) { setEditTarget(null); editForm.resetFields(); } }}>
+                <Typography.Paragraph type="secondary">{t('editUserHint')}</Typography.Paragraph>
+                <Form form={editForm} layout="vertical" onFinish={submitEdit}>
+                    <Form.Item name="username" label={t('username')} rules={[{ required: true, whitespace: true }, { min: 3, max: 50 }]}><Input autoComplete="off" /></Form.Item>
+                    <Form.Item name="email" label={t('email')} rules={[{ required: true }, { type: 'email' }, { max: 200 }]}><Input autoComplete="off" /></Form.Item>
+                    <Form.Item name="role" label={t('currentRole')} extra={editTarget?.id === user?.id ? t('cannotChangeOwnRole') : undefined}>
+                        <Select
+                            disabled={editTarget?.id === user?.id}
+                            options={[
+                                { value: 'USER', label: 'USER' },
+                                { value: 'PUBLISHER', label: 'PUBLISHER' },
+                                ...(editTarget?.role === 'ADMIN' ? [{ value: 'ADMIN', label: 'ADMIN' }] : []),
+                            ]}
+                        />
+                    </Form.Item>
+                    <div className="flex justify-end gap-2">
+                        <Button disabled={savingEdit} onClick={() => { setEditTarget(null); editForm.resetFields(); }}>{t('cancel')}</Button>
+                        <Button type="primary" htmlType="submit" loading={savingEdit}>{t('save')}</Button>
+                    </div>
+                </Form>
+            </Modal>
+            <Modal title={t('resetPassword')} open={!!resetTarget} footer={null} closable={!resettingPassword} maskClosable={!resettingPassword}
+                onCancel={() => { if (!resettingPassword) { setResetTarget(null); resetForm.resetFields(); } }}>
+                <Typography.Paragraph type="secondary">{t('resetPasswordHint', { username: resetTarget?.username })}</Typography.Paragraph>
+                {resetTarget?.id === user?.id && (
+                    <Typography.Paragraph type="warning">{t('resetOwnPasswordWarning')}</Typography.Paragraph>
+                )}
+                <Form form={resetForm} layout="vertical" onFinish={submitReset}>
+                    <Form.Item name="password" label={t('newPassword')} rules={[{ required: true }, { min: 12, max: 72, message: t('passwordLengthRule') }, { validator: (_, value) => !value || new TextEncoder().encode(value).length <= 72 ? Promise.resolve() : Promise.reject(new Error(t('passwordByteRule'))) }]}><Input.Password autoComplete="new-password" /></Form.Item>
+                    <Form.Item name="confirm" label={t('confirmPassword')} dependencies={['password']} rules={[{ required: true }, ({ getFieldValue }) => ({ validator: (_, value) => !value || value === getFieldValue('password') ? Promise.resolve() : Promise.reject(new Error(t('passwordMismatch'))) })]}><Input.Password autoComplete="new-password" /></Form.Item>
+                    <div className="flex justify-end gap-2">
+                        <Button disabled={resettingPassword} onClick={() => { setResetTarget(null); resetForm.resetFields(); }}>{t('cancel')}</Button>
+                        <Button type="primary" danger htmlType="submit" loading={resettingPassword}>{t('resetPassword')}</Button>
+                    </div>
                 </Form>
             </Modal>
         </div>

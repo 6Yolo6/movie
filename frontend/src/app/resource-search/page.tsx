@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { App, Alert, Button, Card, Input, QRCode, Tag, Typography } from 'antd';
 import type { InputRef } from 'antd';
 import { ArrowLeftOutlined, ArrowRightOutlined, QrcodeOutlined, SearchOutlined, SendOutlined } from '@ant-design/icons';
 import { api, readApiError } from '../../lib/api';
 import { MAX_SEARCH_TURNS, parseSearchReply, readSearchHistory, safeSearchLinks, stripSearchUrls } from '../../lib/resourceSearch';
 import type { SearchLink, SearchTurn } from '../../lib/resourceSearch';
+import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '../../store/authStore';
 
 interface SearchJob { jobId: string; status: string; reply?: string; links?: SearchLink[]; message?: string; }
@@ -60,9 +61,9 @@ function SearchReply({ turn, active, busy, onAction }: {
     </div>;
 }
 
-function SearchConversation({ userId }: { userId: number }) {
+function SearchConversation({ userId, entryKeyword = '', autoSearch = false }: { userId: number; entryKeyword?: string; autoSearch?: boolean }) {
     const { message } = App.useApp();
-    const [keyword, setKeyword] = useState('');
+    const [keyword, setKeyword] = useState(entryKeyword);
     const [loading, setLoading] = useState(false);
     const [jobId, setJobId] = useState<string | null>(null);
     const [turns, setTurns] = useState<SearchTurn[]>([]);
@@ -75,6 +76,8 @@ function SearchConversation({ userId }: { userId: number }) {
     const busy = useRef(false);
     const alive = useRef(true);
     const postController = useRef<AbortController | null>(null);
+    const autoSearchHandled = useRef(false);
+    const submitRef = useRef<(command?: string, label?: string) => Promise<void>>(async () => {});
     const storageKey = `resource-search-job:${userId}`;
     const historyKey = `resource-search-history:${userId}`;
 
@@ -181,6 +184,17 @@ function SearchConversation({ userId }: { userId: number }) {
         }
     };
 
+    useEffect(() => {
+        submitRef.current = submit;
+    });
+
+    useEffect(() => {
+        if (!ready || !autoSearch || autoSearchHandled.current) return;
+        autoSearchHandled.current = true;
+        const timer = setTimeout(() => { void submitRef.current(entryKeyword); }, 0);
+        return () => clearTimeout(timer);
+    }, [ready, autoSearch, entryKeyword]);
+
     const latest = turns[turns.length - 1];
     return <main className="mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -224,10 +238,17 @@ const subscribeHydration = () => () => {};
 const clientHydration = () => true;
 const serverHydration = () => false;
 
-export default function ResourceSearchPage() {
+function ResourceSearchContent() {
     const { user } = useAuthStore();
     const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
+    const searchParams = useSearchParams();
+    const entryKeyword = (searchParams.get('keyword') || '').trim().slice(0, 120);
+    const autoSearch = entryKeyword.length > 0 && searchParams.get('auto') === '1';
     if (!mounted) return <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">正在加载资源搜索…</main>;
     if (!user) return <main className="mx-auto max-w-4xl px-4 py-10"><Card title="搜索影片资源">请先登录后使用资源搜索与临时转存。</Card></main>;
-    return <SearchConversation key={user.id} userId={user.id} />;
+    return <SearchConversation key={`${user.id}:${entryKeyword}`} userId={user.id} entryKeyword={entryKeyword} autoSearch={autoSearch} />;
+}
+
+export default function ResourceSearchPage() {
+    return <Suspense fallback={<main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">正在加载资源搜索…</main>}><ResourceSearchContent /></Suspense>;
 }
