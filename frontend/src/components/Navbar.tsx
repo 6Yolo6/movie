@@ -346,7 +346,7 @@ export default function Navbar() {
                         type="text"
                         icon={<MenuOutlined />}
                         aria-label={t('menu')}
-                        className="xl:!hidden !text-lg"
+                        className="!text-lg"
                         onClick={() => setDrawerOpen(true)}
                     />
                     <Link href="/" className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap">
@@ -364,6 +364,11 @@ export default function Navbar() {
                         <Link href="/messages" className="hover:text-blue-600 dark:hover:text-white transition-colors inline-flex items-center gap-1">
                             <MessageOutlined /> {t('messageBoard')}
                         </Link>
+                        {user && (
+                            <Link href="/resource-search" className="hover:text-blue-600 dark:hover:text-white transition-colors inline-flex items-center gap-1">
+                                <CloudDownloadOutlined /> 搜索资源
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -474,7 +479,6 @@ export default function Navbar() {
                 open={drawerOpen}
                 onClose={closeDrawer}
                 styles={{ wrapper: { width: 280 }, body: { padding: '8px 0' } }}
-                className="xl:!hidden"
             >
                 {/* Mobile search with recent hot searches */}
                 <div className="px-4 mb-4">

@@ -32,7 +32,7 @@
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
 - 影片元数据支持缺失海报自动补图；GYING 不可用时自动补图回退 TMDB 搜索、补齐剩余季回退 PanSou，不直接报错。
 - 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；Resend 已接入已验证的 `gyinghub.dpdns.org` 发件域并启用邮箱验证码，163 等邮箱投递正常，Gmail 因免费域声誉暂拒收。
-- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。 首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
+- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，登录用户在桌面导航与抽屉均可直达「搜索资源」。 首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
 ### 影视资源中心
 
@@ -81,12 +81,12 @@
 - 数据中心：2026-09-25 实测 MySQL 8.0.28，`gying` 库 25 张 InnoDB 表；使用现役应用凭据从本机连接匹配 `gying_app@%`，授予 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE，缺少完整备份权限，不能把非 root 等同最小 Host 范围。MCP 只读账号和 `require_secure_transport=OFF`、`local_infile=OFF`、bind address `*` 为此前验收，本轮未重新查询。
 - `docker compose -f docker-compose.prod.yml config --quiet` 已通过；语法与必需键通过不代表 Firewall、Access、MinIO policy 和恢复门禁通过。
 - Redis 与 PanSou 仅作为可重建依赖对待；Redis 实际仅接入非 internal 的共享 `gying-net`，尚未迁入目标 `cache-net`，扫描计数不覆盖这项隔离差异；NapCat 不纳入验收。
-- 2026-09-25 Windows 复核：11:33 管理员已启用 Public Firewall/default inbound Block；规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 在物理接口 `以太网`、`WLAN 2` 上阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any、地址 Any），ActiveStore 复核通过。出站设置未变（有效 Allow），未修改 Domain/Private profile；敏感服务的非 loopback 监听仍未改绑，外部设备入站阻断与 IPv6 链路未验收。公网匿名管理页尚无 Access 拦截证据，管理员 API 仍要求应用认证。
+- 2026-09-25 Windows 复核：11:33 管理员已启用 Public Firewall/default inbound Block；规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 在物理接口 `以太网`、`WLAN 2` 上阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any、地址 Any），ActiveStore 复核通过。出站设置未变（有效 Allow），未修改 Domain/Private profile；敏感服务的非 loopback 监听仍未改绑，用户已报告同网有线电脑访问服务器 `192.168.1.147` 的 6 个 TCP 端口全部 False，网站可打开并可注册；公网直连与 IPv6 链路未验收。公网匿名管理页尚无 Access 拦截证据，管理员 API 仍要求应用认证。
 - 状态文档、Skill 与安全报告只记录键名、状态与结论，不记录原始日志、密钥或完整 SQL 输出。
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-library-qr-backend:20260925c`、`gying-library-qr-frontend:20260925k`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`register-mail-hint-20260925`、`registration-limit-invite-20260925`、`registration-resend-20260925`、`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
+- 当前前后端：`gying-library-qr-backend:20260925c`、`gying-library-qr-frontend:20260925l`（2026-09-25 Asia/Shanghai 部署，容器重启次数 0）。发布包与 deploy/rollback override 位于 `E:\gying-tools\releases\`（`nav-drawer-restore-20260925`、`register-mail-hint-20260925`、`registration-limit-invite-20260925`、`registration-resend-20260925`、`rebrand-yingwo-20260925`、`hot-search-filters-20260924`、`gying-skip-20260924`、`monitoring-page-20260924`、`library-qr-20260924`、`search-admin-20260924-2035`、`business-fixes-20260924-1950`），更早版本镜像标签保留在本地。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -96,10 +96,10 @@
 
 ## 仍需处理
 
-- **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙外部入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
+- **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
-- **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。下一步从独立设备验证上述 6 个 TCP 端口无法经物理接口访问，并单独验证 IPv6；本机 HTTP 探针不替代外部入站证据。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
+- **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。已取得用户报告的同网有线电脑 IPv4 测试：上述 6 端口均 False，网站可打开并可注册。该结论仅覆盖该客户端到 `192.168.1.147` 的不可连接结果，未单独排除路由/客户端隔离，也不是公网直连或 IPv6 测试；后两项继续保留待验收。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
 - **迅雷持续同步待验收**：计划任务 2026-09-25 09:27、10:33 两次运行均返回 0，状态文件 mtime 对应更新至 10:33:36，旧“自动同步未恢复”的结论已过时；仍需观察后续周期和实际授权有效性，任务退出码/文件更新不替代真实链路验收。本轮未读取凭据内容或手动触发刷新/转存。
 - **迅雷凭据权限持续性待验收**：私有临时文件 + 原子替换补丁已随 `backend:20260924c` 上线（在线 jar 含 `PrivateFileWriter`），2026-09-25 两次同步周期后的 stat 均为 `10001:10001 / 600`。backend 自身独立重复写入始终保持 600 的生产证据仍待补齐，不需重复发布或用一次 chmod 代替验收。
 - **Docker 运行目录与磁盘**：完成 Windows 重启后清理 `%LOCALAPPDATA%\docker-secrets-engine` 失效 socket 并恢复默认启动；E 盘空间偏紧（2026-09-25 约 6.3 GiB；新备份放在 G 盘），建议把 `docker_data.vhdx` 迁往空间充足的磁盘。可清理本次产生的临时目录 `run-stuck-*`、`run-recovery-*`。
@@ -131,6 +131,7 @@
 - 本轮未创建真实账号、未修改生产搜索频率、未手工触发转存或发布；模拟 API 回归与单测不替代真实扫码转存和外部副作用验收。
 - 安全续审（2026-09-25 防火墙变更前）：只读扫描 53 PASS / 10 FAIL / 0 UNKNOWN，安全工具单测 16 项通过、工作区 secret scan 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL（迁移文档漂移、新库覆盖）。未重跑上述业务全量测试，未重启生产或修改防火墙/生产凭据。
 - 防火墙单步验收（2026-09-25）：用户实施记录 `20260925-113327-6e2eac1b/result.json` 为 applied，变更前后各 9/9 健康检查通过；本任务 11:34 再查 ActiveStore 的 profile/端口/网卡/方向/动作与预期一致，出站未变，回退守护进程为 0 且无回退记录。独立 `-CheckOnly` 再次 9/9 通过（`G:/gying-tools/security-20260925/firewall-attempts/20260925-113458-e40a05c2/result.json`）；10 个容器运行且未暂停，restart count 均为 0、启动时间早于本次变更。未改数据库、代理/DNS/TLS 或生产容器；此前工具 30 项测试包含模拟回退，真实回退未触发，整体安全门禁仍未通过。
+- 异机局域网验收（2026-09-25，用户报告）：另一台有线电脑 → 当前 Wi‑Fi 服务器 `192.168.1.147`，TCP 3306/33060/5005/8880/9000/9001 全部 False；用户同时确认网站可打开并可注册。未收集原始输出/抓包，不将失败连接全部归因于防火墙；这不覆盖公网直连、IPv6、影片列表/图片/评论或完整应用回归。
 - 完整备份阶段：19/19 加密文件 hash/认证解密通过，25/25 表恢复计数与 CHECKSUM 一致，视图/触发器/事件/例程数量匹配；隔离 MinIO 图片与拒绝探针通过。源站/公网首页、公开列表与管理员/内部路径拒绝复测正常；未进行应用全链路/异机恢复，整体安全门禁仍未通过。
 
 可重复执行的验收：
