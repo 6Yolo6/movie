@@ -19,7 +19,7 @@ export default function RegisterPage(){
  const submit=async(v:Values)=>{setSubmitting(true);try{const r=await api("/api/auth/register",{method:"POST",body:JSON.stringify({username:v.username,email:v.email,password:v.password,emailCode:v.emailCode,inviteCode:v.inviteCode})});if(r.ok){message.success("注册成功，请登录");router.push("/login");}else message.error(await readApiError(r,"注册失败"));}finally{setSubmitting(false);}};
  const inviteOnly=policy&&!policy.publicRegistrationEnabled;
  return <div className="flex min-h-[80vh] items-center justify-center px-4"><Card title="注册 影窝" className="w-full max-w-md shadow-xl">
-  {policy?.registrationLimitReached&&<Alert className="mb-4" type="error" showIcon message="注册人数已达上限" description="当前站点已达到设置的自助注册人数上限，请联系管理员。"/>}
+  {policy?.registrationLimitReached&&<Alert className="mb-4" type="error" showIcon message="公开注册人数已达上限" description="站点已达到自助注册人数上限，仍可使用有效邀请码注册，或联系管理员手动开通账号。"/>}
   {inviteOnly&&<Alert className="mb-4" type={policy.registrationAllowed?"success":"info"} showIcon message={policy.registrationAllowed?"邀请码有效":"当前已关闭公开注册"} description={policy.registrationAllowed?"可继续完成注册。":"请输入老用户提供的邀请码或打开邀请链接。"}/>}
   {policy&&!policy.emailVerificationEnabled&&<Alert className="mb-4" type="warning" showIcon message="邮箱验证码暂未启用" description="系统尚未配置邮件发送服务；仍会校验邮箱格式和邮箱唯一性。"/>}
   <Form form={form} onFinish={submit} size="large" layout="vertical">

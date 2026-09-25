@@ -45,7 +45,7 @@ public class RegistrationService {
         result.put("publicRegistrationEnabled", publicEnabled);
         result.put("invitationEnabled", invitationEnabled);
         result.put("inviteValid", inviteValid);
-        result.put("registrationAllowed", (publicEnabled || inviteValid) && !limitReached);
+        result.put("registrationAllowed", (publicEnabled && !limitReached) || inviteValid);
         result.put("registrationLimitReached", limitReached);
         result.put("maxUsers", maxUsers);
         result.put("emailRequired", true);
@@ -58,11 +58,13 @@ public class RegistrationService {
         String normalizedEmail = normalizeEmail(email);
         boolean publicEnabled = bool("auth.register.enabled", false);
         Map<String, Object> invitation = bool("auth.invite.enabled", true) ? validateInvitation(inviteCode, true) : null;
-        if (!publicEnabled && invitation == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration is invite-only");
-        }
-        if (registrationLimitReached()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration limit reached");
+        if (invitation == null) {
+            if (!publicEnabled) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration is invite-only");
+            }
+            if (registrationLimitReached()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration limit reached");
+            }
         }
         try {
             emailVerification.verify(normalizedEmail, emailCode);

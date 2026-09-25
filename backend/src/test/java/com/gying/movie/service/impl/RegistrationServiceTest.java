@@ -47,14 +47,28 @@ class RegistrationServiceTest {
                 () -> service.register("fixture", "fixture-password", "test@example.com", null, "fixture")).getStatusCode().value());
         verify(users, never()).register(anyString(), anyString(), anyString(), any());
     }
-    @Test void rejectsRegistrationWhenUserLimitReached() {
+    @Test void rejectsPublicRegistrationWhenUserLimitReached() {
+        when(config.getConfigValue(eq("auth.register.max_users"), anyString())).thenReturn("2");
+        when(config.getConfigValue(eq("auth.register.enabled"), anyString())).thenReturn("true");
+        doReturn(2L).when(users).count();
+        assertEquals(true, service.policy(null).get("registrationLimitReached"));
+        assertEquals(false, service.policy(null).get("registrationAllowed"));
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> service.register("fixture", "fixture-password", "test@example.com", null, null));
+        assertEquals(403, error.getStatusCode().value());
+        assertEquals("Registration limit reached", error.getReason());
+        verify(users, never()).register(anyString(), anyString(), anyString(), any());
+    }
+    @Test void inviteRegistrationBypassesUserLimit() {
         when(config.getConfigValue(eq("auth.register.max_users"), anyString())).thenReturn("2");
         doReturn(2L).when(users).count();
         assertEquals(true, service.policy("fixture").get("registrationLimitReached"));
-        assertEquals(false, service.policy("fixture").get("registrationAllowed"));
-        ResponseStatusException error = assertThrows(ResponseStatusException.class,
-                () -> service.register("fixture", "fixture-password", "test@example.com", null, "fixture"));
-        assertEquals(403, error.getStatusCode().value());
+        assertEquals(true, service.policy("fixture").get("inviteValid"));
+        assertEquals(true, service.policy("fixture").get("registrationAllowed"));
+        SysUser user = new SysUser(); user.setId(4L);
+        when(users.register("fixture", "fixture-password", "test@example.com", 2L)).thenReturn(user);
+        assertSame(user, service.register("fixture", "fixture-password", "test@example.com", null, "fixture"));
+        verify(users).register("fixture", "fixture-password", "test@example.com", 2L);
     }
     @Test void validInviteRegistersAndConsumesOneUse() {
         SysUser user = new SysUser(); user.setId(3L);

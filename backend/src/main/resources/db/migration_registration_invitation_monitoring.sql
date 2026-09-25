@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `resource_operation_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='资源操作审计日志';
 
 INSERT INTO sys_config (`config_key`, `config_value`, `description`) VALUES
-('auth.register.max_users', '0', '自助注册的最大用户总数；0 表示不限制，达到上限后公开注册与邀请注册均停止，管理员建号不受影响。'),
+('auth.register.max_users', '0', '公开自助注册的最大用户总数；0 表示不限制，达到上限后仅停止公开注册，仍可使用邀请码或由管理员建号。'),
 ('auth.email_verification.enabled', 'false', '注册时是否启用邮箱验证码；未配置邮件服务时保持关闭'),
 ('auth.invite.enabled', 'true', '是否允许邀请码注册'),
 ('auth.invite.min_account_age_days', '30', '普通用户账号注册满多少天后可生成邀请码'),

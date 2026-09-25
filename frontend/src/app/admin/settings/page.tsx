@@ -24,7 +24,7 @@ const { Title, Text } = Typography;
 
 const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
     'auth.register.enabled': '是否允许访客自行注册；关闭后仍可使用有效邀请码，管理员也可在用户管理中创建账号。',
-    'auth.register.max_users': '允许自助注册的最大用户总数；0 表示不限制。达到上限后公开注册与邀请注册均停止，管理员在用户管理中建号不受影响。',
+    'auth.register.max_users': '允许公开自助注册的最大用户总数；0 表示不限制。达到上限后仅停止公开注册，仍可使用邀请码注册，管理员在用户管理中建号不受影响。',
     'resource.audit.enabled': '用户提交的资源是否需要管理员审核后才公开。',
     'resource.max.per.user': '每个普通发布者最多可保留的有效资源数量；管理员不受此总数限制。',
     'resource.search.rate_limit_per_minute': '网页资源搜索：每用户每分钟最多搜索次数（1–60），默认 5；保存后立即生效。资源序号选择和翻页不计入，重新搜索或查看其他资源计入；QQ 频率独立配置。',

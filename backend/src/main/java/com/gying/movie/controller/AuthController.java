@@ -78,7 +78,7 @@ public class AuthController {
         if (!Boolean.TRUE.equals(policy.get("registrationAllowed"))) {
             boolean limitReached = Boolean.TRUE.equals(policy.get("registrationLimitReached"));
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    limitReached ? "Registration limit reached" : "Registration is invite-only");
+                    limitReached ? "Public registration limit reached; an invite code is required" : "Registration is invite-only");
         }
         try {
             emailVerificationService.send(email, getClientIp(request));
