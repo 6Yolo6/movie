@@ -39,6 +39,7 @@
 - 建议每 2 秒轮询。同一用户已有进行中任务时复用该任务，不另行执行新指令；全局并发 2、等待队列 8、任务缓存最多 200 条，满载返回 429。完成结果保存 15 分钟，任务保存在内存中，不保证跨后端重启恢复。
 - 网页将进行中的任务 ID 保存在当前标签页的 `sessionStorage`，刷新后继续查询。轮询网络故障只重试查询，不重新启动转存。发布此契约时需要同步更新前后端并刷新旧页面。
 - 输入发送成功后自动清空已发送内容，不清除等待期间输入的新草稿；失败保留草稿。最近 20 轮对话按用户保存在当前标签页，历史候选不可执行；最新影片/资源候选与翻页支持直接点击，分享卡片支持复制、打开和二维码。
+- 入口：左侧抽屉「搜索资源」（登录用户）；影片详情页在无任何资源链接时于资源区底部显示「搜索这部影片的资源」，跳转 `/resource-search?q=<片名>&auto=1` 并自动发起一次搜索。`q` 截断至 120 字符且不复用顶栏的 `keyword` 参数，避免顶部搜索框被误填。
 - `resource.search.rate_limit_per_minute` 控制网页每用户每分钟搜索次数，默认 5，范围 1–60，后台保存后即时生效。资源序号选择/翻页不消耗搜索次数；选择影片、重新搜索或“查看其他资源”计入。网页 Redis bucket 与 QQ 独立，不改变 API/边缘防护限流。
 - GYING 读取连接/响应超时分别为 3/20 秒；连接错误、5xx、429 或鉴权失效触发 30 秒短时熔断，之后自动允许重试。AUTO/QQ 搜索继续尝试 PanSou；补充来源失败不会丢弃已有有效候选。显式选择 GYING 的管理任务仍报告来源失败，不伪装为成功。
 
@@ -127,5 +128,7 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 - `/api/admin/comments`：评论管理。
 - `GET /api/admin/users`：分页查询用户；角色、启用状态等管理操作保持原契约。
 - `POST /api/admin/users`：仅 ADMIN 可直接新建用户。请求 `{username, email, password, role}`；用户名 3–50 字符、邮箱必填且唯一、密码至少 12 字符且不超过 72 UTF-8 字节；`role` 默认 USER，仅允许 USER/PUBLISHER。独立于公开注册/邀请码/邮箱验证码，不允许访客绕过注册策略；成功 201，返回 `{id, username, email, role, enabled}`，不返回密码。非法输入 400，重复用户名或邮箱 409，未登录/非管理员 401/403。
+- `PUT /api/admin/users/{id}`：仅 ADMIN 可编辑用户资料，请求体可含 `username`、`email`、`role`。用户名 3–50 字符且不与他人重复，邮箱规范化（trim + 小写）后不与他人重复，角色仅允许 USER/PUBLISHER 且不能修改自己的角色；成功 200 返回更新后的 `{id, username, email, role, enabled}`，非法输入 400，用户名或邮箱冲突 409，用户不存在 404。
+- `PUT /api/admin/users/{id}/password`：仅 ADMIN 可重置指定用户密码，请求 `{password}`；密码至少 12 字符且不超过 72 UTF-8 字节。成功后调用统一 `resetPassword`，密钥哈希更新并吊销该用户全部登录设备；返回 `{message, userId, sessionsRevoked:true, self}`，`self` 表示管理员重置的是自己（当前会话同样失效）。非法输入 400，用户不存在 404。
 - `GET /api/admin/config`：读取系统设置；搜索频率和留言频率未配置时分别返回虚拟默认值 5，不在读取时写数据库。
 - `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 接受 1–60，`comment.rate_limit_per_minute` 接受 1–120；非法值 400，未存在的配置在保存时新增。
