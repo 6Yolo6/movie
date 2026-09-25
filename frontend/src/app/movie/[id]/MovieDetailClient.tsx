@@ -836,7 +836,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                             type="primary"
                                             icon={<SearchOutlined />}
                                             className="bg-blue-600"
-                                            onClick={() => router.push(`/resource-search?keyword=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`)}
+                                            onClick={() => router.push(`/resource-search?q=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`)}
                                         >
                                             {t('searchThisMovieResource')}
                                         </Button>

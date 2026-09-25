@@ -242,7 +242,7 @@ function ResourceSearchContent() {
     const { user } = useAuthStore();
     const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
     const searchParams = useSearchParams();
-    const entryKeyword = (searchParams.get('keyword') || '').trim().slice(0, 120);
+    const entryKeyword = (searchParams.get('q') || '').trim().slice(0, 120);
     const autoSearch = entryKeyword.length > 0 && searchParams.get('auto') === '1';
     if (!mounted) return <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">正在加载资源搜索…</main>;
     if (!user) return <main className="mx-auto max-w-4xl px-4 py-10"><Card title="搜索影片资源">请先登录后使用资源搜索与临时转存。</Card></main>;
