@@ -60,6 +60,7 @@
 - `/resource-search` 提供登录用户网页资源搜索：精确命中片库时优先返回已审核、活动、状态正常的资源，首轮不调用外部来源也不转存；界面只展示资源名称、提取码与二维码，不出现明文 URL 与复制/打开入口。任务异步执行、每 2 秒轮询、刷新续查，发送成功后清空已发送内容。
 - 后台监控页提供统计卡、14 天趋势、响应分布、热门搜索 Top10、发布成功率与多类日志 tab（中文列名与状态筛选）。
 - 系统设置可在线修改 `resource.search.rate_limit_per_minute`（每用户每分钟 1–60，默认 5，保存后即时生效）；资源序号选择与翻页不计入，选择影片、重新搜索或「查看其他资源」计入，QQ 搜索频率独立。
+- 账号自助能力（2026-09-26）：登录页与注册页已全量中英多语言（`login*`/`register*` 文案统一走 i18n，不再硬编码英文）；「我的资料」可修改绑定邮箱，需邮箱验证码且每 90 天限改 1 次，冷却期内返回 `emailChangeAvailableAt` 并由前端提示下次可修改时间；重置密码改为必须邮箱验证码（`POST /api/auth/reset-password/code` 发码，`POST /api/auth/reset-password` 携带 `emailCode`），成功后吊销该账号全部登录设备；`GET /api/auth/me` 追加 `email`、`emailUpdatedAt`、`emailChangeAvailableAt`、`emailVerificationEnabled`。
 
 ### QQ 自动化
 
@@ -129,6 +130,7 @@
 - 首页与分类页结果总数复核：均不显示「N 条结果」，关键词搜索仍显示匹配数量。
 - 留言与抽屉复核（2026-09-25）：1440px 顶栏不再显示「搜索资源」，登录用户抽屉在「留言」之后显示该入口；留言页默认「综合留言」，下拉包含综合留言、求片、失效资源反馈、建议反馈和其他；相关后端测试 15 项通过，前端 `tsc --noEmit`、lint、生产构建通过，部署入口本地/公网 200。
 - 注册上限与邮件复核（2026-09-25）：临时把上限设为当前用户数 `3` 时，无邀请码策略返回 `registrationLimitReached=true`、`registrationAllowed=false`，发码接口 403 `Public registration limit reached; an invite code is required`；带有效邀请码时策略仍返回 `registrationAllowed=true`。清理临时邀请码后上限恢复生产值 `500`。Resend 域名 `gyinghub.dpdns.org` 三条记录 verified、DMARC 已添加，发件地址 `noreply@gyinghub.dpdns.org`；163 邮箱（`yolo136@163.com`）实测 delivered，Gmail 550 拒收；邮箱验证码开关已启用，注册页提示优先使用 QQ/163 邮箱（仅验证开启时显示），Gmail 用户暂收不到验证码。
+- 账号自助能力验收（2026-09-26）：后端全量 257 项测试通过（新增 14 项：邮箱 90 天冷却与冲突 6 项、认证接口 8 项），前端 `tsc --noEmit` 与 lint 通过；生产镜像 backend `20260926a` / frontend `20260926a` 已部署。`sys_user.email_updated_at` 由 DBA 维护账号在本机执行幂等迁移（应用账号只有 DML、无 ALTER 权限），实测 `datetime NULL` 且中文注释正确。本地与公网 `/`、`/login`、`/register`、`/profile`、`/locales/{en,zh}/common.json` 均 200；浏览器复核中英文登录/注册页文案正确；无 token 与无效 token 访问 `me`、`reset-password(/code)`、`email(/code)` 均 401。回滚目标 backend `20260925e` / frontend `20260925n`，无需撤销新增列。
 - 本轮未创建真实账号、未修改生产搜索频率、未手工触发转存或发布；模拟 API 回归与单测不替代真实扫码转存和外部副作用验收。
 - 安全续审（2026-09-25 防火墙变更前）：只读扫描 53 PASS / 10 FAIL / 0 UNKNOWN，安全工具单测 16 项通过、工作区 secret scan 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL（迁移文档漂移、新库覆盖）。未重跑上述业务全量测试，未重启生产或修改防火墙/生产凭据。
 - 防火墙单步验收（2026-09-25）：用户实施记录 `20260925-113327-6e2eac1b/result.json` 为 applied，变更前后各 9/9 健康检查通过；本任务 11:34 再查 ActiveStore 的 profile/端口/网卡/方向/动作与预期一致，出站未变，回退守护进程为 0 且无回退记录。独立 `-CheckOnly` 再次 9/9 通过（`G:/gying-tools/security-20260925/firewall-attempts/20260925-113458-e40a05c2/result.json`）；10 个容器运行且未暂停，restart count 均为 0、启动时间早于本次变更。未改数据库、代理/DNS/TLS 或生产容器；此前工具 30 项测试包含模拟回退，真实回退未触发，整体安全门禁仍未通过。
