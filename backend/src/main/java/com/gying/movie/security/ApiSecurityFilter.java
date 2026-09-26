@@ -31,6 +31,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class ApiSecurityFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(ApiSecurityFilter.class);
     private static final long JSON_LIMIT = 1024 * 1024;
+    private static final int PUBLIC_LIMIT_MAX = 100;
+    private static final int ADMIN_LIMIT_MAX = 5000;
     private final RedisRateLimiter limiter;
     private final ClientIpResolver ips;
     private final ObjectMapper mapper;
@@ -117,7 +119,8 @@ public class ApiSecurityFilter extends OncePerRequestFilter {
             if (values == null) continue;
             if (values.length != 1 || !values[0].matches("[0-9]{1,6}")) badParameter();
             int value = Integer.parseInt(values[0]);
-            int max = "page".equals(name) ? 1000 : 100;
+            int max = "page".equals(name) ? 1000
+                    : ("admin".equals(category(request)) ? ADMIN_LIMIT_MAX : PUBLIC_LIMIT_MAX);
             if (value < 1 || value > max) badParameter();
         }
         for (String name : new String[]{"keyword", "q", "search"}) {

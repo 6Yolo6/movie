@@ -20,6 +20,26 @@ class ApiSecurityFilterTest {
         var res=new MockHttpServletResponse(); filter(limiter).doFilter(req,res,chain);
         assertEquals(400,res.getStatus()); verifyNoInteractions(limiter,chain);
     }
+    @Test void publicLimitAboveHardCapIsRejected() throws Exception {
+        var limiter=mock(RedisRateLimiter.class); var chain=mock(FilterChain.class);
+        var req=new MockHttpServletRequest("GET", "/api/movies"); req.setParameter("limit", "101");
+        var res=new MockHttpServletResponse(); filter(limiter).doFilter(req,res,chain);
+        assertEquals(400,res.getStatus()); verifyNoInteractions(limiter,chain);
+    }
+    @Test void adminLimitAbovePublicCapIsAcceptedWithinAdminHardCap() throws Exception {
+        var limiter=mock(RedisRateLimiter.class); var chain=mock(FilterChain.class);
+        var req=new MockHttpServletRequest("POST", "/api/admin/resource-hub/discoveries/reconcile");
+        req.setParameter("limit", "2000");
+        var res=new MockHttpServletResponse(); filter(limiter).doFilter(req,res,chain);
+        assertEquals(200,res.getStatus()); verify(chain).doFilter(any(), any());
+    }
+    @Test void adminLimitAboveAdminHardCapIsRejected() throws Exception {
+        var limiter=mock(RedisRateLimiter.class); var chain=mock(FilterChain.class);
+        var req=new MockHttpServletRequest("POST", "/api/admin/resource-hub/discoveries/reconcile");
+        req.setParameter("limit", "5001");
+        var res=new MockHttpServletResponse(); filter(limiter).doFilter(req,res,chain);
+        assertEquals(400,res.getStatus()); verifyNoInteractions(limiter,chain);
+    }
     @Test void rateRejectionHasRetryAfterAndNoDownstreamWork() throws Exception {
         var limiter=mock(RedisRateLimiter.class); var chain=mock(FilterChain.class);
         doThrow(new RedisRateLimiter.RateLimitExceededException(1001)).when(limiter).require(anyString(),anyString(),anyInt(),any());
