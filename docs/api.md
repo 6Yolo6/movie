@@ -122,6 +122,19 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 独立发布容器内部提供 `GET /health` 和受 `X-Internal-Token` 保护的 `POST /posts/{logId}`。原 QQ 机器人、原频道账号和原频道定时任务保持独立。
 
+## 认证与账号（2026-09-26）
+
+- \POST /api/auth/login\：用户名+密码登录，返回 JWT。按账号 5 分钟 10 次限流。
+- \POST /api/auth/email-code\：公开注册发送邮箱验证码。需注册策略允许（公开注册未达上限或携带有效邀请码）；按邮箱 60 秒冷却、按客户端 IP 每小时 10 次限流。
+- \GET /api/auth/registration-policy?invite=\：返回是否允许公开注册、是否已达注册上限、邀请码是否有效等。
+- \POST /api/auth/register\：注册。开启邮箱验证时需 \mailCode\；公开注册额度用尽后仍可用邀请码注册或由管理员建号。
+- \POST /api/auth/reset-password/code\：登录用户请求重置密码验证码。仅对有绑定邮箱的账号发送，返回 \{message, email}\，\mail\ 为掩码形式（如 \b***@example.com\）。未绑定邮箱返回 400。
+- \POST /api/auth/reset-password\：请求体 \{password, emailCode}\。必须通过 \mailCode\ 校验（用途 eset-password\）；密码至少 12 字符且不超过 72 UTF-8 字节。成功后吊销该用户全部登录设备。验证码缺失/过期/错误返回 400。
+- \POST /api/auth/email/code\：登录用户请求更换邮箱验证码，请求体 \{email}\（新邮箱，须为合法且与当前邮箱不同）。返回 \{message}\。60 秒冷却，按 IP 每小时 10 次限流。
+- \PUT /api/auth/email\：请求体 \{email, emailCode}\。先校验验证码（用途 \change-email\）再更新邮箱；邮箱每 90 天只能修改 1 次，冷却期内返回 429，邮箱已被占用返回 409，与原邮箱相同返回 400。成功返回 \{message, email, emailUpdatedAt, emailChangeAvailableAt}\。
+- \GET /api/auth/me\：返回 \{id, username, role, email, emailUpdatedAt, emailChangeAvailableAt, emailVerificationEnabled}\；\mailChangeAvailableAt\ 仅在 90 天冷却期内有值，未配置邮件服务时 \mailVerificationEnabled=false\，验证码校验直接放行。
+- 验证码用途隔离：注册沿用 egister:email:code:\，重置密码、更换邮箱分别使用 \mail-code:reset-password:\ 与 \mail-code:change-email:\ 前缀，有效期均为 5 分钟。
+
 ## 其他管理接口
 
 - `/api/admin/resource-reports`：举报处理。
