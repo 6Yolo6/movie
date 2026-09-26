@@ -46,6 +46,11 @@ import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
+import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PreDestroy;
 import java.util.LinkedHashMap;
 import java.time.LocalDateTime;
@@ -71,6 +76,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/resource-hub")
 public class ResourceHubAdminController {
+    private static final Logger log = LoggerFactory.getLogger(ResourceHubAdminController.class);
     private static final int MISSING_RESOURCE_BATCH_LIMIT = 20;
 
     private final AuthHelper authHelper;
@@ -788,7 +794,7 @@ public class ResourceHubAdminController {
             return transfer;
         }
         if (!hasText(discovery.getOriginalUrl())) {
-            throw new IllegalStateException("Discovery result has no source URL to transfer");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Discovery result has no source URL to transfer");
         }
         LocalDateTime now = LocalDateTime.now();
         transfer = new QuarkTransferTask();
@@ -834,10 +840,10 @@ public class ResourceHubAdminController {
         }
         MovieMetadata movie = movieService.getById(discovery.getMovieId());
         if (movie == null) {
-            throw new IllegalStateException("Movie not found: " + discovery.getMovieId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Movie not found: " + discovery.getMovieId());
         }
         if (!ResourceTitleMatcher.isRelevant(movie, discovery.getTitle(), null)) {
-            throw new IllegalStateException("Resource title still does not match movie title");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Resource title still does not match movie title");
         }
         if ("IGNORED".equalsIgnoreCase(discovery.getStatus())
                 && "Resource title does not match movie title".equals(discovery.getFailureReason())) {
@@ -854,7 +860,7 @@ public class ResourceHubAdminController {
                 || "FAILED".equalsIgnoreCase(discovery.getStatus());
         if (!retryable
                 && discovery.getResourceLinkId() == null) {
-            throw new IllegalStateException("Discovery result is not retryable: " + discovery.getStatus());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Discovery result is not retryable: " + discovery.getStatus());
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -862,10 +868,7 @@ public class ResourceHubAdminController {
         if ("XUNLEI".equalsIgnoreCase(discovery.getProvider())) {
             XunleiTransferTask transfer = findOrCreateXunleiTransfer(discovery);
             if (!hasText(transfer.getShareUrl())) {
-                transfer.setAttempts(0);
-                transfer.setStatus("PENDING");
-                transfer.setLastError(null);
-                transfer.setUpdatedAt(LocalDateTime.now());
+                prepareXunleiRetry(transfer);
                 xunleiTransferTaskService.updateById(transfer);
                 QuarkTransferRunResult transferResult = xunleiTransferRunnerService.submitOne(transfer.getId());
                 result.put("transferTaskId", transfer.getId());
@@ -875,9 +878,17 @@ public class ResourceHubAdminController {
                 result.put("transferErrors", transferResult.getErrors());
                 transfer = xunleiTransferTaskService.getById(transfer.getId());
                 if (transferResult.getFailed() > 0 || transfer == null || !hasText(transfer.getShareUrl())) {
-                    throw new IllegalStateException(transferResult.getErrors().isEmpty()
+                    String transferError = transferResult.getErrors().isEmpty()
                             ? "Xunlei transfer did not create an own share"
-                            : transferResult.getErrors().get(0));
+                            : transferResult.getErrors().get(0);
+                    try {
+                        if (recoverFailedDiscoveryWithPanSou(discovery, result)) {
+                            return result;
+                        }
+                    } catch (Exception recoveryError) {
+                        result.put("fallbackError", safeOperationErrorMessage(recoveryError.getMessage()));
+                    }
+                    throw operationFailed(discovery, transferError);
                 }
             }
             return publishRetriedDiscovery(discovery, discoveryResultId, result);
@@ -891,12 +902,17 @@ public class ResourceHubAdminController {
             result.put("transferErrors", transferResult.getErrors());
             transfer = quarkTransferTaskService.getById(transfer.getId());
             if (transferResult.getFailed() > 0 || transfer == null || !hasText(transfer.getShareUrl())) {
-                if (recoverFailedDiscoveryWithPanSou(discovery, result)) {
-                    return result;
-                }
-                throw new IllegalStateException(transferResult.getErrors().isEmpty()
+                String transferError = transferResult.getErrors().isEmpty()
                         ? "Quark transfer did not create an own share and PanSou rediscovery failed"
-                        : transferResult.getErrors().get(0));
+                        : transferResult.getErrors().get(0);
+                try {
+                    if (recoverFailedDiscoveryWithPanSou(discovery, result)) {
+                        return result;
+                    }
+                } catch (Exception recoveryError) {
+                    result.put("fallbackError", safeOperationErrorMessage(recoveryError.getMessage()));
+                }
+                throw operationFailed(discovery, transferError);
             }
         }
         ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryResultId);
@@ -906,7 +922,7 @@ public class ResourceHubAdminController {
         result.put("skipped", publishResult.getSkipped());
         result.put("errors", publishResult.getErrors());
         if (publishResult.getFailed() > 0) {
-            throw new IllegalStateException(publishResult.getErrors().isEmpty()
+            throw operationFailed(discovery, publishResult.getErrors().isEmpty()
                     ? "Discovery publish failed"
                     : publishResult.getErrors().get(0));
         }
@@ -928,7 +944,7 @@ public class ResourceHubAdminController {
         result.put("skipped", publishResult.getSkipped());
         result.put("errors", publishResult.getErrors());
         if (publishResult.getFailed() > 0) {
-            throw new IllegalStateException(publishResult.getErrors().isEmpty()
+            throw operationFailed(discovery, publishResult.getErrors().isEmpty()
                     ? "Discovery publish failed" : publishResult.getErrors().get(0));
         }
         requirePublishedResource(discovery.getMovieId());
@@ -946,7 +962,7 @@ public class ResourceHubAdminController {
                 .orderByDesc("updated_at")
                 .last("LIMIT 1"), false);
         if (transfer != null && !"CANCELED".equalsIgnoreCase(transfer.getStatus())) return transfer;
-        if (!hasText(discovery.getOriginalUrl())) throw new IllegalStateException("Discovery result has no source URL to transfer");
+        if (!hasText(discovery.getOriginalUrl())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Discovery result has no source URL to transfer");
         LocalDateTime now = LocalDateTime.now();
         transfer = new XunleiTransferTask();
         transfer.setDiscoveryResultId(discovery.getId());
@@ -1421,6 +1437,73 @@ public class ResourceHubAdminController {
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private ResponseStatusException operationFailed(ResourceDiscoveryResult discovery, String message) {
+        String safeMessage = safeOperationErrorMessage(message);
+        if (discovery != null) {
+            discovery.setFailureReason(safeMessage);
+            discovery.setUpdatedAt(LocalDateTime.now());
+            if (discovery.getId() != null) {
+                discoveryResultService.updateById(discovery);
+            }
+        }
+        log.info("resource_hub_retry_failed discovery_result_id={} reason={}",
+                discovery == null ? null : discovery.getId(), safeMessage);
+        return new ResponseStatusException(HttpStatus.CONFLICT, safeMessage);
+    }
+
+    private static void prepareXunleiRetry(XunleiTransferTask transfer) {
+        if (transfer == null) {
+            return;
+        }
+        boolean canResumeShare = "WAITING_SHARE".equalsIgnoreCase(transfer.getStatus())
+                && transfer.getSavedPath() != null
+                && !transfer.getSavedPath().isBlank();
+        if (!canResumeShare) {
+            transfer.setStatus("PENDING");
+        }
+        transfer.setAttempts(0);
+        transfer.setLastError(null);
+        transfer.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private static String safeOperationErrorMessage(String value) {
+        if (!hasTextValue(value)) {
+            return "资源重试失败，请稍后重试";
+        }
+        String text = value.trim();
+        String lower = text.toLowerCase(Locale.ROOT);
+        if (lower.contains("xunlei transfer is not configured")) {
+            return "迅雷转存未配置，请检查迅雷授权后重试";
+        }
+        if (lower.contains("xunlei") && (lower.contains("authorization")
+                || lower.contains("unauthorized") || lower.contains("expired"))) {
+            return "迅雷授权已失效或不可用，请更新授权后重试";
+        }
+        if (lower.contains("share contains no video files")) {
+            return "该迅雷分享中没有可转存的视频文件";
+        }
+        if (lower.contains("share api did not return a url")) {
+            return "迅雷转存成功，但创建自有分享失败，请检查迅雷分享配置";
+        }
+        if (lower.contains("xunlei")) {
+            if (lower.contains("share detail") || lower.contains("share page")) {
+                return "读取迅雷分享失败，原始资源可能已失效";
+            }
+            if (lower.contains("timeout") || lower.contains("timed out")) {
+                return "迅雷接口响应超时，请稍后重试";
+            }
+        }
+        text = text.replaceAll(
+                "(?i)(authorization|cookie|token|password|pwd|sign|signature|key)\\s*[=:]\\s*[^\\s,;]+",
+                "$1=[已隐藏]");
+        text = text.replaceAll("https?://\\S+", "[链接已隐藏]");
+        return text.length() > 500 ? text.substring(0, 500) : text;
+    }
+
+    private static boolean hasTextValue(String value) {
+        return value != null && !value.isBlank();
     }
 
     private String safeText(String value) {
