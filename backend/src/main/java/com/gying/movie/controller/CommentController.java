@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.dto.AuthUser;
 import com.gying.movie.dto.CommentDisplayDTO;
 import com.gying.movie.entity.Comment;
+import com.gying.movie.entity.SysUser;
 import com.gying.movie.entity.CommentVote;
 import com.gying.movie.mapper.CommentVoteMapper;
 import com.gying.movie.security.RedisRateLimiter;
 import com.gying.movie.service.ICommentService;
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +45,7 @@ public class CommentController {
 
     private final ICommentService commentService;
     private final CommentVoteMapper commentVoteMapper;
+    private final ISysUserService sysUserService;
     private final AuthHelper authHelper;
     private final IUserNotificationService notificationService;
     private final ISysConfigService configService;
@@ -50,12 +53,14 @@ public class CommentController {
 
     public CommentController(ICommentService commentService,
                              CommentVoteMapper commentVoteMapper,
+                             ISysUserService sysUserService,
                              AuthHelper authHelper,
                              IUserNotificationService notificationService,
                              ISysConfigService configService,
                              RedisRateLimiter rateLimiter) {
         this.commentService = commentService;
         this.commentVoteMapper = commentVoteMapper;
+        this.sysUserService = sysUserService;
         this.authHelper = authHelper;
         this.notificationService = notificationService;
         this.configService = configService;
@@ -104,13 +109,15 @@ public class CommentController {
             }
         }
 
-        comment.setNickname(user.getUsername());
+        SysUser commenter = sysUserService.getById(user.getId());
+        String commenterName = commenter == null ? user.getUsername() : commenter.displayName();
+        comment.setNickname(commenterName);
         comment.setUserId(user.getId());
         comment.setCreatedAt(LocalDateTime.now());
         comment.setIpAddress(request.getRemoteAddr());
 
         commentService.save(comment);
-        notifyCommentReply(parent, comment, user);
+        notifyCommentReply(parent, comment, user, commenterName);
 
         return Map.of("message", "Comment added successfully");
     }
@@ -196,7 +203,7 @@ public class CommentController {
                 COMMENT_RATE_LIMIT_CONFIG_KEY, String.valueOf(DEFAULT_COMMENT_RATE_LIMIT_PER_MINUTE)));
     }
 
-    private void notifyCommentReply(Comment parent, Comment reply, AuthUser replier) {
+    private void notifyCommentReply(Comment parent, Comment reply, AuthUser replier, String replierName) {
         if (parent == null || parent.getUserId() == null || parent.getUserId().equals(replier.getId())) {
             return;
         }
@@ -204,7 +211,7 @@ public class CommentController {
                 parent.getUserId(),
                 "COMMENT_REPLY",
                 "New comment reply",
-                replier.getUsername() + " replied to your comment: " + shorten(reply.getContent(), 80),
+                replierName + " replied to your comment: " + shorten(reply.getContent(), 80),
                 "COMMENT",
                 reply.getRelateId());
     }

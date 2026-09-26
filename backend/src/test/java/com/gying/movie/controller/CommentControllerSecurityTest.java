@@ -16,6 +16,7 @@ import com.gying.movie.mapper.CommentVoteMapper;
 import com.gying.movie.security.RedisRateLimiter;
 import com.gying.movie.service.ICommentService;
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.service.ISysUserService;
 import com.gying.movie.service.IUserNotificationService;
 import com.gying.movie.utils.AuthHelper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ class CommentControllerSecurityTest {
 
     private ICommentService commentService;
     private CommentVoteMapper commentVoteMapper;
+    private ISysUserService sysUserService;
     private AuthHelper authHelper;
     private IUserNotificationService notificationService;
     private ISysConfigService configService;
@@ -38,11 +40,12 @@ class CommentControllerSecurityTest {
     void setUp() {
         commentService = mock(ICommentService.class);
         commentVoteMapper = mock(CommentVoteMapper.class);
+        sysUserService = mock(ISysUserService.class);
         authHelper = mock(AuthHelper.class);
         notificationService = mock(IUserNotificationService.class);
         configService = mock(ISysConfigService.class);
         rateLimiter = mock(RedisRateLimiter.class);
-        controller = new CommentController(commentService, commentVoteMapper, authHelper,
+        controller = new CommentController(commentService, commentVoteMapper, sysUserService, authHelper,
                 notificationService, configService, rateLimiter);
     }
 

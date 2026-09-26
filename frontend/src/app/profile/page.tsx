@@ -2,12 +2,13 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, App, Button, Card, Form, Input, Space, Tag, Typography } from 'antd';
-import { MailOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { MailOutlined, SafetyCertificateOutlined, SmileOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { api, readApiError } from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 
+interface NicknameValues { nickname: string }
 interface ChangeEmailValues { email: string; emailCode?: string }
 interface ResetPasswordValues { password: string; confirm: string; emailCode?: string }
 
@@ -28,10 +29,12 @@ export default function ProfilePage() {
     const { t } = useTranslation();
     const [emailForm] = Form.useForm<ChangeEmailValues>();
     const [passwordForm] = Form.useForm<ResetPasswordValues>();
+    const [nicknameForm] = Form.useForm<NicknameValues>();
     const [sendingEmailCode, setSendingEmailCode] = useState(false);
     const [sendingPasswordCode, setSendingPasswordCode] = useState(false);
     const [savingEmail, setSavingEmail] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
+    const [savingNickname, setSavingNickname] = useState(false);
 
     const emailVerificationEnabled = user?.emailVerificationEnabled ?? true;
     const emailChangeLockedUntil = user?.emailChangeAvailableAt || null;
@@ -49,6 +52,31 @@ export default function ProfilePage() {
     }, [token, login]);
 
     useEffect(() => { void refreshProfile(); }, [refreshProfile]);
+
+    useEffect(() => {
+        nicknameForm.setFieldsValue({ nickname: user?.nickname || user?.username || '' });
+    }, [nicknameForm, user?.nickname, user?.username]);
+
+    const submitNickname = async (values: NicknameValues) => {
+        if (!token || !user) return;
+        setSavingNickname(true);
+        try {
+            const res = await api('/api/auth/profile', {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nickname: values.nickname.trim() }),
+            });
+            if (!res.ok) { message.error(await readApiError(res, t('profileNicknameFailed'))); return; }
+            const data = await res.json();
+            message.success(t('profileNicknameUpdated'));
+            login(token, { ...user, nickname: data.nickname });
+            nicknameForm.setFieldsValue({ nickname: data.nickname });
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setSavingNickname(false);
+        }
+    };
 
     const sendPasswordCode = async () => {
         if (!token) return;
@@ -142,16 +170,35 @@ export default function ProfilePage() {
         <div className="container mx-auto p-8 max-w-4xl min-h-[80vh] flex flex-col gap-8">
             <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-4xl font-bold text-black shadow-lg">
-                    {user.username.charAt(0).toUpperCase()}
+                    {(user.nickname || user.username).charAt(0).toUpperCase()}
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">{user.username}</h1>
+                    <h1 className="text-3xl font-bold mb-2">{user.nickname || user.username}</h1>
                     <div className="flex gap-2 items-center flex-wrap">
                         <Tag color="blue" className="!m-0">{user.role}</Tag>
                         <Typography.Text type="secondary">{user.email || t('profileNoEmail')}</Typography.Text>
                     </div>
                 </div>
             </div>
+
+            <Card title={<span className="text-xl">{t('profileBasicInfo')}</span>} className="shadow-xl">
+                <div className="max-w-lg">
+                    <Form form={nicknameForm} onFinish={submitNickname} layout="vertical">
+                        <Form.Item
+                            name="nickname"
+                            label={t('nickname')}
+                            rules={[{ required: true, whitespace: true, message: t('profileNicknameRequired') }, { max: 20, message: t('profileNicknameRule') }]}
+                        >
+                            <Input prefix={<SmileOutlined />} maxLength={20} showCount autoComplete="nickname" />
+                        </Form.Item>
+                        <Form.Item className="!mb-2">
+                            <Button type="primary" htmlType="submit" loading={savingNickname} className="bg-blue-600 hover:bg-blue-500">{t('profileNicknameSave')}</Button>
+                        </Form.Item>
+                    </Form>
+                    <Typography.Paragraph type="secondary" className="!mb-1">{t('profileUsernameImmutable', { username: user.username })}</Typography.Paragraph>
+                    <Typography.Paragraph type="secondary" className="!mb-0">{t('profileLoginHint')}</Typography.Paragraph>
+                </div>
+            </Card>
 
             <Card title={<span className="text-xl">{t('profileEmailSettings')}</span>} className="shadow-xl">
                 <div className="max-w-lg">

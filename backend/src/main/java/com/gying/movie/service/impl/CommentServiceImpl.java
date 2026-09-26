@@ -174,12 +174,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * Resolve the display nickname for a comment.
      */
     private String resolveNickname(Comment comment, Map<Long, SysUser> userMap) {
-        if (comment.getNickname() != null && !comment.getNickname().isBlank()) {
-            return comment.getNickname();
-        }
         if (comment.getUserId() != null) {
             SysUser user = userMap.get(comment.getUserId());
-            if (user != null) return user.getUsername();
+            if (user != null) return user.displayName();
+        }
+        if (comment.getNickname() != null && !comment.getNickname().isBlank()) {
+            return comment.getNickname();
         }
         return "Anonymous";
     }
@@ -191,9 +191,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             SysUser user = userMap.get(comment.getUserId());
             if (user != null) {
                 dto.setUsername(user.getUsername());
-                if (comment.getNickname() == null || comment.getNickname().isBlank()) {
-                    dto.setNickname(user.getUsername());
-                }
+                dto.setNickname(user.displayName());
+                return dto;
             }
         }
         if (comment.getNickname() != null && !comment.getNickname().isBlank()) {

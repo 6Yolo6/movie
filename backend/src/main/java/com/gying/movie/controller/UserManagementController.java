@@ -47,6 +47,7 @@ public class UserManagementController {
             if (!sysUserService.updateById(user)) throw new IllegalStateException("Could not assign user role");
         }
         return ResponseEntity.status(201).body(Map.of("id", user.getId(), "username", user.getUsername(),
+                "nickname", user.getNickname() == null ? user.getUsername() : user.getNickname(),
                 "email", user.getEmail(), "role", role, "enabled", true));
     }
 
@@ -64,7 +65,7 @@ public class UserManagementController {
         QueryWrapper<SysUser> query = new QueryWrapper<>();
 
         if (keyword != null && !keyword.isBlank()) {
-            query.and(w -> w.like("username", keyword).or().like("email", keyword));
+            query.and(w -> w.like("username", keyword).or().like("nickname", keyword).or().like("email", keyword));
         }
         if (role != null && !role.isBlank()) {
             query.eq("role", role);
@@ -126,6 +127,7 @@ public class UserManagementController {
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("id", target.getId());
         userInfo.put("username", target.getUsername());
+        userInfo.put("nickname", target.displayName());
         userInfo.put("role", target.getRole());
 
         Map<String, Object> response = new HashMap<>();
@@ -179,6 +181,15 @@ public class UserManagementController {
             }
         }
 
+        String nickname = request.get("nickname");
+        if (nickname != null) {
+            String value = nickname.trim();
+            if (value.isEmpty() || value.codePointCount(0, value.length()) > 20) {
+                return ResponseEntity.badRequest().body("昵称长度必须为 1-20 个字符");
+            }
+            user.setNickname(value);
+        }
+
         String email = request.get("email");
         if (email != null) {
             String value;
@@ -215,6 +226,7 @@ public class UserManagementController {
         Map<String, Object> response = new HashMap<>();
         response.put("id", user.getId());
         response.put("username", user.getUsername());
+        response.put("nickname", user.getNickname());
         response.put("email", user.getEmail());
         response.put("role", user.getRole());
         response.put("enabled", user.getEnabled());

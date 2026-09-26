@@ -1311,7 +1311,7 @@ public class ResourceLinkController {
             }
             SysUser uploader = users.get(resource.getUploaderId());
             if (uploader != null) {
-                dto.setUploaderName(uploader.getUsername());
+                dto.setUploaderName(uploader.displayName());
             }
             return dto;
         }).toList());

@@ -98,6 +98,7 @@ DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
+  `nickname` varchar(50) DEFAULT NULL COMMENT '站内昵称',
   `password` varchar(100) NOT NULL,
   `email` varchar(200) DEFAULT NULL,
   `email_updated_at` datetime DEFAULT NULL COMMENT '邮箱最后变更时间',

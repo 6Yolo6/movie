@@ -452,7 +452,7 @@ export default function Navbar() {
                             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                                 <Space className="cursor-pointer hover:bg-gray-100 dark:hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
                                     <Avatar size={28} icon={<UserOutlined />} className="bg-gradient-to-r from-blue-600 to-teal-500" />
-                                    <span className="text-gray-700 dark:text-gray-300 font-medium hidden sm:block">{user.username}</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-medium hidden sm:block">{user.nickname || user.username}</span>
                                 </Space>
                             </Dropdown>
                         </Space>

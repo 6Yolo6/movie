@@ -183,6 +183,19 @@ public class AuthController {
         return result;
     }
 
+    @PutMapping("/profile")
+    public Map<String, Object> updateProfile(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @RequestBody Map<String, String> body) {
+        AuthUser user = authHelper.requireUser(token);
+        String nickname = body == null ? null : body.get("nickname");
+        SysUser updated = sysUserService.updateNickname(user.getId(), nickname);
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", "Profile updated");
+        result.put("nickname", updated.getNickname());
+        return result;
+    }
+
     @GetMapping("/me")
     public Map<String, Object> me(@RequestHeader("Authorization") String token) {
         AuthUser user = authHelper.requireUser(token);
@@ -192,6 +205,7 @@ public class AuthController {
         result.put("role", user.getRole());
         result.put("id", user.getId());
         if (entity != null) {
+            result.put("nickname", entity.getNickname());
             result.put("email", entity.getEmail());
             result.put("emailUpdatedAt", entity.getEmailUpdatedAt());
             result.put("emailChangeAvailableAt", nextEmailChangeAt(entity));

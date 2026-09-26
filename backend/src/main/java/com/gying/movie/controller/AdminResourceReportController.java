@@ -205,7 +205,7 @@ public class AdminResourceReportController {
                 dto.setLinkStatus(resource.getLinkStatus());
                 SysUser uploader = users.get(resource.getUploaderId());
                 if (uploader != null) {
-                    dto.setUploaderName(uploader.getUsername());
+                    dto.setUploaderName(uploader.displayName());
                 }
                 MovieMetadata movie = movies.get(resource.getMovieId());
                 if (movie != null) {

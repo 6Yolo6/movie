@@ -31,7 +31,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username and password are required");
         }
-        SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username));
+        SysUser user = findLoginUser(username);
         if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
@@ -51,6 +51,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (username.length() < 3 || username.length() > 50) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must be 3-50 characters");
         }
+        if (username.contains("@")) {
+            // 邮箱同样可以登录，登录名保留 @ 会造成标识歧义。
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not contain @");
+        }
         if (password == null || password.length() < 12) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 12 characters");
         }
@@ -68,6 +72,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         SysUser user = new SysUser();
         user.setUsername(username);
+        user.setNickname(username);
         user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
         user.setEmail(email);
         user.setInvitedByUserId(invitedByUserId);
@@ -125,6 +130,40 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             if (!this.updateById(user)) throw new IllegalStateException("Could not update email");
         } catch (org.springframework.dao.DuplicateKeyException error) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
+        return user;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public SysUser updateNickname(Long userId, String nickname) {
+        String value = nickname == null ? "" : nickname.trim();
+        if (value.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nickname is required");
+        }
+        if (value.codePointCount(0, value.length()) > 20) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nickname must be at most 20 characters");
+        }
+        for (int i = 0; i < value.length(); i++) {
+            if (Character.isISOControl(value.charAt(i))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nickname contains invalid characters");
+            }
+        }
+        SysUser user = this.getById(userId);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        user.setNickname(value);
+        if (!this.updateById(user)) throw new IllegalStateException("Could not update nickname");
+        return user;
+    }
+
+    /** 登录标识：先按用户名匹配，未命中且含 @ 时再按规范化邮箱匹配。 */
+    SysUser findLoginUser(String identifier) {
+        SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, identifier));
+        if (user == null && identifier.contains("@")) {
+            user = this.getOne(new LambdaQueryWrapper<SysUser>()
+                    .eq(SysUser::getEmail, identifier.trim().toLowerCase(java.util.Locale.ROOT)));
         }
         return user;
     }

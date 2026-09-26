@@ -16,4 +16,7 @@ public interface ISysUserService extends IService<SysUser> {
     long EMAIL_CHANGE_INTERVAL_DAYS = 90;
 
     SysUser changeEmail(Long userId, String newEmail);
+
+    /** 修改站内昵称；登录用户名不可改。 */
+    SysUser updateNickname(Long userId, String nickname);
 }

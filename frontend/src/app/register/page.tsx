@@ -84,7 +84,7 @@ export default function RegisterPage() {
                 {inviteOnly && <Alert className="mb-4" type={policy.registrationAllowed ? 'success' : 'info'} showIcon message={policy.registrationAllowed ? t('registerInviteValid') : t('registerInviteOnly')} description={policy.registrationAllowed ? t('registerInviteValidDesc') : t('registerInviteOnlyDesc')} />}
                 {policy && !policy.emailVerificationEnabled && <Alert className="mb-4" type="warning" showIcon message={t('registerEmailOffTitle')} description={t('registerEmailOffDesc')} />}
                 <Form form={form} onFinish={submit} size="large" layout="vertical">
-                    <Form.Item name="username" label={t('username')} rules={[{ required: true, message: t('registerUsernameRequired') }, { min: 3, max: 50 }]}>
+                    <Form.Item name="username" label={t('username')} extra={t('registerUsernameHint')} rules={[{ required: true, message: t('registerUsernameRequired') }, { min: 3, max: 50 }]}>
                         <Input prefix={<UserOutlined />} autoComplete="username" />
                     </Form.Item>
                     <Form.Item name="email" label={t('email')} extra={policy?.emailVerificationEnabled ? t('registerEmailHint') : undefined} rules={[{ required: true, message: t('registerEmailRequired') }, { type: 'email', message: t('registerEmailInvalid') }]}>

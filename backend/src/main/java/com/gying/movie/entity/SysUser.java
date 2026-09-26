@@ -13,6 +13,7 @@ public class SysUser {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String username;
+    private String nickname;
     private String password;
     private String email;
     private LocalDateTime emailUpdatedAt;
@@ -21,4 +22,9 @@ public class SysUser {
     private Boolean enabled;
     private Long invitedByUserId;
     private LocalDateTime createdAt;
+
+    /** 站内展示名：优先昵称，未设置时回退登录用户名。 */
+    public String displayName() {
+        return nickname == null || nickname.isBlank() ? username : nickname;
+    }
 }

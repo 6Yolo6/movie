@@ -15,12 +15,13 @@ const subscribeHydration = () => () => {};
 const clientHydration = () => true;
 const serverHydration = () => false;
 interface CreateUserValues { username: string; email: string; password: string; confirm: string; role: 'USER' | 'PUBLISHER'; }
-interface EditUserValues { username: string; email: string; role: string; }
+interface EditUserValues { username: string; nickname?: string; email: string; role: string; }
 interface ResetPasswordValues { password: string; confirm: string; }
 
 interface User {
     id: number;
     username: string;
+    nickname?: string;
     email: string;
     role: string;
     enabled: boolean;
@@ -161,7 +162,7 @@ export default function UserManagementPage() {
     };
     const openEdit = (record: User) => {
         setEditTarget(record);
-        editForm.setFieldsValue({ username: record.username, email: record.email, role: record.role });
+        editForm.setFieldsValue({ username: record.username, nickname: record.nickname || record.username, email: record.email, role: record.role });
     };
 
     const submitEdit = async (values: EditUserValues) => {
@@ -171,7 +172,7 @@ export default function UserManagementPage() {
             const res = await api(`/api/admin/users/${editTarget.id}`, {
                 method: 'PUT',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: values.username.trim(), email: values.email.trim(), role: values.role }),
+                body: JSON.stringify({ username: values.username.trim(), nickname: (values.nickname || '').trim(), email: values.email.trim(), role: values.role }),
             });
             if (!res.ok) { message.error(await readApiError(res, t('editUserFailed'))); return; }
             message.success(t('userUpdated'));
@@ -216,6 +217,7 @@ export default function UserManagementPage() {
     const columns: ColumnsType<User> = [
         { title: t('id'), dataIndex: 'id', key: 'id', width: 80 },
         { title: t('username'), dataIndex: 'username', key: 'username' },
+        { title: t('nickname'), dataIndex: 'nickname', key: 'nickname', render: (nickname: string, record: User) => nickname || record.username },
         { title: t('email'), dataIndex: 'email', key: 'email' },
         {
             title: t('currentRole'),
@@ -355,6 +357,7 @@ export default function UserManagementPage() {
                 <Typography.Paragraph type="secondary">{t('editUserHint')}</Typography.Paragraph>
                 <Form form={editForm} layout="vertical" onFinish={submitEdit}>
                     <Form.Item name="username" label={t('username')} rules={[{ required: true, whitespace: true }, { min: 3, max: 50 }]}><Input autoComplete="off" /></Form.Item>
+                    <Form.Item name="nickname" label={t('nickname')} rules={[{ required: true, whitespace: true }, { max: 20 }]}><Input autoComplete="off" /></Form.Item>
                     <Form.Item name="email" label={t('email')} rules={[{ required: true }, { type: 'email' }, { max: 200 }]}><Input autoComplete="off" /></Form.Item>
                     <Form.Item name="role" label={t('currentRole')} extra={editTarget?.id === user?.id ? t('cannotChangeOwnRole') : undefined}>
                         <Select

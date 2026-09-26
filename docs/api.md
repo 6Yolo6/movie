@@ -124,24 +124,26 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 ## 认证与账号（2026-09-26）
 
-- \POST /api/auth/login\：用户名+密码登录，返回 JWT。按账号 5 分钟 10 次限流。
-- \POST /api/auth/email-code\：公开注册发送邮箱验证码。需注册策略允许（公开注册未达上限或携带有效邀请码）；按邮箱 60 秒冷却、按客户端 IP 每小时 10 次限流。
-- \GET /api/auth/registration-policy?invite=\：返回是否允许公开注册、是否已达注册上限、邀请码是否有效等。
-- \POST /api/auth/register\：注册。开启邮箱验证时需 \mailCode\；公开注册额度用尽后仍可用邀请码注册或由管理员建号。
-- \POST /api/auth/reset-password/code\：登录用户请求重置密码验证码。仅对有绑定邮箱的账号发送，返回 \{message, email}\，\mail\ 为掩码形式（如 \b***@example.com\）。未绑定邮箱返回 400。
-- \POST /api/auth/reset-password\：请求体 \{password, emailCode}\。必须通过 \mailCode\ 校验（用途 eset-password\）；密码至少 12 字符且不超过 72 UTF-8 字节。成功后吊销该用户全部登录设备。验证码缺失/过期/错误返回 400。
-- \POST /api/auth/email/code\：登录用户请求更换邮箱验证码，请求体 \{email}\（新邮箱，须为合法且与当前邮箱不同）。返回 \{message}\。60 秒冷却，按 IP 每小时 10 次限流。
-- \PUT /api/auth/email\：请求体 \{email, emailCode}\。先校验验证码（用途 \change-email\）再更新邮箱；邮箱每 90 天只能修改 1 次，冷却期内返回 429，邮箱已被占用返回 409，与原邮箱相同返回 400。成功返回 \{message, email, emailUpdatedAt, emailChangeAvailableAt}\。
-- \GET /api/auth/me\：返回 \{id, username, role, email, emailUpdatedAt, emailChangeAvailableAt, emailVerificationEnabled}\；\mailChangeAvailableAt\ 仅在 90 天冷却期内有值，未配置邮件服务时 \mailVerificationEnabled=false\，验证码校验直接放行。
-- 验证码用途隔离：注册沿用 egister:email:code:\，重置密码、更换邮箱分别使用 \mail-code:reset-password:\ 与 \mail-code:change-email:\ 前缀，有效期均为 5 分钟。
+- `POST /api/auth/login`：登录标识支持**用户名或邮箱** + 密码，返回 JWT。先按用户名精确匹配，未命中且含 `@` 时按规范化小写邮箱匹配；用户名不含 `@`。按账号 5 分钟 10 次限流。
+- `POST /api/auth/email-code`：公开注册发送邮箱验证码。需注册策略允许（公开注册未达上限或携带有效邀请码）；按邮箱 60 秒冷却、按客户端 IP 每小时 10 次限流。
+- `GET /api/auth/registration-policy?invite=`：返回是否允许公开注册、是否已达注册上限、邀请码是否有效等。
+- `POST /api/auth/register`：注册。用户名 3-50 字符且不能含 `@`（避免与邮箱登录标识冲突），昵称默认等于用户名；开启邮箱验证时需 `emailCode`；公开注册额度用尽后仍可用邀请码注册或由管理员建号。
+- `PUT /api/auth/profile`：登录用户修改**站内昵称**，请求体 `{nickname}`。昵称 1-20 个字符（按码点计）且禁止控制字符，用户名不可修改；成功返回 `{message, nickname}`。
+- 站内展示统一使用昵称：`sys_user.nickname` 为空或空白时回退登录用户名；评论、回复通知、资源上传者和管理端用户列表均按此规则展示。
+- `POST /api/auth/reset-password/code`：登录用户请求重置密码验证码。仅对有绑定邮箱的账号发送，返回 `{message, email}`，`email` 为掩码形式（如 `ab***@example.com`）；未绑定邮箱返回 400。
+- `POST /api/auth/reset-password`：请求体 `{password, emailCode}`。必须通过 `emailCode` 校验（用途 `reset-password`）；密码至少 12 字符且不超过 72 UTF-8 字节。成功后吊销该用户全部登录设备；验证码缺失、过期或错误返回 400。
+- `POST /api/auth/email/code`：登录用户请求更换邮箱验证码，请求体 `{email}`（新邮箱，须合法且与当前邮箱不同）。返回 `{message}`；60 秒冷却，按 IP 每小时 10 次限流。
+- `PUT /api/auth/email`：请求体 `{email, emailCode}`。先校验验证码（用途 `change-email`）再更新邮箱；邮箱每 90 天只能修改 1 次，冷却期内返回 429，邮箱已被占用返回 409，与原邮箱相同返回 400；成功返回 `{message, email, emailUpdatedAt, emailChangeAvailableAt}`。
+- `GET /api/auth/me`：返回 `{id, username, nickname, role, email, emailUpdatedAt, emailChangeAvailableAt, emailVerificationEnabled}`；`emailChangeAvailableAt` 仅在 90 天冷却期内有值，未配置邮件服务时 `emailVerificationEnabled=false` 且验证码校验直接放行。
+- 验证码用途隔离：注册沿用 `register:email:code:`，重置密码与更换邮箱分别使用 `email-code:reset-password:`、`email-code:change-email:` 前缀，有效期均为 5 分钟。
 
 ## 其他管理接口
 
 - `/api/admin/resource-reports`：举报处理。
 - `/api/admin/comments`：评论管理。
-- `GET /api/admin/users`：分页查询用户；角色、启用状态等管理操作保持原契约。
+- `GET /api/admin/users`：分页查询用户，返回含 `nickname`；`keyword` 同时匹配用户名、昵称和邮箱。角色、启用状态等管理操作保持原契约。
 - `POST /api/admin/users`：仅 ADMIN 可直接新建用户。请求 `{username, email, password, role}`；用户名 3–50 字符、邮箱必填且唯一、密码至少 12 字符且不超过 72 UTF-8 字节；`role` 默认 USER，仅允许 USER/PUBLISHER。独立于公开注册/邀请码/邮箱验证码，不允许访客绕过注册策略；成功 201，返回 `{id, username, email, role, enabled}`，不返回密码。非法输入 400，重复用户名或邮箱 409，未登录/非管理员 401/403。
-- `PUT /api/admin/users/{id}`：仅 ADMIN 可编辑用户资料，请求体可含 `username`、`email`、`role`。用户名 3–50 字符且不与他人重复，邮箱规范化（trim + 小写）后不与他人重复，角色仅允许 USER/PUBLISHER 且不能修改自己的角色；成功 200 返回更新后的 `{id, username, email, role, enabled}`，非法输入 400，用户名或邮箱冲突 409，用户不存在 404。
+- `PUT /api/admin/users/{id}`：仅 ADMIN 可编辑用户资料，请求体可含 `username`、`nickname`、`email`、`role`（`nickname` 为 1-20 字符）。用户名 3–50 字符且不与他人重复，邮箱规范化（trim + 小写）后不与他人重复，角色仅允许 USER/PUBLISHER 且不能修改自己的角色；成功 200 返回更新后的 `{id, username, email, role, enabled}`，非法输入 400，用户名或邮箱冲突 409，用户不存在 404。
 - `PUT /api/admin/users/{id}/password`：仅 ADMIN 可重置指定用户密码，请求 `{password}`；密码至少 12 字符且不超过 72 UTF-8 字节。成功后调用统一 `resetPassword`，密钥哈希更新并吊销该用户全部登录设备；返回 `{message, userId, sessionsRevoked:true, self}`，`self` 表示管理员重置的是自己（当前会话同样失效）。非法输入 400，用户不存在 404。
 - `GET /api/admin/config`：读取系统设置；搜索频率和留言频率未配置时分别返回虚拟默认值 5，不在读取时写数据库。
 - `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 接受 1–60，`comment.rate_limit_per_minute` 接受 1–120；非法值 400，未存在的配置在保存时新增。

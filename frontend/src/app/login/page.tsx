@@ -61,7 +61,7 @@ export default function LoginPage() {
             <Card title={t('loginTitle')} className="w-full max-w-md dark:bg-gray-900 dark:border-gray-800" styles={{ header: { color: 'inherit' } }}>
                 <Form onFinish={onFinish} size="large">
                     <Form.Item name="username" rules={[{ required: true, message: t('loginUsernameRequired') }]}>
-                        <Input prefix={<UserOutlined />} placeholder={t('username')} autoComplete="username" />
+                        <Input prefix={<UserOutlined />} placeholder={t('loginIdentifier')} autoComplete="username" />
                     </Form.Item>
                     <Form.Item name="password" rules={[{ required: true, message: t('loginPasswordRequired') }]}>
                         <Input.Password prefix={<LockOutlined />} placeholder={t('password')} autoComplete="current-password" />
