@@ -11,4 +11,9 @@ public interface ISysUserService extends IService<SysUser> {
     SysUser register(String username, String password, String email, Long invitedByUserId);
 
     void resetPassword(Long userId, String newPassword);
+
+    /** Cooldown between two self-service email changes, in days. */
+    long EMAIL_CHANGE_INTERVAL_DAYS = 90;
+
+    SysUser changeEmail(Long userId, String newEmail);
 }

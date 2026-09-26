@@ -100,6 +100,7 @@ CREATE TABLE `sys_user` (
   `username` varchar(100) NOT NULL,
   `password` varchar(100) NOT NULL,
   `email` varchar(200) DEFAULT NULL,
+  `email_updated_at` datetime DEFAULT NULL COMMENT '邮箱最后变更时间',
   `role` varchar(50) DEFAULT 'USER' COMMENT 'ADMIN, USER',
   `score` int DEFAULT '0',
   `enabled` tinyint(1) DEFAULT '1',

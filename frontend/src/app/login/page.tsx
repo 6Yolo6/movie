@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface LoginFormValues {
     username: string;
@@ -17,6 +18,7 @@ export default function LoginPage() {
     const router = useRouter();
     const login = useAuthStore((state) => state.login);
     const { message } = App.useApp();
+    const { t } = useTranslation();
 
     const getRedirectPath = () => {
         if (typeof window === 'undefined') return '/';
@@ -33,7 +35,7 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (res.ok) {
-                message.success('Login successful!');
+                message.success(t('loginSuccess'));
 
                 // Fetch real user info first, then navigate
                 const meRes = await api('/api/auth/me', {
@@ -44,33 +46,33 @@ export default function LoginPage() {
                     login(data.token, me);
                     router.push(getRedirectPath());
                 } else {
-                    message.error('Failed to fetch user info');
+                    message.error(t('loginUserInfoFailed'));
                 }
             } else {
-                message.error(data.message || data.error || 'Login failed');
+                message.error(data.message || data.error || t('loginFailed'));
             }
         } catch {
-            message.error('Network error');
+            message.error(t('networkError'));
         }
     };
 
     return (
         <div className="flex justify-center items-center min-h-[80vh] px-4">
-            <Card title="Sign In" className="w-full max-w-md dark:bg-gray-900 dark:border-gray-800" styles={{ header: { color: 'inherit' } }}>
+            <Card title={t('loginTitle')} className="w-full max-w-md dark:bg-gray-900 dark:border-gray-800" styles={{ header: { color: 'inherit' } }}>
                 <Form onFinish={onFinish} size="large">
-                    <Form.Item name="username" rules={[{ required: true, message: 'Please input your Username!' }]}>
-                        <Input prefix={<UserOutlined />} placeholder="Username" />
+                    <Form.Item name="username" rules={[{ required: true, message: t('loginUsernameRequired') }]}>
+                        <Input prefix={<UserOutlined />} placeholder={t('username')} autoComplete="username" />
                     </Form.Item>
-                    <Form.Item name="password" rules={[{ required: true, message: 'Please input your Password!' }]}>
-                        <Input.Password prefix={<LockOutlined />} placeholder="Password" />
+                    <Form.Item name="password" rules={[{ required: true, message: t('loginPasswordRequired') }]}>
+                        <Input.Password prefix={<LockOutlined />} placeholder={t('password')} autoComplete="current-password" />
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit" block className="bg-blue-600">
-                            Log in
+                            {t('loginSubmit')}
                         </Button>
                     </Form.Item>
                     <div className="text-center">
-                        <Link href="/register" className="text-blue-500 dark:text-blue-400">Don&apos;t have an account? Sign Up</Link>
+                        <Link href="/register" className="text-blue-500 dark:text-blue-400">{t('loginNoAccount')} {t('loginSignUp')}</Link>
                     </div>
                 </Form>
             </Card>

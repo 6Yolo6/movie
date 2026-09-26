@@ -5,6 +5,10 @@ interface User {
     id: number;
     username: string;
     role: string;
+    email?: string | null;
+    emailUpdatedAt?: string | null;
+    emailChangeAvailableAt?: string | null;
+    emailVerificationEnabled?: boolean;
 }
 
 interface AuthState {

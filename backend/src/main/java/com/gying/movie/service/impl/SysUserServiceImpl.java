@@ -99,4 +99,33 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         this.updateById(user);
         loginDeviceService.revokeAll(userId);
     }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public SysUser changeEmail(Long userId, String newEmail) {
+        SysUser user = this.getById(userId);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        String normalized = RegistrationService.normalizeEmail(newEmail);
+        if (normalized.equalsIgnoreCase(user.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New email must differ from the current one");
+        }
+        java.time.LocalDateTime lastChanged = user.getEmailUpdatedAt();
+        if (lastChanged != null && lastChanged.plusDays(EMAIL_CHANGE_INTERVAL_DAYS).isAfter(java.time.LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Email can only be changed once every 90 days");
+        }
+        if (this.count(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getEmail, normalized).ne(SysUser::getId, userId)) > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
+        user.setEmail(normalized);
+        user.setEmailUpdatedAt(java.time.LocalDateTime.now());
+        try {
+            if (!this.updateById(user)) throw new IllegalStateException("Could not update email");
+        } catch (org.springframework.dao.DuplicateKeyException error) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
+        return user;
+    }
 }

@@ -15,6 +15,7 @@ public class SysUser {
     private String username;
     private String password;
     private String email;
+    private LocalDateTime emailUpdatedAt;
     private String role;
     private Integer score;
     private Boolean enabled;
