@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -22,6 +24,8 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.IXunleiTransferTaskService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class XunleiTransferRunnerServiceImplTest {
 
@@ -124,7 +128,10 @@ class XunleiTransferRunnerServiceImplTest {
 
         assertEquals(1, result.getSubmitted());
         assertEquals("stable-folder-id", task.getSavedPath());
-        verify(client).createShare("stable-folder-id");
+        var order = inOrder(client);
+        order.verify(client, times(2)).awaitContent("stable-folder-id");
+        order.verify(client).ensureTransferImage("stable-folder-id");
+        order.verify(client).createShare("stable-folder-id");
     }
 
     @Test
@@ -398,5 +405,45 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals(4, task.getAttempts());
         assertEquals("manual retry reached client", task.getLastError());
         verify(client).restore(eq(task.getOriginalUrl()), any());
+    }
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void retriesImageCopyBeforeSharingWithoutRestoringVideosAgain(boolean temporary) {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask();
+        task.setId(90L);
+        task.setMovieId("movie");
+        task.setStatus("PENDING");
+        task.setOriginalUrl("https://pan.xunlei.com/s/source");
+        String path = temporary ? "/QQ临时转存/movie" : "/影视剧资源分享(先转存后再查看)/GYing Resource Hub/movie（movie）";
+        if (temporary) task.setRequestPayload(com.gying.movie.utils.QqTransferMarker.payload(path));
+        when(taskService.getById(90L)).thenReturn(task);
+        when(client.restore(task.getOriginalUrl(), path)).thenReturn(new XunleiClient.RestoreResult(
+                "restore-task", "{}", "destination", null, java.util.List.of("movie.mp4"), 1L));
+        when(client.await("restore-task")).thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.contentSummary("destination")).thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        when(client.awaitContent("destination")).thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        doThrow(new IllegalStateException("image copy failed")).doNothing().when(client).ensureTransferImage("destination");
+        when(client.createShare("destination")).thenReturn("https://pan.xunlei.com/s/owned");
+        XunleiTransferRunnerServiceImpl service = new XunleiTransferRunnerServiceImpl(properties, client,
+                taskService, mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class));
+
+        QuarkTransferRunResult first = service.submitOne(90L);
+        assertEquals(1, first.getFailed());
+        assertEquals("WAITING_SHARE", task.getStatus());
+        assertEquals("image copy failed", task.getLastError());
+        verify(client, never()).createShare(any(String.class));
+
+        QuarkTransferRunResult retry = service.submitOne(90L);
+        assertEquals(1, retry.getSubmitted());
+        assertEquals("SUCCEEDED", task.getStatus());
+        verify(client).restore(task.getOriginalUrl(), path);
+        var order = inOrder(client);
+        order.verify(client).ensureTransferImage("destination");
+        order.verify(client).awaitContent("destination");
+        order.verify(client).ensureTransferImage("destination");
+        order.verify(client).createShare("destination");
     }
 }

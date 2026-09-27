@@ -26,6 +26,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class QuarkShareClient {
 
+    private static final String TRANSFER_IMAGE_NAME = "救星小窝基地.jpg";
     private static final String BASE_URL = "https://drive-pc.quark.cn";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             + "(KHTML, like Gecko) quark-cloud-drive/3.14.2 Chrome/112.0.5615.165 Electron/24.1.3.8 Safari/537.36";
@@ -66,7 +67,9 @@ public class QuarkShareClient {
             if (mediaFids.isEmpty()) {
                 throw rejected;
             }
-            result = createShareExcludingRejected(cookie, mediaFids, shareTitle);
+            String imageFid = findTransferImageFid(cookie, pathInfo.fid());
+            if (imageFid != null && rejected.invalidFids().contains(imageFid)) imageFid = null;
+            result = createShareExcludingRejected(cookie, mediaFids, imageFid, shareTitle);
         }
         result.setFid(pathInfo.fid());
         return result;
@@ -75,15 +78,22 @@ public class QuarkShareClient {
     private QuarkShareResult createShareExcludingRejected(
             String cookie,
             List<String> initialFids,
+            String imageFid,
             String title) {
+        // Keep videos separate from the companion image: never publish an image-only resource.
         List<String> fids = new ArrayList<>(initialFids);
         for (int attempt = 0; attempt < 3 && !fids.isEmpty(); attempt++) {
             try {
-                return createShare(cookie, fids, title);
+                List<String> shareFids = new ArrayList<>(fids);
+                if (hasText(imageFid)) shareFids.add(imageFid);
+                return createShare(cookie, shareFids, title);
             } catch (QuarkShareRejectedException rejected) {
-                if (rejected.invalidFids().isEmpty() || !fids.removeAll(rejected.invalidFids())) {
-                    throw rejected;
+                boolean changed = fids.removeAll(rejected.invalidFids());
+                if (imageFid != null && rejected.invalidFids().contains(imageFid)) {
+                    imageFid = null;
+                    changed = true;
                 }
+                if (!changed) throw rejected;
             }
         }
         throw new IllegalStateException("Saved Quark folder has no shareable media files");
@@ -93,6 +103,72 @@ public class QuarkShareClient {
         String taskId = createShareTask(cookie, fids, title);
         String shareId = pollShareId(cookie, taskId);
         return submitShare(cookie, shareId);
+    }
+
+    /** Copies the account-owned image, never moving it or taking an image from the source share. */
+    public void ensureTransferImage(String folderFid) {
+        if (!hasText(folderFid)) {
+            throw new IllegalArgumentException("Quark transfer folder id is required");
+        }
+        String cookie = quarkAutoSaveClient.getPrimaryCookie();
+        if (hasText(findTransferImageFid(cookie, folderFid))) {
+            return;
+        }
+        String sourceFid = findTransferImageFid(cookie, "0");
+        if (!hasText(sourceFid)) {
+            throw new IllegalStateException("Quark transfer image is missing from /" + TRANSFER_IMAGE_NAME);
+        }
+        JsonNode response = post(cookie, "/1/clouddrive/file/copy", Map.of(
+                "action", "copy", "fid_list", List.of(sourceFid),
+                "to_pdir_fid", folderFid, "exclude_fids", List.of()));
+        ensureOk(response, "copy Quark transfer image failed");
+        String taskId = response.path("data").path("task_id").asText(null);
+        int attempts = Math.max(properties.getQuark().getSharePollAttempts(), 1);
+        long intervalMs = Math.max(properties.getQuark().getSharePollIntervalMs(), 100);
+        boolean copyComplete = !hasText(taskId);
+        for (int index = 0; index < attempts; index++) {
+            if (!copyComplete) {
+                JsonNode task = get(cookie, "/1/clouddrive/task",
+                        Map.of("task_id", taskId, "retry_index", String.valueOf(index)));
+                ensureOk(task, "copy Quark transfer image failed");
+                int status = task.path("data").path("status").asInt(0);
+                if (status == 3) {
+                    throw new IllegalStateException("Quark transfer image copy task failed");
+                }
+                copyComplete = status == 2;
+            }
+            if (copyComplete && hasText(findTransferImageFid(cookie, folderFid))) {
+                return;
+            }
+            if (index + 1 < attempts) {
+                sleep(intervalMs);
+            }
+        }
+        throw new IllegalStateException("Quark transfer image was not copied to the destination: "
+                + TRANSFER_IMAGE_NAME);
+    }
+
+    private String findTransferImageFid(String cookie, String folderFid) {
+        for (int page = 1; page <= MEDIA_SCAN_MAX_PAGES; page++) {
+            JsonNode response = get(cookie, "/1/clouddrive/file/sort", Map.of(
+                    "pdir_fid", folderFid, "_page", String.valueOf(page),
+                    "_size", String.valueOf(MEDIA_SCAN_PAGE_SIZE), "_fetch_total", "1",
+                    "_fetch_sub_dirs", "0", "sort", "file_type:asc,updated_at:desc"));
+            ensureOk(response, "find Quark transfer image failed");
+            JsonNode data = response.path("data");
+            JsonNode files = firstArray(data.path("list"), data.path("items"), data.path("files"));
+            if (files == null || files.isEmpty()) return null;
+            for (JsonNode file : files) {
+                if (!file.path("dir").asBoolean(false)
+                        && TRANSFER_IMAGE_NAME.equals(file.path("file_name").asText())) {
+                    String fid = file.path("fid").asText(null);
+                    if (!hasText(fid)) throw new IllegalStateException("Quark transfer image has no file id");
+                    return fid;
+                }
+            }
+            if (files.size() < MEDIA_SCAN_PAGE_SIZE) return null;
+        }
+        throw new IllegalStateException("Quark transfer image lookup exceeded the folder page limit");
     }
 
     public FolderContentCheck checkFolderContent(String savePath) {

@@ -38,6 +38,8 @@ import org.springframework.web.util.UriUtils;
 
 @Component
 public class XunleiClient {
+    private static final String TRANSFER_IMAGE_NAME = "救星小窝基地.jpg";
+    private static final String TRANSFER_IMAGE_SOURCE_FOLDER = "影视剧资源分享(先转存后再查看)";
     private static final Pattern SHARE_PATTERN = Pattern.compile("https?://[^/]+/s/([^/?#]+)(?:[/?#].*)?", Pattern.CASE_INSENSITIVE);
     private static final String CAPTCHA_URL = "https://xluser-ssl.xunlei.com/v1/shield/captcha/init";
     private static final String AUTH_TOKEN_URL = "https://xluser-ssl.xunlei.com/v1/auth/token";
@@ -288,6 +290,47 @@ public class XunleiClient {
 
     static Map<String, Object> movePayload(List<String> fileIds, String parentId) {
         return Map.of("to", Map.of("parent_id", parentId), "ids", List.copyOf(fileIds));
+    }
+
+    /** Adds the account-owned image to the stable transfer folder before it is shared. */
+    public void ensureTransferImage(String parentId) {
+        if (!hasText(parentId)) {
+            throw new IllegalArgumentException("Xunlei transfer folder id is required");
+        }
+        if (hasText(findNamedChildId(parentId, TRANSFER_IMAGE_NAME, false))) return;
+        String sourceFolderId = findNamedChildId(findRestoreRootId(), TRANSFER_IMAGE_SOURCE_FOLDER, true);
+        if (!hasText(sourceFolderId)) {
+            throw new IllegalStateException("Xunlei transfer image source folder is missing: 我的转存/"
+                    + TRANSFER_IMAGE_SOURCE_FOLDER);
+        }
+        String sourceId = findNamedChildId(sourceFolderId, TRANSFER_IMAGE_NAME, false);
+        if (!hasText(sourceId)) {
+            throw new IllegalStateException("Xunlei transfer image is missing: 我的转存/"
+                    + TRANSFER_IMAGE_SOURCE_FOLDER + "/" + TRANSFER_IMAGE_NAME);
+        }
+        request(HttpMethod.POST, "/files:batchCopy",
+                Map.of("ids", List.of(sourceId), "to", Map.of("parent_id", parentId)));
+        int attempts = Math.max(properties.getXunlei().getPollAttempts(), 1);
+        for (int index = 0; index < attempts; index++) {
+            if (hasText(findNamedChildId(parentId, TRANSFER_IMAGE_NAME, false))) return;
+            if (index + 1 < attempts) sleep(properties.getXunlei().getPollIntervalMs());
+        }
+        throw new IllegalStateException("Xunlei transfer image was not copied to the destination: "
+                + TRANSFER_IMAGE_NAME);
+    }
+
+    private String findNamedChildId(String parentId, String name, boolean folder) {
+        for (JsonNode file : listFolderChildren(parentId)) {
+            String fileName = firstText(file.path("name").asText(null), file.path("file_name").asText(null),
+                    file.path("filename").asText(null), file.path("fileName").asText(null));
+            if (name.equals(fileName) && isFolder(file) == folder) {
+                String id = firstText(file.path("id").asText(null), file.path("file_id").asText(null),
+                        file.path("fileId").asText(null), file.path("fid").asText(null));
+                if (!hasText(id)) throw new IllegalStateException("Xunlei transfer image entry has no file id");
+                return id;
+            }
+        }
+        return null;
     }
 
     public String createShare(String parentId) {

@@ -3,6 +3,7 @@ package com.gying.movie.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkShareResult;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -24,8 +27,9 @@ import org.springframework.web.client.RestTemplate;
 
 class QuarkShareClientTest {
 
-    @Test
-    void fallsBackToValidMediaFilesWhenFolderShareContainsRejectedFile() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void fallsBackToValidMediaFilesWhenFolderShareContainsRejectedFile(boolean allVideosRejected) {
         ResourceHubProperties properties = new ResourceHubProperties();
         properties.getQuark().setSharePollAttempts(1);
         QuarkAutoSaveClient autoSaveClient = mock(QuarkAutoSaveClient.class);
@@ -62,7 +66,11 @@ class QuarkShareClientTest {
                                   "status":3,"creation_snapshot":{"invalid_fids":["bad-video"]}
                                 }}
                                 """),
-                        ResponseEntity.ok("""
+                        ResponseEntity.ok(allVideosRejected ? """
+                                {"code":41026,"message":"no shareable videos","data":{
+                                  "status":3,"creation_snapshot":{"invalid_fids":["good-video"]}
+                                }}
+                                """ : """
                                 {"code":0,"data":{"share_id":"owned-share"}}
                                 """));
         when(restTemplate.exchange(
@@ -73,7 +81,8 @@ class QuarkShareClientTest {
                 .thenReturn(ResponseEntity.ok("""
                         {"code":0,"data":{"list":[
                           {"fid":"bad-video","file_name":"bad.mp4","dir":false},
-                          {"fid":"good-video","file_name":"good.mkv","dir":false}
+                          {"fid":"good-video","file_name":"good.mkv","dir":false},
+                           {"fid":"transfer-image","file_name":"救星小窝基地.jpg","dir":false}
                         ]}}
                         """));
         when(restTemplate.postForEntity(
@@ -89,6 +98,13 @@ class QuarkShareClientTest {
                 properties,
                 autoSaveClient);
 
+        if (allVideosRejected) {
+            assertThrows(IllegalStateException.class, () -> client.createShareForPath(
+                    "/GYing Resource Hub/movie/Toy Story 5", "Toy Story 5"));
+            verify(restTemplate, times(2)).postForEntity(
+                    contains("/1/clouddrive/share?"), any(HttpEntity.class), eq(String.class));
+            return;
+        }
         QuarkShareResult result = client.createShareForPath(
                 "/GYing Resource Hub/movie/Toy Story 5",
                 "Toy Story 5");
@@ -99,6 +115,7 @@ class QuarkShareClientTest {
                 contains("/1/clouddrive/share?"), requests.capture(), eq(String.class));
         String retryPayload = requests.getAllValues().get(1).getBody().toString();
         assertTrue(retryPayload.contains("good-video"));
+        assertTrue(retryPayload.contains("transfer-image"));
         assertFalse(retryPayload.contains("bad-video"));
     }
 

@@ -109,6 +109,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                     }
                 }
                 client.awaitContent(task.getSavedPath());
+                client.ensureTransferImage(task.getSavedPath());
                 String share = existingMovieFolderShare(task);
                 if (share == null) share = client.createShare(task.getSavedPath());
                 if (share == null) {
@@ -182,6 +183,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 if (!recoveries.isEmpty()) task.setResponsePayload(client.restoreRecoveryPayload(recoveries));
                 task.setUpdatedAt(LocalDateTime.now()); taskService.updateById(task);
                 client.awaitContent(restore.parentId());
+                client.ensureTransferImage(restore.parentId());
                 String share = existingMovieFolderShare(task);
                 if (share == null) share = client.createShare(restore.parentId());
                 if (share != null) { task.setShareUrl(share); task.setShareUrlHash(ResourceHubHashUtils.sha256(share)); task.setStatus("SUCCEEDED"); task.setLastError(null); updatePublishedLink(task); result.setSubmitted(result.getSubmitted() + 1); } else { task.setLastError("Xunlei restore succeeded but share API did not return a URL"); result.setFailed(result.getFailed() + 1); if (result.getErrors().size() < 10) result.getErrors().add(task.getLastError()); }

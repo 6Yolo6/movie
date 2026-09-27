@@ -44,7 +44,7 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
 
     @Override
     public String ensureShareUrl(QuarkTransferTask task) {
-        if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
+        if (task == null) {
             return null;
         }
         if (!hasText(task.getSavedPath())
@@ -59,6 +59,10 @@ public class QuarkShareServiceImpl implements IQuarkShareService {
         if (!contentCheck.hasContent()) {
             throw new IllegalStateException(
                     "Saved Quark folder has no transferred media files: " + task.getSavedPath());
+        }
+        quarkShareClient.ensureTransferImage(contentCheck.fid());
+        if (!resourceHubProperties.getQuark().isShareEnabled()) {
+            return null;
         }
         if (hasText(task.getShareUrl())) {
             markShareReady(task);
