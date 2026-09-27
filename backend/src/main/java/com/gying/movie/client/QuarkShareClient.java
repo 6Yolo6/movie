@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -118,8 +119,9 @@ public class QuarkShareClient {
         if (!hasText(sourceFid)) {
             throw new IllegalStateException("Quark transfer image is missing from /" + TRANSFER_IMAGE_NAME);
         }
+        // Account-file copy uses filelist/action_type, not the share-save fid_list contract.
         JsonNode response = post(cookie, "/1/clouddrive/file/copy", Map.of(
-                "action", "copy", "fid_list", List.of(sourceFid),
+                "action_type", 1, "filelist", List.of(sourceFid),
                 "to_pdir_fid", folderFid, "exclude_fids", List.of()));
         ensureOk(response, "copy Quark transfer image failed");
         String taskId = response.path("data").path("task_id").asText(null);
@@ -417,10 +419,13 @@ public class QuarkShareClient {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET,
                     new HttpEntity<>(headers(cookie)), String.class);
             return objectMapper.readTree(response.getBody());
+        } catch (RestClientResponseException e) {
+            throw httpFailure("GET", path, e);
         } catch (RestClientException e) {
-            throw new IllegalStateException("Quark request failed", e);
+            throw new IllegalStateException("Quark GET " + path + " request failed ("
+                    + e.getClass().getSimpleName() + ")");
         } catch (Exception e) {
-            throw new IllegalStateException("Quark response parse failed: " + e.getMessage(), e);
+            throw new IllegalStateException("Quark GET " + path + " response parse failed");
         }
     }
 
@@ -430,11 +435,29 @@ public class QuarkShareClient {
             ResponseEntity<String> response = restTemplate.postForEntity(url,
                     new HttpEntity<>(payload, headers(cookie)), String.class);
             return objectMapper.readTree(response.getBody());
+        } catch (RestClientResponseException e) {
+            throw httpFailure("POST", path, e);
         } catch (RestClientException e) {
-            throw new IllegalStateException("Quark request failed", e);
+            throw new IllegalStateException("Quark POST " + path + " request failed ("
+                    + e.getClass().getSimpleName() + ")");
         } catch (Exception e) {
-            throw new IllegalStateException("Quark response parse failed: " + e.getMessage(), e);
+            throw new IllegalStateException("Quark POST " + path + " response parse failed");
         }
+    }
+
+    private IllegalStateException httpFailure(String method, String path, RestClientResponseException error) {
+        String code = "";
+        try {
+            JsonNode body = objectMapper.readTree(error.getResponseBodyAsString());
+            if (body != null && body.path("code").isIntegralNumber()) {
+                code = ", upstream code " + body.path("code").asText();
+            }
+        } catch (Exception ignored) {
+            // HTML/proxy responses have no structured provider code.
+        }
+        // Never expose raw response bodies, cookies, query strings or share URLs in task errors.
+        return new IllegalStateException("Quark " + method + " " + path
+                + " failed: HTTP " + error.getStatusCode().value() + code);
     }
 
     private String baseUrl(String path, Map<String, String> extraParams) {

@@ -2,6 +2,8 @@ package com.gying.movie.client;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,6 +12,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.queryParam;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
@@ -103,6 +107,49 @@ class QuarkTransferImageTest {
         server.verify();
     }
 
+    @Test
+    void completedTaskWaitsForImageVisibilityAndRetryDoesNotCopyAgain() {
+        list("destination", 1, "");
+        list("0", 1, IMAGE);
+        copy("{\"code\":0,\"data\":{\"task_id\":\"copy-task\"}}");
+        task(2);
+        list("destination", 1, "");
+        list("destination", 1, IMAGE);
+        list("destination", 1, IMAGE);
+        client.ensureTransferImage("destination");
+        client.ensureTransferImage("destination");
+        server.verify();
+    }
+
+    @Test
+    void copyHttpFailureIncludesEndpointAndCodesWithoutRawResponseOrRetry() {
+        list("destination", 1, "");
+        list("0", 1, IMAGE);
+        server.expect(requestTo(containsString("/1/clouddrive/file/copy?")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"code\":14001,\"message\":\"Cookie=private-cookie https://example.com/?token=secret\"}"));
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> client.ensureTransferImage("destination"));
+        assertEquals("Quark POST /1/clouddrive/file/copy failed: HTTP 400, upstream code 14001",
+                error.getMessage());
+        assertNull(error.getCause());
+        server.verify();
+    }
+
+    @Test
+    void listHttpFailureKeepsStatusWithoutExposingHtmlOrAttemptingCopy() {
+        server.expect(requestTo(containsString("/1/clouddrive/file/sort?")))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_GATEWAY).contentType(MediaType.TEXT_HTML)
+                        .body("<html>secret upstream request data</html>"));
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> client.ensureTransferImage("destination"));
+        assertEquals("Quark GET /1/clouddrive/file/sort failed: HTTP 502", error.getMessage());
+        assertNull(error.getCause());
+        server.verify();
+    }
+
     private void list(String parent, int page, String items) {
         server.expect(requestTo(containsString("/1/clouddrive/file/sort?")))
                 .andExpect(method(HttpMethod.GET))
@@ -115,7 +162,7 @@ class QuarkTransferImageTest {
         server.expect(requestTo(containsString("/1/clouddrive/file/copy?")))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().json("""
-                        {"action":"copy","fid_list":["image-id"],"to_pdir_fid":"destination","exclude_fids":[]}
+                        {"action_type":1,"filelist":["image-id"],"to_pdir_fid":"destination","exclude_fids":[]}
                         """, true))
                 .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
     }
