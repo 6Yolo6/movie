@@ -104,7 +104,7 @@
 ## 仍需处理
 
 - **GYING 发布写入仍需验收**：单片全账号遍历导致的超时已修复并部署，真实 backend→source 单片查询实测 7.68 秒；目录和搜索正常。新 source 的自动 `/publish` 请求中另观察到 2 条 `RuntimeError` 上游错误，尚不能仅凭通用日志区分重复提交提示、网站拒绝或发布后复核失败。未手工重放发布，真实写入不标记通过；后续需按单条任务核对远端结果后再决定重试，避免重复副作用。
-- **迅雷配图实盘验收**：夸克配图复制已通过失败任务 `1597` 受控重试验证，目标目录含 1 张配图和 4 个视频，重复执行会跳过；迅雷指定位置源图已只读确认存在，但仍需选择可丢弃的迅雷临时资源或采集任务复核真实复制、重试幂等及最终分享可访问。
+- **迅雷配图实盘验收**：夸克配图复制已通过失败任务 `1583` 和 `1597` 的受控重试验证；`1583` 在部署后实际走完复制分支（原目录 0 张图/10 个视频，复核为 1 张图/10 个视频），分享令牌有效；迅雷指定位置源图已只读确认存在，但仍需选择可丢弃的迅雷临时资源或采集任务复核真实复制、重试幂等及最终分享可访问。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
@@ -133,7 +133,7 @@
 
 - 转存配图部署验收（2026-09-27）：Java 17 编译/打包成功，后端全量测试 314 项、0 failures/errors、1 项 Redis 集成测试按环境跳过；镜像 `gying-transfer-image-backend:20260927a` 已上线，容器 JAR SHA-256 与构建产物一致，非 root 与原环境配置保持不变。本地/公网 `/`、`/resource-search`、`/api/movies/hot-searches` 均 200，匿名管理接口 401、内部 QQ 入口 404；内部 Resource Hub、GYING Source、social-publisher、frontend→backend 与 MinIO 健康均正常，nginx 配置校验和重载成功，backend 启动日志无 ERROR。部署前无 RUNNING 转存；本次未手工触发真实转存/分享，源图只读检查不等同实盘复制验收。
 
-- 夸克配图复制修复验收（2026-09-27）：根因是夸克账号文件复制接口拒绝旧 `action/fid_list` 参数并返回 HTTP 400、上游 code 14001；改用 `action_type/filelist` 后，后端全量 319 项测试通过（0 failures/errors，1 项 Redis 集成测试按环境跳过）。镜像 `gying-quark-copy-backend:20260927b` 已上线，非 root、环境配置保持不变；内部健康入口通过。失败任务 `1597` 受控重试返回 submitted=1/failed=0，目标目录复核 1 张配图、4 个视频，任务为 `SUBMITTED`，对应发现记录为 `SAVED`、`resource_link` 状态为 `NORMAL`；同批其余失败任务未批量重放，避免与已入队 PanSou 回退重复。
+- 夸克配图复制修复验收（2026-09-27）：根因是夸克账号文件复制接口拒绝旧 `action/fid_list` 参数并返回 HTTP 400、上游 code 14001；改用 `action_type/filelist` 后，后端全量 319 项测试通过（0 failures/errors，1 项 Redis 集成测试按环境跳过）。镜像 `gying-quark-copy-backend:20260927b` 已上线，非 root、环境配置保持不变；内部健康入口通过。失败任务 `1583` 受控重试在部署后实际执行复制分支，返回 submitted=1/failed=0，目标目录由 0 张配图/10 个视频变为 1 张配图/10 个视频，任务为 `SUBMITTED`，自有分享令牌校验 HTTP 200/code 0；另一条 `1597` 复核 1 张配图和 4 个视频，对应发现记录为 `SAVED`、`resource_link` 状态为 `NORMAL`。同批其余失败任务未批量重放，避免与已入队 PanSou 回退重复。
 
 当前结论（本次部署复核 2026-09-27；历史验收日期见各条目）：
 
