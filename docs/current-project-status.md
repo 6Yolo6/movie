@@ -48,6 +48,7 @@
 
 ### GYING 数据源
 
+- 单片详情及发布前检查仅读取该片详情中的资源，按发布者识别 `ownResources`，不再遍历账号自有资源列表；显式账号已发布资源同步仍可分页。该优化随 `gying-source-detail:20260927a` 上线（代码 `40bac83`），网站重复提交保护和已有自有资源去重保持不变。
 - 支持按类型和模式搜索、目录同步、元数据导入、资源发布与已发布资源抓取；发布使用固定契约 `/res/pan/add`（`binds[0][dir]` + `binds[0][id]`），不把类型与 ID 拼入路径。
 - 上游不可用（连接错误、5xx、429、鉴权失效）时影片元数据操作不直接失败：补齐剩余季改用 PanSou 兜底（夸克+迅雷候选，按剧集名或 TMDB ID 匹配、跳过已有资源、按季号最多 5 季逐季转存入库），自动补图回退 TMDB 搜索；结果以 `mode=PANSOU_FALLBACK`、`gyingUnavailable=true` 与 `{discovered,completed,skipped,failed,reason,items}` 返回，全部失败记 `FAILED`，否则记 `SKIPPED`。
 - 读取连接/响应超时为 3/20 秒，失败后 30 秒短时熔断并自动允许重试；AUTO/QQ 搜索继续尝试 PanSou，补充来源失败不丢弃已有候选。
@@ -89,6 +90,7 @@
 
 ### 迁移与恢复基线
 
+- GYING 数据源当前镜像为 `gying-source-detail:20260927a`（2026-09-27 部署），发布/回滚覆盖位于 `E:/gying-tools/releases/gying-detail-snapshot-20260927`，回滚镜像 `gying-source-rollback:pre-detail-20260927` 对应原 source 镜像 `sha256:788dd59993e0…`。本次只重建 source，保留原环境和非 root 用户，backend/frontend/依赖容器未变；部署前检查点 `G:/gying-backups/20260927T120205.182820Z` 共 4 个加密文件，hash 全部通过，未在本轮单独恢复演练。
 - 当前前后端：`gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）、`gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
@@ -99,6 +101,7 @@
 
 ## 仍需处理
 
+- **GYING 发布写入仍需验收**：单片全账号遍历导致的超时已修复并部署，真实 backend→source 单片查询实测 7.68 秒；目录和搜索正常。新 source 的自动 `/publish` 请求中另观察到 2 条 `RuntimeError` 上游错误，尚不能仅凭通用日志区分重复提交提示、网站拒绝或发布后复核失败。未手工重放发布，真实写入不标记通过；后续需按单条任务核对远端结果后再决定重试，避免重复副作用。
 - **转存配图实盘验收**：新逻辑已部署，夸克与迅雷指定位置的源图均已只读确认存在；尚未手工触发真实转存、复制或对外发布。下一次可丢弃临时资源/采集任务需复核目标目录包含视频与图片、重试不重复复制及最终分享可访问。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
@@ -123,6 +126,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- GYING 单片查询部署验收（2026-09-27）：crawler 12 项、后端 GYING 工作流/客户端 25 项测试全部通过，后端编译通过；source 镜像 `gying-source-detail:20260927a` 的脚本 hash 与提交产物一致。真实 backend 容器按原 20 秒超时调用同一单片，耗时由旧样本 35.08 秒降至 7.68 秒，仍返回 257 条资源/2 条自有资源；目录 1.72 秒、搜索 1.24 秒均返回有效结果。本地/公网首页、资源搜索与热搜接口正常，匿名管理接口 401、内部 QQ 入口 404；nginx 校验/重载成功，其他服务容器与环境配置未变。部署观察期没有 BrokenPipeError、Traceback 或 PoW 失败，但自动发布有 2 条上游 RuntimeError，写入验收继续保留。没有手工触发发布、修改、导入或转存。
 
 - 转存配图部署验收（2026-09-27）：Java 17 编译/打包成功，后端全量测试 314 项、0 failures/errors、1 项 Redis 集成测试按环境跳过；镜像 `gying-transfer-image-backend:20260927a` 已上线，容器 JAR SHA-256 与构建产物一致，非 root 与原环境配置保持不变。本地/公网 `/`、`/resource-search`、`/api/movies/hot-searches` 均 200，匿名管理接口 401、内部 QQ 入口 404；内部 Resource Hub、GYING Source、social-publisher、frontend→backend 与 MinIO 健康均正常，nginx 配置校验和重载成功，backend 启动日志无 ERROR。部署前无 RUNNING 转存；本次未手工触发真实转存/分享，源图只读检查不等同实盘复制验收。
 
