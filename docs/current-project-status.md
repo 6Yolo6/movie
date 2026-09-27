@@ -37,6 +37,7 @@
 ### 影视资源中心
 
 - 临时转存与后台采集转存均在视频落盘后、创建自有分享前补齐 `救星小窝基地.jpg`：夸克源图位于网盘根目录，迅雷源图位于 `我的转存/影视剧资源分享(先转存后再查看)`；保留源图，目标已有同名图片时跳过，复制失败保留任务错误。夸克按文件回退分享时携带该图片，但不生成纯图片资源分享。
+- 夸克配图复制采用账号文件接口的 `action_type + filelist` 契约；HTTP 失败错误只记录方法、路径、状态和上游 code，不回显响应正文、Cookie、查询串或分享 URL。该修复由 backend `gying-quark-copy-backend:20260927b` 上线（代码 `3276b6e`）。
 - 搜索合并本地 PanSou 与外部 Panso 结果并按 URL 去重；自动资源必须先转存为系统自有夸克/迅雷分享，再写入 `resource_link`。
 - 夸克任务支持目录创建、剧集目录更新、失效分享重试与周转存（`update_subdir: ".*"` 递归追踪同名目录新增文件）；迅雷使用官方 Drive API 校验分享、遍历目录并筛选视频文件，Authorization 为短期凭据，支持运行时更新与 refresh token 优先。
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供「修复并重分享」；成功后原位更新链接，并在存在 GYING 映射时同步发布。
@@ -91,7 +92,8 @@
 ### 迁移与恢复基线
 
 - GYING 数据源当前镜像为 `gying-source-detail:20260927a`（2026-09-27 部署），发布/回滚覆盖位于 `E:/gying-tools/releases/gying-detail-snapshot-20260927`，回滚镜像 `gying-source-rollback:pre-detail-20260927` 对应原 source 镜像 `sha256:788dd59993e0…`。本次只重建 source，保留原环境和非 root 用户，backend/frontend/依赖容器未变；部署前检查点 `G:/gying-backups/20260927T120205.182820Z` 共 4 个加密文件，hash 全部通过，未在本轮单独恢复演练。
-- 当前前后端：`gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）、`gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
+- 前端当前为 `gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）；上一轮 backend 为 `gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
+- 当前后端（2026-09-27 20:48）：`gying-quark-copy-backend:20260927b`（代码提交 `3276b6e`），部署/回滚覆盖位于 `E:/gying-tools/releases/quark-copy-contract-20260927`，回滚镜像 `gying-quark-copy-rollback:pre-fix-20260927`。本次只重建 backend 并重载 nginx，前端、依赖服务、数据库结构与环境配置未改变；部署前加密检查点 `G:/gying-backups/20260927T124754.729798Z` 包含 MySQL、环境与上一部署覆盖，3/3 文件 hash 通过，未在本轮单独恢复演练。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -102,7 +104,7 @@
 ## 仍需处理
 
 - **GYING 发布写入仍需验收**：单片全账号遍历导致的超时已修复并部署，真实 backend→source 单片查询实测 7.68 秒；目录和搜索正常。新 source 的自动 `/publish` 请求中另观察到 2 条 `RuntimeError` 上游错误，尚不能仅凭通用日志区分重复提交提示、网站拒绝或发布后复核失败。未手工重放发布，真实写入不标记通过；后续需按单条任务核对远端结果后再决定重试，避免重复副作用。
-- **转存配图实盘验收**：新逻辑已部署，夸克与迅雷指定位置的源图均已只读确认存在；尚未手工触发真实转存、复制或对外发布。下一次可丢弃临时资源/采集任务需复核目标目录包含视频与图片、重试不重复复制及最终分享可访问。
+- **迅雷配图实盘验收**：夸克配图复制已通过失败任务 `1597` 受控重试验证，目标目录含 1 张配图和 4 个视频，重复执行会跳过；迅雷指定位置源图已只读确认存在，但仍需选择可丢弃的迅雷临时资源或采集任务复核真实复制、重试幂等及最终分享可访问。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
@@ -130,6 +132,8 @@
 - GYING 单片查询部署验收（2026-09-27）：crawler 12 项、后端 GYING 工作流/客户端 25 项测试全部通过，后端编译通过；source 镜像 `gying-source-detail:20260927a` 的脚本 hash 与提交产物一致。真实 backend 容器按原 20 秒超时调用同一单片，耗时由旧样本 35.08 秒降至 7.68 秒，仍返回 257 条资源/2 条自有资源；目录 1.72 秒、搜索 1.24 秒均返回有效结果。本地/公网首页、资源搜索与热搜接口正常，匿名管理接口 401、内部 QQ 入口 404；nginx 校验/重载成功，其他服务容器与环境配置未变。部署观察期没有 BrokenPipeError、Traceback 或 PoW 失败，但自动发布有 2 条上游 RuntimeError，写入验收继续保留。没有手工触发发布、修改、导入或转存。
 
 - 转存配图部署验收（2026-09-27）：Java 17 编译/打包成功，后端全量测试 314 项、0 failures/errors、1 项 Redis 集成测试按环境跳过；镜像 `gying-transfer-image-backend:20260927a` 已上线，容器 JAR SHA-256 与构建产物一致，非 root 与原环境配置保持不变。本地/公网 `/`、`/resource-search`、`/api/movies/hot-searches` 均 200，匿名管理接口 401、内部 QQ 入口 404；内部 Resource Hub、GYING Source、social-publisher、frontend→backend 与 MinIO 健康均正常，nginx 配置校验和重载成功，backend 启动日志无 ERROR。部署前无 RUNNING 转存；本次未手工触发真实转存/分享，源图只读检查不等同实盘复制验收。
+
+- 夸克配图复制修复验收（2026-09-27）：根因是夸克账号文件复制接口拒绝旧 `action/fid_list` 参数并返回 HTTP 400、上游 code 14001；改用 `action_type/filelist` 后，后端全量 319 项测试通过（0 failures/errors，1 项 Redis 集成测试按环境跳过）。镜像 `gying-quark-copy-backend:20260927b` 已上线，非 root、环境配置保持不变；内部健康入口通过。失败任务 `1597` 受控重试返回 submitted=1/failed=0，目标目录复核 1 张配图、4 个视频，任务为 `SUBMITTED`，对应发现记录为 `SAVED`、`resource_link` 状态为 `NORMAL`；同批其余失败任务未批量重放，避免与已入队 PanSou 回退重复。
 
 当前结论（本次部署复核 2026-09-27；历史验收日期见各条目）：
 
