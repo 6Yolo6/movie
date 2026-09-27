@@ -36,6 +36,7 @@
 
 ### 影视资源中心
 
+- 临时转存与后台采集转存均在视频落盘后、创建自有分享前补齐 `救星小窝基地.jpg`：夸克源图位于网盘根目录，迅雷源图位于 `我的转存/影视剧资源分享(先转存后再查看)`；保留源图，目标已有同名图片时跳过，复制失败保留任务错误。夸克按文件回退分享时携带该图片，但不生成纯图片资源分享。
 - 搜索合并本地 PanSou 与外部 Panso 结果并按 URL 去重；自动资源必须先转存为系统自有夸克/迅雷分享，再写入 `resource_link`。
 - 夸克任务支持目录创建、剧集目录更新、失效分享重试与周转存（`update_subdir: ".*"` 递归追踪同名目录新增文件）；迅雷使用官方 Drive API 校验分享、遍历目录并筛选视频文件，Authorization 为短期凭据，支持运行时更新与 refresh token 优先。
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供「修复并重分享」；成功后原位更新链接，并在存在 GYING 映射时同步发布。
@@ -88,7 +89,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-library-qr-backend:20260925d`、`gying-library-qr-frontend:20260925m`（2026-09-25 Asia/Shanghai 部署）。最近发布与回滚 override 为 `E:\gying-tools\releases\drawer-comment-rate-20260925`，回滚目标 backend `20260925c` / frontend `20260925l`；更早版本镜像标签保留在本地。
+- 当前前后端：`gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）、`gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -98,6 +99,7 @@
 
 ## 仍需处理
 
+- **转存配图实盘验收**：新逻辑已部署，夸克与迅雷指定位置的源图均已只读确认存在；尚未手工触发真实转存、复制或对外发布。下一次可丢弃临时资源/采集任务需复核目标目录包含视频与图片、重试不重复复制及最终分享可访问。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
@@ -122,7 +124,9 @@
 
 ## 验收
 
-当前结论（2026-09-24 / 09-25 复核）：
+- 转存配图部署验收（2026-09-27）：Java 17 编译/打包成功，后端全量测试 314 项、0 failures/errors、1 项 Redis 集成测试按环境跳过；镜像 `gying-transfer-image-backend:20260927a` 已上线，容器 JAR SHA-256 与构建产物一致，非 root 与原环境配置保持不变。本地/公网 `/`、`/resource-search`、`/api/movies/hot-searches` 均 200，匿名管理接口 401、内部 QQ 入口 404；内部 Resource Hub、GYING Source、social-publisher、frontend→backend 与 MinIO 健康均正常，nginx 配置校验和重载成功，backend 启动日志无 ERROR。部署前无 RUNNING 转存；本次未手工触发真实转存/分享，源图只读检查不等同实盘复制验收。
+
+当前结论（本次部署复核 2026-09-27；历史验收日期见各条目）：
 
 - 后端全量测试 239 项通过（0 failures/errors，1 项 Redis 集成测试按环境跳过）；前端 `tsc --noEmit` 0 错误。
 - 浏览器回归在隔离镜像与公网环境均通过，覆盖热门搜索面板与跳转、筛选默认收起与摘要、资源搜索对话与二维码展示、管理员建号与搜索频率保存、注册与编辑绑定；公网复验无页面运行时错误。
