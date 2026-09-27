@@ -1028,23 +1028,11 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
 def fetch_movie_resource_snapshot(type_code, mid):
     metadata = fetch_movie_metadata(type_code, mid) or {}
     resources = fetch_download_resources(type_code, mid, [], target_user="")
+    # Ownership comes from this movie's detail resources. Do not scan the account's
+    # content list here: it makes every detail/publish check proportional to account size.
+    # The site also rejects duplicate submissions at the publish endpoint.
     for resource in resources:
-        resource["is_own"] = resource.get("uploader") == TARGET_USER
-    # /res/downurl may omit an already-published item or return stale public data.
-    # The authenticated content list is authoritative for duplicate prevention.
-    owned = list_my_pan_resources(limit=1000, max_pages=50, type_code=type_code, mid=mid)
-    by_source = {item.get("source_id"): item for item in resources if item.get("source_id")}
-    by_url = {item.get("url"): item for item in resources if item.get("url")}
-    for item in owned:
-        existing = by_source.get(item.get("source_id")) or by_url.get(item.get("url"))
-        if existing is None:
-            resources.append(item)
-        else:
-            existing.update(item)
-        if item.get("url"):
-            by_url[item.get("url")] = existing or item
-        if item.get("source_id"):
-            by_source[item.get("source_id")] = existing or item
+        resource["is_own"] = bool(TARGET_USER and resource.get("uploader") == TARGET_USER)
     title = metadata.get("title") or metadata.get("name") or metadata.get("ename")
     series_name, season = parse_season(title, type_code)
     return {

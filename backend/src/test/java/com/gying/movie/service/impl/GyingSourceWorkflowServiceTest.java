@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -46,6 +47,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -96,6 +99,29 @@ class GyingSourceWorkflowServiceTest {
                 shareService,
                 xunleiTransferTaskService,
                 xunleiTransferRunnerService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void skipsPublishingWhenMovieDetailsAlreadyContainTheOwnedResource(String provider) {
+        ResourceLink resource = new ResourceLink();
+        resource.setId(42L);
+        resource.setMovieId("local-movie");
+        resource.setType("DISK");
+        resource.setProvider(provider);
+        resource.setUrl("QUARK".equals(provider)
+                ? "https://pan.quark.cn/s/owned" : "https://pan.xunlei.com/s/owned");
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setSourceType("mv");
+        identity.setExternalId("SITE1");
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(gyingSourceClient.get("/movie/mv/SITE1")).thenReturn(Map.of(
+                "ownResources", List.of(Map.of("source_id", "OWNED1", "url", resource.getUrl()))));
+
+        assertTrue(service.publishResourceToGying(resource));
+
+        verify(gyingSourceClient).get("/movie/mv/SITE1");
+        verifyNoMoreInteractions(gyingSourceClient);
     }
 
     @Test
