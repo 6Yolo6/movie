@@ -61,11 +61,11 @@ public class GyingSourceWorkflowService {
     private static final String PANSOU_FALLBACK_REASON = "GYING 源当前不可用，已改用 PanSou 等其他来源处理";
     private static final String FALLBACK_UNAVAILABLE_REASON = "GYING 源当前不可用，其他来源也暂时不可用，已跳过本次操作";
     private static final String POSTER_SKIPPED_REASON = "GYING 源当前不可用，其他来源也未找到可用海报，已跳过本次操作";
-    private static final int MAX_PANSOU_SEASON_TARGETS = 5;
     private static final int MAX_PANSOU_SEARCH_KEYWORDS = 3;
 
     private final GyingSourceClient gyingSourceClient;
     private final TmdbClient tmdbClient;
+    private final SeasonMetadataCompletion seasonMetadataCompletion;
     private final PosterStorageService posterStorageService;
     private final PanSouClient panSouClient;
     private final IMovieMetadataService movieService;
@@ -109,6 +109,9 @@ public class GyingSourceWorkflowService {
         this.quarkShareService = quarkShareService;
         this.xunleiTransferTaskService = xunleiTransferTaskService;
         this.xunleiTransferRunnerService = xunleiTransferRunnerService;
+        this.seasonMetadataCompletion = new SeasonMetadataCompletion(
+                tmdbClient, posterStorageService, movieService, sourceIdentityService,
+                resourceLinkService, discoveryResultService);
     }
 
     public GyingSourceWorkflowService(GyingSourceClient gc, TmdbClient tc, PosterStorageService pc, PanSouClient ps,
@@ -488,214 +491,44 @@ public class GyingSourceWorkflowService {
 
     public Map<String, Object> ensureRemainingSeasons(String movieId, int maxPages) {
         MovieMetadata movie = movieService.getById(required(movieId, "local movie id"));
-        if (movie == null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
+        if (movie == null || movie.getDeletedAt() != null || "DELETED".equalsIgnoreCase(movie.getStatus())) {
             throw new IllegalArgumentException("Movie not found: " + movieId);
         }
-        MovieSourceIdentity identity = findGyingIdentity(movie.getId());
-        List<Map<String, Object>> seasons;
-        try {
-            if (identity == null) {
-                identity = discoverGyingIdentity(movie, maxPages);
-            }
-            if (identity == null) {
-                throw new IllegalStateException("No exact GYING series match found");
-            }
-            seasons = mapList(gyingSourceClient.get(
+        return seasonMetadataCompletion.complete(movie, existingSeasons -> {
+            MovieSourceIdentity identity = findGyingIdentity(movie.getId());
+            if (identity == null) identity = discoverGyingIdentity(movie, maxPages);
+            if (identity == null) throw new IllegalStateException("No exact GYING series match found");
+            List<Map<String, Object>> sourceSeasons = mapList(gyingSourceClient.get(
                     "/series?typeCode=" + identity.getSourceType() + "&mid=" + identity.getExternalId()
                             + "&maxPages=" + Math.min(Math.max(maxPages, 1), 50)).get("items"));
-        } catch (Exception error) {
-            if (!isUpstreamUnavailable(error)) {
-                throw error;
-            }
-            return ensureRemainingSeasonsViaPanSou(movie);
-        }
-        List<Map<String, Object>> items = new ArrayList<>();
-        int completed = 0;
-        int failed = 0;
-        int skipped = 0;
-        boolean sourceUnavailable = false;
-        for (Map<String, Object> season : seasons) {
-            if (sourceUnavailable) {
-                skipped++;
-                items.add(skippedSeasonItem(season, GYING_UNAVAILABLE_REASON));
-                continue;
-            }
-            try {
-                items.add(ensureMovieResource(
-                        stringValue(season.get("typeCode")), stringValue(season.get("mid"))));
-                completed++;
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    sourceUnavailable = true;
-                    skipped++;
-                    items.add(skippedSeasonItem(season, GYING_UNAVAILABLE_REASON));
-                    continue;
+            List<MovieMetadata> imported = new ArrayList<>();
+            Set<Integer> seen = new LinkedHashSet<>(existingSeasons);
+            for (Map<String, Object> item : sourceSeasons) {
+                Integer season = integerValue(item.get("season"));
+                if (season == null) {
+                    SeasonSearchUtils.SeasonQuery parsed = SeasonSearchUtils.parse(stringValue(item.get("title")));
+                    season = parsed == null ? null : parsed.season();
                 }
-                Map<String, Object> item = new LinkedHashMap<>(season);
-                item.put("status", "FAILED");
-                item.put("error", safeText(error.getMessage()));
-                items.add(item);
-                failed++;
-            }
-        }
-        Map<String, Object> outcome = new LinkedHashMap<>();
-        outcome.put("discovered", seasons.size());
-        outcome.put("completed", completed);
-        outcome.put("skipped", skipped);
-        outcome.put("failed", failed);
-        if (skipped > 0 && completed == 0 && failed == 0) {
-            return ensureRemainingSeasonsViaPanSou(movie);
-        }
-        if (skipped > 0) {
-            outcome.put("reason", GYING_UNAVAILABLE_REASON);
-        }
-        outcome.put("items", items);
-        return outcome;
-    }
-
-    /**
-     * PanSou fallback for the season workflow. When the GYING source cannot serve the
-     * season list it fills the local season rows that still have no active resource
-     * instead of failing the whole operation.
-     */
-    private Map<String, Object> ensureRemainingSeasonsViaPanSou(MovieMetadata movie) {
-        List<MovieMetadata> targets = missingSeasonTargets(movie);
-        List<Map<String, Object>> items = new ArrayList<>();
-        int completed = 0;
-        int skipped = 0;
-        int failed = 0;
-        boolean fallbackUnavailable = false;
-        for (MovieMetadata target : targets) {
-            if (fallbackUnavailable) {
-                skipped++;
-                items.add(skippedForUnavailableSource(target.getId(), FALLBACK_UNAVAILABLE_REASON));
-                continue;
-            }
-            try {
-                Map<String, Object> item = fillSeasonResourceFromPanSou(target);
-                items.add(item);
-                String status = stringValue(item.get("status"));
-                if ("FILLED".equals(status)) {
-                    completed++;
-                } else if ("FAILED".equals(status)) {
-                    failed++;
-                } else {
-                    skipped++;
+                if (season == null || season < 1 || season > 99 || seen.contains(season)) continue;
+                String type = firstText(stringValue(item.get("typeCode")), identity.getSourceType());
+                if (!movie.getCategory().equalsIgnoreCase(type)) continue;
+                MovieMetadata candidate = new MovieMetadata();
+                candidate.setCategory(type); candidate.setTitleCn(stringValue(item.get("title")));
+                if (!SeasonMetadataCompletion.sameSeries(movie, candidate)) continue;
+                try {
+                    // Only metadata: do not import source links or start another transfer.
+                    GyingMovieMetadata ingested = ingestMovieMetadata(type, stringValue(item.get("mid")), false);
+                    MovieMetadata target = ingested.movie();
+                    if (target != null && season.equals(target.getSeason())
+                            && SeasonMetadataCompletion.sameSeries(movie, target)) {
+                        imported.add(target); seen.add(season);
+                    }
+                } catch (Exception ignored) {
+                    // Preserve successful GYING seasons; missing collection seasons can fall back to TMDB.
                 }
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    fallbackUnavailable = true;
-                    skipped++;
-                    items.add(skippedForUnavailableSource(target.getId(), FALLBACK_UNAVAILABLE_REASON));
-                    continue;
-                }
-                failed++;
-                Map<String, Object> failedItem = new LinkedHashMap<>();
-                failedItem.put("movieId", target.getId());
-                failedItem.put("title", firstText(target.getTitleCn(), target.getTitleEn()));
-                failedItem.put("season", target.getSeason());
-                failedItem.put("source", "PANSOU");
-                failedItem.put("status", "FAILED");
-                failedItem.put("error", safeText(error.getMessage()));
-                items.add(failedItem);
             }
-        }
-        Map<String, Object> outcome = new LinkedHashMap<>();
-        outcome.put("mode", "PANSOU_FALLBACK");
-        outcome.put("source", "PANSOU");
-        outcome.put("gyingUnavailable", true);
-        outcome.put("discovered", targets.size());
-        outcome.put("completed", completed);
-        outcome.put("skipped", skipped);
-        outcome.put("failed", failed);
-        outcome.put("reason", PANSOU_FALLBACK_REASON);
-        outcome.put("items", items);
-        if (completed == 0) {
-            if (failed > 0) {
-                outcome.put("status", "FAILED");
-                outcome.put("reason", "GYING 源当前不可用，PanSou 候选资源转移失败，已跳过本次操作");
-            } else {
-                outcome.put("status", "SKIPPED");
-                outcome.put("reason", targets.isEmpty()
-                        ? "GYING 源当前不可用，本地没有需要补齐剩余季的资源"
-                        : "GYING 源当前不可用，PanSou 未找到可补齐的季资源，已跳过本次操作");
-            }
-        }
-        return outcome;
-    }
-
-    private List<MovieMetadata> missingSeasonTargets(MovieMetadata movie) {
-        String seriesKey = firstText(
-                movie.getSeriesName(),
-                SeasonSearchUtils.baseTitle(firstText(movie.getTitleCn(), movie.getTitleEn())),
-                movie.getTitleCn(),
-                movie.getTitleEn());
-        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
-                .ne("status", "DELETED")
-                .in("category", List.of("tv", "ac"))
-                .last("LIMIT 40");
-        if (movie.getTmdbId() != null && "tv".equalsIgnoreCase(firstText(movie.getTmdbType(), "tv"))) {
-            query.eq("tmdb_id", movie.getTmdbId());
-        } else if (hasText(seriesKey)) {
-            query.and(item -> item.eq("series_name", seriesKey)
-                    .or().eq("title_cn", seriesKey)
-                    .or().eq("title_en", seriesKey));
-        }
-        List<MovieMetadata> rows = new ArrayList<>(movieService.list(query));
-        if (rows.stream().noneMatch(row -> movie.getId().equals(row.getId()))) {
-            rows.add(movie);
-        }
-        return rows.stream()
-                .filter(row -> hasText(row.getId()))
-                .filter(row -> !hasActiveDiskResource(row.getId()))
-                .sorted(Comparator.comparingInt(row -> row.getSeason() == null ? 1 : row.getSeason()))
-                .limit(MAX_PANSOU_SEASON_TARGETS)
-                .toList();
-    }
-
-    private Map<String, Object> fillSeasonResourceFromPanSou(MovieMetadata movie) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("movieId", movie.getId());
-        result.put("title", firstText(movie.getTitleCn(), movie.getTitleEn()));
-        result.put("season", movie.getSeason());
-        result.put("source", "PANSOU");
-        if (hasActiveDiskResource(movie.getId())) {
-            result.put("status", "SKIPPED");
-            result.put("reason", "本地已有可用资源");
-            return result;
-        }
-        List<Map<String, Object>> candidates = panSouCandidates(movie, MAX_TRANSFER_CANDIDATES);
-        if (candidates.isEmpty()) {
-            result.put("status", "SKIPPED");
-            result.put("reason", "PanSou 未找到匹配的候选资源");
-            return result;
-        }
-        List<String> errors = new ArrayList<>();
-        for (Map<String, Object> candidate : candidates) {
-            try {
-                ResourceLink local = transferAndPublishLocally(movie, candidate);
-                markMovieAvailable(movie);
-                result.put("status", "FILLED");
-                result.put("resourceId", local == null ? null : local.getId());
-                result.put("provider", local == null ? candidate.get("provider") : local.getProvider());
-                result.put("url", local == null ? candidate.get("url") : local.getUrl());
-                result.put("candidateTitle", candidate.get("title"));
-                result.put("attempts", errors.size() + 1);
-                result.put("errors", errors);
-                return result;
-            } catch (Exception error) {
-                if (isUpstreamUnavailable(error)) {
-                    throw error;
-                }
-                errors.add(firstText(stringValue(candidate.get("title")), "候选资源")
-                        + ": " + safeText(error.getMessage()));
-            }
-        }
-        result.put("status", "FAILED");
-        result.put("attempts", errors.size());
-        result.put("errors", errors);
-        result.put("reason", errors.isEmpty() ? "PanSou 候选资源转移失败" : errors.get(errors.size() - 1));
-        return result;
+            return imported;
+        });
     }
 
     private List<Map<String, Object>> panSouCandidates(MovieMetadata movie, int limit) {

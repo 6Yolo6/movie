@@ -922,5 +922,12 @@
   "unknownDevice": "Unknown device",
   "loginIp": "Login IP",
   "loginAt": "Login time",
-  "lastSeenAt": "Last active"
+  "lastSeenAt": "Last active",
+  "contactUs": "Contact",
+  "contactQqPriority": "QQ group preferred",
+  "contactQqHint": "Scan the QR code with QQ to join the group.",
+  "contactQqQrAlt": "QR code to join our QQ group",
+  "contactEmailHint": "Email is checked infrequently. Please contact us via the QQ group first.",
+  "movieSeasonCompletionHint": "Fill season metadata from GYING first, then TMDB. Reuse existing collection links only for covered seasons; no new transfers.",
+  "movieSeasonCompletionSummary": "Added {{created}} seasons and {{bound}} collection resource bindings"
 }

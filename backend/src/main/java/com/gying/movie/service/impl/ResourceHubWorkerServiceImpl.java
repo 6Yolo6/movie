@@ -531,6 +531,13 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         for (Long resourceId : publishResult.getResourceIds()) {
             try {
                 ResourceLink link = resourceLinkService.getById(resourceId);
+                if (link != null && com.gying.movie.utils.SeasonSearchUtils.collectionSeasons(link.getName()).size() > 1) {
+                    try {
+                        gyingSourceWorkflowService.ensureRemainingSeasons(link.getMovieId(), 5);
+                    } catch (Exception ignored) {
+                        // Metadata enrichment is best-effort; the usable local share remains successful.
+                    }
+                }
                 gyingSourceWorkflowService.publishResourceToGying(link);
             } catch (Exception ignored) {
                 // Local publication remains successful; next worker cycle can retry GYING.

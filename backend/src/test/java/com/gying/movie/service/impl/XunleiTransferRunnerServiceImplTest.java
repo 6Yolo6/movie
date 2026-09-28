@@ -446,4 +446,25 @@ class XunleiTransferRunnerServiceImplTest {
         order.verify(client).ensureTransferImage("destination");
         order.verify(client).createShare("destination");
     }
+    @Test
+    void queueFiltersExhaustedFailuresInSqlBeforeLimitAndRotatesShareFailures() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setShareEnabled(true);
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
+        when(client.isConfigured()).thenReturn(true);
+        when(tasks.list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenAnswer(invocation -> {
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?> query = invocation.getArgument(0);
+            String sql = query.getSqlSegment();
+            org.junit.jupiter.api.Assertions.assertTrue(sql.contains("attempts <"));
+            org.junit.jupiter.api.Assertions.assertTrue(sql.contains("attempts IS NULL"));
+            org.junit.jupiter.api.Assertions.assertTrue(sql.contains("ORDER BY updated_at ASC,id ASC"));
+            org.junit.jupiter.api.Assertions.assertTrue(sql.endsWith("LIMIT 5"));
+            org.junit.jupiter.api.Assertions.assertTrue(query.getParamNameValuePairs().containsValue(3));
+            return java.util.List.of();
+        });
+        new XunleiTransferRunnerServiceImpl(properties, client, tasks,
+                mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class)).submitPending(5);
+        verify(tasks).list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+    }
 }

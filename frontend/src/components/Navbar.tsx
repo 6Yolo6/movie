@@ -6,7 +6,7 @@ import { SITE_NAME } from '../lib/site';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag, Tooltip } from 'antd';
 import {
     BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
-    LoginOutlined, LogoutOutlined, MenuOutlined, MessageOutlined, MoonOutlined, SunOutlined, TranslationOutlined,
+    LoginOutlined, LogoutOutlined, MenuOutlined, MoonOutlined, SunOutlined, TranslationOutlined,
     NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -193,7 +193,6 @@ export default function Navbar() {
         { href: '/?category=tv', label: t('tvShows'), icon: <DesktopOutlined /> },
         { href: '/?category=ac', label: t('anime'), icon: <VideoCameraOutlined /> },
         { href: '/hot', label: t('hot'), icon: <FireOutlined /> },
-        { href: '/messages', label: t('messageBoard'), icon: <MessageOutlined /> },
         ...(user ? [{ href: '/resource-search', label: t('navSearchResources'), icon: <CloudDownloadOutlined /> }] : []),
     ];
 
@@ -366,9 +365,6 @@ export default function Navbar() {
                         <Link href="/?category=ac" className="hover:text-blue-600 dark:hover:text-white transition-colors">{t('anime')}</Link>
                         <Link href="/hot" className="hover:text-orange-500 dark:hover:text-orange-400 transition-colors inline-flex items-center gap-1">
                             <FireOutlined /> {t('hot')}
-                        </Link>
-                        <Link href="/messages" className="hover:text-blue-600 dark:hover:text-white transition-colors inline-flex items-center gap-1">
-                            <MessageOutlined /> {t('messageBoard')}
                         </Link>
                     </div>
                 </div>

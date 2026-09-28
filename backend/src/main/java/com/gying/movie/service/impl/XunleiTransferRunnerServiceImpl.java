@@ -50,8 +50,13 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
                 : List.of("PENDING", "FAILED");
         List<XunleiTransferTask> tasks = taskService.list(new QueryWrapper<XunleiTransferTask>()
                 .in("status", statuses)
-                .orderByAsc("created_at")
-                .last("LIMIT 200"));
+                // Filter BEFORE LIMIT: capped historical failures must never hide fresh tasks.
+                .and(query -> query.ne("status", "FAILED")
+                        .or(retry -> retry.isNull("attempts").or().lt("attempts", MAX_TRANSFER_ATTEMPTS)))
+                // A failed share attempt moves to the back instead of monopolizing every cycle.
+                .orderByAsc("updated_at", "id")
+                .last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
+        if (tasks == null) return result;
         tasks.stream()
                 .filter(task -> !hasReachedRetryLimit(task))
                 .limit(Math.min(Math.max(limit, 1), 20))

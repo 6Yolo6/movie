@@ -400,6 +400,14 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
     private String resourceTitle(MovieMetadata movie, ResourceDiscoveryResult discovery) {
         String genrePrefix = genrePrefix(movie);
+        if (movie != null && SeasonSearchUtils.isCollectionResource(discovery.getTitle())) {
+            String base = SeasonSearchUtils.baseTitle(firstText(
+                    movie.getSeriesName(), movie.getTitleCn(), movie.getTitleEn(), movie.getId()));
+            java.util.regex.Matcher quality = java.util.regex.Pattern.compile(
+                    "(?i)(8K|4K|2160P|1080[PI]|720P)").matcher(firstText(discovery.getQuality(), discovery.getTitle(), ""));
+            return genrePrefix + base + " " + SeasonSearchUtils.collectionLabel(discovery.getTitle())
+                    + (quality.find() ? " " + quality.group().toLowerCase(java.util.Locale.ROOT) : "");
+        }
         if (movie != null && movie.getSeason() != null && movie.getSeason() > 0) {
             String title = SeasonSearchUtils.seasonQualifiedTitle(
                     firstText(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName(), movie.getId()),

@@ -48,6 +48,9 @@ type WorkflowJob = {
         reason?: string;
         mode?: string;
         gyingUnavailable?: boolean;
+        metadataCreated?: number;
+        bound?: number;
+        warnings?: string[];
     } | null;
 };
 
@@ -129,6 +132,20 @@ export default function AdminMoviesPage() {
                 }
                 const job = await jobResponse.json() as WorkflowJob;
                 if (job.status === 'SUCCEEDED') {
+                    if (job.result?.mode === 'METADATA_AND_EXISTING_COLLECTION') {
+                        const summary = t('movieSeasonCompletionSummary', {
+                            created: job.result.metadataCreated ?? 0,
+                            bound: job.result.bound ?? 0,
+                        });
+                        if (job.result.status === 'PARTIAL' || job.result.status === 'SKIPPED') {
+                            message.warning(summary);
+                        } else {
+                            message.success(summary);
+                        }
+                        if (job.result.warnings?.length) message.warning(job.result.warnings.join('；'), 8);
+                        await fetchMovies();
+                        return;
+                    }
                     if (job.result?.status === 'FAILED') {
                         message.error(job.result.reason || t('gyingSourceActionFailed'));
                         await fetchMovies();
@@ -303,7 +320,7 @@ export default function AdminMoviesPage() {
                         />
                     </Tooltip>
                     {['tv', 'ac'].includes(record.category) && (
-                        <Tooltip title={t('gyingSourceEnsureSeasons')}>
+                        <Tooltip title={t('movieSeasonCompletionHint')}>
                             <Button
                                 type="text"
                                 icon={<DatabaseOutlined />}

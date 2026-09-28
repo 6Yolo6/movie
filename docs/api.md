@@ -84,7 +84,8 @@
 - `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
 - `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
-- `POST /movies/{movieId}/poster/repair`、`POST /movies/{movieId}/seasons/ensure?maxPages=`、`POST /posters/repair?limit=`：影片元数据页的“自动补图 / 补齐剩余季 / 批量补图”。当 GYING 上游不可用（连接错误、5xx、429、鉴权失效）时不直接报错：补齐剩余季改用 PanSou（夸克 + 迅雷候选，按剧集名或 TMDB ID 匹配同剧集、跳过已有 ACTIVE DISK 资源、按季号升序最多 5 个目标，逐季转存并入库），自动补图回退 TMDB 搜索匹配。任务结果返回 `mode=PANSOU_FALLBACK`、`source`、`gyingUnavailable` 与 `{discovered,completed,skipped,failed,reason,items}`；全部失败记为 `FAILED`，否则记为 `SKIPPED` 并说明原因，不再表现为 GYING 源失败。
+- `POST /movies/{movieId}/poster/repair`、`POST /posters/repair?limit=`：自动补图；GYING 不可用时回退 TMDB 搜索匹配。
+- `POST /movies/{movieId}/seasons/ensure?maxPages=`：异步补齐季元数据，优先 GYING（`includeResources=false`），缺失时回退 TMDB 唯一剧集匹配与真实季信息。只补缺失元数据；已有 ACTIVE、已审核、NORMAL 的合集分享按明确季范围绑定原 URL/提取码，保留旧 canonical 与绑定，重复操作不重复创建。单季/未知范围/失效/带 `fid` 子目录的链接不扩散，且不发起转存或额外外部发布。结果 `mode=METADATA_AND_EXISTING_COLLECTION`，含 `status=COMPLETED|PARTIAL|SKIPPED`、`metadataCreated`、`gyingCreated`、`tmdbCreated`、`bound`、`existingBindings`、`missingSeasons`、`warnings`、`items`；新绑定来源标记 `COLLECTION_BINDING`。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，

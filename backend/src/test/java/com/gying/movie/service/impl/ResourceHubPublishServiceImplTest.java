@@ -127,4 +127,27 @@ class ResourceHubPublishServiceImplTest {
         assertEquals(1700L, discovery.getResourceLinkId());
         assertEquals("\u5c3c\u53e4\u55b5\u55b5 \u7b2c1\u5b63 (2026)", savedLink.get().getName());
     }
+    @Test
+    void publishesCollectionRangeAndResolutionInsteadOfOverwritingWithSeasonOne() {
+        ResourceHubProperties properties = new ResourceHubProperties(); properties.setEnabled(true);
+        IResourceDiscoveryResultService discoveries = mock(IResourceDiscoveryResultService.class);
+        IResourceLinkService resources = mock(IResourceLinkService.class);
+        IMovieMetadataService movies = mock(IMovieMetadataService.class);
+        ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
+        discovery.setId(100L); discovery.setMovieId("series"); discovery.setStatus("DISCOVERED");
+        discovery.setTitle("【全六季】《破产姐妹》1-6季【1080P蓝光】");
+        discovery.setResourceType("DISK"); discovery.setProvider("XUNLEI");
+        discovery.setOriginalUrl("https://pan.xunlei.com/s/source");
+        discovery.setShareUrl("https://pan.xunlei.com/s/owned");
+        MovieMetadata movie = new MovieMetadata(); movie.setId("series"); movie.setTitleCn("破产姐妹 第一季");
+        movie.setSeriesName("破产姐妹"); movie.setSeason(1); movie.setCategory("tv");
+        when(discoveries.getById(100L)).thenReturn(discovery); when(movies.getById("series")).thenReturn(movie);
+        AtomicReference<ResourceLink> saved = new AtomicReference<>();
+        doAnswer(call -> { ResourceLink link=call.getArgument(0); link.setId(101L); saved.set(link); return true; })
+                .when(resources).save(any(ResourceLink.class));
+        ResourceHubPublishResult result = new ResourceHubPublishServiceImpl(properties, discoveries, resources,
+                mock(IQuarkTransferTaskService.class), mock(IQuarkShareService.class), movies).publishDiscovery(100L);
+        assertEquals(1, result.getPublished());
+        assertEquals("破产姐妹 第1-6季合集 1080p", saved.get().getName());
+    }
 }

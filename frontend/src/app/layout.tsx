@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 import Navbar from '../components/Navbar';
 import SiteTelemetry from '../components/SiteTelemetry';
+import SiteFooter from '../components/SiteFooter';
 
 const RootLayout = ({ children }: React.PropsWithChildren) => (
   <html lang="zh-CN">
@@ -21,14 +22,15 @@ const RootLayout = ({ children }: React.PropsWithChildren) => (
       <AntdRegistry>
         <I18nProvider>
           <ThemeProvider>
-              <AntdApp>
+            <AntdApp className="flex min-h-screen flex-col">
               <React.Suspense fallback={<div className="h-[64px] bg-[#141414] border-b border-[#1f1f1f]" />}>
                 <Navbar />
                 <SiteTelemetry />
               </React.Suspense>
-              {children}
-          </AntdApp>
-        </ThemeProvider>
+              <div className="min-w-0 flex-1">{children}</div>
+              <SiteFooter />
+            </AntdApp>
+          </ThemeProvider>
         </I18nProvider>
       </AntdRegistry>
     </body>

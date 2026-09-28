@@ -922,5 +922,12 @@
   "unknownDevice": "未知设备",
   "loginIp": "登录 IP",
   "loginAt": "登录时间",
-  "lastSeenAt": "最近活动"
+  "lastSeenAt": "最近活动",
+  "contactUs": "联系方式",
+  "contactQqPriority": "QQ 群优先",
+  "contactQqHint": "使用 QQ 扫描下方二维码，加入群聊。",
+  "contactQqQrAlt": "QQ 群二维码，扫码加入群聊",
+  "contactEmailHint": "邮箱不常看，请优先通过 QQ 群联系。",
+  "movieSeasonCompletionHint": "优先 GYING、其次 TMDB 补齐季元数据；已有合集将按季范围复用原链接，不重复转存",
+  "movieSeasonCompletionSummary": "新增 {{created}} 季元数据，复用合集绑定 {{bound}} 条资源"
 }

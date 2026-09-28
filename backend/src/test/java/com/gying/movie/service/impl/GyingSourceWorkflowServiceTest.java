@@ -389,7 +389,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
 
-        assertEquals(0, result.get("discovered"));
+        assertEquals(1, result.get("discovered"));
         ArgumentCaptor<MovieSourceIdentity> identityCaptor = ArgumentCaptor.forClass(MovieSourceIdentity.class);
         verify(sourceIdentityService, times(2)).save(identityCaptor.capture());
         MovieSourceIdentity gyingIdentity = identityCaptor.getAllValues().stream()
@@ -678,65 +678,19 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
-    void ensureRemainingSeasonsFallsBackToPansouWhenGyingUnavailable() {
+    void ensureRemainingSeasonsNeverTransfersFromPansouWhenGyingUnavailable() {
         MovieMetadata movie = movie("tmdb_tv_900", "示例剧 第二季", "tv", "TRAILER");
-        movie.setSeason(2);
-        movie.setSeriesName("示例剧");
+        movie.setSeason(2); movie.setSeriesName("示例剧");
         when(movieService.getById(movie.getId())).thenReturn(movie);
-        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
         when(gyingSourceClient.get(anyString()))
                 .thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "GYING unavailable"));
-
-        DiscoveredResource resource = new DiscoveredResource();
-        resource.setTitle("示例剧 第2季 4K 夸克网盘");
-        resource.setProvider("QUARK");
-        resource.setUrl("https://pan.quark.cn/s/example-season2");
-        resource.setCode("abcd");
-        resource.setSource("PANSOU");
-        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of(resource));
-        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of());
-
-        AtomicReference<ResourceDiscoveryResult> discoveryRef = new AtomicReference<>();
-        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
-        when(discoveryService.save(any())).thenAnswer(invocation -> {
-            ResourceDiscoveryResult saved = invocation.getArgument(0);
-            saved.setId(901L);
-            discoveryRef.set(saved);
-            return true;
-        });
-        AtomicReference<QuarkTransferTask> transferRef = new AtomicReference<>();
-        when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(null);
-        when(transferTaskService.save(any())).thenAnswer(invocation -> {
-            QuarkTransferTask saved = invocation.getArgument(0);
-            saved.setId(902L);
-            transferRef.set(saved);
-            return true;
-        });
-        when(transferTaskService.getById(902L)).thenAnswer(invocation -> transferRef.get());
-        when(transferRunnerService.submitOne(902L)).thenAnswer(invocation -> {
-            transferRef.get().setShareUrl("https://pan.quark.cn/s/own-share");
-            return new QuarkTransferRunResult();
-        });
-        ResourceHubPublishResult publish = new ResourceHubPublishResult();
-        publish.getResourceIds().add(903L);
-        when(publishService.publishDiscovery(901L)).thenReturn(publish);
-        ResourceLink published = new ResourceLink();
-        published.setId(903L);
-        published.setMovieId(movie.getId());
-        published.setProvider("QUARK");
-        published.setUrl("https://pan.quark.cn/s/own-share");
-        when(resourceLinkService.getById(903L)).thenReturn(published);
-
         Map<String, Object> result = service.ensureRemainingSeasons(movie.getId(), 2);
-
-        assertEquals("PANSOU_FALLBACK", result.get("mode"));
-        assertEquals(1, result.get("completed"));
-        assertEquals(0, result.get("failed"));
-        assertEquals(Boolean.TRUE, result.get("gyingUnavailable"));
-        assertEquals("PANSOU", discoveryRef.get().getSource());
-        assertEquals("AVAILABLE", movie.getResourceStatus());
-        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
-        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        assertEquals("METADATA_AND_EXISTING_COLLECTION", result.get("mode"));
+        assertEquals(0, result.get("completed")); assertEquals(0, result.get("bound"));
+        verify(transferRunnerService, never()).submitOne(any());
+        verify(xunleiTransferRunnerService, never()).submitOne(any());
+        verify(publishService, never()).publishDiscovery(any());
+        verify(gyingSourceClient, never()).post(anyString(), any());
     }
 
     @Test
