@@ -54,6 +54,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class GyingSourceWorkflowService {
     private static final Set<String> TYPE_CODES = Set.of("mv", "tv", "ac");
+    private static final Pattern RELEASE_YEAR_PATTERN = Pattern.compile("(?<!\\d)((?:18|19|20)\\d{2})(?!\\d)");
     private static final Pattern QUALITY_PATTERN = Pattern.compile(
             "(?i)(8K|4K|2160P|1080P|720P|HDR10\\+?|HDR|DV|杜比视界|蓝光|WEB[- .]?DL)");
     private static final int MAX_TRANSFER_CANDIDATES = 5;
@@ -700,10 +701,11 @@ public class GyingSourceWorkflowService {
         if (items == null) {
             return null;
         }
-        for (TmdbListItem item : items) {
-            if (!matchesTmdbSearchResult(movie, item)) {
-                continue;
-            }
+        List<TmdbListItem> matched = items.stream()
+                .filter(item -> matchesTmdbSearchResult(movie, item))
+                .sorted(Comparator.comparingInt((TmdbListItem item) -> tmdbSearchMatchScore(movie, item)).reversed())
+                .toList();
+        for (TmdbListItem item : matched) {
             try {
                 JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
                 String posterObject = posterStorageService.storeTmdbPoster(
@@ -713,6 +715,9 @@ public class GyingSourceWorkflowService {
                 if (!hasText(posterObject)) {
                     continue;
                 }
+                String mediaType = item.getMediaType().trim().toLowerCase(Locale.ROOT);
+                movie.setTmdbId(item.getTmdbId());
+                movie.setTmdbType(mediaType);
                 movie.setPosterUrl(posterObject);
                 movie.setUpdatedAt(LocalDateTime.now());
                 movieService.updateById(movie);
@@ -720,6 +725,7 @@ public class GyingSourceWorkflowService {
                 result.put("movieId", movie.getId());
                 result.put("source", "TMDB_SEARCH");
                 result.put("tmdbId", item.getTmdbId());
+                result.put("tmdbType", mediaType);
                 result.put("posterUrl", posterObject);
                 result.put("status", "UPDATED");
                 return result;
@@ -731,26 +737,65 @@ public class GyingSourceWorkflowService {
     }
 
     private boolean matchesTmdbSearchResult(MovieMetadata movie, TmdbListItem item) {
+        return tmdbSearchMatchScore(movie, item) > 0;
+    }
+
+    private int tmdbSearchMatchScore(MovieMetadata movie, TmdbListItem item) {
         if (item == null || item.getTmdbId() == null || !hasText(item.getMediaType())) {
-            return false;
+            return 0;
         }
         String category = firstText(movie.getCategory(), "").toLowerCase(Locale.ROOT);
         boolean typeCompatible = "tv".equalsIgnoreCase(item.getMediaType())
                 ? Set.of("tv", "ac").contains(category)
                 : "mv".equals(category);
         if (!typeCompatible) {
-            return false;
+            return 0;
         }
-        List<String> expected = titleVariants(movie.getTitleCn(), movie.getTitleEn(), movie.getSeriesName());
+
+        List<String> expected = titleVariants(movie.getTitleCn(), movie.getTitleEn());
         List<String> candidates = titleVariants(item.getTitle(), item.getOriginalTitle());
+        int score = 0;
         for (String left : expected) {
             for (String right : candidates) {
                 if (MovieTitleMatcher.normalizedEquals(left, right)) {
-                    return true;
+                    score = Math.max(score, 100);
                 }
             }
         }
-        return false;
+        if (score == 0) {
+            return 0;
+        }
+
+        Integer movieYear = movie.getYear();
+        Integer itemYear = parseReleaseYear(item.getReleaseDate());
+        if (movieYear != null && itemYear != null) {
+            if (movieYear.equals(itemYear)) {
+                score += 30;
+            } else if ("mv".equals(category)) {
+                return 0;
+            } else {
+                score -= 10;
+            }
+        }
+        if (item.getPopularity() != null) {
+            score += Math.min((int) Math.round(item.getPopularity() / 20.0), 15);
+        }
+        return Math.max(score, 0);
+    }
+
+    private Integer parseReleaseYear(String value) {
+        if (!hasText(value) || value.length() < 4) {
+            return null;
+        }
+        Matcher matcher = RELEASE_YEAR_PATTERN.matcher(value);
+        if (!matcher.find()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private static List<String> titleVariants(String... values) {

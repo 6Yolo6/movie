@@ -213,7 +213,7 @@ public class AdminMovieController {
         movie.setReleaseDates(clean(request.getReleaseDates(), 500));
         movie.setAliases(clean(request.getAliases(), 2000));
         movie.setCategory(normalizeLower(request.getCategory(), "mv"));
-        movie.setPosterUrl(clean(request.getPosterUrl(), 500));
+        movie.setPosterUrl(PosterUrlUtils.toStoragePath(clean(request.getPosterUrl(), 500), minioUrlPrefix));
         movie.setDoubanScore(request.getDoubanScore());
         movie.setImdbScore(request.getImdbScore());
         movie.setTmdbPopularity(request.getTmdbPopularity());

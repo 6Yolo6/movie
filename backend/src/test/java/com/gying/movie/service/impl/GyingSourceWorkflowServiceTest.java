@@ -713,6 +713,43 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void repairMoviePosterSearchPrefersExactSequelOverSeriesTitle() throws Exception {
+        MovieMetadata movie = movie("local_mv_avengers2", "复仇者联盟2：奥创纪元", "mv", "AVAILABLE");
+        movie.setSeriesName("复仇者联盟");
+        movie.setSeason(2);
+        movie.setYear(2015);
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+
+        TmdbListItem series = new TmdbListItem();
+        series.setTmdbId(24428L);
+        series.setMediaType("movie");
+        series.setTitle("复仇者联盟");
+        series.setOriginalTitle("The Avengers");
+        series.setReleaseDate("2012-04-25");
+
+        TmdbListItem sequel = new TmdbListItem();
+        sequel.setTmdbId(99861L);
+        sequel.setMediaType("movie");
+        sequel.setTitle("复仇者联盟2：奥创纪元");
+        sequel.setOriginalTitle("Avengers: Age of Ultron");
+        sequel.setReleaseDate("2015-04-22");
+
+        when(tmdbClient.searchMulti("复仇者联盟2：奥创纪元", 5)).thenReturn(List.of(series, sequel));
+        when(tmdbClient.fetchDetails("movie", 99861L))
+                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/avengers2.jpg\"}"));
+        when(posterStorageService.storeTmdbPoster("movie", 99861L, "/avengers2.jpg"))
+                .thenReturn("tmdb/movie/99861/poster.jpg");
+
+        Map<String, Object> result = service.repairMoviePoster(movie.getId());
+
+        assertEquals("UPDATED", result.get("status"));
+        assertEquals(99861L, result.get("tmdbId"));
+        assertEquals(99861L, movie.getTmdbId());
+        assertEquals("movie", movie.getTmdbType());
+        assertEquals("tmdb/movie/99861/poster.jpg", movie.getPosterUrl());
+        verify(posterStorageService, never()).storeTmdbPoster(eq("movie"), eq(24428L), any());
+    }
+    @Test
     void repairMoviePosterFallsBackToTmdbSearch() throws Exception {
         MovieMetadata movie = movie("local_mv_777", "钢铁侠2", "mv", "AVAILABLE");
         when(movieService.getById(movie.getId())).thenReturn(movie);
