@@ -2,10 +2,10 @@
 
 ## 1. 在线观测（区分当前配置与历史查询）
 
-- 2026-09-25 实测 MySQL 8.0.28，gying 库有 25 张 InnoDB 表；本轮未重新查询服务器安全变量。
-- 2026-09-25 Windows 监听复核：`3306` 和 `33060` 仍有非 loopback 监听，Public Firewall 关闭；`bind_address=*`、`mysqlx_bind_address=*` 为 2026-09-24 查询结果。
-- `require_secure_transport=OFF`；`local_infile=OFF`；`secure_file_priv=NULL`。
-- 2026-09-25 三个应用容器配置已均为非 root 的 `gying_app`；本机用现役凭据实测 `CURRENT_USER()=gying_app@%`，grants 为 USAGE 与 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE。这不替代每个容器来源/其他用户的验收；通配 Host 和共用身份仍不符合目标。MCP 为此前只读实测。
+- 2026-09-28 实测 MySQL 8.0.28，gying 库有 25 张 InnoDB 表；本轮已重新查询下列安全变量与现役账号 grants。
+- 2026-09-28 查询 `bind_address=*`、`mysqlx_bind_address=*`；Windows ActiveStore 的 Public/Private Firewall 已启用/default inbound Block，物理接口入站 TCP 3306/33060 等 6 端口拒绝规则仍有效。9 月 25 日同网有线客户端报告 6 端口全部 False 为历史证据，公网直连/IPv6 仍未验收。
+- 2026-09-28 实测 `require_secure_transport=OFF`、`local_infile=OFF`、`secure_file_priv=NULL`。
+- 2026-09-28 三个应用容器配置仍共用非 root 的 `gying_app`；本机现役凭据连接匹配 `CURRENT_USER()=gying_app@%`，grants 为 USAGE 与 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE。这不替代每个容器来源/其他用户验收；通配 Host 与共用身份仍不符合目标。MCP 沿用此前只读实测。
 - 应用账号仍缺完整备份权限，未扩大其 grants；用户已创建 `gying_backup@localhost`，实测库级 SELECT/SHOW VIEW/TRIGGER/EVENT 及全局 SHOW_ROUTINE，凭据仅当前用户/SYSTEM 可读。拥有元数据权限后确认视图/触发器/事件/例程均为 0。
 - 2026-09-20 应用使用 root 的记录仅为历史基线，不再作为当前状态；分服务身份、最小 grants、TLS 和防火墙仍待闭环。本轮未变更账号或数据库。
 

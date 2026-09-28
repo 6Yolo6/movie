@@ -86,12 +86,12 @@
 
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
-- 生产安全审计（2026-09-25 复核）：`python tools/security/check_security.py --repo . --probe` 为 53 PASS / 10 FAIL / 0 UNKNOWN，失败项集中在未收紧的 quark/MinIO 端口、部分容器缺少 `no-new-privileges` 与 UID 0 进程，未放宽检查标准。
+- 生产安全审计（2026-09-28 复核）：`python tools/security/check_security.py --repo . --probe` 为 53 PASS / 11 FAIL / 0 UNKNOWN；新增 `cache_network_isolation` 检查把此前未计数的 Redis 共享网络风险纳入，原 10 项失败仍在。审计工具不放宽标准，缺失证据为 UNKNOWN，已确认的失败不会被混杂的异常元数据覆盖。
 - 凭据历史：扫描 1,278 个 Blob 命中 105 条规则（跨版本重复），当前工作区扫描为 0；可能有效的凭据仍需在 provider 侧轮换，历史重写另行审批。
-- 数据中心：2026-09-25 实测 MySQL 8.0.28，`gying` 库 25 张 InnoDB 表；使用现役应用凭据从本机连接匹配 `gying_app@%`，授予 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE，缺少完整备份权限，不能把非 root 等同最小 Host 范围。MCP 只读账号和 `require_secure_transport=OFF`、`local_infile=OFF`、bind address `*` 为此前验收，本轮未重新查询。
+- 数据中心：2026-09-28 实测 MySQL 8.0.28，`gying` 库 25 张 InnoDB 表；三个应用容器仍共用 `gying_app`，本机现役凭据连接匹配 `gying_app@%`，grants 为 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE。实测 `require_secure_transport=OFF`、`local_infile=OFF`、`secure_file_priv=NULL`、MySQL/MySQL X bind address 均为 `*`。本轮只读，未修改账号、grants 或数据；MCP 只读身份沿用此前验收。
 - `docker compose -f docker-compose.prod.yml config --quiet` 已通过；语法与必需键通过不代表 Firewall、Access、MinIO policy 和恢复门禁通过。
-- Redis 与 PanSou 仅作为可重建依赖对待；Redis 实际仅接入非 internal 的共享 `gying-net`，尚未迁入目标 `cache-net`，扫描计数不覆盖这项隔离差异；NapCat 不纳入验收。
-- 2026-09-25 Windows 复核：11:33 管理员已启用 Public Firewall/default inbound Block；规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 在物理接口 `以太网`、`WLAN 2` 上阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any、地址 Any），ActiveStore 复核通过。出站设置未变（有效 Allow），未修改 Domain/Private profile；敏感服务的非 loopback 监听仍未改绑，用户已报告同网有线电脑访问服务器 `192.168.1.147` 的 6 个 TCP 端口全部 False，网站可打开并可注册；公网直连与 IPv6 链路未验收。公网匿名管理页尚无 Access 拦截证据，管理员 API 仍要求应用认证。
+- Redis 与 PanSou 仅作为可重建依赖对待；2026-09-28 Redis 实际仍仅接入非 internal 的共享 `gying-movie_gying-net`，未迁入目标 `cache-net`，该差异已纳入扫描失败计数；未认证 PING 被拒绝。NapCat 不纳入验收。
+- 2026-09-28 Windows ActiveStore 复核：Public/Private Firewall 已启用、默认入站 Block、出站 Allow；Domain 未启用，本轮未改动。规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 仍在物理接口 `以太网`、`WLAN 2` 阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any）；原非 loopback 监听未改绑。9 月 25 日用户报告同网有线客户端到 `192.168.1.147` 的 6 端口全部 False、网站可打开并注册，仅为历史客户端证据；公网直连/IPv6 入站仍未验收。
 - 状态文档、Skill 与安全报告只记录键名、状态与结论，不记录原始日志、密钥或完整 SQL 输出。
 
 ### 迁移与恢复基线
@@ -114,8 +114,8 @@
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
 - **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。已取得用户报告的同网有线电脑 IPv4 测试：上述 6 端口均 False，网站可打开并可注册。该结论仅覆盖该客户端到 `192.168.1.147` 的不可连接结果，未单独排除路由/客户端隔离，也不是公网直连或 IPv6 测试；后两项继续保留待验收。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
-- **迅雷持续同步待验收**：计划任务 2026-09-25 09:27、10:33 两次运行均返回 0，状态文件 mtime 对应更新至 10:33:36，旧“自动同步未恢复”的结论已过时；仍需观察后续周期和实际授权有效性，任务退出码/文件更新不替代真实链路验收。本轮未读取凭据内容或手动触发刷新/转存。
-- **迅雷凭据权限持续性待验收**：私有临时文件 + 原子替换补丁已随 `backend:20260924c` 上线（在线 jar 含 `PrivateFileWriter`），2026-09-25 两次同步周期后的 stat 均为 `10001:10001 / 600`。backend 自身独立重复写入始终保持 600 的生产证据仍待补齐，不需重复发布或用一次 chmod 代替验收。
+- **迅雷持续同步失败待处理**：2026-09-28 18:33:33 计划任务最近一次已完成运行返回 1；近期调度日志包含 `no_usable_authenticated_token`，不能沿用 9 月 25 日两次成功作为当前健康结论。需恢复浏览器授权来源并分别验证同步与实际调用；本轮未读取凭据内容、手动刷新、触发转存或修改任务。文件被 backend 更新不证明浏览器同步成功。
+- **迅雷凭据权限持续性待验收**：私有临时文件 + 原子替换补丁此前已上线；2026-09-28 20:15:38 更新后的在线状态文件实测仍为 `10001:10001 / 600`。仅凭 stat 不归因写入者，backend 自身独立重复写入、同步脚本成功写入及实际授权仍需各自证据，不用一次 chmod 代替验收。
 - **Docker 运行目录与磁盘**：`docker_data.vhdx` 已于 2026-09-25 由 E 盘迁移至 `G:\dockerdesktop\wsl\DockerDesktopWSL`，E 盘由约 3.1 GiB 恢复至 47.3 GiB、G 盘余约 220 GiB。
 - **数据质量**：历史遗留的乱码任务、重复目录和无视频分享需按资源价值逐批人工确认，优先 dry-run 与软删除。
 - **外部依赖稳定性**：GYING 图片源和部分外部网盘接口存在偶发超时、风控或响应结构变化，需保留重试与失败审计，不把单次 HTTP 200 视为业务成功；持续观察 GYING BT 登录态、PoW 与响应结构变化，认证失效时只更新外部登录态、不降低采集频率。
@@ -133,6 +133,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 安全只读复核（2026-09-28）：本次提交范围 32 项测试通过（审计边界专项 16 项）；完整工作区 66 项测试中 57 通过、9 项 POSIX 权限用例在 Windows 跳过，完整工作区计数含其他未提交工具用例，compileall 与工作区密钥扫描通过（0 命中）。严格限定密码重置用途常量豁免的文件路径与完整声明；Redis 网络检查验证实际 inspect 的 internal/Compose 标记，异常元数据不得掩盖已确认失败。真实入口 9/9 通过；19 个加密备份文件 hash 复核通过（本轮未解密/重做恢复）。运维就绪检查 10 通过、2 项既有架构/文档警告。脱敏证据为 `tmp/security-{audit,health,runtime,windows}-20260928-continuation.json` 与运维快照。本轮仅更新宿主审计工具/文档；Access 按用户要求暂缓，未修改云端策略、凭据、防火墙、生产数据或重建服务，未手工触发外部发布。
 
 - 页脚、迅雷队列与合集补季验收（2026-09-28）：后端 331 项测试 0 failures/errors，5 项按环境跳过（4 POSIX 文件权限项、1 Redis 集成项）；前端类型检查、lint（0 error、7 个既有 warning）、生产构建通过。隔离与公网各通过 4 组页脚浏览器场景及 3 组补季结果 UI 场景（管理员 API 全模拟，无真实账号或生产写入）；后端 JAR、页脚 JPG hash 与构建/源文件一致。本地与公网 IPv4 页面/图片/热搜 200、匿名管理 API 401、内部路径 404；Python urllib 公网探针受边缘拦截返回 403，浏览器与 curl IPv4 正常。上线后首批 5 条旧 PENDING 均自动执行，2 条成功、3 条失败，观察期共 6 条迅雷转存成功；没有手动重放转存或发布。补季真实管理员点击、绑定数据与扫码入群仍未验收；此前已有的中文直达留言/登录页 hydration 警告未在本次无关范围修复。
 

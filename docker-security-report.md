@@ -4,8 +4,8 @@
 - 工作区：`D:\gying-movie\movie`
 - 目标架构：Windows + Docker Desktop + Cloudflare Tunnel
 - 审计性质：代码、Compose、配置和本机运行态的防御性审计；不是经授权的外部渗透测试
-- 最近只读复核：2026-09-25；生产已部分部署加固，工作区 HEAD `ead71b9`，backend 在线镜像 `gying-library-qr-backend:20260924c`（`sha256:6ccf38a9bee1…`），frontend 为 `gying-library-qr-frontend:20260925h`。
-- 重要状态：应用/入口及迅雷凭据权限补丁已上线；在线 jar 已确认包含 `PrivateFileWriter`，状态文件为 `10001:10001 / 600`。同步任务 2026-09-25 09:27、10:33 两次已完成运行均返回 0，对应两次 stat 均为 600；backend 自身重复写入与实际授权有效性仍待验收。用户已在本机新建 localhost 专用备份账号并导出防火墙策略；本任务完成完整逻辑/持久数据备份及隔离恢复，期间 6 个原始写入容器暂停约 31 秒后全部解冻，未重建容器或修改生产数据。防火墙加固另需 UAC 与结果证据，不把脚本启动当作策略已生效。
+- 最近只读复核：2026-09-28；复核起点 HEAD `0d9e895`，backend 在线镜像 `gying-collection-queue-backend:20260928a`，frontend 为 `gying-contact-footer-frontend:20260928c`，source 为 `gying-source-detail:20260927a`。本轮不重建服务。
+- 重要状态：应用/入口部分加固已上线；安全审计 53 PASS / 11 FAIL / 0 UNKNOWN，新增 Redis 网络隔离检查纳入既有风险。迅雷文件仍为 `10001:10001 / 600`，但 2026-09-28 18:33 最近一次已完成同步任务返回 1，日志为 `no_usable_authenticated_token`，权限与授权健康分开验收。Public/Private 防火墙及物理网卡敏感端口规则仍有效；公网直连/IPv6、分服务 DB 身份与 MinIO policy 等门禁未闭环，Access 按用户要求暂缓。本轮仅复核历史 19 个加密备份文件 hash，未重做恢复或修改生产数据。
 
 ## 1. 执行范围
 
@@ -21,31 +21,33 @@
 8. Git 工作区和可达历史 Blob 的凭据扫描；
 9. npm 依赖、Java 测试、Python 运维工具和隔离 nginx 回归测试。
 
-初始审计日期为 2026-09-20；以下当前基线已按 2026-09-25 只读证据校准；未重新查询的 DB 变量、grants 与 Quark 文件模式沿用带日期的历史证据，不作为本轮新增验收。历史测试/CVE 计数保留原日期，未复核项目明确标注，目标配置不能代替在线事实。
+初始审计日期为 2026-09-20；当前基线按 2026-09-28 只读证据校准。DB 变量、现役账号 grants、Redis 网络、Windows 防火墙与凭据文件模式本轮已复核；历史测试/CVE/恢复结果保留原日期，不把目标配置当作在线事实。
 
-## 2. 在线基线（2026-09-25，部分加固已上线）
+本文当前镜像与扫描计数对应 2026-09-28 复核；后续版本/回滚材料见 `docs/current-project-status.md`。宿主审计工具变更无需重建业务容器。
+
+## 2. 在线基线（2026-09-28，部分加固已上线）
 
 | 项目 | 当前观测 | 状态/剩余风险 |
 | --- | --- | --- |
 | nginx/backend | `127.0.0.1:80` / `127.0.0.1:8880`；首页/列表 200、匿名管理员 401、内部 QQ/internal 404 | 入口部分已验证，不代表 Cloudflare Access 已启用 |
-| quark-auto-save | 5005 非 loopback；UID 0；配置模式 `0:0 / 755` 为 2026-09-24 证据，本轮未复测 | High/Open：端口与 Cookie 文件权限 |
+| quark-auto-save | 5005 非 loopback、UID 0；2026-09-28 实测卷根目录 `/app/config` 为 `0:0 / 700` | 父目录权限已收紧，端口、单文件权限、非 root/NNP 与 Cookie 轮换仍需验收 |
 | MinIO | 9000/9001 非 loopback；UID 0；已接入应用网络且有 `minio` alias | 网络 alias/图片路径已验证；端口/权限仍 Open |
 | MinIO 应用身份 | backend key 与 root key 不同；2026-09-22 已记录 scoped 身份创建 | 本次未重审完整 policy/匿名范围；不能延用“应用仍用 root”也不能宣称权限闭环 |
 | Redis/PanSou | 无宿主端口；Redis 未认证 PING 被拒绝，但仍仅接入非 internal 的 `gying-net`；PanSou 进程 UID 0 | 认证/端口部分通过，Redis cache-net 隔离尚未部署，仍需容器权限/完整 ACL 复核 |
-| Windows/MySQL | 活跃 WLAN 为 Public；Public Firewall Disabled；3306/33060 非 loopback；MySQL/MySQLX bind 为 `*` 是 2026-09-24 查询结果 | Critical/Open；未凭监听结果推断 Internet 已可达 |
-| 数据库身份 | 三应用容器配置均为 `gying_app`；本机实际会话 `gying_app@%`，gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE；MCP 为此前证据 | 已迁离 root，但 Host 为通配、身份共用，且缺完整备份权限；分服务与 grants 仍需收紧 |
-| 数据库安全变量 | 2026-09-24 查询为 `require_secure_transport=OFF`、`local_infile=OFF`；本轮未重查 | TLS 未闭环；local_infile 是限制项，不误报为开放 |
+| Windows/MySQL | Public/Private 已启用/default inbound Block、outbound Allow；Domain 未启用；原物理接口 TCP 3306/33060/5005/8880/9000/9001 拒绝规则有效 | 本机策略/9 项入口健康通过；公网/IPv6 入站和敏感监听改绑未完成，本轮未改防火墙 |
+| 数据库身份 | 三应用仍共用 `gying_app`；2026-09-28 本机会话 `gying_app@%`，gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE；25 张 InnoDB 表 | Host 通配、身份共用，分服务 grants 待收紧；不扩大应用账号以完成备份 |
+| 数据库安全变量 | 2026-09-28 实测 `require_secure_transport=OFF`、`local_infile=OFF`、`secure_file_priv=NULL`，MySQL/MySQL X bind 均为 `*` | TLS 未闭环；local_infile 不误报为开放 |
 | 容器权限 | 应用/入口/OpenClaw/Redis 非 root；quark/PanSou/MinIO 存在 root 进程 | 5 个旧依赖容器缺 `no-new-privileges`；未见 socket/privileged |
 | OpenClaw | 当前只在默认 bridge；健康容器运行中 | 内部应用网络和真实 QQ 搜索未验收 |
-| 迅雷凭据 | backend-data 状态文件为 `10001:10001 / 600`，mtime 2026-09-25 10:33:36；在线 jar 含 `PrivateFileWriter` | 补丁部署/两次文件权限已验证；同步任务 09:27、10:33 均返回 0，backend 自身重复写入与实际授权有效性仍未验收 |
-| Cloudflare Access/WAF | 账号侧策略本轮未核验 | High/Open；本机 401/404 不能证明 Access 策略生效 |
+| 迅雷凭据 | 2026-09-28 20:15:38 更新后的文件为 `10001:10001 / 600`；18:33 同步任务结果 1，日志为 `no_usable_authenticated_token` | stat 不归因写入者；同步失败与文件权限分别记录，两条写入链路独立重复验收仍待完成 |
+| Cloudflare Access/WAF | 用户要求暂缓；账号侧策略本轮未核验或变更 | High/Open；入口 401/404 不能证明 Access 策略生效 |
 | 历史凭据/恢复 | 已完成 19 文件完整逻辑/持久数据备份、25 表行数/CHECKSUM 与对象元数据恢复比对、MinIO 单图验证 | H-04/H-06 仍未全闭环：MySQL 系统账号、完整应用/异机恢复与私钥离线保管未验证 |
 
 ### 2.1 验证边界
 
-- 只读检查为 53 PASS / 10 FAIL / 0 UNKNOWN；证据保存为本机忽略文件 `tmp/security-audit-20260925.json`，不包含凭据值。
+- 只读检查为 53 PASS / 11 FAIL / 0 UNKNOWN；证据为本机忽略文件 `tmp/security-audit-20260928-continuation.json`，不包含凭据值。
 - 原 `docker top -eo user,comm` 缺少 Docker 所需 PID 字段，造成全部用户检查 UNKNOWN；已改用 `pid,uid,comm` 并新增 6 项回归，异常/缺行仍 UNKNOWN，不以镜像 Config.User 代替进程证据。
-- 10 个失败项是 2 项非 loopback 端口、5 项缺 `no-new-privileges`、3 项 root 进程；Windows Firewall、Cloudflare、DB grants、MinIO policy、备份恢复和 Redis 网络隔离不在该计数覆盖范围内。
+- 11 个失败项为 2 项非 loopback 端口、5 项缺 `no-new-privileges`、3 项 root 进程及 1 项 Redis 网络隔离；比历史多 1 FAIL 是检查覆盖增加，不是本轮生产变更。Firewall、Cloudflare、DB grants、MinIO policy 与恢复门禁仍须单独验收。
 - 未执行外部发帖、网盘转存、真实 QQ 消息、账号轮换或生产重建；未检查全部 MinIO 对象。本轮只观察既有计划任务，未手动触发迅雷同步。
 - 公网匿名 `/admin/movies` 返回 200，未表现为 Access 拦截；管理员 API 401、内部路由 404 均通过。此探针不证明账号侧没有其他策略，也不等于业务管理权限被绕过。
 
@@ -86,23 +88,23 @@
 
 | 编号 | 等级 | 风险 | 处理结论 |
 | --- | --- | --- | --- |
-| C-01 | Critical | MySQL/MinIO 在所有接口监听，且 Windows Public Firewall Disabled；外部可达性未完成证明 | 先收紧 Windows 防火墙和 loopback/内部绑定，再做端口复测 |
+| C-01 | Critical | MySQL/MinIO 非 loopback；Public/Private Firewall 与物理接口敏感端口规则有效，9 月 25 日同网客户端报告 6 端口全 False | 保留未闭环；公网直连/IPv6 及敏感监听改绑待验收，不重复执行防火墙单步 |
 | C-02 | Critical | backend 已不使用 root key；匿名/scoped policy 与 root key 轮换本次未重新验收 | 保留未闭环状态，核验最小 policy/匿名范围并在维护窗口轮换 root key |
 | H-01 | High | nginx/backend 已 loopback；quark 5005、MinIO 9000/9001 仍为非 loopback | 继续收紧剩余端口，独立验证 Firewall/Access；不能重复写成 backend 尚未收紧 |
-| H-02 | High | 三服务共用非 root gying_app；本机实测 gying_app@% 具有库级 SELECT/INSERT/UPDATE/DELETE/EXECUTE，缺完整备份权限 | 分服务身份、精确 Host、最小 grants 与独立 backup 账号待配置；不扩大应用账号以完成备份 |
-| H-03 | High | Cloudflare Access/WAF 账号侧未核验，管理员路径公开接受结果未闭环 | 创建 Access policy，做登录/未登录/服务 token 三态验收 |
+| H-02 | High | 三服务共用 `gying_app@%`、库级 SELECT/INSERT/UPDATE/DELETE/EXECUTE；localhost 专用备份账号此前已建立 | 应用分服务身份、精确 Host、最小 grants 待收紧；备份账号沿用历史验收，不扩大应用权限 |
+| H-03 | High | Cloudflare Access/WAF 未闭环，用户要求暂缓 | 恢复此项时先核验账号策略/冲突，再做管理员路径三态验收；本轮不创建云端策略 |
 | H-04 | High | Git 历史存在凭据命中，历史未重写、凭据未全部轮换 | 立即按 `secret-management.md` 轮换；历史重写另行审批 |
-| H-05 | High | Quark Cookie 持久化配置权限过宽 | 停止/备份前提下收紧卷 ACL/文件模式，旋转 Cookie，验证 WebUI 登录 |
+| H-05 | High | Quark 卷根目录现为 root `0700`，历史非属主拒绝证据保留；文件自身模式/非 root 与旧 Cookie 撤销未完成 | 目录边界部分通过，不能代替单文件权限与身份、Cookie 验收 |
 | H-06 | High | localhost 备份账号、完整 gying 逻辑/持久数据备份、约 31 秒本地写入冻结及隔离 DB/MinIO 恢复已通过 | 仍需私钥离线保管、系统账号重建、完整应用/异机演练；不把本机隔离验证当成整机灾难恢复 |
-| H-07 | High | 旧 2026-09-20 backend 扫描为 61 个唯一漏洞，不能代表 2026-09-24 重建的当前镜像 | 记录当前 backend 镜像 6ccf38a9bee1，重新扫描并做 fixed-version triage；不以旧计数或 npm audit 0 结案 |
+| H-07 | High | 2026-09-20 backend CVE 扫描不代表当前 `gying-collection-queue-backend:20260928a` | 当前镜像需重扫并逐项处置；不以历史计数或 npm audit 0 结案 |
 | M-01 | Medium | MySQL `require_secure_transport=OFF`、密码校验策略未确认 | 先建立证书/连接验证计划，再开启并回归所有连接器 |
 | M-02 | Medium | 部分第三方镜像仍使用 `latest`，完整 JVM/Python/容器 CVE 扫描未闭环 | 固定版本/摘要，保留 Docker Scout/依赖扫描结果 |
 | M-03 | Medium | 已接入 gying-movie_gying-net 且有 minio alias；nginx 图片抽样 200 | 网络 alias 与图片路径已验证；端口与对象权限风险仍归 C-01/C-02 |
 | M-04 | Medium | 当前只接入默认 bridge，尚未接入应用网络；本轮未验证真实 QQ 搜索 | 备份配置后迁移到 backend:8880 内部链路，核验 token 与真实 QQ 搜索 |
 | M-05 | Medium | 日志/安全事件已有结构化输出，但尚未接入告警/集中保留 | 配置 Windows/Docker 日志收集和 401/403/429/5xx 告警 |
-| H-08 | High | 私有原子写入修复已部署，在线为 10001:10001 / 600；两条写入链路的持续性未闭环 | 不再要求重复发布；备份后验证同步脚本及 backend 自身重复写入始终 600、旧文件可回滚；同步任务退出 0 不替代授权/业务验收 |
+| H-08 | High | 私有原子写入修复此前已部署，现文件 600；最新浏览器同步失败，两条写入链路持续性未闭环 | 恢复授权来源后分别验收同步脚本/backend 重复写入与实际调用；本轮不手动刷新、chmod 或重发版 |
 | M-06 | Medium | quark/PanSou/MinIO 有 root 进程；5 个旧依赖容器缺 no-new-privileges | 逐个验证非 root、卷可写路径与 no-new-privileges；避免批量重建造成中断 |
-| M-07 | Medium | Redis 无宿主发布但仍在非 internal 的共享 gying-net，不是目标 cache-net 隔离 | 备份/维护窗口内验证 backend Redis 地址与 ACL，逐步迁到 cache-net；生产扫描计数未覆盖此项 |
+| M-07 | Medium | Redis 无宿主发布，但仍仅在非 internal 共享 gying-net，不是目标 cache-net | 已计入本轮网络隔离 FAIL；维护窗口内验证地址/ACL 后迁移，不绕过安全门禁 |
 | L-01 | Low | origin 使用 HTTP，由 Cloudflare 提供公网 TLS | Cloudflare 开启 Always Use HTTPS、HSTS 与严格 origin policy；不直接暴露 origin |
 | L-02 | Low | 工作区审计工具不能代替外部渗透、云账号策略审计 | 每季度或重大变更时复核范围和证据 |
 
@@ -137,7 +139,16 @@
 
 ## 6. 验证证据
 
-### 2026-09-25 本轮只读复核
+### 2026-09-28 审计续接验收
+
+- 本次提交范围 32 项测试通过（审计边界专项 16 项）；完整工作区 66 项测试中 57 通过、9 项 POSIX 用例在 Windows 跳过，工作区计数含其他未提交工具用例。新增异常网络元数据回归先复现 10 个失败断言，修正后通过；UNKNOWN 不得覆盖已确认的不安全网络，不输出原始 daemon 响应。
+- 工作区密钥扫描 0 命中、compileall/Compose contract 通过。密码重置用途常量只对精确文件路径与完整声明豁免；修改值/声明、附加凭据或不同路径仍报告。
+- 真实入口健康 9/9；公网管理员页面 200、管理员 API 401。历史完整备份 `G:/gying-backups/20260925T030328.719395Z` 的 19 个加密文件 hash 通过，本轮未重新解密/恢复。运维就绪 10 通过、2 项既有架构/文档警告。
+- Windows Public/Private 与物理接口规则有效，Quark 目录 `0:0 / 700`、迅雷文件 `10001:10001 / 600`；DB 共用 `gying_app@%`，Redis 仅在非 internal 共享网络。最新迅雷同步诊断为候选令牌 0、已存凭据 0、无 refresh token、刷新 HTTP 400，未手动刷新/转存。
+- 脱敏证据：`tmp/ops-snapshot-security-20260928-continuation.md` 与 `tmp/security-{audit,health,runtime,windows}-20260928-continuation.json`。仅宿主审计工具/文档变更；Access 暂缓，未重建生产服务、修改凭据/权限、防火墙、数据库或云端策略。
+
+
+### 2026-09-25 历史只读复核
 
 - 生产扫描 53 PASS / 10 FAIL / 0 UNKNOWN；Python 安全工具 16 项通过；工作区 secret scan 0 findings。没有重跑后端全量、镜像 CVE 或外部副作用测试。
 - 运维就绪检查 10 PASS / 2 WARN / 0 FAIL；警告为迁移文档漂移和新库架构覆盖，不等同安全上线门禁已通过。

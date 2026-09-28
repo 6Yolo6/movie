@@ -32,6 +32,51 @@ def process_user_check(result):
     return "PASS", []
 
 
+def redis_network_check(attached, result):
+    """Require internal cache-net evidence; malformed peers must not hide a known failure."""
+    if not isinstance(attached, dict) or not attached or result.returncode != 0:
+        return "UNKNOWN", []
+    try:
+        rows = json.loads(result.stdout)
+    except (ValueError, TypeError):
+        return "UNKNOWN", []
+    if not isinstance(rows, list):
+        return "UNKNOWN", []
+
+    networks = {}
+    unknown = False
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get("Name"), str) or not row["Name"]:
+            unknown = True
+            continue
+        networks.setdefault(row["Name"], []).append(row)
+
+    detail = []
+    unsafe = False
+    for name in attached:
+        matches = networks.get(name, [])
+        if len(matches) != 1:
+            unknown = True
+        for row in matches:
+            internal = row.get("Internal")
+            if not isinstance(internal, bool):
+                internal = None
+                unknown = True
+            labels = row.get("Labels")
+            if "Labels" in row and labels is None:
+                labels = {}  # Docker explicitly reports an unlabeled network.
+            if isinstance(labels, dict):
+                cache_network = labels.get("com.docker.compose.network") == "cache-net"
+            else:
+                cache_network = None
+                unknown = True
+            detail.append({"network": name, "internal": internal, "cache_network": cache_network})
+            unsafe |= internal is False or cache_network is False
+    if unsafe:
+        return "FAIL", detail
+    return ("UNKNOWN" if unknown else "PASS"), detail
+
+
 def collect(repo, probe=False):
     checks=[]
     def add(name,status,detail): checks.append({"check":name,"status":status,"detail":detail})
@@ -67,6 +112,13 @@ def collect(repo, probe=False):
             token_key="GYING_SOURCE_API_TOKEN" if "gying-source" in name else "SOCIAL_PUBLISHER_TOKEN" if "social-publisher" in name else None
             if token_key: add(name+":internal_token","PASS" if len(env.get(token_key,"").encode())>=32 else "FAIL",{"key":token_key,"meets_minimum":len(env.get(token_key,"").encode())>=32})
             if "redis" in name:
+                attached = row.get("NetworkSettings", {}).get("Networks", {})
+                if isinstance(attached, dict) and attached:
+                    networks = run(["docker", "network", "inspect", *attached])
+                    status, detail = redis_network_check(attached, networks)
+                else:
+                    status, detail = "UNKNOWN", []
+                add(name+":cache_network_isolation", status, detail)
                 ping=run(["docker","exec",name,"redis-cli","PING"])
                 add(name+":redis_anonymous_auth","PASS" if "NOAUTH" in ping.stdout else "FAIL","Unauthenticated PING denied" if "NOAUTH" in ping.stdout else "Expected NOAUTH not observed")
     if probe:
