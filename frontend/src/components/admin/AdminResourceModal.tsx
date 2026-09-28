@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { App, Button, Col, Form, Input, Modal, Row, Select, Space, Tag } from 'antd';
+import { Alert, App, Button, Col, Form, Input, Modal, Row, Select, Space, Tag } from 'antd';
 import type { InputRef } from 'antd';
 import { CopyOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import type { Rule } from 'antd/es/form';
@@ -34,7 +34,14 @@ type FormValues = {
     fileSize?: string;
     versionNote?: string;
     bindMovieIds?: string[];
+    bindingVersion?: string;
 };
+
+type BindingMovie = { id: string; titleCn?: string; titleEn?: string; season?: number; year?: number };
+const bindingOption = (item: BindingMovie) => ({
+    value: item.id,
+    label: `${item.titleCn || item.titleEn || item.id}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
+});
 
 const PROVIDERS = ['BAIDU', 'QUARK', 'ALIYUN', 'XUNLEI', 'UC', '115', '123PAN', 'TIANYI', 'MOBILE', 'PIKPAK'];
 
@@ -65,6 +72,14 @@ export default function AdminResourceModal({
     const [quickParams, setQuickParams] = useState(RESOURCE_QUICK_PARAMS);
     const [bindCandidates, setBindCandidates] = useState<{ value: string; label: string }[]>([]);
     const [bindLoading, setBindLoading] = useState(false);
+    const [bindingOptions, setBindingOptions] = useState<{ value: string; label: string }[]>([]);
+    const [bindingsReady, setBindingsReady] = useState(false);
+    const [bindingsError, setBindingsError] = useState(false);
+    const [bindingsRetry, setBindingsRetry] = useState(0);
+    const bindRequest = useRef(0);
+    const primaryMovieId = Form.useWatch('movieId', form);
+    const allBindingOptions = Array.from(new Map([...bindingOptions, ...bindCandidates]
+        .filter(item => item.value !== primaryMovieId).map(item => [item.value, item])).values());
 
     useEffect(() => {
         if (type === 'DISK') {
@@ -91,6 +106,7 @@ export default function AdminResourceModal({
     const loadBindCandidates = useCallback(async (keyword = '') => {
         const movieId = form.getFieldValue('movieId');
         if (!movieId) return;
+        const requestId = ++bindRequest.current;
         setBindLoading(true);
         try {
             const query = new URLSearchParams({ movieId, limit: '50' });
@@ -98,12 +114,11 @@ export default function AdminResourceModal({
             const response = await api(`/api/resources/bind-candidates?${query}`);
             if (!response.ok) return;
             const items = await response.json();
-            setBindCandidates((items || []).map((item: { id: string; titleCn?: string; titleEn?: string; season?: number; year?: number }) => ({
-                value: item.id,
-                label: `${item.titleCn || item.titleEn || item.id}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
-            })));
+            if (requestId === bindRequest.current) setBindCandidates((items || []).map(bindingOption));
+        } catch {
+            // Existing selections stay intact if candidate search fails.
         } finally {
-            setBindLoading(false);
+            if (requestId === bindRequest.current) setBindLoading(false);
         }
     }, [form]);
 
@@ -159,6 +174,8 @@ export default function AdminResourceModal({
             subtitle: resource.subtitle,
             fileSize: resource.fileSize,
             versionNote: resource.versionNote,
+            bindMovieIds: [],
+            bindingVersion: undefined,
         } : { type: 'DISK', provider: 'BAIDU', name: '' });
         setMovieOptions(resource ? [{
             value: resource.movieId,
@@ -169,8 +186,42 @@ export default function AdminResourceModal({
     }, [form, loadMovies, open, resource]);
 
     useEffect(() => {
+        bindRequest.current += 1;
+        setBindCandidates([]);
         if (open && form.getFieldValue('movieId')) loadBindCandidates();
-    }, [form, loadBindCandidates, open]);
+        return () => { bindRequest.current += 1; };
+    }, [form, loadBindCandidates, open, resource]);
+
+    useEffect(() => {
+        if (!open) return;
+        const controller = new AbortController();
+        setBindingOptions([]);
+        setBindingsReady(!resource);
+        setBindingsError(false);
+        if (!resource) return;
+        api(`/api/resources/${resource.id}/bindings`, {
+            headers: { Authorization: `Bearer ${token}` }, signal: controller.signal,
+        }).then(async response => {
+            if (!response.ok) throw new Error('bindings unavailable');
+            const data = await response.json();
+            if (controller.signal.aborted) return;
+            if (!Array.isArray(data.bindMovieIds) || !Array.isArray(data.bindings) || !data.bindingVersion || data.resource?.id !== resource.id) {
+                throw new Error('invalid bindings response');
+            }
+            setBindingOptions(data.bindings.map(bindingOption));
+            form.setFieldsValue({
+                movieId: data.resource.movieId, name: data.resource.name || '', type: data.resource.type,
+                url: data.resource.url, code: data.resource.code, provider: data.resource.provider,
+                quality: data.resource.quality, subtitle: data.resource.subtitle,
+                fileSize: data.resource.fileSize, versionNote: data.resource.versionNote,
+                bindMovieIds: data.bindMovieIds, bindingVersion: data.bindingVersion,
+            });
+            setBindingsReady(true);
+        }).catch(() => {
+            if (!controller.signal.aborted) setBindingsError(true);
+        });
+        return () => controller.abort();
+    }, [form, open, resource, token, bindingsRetry]);
 
     useEffect(() => {
         if (!open || !createdMovie) return;
@@ -202,6 +253,7 @@ export default function AdminResourceModal({
     };
 
     const submit = async (values: FormValues) => {
+        if (resource && !bindingsReady) return;
         setSaving(true);
         try {
             const payload = {
@@ -219,7 +271,10 @@ export default function AdminResourceModal({
                 message.error(await readApiError(res, t('resourceSaveFailed')));
                 return;
             }
-            message.success(resource ? t('resourceUpdated') : t('resourceCreated'));
+            const result = resource ? await res.json() : null;
+            message.success(resource ? t('resourceBindingSaved', {
+                updated: (result?.updatedBindings ?? 0) + 1, added: result?.boundCount ?? 0,
+            }) : t('resourceCreated'));
             form.resetFields();
             onSaved();
         } catch {
@@ -238,7 +293,7 @@ export default function AdminResourceModal({
             width={780}
             destroyOnHidden
         >
-            <Form form={form} layout="vertical" onFinish={submit} requiredMark={false}>
+            <Form form={form} layout="vertical" onFinish={submit} requiredMark={false} disabled={saving || Boolean(resource && !bindingsReady)}>
                 <Form.Item name="movieId" label={t('movieTitle')} rules={[{ required: true }]}>
                     <Select
                         showSearch
@@ -294,13 +349,19 @@ export default function AdminResourceModal({
                 <Form.Item name="url" label={t('resourceURL')} rules={urlRules()}>
                     <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} />
                 </Form.Item>
-                <Form.Item name="bindMovieIds" label={t('resourceBindSeries')} extra={resource ? "仅追加绑定；已绑定影片保持不变，相同链接自动跳过。" : undefined}>
+                <Form.Item name="bindingVersion" hidden><Input /></Form.Item>
+                {resource && bindingsError && (
+                    <Alert type="error" showIcon className="!mb-4" title={t('resourceBindingsLoadFailed')}
+                        action={<Button size="small" disabled={false} onClick={() => setBindingsRetry(value => value + 1)}>{t('retry')}</Button>} />
+                )}
+                <Form.Item name="bindMovieIds" label={t('resourceBindSeries')} extra={resource ? t('resourceBindingEditHint') : undefined}>
                     <Select
                         mode="multiple"
                         showSearch
                         filterOption={false}
-                        loading={bindLoading}
-                        options={bindCandidates}
+                        loading={bindLoading || Boolean(resource && !bindingsReady && !bindingsError)}
+                        disabled={Boolean(resource && !bindingsReady)}
+                        options={allBindingOptions}
                         onSearch={loadBindCandidates}
                         onFocus={() => loadBindCandidates()}
                         placeholder={t('resourceBindSeriesPlaceholder')}
@@ -322,7 +383,7 @@ export default function AdminResourceModal({
                 </Form.Item>
                 <Space className="flex w-full justify-end">
                     <Button onClick={onCancel}>{t('cancel')}</Button>
-                    <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
+                    <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving} disabled={Boolean(resource && !bindingsReady)}>
                         {t('save')}
                     </Button>
                 </Space>

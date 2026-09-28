@@ -46,7 +46,7 @@
 - 搜索合并本地 PanSou 与外部 Panso 结果并按 URL 去重；自动资源必须先转存为系统自有夸克/迅雷分享，再写入 `resource_link`。
 - 夸克任务支持目录创建、剧集目录更新、失效分享重试与周转存（`update_subdir: ".*"` 递归追踪同名目录新增文件）；迅雷使用官方 Drive API 校验分享、遍历目录并筛选视频文件，Authorization 为短期凭据，支持运行时更新与 refresh token 优先。
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供「修复并重分享」；成功后原位更新链接，并在存在 GYING 映射时同步发布。
-- 资源编辑可提交 `bindMovieIds` 追加最多 50 个影片绑定，更新与追加在同一事务完成，按影片与 URL 跳过已有资源且不删除旧绑定；快速标题参数由 `resource.form.quick_params` 集中管理。
+- 资源管理编辑实际绑定组：打开编辑器时预选已绑定季；保存时校验 `bindingVersion`，并原位更新所选影片现有的同组资源及历史重复行，仅对新增绑定创建记录，不删除取消勾选的记录，也不改动其他网盘或版本。
 - 「已发现」转存任务支持单条与批量延迟重跑（每天 08:30 Asia/Shanghai 调度）；本轮存在 Authorization 过期或不可用的迅雷任务时整轮跳过，不启动转存；发布成功后继续同步 GYING，重跑数量与间隔由 `RESOURCE_HUB_DISCOVERED_RETRY_*` 控制。
 - GYING 目录自动同步支持热门与综合评分（电影/剧集/动漫，六来源轮换），每轮上限由 `resource.hub.gying.auto_sync_max_items` 控制（当前 15），实际间隔遵循 `resource.hub.gying.auto_sync_interval_hours`（当前 1 小时）。
 - GYING BT 详情页解析真实 `magnet` 与 `.torrent` 地址，以 `MAGNET`/`TORRENT` + `provider=P2P` 保存；网盘并行数组按索引读取资源名，写入 `resource_link.name` 的路径统一限制 255 字符。
@@ -96,6 +96,7 @@
 
 ### 迁移与恢复基线
 
+- 当前前后端：`gying-binding-editor-backend:20260928a` / `gying-binding-editor-frontend:20260928a`（2026-09-28 资源绑定编辑修复；仅重建 backend/frontend 并重载 nginx，环境变量哈希、卷、网络和安全选项保持）。回滚目标 backend `gying-collection-queue-backend:20260928a`、frontend `gying-contact-footer-frontend:20260928c`，发布/回滚材料位于 `E:/gying-tools/releases/resource-binding-edit-20260928`；无数据库或架构迁移。
 - GYING 数据源当前镜像为 `gying-source-detail:20260927a`（2026-09-27 部署），发布/回滚覆盖位于 `E:/gying-tools/releases/gying-detail-snapshot-20260927`，回滚镜像 `gying-source-rollback:pre-detail-20260927` 对应原 source 镜像 `sha256:788dd59993e0…`。本次只重建 source，保留原环境和非 root 用户，backend/frontend/依赖容器未变；部署前检查点 `G:/gying-backups/20260927T120205.182820Z` 共 4 个加密文件，hash 全部通过，未在本轮单独恢复演练。
 - 前端当前为 `gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）；上一轮 backend 为 `gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
 - 当前后端（2026-09-27 20:48）：`gying-quark-copy-backend:20260927b`（代码提交 `3276b6e`），部署/回滚覆盖位于 `E:/gying-tools/releases/quark-copy-contract-20260927`，回滚镜像 `gying-quark-copy-rollback:pre-fix-20260927`。本次只重建 backend 并重载 nginx，前端、依赖服务、数据库结构与环境配置未改变；部署前加密检查点 `G:/gying-backups/20260927T124754.729798Z` 包含 MySQL、环境与上一部署覆盖，3/3 文件 hash 通过，未在本轮单独恢复演练。
@@ -133,6 +134,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 资源绑定编辑修复验收（2026-09-28）：后端全量 331 项测试 0 failures/errors、5 项按环境跳过；前端生产构建通过。隔离与公网各通过 4 组浏览器场景，覆盖九个已有季自动勾选、绑定加载失败禁止保存、并发 409、取消勾选并追加新季；匿名绑定接口 401，首页 200。新镜像已部署，环境变量哈希与旧容器一致，其他服务未重建；无数据库写入。生产“心动的信号”仍有 6 个历史重复影片组（15 条绑定行对应 9 个影片），本轮未擅自删除；再次打开并保存会原位同步这些现有行。
 
 - 安全只读复核（2026-09-28）：本次提交范围 32 项测试通过（审计边界专项 16 项）；完整工作区 66 项测试中 57 通过、9 项 POSIX 权限用例在 Windows 跳过，完整工作区计数含其他未提交工具用例，compileall 与工作区密钥扫描通过（0 命中）。严格限定密码重置用途常量豁免的文件路径与完整声明；Redis 网络检查验证实际 inspect 的 internal/Compose 标记，异常元数据不得掩盖已确认失败。真实入口 9/9 通过；19 个加密备份文件 hash 复核通过（本轮未解密/重做恢复）。运维就绪检查 10 通过、2 项既有架构/文档警告。脱敏证据为 `tmp/security-{audit,health,runtime,windows}-20260928-continuation.json` 与运维快照。本轮仅更新宿主审计工具/文档；Access 按用户要求暂缓，未修改云端策略、凭据、防火墙、生产数据或重建服务，未手工触发外部发布。
 

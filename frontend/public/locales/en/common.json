@@ -752,6 +752,7 @@
   "refresh": "Refresh",
   "edit": "Edit",
   "save": "Save",
+  "retry": "Retry",
   "deleted": "Deleted",
   "activeRecord": "Active",
   "poster": "Poster",
@@ -929,5 +930,8 @@
   "contactQqQrAlt": "QR code to join our QQ group",
   "contactEmailHint": "Email is checked infrequently. Please contact us via the QQ group first.",
   "movieSeasonCompletionHint": "Fill season metadata from GYING first, then TMDB. Reuse existing collection links only for covered seasons; no new transfers.",
-  "movieSeasonCompletionSummary": "Added {{created}} seasons and {{bound}} collection resource bindings"
+  "movieSeasonCompletionSummary": "Added {{created}} seasons and {{bound}} collection resource bindings",
+  "resourceBindingEditHint": "Existing bindings are preselected. Save updates the selected resources in place and creates records only for new bindings. Deselecting skips this update without removing the binding; other providers and versions are not changed.",
+  "resourceBindingsLoadFailed": "Existing bindings could not be loaded. Retry before saving.",
+  "resourceBindingSaved": "Updated {{updated}} resources; added {{added}} bindings"
 }

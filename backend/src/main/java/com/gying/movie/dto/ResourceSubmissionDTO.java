@@ -28,6 +28,8 @@ public class ResourceSubmissionDTO {
     private String fileSize;
     @Size(max = 255)
     private String versionNote;
+    @Size(max = 64)
+    private String bindingVersion;
     @Size(max = 50)
     private List<@NotBlank @Size(max = 64) String> bindMovieIds;
 }

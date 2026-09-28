@@ -19,7 +19,8 @@
 
 - `POST /api/resources`：发布者/管理员提交网盘、磁力、种子或在线播放资源。管理员不受 `resource.max.per.user` 总量限制；发布者仍受限，提交间隔、重复链接及权限校验不变。
 - `GET /api/resources/mine`：我的投稿。
-- `PUT /api/resources/{id}`：发布者编辑自己的资源，管理员可编辑任意资源；可传 `bindMovieIds` 追加最多 50 个影片绑定。更新与追加在同一事务中完成，按影片和 URL 跳过已有资源，不删除旧绑定；返回 `{message, boundCount}`。
+- `GET /api/resources/{id}/bindings`：发布者/管理员读取自己的资源实际绑定组，返回新鲜资源值、已绑定影片、资源 ID 列表和 `bindingVersion`；同系列但不同网盘、版本或未实际绑定的影片不会混入。
+- `PUT /api/resources/{id}`：发布者编辑自己的资源，管理员可编辑任意资源；可传 `bindMovieIds` 绑定最多 50 个影片。编辑时应先读取 `bindings` 并回传 `bindingVersion`；已有绑定按影片原位更新 URL、提取码和元数据，仅对新增绑定创建记录，不删除取消勾选的历史记录。目标影片存在不同资源链接或版本陈旧时返回 409，返回 `{message, updatedBindings, boundCount}`。
 - `DELETE /api/resources/{id}`：软删除自己的资源。
 - `POST /api/resources/{id}/report`：举报失效链接。
 - `GET /api/resources/admin/all`：管理列表。

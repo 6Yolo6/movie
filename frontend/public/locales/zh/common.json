@@ -752,6 +752,7 @@
   "refresh": "刷新",
   "edit": "编辑",
   "save": "保存",
+  "retry": "重试",
   "deleted": "已删除",
   "activeRecord": "有效",
   "poster": "海报",
@@ -929,5 +930,8 @@
   "contactQqQrAlt": "QQ 群二维码，扫码加入群聊",
   "contactEmailHint": "邮箱不常看，请优先通过 QQ 群联系。",
   "movieSeasonCompletionHint": "优先 GYING、其次 TMDB 补齐季元数据；已有合集将按季范围复用原链接，不重复转存",
-  "movieSeasonCompletionSummary": "新增 {{created}} 季元数据，复用合集绑定 {{bound}} 条资源"
+  "movieSeasonCompletionSummary": "新增 {{created}} 季元数据，复用合集绑定 {{bound}} 条资源",
+  "resourceBindingEditHint": "已绑定影片默认勾选；保存会原位更新所选影片的同组资源（链接、提取码等），仅对新增绑定创建记录。取消勾选只跳过本次同步，不删除绑定，也不会改动其他网盘或版本。",
+  "resourceBindingsLoadFailed": "已有绑定加载失败，暂不可保存，请重试。",
+  "resourceBindingSaved": "已更新 {{updated}} 条资源，新增 {{added}} 条绑定"
 }

@@ -33,6 +33,8 @@ import com.gying.movie.service.IXunleiTransferRunnerService;
 import com.gying.movie.service.IXunleiTransferTaskService;
 import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.service.impl.GyingSourceWorkflowService;
+import com.gying.movie.service.impl.ResourceBindingResolver;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
 import jakarta.annotation.PreDestroy;
@@ -411,6 +413,35 @@ public class ResourceLinkController {
         return ResponseEntity.ok(toAdminPage(result));
     }
 
+    @GetMapping("/{id}/bindings")
+    public ResponseEntity<?> getResourceBindings(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        AuthUser user = authHelper.requireResourcePublisher(token);
+        ResourceLink resource = resourceLinkService.getById(id);
+        if (resource == null || resource.getDeletedAt() != null || "DELETED".equals(resource.getStatus())) {
+            return ResponseEntity.status(404).body("Resource not found");
+        }
+        if (!ResourceBindingResolver.editable(resource, user)) return ResponseEntity.status(403).body("Forbidden");
+        var snapshot = new ResourceBindingResolver(resourceLinkService, movieService).resolve(resource, user, false);
+        Map<String, List<ResourceLink>> grouped = snapshot.resources().stream()
+                .filter(row -> !Objects.equals(row.getMovieId(), resource.getMovieId()))
+                .collect(Collectors.groupingBy(ResourceLink::getMovieId, LinkedHashMap::new, Collectors.toList()));
+        List<Map<String, Object>> bindings = new ArrayList<>();
+        for (var entry : grouped.entrySet()) {
+            MovieMetadata movie = movieService.getById(entry.getKey());
+            if (movie == null || movie.getDeletedAt() != null || "DELETED".equalsIgnoreCase(movie.getStatus())) continue;
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", movie.getId()); item.put("titleCn", movie.getTitleCn()); item.put("titleEn", movie.getTitleEn());
+            item.put("season", movie.getSeason()); item.put("year", movie.getYear());
+            item.put("resourceIds", entry.getValue().stream().map(ResourceLink::getId).toList());
+            bindings.add(item);
+        }
+        return ResponseEntity.ok(Map.of("bindings", bindings, "resource", resource,
+                "bindMovieIds", bindings.stream().map(item -> item.get("id")).toList(),
+                "bindingVersion", snapshot.version()));
+    }
+
     @PutMapping("/{id}")
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> updateOwnResource(
@@ -461,36 +492,62 @@ public class ResourceLinkController {
         } catch (IllegalArgumentException error) {
             return ResponseEntity.badRequest().body(error.getMessage());
         }
-        long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                .eq("movie_id", targetMovieId)
-                .eq("status", "ACTIVE").isNull("deleted_at")
-                .and(w -> w.eq("url_hash", ResourceHubHashUtils.sha256(resourceUrl)).or().eq("url", resourceUrl))
-                .ne("id", id));
-        if (duplicateCount > 0) {
-            return ResponseEntity.status(409).body("This resource URL has already been submitted.");
+        var snapshot = new ResourceBindingResolver(resourceLinkService, movieService).resolve(resource, authUser, true);
+        if (dto.getBindingVersion() != null && !dto.getBindingVersion().equals(snapshot.version())) {
+            return ResponseEntity.status(409).body("绑定资源已被修改，请关闭编辑窗口后重新打开");
         }
-        resource.setMovieId(targetMovieId);
-        resource.setName(cleanOptional(dto.getName(), 255));
-        resource.setUrl(resourceUrl);
-        resource.setUrlHash(ResourceHubHashUtils.sha256(resourceUrl));
-        resource.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
-        resource.setProvider(provider);
-        resource.setType(type);
-        resource.setLinkStatus("NORMAL");
-        resource.setReportCount(0);
-        applyQualityFields(resource, dto);
-        resource.setRejectReason(null);
-        resource.setUpdatedAt(LocalDateTime.now());
-        if (!isAdmin) {
-            String auditEnabled = sysConfigService.getConfigValue("resource.audit.enabled", "true");
-            resource.setAuditStatus("true".equals(auditEnabled) ? 0 : 1);
+        ResourceLink lockedPrimary = snapshot.resources().stream().filter(row -> id.equals(row.getId())).findFirst().orElse(null);
+        if (lockedPrimary == null) return ResponseEntity.status(409).body("Resource changed; reopen the editor");
+        Set<String> selectedMovies = bindMovies.stream().map(MovieMetadata::getId)
+                .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+        selectedMovies.add(targetMovieId);
+        String primaryMovieId = targetMovieId;
+        List<ResourceLink> existingBindings = snapshot.resources().stream()
+                .filter(row -> id.equals(row.getId()) || selectedMovies.contains(row.getMovieId())).toList();
+        List<Long> editedIds = existingBindings.stream().map(ResourceLink::getId).toList();
+        Set<String> existingMovieIds = existingBindings.stream()
+                .map(row -> id.equals(row.getId()) ? primaryMovieId : row.getMovieId()).collect(Collectors.toSet());
+        String urlHash = ResourceHubHashUtils.sha256(resourceUrl);
+        // Reject collisions with a different resource/version BEFORE changing any row.
+        for (String movieId : existingMovieIds) {
+            long duplicateCount = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                    .eq("movie_id", movieId).eq("status", "ACTIVE").isNull("deleted_at")
+                    .and(w -> w.eq("url_hash", urlHash).or().eq("url", resourceUrl)).notIn("id", editedIds));
+            if (duplicateCount > 0) return ResponseEntity.status(409).body(
+                    "目标影片已存在这个链接的其他资源，请先核对重复记录；本次未作修改");
         }
-        if (!resourceLinkService.updateById(resource)) {
-            throw new IllegalStateException("Resource update failed");
+        Integer auditStatus = !isAdmin && "true".equals(sysConfigService.getConfigValue("resource.audit.enabled", "true")) ? 0 : null;
+        int updatedBindings = 0;
+        for (ResourceLink target : existingBindings) {
+            if (id.equals(target.getId())) target.setMovieId(targetMovieId);
+            applyResourceEdit(target, dto, resourceUrl, urlHash, type, provider, auditStatus);
+            if (!id.equals(target.getId())) updatedBindings++;
         }
-        // Append only: existing bindings are preserved and duplicate URLs are skipped.
-        int boundCount = createBoundResources(resource, bindMovies, resourceUrl, resource.getUrlHash());
-        return ResponseEntity.ok(Map.of("message", "Resource updated", "boundCount", boundCount));
+        // Only genuinely new selected movie bindings are inserted. Old URLs are updated in place.
+        List<MovieMetadata> newMovies = bindMovies.stream().filter(item -> !existingMovieIds.contains(item.getId())).toList();
+        int boundCount = createBoundResources(lockedPrimary, newMovies, resourceUrl, urlHash, snapshot.rootId());
+        return ResponseEntity.ok(Map.of("message", "Resource updated", "boundCount", boundCount,
+                "updatedBindings", updatedBindings));
+    }
+
+    private void applyResourceEdit(ResourceLink target, ResourceSubmissionDTO dto, String url, String urlHash,
+            String type, String provider, Integer auditStatus) {
+        target.setName(cleanOptional(dto.getName(), 255)); target.setUrl(url); target.setUrlHash(urlHash);
+        target.setCode("DISK".equals(type) ? cleanOptional(dto.getCode(), 50) : null);
+        target.setType(type); target.setProvider(provider); target.setLinkStatus("NORMAL"); target.setReportCount(0);
+        applyQualityFields(target, dto);
+        target.setLastCheckError(null); target.setRejectReason(null); target.setValidatedAt(null);
+        target.setUpdatedAt(LocalDateTime.now());
+        if (auditStatus != null) target.setAuditStatus(auditStatus);
+        if (!resourceLinkService.updateById(target)) throw new IllegalStateException("Resource update failed");
+        // MyBatis ignores null entity fields, so explicitly clear stale failure and optional metadata.
+        if (!resourceLinkService.update(new UpdateWrapper<ResourceLink>().eq("id", target.getId())
+                .set("code", target.getCode()).set("name", target.getName())
+                .set("quality", target.getQuality()).set("subtitle", target.getSubtitle())
+                .set("file_size", target.getFileSize()).set("version_note", target.getVersionNote())
+                .set("last_check_error", null).set("reject_reason", null).set("validated_at", null))) {
+            throw new IllegalStateException("Resource metadata update failed");
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -1372,6 +1429,10 @@ public class ResourceLinkController {
     }
 
     private int createBoundResources(ResourceLink source, List<MovieMetadata> movies, String url, String urlHash) {
+        return createBoundResources(source, movies, url, urlHash, source.getId());
+    }
+
+    private int createBoundResources(ResourceLink source, List<MovieMetadata> movies, String url, String urlHash, Long rootId) {
         int created = 0;
         for (MovieMetadata movie : movies) {
             if (resourceLinkService.count(new QueryWrapper<ResourceLink>()
@@ -1385,6 +1446,7 @@ public class ResourceLinkController {
             BeanUtils.copyProperties(source, copy);
             copy.setId(null);
             copy.setMovieId(movie.getId());
+            if (rootId != null) { copy.setSource("RESOURCE_BINDING"); copy.setSourceRef(String.valueOf(rootId)); }
             copy.setUrl(url);
             copy.setUrlHash(urlHash);
             copy.setCreatedAt(LocalDateTime.now());
