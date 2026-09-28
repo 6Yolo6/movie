@@ -96,7 +96,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-binding-editor-backend:20260928a` / `gying-binding-editor-frontend:20260928a`（2026-09-28 资源绑定编辑修复；仅重建 backend/frontend 并重载 nginx，环境变量哈希、卷、网络和安全选项保持）。回滚目标 backend `gying-collection-queue-backend:20260928a`、frontend `gying-contact-footer-frontend:20260928c`，发布/回滚材料位于 `E:/gying-tools/releases/resource-binding-edit-20260928`；无数据库或架构迁移。
+- 当前前后端：`gying-poster-metadata-fix-backend:20260928a` / `gying-binding-editor-frontend:20260928a`（2026-09-28 海报路径与 TMDB 补图修复；backend 补丁镜像已部署并重载 nginx，frontend 保持原生产镜像）。回滚目标 backend `gying-binding-editor-backend:20260928a`，发布/回滚材料位于 `E:/gying-tools/releases/poster-metadata-fix-20260928`；无数据库或架构迁移。
 - GYING 数据源当前镜像为 `gying-source-detail:20260927a`（2026-09-27 部署），发布/回滚覆盖位于 `E:/gying-tools/releases/gying-detail-snapshot-20260927`，回滚镜像 `gying-source-rollback:pre-detail-20260927` 对应原 source 镜像 `sha256:788dd59993e0…`。本次只重建 source，保留原环境和非 root 用户，backend/frontend/依赖容器未变；部署前检查点 `G:/gying-backups/20260927T120205.182820Z` 共 4 个加密文件，hash 全部通过，未在本轮单独恢复演练。
 - 前端当前为 `gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）；上一轮 backend 为 `gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
 - 当前后端（2026-09-27 20:48）：`gying-quark-copy-backend:20260927b`（代码提交 `3276b6e`），部署/回滚覆盖位于 `E:/gying-tools/releases/quark-copy-contract-20260927`，回滚镜像 `gying-quark-copy-rollback:pre-fix-20260927`。本次只重建 backend 并重载 nginx，前端、依赖服务、数据库结构与环境配置未改变；部署前加密检查点 `G:/gying-backups/20260927T124754.729798Z` 包含 MySQL、环境与上一部署覆盖，3/3 文件 hash 通过，未在本轮单独恢复演练。
@@ -134,6 +134,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 影片元数据海报修复验收（2026-09-28）：后端全量 347 项测试 0 failures/errors、5 项按环境跳过（新增 6 项海报 URL 与 TMDB 续集匹配回归）。backend `gying-poster-metadata-fix-backend:20260928a` 已部署，运行容器 JAR SHA-256 与发布制品一致；本地与公网首页、影片列表和海报均 200，匿名管理员接口 401，数据库无重复 `/media` 前缀存量。现有“复仇者联盟”1-4 的错误海报数据需管理员逐条重跑“自动补图”后改写，未在部署时代用户执行。
 
 - 资源绑定编辑修复验收（2026-09-28）：后端全量 331 项测试 0 failures/errors、5 项按环境跳过；前端生产构建通过。隔离与公网各通过 4 组浏览器场景，覆盖九个已有季自动勾选、绑定加载失败禁止保存、并发 409、取消勾选并追加新季；匿名绑定接口 401，首页 200。新镜像已部署，环境变量哈希与旧容器一致，其他服务未重建；无数据库写入。生产“心动的信号”仍有 6 个历史重复影片组（15 条绑定行对应 9 个影片），本轮未擅自删除；再次打开并保存会原位同步这些现有行。
 
