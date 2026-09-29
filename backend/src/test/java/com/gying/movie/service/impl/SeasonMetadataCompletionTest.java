@@ -21,6 +21,7 @@ class SeasonMetadataCompletionTest {
     IResourceLinkService resources;
     IResourceDiscoveryResultService discoveries;
     SeasonMetadataCompletion service;
+    PosterStorageService posters;
     MovieMetadata first;
     ResourceLink collection;
 
@@ -29,7 +30,8 @@ class SeasonMetadataCompletionTest {
         tmdb = mock(TmdbClient.class); movies = mock(IMovieMetadataService.class);
         identities = mock(IMovieSourceIdentityService.class); resources = mock(IResourceLinkService.class);
         discoveries = mock(IResourceDiscoveryResultService.class);
-        service = new SeasonMetadataCompletion(tmdb, mock(PosterStorageService.class), movies, identities, resources, discoveries);
+        posters = mock(PosterStorageService.class);
+        service = new SeasonMetadataCompletion(tmdb, posters, movies, identities, resources, discoveries);
         first = season(1); first.setTmdbId(100L); first.setTmdbType("tv"); first.setYear(2011);
         when(movies.list(any(Wrapper.class))).thenReturn(List.of(first));
         when(movies.save(any(MovieMetadata.class))).thenReturn(true);
@@ -162,5 +164,28 @@ class SeasonMetadataCompletionTest {
         MovieMetadata movie=new MovieMetadata(); movie.setId("gying_s"+number);
         movie.setTitleCn("破产姐妹 第"+number+"季");movie.setSeriesName("破产姐妹");
         movie.setCategory("tv");movie.setSeason(number);movie.setStatus("ACTIVE");return movie;
+    }
+    @Test void missingSeasonPosterNeverCopiesAnchorArtwork() throws Exception {
+        first.setPosterUrl("tv/fourth-season/384.avif");
+        when(tmdb.fetchDetails("tv",100L)).thenReturn(new ObjectMapper().readTree("""
+            {"id":100,"seasons":[{"season_number":2,"air_date":"2020-01-01","poster_path":"/s2.jpg"}]}
+            """));
+        when(posters.storeTmdbSeasonPoster(100L,2,"/s2.jpg")).thenReturn("tmdb/tv/100/season-2/poster.jpg");
+        service.complete(first, existing -> List.of());
+        ArgumentCaptor<MovieMetadata> created=ArgumentCaptor.forClass(MovieMetadata.class);
+        verify(movies).save(created.capture());
+        assertEquals("tmdb/tv/100/season-2/poster.jpg",created.getValue().getPosterUrl());
+        verify(posters,never()).storeTmdbPoster(any(),any(),any());
+    }
+
+
+    @Test void bindingUsesRefreshedGyingPosterRatherThanPreSyncSnapshot() {
+        MovieMetadata stale = season(2); stale.setPosterUrl("tv/wrong-season/384.avif");
+        when(movies.list(any(Wrapper.class))).thenReturn(List.of(first,stale));
+        MovieMetadata refreshed = season(2); refreshed.setPosterUrl("tv/actual-second/384.avif");
+        service.complete(first, existing -> List.of(refreshed));
+        ArgumentCaptor<MovieMetadata> updates=ArgumentCaptor.forClass(MovieMetadata.class);
+        verify(movies).updateById(updates.capture());
+        assertEquals("tv/actual-second/384.avif",updates.getValue().getPosterUrl());
     }
 }

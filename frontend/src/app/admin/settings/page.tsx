@@ -62,7 +62,7 @@ const CONFIG_DESCRIPTIONS_ZH: Record<string, string> = {
     'qq.bot.min_keyword_length': 'QQ群机器人接受的最短搜索关键词字数。',
     'qq.bot.rate_limit_per_minute': '每个群成员每分钟最多可发起的搜索次数；至少为 1。',
     'qq.bot.max_results': 'QQ群机器人单次回复展示的资源候选数量。',
-    'qq.bot.blocked_keywords': 'QQ群机器人拒绝搜索的关键词，支持逗号、分号或换行分隔。',
+    'qq.bot.blocked_keywords': '网站资源搜索与QQ群搜索共用的拒绝关键词，保存后即时生效；支持逗号、分号或换行。内置明确色情关键词始终拦截，并检查影片和资源候选名称。',
     'qq.bot.transfer_cleanup.enabled': '是否自动清理QQ群用户搜索后临时转存的网盘文件；不影响正式资源库。',
     'qq.bot.transfer_cleanup.delay_minutes': 'QQ群临时转存成功后延迟多少分钟删除文件和临时资源链接。',
     'qq.bot.transfer_cleanup.quark_root': 'QQ群夸克临时转存专用根目录；安全清理只允许发生在此目录下。',

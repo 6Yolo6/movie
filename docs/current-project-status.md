@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-09-28
+更新时间：2026-09-29
 
 本文记录生产环境当前能力、运行约束、待处理事项与可复核的验收结论。一次性任务编号、单次发布流水和基础接口状态不长期保留；接口契约见 `docs/api.md`，部署与恢复流程见 `docs/deployment.md` 和 `.agents/skills/gying-project-ops/references/`。
 
@@ -15,7 +15,7 @@
 
 - 对外入口：Cloudflare Tunnel `gyinghub.dpdns.org` → loopback nginx（`127.0.0.1:80`）→ Next.js / Spring Boot（backend `127.0.0.1:8880`）。Tunnel 配置在 `E:\gying-tools\cloudflared\config.yml`，由登录触发的计划任务 `GYing Cloudflare Tunnel` 启动。
 - 核心服务：`frontend`、`backend`、`gying-source`、`social-publisher`、`nginx`；依赖 MySQL、Redis、MinIO、PanSou、`quark-auto-save`、OpenClaw QQBot。
-- 生产 Compose 文件为 `docker-compose.prod.yml`（无默认 `docker-compose.yml`）；容器与 JVM 时区统一 `Asia/Shanghai`。本机 Docker CLI 位于 `C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker.exe`。
+- 生产 Compose 文件为 `docker-compose.prod.yml`（无默认 `docker-compose.yml`）；容器与 JVM 时区统一 `Asia/Shanghai`。本机 Docker CLI 位于 `C:\Users\ASUS\AppData\Local\Programs\DockerDesktop\resources\bin\docker.exe`。 部署必须显式指定已存在的项目名 `-p gying-movie`，不能使用目录名推导出的默认项目 `movie`。
 - 代码与 Python 环境在 `D:\gying-movie\movie`；Docker Desktop 数据（`docker_data.vhdx`，约 44 GiB）位于 `G:\dockerdesktop\wsl\DockerDesktopWSL`（2026-09-25 由 E 盘迁移）。
 - QQ 频道发帖由宿主机 `tencent-channel-cli` 计划任务执行，不经过 `social-publisher`；NapCat 已停用，不作为备用通道、迁移依赖或验收项。
 - Cloudflare Tunnel 使用 HTTP/2 传输（计划任务参数 `--protocol http2`）：本机代理以 fake-IP 方式解析 `cfd.argotunnel.com`，QUIC/UDP 会被代理丢弃。健康检查用 `http://127.0.0.1:20241/ready` 或公网首页状态码；`E:\gying-tools\cloudflared\config.yml` 的 ACL 对当前用户只读，改配置需提权。
@@ -30,7 +30,7 @@
 - 首页三个分类按资源最近更新时间优先，并综合站内热度、TMDB 热度与可用评分；搜索/筛选页保留最新与评分排序。
 - 顶部搜索框提供「最近热门搜索」（近 7 天 Redis 热词合并，回退 `site_search_log`，公开接口 `GET /api/movies/hot-searches`）；搜索页与电影/剧集/动漫分类页的筛选项默认收起，仅常显排序，有已选条件时显示可逐个关闭的摘要与「清除全部」。
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
-- 影片元数据支持缺失海报自动补图；GYING 不可用时自动补图回退 TMDB 搜索，剩余季元数据按 GYING → TMDB 补齐。
+- 影片元数据页支持跨页多选（最多 100 部）、所选缺图补全及确认后刷新已有海报；新增单片 GYING 元数据同步。GYING 对应影片/季的详情与海报优先，严格匹配后绑定 GYING 与 TMDB 到同一 canonical 记录；TMDB 回退使用独立季海报对象，不复用整剧或其他季图片。
 - 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；Resend 已接入已验证的 `gyinghub.dpdns.org` 发件域并启用邮箱验证码，163 等邮箱投递正常，Gmail 因免费域声誉暂拒收。
 - 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，登录用户在抽屉中进入「搜索资源」，顶栏不重复展示该入口；留言页默认类型为「综合留言」，留言频率可在后台配置（`comment.rate_limit_per_minute`，默认 5 次/分钟），内容经 HTML 白名单清洗。首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
@@ -39,7 +39,7 @@
 ### 影视资源中心
 
 - 迅雷自动队列在 SQL 中先排除已达重试上限的 FAILED 任务，再限制数量，按 `updated_at,id` 轮转，避免最早 200 条历史失败挡住新任务；合集入库名称保留明确季范围与清晰度（如「破产姐妹 第1-6季合集 1080p」）。
-- 影片元数据页「补齐剩余季」优先 GYING，再用 TMDB 补缺；仅创建可信、缺失的季元数据，并按已有有效合集的明确覆盖季范围复用原 URL/提取码，不重新转存。未知季范围、单季、失效及子目录分享不扩散；幂等绑定标记 `COLLECTION_BINDING`，不额外触发外部发布。自动采集成功入库的明确多季合集也会尝试此元数据补全。
+- 「补全系列/剩余季」支持电影、剧集及动漫。GYING 按系列名搜索并刷新已有季，TMDB 以真实季信息或官方电影合集补缺；不创建推测续集、不隐式恢复已删除记录。剧集仍只按有效合集的明确季范围复用 URL/提取码（`COLLECTION_BINDING`），电影续集仅补元数据，不扩散资源、不转存或发布。
 
 - 临时转存与后台采集转存均在视频落盘后、创建自有分享前补齐 `救星小窝基地.jpg`：夸克源图位于网盘根目录，迅雷源图位于 `我的转存/影视剧资源分享(先转存后再查看)`；保留源图，目标已有同名图片时跳过，复制失败保留任务错误。夸克按文件回退分享时携带该图片，但不生成纯图片资源分享。
 - 夸克配图复制采用账号文件接口的 `action_type + filelist` 契约；HTTP 失败错误只记录方法、路径、状态和上游 code，不回显响应正文、Cookie、查询串或分享 URL。该修复由 backend `gying-quark-copy-backend:20260927b` 上线（代码 `3276b6e`）。
@@ -73,6 +73,9 @@
 
 ### QQ 自动化
 
+- 网站资源搜索与 QQ 共用内置拒绝词库 `backend/src/main/resources/moderation/search-blocklist.txt`（220 条覆盖项），叠加 `qq.bot.blocked_keywords` 的实时配置；每次请求读取配置快照，覆盖输入、候选名称与旧候选选择/翻页/换资源。NFKC、大小写、标点/空格/零宽归一化，短英文标签加边界避免 AV 误伤 Avatar；关键词策略仍需维护和人工审核，不能保证识别所有伪装内容。
+- QQ 上映判断取各地区最早有效日期；待上映或遗留 `TRAILER` 标记的影片如果已有已审核、正常资源，优先直接返回库内资源，不先搜索外部影片候选或拒绝。
+
 - 搜索先回复「正在搜索资源，请稍后...」，随后返回影片候选与资源候选（优先夸克）；只有用户回复单个资源序号才创建并执行转存任务，成功回复附带影片元数据与最终自有分享。失效分享、无视频文件或平台拦截均回复固定文案并保留候选上下文。
 - QQ 每日推荐由 backend QQBot 触发（配置存于 `sys_config`），需与 QQ 官方主动消息权限配合；频道发布由宿主机 CLI 计划任务承担。
 - OpenClaw 使用唯一运行时插件副本，升级后必须重新应用补丁（UTF-8 进度文本、管理员白名单、拒绝未授权命令）。
@@ -96,10 +99,8 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-poster-metadata-fix-backend:20260928a` / `gying-binding-editor-frontend:20260928a`（2026-09-28 海报路径与 TMDB 补图修复；backend 补丁镜像已部署并重载 nginx，frontend 保持原生产镜像）。回滚目标 backend `gying-binding-editor-backend:20260928a`，发布/回滚材料位于 `E:/gying-tools/releases/poster-metadata-fix-20260928`；无数据库或架构迁移。
-- GYING 数据源当前镜像为 `gying-source-detail:20260927a`（2026-09-27 部署），发布/回滚覆盖位于 `E:/gying-tools/releases/gying-detail-snapshot-20260927`，回滚镜像 `gying-source-rollback:pre-detail-20260927` 对应原 source 镜像 `sha256:788dd59993e0…`。本次只重建 source，保留原环境和非 root 用户，backend/frontend/依赖容器未变；部署前检查点 `G:/gying-backups/20260927T120205.182820Z` 共 4 个加密文件，hash 全部通过，未在本轮单独恢复演练。
-- 前端当前为 `gying-library-qr-frontend:20260926b`（2026-09-27 Asia/Shanghai 复核）；上一轮 backend 为 `gying-transfer-image-backend:20260927a`（代码提交 `18b733b`）。本次只更新 backend，部署/回滚覆盖位于 `E:/gying-tools/releases/transfer-image-20260927`，回滚目标 backend `gying-library-qr-backend:20260926d`；环境变量、前端、依赖服务与数据库结构未改变。部署前加密检查点 `G:/gying-backups/20260927T112702.982957Z` 包含 MySQL、环境与旧部署覆盖，3/3 文件 hash 通过；本次检查点未单独做恢复演练，不替代完整恢复基线。
-- 当前后端（2026-09-27 20:48）：`gying-quark-copy-backend:20260927b`（代码提交 `3276b6e`），部署/回滚覆盖位于 `E:/gying-tools/releases/quark-copy-contract-20260927`，回滚镜像 `gying-quark-copy-rollback:pre-fix-20260927`。本次只重建 backend 并重载 nginx，前端、依赖服务、数据库结构与环境配置未改变；部署前加密检查点 `G:/gying-backups/20260927T124754.729798Z` 包含 MySQL、环境与上一部署覆盖，3/3 文件 hash 通过，未在本轮单独恢复演练。
+- 当前前后端：`gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`（2026-09-29）。只替换 backend/frontend/gying-source 并重载 nginx；回滚镜像分别为 `gying-poster-metadata-fix-backend:20260928a`、`gying-binding-editor-frontend:20260928a`、`gying-source-detail:20260927a`。发布/回滚及验收材料在 `E:/gying-tools/releases/series-search-20260929`；无架构迁移。部署检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
+- 当前 GYING 数据源镜像 `gying-series-search-source:20260929a`；系列查找改为名称搜索，不再翻查 20 页评分榜。元数据同步自动填入系列与季/部序号，电影来源身份仍使用 season=0；非 root 身份及环境配置保持。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -134,6 +135,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 系列元数据与搜索治理（2026-09-29）：后端 365 项测试 0 失败（5 项既有环境跳过），crawler 15 项通过，前端类型检查、构建与 lint 通过（7 项既有 warning）。网站/QQ 两条真实内部接口的 14 个词库探针均拒绝且不返回链接；PanSou 对 `porn` 查询仍返回候选，不能依赖上游过滤。新 GYING 系列接口 1.5 秒返回「星际迷航：奇异新世界」1–4 季。按严格季号/年份匹配修正「破产姐妹」6 季及「奇异新世界」4 季的现有元数据和双源身份：10/10 资源链接内容不变，公开图片响应及 SHA-256 确认分别为 6/4 张不同海报。「生化危机：爆发夜」QQ 搜索实际返回库内夸克和迅雷，不再因第一项中国大陆上映日期误判。未触发网盘转存或向群发送测试消息。
 
 - 影片元数据海报修复验收（2026-09-28）：后端全量 347 项测试 0 failures/errors、5 项按环境跳过（新增 6 项海报 URL 与 TMDB 续集匹配回归）。backend `gying-poster-metadata-fix-backend:20260928a` 已部署，运行容器 JAR SHA-256 与发布制品一致；本地与公网首页、影片列表和海报均 200，匿名管理员接口 401，数据库无重复 `/media` 前缀存量。现有“复仇者联盟”2-4 已按核实的 TMDB ID 99861/299536/299534 原位更新，图片对象补入 MinIO；四张系列海报均返回 200 且 SHA-256 各不相同。该数据修复仅更新三行影片元数据，依赖部署前完整备份 `G:/gying-backups/20260928T131723.360179Z`，未改变资源、账号或转存状态。
 

@@ -174,8 +174,13 @@ CN_MAP = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, 
 
 def parse_season(text, type_code=None):
     if not text: return None, None
-    if type_code == "mv":
-        return None, None
+    # Explicit English season and numbered installments, including a subtitle.
+    english = re.search(r'^(.*?)\s+(?:Season\s*|S)(\d{1,2})(?:\s|$|[:：])', text, re.I)
+    if english and english.group(1).strip() and int(english.group(2)) > 0:
+        return english.group(1).strip(), int(english.group(2))
+    installment = re.search(r'^(.*?[^\d\s])\s*(\d{1,2})(?:\s*[:：]\s*.+)?$', text)
+    if installment and len(installment.group(1).strip()) >= 2 and 0 < int(installment.group(2)) <= 99:
+        return installment.group(1).strip(), int(installment.group(2))
     # 1. Digits: "第4季"
     match = re.search(r'^(.*?)\s*第(\d+)季', text)
     if match:
@@ -195,19 +200,6 @@ def parse_season(text, type_code=None):
         
         return match_cn.group(1).strip(), val
     
-    # 3. Numeric Suffix: "Title 2", "Title2"
-    # Exclude years (1900-2100)
-    match_num = re.search(r'^(.*?)(\d+)$', text)
-    if match_num:
-        name = match_num.group(1).strip()
-        num_val = int(match_num.group(2))
-        if num_val < 1900 or num_val > 2100:
-             # Ensure name ends with valid separator or is clean?
-             # "Name2" is common. "Name 2" is common.
-             # If name is empty? "2".
-             if name:
-                 return name, num_val
-
     # 4. Default: Treat as Season 1 of itself
     return text.strip(), 1
 
@@ -1349,27 +1341,31 @@ def fetch_catalog_movies(type_code, sort="score", page=1, limit=30):
 
 
 def find_series_seasons(type_code, mid, max_pages=20):
+    """Exact normalized family only; search first so old series need not be in top charts."""
     anchor = fetch_movie_metadata(type_code, mid) or {}
     anchor_title = anchor.get("title") or anchor.get("name") or anchor.get("ename") or mid
-    base_title, anchor_season = parse_season(anchor_title)
-    expected = re.sub(r"[\s\W_]+", "", base_title or anchor_title).lower()
+    base_title, anchor_season = parse_season(anchor_title, type_code)
+    normalize = lambda value: re.sub(r"[\s\W_]+", "", value or "").lower()
+    expected = normalize(base_title or anchor_title)
     found = {}
-    for page in range(1, min(max(int(max_pages), 1), 50) + 1):
-        rows = fetch_catalog_movies(type_code, "score", page, 100)
-        if not rows:
-            break
-        for row in rows:
-            candidate_base = re.sub(r"[\s\W_]+", "", row.get("seriesName") or row.get("title") or "").lower()
-            if candidate_base == expected and row.get("season"):
-                found[int(row["season"])] = row
-    if anchor_season and anchor_season not in found:
-        found[anchor_season] = {
-            "typeCode": type_code, "mid": mid, "title": anchor_title,
-            "year": anchor.get("year"), "seriesName": base_title, "season": anchor_season,
-            "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
-        }
-    return [found[key] for key in sorted(found)]
 
+    def collect(rows):
+        for row in rows:
+            row_type = row.get("typeCode") or type_code
+            family, number = parse_season(row.get("title"), row_type)
+            if normalize(row.get("seriesName") or family) != expected or not number:
+                continue
+            found[(row_type, str(row.get("mid")))] = dict(row, seriesName=family, season=number)
+
+    collect(search_movies(base_title or anchor_title, type_code=type_code, mode=3, limit=100))
+    # Do not scan dozens of score-chart pages here: that exceeded the backend's
+    # read timeout and incorrectly turned a healthy source into a circuit-breaker outage.
+    found.setdefault((type_code, str(mid)), {
+        "typeCode": type_code, "mid": mid, "title": anchor_title,
+        "year": anchor.get("year"), "seriesName": base_title, "season": anchor_season,
+        "detailUrl": f"{BASE_URL}/{type_code}/{mid}",
+    })
+    return sorted(found.values(), key=lambda row: (row.get("season") or 0, str(row.get("mid"))))
 
 def repair_movie_poster(db, type_code, mid, target_movie_id):
     poster_url = upload_image_by_pattern(type_code, mid)
@@ -1390,6 +1386,9 @@ def repair_movie_poster(db, type_code, mid, target_movie_id):
 
 def save_source_identity(db, movie_id, source, source_type, external_id, season=0,
                          confidence=100, match_method="SOURCE_ID", match_status="CONFIRMED", evidence=None):
+    # Installment ordinal is metadata; film source identities always use season zero.
+    if (source.upper(), source_type.lower()) in {("GYING", "mv"), ("TMDB", "movie")}:
+        season = 0
     try:
         with db.cursor() as cursor:
             cursor.execute(
@@ -1459,7 +1458,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
             poster_url=COALESCE(VALUES(poster_url), poster_url),
             douban_score=VALUES(douban_score), imdb_score=VALUES(imdb_score),
             summary=VALUES(summary), category=VALUES(category),
-            series_name=VALUES(series_name), season=VALUES(season),
+            series_name=COALESCE(VALUES(series_name), series_name), season=COALESCE(VALUES(season), season),
             status='ACTIVE', deleted_at=NULL, updated_at=NOW()
     """
     values = (

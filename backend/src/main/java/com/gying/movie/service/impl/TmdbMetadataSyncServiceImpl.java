@@ -223,7 +223,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         boolean inserted = existing == null;
         LocalDateTime now = LocalDateTime.now();
 
-        target.setCategory(categoryFor(item.getMediaType()));
+        if (!hasText(target.getCategory())) target.setCategory(categoryFor(item.getMediaType()));
         if (inserted) {
             target.setId(buildMovieId(item));
             target.setStatus("ACTIVE");
@@ -241,9 +241,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         if ("tv".equals(item.getMediaType())) {
             target.setSeriesName(firstText(target.getSeriesName(), title(details, item.getMediaType()), 255));
             target.setSeason(firstValue(target.getSeason(), 1));
-        } else {
-            target.setSeriesName(null);
-            target.setSeason(null);
+        } else if (details.path("belongs_to_collection").path("id").asLong() > 0) {
+            target.setSeriesName(firstText(target.getSeriesName(),
+                    details.path("belongs_to_collection").path("name").asText(null), 255));
         }
         target.setYear(firstValue(target.getYear(), parseYear(releaseDate(details, item.getMediaType()))));
         target.setRuntime(firstText(target.getRuntime(), runtime(details, item.getMediaType()), 100));
@@ -254,10 +254,21 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         target.setLanguages(firstList(target.getLanguages(), languages(details)));
         target.setReleaseDates(firstText(target.getReleaseDates(), releaseDate(details, item.getMediaType()), 500));
         target.setAliases(firstText(target.getAliases(), aliases(details, item.getMediaType()), 2000));
-        String posterObjectName = posterStorageService.storeTmdbPoster(
-                item.getMediaType(),
-                item.getTmdbId(),
-                details.path("poster_path").asText(null));
+        String posterObjectName = null;
+        if (!hasText(target.getPosterUrl()) || target.getPosterUrl().startsWith("tmdb/")) {
+            if ("tv".equals(item.getMediaType()) && target.getSeason() != null) {
+                for (JsonNode season : details.path("seasons")) {
+                    if (season.path("season_number").asInt() == target.getSeason()) {
+                        posterObjectName = posterStorageService.storeTmdbSeasonPoster(
+                                item.getTmdbId(), target.getSeason(), season.path("poster_path").asText(null));
+                        break;
+                    }
+                }
+            } else {
+                posterObjectName = posterStorageService.storeTmdbPoster(item.getMediaType(), item.getTmdbId(),
+                        details.path("poster_path").asText(null));
+            }
+        }
         target.setPosterUrl(preferLocalPoster(target.getPosterUrl(), posterObjectName));
         target.setTmdbPopularity(decimal(details.path("popularity")));
         target.setTmdbVoteAverage(decimal(details.path("vote_average")));
@@ -272,12 +283,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             movieService.save(target);
         } else {
             movieService.updateById(target);
-            if ("movie".equalsIgnoreCase(item.getMediaType())) {
-                movieService.update(new UpdateWrapper<MovieMetadata>()
-                        .eq("id", target.getId())
-                        .set("series_name", null)
-                        .set("season", null));
-            }
+
         }
         bindTmdbIdentity(target);
         return new MovieUpsertResult(target, inserted);
@@ -773,7 +779,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         if (!hasText(incoming)) {
             return current;
         }
-        if (!hasText(current) || isRemoteUrl(current)) {
+        if (!hasText(current) || isRemoteUrl(current) || current.startsWith("tmdb/")) {
             return trim(incoming, 500);
         }
         return current;

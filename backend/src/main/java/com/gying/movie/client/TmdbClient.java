@@ -88,6 +88,16 @@ public class TmdbClient {
                 .queryParam("append_to_response", "credits,alternative_titles"));
     }
 
+    public JsonNode fetchSeasonDetails(long tmdbId, int season) {
+        if (tmdbId <= 0 || season < 1 || season > 99) throw new IllegalArgumentException("Invalid season identity");
+        return getJson("/tv/" + tmdbId + "/season/" + season, builder -> builder.queryParam("language", LANGUAGE));
+    }
+
+    public JsonNode fetchCollection(long collectionId) {
+        if (collectionId <= 0) throw new IllegalArgumentException("Invalid collection identity");
+        return getJson("/collection/" + collectionId, builder -> builder.queryParam("language", LANGUAGE));
+    }
+
     public List<TmdbListItem> searchMulti(String query, int maxResults) {
         if (query == null || query.isBlank()) {
             return List.of();

@@ -987,6 +987,80 @@ class QqBotServiceImplTest {
         assertTrue(nextPage.contains("迅雷候选 4"));
     }
 
+    @Test
+    void builtInAndConfiguredBlocklistStopsWebAndQqBeforeAnySearch() {
+        for (String key : List.of("web:blocked", "qq:blocked")) {
+            assertTrue(service.buildSearchReply("ＰＯＲＮ", key).contains("不支持的内容"));
+            qqBotProperties.setBlockedKeywords("禁搜测试");
+            assertTrue(service.buildSearchReply("禁 搜 测 试", key).contains("不支持的内容"));
+        }
+        org.mockito.Mockito.verifyNoInteractions(movieService, resourceLinkService, gyingSourceWorkflowService,
+                tmdbMetadataSyncService, panSouClient, resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void blocklistChangesInvalidateCachedLibraryContinuation() {
+        MovieMetadata local = movie("policy-cache", "缓存影片", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink saved = link("QUARK", "缓存影片资源", "https://pan.quark.cn/s/policy-fixture");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        assertTrue(service.buildSearchReply("缓存影片", "web:policy").contains("资源库已有资源"));
+        qqBotProperties.setBlockedKeywords("缓存影片");
+        assertTrue(service.buildSearchReply("资源", "web:policy").contains("不支持的内容"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqReturnsApprovedLibraryResourcesEvenWhenReleaseDateIsFuture() {
+        MovieMetadata local = movie("outbreak", "生化危机：爆发夜", 2099);
+        local.setReleaseDates("2099-10-05(中国大陆)"); local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink saved = link("QUARK", "爆发夜 已入库资源", "https://pan.quark.cn/s/outbreak-fixture");
+        saved.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(saved));
+        String reply = service.buildSearchReply("生化危机：爆发夜", "qq:outbreak");
+        assertTrue(reply.contains(saved.getUrl())); assertFalse(reply.contains("尚未上映"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void regionalReleaseDateUsesEarliestValidDateNotFirstRegion() {
+        MovieMetadata local = movie("regions", "跨地区上映", 2026);
+        local.setReleaseDates("2099-10-05(中国大陆) / 2020-09-16(法国) / 2020-09-18(美国)");
+        assertEquals(false, org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "isUpcoming", local));
+        local.setReleaseDates("2099-10-05(中国大陆)");
+        assertEquals(true, org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "isUpcoming", local));
+    }
+
+    @Test
+    void readsCurrentSystemBlocklistForEveryRequestWithoutReloadOrRestart() {
+        var config = mock(com.gying.movie.service.ISysConfigService.class);
+        service.configureSearchLimits(config);
+        when(config.getConfigValue("qq.bot.blocked_keywords", "")).thenReturn("临时禁词甲", "临时禁词乙");
+        assertTrue(service.buildSearchReply("临时禁词甲", "web:live-config").contains("不支持的内容"));
+        assertTrue(service.buildSearchReply("临时禁词乙", "qq:live-config").contains("不支持的内容"));
+        verify(config, org.mockito.Mockito.times(2)).getConfigValue("qq.bot.blocked_keywords", "");
+        org.mockito.Mockito.verifyNoInteractions(movieService, resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqStaleTrailerStatusReturnsExistingResourcesBeforeExternalMovieCandidates() {
+        MovieMetadata local = movie("stale-trailer", "生化危机：爆发夜", 2026);
+        local.setReleaseDates("2099-10-05(中国大陆) / 2020-09-16(法国)");
+        local.setResourceStatus("TRAILER");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink quark = link("QUARK", "已审核夸克资源", "https://pan.quark.cn/s/stale-fixture");
+        quark.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(quark));
+        String reply = service.buildSearchReply("生化危机：爆发夜", "qq:stale-trailer");
+        assertTrue(reply.contains(quark.getUrl())); assertFalse(reply.contains("尚未上映"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
     private MovieSearchCandidate candidate(Long tmdbId, String title, int year, int score) {
         return new MovieSearchCandidate(tmdbId, "tv", title, null, year, score);
     }

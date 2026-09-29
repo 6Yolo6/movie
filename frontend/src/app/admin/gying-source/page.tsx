@@ -449,7 +449,7 @@ export default function GyingSourcePage() {
                         >
                             {t('gyingSourceEnsureAction')}
                         </Button>
-                        {record.localMovieId && ['tv', 'ac'].includes(record.typeCode) && (
+                        {record.localMovieId && (
                             <Button
                                 size="small"
                                 icon={<DatabaseOutlined />}

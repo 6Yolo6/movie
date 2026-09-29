@@ -47,7 +47,7 @@
 ### 网页搜索：库内资源优先与仅二维码（2026-09-24 21:38 已部署）
 
 - `web:` 用户精确命中本地影片时优先返回已审核、活动、未删除、健康状态正常的片库资源；不受自有转存来源筛选限制，包含人工发布。同名不同年份/类型仍需先确认影片。
-- 库内快路径只读，不等待 GYING/TMDB/PanSou、分享验活或转存；用户发送“资源”/点击“搜索其他资源”后才进入已有外部候选流程。QQ 链路保持原行为。
+- 库内快路径只读，不等待 GYING/TMDB/PanSou、分享验活或转存；用户发送“资源”/点击“搜索其他资源”后才进入已有外部候选流程。QQ 对待上映或残留 `TRAILER` 标记的影片同样先检查库内有效资源，避免错误拒绝；上映判断取所有地区日期的最早有效值。
 - 网页只渲染二维码、资源名称和提取码，移除明文 URL 与复制/打开入口；二维码内容即分享地址，可被解码，不构成强制手机 App 或防提取措施。过长地址显示二维码不可用提示，不回退为明文。
 
 ## Resource Hub
@@ -85,8 +85,10 @@
 - `POST /published-resources/sync?limit=`：分页读取当前账号已发布资源，按 GYING `source_id` 或 URL 跳过本地已有记录；新资源复用影片元数据入库流程并写入 `resource_link`。
 - `POST /published-resources/repair-by-ids`：请求体为 GYING `panlist.id` 字符串数组，最多 100 个；只验链并修复当前账号中精确匹配且明确 `INVALID` 的资源。
 - `GET /jobs/{jobId}`：后台任务状态。
-- `POST /movies/{movieId}/poster/repair`、`POST /posters/repair?limit=`：自动补图；GYING 不可用时回退 TMDB 搜索匹配。
-- `POST /movies/{movieId}/seasons/ensure?maxPages=`：异步补齐季元数据，优先 GYING（`includeResources=false`），缺失时回退 TMDB 唯一剧集匹配与真实季信息。只补缺失元数据；已有 ACTIVE、已审核、NORMAL 的合集分享按明确季范围绑定原 URL/提取码，保留旧 canonical 与绑定，重复操作不重复创建。单季/未知范围/失效/带 `fid` 子目录的链接不扩散，且不发起转存或额外外部发布。结果 `mode=METADATA_AND_EXISTING_COLLECTION`，含 `status=COMPLETED|PARTIAL|SKIPPED`、`metadataCreated`、`gyingCreated`、`tmdbCreated`、`bound`、`existingBindings`、`missingSeasons`、`warnings`、`items`；新绑定来源标记 `COLLECTION_BINDING`。
+- `POST /movies/{movieId}/metadata/sync`：严格匹配 GYING 并同步到既有 canonical 影片，回填 `seriesName` / `season`，保留并补充 TMDB 身份，不导入资源。
+- `POST /movies/{movieId}/poster/repair`：GYING 对应影片/季海报优先；缺失或来源异常时回退 TMDB 本季图，不复用整剧或其他季封面。
+- `POST /posters/repair?limit=50`：无请求体时补全最多 100 部缺图影片；可传 `{"movieIds":["id1","id2"],"refreshExisting":false}` 只补所选缺图。`refreshExisting=true` 替换所选已有海报，必须显式提供 1–100 个 ID；空选择不扩大成全库操作。
+- `POST /movies/{movieId}/seasons/ensure?maxPages=`：电影、剧集和动漫均可异步补齐系列/季元数据，优先 GYING（`includeResources=false`），缺失时回退 TMDB 唯一剧集匹配与真实季信息。刷新现有 GYING 元数据与双源身份，并补充缺失成员；已有 ACTIVE、已审核、NORMAL 的合集分享按明确季范围绑定原 URL/提取码，保留旧 canonical 与绑定，重复操作不重复创建。单季/未知范围/失效/带 `fid` 子目录的链接不扩散，且不发起转存或额外外部发布。结果 `mode=METADATA_AND_EXISTING_COLLECTION`，含 `status=COMPLETED|PARTIAL|SKIPPED`、`metadataCreated`、`metadataRefreshed`、`gyingCreated`、`tmdbCreated`、`bound`、`existingBindings`、`missingSeasons`、`warnings`、`items`；新绑定来源标记 `COLLECTION_BINDING`。 电影及电影型动漫按 TMDB 官方合集成员补缺（`mode=METADATA_ONLY_COLLECTION`），每部保留独立 movie ID，来源身份季号仍为 0，不把一条电影资源推测绑定到其他续集。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，
@@ -94,6 +96,13 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 向 GYING 发布网盘资源使用 `POST /res/pan/add`；表单中的 `binds[0][dir]` 传递
 `mv|tv|ac` 类型，`binds[0][id]` 传递 GYING 影片 ID。不得再把类型和 ID 拼入请求路径。
+
+### 网站与 QQ 共用的拒绝关键词
+
+- 内置词库：`backend/src/main/resources/moderation/search-blocklist.txt`，覆盖明确成人资源词、繁体变体、英文词与成人站点标识；普通行归一化子串匹配，`@token` 使用英文边界避免 AV 误伤 Avatar。
+- `qq.bot.blocked_keywords` 是管理员追加词，每次请求读取最新配置，无需重启；逗号、分号、顿号和换行分隔，空配置不关闭基础词库。
+- NFKC、大小写、空格、标点和零宽字符归一化；入口、候选名称、旧候选选择/翻页/切换资源均复查。拒绝后清除候选上下文，不依赖 PanSou 过滤。
+- 关键词策略不能保证识别所有伪装资源，也可能误匹配；需要持续维护并保留人工审核。
 
 ## QQ 自动化
 

@@ -44,6 +44,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -102,6 +104,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final QqTransferCleanupService transferCleanupService;
     private final RedisRateLimiter rateLimiter;
     private com.gying.movie.service.ISysConfigService searchLimitConfig;
+    private final ThreadLocal<String> searchKeywordSnapshot = new ThreadLocal<>();
 
     @Autowired
     public void configureSearchLimits(com.gying.movie.service.ISysConfigService config) {
@@ -283,12 +286,33 @@ public class QqBotServiceImpl implements IQqBotService {
 
     @Override
     public String buildSearchReply(String keyword, String userKey) {
+        String fallback = java.util.Objects.toString(qqBotProperties.getBlockedKeywords(), "");
+        String configured = searchLimitConfig == null ? fallback
+                : searchLimitConfig.getConfigValue("qq.bot.blocked_keywords", fallback);
+        searchKeywordSnapshot.set(configured == null ? fallback : configured);
+        try {
+            return buildSearchReplyWithPolicy(keyword, userKey);
+        } finally {
+            searchKeywordSnapshot.remove();
+        }
+    }
+
+    private String buildSearchReplyWithPolicy(String keyword, String userKey) {
         String requestedKeyword = trim(keyword, 80);
         if (!hasText(requestedKeyword)) {
             return finishSearch(userKey, requestedKeyword, "REJECTED", null, 0,
                     defaultHelpReply(), "empty keyword");
         }
+        if (blocked(requestedKeyword)) return blockedReply(userKey, requestedKeyword);
         ResourcePreference resourcePreference = parseResourcePreference(requestedKeyword);
+        ResourceSearchContext policyContext = activeResourceSearchContext(userKey);
+        if (policyContext != null && (resourcePreference != null || isCandidateSelection(requestedKeyword)
+                || isResourcePageCommand(requestedKeyword))) {
+            MovieMetadata contextMovie = movieService.getById(policyContext.movieId());
+            if (blocked(policyContext.keyword()) || blockedMovie(contextMovie)) {
+                return blockedReply(userKey, requestedKeyword);
+            }
+        }
         if (resourcePreference != null) {
             return buildResourcePreferenceReply(requestedKeyword, userKey, resourcePreference);
         }
@@ -299,6 +323,11 @@ public class QqBotServiceImpl implements IQqBotService {
                     "resource candidates expired");
         }
         ResourceCandidates activeResources = activeResourceCandidates(userKey);
+        if (activeResources != null && (candidateSelection || isResourcePageCommand(requestedKeyword))
+                && (blocked(activeResources.movieTitle()) || activeResources.allResources().stream()
+                        .anyMatch(choice -> blocked(choice.name())))) {
+            return blockedReply(userKey, requestedKeyword);
+        }
         if (activeResources != null && isResourcePageCommand(requestedKeyword)) {
             return changeResourcePage(userKey, requestedKeyword, activeResources,
                     isPreviousResourcePage(requestedKeyword) ? -1 : 1);
@@ -330,11 +359,8 @@ public class QqBotServiceImpl implements IQqBotService {
                     "搜索词太短，请至少输入 " + Math.max(qqBotProperties.getMinKeywordLength(), 1) + " 个字。",
                     "keyword too short");
         }
-        String blockedWord = firstBlockedKeyword(safeKeyword);
-        if (hasText(blockedWord)) {
-            log.info("QQ bot search blocked by sensitive keyword: {}", blockedWord);
-            return finishSearch(userKey, safeKeyword, "BLOCKED", null, 0,
-                    "搜索词包含不支持的内容，请更换关键词。", "blocked keyword: " + blockedWord);
+        if (blocked(safeKeyword) || selectedCandidate != null && blocked(selectedCandidate.getOriginalTitle())) {
+            return blockedReply(userKey, safeKeyword);
         }
         if (!allowSearch(userKey)) {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
@@ -343,7 +369,9 @@ public class QqBotServiceImpl implements IQqBotService {
         List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
         // Website users can immediately use approved library resources. Do not wait for
         // metadata providers, live share checks, discovery or transfers on this read-only path.
-        if (userKey != null && userKey.startsWith("web:")) {
+        if (userKey != null && userKey.startsWith("web:")
+                || localCandidates.stream().anyMatch(candidate -> isUpcoming(candidate)
+                        || "TRAILER".equalsIgnoreCase(candidate.getResourceStatus()))) {
             String libraryReply = tryBuildWebLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
             if (libraryReply != null) return libraryReply;
         }
@@ -403,6 +431,7 @@ public class QqBotServiceImpl implements IQqBotService {
                         "no credible metadata");
             }
         }
+        if (blockedMovie(movie)) return blockedReply(userKey, safeKeyword);
         if (hasText(selectedKeyword)) {
             suggestedCandidates.remove(candidateUserKey(userKey));
         }
@@ -435,7 +464,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     ? MovieTitleMatcher.isExactMatch(movie, keyword) : matchesCandidate(movie, selected)).toList();
         }
         matches = matches.stream().filter(movie -> "ACTIVE".equalsIgnoreCase(movie.getStatus())
-                && movie.getDeletedAt() == null).toList();
+                && movie.getDeletedAt() == null && !blockedMovie(movie)).toList();
         if (matches.isEmpty()) return null;
         Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
         for (MovieMetadata movie : matches) {
@@ -474,7 +503,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     .append("\n  ").append(link.getUrl());
             if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
         }
-        reply.append("\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。");
+        reply.append(userKey != null && userKey.startsWith("web:")
+                ? "\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。"
+                : "\n\n需要其他版本或网盘，可发送“资源”继续。");
         return finishSearch(userKey, keyword, "LIBRARY_RESOURCE", movie.getId(), links.size(), reply.toString(), null);
     }
 
@@ -489,7 +520,7 @@ public class QqBotServiceImpl implements IQqBotService {
         for (ResourceLink link : stored) {
             if (link == null || !movieId.equals(link.getMovieId()) || !Integer.valueOf(1).equals(link.getAuditStatus())
                     || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
-                    || !isNormalLink(link) || !hasText(link.getUrl())) continue;
+                    || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())) continue;
             try {
                 java.net.URI uri = java.net.URI.create(link.getUrl().trim());
                 String scheme = firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT);
@@ -557,6 +588,11 @@ public class QqBotServiceImpl implements IQqBotService {
                     "目前仅支持夸克和迅雷自有分享链接。", "unsupported cloud provider");
         }
         List<String> searchNotes = new ArrayList<>();
+        if (isUpcoming(movie)) {
+            String library = tryBuildWebLibraryReply(userKey, context.keyword(), null, List.of(movie));
+            if (library != null) return library;
+            return finishSearch(userKey, context.keyword(), "TRAILER", movie.getId(), 0, buildUpcomingReply(movie), null);
+        }
         ResourceCandidates candidates = activeResourceCandidates(userKey);
         if (candidates == null || !context.movieId().equals(candidates.movieId())) {
             List<ResourceChoice> discovered = findResourceChoices(movie, context.keyword(), searchNotes);
@@ -633,7 +669,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 }
             }
         }
-        return prioritizeResourceChoices(choices);
+        return prioritizeResourceChoices(choices.stream().filter(choice -> !blocked(choice.name())).toList());
     }
 
     private void discoverResourceCandidates(MovieMetadata movie, String keyword, List<String> searchNotes) {
@@ -1054,7 +1090,8 @@ public class QqBotServiceImpl implements IQqBotService {
                 gying,
                 fallback,
                 MAX_CANDIDATE_SUGGESTIONS,
-                MAX_GYING_CANDIDATE_SUGGESTIONS);
+                MAX_GYING_CANDIDATE_SUGGESTIONS).stream()
+                .filter(candidate -> !blocked(candidate.getTitle()) && !blocked(candidate.getOriginalTitle())).toList();
     }
 
     private String resolveCandidateMediaType(MovieMetadata movie) {
@@ -1352,17 +1389,15 @@ public class QqBotServiceImpl implements IQqBotService {
         if (!hasText(releaseDates)) {
             return null;
         }
-        for (String part : releaseDates.split("[,/;|\\s]+")) {
-            String value = part.trim();
-            if (value.length() >= 10) {
-                try {
-                    return LocalDate.parse(value.substring(0, 10));
-                } catch (DateTimeParseException ignored) {
-                    // Try the next date token.
-                }
-            }
+        LocalDate earliest = null;
+        Matcher dates = Pattern.compile("[0-9]{4}-[0-9]{2}-[0-9]{2}").matcher(releaseDates);
+        while (dates.find()) {
+            try {
+                LocalDate date = LocalDate.parse(dates.group());
+                if (earliest == null || date.isBefore(earliest)) earliest = date;
+            } catch (DateTimeParseException ignored) { /* Ignore malformed source dates. */ }
         }
-        return null;
+        return earliest;
     }
 
     private void markTrailer(MovieMetadata movie) {
@@ -1982,18 +2017,23 @@ public class QqBotServiceImpl implements IQqBotService {
         resourceLinkService.updateById(link);
     }
 
-    private String firstBlockedKeyword(String keyword) {
-        if (!hasText(qqBotProperties.getBlockedKeywords())) {
-            return null;
-        }
-        String normalized = keyword.trim().toLowerCase();
-        for (String item : qqBotProperties.getBlockedKeywords().split("[,，|;；\\n\\r]+")) {
-            String blocked = item.trim();
-            if (hasText(blocked) && normalized.contains(blocked.toLowerCase())) {
-                return blocked;
-            }
-        }
-        return null;
+    private boolean blocked(String value) {
+        return com.gying.movie.utils.SearchKeywordPolicy.blocked(value, searchKeywordSnapshot.get() == null
+                ? qqBotProperties.getBlockedKeywords() : searchKeywordSnapshot.get());
+    }
+
+    private boolean blockedMovie(MovieMetadata movie) {
+        return movie != null && (blocked(movie.getTitleCn()) || blocked(movie.getTitleEn())
+                || blocked(movie.getSeriesName()) || blocked(movie.getAliases()));
+    }
+
+    private String blockedReply(String userKey, String keyword) {
+        String key = candidateUserKey(userKey);
+        suggestedCandidates.remove(key);
+        resourceCandidates.remove(key);
+        resourceSearchContexts.remove(key);
+        return finishSearch(userKey, keyword, "BLOCKED", null, 0,
+                "搜索词包含不支持的内容，请更换关键词。", "blocked content policy");
     }
 
     private String buildNoResourceReply(MovieMetadata movie, List<String> searchNotes) {

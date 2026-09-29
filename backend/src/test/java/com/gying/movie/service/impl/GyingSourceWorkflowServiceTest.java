@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -399,18 +401,20 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(movie.getId(), gyingIdentity.getMovieId());
         assertEquals("GY100", gyingIdentity.getExternalId());
         assertEquals("AUTO", gyingIdentity.getMatchStatus());
-        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals(false, payload.getValue().get("includeResources"));
     }
 
     @Test
-    void repairMissingPostersPrefersTmdbWithoutGyingIdentity() throws Exception {
+    void repairMissingPostersFallsBackToTmdbWithoutGyingIdentity() throws Exception {
         MovieMetadata movie = movie("tmdb_movie_200", "海报测试", "mv", "AVAILABLE");
         movie.setTmdbId(200L);
         movie.setTmdbType("movie");
         when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
         when(movieService.getById(movie.getId())).thenReturn(movie);
         when(tmdbClient.fetchDetails("movie", 200L))
-                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/poster.jpg\"}"));
+                .thenReturn(new ObjectMapper().readTree("{\"id\":200,\"poster_path\":\"/poster.jpg\"}"));
         when(posterStorageService.storeTmdbPoster("movie", 200L, "/poster.jpg"))
                 .thenReturn("tmdb/movie/200/poster.jpg");
 
@@ -437,8 +441,8 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.repairMoviePoster(movie.getId());
 
-        assertEquals("FAILED", result.get("status"));
-        assertEquals("image unavailable", result.get("reason"));
+        assertEquals("SKIPPED", result.get("status"));
+        assertTrue(String.valueOf(result.get("reason")).contains("保留原图"));
         verify(movieService, never()).updateById(any());
     }
 
@@ -736,7 +740,7 @@ class GyingSourceWorkflowServiceTest {
 
         when(tmdbClient.searchMulti("复仇者联盟2：奥创纪元", 5)).thenReturn(List.of(series, sequel));
         when(tmdbClient.fetchDetails("movie", 99861L))
-                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/avengers2.jpg\"}"));
+                .thenReturn(new ObjectMapper().readTree("{\"id\":99861,\"poster_path\":\"/avengers2.jpg\"}"));
         when(posterStorageService.storeTmdbPoster("movie", 99861L, "/avengers2.jpg"))
                 .thenReturn("tmdb/movie/99861/poster.jpg");
 
@@ -760,7 +764,7 @@ class GyingSourceWorkflowServiceTest {
         item.setOriginalTitle("Iron Man 2");
         when(tmdbClient.searchMulti("钢铁侠2", 5)).thenReturn(List.of(item));
         when(tmdbClient.fetchDetails("movie", 10138L))
-                .thenReturn(new ObjectMapper().readTree("{\"poster_path\":\"/iron2.jpg\"}"));
+                .thenReturn(new ObjectMapper().readTree("{\"id\":10138,\"poster_path\":\"/iron2.jpg\"}"));
         when(posterStorageService.storeTmdbPoster("movie", 10138L, "/iron2.jpg"))
                 .thenReturn("tmdb/movie/10138/poster.jpg");
 
@@ -770,7 +774,7 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("TMDB_SEARCH", result.get("source"));
         assertEquals("tmdb/movie/10138/poster.jpg", movie.getPosterUrl());
         verify(movieService).updateById(movie);
-        verify(gyingSourceClient, never()).get(anyString());
+        verify(gyingSourceClient).get(eq("/search"), anyMap());
     }
 
     @Test
@@ -783,9 +787,50 @@ class GyingSourceWorkflowServiceTest {
         Map<String, Object> result = service.repairMoviePoster(movie.getId());
 
         assertEquals("SKIPPED", result.get("status"));
-        assertEquals(Boolean.TRUE, result.get("skipped"));
+        assertTrue(String.valueOf(result.get("reason")).contains("保留原图"));
         assertTrue(String.valueOf(result.get("reason")).contains("GYING"));
         verify(movieService, never()).updateById(any());
+    }
+
+    @Test
+    void gyingPosterHasPriorityForTmdbOriginWithoutReplacingIdentity() {
+        MovieMetadata movie = movie("tmdb_tv_103516_s2", "星际迷航：奇异新世界 第2季", "tv", "AVAILABLE");
+        movie.setTmdbId(103516L); movie.setTmdbType("tv"); movie.setSeason(2);
+        MovieSourceIdentity gying = new MovieSourceIdentity(); gying.setMovieId(movie.getId());
+        gying.setSource("GYING"); gying.setSourceType("tv"); gying.setExternalId("DDBy");
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(gying);
+        when(gyingSourceClient.post(eq("/poster"), any())).thenReturn(Map.of("status", "UPDATED", "posterUrl", "tv/DDBy/384.avif"));
+        assertEquals("tv/DDBy/384.avif", service.repairMoviePoster(movie.getId()).get("posterUrl"));
+        assertEquals(103516L, movie.getTmdbId());
+        verifyNoInteractions(tmdbClient, posterStorageService);
+    }
+
+    @Test
+    void tmdbFallbackUsesSeasonSpecificArtworkAndNeverSeriesPoster() throws Exception {
+        MovieMetadata movie = movie("tmdb_tv_103516_s3", "星际迷航：奇异新世界 第3季", "tv", "AVAILABLE");
+        movie.setTmdbId(103516L); movie.setTmdbType("tv"); movie.setSeason(3);
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        when(gyingSourceClient.get(anyString(), anyMap())).thenThrow(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(tmdbClient.fetchSeasonDetails(103516L, 3)).thenReturn(new ObjectMapper().readTree("{\"season_number\":3,\"poster_path\":\"/season3.jpg\"}"));
+        when(posterStorageService.storeTmdbSeasonPoster(103516L, 3, "/season3.jpg")).thenReturn("tmdb/tv/103516/season-3/poster.jpg");
+        assertEquals("UPDATED", service.repairMoviePoster(movie.getId()).get("status"));
+        assertEquals("tmdb/tv/103516/season-3/poster.jpg", movie.getPosterUrl());
+        verify(posterStorageService, never()).storeTmdbPoster(any(), any(), any());
+    }
+
+    @Test
+    void selectedPosterBatchCannotBecomeUnboundedRefresh() {
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> service.repairMissingPosters(20, List.of(), true));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> service.repairMissingPosters(20, null, true));
+        service.repairMissingPosters(20, List.of("selected"), false);
+        ArgumentCaptor<Wrapper<MovieMetadata>> query = ArgumentCaptor.forClass(Wrapper.class);
+        verify(movieService).list(query.capture());
+        assertTrue(query.getValue().getSqlSegment().contains("id IN"));
+        assertTrue(query.getValue().getSqlSegment().contains("poster_url"));
+        assertTrue(query.getValue().getSqlSegment().contains("LIMIT 1"));
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {

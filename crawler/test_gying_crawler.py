@@ -3,6 +3,9 @@ from unittest.mock import Mock, patch
 
 from crawler.gying_crawler import (
     fetch_movie_resource_snapshot,
+    parse_season,
+    find_series_seasons,
+    save_source_identity,
     list_my_pan_resources,
     gying_search_type,
     normalize_search_mode,
@@ -23,7 +26,7 @@ class GyingSearchParserTest(unittest.TestCase):
         self.assertEqual(2, normalize_search_mode("2"))
         self.assertEqual(3, normalize_search_mode(99))
 
-    def test_parses_parallel_search_arrays_and_keeps_movie_season_empty(self):
+    def test_parses_parallel_search_arrays_and_fills_movie_series(self):
         payload = {
             "l": {
                 "daoyan": [
@@ -60,8 +63,43 @@ class GyingSearchParserTest(unittest.TestCase):
             ["\u53f2\u8482\u6587\u00b7\u65af\u76ae\u5c14\u4f2f\u683c"],
             items[0]["directors"],
         )
-        self.assertIsNone(items[0]["seriesName"])
-        self.assertIsNone(items[0]["season"])
+        self.assertEqual("揭秘日", items[0]["seriesName"])
+        self.assertEqual(1, items[0]["season"])
+
+    def test_movie_anime_and_tv_series_fields(self):
+        for title, kind, expected in [
+            ("复仇者联盟2：奥创纪元", "mv", ("复仇者联盟", 2)),
+            ("破产姐妹 第六季", "tv", ("破产姐妹", 6)),
+            ("星际迷航：奇异新世界 第四季", "tv", ("星际迷航：奇异新世界", 4)),
+            ("示例动漫 Season 2", "ac", ("示例动漫", 2)),
+            ("1917", "mv", ("1917", 1)),
+            ("银翼杀手2049", "mv", ("银翼杀手2049", 1)),
+        ]:
+            self.assertEqual(expected, parse_season(title, kind))
+
+    @patch("crawler.gying_crawler.fetch_catalog_movies")
+    @patch("crawler.gying_crawler.search_movies")
+    @patch("crawler.gying_crawler.fetch_movie_metadata")
+    def test_star_trek_uses_search_not_twenty_catalog_pages(self, metadata, search, catalog):
+        metadata.return_value = {"title": "星际迷航：奇异新世界 第四季"}
+        search.return_value = [
+            {"typeCode":"tv", "mid":str(n), "title":f"星际迷航：奇异新世界 第{n}季"}
+            for n in [1,2,3]
+        ] + [{"typeCode":"tv", "mid":"unrelated", "title":"星际迷航：发现号 第一季"}]
+        rows = find_series_seasons("tv", "fourth", 20)
+        self.assertEqual([1,2,3,4], [row["season"] for row in rows])
+        catalog.assert_not_called()
+        search.assert_called_once_with("星际迷航：奇异新世界", type_code="tv", mode=3, limit=100)
+
+    def test_movie_installment_number_does_not_change_identity_season(self):
+        from unittest.mock import MagicMock
+        db = MagicMock()
+        save_source_identity(db, "canonical", "GYING", "mv", "source", 3)
+        values = db.cursor.return_value.__enter__.return_value.execute.call_args.args[1]
+        self.assertEqual(0, values[4])
+        save_source_identity(db, "canonical", "GYING", "tv", "source", 3)
+        values = db.cursor.return_value.__enter__.return_value.execute.call_args.args[1]
+        self.assertEqual(3, values[4])
 
     def test_preserves_existing_owned_resource_source(self):
         self.assertEqual(

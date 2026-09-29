@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 /** Metadata-only season completion. Never searches for, transfers or publishes external resources. */
 final class SeasonMetadataCompletion {
     private final TmdbClient tmdb;
+    private final PosterStorageService posters;
     private final IMovieMetadataService movies;
     private final IMovieSourceIdentityService identities;
     private final IResourceLinkService resources;
@@ -35,7 +36,7 @@ final class SeasonMetadataCompletion {
     SeasonMetadataCompletion(TmdbClient tmdb, PosterStorageService posters, IMovieMetadataService movies,
             IMovieSourceIdentityService identities, IResourceLinkService resources,
             IResourceDiscoveryResultService discoveries) {
-        this.tmdb = tmdb; this.movies = movies;
+        this.tmdb = tmdb; this.movies = movies; this.posters = posters;
         this.identities = identities; this.resources = resources; this.discoveries = discoveries;
     }
 
@@ -57,17 +58,20 @@ final class SeasonMetadataCompletion {
         collections.forEach(link -> expected.addAll(link.seasons()));
         List<String> warnings = new ArrayList<>();
         boolean gyingUnavailable = false;
-        int gyingAdded = 0, tmdbAdded = 0;
+        int gyingAdded = 0, gyingRefreshed = 0, tmdbAdded = 0;
         try {
             for (MovieMetadata row : safe(gyingLoader.apply(Set.copyOf(seasons.keySet())))) {
-                if (row != null && row.getSeason() != null && row.getSeason() > 0
-                        && !seasons.containsKey(row.getSeason())) {
-                    seasons.put(row.getSeason(), row); gyingAdded++;
+                if (row != null && row.getSeason() != null && row.getSeason() > 0) {
+                    if (seasons.containsKey(row.getSeason())) gyingRefreshed++; else gyingAdded++;
+                    // Subsequent resource bindings must use refreshed source metadata, not a stale DB snapshot.
+                    seasons.put(row.getSeason(), row);
                 }
             }
         } catch (Exception error) {
             gyingUnavailable = true;
-            warnings.add("GYING 元数据暂不可用，已尝试 TMDB");
+            warnings.add(error instanceof IllegalStateException
+                    ? "GYING 未找到唯一可信的系列匹配或导入未完成，已尝试 TMDB"
+                    : "GYING 请求超时或来源暂不可用，已尝试 TMDB");
         }
         boolean tmdbNeeded = expected.isEmpty() || !seasons.keySet().containsAll(expected);
         if (tmdbNeeded) {
@@ -116,10 +120,10 @@ final class SeasonMetadataCompletion {
         result.put("gyingUnavailable", gyingUnavailable);
         result.put("mode", "METADATA_AND_EXISTING_COLLECTION");
         result.put("status", failed > 0 || !missing.isEmpty() ? "PARTIAL"
-                : gyingAdded + tmdbAdded == 0 && bound == 0 ? "SKIPPED" : "COMPLETED");
+                : gyingAdded + tmdbAdded + gyingRefreshed == 0 && bound == 0 ? "SKIPPED" : "COMPLETED");
         result.put("discovered", seasons.size()); result.put("completed", gyingAdded + tmdbAdded);
         result.put("metadataCreated", gyingAdded + tmdbAdded); result.put("gyingCreated", gyingAdded);
-        result.put("tmdbCreated", tmdbAdded); result.put("bound", bound);
+        result.put("tmdbCreated", tmdbAdded); result.put("metadataRefreshed", gyingRefreshed); result.put("bound", bound);
         result.put("existingBindings", existingBindings); result.put("failed", failed);
         result.put("missingSeasons", missing); result.put("items", items); result.put("warnings", warnings);
         result.put("reason", "优先 GYING，其次 TMDB；只补元数据并复用已确认的合集分享，不重复转存");
@@ -207,8 +211,8 @@ final class SeasonMetadataCompletion {
             row.setYear(Integer.parseInt(airDate.substring(0, 4))); row.setReleaseDates(airDate);
             row.setSummary(season.path("overview").asText(null));
             row.setGenres(movie.getGenres()); row.setRegions(movie.getRegions()); row.setLanguages(movie.getLanguages());
-            row.setPosterUrl(movie.getPosterUrl());
-            // Reuse a known-local series poster; avoid introducing untrusted remote image paths.
+            row.setPosterUrl(posters.storeTmdbSeasonPoster(tmdbId, number, season.path("poster_path").asText(null)));
+            // Never reuse a different season's image. Missing artwork remains eligible for repair.
             row.setStatus("ACTIVE"); row.setResourceStatus("UNKNOWN"); row.setPopularity(0);
             row.setCreatedAt(LocalDateTime.now()); row.setUpdatedAt(row.getCreatedAt()); row.setTmdbLastSyncAt(row.getCreatedAt());
             if (!movies.save(row)) throw new IllegalStateException("Season metadata not saved");
@@ -235,7 +239,8 @@ final class SeasonMetadataCompletion {
     static boolean sameSeries(MovieMetadata base, MovieMetadata row) {
         if (row == null || row.getDeletedAt() != null || "DELETED".equals(row.getStatus())) return false;
         if (base.getTmdbId() != null && row.getTmdbId() != null) {
-            return base.getTmdbId().equals(row.getTmdbId()) && "tv".equals(row.getTmdbType());
+            return base.getTmdbId().equals(row.getTmdbId()) && "tv".equals(row.getTmdbType())
+                    && "tv".equals(base.getTmdbType());
         }
         String name = normalized(base(base));
         if (name.isEmpty() || !base.getCategory().equals(row.getCategory()) || !name.equals(normalized(base(row)))) return false;
