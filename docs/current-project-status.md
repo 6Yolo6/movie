@@ -99,7 +99,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-binding-quickadd-backend:20260930a` / `gying-binding-quickadd-frontend:20260930c`（2026-09-30）。快速追加改为全库搜索版，只重建 frontend，backend 未变；回滚目标 `gying-binding-quickadd-frontend:20260930b`（再往前 `gying-binding-quickadd-frontend:20260930a`）。无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-quickadd-global-search-20260930`、`E:/gying-tools/releases/binding-quickadd-picker-20260930` 与 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
+- 当前前后端：`gying-binding-quickadd-backend:20260930b` / `gying-binding-quickadd-frontend:20260930c`（2026-09-30）。本轮只重建 backend（无上传者分享行并入绑定组），frontend 未变；回滚目标 `gying-binding-quickadd-backend:20260930a` 与 `gying-binding-quickadd-frontend:20260930b`（再往前 `gying-binding-quickadd-frontend:20260930a`）。无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-uploader-merge-20260930`、`E:/gying-tools/releases/binding-quickadd-global-search-20260930`、`E:/gying-tools/releases/binding-quickadd-picker-20260930` 与 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
 - 当前 GYING 数据源镜像 `gying-series-search-source:20260929a`；系列查找改为名称搜索，不再翻查 20 页评分榜。元数据同步自动填入系列与季/部序号，电影来源身份仍使用 season=0；非 root 身份及环境配置保持。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
@@ -137,6 +137,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 无上传者分享行并入绑定组验收（2026-09-30）：修复「流人」迅雷分享编辑时第五季不回显——该分享 6 行同一 URL 中，第五季行 `resource_link.id=2500` 由系统发布创建、`uploader_id` 为空，而其余 5 行为 `uploader_id=1`，原 `sameShare` 要求上传者完全相等，导致该行被排除在绑定组外。现同一 URL、类型、网盘与同系列下，任一侧上传者为空即视为同一分享，两侧上传者都非空且不同时仍严格分开；仅放宽回显与同组更新范围，不改变非管理员只能编辑自己资源行的鉴权。后端全量 368 项测试 0 failures/errors、1 项按环境跳过（新增 2 项：无上传者行回显、不同真实上传者仍分开）；生产只读复核该分享 6 行由修复前 5 行并入变为 6 行并入，全库混合空/有主上传者的分享共 10 组，其余按同系列继续分开。仅重建 backend 为 `gying-binding-quickadd-backend:20260930b`（运行容器 JAR SHA-256 `df03a0f…f560da`，字节码含新增 `sameUploader`），frontend 与其它容器未变；首页/登录页/`form-config` 200，匿名绑定接口 401，无数据库写入。回滚目标 `gying-binding-quickadd-backend:20260930a`，材料在 `E:/gying-tools/releases/binding-uploader-merge-20260930`。
 
 - 资源绑定快速追加全库搜索验收（2026-09-30）：快速添加输入框不再限定同系列，关键词命中库内任意影片都列为可点击候选；同系列候选之外跨系列命中同样可点选，最多显示 24 条并在超出时提示「另有 N 条匹配未显示」，精确影片 ID/标题仍可点「添加」直接追加。前端 lint 0 error、生产构建通过；本地与已部署站点各跑一轮 5 组浏览器场景全部通过（含跨系列候选显现）。仅重建 frontend 为 `gying-binding-quickadd-frontend:20260930c`，backend 与其它容器 ID、启动时间未变；本地首页/登录页 200、匿名绑定接口 401、`/api/resources/form-config` 200，无数据库写入。回滚目标 `gying-binding-quickadd-frontend:20260930b`，材料在 `E:/gying-tools/releases/binding-quickadd-global-search-20260930`。
 
