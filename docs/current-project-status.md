@@ -99,7 +99,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`（2026-09-29）。只替换 backend/frontend/gying-source 并重载 nginx；回滚镜像分别为 `gying-poster-metadata-fix-backend:20260928a`、`gying-binding-editor-frontend:20260928a`、`gying-source-detail:20260927a`。发布/回滚及验收材料在 `E:/gying-tools/releases/series-search-20260929`；无架构迁移。部署检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
+- 当前前后端：`gying-binding-quickadd-backend:20260930a` / `gying-binding-quickadd-frontend:20260930a`（2026-09-30）。本轮只重建 backend/frontend，回滚目标 `gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`；无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
 - 当前 GYING 数据源镜像 `gying-series-search-source:20260929a`；系列查找改为名称搜索，不再翻查 20 页评分榜。元数据同步自动填入系列与季/部序号，电影来源身份仍使用 season=0；非 root 身份及环境配置保持。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
