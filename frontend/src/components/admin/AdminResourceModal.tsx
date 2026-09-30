@@ -78,11 +78,16 @@ export default function AdminResourceModal({
     const [bindingsRetry, setBindingsRetry] = useState(0);
     const [quickBindingInput, setQuickBindingInput] = useState('');
     const [quickBindingAdding, setQuickBindingAdding] = useState(false);
+    const [quickBindingMatches, setQuickBindingMatches] = useState<BindingMovie[]>([]);
+    const [quickBindingSearching, setQuickBindingSearching] = useState(false);
     const bindRequest = useRef(0);
+    const quickSearchRequest = useRef(0);
     const primaryMovieId = Form.useWatch('movieId', form);
     const selectedBindingIds = Form.useWatch('bindMovieIds', form) || [];
     const allBindingOptions = Array.from(new Map([...bindingOptions, ...bindCandidates]
         .filter(item => item.value !== primaryMovieId).map(item => [item.value, item])).values());
+    const quickBindingCandidates = quickBindingMatches
+        .filter(item => !selectedBindingIds.includes(item.id));
 
     useEffect(() => {
         if (type === 'DISK') {
@@ -137,27 +142,58 @@ export default function AdminResourceModal({
         return true;
     };
 
+    const fetchSeriesMatches = useCallback(async (rawQuery: string): Promise<BindingMovie[]> => {
+        const query = rawQuery.trim();
+        const movieId = form.getFieldValue('movieId');
+        if (!query || !movieId) return [];
+        const [baseResponse, keywordResponse] = await Promise.all([
+            api(`/api/resources/bind-candidates?${new URLSearchParams({ movieId, limit: '100' })}`),
+            api(`/api/resources/bind-candidates?${new URLSearchParams({ movieId, keyword: query, limit: '100' })}`),
+        ]);
+        if (!baseResponse.ok || !keywordResponse.ok) return [];
+        const [baseItems, keywordItems] = await Promise.all([baseResponse.json(), keywordResponse.json()]);
+        const sameSeriesIds = new Set((baseItems || []).map((item: BindingMovie) => item.id));
+        const matches = new Map<string, BindingMovie>();
+        (keywordItems || [])
+            .filter((item: BindingMovie) => sameSeriesIds.has(item.id))
+            .forEach((item: BindingMovie) => matches.set(item.id, item));
+        return Array.from(matches.values());
+    }, [form]);
+
+    useEffect(() => {
+        const query = quickBindingInput.trim();
+        const blocked = !open || Boolean(resource && !bindingsReady);
+        if (!query || blocked) {
+            quickSearchRequest.current += 1;
+            setQuickBindingMatches([]);
+            setQuickBindingSearching(false);
+            return;
+        }
+        const requestId = ++quickSearchRequest.current;
+        setQuickBindingSearching(true);
+        const timer = setTimeout(() => {
+            fetchSeriesMatches(query).then((items) => {
+                if (requestId === quickSearchRequest.current) setQuickBindingMatches(items);
+            }).catch(() => {
+                if (requestId === quickSearchRequest.current) setQuickBindingMatches([]);
+            }).finally(() => {
+                if (requestId === quickSearchRequest.current) setQuickBindingSearching(false);
+            });
+        }, 250);
+        return () => clearTimeout(timer);
+    }, [bindingsReady, fetchSeriesMatches, open, quickBindingInput, resource]);
+
     const addBindingByInput = async () => {
         const query = quickBindingInput.trim();
         if (!query || !primaryMovieId || quickBindingAdding) return;
         setQuickBindingAdding(true);
         try {
-            const baseQuery = new URLSearchParams({ movieId: primaryMovieId, limit: '100' });
-            const keywordQuery = new URLSearchParams({ movieId: primaryMovieId, keyword: query, limit: '100' });
-            const [baseResponse, keywordResponse] = await Promise.all([
-                api(`/api/resources/bind-candidates?${baseQuery}`),
-                api(`/api/resources/bind-candidates?${keywordQuery}`),
-            ]);
-            if (!baseResponse.ok || !keywordResponse.ok) {
-                message.error(t('resourceBindQuickAddNotFound'));
+            const candidates = await fetchSeriesMatches(query);
+            setQuickBindingMatches(candidates);
+            if (!candidates.length) {
+                message.warning(t('resourceBindQuickAddNotFound'));
                 return;
             }
-            const [baseItems, keywordItems] = await Promise.all([baseResponse.json(), keywordResponse.json()]);
-            const sameSeriesIds = new Set((baseItems || []).map((item: BindingMovie) => item.id));
-            const candidates: BindingMovie[] = Array.from(new Map(
-                [...(baseItems || []), ...(keywordItems || []).filter((item: BindingMovie) => sameSeriesIds.has(item.id))]
-                    .map((item: BindingMovie) => [item.id, item])
-            ).values());
             const normalized = query.toLocaleLowerCase();
             const exactId = candidates.find(item => item.id.toLocaleLowerCase() === normalized);
             const exactTitles = candidates.filter(item => [item.titleCn, item.titleEn]
@@ -165,7 +201,7 @@ export default function AdminResourceModal({
             const match = exactId || (exactTitles.length === 1 ? exactTitles[0] : undefined)
                 || (candidates.length === 1 ? candidates[0] : undefined);
             if (!match) {
-                message.warning(t(candidates.length > 1 ? 'resourceBindQuickAddAmbiguous' : 'resourceBindQuickAddNotFound'));
+                message.info(t('resourceBindQuickAddPickFromList'));
                 return;
             }
             if (addBindingOption(bindingOption(match))) setQuickBindingInput('');
@@ -216,6 +252,8 @@ export default function AdminResourceModal({
                 setQuickParams(parseResourceQuickParams(data.quickParams.join(',')));
             }
         }).catch(() => undefined);
+        setQuickBindingInput('');
+        setQuickBindingMatches([]);
         form.resetFields();
         form.setFieldsValue(resource ? {
             movieId: resource.movieId,
@@ -431,6 +469,23 @@ export default function AdminResourceModal({
                                     {t('resourceBindQuickAdd')}
                                 </Button>
                             </Space.Compact>
+                            {quickBindingInput.trim() && (
+                                <div className="mt-1" data-testid="quick-binding-matches">
+                                    {quickBindingSearching ? (
+                                        <span className="text-xs text-gray-500">{t('resourceBindQuickAddSearching')}</span>
+                                    ) : quickBindingCandidates.length > 0 ? (
+                                        <Space size={[4, 4]} wrap>
+                                            {quickBindingCandidates.map(item => (
+                                                <Tag key={item.id} color="blue" className="!mr-0 cursor-pointer" onClick={() => addBindingOption(bindingOption(item))}>
+                                                    {bindingOption(item).label}
+                                                </Tag>
+                                            ))}
+                                        </Space>
+                                    ) : (
+                                        <span className="text-xs text-gray-500">{t('resourceBindQuickAddNoMatch')}</span>
+                                    )}
+                                </div>
+                            )}
                             <div className="mt-1 text-xs text-gray-500">{t('resourceBindQuickAddHint')}</div>
                             {selectedBindingIds.length > 0 && (
                                 <div className="mt-1 text-xs text-gray-500">{t('resourceBindSelectedCount', { count: selectedBindingIds.length })}</div>

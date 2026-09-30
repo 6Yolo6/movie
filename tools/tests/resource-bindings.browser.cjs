@@ -22,7 +22,7 @@ async function main() {
     localStorage.setItem('auth-storage',JSON.stringify({state:{token:'test-only-placeholder',user:{id:1,username:'fixture',role:'ADMIN'}},version:0}));
    },lang);
    const page=await context.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));
-   const movies=Array.from({length:10},(_,index)=>({id:`series-s${index+1}`,titleCn:`测试剧 第${index+1}季`,season:index+1,category:'tv',year:2010+index,status:'ACTIVE'}));
+   const movies=Array.from({length:11},(_,index)=>({id:`series-s${index+1}`,titleCn:`测试剧 第${index+1}季`,season:index+1,category:'tv',year:2010+index,status:'ACTIVE'}));
    const resource={id:10,movieId:movies[0].id,movieTitle:movies[0].titleCn,name:'测试剧 第1-9季合集 1080p',type:'DISK',provider:'QUARK',url:'https://pan.quark.cn/s/old-fixture',code:'old1',linkStatus:'INVALID',status:'ACTIVE',auditStatus:1};
    let bindingRequests=0,saved=null;const writes=[];
    await page.route('**/api/**',async route=>{
@@ -32,7 +32,7 @@ async function main() {
     if(pathname==='/api/resources/admin/all')body={records:[resource],total:1};
     else if(pathname==='/api/admin/movies')body={records:movies,total:movies.length};
     else if(pathname==='/api/resources/form-config')body={quickParams:[]};
-    else if(pathname==='/api/resources/bind-candidates')body=url.searchParams.get('keyword')?[movies[9]]:movies.slice(1);
+    else if(pathname==='/api/resources/bind-candidates')body=url.searchParams.get('keyword')?[...movies.slice(7),{id:'other-series-1',titleCn:'别的剧 第1季',season:1,category:'tv',year:2020,status:'ACTIVE'}]:movies.slice(1);
     else if(pathname==='/api/resources/10/bindings') {
      bindingRequests++;
      await new Promise(resolve=>setTimeout(resolve,350));
@@ -63,7 +63,17 @@ async function main() {
    assert.equal(await modal.locator('#quality').inputValue(),'1080P','Fresh resource values from binding read');
    if(scenario.quickAdd){
     const quickInput=modal.getByPlaceholder(t.resourceBindQuickAddPlaceholder);
-    await quickInput.fill(movies[9].titleCn);
+    const matches=modal.getByTestId('quick-binding-matches');
+    // A loose series keyword must surface clickable same-series candidates only.
+    await quickInput.fill('测试剧');
+    await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).waitFor({state:'visible'});
+    assert.equal(await matches.locator('.ant-tag').count(),2,'Only unbound same-series matches are offered');
+    assert.ok(!(await matches.innerText()).includes('别的剧'),'Other series candidates are filtered out');
+    await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).click();
+    await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).waitFor({state:'detached'});
+    assert.ok((await select.innerText()).includes(movies[9].titleCn),'Clicked candidate appears in selection');
+    // Exact id/title still appends through the button.
+    await quickInput.fill(movies[10].titleCn);
     await Promise.all([
      page.waitForResponse(r=>r.url().includes('/api/resources/bind-candidates')&&new URL(r.url()).searchParams.has('keyword')),
      quickInput.locator('xpath=following::button[1]').click(),
@@ -73,15 +83,27 @@ async function main() {
      const root=label&&label.closest('.ant-form-item');
      const el=root&&root.querySelector('.ant-select');
      return !!el&&el.innerText.includes(title);
-    },movies[9].titleCn);
-    assert.ok((await select.innerText()).includes(movies[9].titleCn),'Quick-added movie appears in selection');
+    },movies[10].titleCn);
+    assert.ok((await select.innerText()).includes(movies[10].titleCn),'Button-appended movie appears in selection');
    }
    if(scenario.changeSelection){
     // Searching candidates must not reset preselected IDs. Toggle one existing and one genuinely new movie.
     await select.locator('.ant-select-selection-item').filter({hasText:movies[1].titleCn}).locator('.ant-select-selection-item-remove').click();
     await select.locator('input.ant-select-input').click();
     await select.locator('input.ant-select-input').fill('第10季');
-    await page.locator('.ant-select-item-option').filter({hasText:movies[9].titleCn}).click();
+    const appendOption=page.locator('.ant-select-item-option').filter({hasText:movies[9].titleCn}).first();
+    const appendLanded=async()=>page.waitForFunction(title=>{
+     const label=document.querySelector('label[for="bindMovieIds"]');
+     const root=label&&label.closest('.ant-form-item');
+     const el=root&&root.querySelector('.ant-select');
+     return !!el&&el.innerText.includes(title);
+    },movies[9].titleCn,{timeout:4000}).then(()=>true).catch(()=>false);
+    await appendOption.waitFor({state:'visible'});
+    await appendOption.click();
+    if(!(await appendLanded())){
+     await appendOption.click();
+     assert.ok(await appendLanded(),'Searching candidates and appending a season must add it');
+    }
     await page.keyboard.press('Escape');
    }
    await modal.locator('#url').fill('https://pan.quark.cn/s/new-fixture');
@@ -90,7 +112,7 @@ async function main() {
    // The route handler records the payload before responding.
    assert.ok(saved);
    const expected=scenario.changeSelection?[...movies.slice(2,9),movies[9]]:movies.slice(1,9);
-   if(scenario.quickAdd)expected.push(movies[9]);
+   if(scenario.quickAdd)expected.push(movies[9],movies[10]);
    assert.deepEqual([...saved.bindMovieIds].sort(),expected.map(m=>m.id).sort());
    assert.equal(saved.bindingVersion,'a'.repeat(64));assert.equal(saved.code,'new1');
    assert.ok(saved.url.includes('/new-fixture'));
