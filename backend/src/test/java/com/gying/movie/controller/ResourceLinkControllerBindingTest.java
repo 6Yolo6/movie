@@ -249,4 +249,32 @@ class ResourceLinkControllerBindingTest {
         ResourceLink other=bound(21L,"third","999","https://pan.quark.cn/s/other");other.setSource(null);other.setSourceRef(null);
         assertEquals(List.of("second"),((Map<?,?>)controller.getResourceBindings(10L,"owner").getBody()).get("bindMovieIds"));
     }
+
+    @Test void shareRowWithoutUploaderIsStillPreselected() {
+        // Production case: the XUNLEI season-5 row was created by system publishing without an
+        // uploader while its five sibling seasons of the exact same share carry uploader 1.
+        existing.setProvider("XUNLEI");
+        MovieMetadata primary = new MovieMetadata();
+        primary.setId("first"); primary.setCategory("tv"); primary.setSeriesName("示例剧"); primary.setStatus("ACTIVE");
+        when(movieService.getById("first")).thenReturn(primary);
+        ResourceLink season = bound(2500L, "season-5", "9005", existing.getUrl());
+        season.setProvider("XUNLEI"); season.setSource("GYING_PUBLISHED"); season.setSourceRef("root");
+        season.setUploaderId(null);
+        var response = controller.getResourceBindings(10L, "owner");
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(List.of("season-5"), ((Map<?, ?>) response.getBody()).get("bindMovieIds"));
+    }
+
+    @Test void differentRealUploadersStaySeparate() {
+        existing.setProvider("XUNLEI");
+        MovieMetadata primary = new MovieMetadata();
+        primary.setId("first"); primary.setCategory("tv"); primary.setSeriesName("示例剧"); primary.setStatus("ACTIVE");
+        when(movieService.getById("first")).thenReturn(primary);
+        ResourceLink foreign = bound(2501L, "season-9", "9006", existing.getUrl());
+        foreign.setProvider("XUNLEI"); foreign.setSource(null); foreign.setSourceRef(null);
+        foreign.setUploaderId(2L);
+        var response = controller.getResourceBindings(10L, "owner");
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(List.of(), ((Map<?, ?>) response.getBody()).get("bindMovieIds"));
+    }
 }

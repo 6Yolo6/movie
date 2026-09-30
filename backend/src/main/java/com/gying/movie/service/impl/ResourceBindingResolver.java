@@ -99,7 +99,17 @@ public final class ResourceBindingResolver {
                 && Objects.equals(a.getUrl(), b.getUrl())
                 && sameText(a.getType(), b.getType())
                 && sameText(a.getProvider(), b.getProvider())
-                && Objects.equals(a.getUploaderId(), b.getUploaderId());
+                && sameUploader(a.getUploaderId(), b.getUploaderId());
+    }
+
+    /**
+     * Rows created by system publishing (for example GYING_PUBLISHED) may carry no uploader at all.
+     * A missing uploader must not split a share that is otherwise identical - URL, type, provider and
+     * series already identify the group - or reopening the editor silently drops those seasons.
+     * Two rows owned by different real uploaders stay separate.
+     */
+    private static boolean sameUploader(Long left, Long right) {
+        return left == null || right == null || left.equals(right);
     }
 
     private static boolean sameText(String left, String right) {
