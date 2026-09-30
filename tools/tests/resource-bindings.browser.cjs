@@ -78,8 +78,8 @@ async function main() {
    }
    if(scenario.changeSelection){
     // Searching candidates must not reset preselected IDs. Toggle one existing and one genuinely new movie.
+    await select.locator('.ant-select-selection-item').filter({hasText:movies[1].titleCn}).locator('.ant-select-selection-item-remove').click();
     await select.locator('input.ant-select-input').click();
-    await page.locator('.ant-select-item-option').filter({hasText:movies[1].titleCn}).click();
     await select.locator('input.ant-select-input').fill('第10季');
     await page.locator('.ant-select-item-option').filter({hasText:movies[9].titleCn}).click();
     await page.keyboard.press('Escape');
