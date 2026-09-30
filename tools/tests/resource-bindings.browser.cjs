@@ -64,11 +64,11 @@ async function main() {
    if(scenario.quickAdd){
     const quickInput=modal.getByPlaceholder(t.resourceBindQuickAddPlaceholder);
     const matches=modal.getByTestId('quick-binding-matches');
-    // A loose series keyword must surface clickable same-series candidates only.
+    // A keyword must surface clickable candidates from the whole library, not just the same series.
     await quickInput.fill('测试剧');
     await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).waitFor({state:'visible'});
-    assert.equal(await matches.locator('.ant-tag').count(),2,'Only unbound same-series matches are offered');
-    assert.ok(!(await matches.innerText()).includes('别的剧'),'Other series candidates are filtered out');
+    assert.equal(await matches.locator('.ant-tag').count(),3,'Keyword search offers every unbound match in the library');
+    assert.ok((await matches.innerText()).includes('别的剧'),'Cross-series candidates are offered too');
     await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).click();
     await matches.locator('.ant-tag').filter({hasText:movies[9].titleCn}).waitFor({state:'detached'});
     assert.ok((await select.innerText()).includes(movies[9].titleCn),'Clicked candidate appears in selection');

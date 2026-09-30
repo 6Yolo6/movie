@@ -37,12 +37,17 @@ type FormValues = {
     bindingVersion?: string;
 };
 
-type BindingMovie = { id: string; titleCn?: string; titleEn?: string; season?: number; year?: number };
-const bindingOption = (item: BindingMovie) => ({
-    value: item.id,
-    label: `${item.titleCn || item.titleEn || item.id}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
-});
+type BindingMovie = { id: string; titleCn?: string; titleEn?: string; seriesName?: string; season?: number; year?: number };
+const bindingOption = (item: BindingMovie) => {
+    const title = item.titleCn || item.titleEn || item.id;
+    const series = item.seriesName && !title.includes(item.seriesName) ? ` · ${item.seriesName}` : '';
+    return {
+        value: item.id,
+        label: `${title}${series}${item.season ? ` S${item.season}` : ''}${item.year ? ` (${item.year})` : ''} - ${item.id}`,
+    };
+};
 
+const QUICK_BINDING_MAX_TAGS = 24;
 const PROVIDERS = ['BAIDU', 'QUARK', 'ALIYUN', 'XUNLEI', 'UC', '115', '123PAN', 'TIANYI', 'MOBILE', 'PIKPAK'];
 
 const movieOption = (movie: MovieMetadata) => ({
@@ -88,6 +93,8 @@ export default function AdminResourceModal({
         .filter(item => item.value !== primaryMovieId).map(item => [item.value, item])).values());
     const quickBindingCandidates = quickBindingMatches
         .filter(item => !selectedBindingIds.includes(item.id));
+    const quickBindingVisible = quickBindingCandidates.slice(0, QUICK_BINDING_MAX_TAGS);
+    const quickBindingHiddenCount = quickBindingCandidates.length - quickBindingVisible.length;
 
     useEffect(() => {
         if (type === 'DISK') {
@@ -142,21 +149,15 @@ export default function AdminResourceModal({
         return true;
     };
 
-    const fetchSeriesMatches = useCallback(async (rawQuery: string): Promise<BindingMovie[]> => {
+    const fetchBindingMatches = useCallback(async (rawQuery: string): Promise<BindingMovie[]> => {
         const query = rawQuery.trim();
         const movieId = form.getFieldValue('movieId');
         if (!query || !movieId) return [];
-        const [baseResponse, keywordResponse] = await Promise.all([
-            api(`/api/resources/bind-candidates?${new URLSearchParams({ movieId, limit: '100' })}`),
-            api(`/api/resources/bind-candidates?${new URLSearchParams({ movieId, keyword: query, limit: '100' })}`),
-        ]);
-        if (!baseResponse.ok || !keywordResponse.ok) return [];
-        const [baseItems, keywordItems] = await Promise.all([baseResponse.json(), keywordResponse.json()]);
-        const sameSeriesIds = new Set((baseItems || []).map((item: BindingMovie) => item.id));
+        const response = await api(`/api/resources/bind-candidates?${new URLSearchParams({ movieId, keyword: query, limit: '100' })}`);
+        if (!response.ok) return [];
+        const items: BindingMovie[] = await response.json();
         const matches = new Map<string, BindingMovie>();
-        (keywordItems || [])
-            .filter((item: BindingMovie) => sameSeriesIds.has(item.id))
-            .forEach((item: BindingMovie) => matches.set(item.id, item));
+        (items || []).forEach(item => matches.set(item.id, item));
         return Array.from(matches.values());
     }, [form]);
 
@@ -172,7 +173,7 @@ export default function AdminResourceModal({
         const requestId = ++quickSearchRequest.current;
         setQuickBindingSearching(true);
         const timer = setTimeout(() => {
-            fetchSeriesMatches(query).then((items) => {
+            fetchBindingMatches(query).then((items) => {
                 if (requestId === quickSearchRequest.current) setQuickBindingMatches(items);
             }).catch(() => {
                 if (requestId === quickSearchRequest.current) setQuickBindingMatches([]);
@@ -181,14 +182,14 @@ export default function AdminResourceModal({
             });
         }, 250);
         return () => clearTimeout(timer);
-    }, [bindingsReady, fetchSeriesMatches, open, quickBindingInput, resource]);
+    }, [bindingsReady, fetchBindingMatches, open, quickBindingInput, resource]);
 
     const addBindingByInput = async () => {
         const query = quickBindingInput.trim();
         if (!query || !primaryMovieId || quickBindingAdding) return;
         setQuickBindingAdding(true);
         try {
-            const candidates = await fetchSeriesMatches(query);
+            const candidates = await fetchBindingMatches(query);
             setQuickBindingMatches(candidates);
             if (!candidates.length) {
                 message.warning(t('resourceBindQuickAddNotFound'));
@@ -474,13 +475,18 @@ export default function AdminResourceModal({
                                     {quickBindingSearching ? (
                                         <span className="text-xs text-gray-500">{t('resourceBindQuickAddSearching')}</span>
                                     ) : quickBindingCandidates.length > 0 ? (
-                                        <Space size={[4, 4]} wrap>
-                                            {quickBindingCandidates.map(item => (
-                                                <Tag key={item.id} color="blue" className="!mr-0 cursor-pointer" onClick={() => addBindingOption(bindingOption(item))}>
-                                                    {bindingOption(item).label}
-                                                </Tag>
-                                            ))}
-                                        </Space>
+                                        <>
+                                            <Space size={[4, 4]} wrap>
+                                                {quickBindingVisible.map(item => (
+                                                    <Tag key={item.id} color="blue" className="!mr-0 cursor-pointer" onClick={() => addBindingOption(bindingOption(item))}>
+                                                        {bindingOption(item).label}
+                                                    </Tag>
+                                                ))}
+                                            </Space>
+                                            {quickBindingHiddenCount > 0 && (
+                                                <div className="mt-1 text-xs text-gray-500">{t('resourceBindQuickAddMore', { count: quickBindingHiddenCount })}</div>
+                                            )}
+                                        </>
                                     ) : (
                                         <span className="text-xs text-gray-500">{t('resourceBindQuickAddNoMatch')}</span>
                                     )}
