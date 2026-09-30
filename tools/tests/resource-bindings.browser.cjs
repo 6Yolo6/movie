@@ -13,6 +13,7 @@ async function main() {
    {name:'load-failure-retry-en', lang:'en', failLoad:true},
    {name:'stale-save-zh', lang:'zh', conflict:true},
    {name:'deselect-and-append-en', lang:'en', changeSelection:true},
+   {name:'quick-add-zh', lang:'zh', quickAdd:true},
   ]) {
    const {lang}=scenario,t=translations[lang];
    const context = await browser.newContext({ viewport:{width:1440,height:1100},locale:lang==='zh'?'zh-CN':'en-US' });
@@ -56,15 +57,30 @@ async function main() {
    }
    await page.waitForFunction(()=>document.querySelector('#bindingVersion')?.value.length===64);
    assert.equal(await save.isEnabled(),true);
-   const select=modal.locator('#bindMovieIds').locator('xpath=ancestor::div[contains(concat(" ",normalize-space(@class)," ")," ant-select ")]');
+   const select=modal.locator('label[for="bindMovieIds"]').locator('xpath=ancestor::div[contains(concat(" ",normalize-space(@class)," ")," ant-form-item ")][1]//div[contains(concat(" ",normalize-space(@class)," ")," ant-select ")]').first();
    for(const movie of movies.slice(1,9))assert.ok((await select.innerText()).includes(movie.titleCn),'Actual existing binding preselected');
    assert.ok(!(await select.innerText()).includes(movies[9].titleCn),'Unbound same-series season must not be preselected');
    assert.equal(await modal.locator('#quality').inputValue(),'1080P','Fresh resource values from binding read');
+   if(scenario.quickAdd){
+    const quickInput=modal.getByPlaceholder(t.resourceBindQuickAddPlaceholder);
+    await quickInput.fill(movies[9].titleCn);
+    await Promise.all([
+     page.waitForResponse(r=>r.url().includes('/api/resources/bind-candidates')&&new URL(r.url()).searchParams.has('keyword')),
+     quickInput.locator('xpath=following::button[1]').click(),
+    ]);
+    await page.waitForFunction(title=>{
+     const label=document.querySelector('label[for="bindMovieIds"]');
+     const root=label&&label.closest('.ant-form-item');
+     const el=root&&root.querySelector('.ant-select');
+     return !!el&&el.innerText.includes(title);
+    },movies[9].titleCn);
+    assert.ok((await select.innerText()).includes(movies[9].titleCn),'Quick-added movie appears in selection');
+   }
    if(scenario.changeSelection){
     // Searching candidates must not reset preselected IDs. Toggle one existing and one genuinely new movie.
-    await modal.locator('#bindMovieIds').click();
+    await select.locator('input.ant-select-input').click();
     await page.locator('.ant-select-item-option').filter({hasText:movies[1].titleCn}).click();
-    await modal.locator('#bindMovieIds').fill('第10季');
+    await select.locator('input.ant-select-input').fill('第10季');
     await page.locator('.ant-select-item-option').filter({hasText:movies[9].titleCn}).click();
     await page.keyboard.press('Escape');
    }
@@ -74,6 +90,7 @@ async function main() {
    // The route handler records the payload before responding.
    assert.ok(saved);
    const expected=scenario.changeSelection?[...movies.slice(2,9),movies[9]]:movies.slice(1,9);
+   if(scenario.quickAdd)expected.push(movies[9]);
    assert.deepEqual([...saved.bindMovieIds].sort(),expected.map(m=>m.id).sort());
    assert.equal(saved.bindingVersion,'a'.repeat(64));assert.equal(saved.code,'new1');
    assert.ok(saved.url.includes('/new-fixture'));

@@ -38,19 +38,18 @@ public final class ResourceBindingResolver {
             if (ancestors.size() > MAX_ROWS) throw tooLarge();
         }
         Long rootId = root == null ? source.getId() : root.getId();
-        // Older multi-bind submissions copied provenance but had no explicit group ID.
-        // Recover only identical shares/provenance/owner within the same exact series.
-        List<ResourceLink> legacy = resources.list(new QueryWrapper<ResourceLink>()
+        // Earlier partial edits could create more than one root for the exact same share.
+        // Recover every row for that share within the exact same series, even when its
+        // provenance points elsewhere, so reopening the editor preselects all seasons.
+        List<ResourceLink> sameShareRows = resources.list(new QueryWrapper<ResourceLink>()
                 .eq("url", source.getUrl()).eq("type", source.getType())
                 .eq("status", "ACTIVE").isNull("deleted_at").orderByAsc("id").last("LIMIT 501"));
-        if (legacy != null) {
+        if (sameShareRows != null) {
             MovieMetadata primary = movies.getById(source.getMovieId());
-            for (ResourceLink row : legacy) {
-                if (row.getId() == null || parentId(row) != null || parentId(source) != null) continue;
-                if (Objects.equals(row.getUrl(), source.getUrl()) && Objects.equals(row.getProvider(), source.getProvider())
-                        && Objects.equals(row.getSource(), source.getSource()) && Objects.equals(row.getSourceRef(), source.getSourceRef())
-                        && Objects.equals(row.getUploaderId(), source.getUploaderId())
-                        && sameSeries(primary, movies.getById(row.getMovieId()))) group.put(row.getId(), row);
+            for (ResourceLink row : sameShareRows) {
+                if (row.getId() == null || !sameShare(row, source)
+                        || !sameSeries(primary, movies.getById(row.getMovieId()))) continue;
+                group.put(row.getId(), row);
             }
         }
         Set<Long> visited = new HashSet<>();
@@ -92,6 +91,19 @@ public final class ResourceBindingResolver {
         } catch (com.fasterxml.jackson.core.JsonProcessingException error) {
             throw new IllegalStateException("Unable to fingerprint binding", error);
         }
+    }
+
+    private static boolean sameShare(ResourceLink a, ResourceLink b) {
+        return a != null && b != null && a.getDeletedAt() == null && b.getDeletedAt() == null
+                && !"DELETED".equalsIgnoreCase(a.getStatus()) && !"DELETED".equalsIgnoreCase(b.getStatus())
+                && Objects.equals(a.getUrl(), b.getUrl())
+                && sameText(a.getType(), b.getType())
+                && sameText(a.getProvider(), b.getProvider())
+                && Objects.equals(a.getUploaderId(), b.getUploaderId());
+    }
+
+    private static boolean sameText(String left, String right) {
+        return left == null ? right == null : right != null && left.equalsIgnoreCase(right);
     }
 
     public static boolean editable(ResourceLink row, AuthUser user) {

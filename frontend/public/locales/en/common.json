@@ -939,5 +939,12 @@
   "movieRefreshSelectedPosters": "Refresh selected posters ({{count}})",
   "movieRefreshSelectedPostersConfirm": "Replace selected posters, preferring installment-specific GYING artwork?",
   "movieSelectedCount": "{{count}} selected (up to 100, across pages)",
-  "clearSelection": "Clear selection"
+  "clearSelection": "Clear selection",
+  "resourceBindQuickAddPlaceholder": "Quick add: enter a movie ID or full title",
+  "resourceBindQuickAdd": "Add",
+  "resourceBindQuickAddHint": "When many movies are involved, add them here instead of searching the dropdown one by one.",
+  "resourceBindQuickAddDuplicate": "This movie is already selected",
+  "resourceBindQuickAddAmbiguous": "Multiple movies match; select one in the list below",
+  "resourceBindQuickAddNotFound": "No movie in this series matched; check the ID or full title",
+  "resourceBindSelectedCount": "{{count}} selected"
 }

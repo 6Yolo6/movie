@@ -76,8 +76,11 @@ export default function AdminResourceModal({
     const [bindingsReady, setBindingsReady] = useState(false);
     const [bindingsError, setBindingsError] = useState(false);
     const [bindingsRetry, setBindingsRetry] = useState(0);
+    const [quickBindingInput, setQuickBindingInput] = useState('');
+    const [quickBindingAdding, setQuickBindingAdding] = useState(false);
     const bindRequest = useRef(0);
     const primaryMovieId = Form.useWatch('movieId', form);
+    const selectedBindingIds = Form.useWatch('bindMovieIds', form) || [];
     const allBindingOptions = Array.from(new Map([...bindingOptions, ...bindCandidates]
         .filter(item => item.value !== primaryMovieId).map(item => [item.value, item])).values());
 
@@ -121,6 +124,57 @@ export default function AdminResourceModal({
             if (requestId === bindRequest.current) setBindLoading(false);
         }
     }, [form]);
+
+    const addBindingOption = (option: { value: string; label: string }) => {
+        if (!option.value || option.value === primaryMovieId) return false;
+        const current = form.getFieldValue('bindMovieIds') || [];
+        if (current.includes(option.value)) {
+            message.info(t('resourceBindQuickAddDuplicate'));
+            return false;
+        }
+        form.setFieldValue('bindMovieIds', [...current, option.value]);
+        setBindCandidates((items) => Array.from(new Map([...items, option].map(item => [item.value, item])).values()));
+        return true;
+    };
+
+    const addBindingByInput = async () => {
+        const query = quickBindingInput.trim();
+        if (!query || !primaryMovieId || quickBindingAdding) return;
+        setQuickBindingAdding(true);
+        try {
+            const baseQuery = new URLSearchParams({ movieId: primaryMovieId, limit: '100' });
+            const keywordQuery = new URLSearchParams({ movieId: primaryMovieId, keyword: query, limit: '100' });
+            const [baseResponse, keywordResponse] = await Promise.all([
+                api(`/api/resources/bind-candidates?${baseQuery}`),
+                api(`/api/resources/bind-candidates?${keywordQuery}`),
+            ]);
+            if (!baseResponse.ok || !keywordResponse.ok) {
+                message.error(t('resourceBindQuickAddNotFound'));
+                return;
+            }
+            const [baseItems, keywordItems] = await Promise.all([baseResponse.json(), keywordResponse.json()]);
+            const sameSeriesIds = new Set((baseItems || []).map((item: BindingMovie) => item.id));
+            const candidates: BindingMovie[] = Array.from(new Map(
+                [...(baseItems || []), ...(keywordItems || []).filter((item: BindingMovie) => sameSeriesIds.has(item.id))]
+                    .map((item: BindingMovie) => [item.id, item])
+            ).values());
+            const normalized = query.toLocaleLowerCase();
+            const exactId = candidates.find(item => item.id.toLocaleLowerCase() === normalized);
+            const exactTitles = candidates.filter(item => [item.titleCn, item.titleEn]
+                .some(title => title?.trim().toLocaleLowerCase() === normalized));
+            const match = exactId || (exactTitles.length === 1 ? exactTitles[0] : undefined)
+                || (candidates.length === 1 ? candidates[0] : undefined);
+            if (!match) {
+                message.warning(t(candidates.length > 1 ? 'resourceBindQuickAddAmbiguous' : 'resourceBindQuickAddNotFound'));
+                return;
+            }
+            if (addBindingOption(bindingOption(match))) setQuickBindingInput('');
+        } catch {
+            message.error(t('networkError'));
+        } finally {
+            setQuickBindingAdding(false);
+        }
+    };
 
     const insertParameter = (parameter: string) => {
         const input = nameInputRef.current?.input;
@@ -354,7 +408,36 @@ export default function AdminResourceModal({
                     <Alert type="error" showIcon className="!mb-4" title={t('resourceBindingsLoadFailed')}
                         action={<Button size="small" disabled={false} onClick={() => setBindingsRetry(value => value + 1)}>{t('retry')}</Button>} />
                 )}
-                <Form.Item name="bindMovieIds" label={t('resourceBindSeries')} extra={resource ? t('resourceBindingEditHint') : undefined}>
+                <Form.Item
+                    name="bindMovieIds"
+                    label={t('resourceBindSeries')}
+                    extra={(
+                        <div>
+                            {resource ? <div>{t('resourceBindingEditHint')}</div> : null}
+                            <Space.Compact className="mt-2 w-full">
+                                <Input
+                                    value={quickBindingInput}
+                                    onChange={(event) => setQuickBindingInput(event.target.value)}
+                                    onPressEnter={addBindingByInput}
+                                    disabled={!primaryMovieId || Boolean(resource && !bindingsReady)}
+                                    placeholder={t('resourceBindQuickAddPlaceholder')}
+                                />
+                                <Button
+                                    icon={<PlusOutlined />}
+                                    loading={quickBindingAdding}
+                                    disabled={!primaryMovieId || !quickBindingInput.trim() || Boolean(resource && !bindingsReady)}
+                                    onClick={addBindingByInput}
+                                >
+                                    {t('resourceBindQuickAdd')}
+                                </Button>
+                            </Space.Compact>
+                            <div className="mt-1 text-xs text-gray-500">{t('resourceBindQuickAddHint')}</div>
+                            {selectedBindingIds.length > 0 && (
+                                <div className="mt-1 text-xs text-gray-500">{t('resourceBindSelectedCount', { count: selectedBindingIds.length })}</div>
+                            )}
+                        </div>
+                    )}
+                >
                     <Select
                         mode="multiple"
                         showSearch

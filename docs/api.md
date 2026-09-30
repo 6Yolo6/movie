@@ -19,7 +19,7 @@
 
 - `POST /api/resources`：发布者/管理员提交网盘、磁力、种子或在线播放资源。管理员不受 `resource.max.per.user` 总量限制；发布者仍受限，提交间隔、重复链接及权限校验不变。
 - `GET /api/resources/mine`：我的投稿。
-- `GET /api/resources/{id}/bindings`：发布者/管理员读取自己的资源实际绑定组，返回新鲜资源值、已绑定影片、资源 ID 列表和 `bindingVersion`；同系列但不同网盘、版本或未实际绑定的影片不会混入。
+- `GET /api/resources/{id}/bindings`：发布者/管理员读取自己的资源实际绑定组，返回新鲜资源值、已绑定影片、资源 ID 列表和 `bindingVersion`；同系列且 URL、网盘、用户完全一致的历史分组会合并回显，修复旧记录拆分根节点后再次编辑只带出部分季的问题；同系列但不同网盘、链接版本或未实际绑定的影片不会混入。
 - `PUT /api/resources/{id}`：发布者编辑自己的资源，管理员可编辑任意资源；可传 `bindMovieIds` 绑定最多 50 个影片。编辑时应先读取 `bindings` 并回传 `bindingVersion`；已有绑定按影片原位更新 URL、提取码和元数据，仅对新增绑定创建记录，不删除取消勾选的历史记录。目标影片存在不同资源链接或版本陈旧时返回 409，返回 `{message, updatedBindings, boundCount}`。
 - `DELETE /api/resources/{id}`：软删除自己的资源。
 - `POST /api/resources/{id}/report`：举报失效链接。
@@ -88,7 +88,8 @@
 - `POST /movies/{movieId}/metadata/sync`：严格匹配 GYING 并同步到既有 canonical 影片，回填 `seriesName` / `season`，保留并补充 TMDB 身份，不导入资源。
 - `POST /movies/{movieId}/poster/repair`：GYING 对应影片/季海报优先；缺失或来源异常时回退 TMDB 本季图，不复用整剧或其他季封面。
 - `POST /posters/repair?limit=50`：无请求体时补全最多 100 部缺图影片；可传 `{"movieIds":["id1","id2"],"refreshExisting":false}` 只补所选缺图。`refreshExisting=true` 替换所选已有海报，必须显式提供 1–100 个 ID；空选择不扩大成全库操作。
-- `POST /movies/{movieId}/seasons/ensure?maxPages=`：电影、剧集和动漫均可异步补齐系列/季元数据，优先 GYING（`includeResources=false`），缺失时回退 TMDB 唯一剧集匹配与真实季信息。刷新现有 GYING 元数据与双源身份，并补充缺失成员；已有 ACTIVE、已审核、NORMAL 的合集分享按明确季范围绑定原 URL/提取码，保留旧 canonical 与绑定，重复操作不重复创建。单季/未知范围/失效/带 `fid` 子目录的链接不扩散，且不发起转存或额外外部发布。结果 `mode=METADATA_AND_EXISTING_COLLECTION`，含 `status=COMPLETED|PARTIAL|SKIPPED`、`metadataCreated`、`metadataRefreshed`、`gyingCreated`、`tmdbCreated`、`bound`、`existingBindings`、`missingSeasons`、`warnings`、`items`；新绑定来源标记 `COLLECTION_BINDING`。 电影及电影型动漫按 TMDB 官方合集成员补缺（`mode=METADATA_ONLY_COLLECTION`），每部保留独立 movie ID，来源身份季号仍为 0，不把一条电影资源推测绑定到其他续集。
+- `POST /movies/{movieId}/seasons/ensure?maxPages=`：电影、剧集和动漫均可异步补齐系列/季元数据，优先 GYING（`includeResources=false`），缺失时回退 TMDB 唯一剧集匹配与真实季信息。刷新现有 GYING 元数据与双源身份，并补充缺失成员；已有 ACTIVE、已审核、NORMAL 的合集分享按明确季范围绑定原 URL/提取码，保留旧 canonical 与绑定，重复操作不重复创建。单季/未知范围/失效/带 `fid` 子目录的链接不扩散，且不发起转存或额外外部发布。结果 `mode=METADATA_AND_EXISTING_COLLECTION`，含 `status=COMPLETED|PARTIAL|SKIPPED`、`metadataCreated`、`metadataRefreshed`、`gyingCreated`、`tmdbCreated`、`bound`、`existingBindings`、`missingSeasons`、`warnings`、`items`；新绑定来源标记 `COLLECTION_BINDING`。
+ 电影及电影型动漫按 TMDB 官方合集成员补缺（`mode=METADATA_ONLY_COLLECTION`），每部保留独立 movie ID，来源身份季号仍为 0，不把一条电影资源推测绑定到其他续集。
 
 内部 `gying-source` 服务提供 `GET /search?q=&typeCode=&limit=`，使用当前共享会话访问
 GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份和主创严格匹配来源身份，

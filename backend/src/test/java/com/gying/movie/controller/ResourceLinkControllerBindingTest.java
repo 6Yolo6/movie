@@ -224,6 +224,23 @@ class ResourceLinkControllerBindingTest {
         assertThrows(IllegalStateException.class,()->controller.updateOwnResource(10L,dto,"owner"));
     }
 
+    @Test void exactShareAcrossHistoricalRootsIsFullyPreselected() {
+        existing.setProvider("QUARK");
+        MovieMetadata primary = new MovieMetadata();
+        primary.setId("first"); primary.setCategory("tv"); primary.setSeriesName("示例剧"); primary.setStatus("ACTIVE");
+        when(movieService.getById("first")).thenReturn(primary);
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        for (int n = 2; n <= 6; n++) {
+            String movie = "season-" + n; ids.add(movie);
+            ResourceLink row = bound(10L + n, movie, String.valueOf(900 + n), existing.getUrl());
+            row.setSource("RESOURCE_BINDING");
+        }
+        var response = controller.getResourceBindings(10L, "owner");
+        assertEquals(200, response.getStatusCode().value());
+        Map<?, ?> result = (Map<?, ?>) response.getBody();
+        assertEquals(new java.util.HashSet<>(ids), new java.util.HashSet<>((List<?>) result.get("bindMovieIds")));
+    }
+
     @Test void legacySameShareIsRecoveredButSameSeriesDifferentVersionIsNotSelected() {
         existing.setProvider("QUARK");
         MovieMetadata primary=new MovieMetadata();primary.setId("first");primary.setCategory("tv");primary.setSeriesName("示例剧");
