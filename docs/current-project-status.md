@@ -46,7 +46,7 @@
 - 搜索合并本地 PanSou 与外部 Panso 结果并按 URL 去重；自动资源必须先转存为系统自有夸克/迅雷分享，再写入 `resource_link`。
 - 夸克任务支持目录创建、剧集目录更新、失效分享重试与周转存（`update_subdir: ".*"` 递归追踪同名目录新增文件）；迅雷使用官方 Drive API 校验分享、遍历目录并筛选视频文件，Authorization 为短期凭据，支持运行时更新与 refresh token 优先。
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供「修复并重分享」；成功后原位更新链接，并在存在 GYING 映射时同步发布。
-- 资源管理编辑实际绑定组：打开编辑器时回显全部已绑定季（同一分享的多个历史根节点合并回显）；影片较多时可用「快速添加」按影片 ID 或完整标题追加。保存时校验 `bindingVersion`，并原位更新所选影片现有的同组资源及历史重复行，仅对新增绑定创建记录，不删除取消勾选的记录，也不改动其他网盘或版本。
+- 资源管理编辑实际绑定组：打开编辑器时回显全部已绑定季（同一分享的多个历史根节点合并回显）；影片较多时可输入关键词，从下方同系列候选中点选加入，也支持按影片 ID 或完整标题直接追加。保存时校验 `bindingVersion`，并原位更新所选影片现有的同组资源及历史重复行，仅对新增绑定创建记录，不删除取消勾选的记录，也不改动其他网盘或版本。
 - 「已发现」转存任务支持单条与批量延迟重跑（每天 08:30 Asia/Shanghai 调度）；本轮存在 Authorization 过期或不可用的迅雷任务时整轮跳过，不启动转存；发布成功后继续同步 GYING，重跑数量与间隔由 `RESOURCE_HUB_DISCOVERED_RETRY_*` 控制。
 - GYING 目录自动同步支持热门与综合评分（电影/剧集/动漫，六来源轮换），每轮上限由 `resource.hub.gying.auto_sync_max_items` 控制（当前 15），实际间隔遵循 `resource.hub.gying.auto_sync_interval_hours`（当前 1 小时）。
 - GYING BT 详情页解析真实 `magnet` 与 `.torrent` 地址，以 `MAGNET`/`TORRENT` + `provider=P2P` 保存；网盘并行数组按索引读取资源名，写入 `resource_link.name` 的路径统一限制 255 字符。
@@ -99,7 +99,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-binding-quickadd-backend:20260930a` / `gying-binding-quickadd-frontend:20260930a`（2026-09-30）。本轮只重建 backend/frontend，回滚目标 `gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`；无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
+- 当前前后端：`gying-binding-quickadd-backend:20260930a` / `gying-binding-quickadd-frontend:20260930b`（2026-09-30）。快速追加候选版只重建 frontend，backend 未变；回滚目标 `gying-binding-quickadd-frontend:20260930a`（再往前为 `gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`）；无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-quickadd-picker-20260930` 与 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
 - 当前 GYING 数据源镜像 `gying-series-search-source:20260929a`；系列查找改为名称搜索，不再翻查 20 页评分榜。元数据同步自动填入系列与季/部序号，电影来源身份仍使用 season=0；非 root 身份及环境配置保持。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
@@ -137,6 +137,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 资源绑定快速追加候选验收（2026-09-30）：前端 lint 0 error、生产构建通过。快速添加输入框改为 250ms 防抖查询同系列候选，并把未绑定命中列成可点击标签；跨系列命中被过滤，精确影片 ID/标题仍可点「添加」直接追加。部署后连续两轮 5 组浏览器场景全部通过（已绑定季回显、加载失败禁用保存、并发 409、取消勾选后追加、关键词候选点选与精确追加）。仅重建 frontend 为 `gying-binding-quickadd-frontend:20260930b`，backend 与其它容器 ID 未变；本地首页/登录页 200、匿名绑定接口 401，无数据库写入。回滚目标 `gying-binding-quickadd-frontend:20260930a`，材料在 `E:/gying-tools/releases/binding-quickadd-picker-20260930`。顺带复核 `AdminMovieModal` 的 `maxTagCount:'responsive'` 在 antd v6 下仍生效（6 个导演标签折叠为「+N」），无需改动。
 
 - 资源绑定回显与快速追加验收（2026-09-30）：后端全量 366 项测试 0 failures/errors、1 项按环境跳过（含「同一分享跨历史根节点全部回显」回归，绑定专项 18/18）；前端 lint 0 error、生产构建通过。隔离与部署后各通过 5 组浏览器场景，覆盖九个已有季自动勾选、绑定加载失败禁止保存、并发 409、取消勾选并追加新季、按影片 ID/完整标题快速追加；本地首页与登录页 200，匿名绑定接口 401，`/api/resources/form-config` 200。根因是快速追加控件与多选 `Select` 同处一个 `Form.Item`，多子节点使 `Form.Item` 无法把 `bindMovieIds` 注入 `Select`，重开编辑不再回显已绑定季；现由 `Form.Item` 的 `extra` 承载快速追加控件，并移除对 antd v6 无效的 `maxTagCount`。backend/frontend 镜像 `gying-binding-quickadd-backend:20260930a` / `gying-binding-quickadd-frontend:20260930a` 已上线，运行容器 JAR SHA-256 与发布产物一致，其他容器未重建、重启计数 0；无数据库写入。回滚目标 `gying-series-search-backend:20260929c` / `gying-series-search-frontend:20260929b`，发布与回滚材料在 `E:/gying-tools/releases/binding-quickadd-20260930`。
 
