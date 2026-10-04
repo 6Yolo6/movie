@@ -38,7 +38,7 @@
 
 ### 影视资源中心
 
-- 元数据范围续采（代码已完成，尚未部署）：TMDB / GYING 支持 1–500 的起止页范围，各榜单独立保存页码与页内进度；完成当前页后翻页，到结束页或空页回到起始页。失败保留批次，手动单页任务不影响自动位置；单实例 backend 重启仅释放中断的自动范围元数据任务，不重置旧任务或转存。旧配置兼容为原页码的单页范围，详见 `docs/resource-hub.md`。
+- 元数据范围续采（已部署，2026-10-04）：TMDB / GYING 支持 1–500 的起止页范围，各榜单独立保存页码与页内进度；完成当前页后翻页，到结束页或空页回到起始页。失败保留批次，手动单页任务不影响自动位置；单实例 backend 重启仅释放中断的自动范围元数据任务，不重置旧任务或转存。旧配置兼容为原页码的单页范围，详见 `docs/resource-hub.md`。
 - 迅雷自动队列在 SQL 中先排除已达重试上限的 FAILED 任务，再限制数量，按 `updated_at,id` 轮转，避免最早 200 条历史失败挡住新任务；合集入库名称保留明确季范围与清晰度（如「破产姐妹 第1-6季合集 1080p」）。
 - 「补全系列/剩余季」支持电影、剧集及动漫。GYING 按系列名搜索并刷新已有季，TMDB 以真实季信息或官方电影合集补缺；不创建推测续集、不隐式恢复已删除记录。剧集仍只按有效合集的明确季范围复用 URL/提取码（`COLLECTION_BINDING`），电影续集仅补元数据，不扩散资源、不转存或发布。
 
@@ -100,7 +100,7 @@
 
 ### 迁移与恢复基线
 
-- 当前前后端：`gying-binding-quickadd-backend:20260930b` / `gying-binding-quickadd-frontend:20260930c`（2026-09-30）。本轮只重建 backend（无上传者分享行并入绑定组），frontend 未变；回滚目标 `gying-binding-quickadd-backend:20260930a` 与 `gying-binding-quickadd-frontend:20260930b`（再往前 `gying-binding-quickadd-frontend:20260930a`）。无架构迁移、无数据库写入。发布与回滚材料在 `E:/gying-tools/releases/binding-uploader-merge-20260930`、`E:/gying-tools/releases/binding-quickadd-global-search-20260930`、`E:/gying-tools/releases/binding-quickadd-picker-20260930` 与 `E:/gying-tools/releases/binding-quickadd-20260930`。上一轮 series-search 发布材料仍在 `E:/gying-tools/releases/series-search-20260929`，检查点 `G:/gying-backups/20260929T113923.115086Z` 的 15 个加密文件均通过 hash 与认证解密，SQL 含 25 张表；本轮未重做整库恢复演练。
+- 当前前后端：`gying-metadata-crawl-backend:20261004a` / `gying-metadata-crawl-frontend:20261004a`（2026-10-04，功能提交 `2737b04`）。本轮只重建 backend/frontend，nginx 仅平滑重载，其他 8 个容器 ID/启动时间/重启计数未变；环境配置与挂载保持。无架构迁移，启动仅补出两项 `auto_sync_end_page=3` 默认配置。回滚目标为 `gying-binding-quickadd-backend:20260930b` / `gying-binding-quickadd-frontend:20260930c`；部署、回滚、JAR 校验和、前后快照及验收证据位于 `E:/gying-tools/releases/metadata-crawl-20261004`。最新数据库、环境与 Compose 检查点 `G:/gying-backups/20261004T031935.885272Z` 共 3 个加密文件 hash 通过，本轮未解密或恢复演练；9 月 30 日及更早回滚材料继续保留。
 - 当前 GYING 数据源镜像 `gying-series-search-source:20260929a`；系列查找改为名称搜索，不再翻查 20 页评分榜。元数据同步自动填入系列与季/部序号，电影来源身份仍使用 season=0；非 root 身份及环境配置保持。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
@@ -111,7 +111,7 @@
 
 ## 仍需处理
 
-- **元数据范围续采待上线（2026-10-04）**：实现与测试已完成，但部署前安全扫描为 53 PASS / 11 FAIL / 0 UNKNOWN；按安全门禁停止生产替换。失败项为 2 项非 loopback 端口、5 项缺少 no-new-privileges、3 项 root 进程、1 项 Redis 网络隔离，未借本次功能更新修改无关安全配置。待安全门禁解决后仅部署 backend/frontend，再验收真实管理员保存与正常定时续采；当前线上仍是 9 月 30 日镜像、固定第 3 页。
+- **元数据自然续采待观察（2026-10-04）**：范围功能已部署，当前 TMDB / GYING 保持 3～3 页、2 小时间隔，两来源与 Worker 仍启用；未手动保存生产范围或触发采集/转存/发布。首次正常调度后的自动任务与 `payload.crawl` 进度尚待观察，真实管理员扩大范围及跨页结果不冒充已验收。既有手动/QQ 与迅雷遗留 RUNNING 记录未重置。
 
 - **当前入口故障（2026-09-30 20:20 复核）**：容器内 backend/nginx 正常；宿主机 nginx 原容器经单独重启后，`127.0.0.1:80` 首页与列表恢复 200。既有 HTTP/2 Tunnel 计划任务重启后公网首页/列表/资源搜索及 ready 曾返回 200，但数分钟内再次变为公网 530、ready 503，不能认定稳定恢复。宿主机 backend `8880`、quark `5005` 仍返回空响应；MinIO `9000` 与 OpenClaw `18789` 健康为 200。未重启 backend/quark 或整套 Docker，未修改代理/DNS/防火墙/凭据。库内 Resource Hub 与迅雷各有 1 条自 9 月 28 日遗留的 RUNNING 记录，未强行重置或重放；需先核实任务及宿主端口转发，再修复 Tunnel 持续断连，QQ 与转存端到端暂不标记通过。
 
@@ -141,7 +141,7 @@
 
 ## 验收
 
-- 元数据范围续采验收（2026-10-04，未上线）：后端 Java 17 离线编译/打包及全量 391 项测试通过（0 failures/errors、1 项环境跳过）；前端 lint 0 error / 7 项既有 warning、生产构建通过。浏览器模拟 API 回归覆盖中英桌面、中文 390px 手机和旧响应兼容共 4 组，含非法范围阻止保存、有效范围保存/刷新、页内进度与失败状态显示；修复此页中文初次渲染 hydration 不一致。只读库核验 10:46（Asia/Shanghai）两来源采集开启、页码均 3、间隔均 2 小时，元数据 PENDING/RUNNING 为 0，近 24 小时新增活动影片 18 条，最近 TMDB 同步 09:56:59，证明此前采集并非完全未写入。无手动生产采集、转存、发布或配置变更。候选镜像 `gying-metadata-crawl-backend:20261004a` / `gying-metadata-crawl-frontend:20261004a` 与部署/回滚描述保存在 `E:/gying-tools/releases/metadata-crawl-20261004`；备份 `G:/gying-backups/20261004T030057.676186Z` 的数据库、环境与 Compose 共 3 个加密文件 hash 通过，本轮未解密/恢复演练。安全门禁失败，生产镜像、容器与采集范围均未替换，不把隔离测试视为线上续采已通过。
+- 元数据范围续采上线验收（2026-10-04）：实现提交 `2737b04`，Java 17 编译/打包及全量 391 项测试通过（0 failures/errors、1 项环境跳过），前端构建通过、lint 0 error / 7 项既有 warning。初次安全扫描 53 PASS / 11 FAIL / 0 UNKNOWN 后曾停止部署，随后用户明确要求“直接上线部署”，据此仅实施本次 backend/frontend 镜像更新；未改变无关安全配置，部署后仍为同样 11 项既有风险，不标记安全门禁已通过。11:20–11:21 替换前后端并平滑重载 nginx，backend 实际 JAR SHA-256 与测试产物一致，前后端 restart count 为 0、启动后日志无 ERROR/Exception；其他 8 个容器 ID、启动时间、重启计数不变，所有容器环境与挂载保持。GYING Source、social-publisher、backend 与 frontend 内部读取均 200；本地/公网首页、采集设置页、影片列表、form-config 均 200，匿名管理配置 401、内部 health 路径 404，共 12 项入口检查通过。最终候选镜像及已部署公网页面各通过中英桌面、中文 390px 手机、旧响应兼容 4 组浏览器回归（API 模拟，无生产写入），覆盖保存校验、范围刷新、进度/状态文案与无 hydration 错误；不以模拟保存替代真实管理员保存。只读库确认新增结束页默认值均为 3、原间隔 2 小时及开关不变，尚未手工推进自动任务；10:46 的近 24 小时新增活动影片为 18 条。发布材料 `E:/gying-tools/releases/metadata-crawl-20261004`，回滚目标 backend `20260930b` / frontend `20260930c`；最新备份 `G:/gying-backups/20261004T031935.885272Z` 三项加密文件 hash 通过，未做本轮解密/恢复。
 
 - 无上传者分享行并入绑定组验收（2026-09-30）：修复「流人」迅雷分享编辑时第五季不回显——该分享 6 行同一 URL 中，第五季行 `resource_link.id=2500` 由系统发布创建、`uploader_id` 为空，而其余 5 行为 `uploader_id=1`，原 `sameShare` 要求上传者完全相等，导致该行被排除在绑定组外。现同一 URL、类型、网盘与同系列下，任一侧上传者为空即视为同一分享，两侧上传者都非空且不同时仍严格分开；仅放宽回显与同组更新范围，不改变非管理员只能编辑自己资源行的鉴权。后端全量 368 项测试 0 failures/errors、1 项按环境跳过（新增 2 项：无上传者行回显、不同真实上传者仍分开）；生产只读复核该分享 6 行由修复前 5 行并入变为 6 行并入，全库混合空/有主上传者的分享共 10 组，其余按同系列继续分开。仅重建 backend 为 `gying-binding-quickadd-backend:20260930b`（运行容器 JAR SHA-256 `df03a0f…f560da`，字节码含新增 `sameUploader`），frontend 与其它容器未变；首页/登录页/`form-config` 200，匿名绑定接口 401，无数据库写入。回滚目标 `gying-binding-quickadd-backend:20260930a`，材料在 `E:/gying-tools/releases/binding-uploader-merge-20260930`。
 
