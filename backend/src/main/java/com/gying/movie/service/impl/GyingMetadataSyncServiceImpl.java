@@ -33,6 +33,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
+    private final MetadataCrawlPlanner crawlPlanner;
 
     public GyingMetadataSyncServiceImpl(
             ResourceHubProperties properties,
@@ -47,17 +48,30 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         this.resourceDiscoveryService = resourceDiscoveryService;
         this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
+        this.crawlPlanner = new MetadataCrawlPlanner(taskService, objectMapper);
     }
 
     @Override
     public ResourceHubTask enqueue(String source, int page, int maxItems) {
+        return enqueue(source, page, maxItems, null);
+    }
+
+    @Override
+    public ResourceHubTask enqueueAutomatic(String source) {
+        var config = properties.getGying();
+        var position = crawlPlanner.next("GYING", source, config.getAutoSyncPage(), config.getAutoSyncEndPage());
+        return enqueue(source, position.page(), config.getAutoSyncMaxItems(), position);
+    }
+
+    private ResourceHubTask enqueue(String source, int page, int maxItems, MetadataCrawlPlanner.Position position) {
         ensureEnabled();
         SyncPayload payload = normalize(source, page, maxItems);
         ResourceHubTask task = new ResourceHubTask();
         task.setTaskType("METADATA_SYNC");
         task.setSource("GYING");
         task.setKeyword(payload.source());
-        task.setPayload(writePayload(payload));
+        String json = writePayload(payload);
+        task.setPayload(position == null ? json : crawlPlanner.attach(json, position));
         task.setPriority(9);
         return taskService.enqueue(task);
     }
@@ -82,13 +96,17 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         result.setRequested(payload.maxItems());
         markRunning(task);
         try {
-            Map<String, Object> synced = workflowService.syncCatalogMetadata(
-                    payload.source(), payload.page(), payload.maxItems());
+            Map<String, Object> synced = crawlPlanner.automatic(task)
+                    ? workflowService.syncCatalogMetadata(payload.source(), payload.page(), payload.maxItems(),
+                            crawlPlanner.offset(task))
+                    : workflowService.syncCatalogMetadata(payload.source(), payload.page(), payload.maxItems());
             result.setProcessed(number(synced.get("processed")));
             result.setInserted(number(synced.get("inserted")));
             result.setUpdated(number(synced.get("linked")));
             result.setFailed(number(synced.get("failed")));
             addErrors(result, synced.get("errors"));
+            crawlPlanner.completed(task, number(synced.get("pageSize")),
+                    result.getProcessed() + result.getFailed(), result.getFailed());
             Object discoveryMovieIds = synced.containsKey("resourceDiscoveryMovieIds")
                     ? synced.get("resourceDiscoveryMovieIds") : synced.get("movieIds");
             enqueueDiscoveryTasks(result, discoveryMovieIds);

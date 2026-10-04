@@ -221,6 +221,11 @@ public class GyingSourceWorkflowService {
     }
 
     public Map<String, Object> syncCatalogMetadata(String source, int page, int limit) {
+        return syncCatalogMetadata(source, page, limit, null);
+    }
+
+    /** Automatic crawls read a full catalog page, then process only this bounded batch. */
+    public Map<String, Object> syncCatalogMetadata(String source, int page, int limit, Integer offset) {
         String normalizedSource = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
         String typeCode = switch (normalizedSource) {
             case "HITS_MOVIE", "CSCORE_MOVIE" -> "mv";
@@ -231,7 +236,10 @@ public class GyingSourceWorkflowService {
         String sort = normalizedSource.startsWith("CSCORE_") ? "cscore" : "hits";
         int safePage = Math.min(Math.max(page, 1), 500);
         int safeLimit = Math.min(Math.max(limit, 1), 20);
-        List<Map<String, Object>> candidates = fetchCatalogCandidates(typeCode, sort, safePage, safeLimit);
+        List<Map<String, Object>> pageItems = fetchCatalogCandidates(typeCode, sort, safePage,
+                offset == null ? safeLimit : 100);
+        int start = Math.min(Math.max(offset == null ? 0 : offset, 0), pageItems.size());
+        List<Map<String, Object>> candidates = pageItems.subList(start, Math.min(start + safeLimit, pageItems.size()));
         int inserted = 0;
         int linked = 0;
         int failed = 0;
@@ -302,6 +310,7 @@ public class GyingSourceWorkflowService {
             }
         }
         Map<String, Object> result = new LinkedHashMap<>();
+        result.put("pageSize", pageItems.size());
         result.put("source", normalizedSource);
         result.put("page", safePage);
         result.put("requested", safeLimit);

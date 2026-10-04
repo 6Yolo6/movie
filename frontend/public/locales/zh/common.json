@@ -464,7 +464,7 @@
   "resourceHubGyingSyncInterval": "GYING 轮询间隔（小时）",
   "resourceHubGyingSyncPage": "GYING 页码",
   "resourceHubGyingSyncItems": "GYING 每次条数",
-  "resourceHubGyingSyncHelp": "GYING 目录采集默认关闭；启用后按来源轮换低频采集。综合评分来源每轮只采集少量条目，且两次综合评分采集至少间隔 72 小时；同时保存可解析的磁力和种子资源。",
+  "resourceHubGyingSyncHelp": "GYING 目录采集默认关闭；启用后按设置的间隔轮换热门、综合评分等来源，每个来源分别保存页码和页内进度；同时保存可解析的磁力和种子资源。",
   "resourceHubDiscoveryLimit": "搜索结果上限",
   "resourceHubTaskLimit": "任务处理上限",
   "resourceHubPublishLimit": "发布上限",
@@ -950,5 +950,17 @@
   "resourceBindQuickAddAmbiguous": "匹配到多部影片，请在下方列表中选择",
   "resourceBindQuickAddNotFound": "未找到匹配影片，请检查关键词、影片 ID 或完整标题",
   "resourceBindQuickAddMore": "另有 {{count}} 条匹配未显示，请输入更具体的关键词",
-  "resourceBindSelectedCount": "已选择 {{count}} 部"
+  "resourceBindSelectedCount": "已选择 {{count}} 部",
+  "resourceHubCrawlStartPage": "起始页",
+  "resourceHubCrawlEndPage": "结束页（含）",
+  "resourceHubCrawlRangeInvalid": "请填写 1–500 的整数，结束页不能小于起始页",
+  "resourceHubCrawlHelp": "按来源轮换，每轮最多处理设定数量。当前页未处理完会在下次续采，处理完再翻页；到结束页或遇空页后回到起始页。失败保留位置重试，重启不丢进度。起止页相同表示只循环这一页；修改范围后从新起始页开始（已排队任务仍按原范围完成）。榜单会变化，最终入库仍按影片去重。",
+  "resourceHubCrawlProgress": "自动采集进度",
+  "resourceHubCrawlProgressHelp": "显示已保存范围内，各来源下一轮的位置；运行中显示当前批次。手动单页采集不改变此进度。",
+  "resourceHubCrawlSource": "来源 / 榜单",
+  "resourceHubCrawlRange": "页码范围",
+  "resourceHubCrawlNext": "采集位置",
+  "resourceHubCrawlState": "最近任务状态",
+  "resourceHubCrawlPosition": "第 {{page}} 页 · 第 {{item}} 条起",
+  "resourceHubCrawlStatus": {"NOT_STARTED": "尚未开始", "PENDING": "排队中", "RUNNING": "运行中", "SUCCEEDED": "已完成，等待下一轮", "FAILED": "失败，保留位置", "RETRY": "部分失败，保留位置", "CANCELED": "已取消，保留位置"}
 }

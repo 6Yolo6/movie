@@ -8,6 +8,12 @@ import com.gying.movie.dto.ResourceHubConfigResponse;
 import com.gying.movie.entity.SysConfig;
 import com.gying.movie.service.IResourceHubConfigService;
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.service.IResourceHubTaskService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import com.gying.movie.dto.MetadataCrawlProgress;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,6 +38,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_TMDB_AUTO_SYNC_ENABLED = "resource.hub.tmdb.auto_sync_enabled";
     private static final String KEY_TMDB_AUTO_SYNC_SOURCES = "resource.hub.tmdb.auto_sync_sources";
     private static final String KEY_TMDB_AUTO_SYNC_PAGE = "resource.hub.tmdb.auto_sync_page";
+    private static final String KEY_TMDB_AUTO_SYNC_END_PAGE = "resource.hub.tmdb.auto_sync_end_page";
     private static final String KEY_TMDB_AUTO_SYNC_MAX_ITEMS = "resource.hub.tmdb.auto_sync_max_items";
     private static final String KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.tmdb.auto_sync_interval_hours";
     private static final String KEY_TMDB_AUTO_DISCOVERY_ENABLED = "resource.hub.tmdb.auto_discovery_enabled";
@@ -41,6 +48,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
     private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
     private static final String KEY_GYING_AUTO_SYNC_PAGE = "resource.hub.gying.auto_sync_page";
+    private static final String KEY_GYING_AUTO_SYNC_END_PAGE = "resource.hub.gying.auto_sync_end_page";
     private static final String KEY_GYING_AUTO_SYNC_MAX_ITEMS = "resource.hub.gying.auto_sync_max_items";
     private static final String KEY_GYING_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.gying.auto_sync_interval_hours";
     private static final String KEY_WORKER_ENABLED = "resource.hub.worker.enabled";
@@ -58,6 +66,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     @Autowired(required = false)
     private XunleiClient xunleiClient;
+
+    @Autowired(required = false)
+    private IResourceHubTaskService taskService;
 
     public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService) {
         this(properties, sysConfigService, new ObjectMapper());
@@ -90,7 +101,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         properties.setAutoApprove(readBoolean(KEY_AUTO_APPROVE, properties.isAutoApprove()));
         tmdb.setAutoSyncEnabled(readBoolean(KEY_TMDB_AUTO_SYNC_ENABLED, tmdb.isAutoSyncEnabled()));
         tmdb.setAutoSyncSources(readString(KEY_TMDB_AUTO_SYNC_SOURCES, tmdb.getAutoSyncSources()));
-        tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 20));
+        tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 500));
+        tmdb.setAutoSyncEndPage(Math.max(tmdb.getAutoSyncPage(),
+                readInt(KEY_TMDB_AUTO_SYNC_END_PAGE, tmdb.getAutoSyncEndPage(), 1, 500)));
         tmdb.setAutoSyncMaxItems(readInt(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, tmdb.getAutoSyncMaxItems(), 1, 100));
         tmdb.setAutoSyncIntervalHours(readInt(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, tmdb.getAutoSyncIntervalHours(), 1, 720));
         tmdb.setAutoDiscoveryEnabled(readBoolean(KEY_TMDB_AUTO_DISCOVERY_ENABLED, tmdb.isAutoDiscoveryEnabled()));
@@ -100,6 +113,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
         gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
         gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
+        gying.setAutoSyncEndPage(Math.max(gying.getAutoSyncPage(),
+                readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, 500)));
         gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
         gying.setAutoSyncIntervalHours(readInt(
                 KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, gying.getAutoSyncIntervalHours(), 1, 720));
@@ -122,6 +137,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public synchronized ResourceHubConfigResponse updateConfig(ResourceHubConfigRequest request) {
         if (request == null) {
             return getConfig();
@@ -131,6 +147,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Gying gying = properties.getGying();
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
+
+        int[] tmdbRange = resolveRange(request.getTmdbAutoSyncPage(), request.getTmdbAutoSyncEndPage(),
+                tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
+        int[] gyingRange = resolveRange(request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
+                gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
 
         // Credentials are intentionally runtime-only. They are never written to sys_config.
         if (xunlei != null) {
@@ -159,10 +180,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             tmdb.setAutoSyncSources(value);
             upsert(KEY_TMDB_AUTO_SYNC_SOURCES, value, "TMDB 自动同步的数据源类型列表");
         }
-        if (request.getTmdbAutoSyncPage() != null) {
-            int value = clamp(request.getTmdbAutoSyncPage(), 1, 20);
-            tmdb.setAutoSyncPage(value);
-            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(value), "TMDB 自动同步读取的目录页码");
+        if (request.getTmdbAutoSyncPage() != null || request.getTmdbAutoSyncEndPage() != null) {
+            tmdb.setAutoSyncPage(tmdbRange[0]);
+            tmdb.setAutoSyncEndPage(tmdbRange[1]);
+            upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(tmdbRange[0]), "TMDB 自动采集起始页码");
+            upsert(KEY_TMDB_AUTO_SYNC_END_PAGE, Integer.toString(tmdbRange[1]), "TMDB 自动采集结束页码（含）");
         }
         if (request.getTmdbAutoSyncMaxItems() != null) {
             int value = clamp(request.getTmdbAutoSyncMaxItems(), 1, 100);
@@ -203,10 +225,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             gying.setAutoSyncSources(value);
             upsert(KEY_GYING_AUTO_SYNC_SOURCES, value, "GYING 自动同步的数据源类型列表");
         }
-        if (request.getGyingAutoSyncPage() != null) {
-            int value = clamp(request.getGyingAutoSyncPage(), 1, 500);
-            gying.setAutoSyncPage(value);
-            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(value), "GYING 自动同步读取的目录页码");
+        if (request.getGyingAutoSyncPage() != null || request.getGyingAutoSyncEndPage() != null) {
+            gying.setAutoSyncPage(gyingRange[0]);
+            gying.setAutoSyncEndPage(gyingRange[1]);
+            upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(gyingRange[0]), "GYING 自动采集起始页码");
+            upsert(KEY_GYING_AUTO_SYNC_END_PAGE, Integer.toString(gyingRange[1]), "GYING 自动采集结束页码（含）");
         }
         if (request.getGyingAutoSyncMaxItems() != null) {
             int value = clamp(request.getGyingAutoSyncMaxItems(), 1, 20);
@@ -288,6 +311,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setTmdbAutoSyncEnabled(tmdb.isAutoSyncEnabled());
         response.setTmdbAutoSyncSources(tmdb.getAutoSyncSources());
         response.setTmdbAutoSyncPage(tmdb.getAutoSyncPage());
+        response.setTmdbAutoSyncEndPage(tmdb.getAutoSyncEndPage());
         response.setTmdbAutoSyncMaxItems(tmdb.getAutoSyncMaxItems());
         response.setTmdbAutoSyncIntervalHours(tmdb.getAutoSyncIntervalHours());
         response.setTmdbAutoDiscoveryEnabled(tmdb.isAutoDiscoveryEnabled());
@@ -297,6 +321,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
         response.setGyingAutoSyncSources(gying.getAutoSyncSources());
         response.setGyingAutoSyncPage(gying.getAutoSyncPage());
+        response.setGyingAutoSyncEndPage(gying.getAutoSyncEndPage());
         response.setGyingAutoSyncMaxItems(gying.getAutoSyncMaxItems());
         response.setGyingAutoSyncIntervalHours(gying.getAutoSyncIntervalHours());
         response.setWorkerEnabled(worker.isEnabled());
@@ -308,6 +333,15 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setDiscoveredRetryLimit(worker.getDiscoveredRetryLimit());
         response.setDiscoveredRetryDelayMs(worker.getDiscoveredRetryDelayMs());
         response.setDiscoveredRetryCron(worker.getDiscoveredRetryCron());
+        if (taskService != null) {
+            var planner = new MetadataCrawlPlanner(taskService, objectMapper);
+            var progress = new ArrayList<MetadataCrawlProgress>();
+            addProgress(progress, planner, "TMDB", tmdb.getAutoSyncSources(),
+                    tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
+            addProgress(progress, planner, "GYING", gying.getAutoSyncSources(),
+                    gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
+            response.setMetadataCrawlProgress(progress);
+        }
         return response;
     }
 
@@ -337,6 +371,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_TMDB_AUTO_SYNC_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据"));
         defaults.put(KEY_TMDB_AUTO_SYNC_SOURCES, values(properties.getTmdb().getAutoSyncSources(), "TMDB 自动同步的数据源类型列表"));
         defaults.put(KEY_TMDB_AUTO_SYNC_PAGE, values(Integer.toString(properties.getTmdb().getAutoSyncPage()), "TMDB 自动同步读取的目录页码"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_END_PAGE, values(
+                Integer.toString(properties.getTmdb().getAutoSyncEndPage()), "TMDB 自动采集结束页码（含）"));
         defaults.put(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, values(Integer.toString(properties.getTmdb().getAutoSyncMaxItems()), "每轮 TMDB 自动同步最多处理的影片数"));
         defaults.put(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, values(Integer.toString(properties.getTmdb().getAutoSyncIntervalHours()), "TMDB 自动同步任务之间的最小间隔（小时）"));
         defaults.put(KEY_TMDB_AUTO_DISCOVERY_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoDiscoveryEnabled()), "TMDB 同步完成后是否自动创建资源发现任务"));
@@ -352,6 +388,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 properties.getGying().getAutoSyncSources(), "GYING 自动同步的数据源类型列表"));
         defaults.put(KEY_GYING_AUTO_SYNC_PAGE, values(
                 Integer.toString(properties.getGying().getAutoSyncPage()), "GYING 自动同步读取的目录页码"));
+        defaults.put(KEY_GYING_AUTO_SYNC_END_PAGE, values(
+                Integer.toString(properties.getGying().getAutoSyncEndPage()), "GYING 自动采集结束页码（含）"));
         defaults.put(KEY_GYING_AUTO_SYNC_MAX_ITEMS, values(
                 Integer.toString(properties.getGying().getAutoSyncMaxItems()), "每轮 GYING 自动同步最多处理的影片数"));
         defaults.put(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, values(
@@ -366,6 +404,26 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_DISCOVERED_RETRY_DELAY_MS, values(Long.toString(properties.getWorker().getDiscoveredRetryDelayMs()), "批量重试每条资源之间的等待时间（毫秒）"));
         defaults.put(KEY_DISCOVERED_RETRY_CRON, values(properties.getWorker().getDiscoveredRetryCron(), "已发现资源定时重试的 Cron 表达式"));
         defaults.forEach((key, value) -> upsertMissing(key, value[0], value[1]));
+    }
+
+    private void addProgress(java.util.List<MetadataCrawlProgress> progress, MetadataCrawlPlanner planner,
+            String provider, String sources, int start, int end) {
+        if (sources != null) {
+            Arrays.stream(sources.split(",")).map(String::trim).filter(value -> !value.isEmpty()).distinct()
+                    .forEach(source -> progress.add(planner.progress(provider, source, start, end)));
+        }
+    }
+
+    private int[] resolveRange(Integer requestedStart, Integer requestedEnd, int currentStart, int currentEnd) {
+        int start = requestedStart == null ? currentStart : requestedStart;
+        // Old clients editing a single page keep single-page behavior.
+        int end = requestedEnd == null
+                ? (currentStart == currentEnd && requestedStart != null ? start : currentEnd) : requestedEnd;
+        if (start < 1 || end > 500 || end < start) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "采集页码范围无效：须满足 1 ≤ 起始页 ≤ 结束页 ≤ 500");
+        }
+        return new int[] {start, end};
     }
 
     private String[] values(String value, String description) {

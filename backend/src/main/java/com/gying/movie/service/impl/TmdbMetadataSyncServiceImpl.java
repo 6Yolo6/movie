@@ -55,6 +55,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private final IResourceDiscoveryResultService discoveryResultService;
     private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
+    private final MetadataCrawlPlanner crawlPlanner;
 
     public TmdbMetadataSyncServiceImpl(
             TmdbClient tmdbClient,
@@ -77,10 +78,26 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         this.discoveryResultService = discoveryResultService;
         this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
+        this.crawlPlanner = new MetadataCrawlPlanner(taskService, objectMapper);
     }
 
     @Override
     public ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request) {
+        return enqueue(request, null);
+    }
+
+    @Override
+    public ResourceHubTask enqueueAutomatic(String source) {
+        var config = resourceHubProperties.getTmdb();
+        var position = crawlPlanner.next("TMDB", source, config.getAutoSyncPage(), config.getAutoSyncEndPage());
+        ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
+        request.setSource(source);
+        request.setPage(position.page());
+        request.setMaxItems(config.getAutoSyncMaxItems());
+        return enqueue(request, position);
+    }
+
+    private ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request, MetadataCrawlPlanner.Position position) {
         ensureEnabled();
         SyncPayload payload = normalizePayload(request);
 
@@ -88,7 +105,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         task.setTaskType("METADATA_SYNC");
         task.setSource("TMDB");
         task.setKeyword(payload.source());
-        task.setPayload(writePayload(payload));
+        String json = writePayload(payload);
+        task.setPayload(position == null ? json : crawlPlanner.attach(json, position));
         task.setPriority(10);
         return taskService.enqueue(task);
     }
@@ -114,8 +132,9 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         markRunning(task);
         try {
             List<TmdbListItem> items = tmdbClient.fetchList(payload.source(), payload.page());
-            int limit = Math.min(payload.maxItems(), items.size());
-            for (int i = 0; i < limit; i++) {
+            int offset = Math.min(crawlPlanner.offset(task), items.size());
+            int limit = Math.min(payload.maxItems(), items.size() - offset);
+            for (int i = offset; i < offset + limit; i++) {
                 TmdbListItem item = items.get(i);
                 try {
                     JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
@@ -132,7 +151,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                     addError(result, item.getMediaType() + "/" + item.getTmdbId() + ": " + itemError.getMessage());
                 }
             }
-            result.setSkipped(Math.max(items.size() - limit, 0));
+            result.setSkipped(Math.max(items.size() - offset - limit, 0));
+            crawlPlanner.completed(task, items.size(), limit, result.getFailed());
             String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
             String errorSummary = result.getFailed() > 0
                     ? result.getFailed() + " TMDB item(s) failed during sync"

@@ -8,12 +8,14 @@ public class ResourceHubConfigResponse {
     private String xunleiAuthorizationExpiresAt;
     private boolean xunleiAuthorizationExpired;
     private boolean xunleiCaptchaConfigured;
+    private java.util.List<MetadataCrawlProgress> metadataCrawlProgress = java.util.List.of();
     private boolean enabled;
     private boolean autoApprove;
     private boolean tmdbConfigured;
     private boolean tmdbAutoSyncEnabled;
     private String tmdbAutoSyncSources;
     private int tmdbAutoSyncPage;
+    private int tmdbAutoSyncEndPage;
     private int tmdbAutoSyncMaxItems;
     private int tmdbAutoSyncIntervalHours;
     private boolean tmdbAutoDiscoveryEnabled;
@@ -23,6 +25,7 @@ public class ResourceHubConfigResponse {
     private boolean gyingAutoSyncEnabled;
     private String gyingAutoSyncSources;
     private int gyingAutoSyncPage;
+    private int gyingAutoSyncEndPage;
     private int gyingAutoSyncMaxItems;
     private int gyingAutoSyncIntervalHours;
     private boolean workerEnabled;

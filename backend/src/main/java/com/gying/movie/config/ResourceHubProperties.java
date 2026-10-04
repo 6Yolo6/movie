@@ -23,6 +23,12 @@ public class ResourceHubProperties {
         private boolean autoSyncEnabled = false;
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
         private int autoSyncPage = 1;
+        private int autoSyncEndPage;
+
+        // Missing range configuration preserves the legacy single-page scope.
+        public int getAutoSyncEndPage() {
+            return Math.max(autoSyncPage, autoSyncEndPage);
+        }
         private int autoSyncMaxItems = 20;
         private int autoSyncIntervalHours = 24;
         private boolean autoDiscoveryEnabled = true;
@@ -38,6 +44,12 @@ public class ResourceHubProperties {
         private boolean autoSyncEnabled = false;
         private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         private int autoSyncPage = 1;
+        private int autoSyncEndPage;
+
+        // Missing range configuration preserves the legacy single-page scope.
+        public int getAutoSyncEndPage() {
+            return Math.max(autoSyncPage, autoSyncEndPage);
+        }
         private int autoSyncMaxItems = 10;
         private int autoSyncIntervalHours = 24;
     }

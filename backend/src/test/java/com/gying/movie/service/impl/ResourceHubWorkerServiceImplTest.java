@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.QuarkTransferRunResult;
-import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.entity.ResourceHubTask;
@@ -26,7 +25,6 @@ import com.gying.movie.service.ITmdbMetadataSyncService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -44,10 +42,7 @@ class ResourceHubWorkerServiceImplTest {
 
         ResourceHubWorkerResult result = fixture.service.runOnce();
 
-        ArgumentCaptor<ResourceHubMetadataSyncRequest> requestCaptor =
-                ArgumentCaptor.forClass(ResourceHubMetadataSyncRequest.class);
-        verify(fixture.tmdbService).enqueue(requestCaptor.capture());
-        assertEquals("TOP_RATED_TV", requestCaptor.getValue().getSource());
+        verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_TV");
         assertEquals(1, result.getMetadataSyncTasksCreated());
     }
 
@@ -59,7 +54,7 @@ class ResourceHubWorkerServiceImplTest {
 
         ResourceHubWorkerResult result = fixture.service.runOnce();
 
-        verify(fixture.tmdbService, never()).enqueue(any());
+        verify(fixture.tmdbService, never()).enqueueAutomatic(any());
         assertEquals(0, result.getMetadataSyncTasksCreated());
     }
 
@@ -98,6 +93,30 @@ class ResourceHubWorkerServiceImplTest {
         InOrder order = Mockito.inOrder(xunleiService, quarkService);
         order.verify(xunleiService).submitPending(any(Integer.class));
         order.verify(quarkService).submitPending(any(Integer.class));
+    }
+
+    @Test
+    void gyingUsesAutomaticPlannerAndRetainsIntervalAndActiveTaskGuards() {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncEnabled(false);
+        fixture.properties.getGying().setAutoSyncEnabled(true);
+        fixture.properties.getGying().setAutoSyncSources("HITS_MOVIE,CSCORE_MOVIE");
+        fixture.properties.getGying().setAutoSyncIntervalHours(1);
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("HITS_MOVIE");
+        latest.setCreatedAt(LocalDateTime.now().minusHours(2));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        fixture.service.runOnce();
+        verify(fixture.gyingService).enqueueAutomatic("CSCORE_MOVIE");
+        Mockito.clearInvocations(fixture.gyingService);
+        latest.setCreatedAt(LocalDateTime.now());
+        fixture.service.runOnce();
+        verify(fixture.gyingService, never()).enqueueAutomatic(any());
+        latest.setCreatedAt(LocalDateTime.now().minusHours(2));
+        when(fixture.taskService.count(any(Wrapper.class))).thenReturn(1L);
+        fixture.service.runOnce();
+        verify(fixture.gyingService, never()).enqueueAutomatic(any());
     }
 
     private static class Fixture {

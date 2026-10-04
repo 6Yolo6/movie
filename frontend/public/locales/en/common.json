@@ -464,7 +464,7 @@
   "resourceHubGyingSyncInterval": "GYING rotation interval (hours)",
   "resourceHubGyingSyncPage": "GYING page",
   "resourceHubGyingSyncItems": "GYING items per run",
-  "resourceHubGyingSyncHelp": "GYING catalog sync is disabled by default and rotates sources at a low rate. Composite-score sources fetch only a small batch per run and enforce a 72-hour minimum between composite-score runs; parsed magnet and torrent resources are stored as GYING links.",
+  "resourceHubGyingSyncHelp": "GYING catalog collection is disabled by default. When enabled, popular and composite-score catalogs rotate at the configured interval, each with its own page and item checkpoint. Parsed magnet and torrent resources are also stored.",
   "resourceHubDiscoveryLimit": "Discovery result limit",
   "resourceHubTaskLimit": "Task limit",
   "resourceHubPublishLimit": "Publish limit",
@@ -950,5 +950,17 @@
   "resourceBindQuickAddAmbiguous": "Multiple movies match; select one in the list below",
   "resourceBindQuickAddNotFound": "No movie matched; check the keyword, ID, or full title",
   "resourceBindQuickAddMore": "{{count}} more matches hidden — enter a more specific keyword",
-  "resourceBindSelectedCount": "{{count}} selected"
+  "resourceBindSelectedCount": "{{count}} selected",
+  "resourceHubCrawlStartPage": "Start page",
+  "resourceHubCrawlEndPage": "End page (inclusive)",
+  "resourceHubCrawlRangeInvalid": "Use integers from 1 to 500; end page must be at least start page",
+  "resourceHubCrawlHelp": "Sources rotate at the configured interval, processing at most the batch limit. Resume unfinished items before turning the page. Return to the start after the end page or an empty page. Failures retain the position; restarts preserve progress. Equal start/end pages loop over one page. A range change starts at the new beginning; queued tasks still finish their original range. Rankings can change; ingestion remains deduplicated.",
+  "resourceHubCrawlProgress": "Automatic collection progress",
+  "resourceHubCrawlProgressHelp": "Positions use saved ranges. Running tasks show their current batch. Manual single-page collection does not change this progress.",
+  "resourceHubCrawlSource": "Provider / catalog",
+  "resourceHubCrawlRange": "Page range",
+  "resourceHubCrawlNext": "Position",
+  "resourceHubCrawlState": "Latest task status",
+  "resourceHubCrawlPosition": "Page {{page}} · from item {{item}}",
+  "resourceHubCrawlStatus": {"NOT_STARTED": "Not started", "PENDING": "Queued", "RUNNING": "Running", "SUCCEEDED": "Complete, awaiting next run", "FAILED": "Failed, position retained", "RETRY": "Partial failure, position retained", "CANCELED": "Canceled, position retained"}
 }

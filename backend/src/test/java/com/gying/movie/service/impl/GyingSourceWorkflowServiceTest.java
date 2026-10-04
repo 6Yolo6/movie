@@ -541,6 +541,25 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void automaticCatalogBatchReadsFullPageButOnlyIngestsRemainingItems() {
+        MovieMetadata saved = movie("gying_mv_NEW2", "续采电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=3&limit=100"))
+                .thenReturn(Map.of("items", List.of(
+                        Map.of("mid", "DONE1", "title", "已处理电影", "year", 2026),
+                        Map.of("mid", "NEW2", "title", "续采电影", "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById("gying_mv_NEW2")).thenReturn(saved);
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+        Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 3, 1, 1);
+        assertEquals(2, result.get("pageSize"));
+        assertEquals(1, result.get("processed"));
+        ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
+        assertEquals("NEW2", payload.getValue().get("mid"));
+        assertEquals(false, payload.getValue().get("includeResources"));
+    }
+
+    @Test
     void syncCatalogMetadataDoesNotImportThirdPartyResources() {
         MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
         when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Alert,
@@ -42,6 +42,7 @@ import { useAuthStore } from '@/store/authStore';
 
 const { Title, Text } = Typography;
 const MISSING_RESOURCE_BATCH_LIMIT = 20;
+const subscribeToHydration = () => () => {};
 
 interface ApiEnvelope<T> {
     code?: string;
@@ -49,7 +50,19 @@ interface ApiEnvelope<T> {
     data?: T;
 }
 
+interface MetadataCrawlProgress {
+    provider: string;
+    source: string;
+    startPage: number;
+    endPage: number;
+    nextPage: number;
+    nextItem: number;
+    status: string;
+    taskId?: number | null;
+}
+
 interface ResourceHubConfig {
+    metadataCrawlProgress?: MetadataCrawlProgress[];
     xunleiAuthorizationConfigured: boolean;
     xunleiAuthorizationExpiresAt?: string | null;
     xunleiAuthorizationExpired?: boolean;
@@ -60,6 +73,7 @@ interface ResourceHubConfig {
     tmdbAutoSyncEnabled: boolean;
     tmdbAutoSyncSources: string;
     tmdbAutoSyncPage: number;
+    tmdbAutoSyncEndPage: number;
     tmdbAutoSyncMaxItems: number;
     tmdbAutoSyncIntervalHours: number;
     tmdbAutoDiscoveryEnabled: boolean;
@@ -69,6 +83,7 @@ interface ResourceHubConfig {
     gyingAutoSyncEnabled: boolean;
     gyingAutoSyncSources: string;
     gyingAutoSyncPage: number;
+    gyingAutoSyncEndPage: number;
     gyingAutoSyncMaxItems: number;
     gyingAutoSyncIntervalHours: number;
     workerEnabled: boolean;
@@ -264,6 +279,7 @@ function formatDate(value?: string) {
 }
 
 export default function ResourceHubAdminPage() {
+    const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
     const { user, token } = useAuthStore();
     const router = useRouter();
     const { message } = App.useApp();
@@ -335,6 +351,8 @@ export default function ResourceHubAdminPage() {
 
     const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => ({
         ...config,
+        tmdbAutoSyncEndPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
+        gyingAutoSyncEndPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
         tmdbAutoSyncSources: config.tmdbAutoSyncSources
             ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
             : [],
@@ -1019,6 +1037,9 @@ export default function ResourceHubAdminPage() {
     const collectionStats = overview?.collectionStats;
     const workerEffective = Boolean(overview?.enabled && overview?.worker.enabled);
 
+    // Locale and admin session are client-side; keep the first render identical to SSR.
+    if (!hydrated) return <main className="container mx-auto px-4 py-8" aria-busy="true" />;
+
     return (
         <div className="min-h-screen bg-[#f5f7fa] dark:bg-black">
             <div className="container mx-auto px-4 lg:px-8 py-8">
@@ -1348,8 +1369,25 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="tmdbAutoSyncPage" label={t('resourceHubSyncPage')}>
-                                                            <InputNumber min={1} max={20} className="w-full" />
+                                                        <Form.Item name="tmdbAutoSyncPage" label={t('resourceHubCrawlStartPage')}
+                                                            rules={[{ required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') }]}>
+                                                            <InputNumber min={1} max={500} precision={0} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={8}>
+                                                        <Form.Item name="tmdbAutoSyncEndPage" label={t('resourceHubCrawlEndPage')}
+                                                            dependencies={['tmdbAutoSyncPage']}
+                                                            rules={[
+                                                                { required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') },
+                                                                ({ getFieldValue }) => ({
+                                                                    validator(_, value) {
+                                                                        return value >= getFieldValue('tmdbAutoSyncPage')
+                                                                            ? Promise.resolve()
+                                                                            : Promise.reject(new Error(t('resourceHubCrawlRangeInvalid')));
+                                                                    },
+                                                                }),
+                                                            ]}>
+                                                            <InputNumber min={1} max={500} precision={0} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
@@ -1371,8 +1409,25 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
-                                                        <Form.Item name="gyingAutoSyncPage" label={t('resourceHubGyingSyncPage')}>
-                                                            <InputNumber min={1} max={500} className="w-full" />
+                                                        <Form.Item name="gyingAutoSyncPage" label={t('resourceHubCrawlStartPage')}
+                                                            rules={[{ required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') }]}>
+                                                            <InputNumber min={1} max={500} precision={0} className="w-full" />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col xs={12} md={8}>
+                                                        <Form.Item name="gyingAutoSyncEndPage" label={t('resourceHubCrawlEndPage')}
+                                                            dependencies={['gyingAutoSyncPage']}
+                                                            rules={[
+                                                                { required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') },
+                                                                ({ getFieldValue }) => ({
+                                                                    validator(_, value) {
+                                                                        return value >= getFieldValue('gyingAutoSyncPage')
+                                                                            ? Promise.resolve()
+                                                                            : Promise.reject(new Error(t('resourceHubCrawlRangeInvalid')));
+                                                                    },
+                                                                }),
+                                                            ]}>
+                                                            <InputNumber min={1} max={500} precision={0} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={12} md={8}>
@@ -1382,6 +1437,25 @@ export default function ResourceHubAdminPage() {
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Text type="secondary">{t('resourceHubGyingSyncHelp')}</Text>
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Alert type="info" showIcon title={t('resourceHubCrawlHelp')} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Title level={5}>{t('resourceHubCrawlProgress')}</Title>
+                                                        <Text type="secondary">{t('resourceHubCrawlProgressHelp')}</Text>
+                                                        <Table<MetadataCrawlProgress>
+                                                            data-testid="metadata-crawl-progress"
+                                                            size="small" pagination={false} scroll={{ x: 620 }}
+                                                            rowKey={(row) => `${row.provider}:${row.source}`}
+                                                            dataSource={overview?.config.metadataCrawlProgress || []}
+                                                            columns={[
+                                                                { title: t('resourceHubCrawlSource'), key: 'source', render: (_, row) => `${row.provider} / ${t(`${row.provider === 'GYING' ? 'resourceHubGyingSource' : 'resourceHubSource'}.${row.source}`, { defaultValue: row.source })}` },
+                                                                { title: t('resourceHubCrawlRange'), key: 'range', render: (_, row) => `${row.startPage}–${row.endPage}` },
+                                                                { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem }) },
+                                                                { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string) => t(`resourceHubCrawlStatus.${value}`, { defaultValue: value }) },
+                                                            ]}
+                                                        />
                                                     </Col>
                                                     <Col xs={12} md={8}>
                                                         <Form.Item name="tmdbDiscoveryMaxResults" label={t('resourceHubDiscoveryLimit')}>

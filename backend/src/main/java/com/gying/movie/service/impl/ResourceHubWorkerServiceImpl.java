@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.client.XunleiClient;
 import com.gying.movie.dto.QuarkTransferRunResult;
-import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
@@ -160,11 +159,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
         String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
         try {
-            ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
-            request.setSource(source);
-            request.setPage(tmdb.getAutoSyncPage());
-            request.setMaxItems(tmdb.getAutoSyncMaxItems());
-            tmdbMetadataSyncService.enqueue(request);
+            tmdbMetadataSyncService.enqueueAutomatic(source);
             result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
         } catch (Exception e) {
             addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
@@ -354,7 +349,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
         String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
         try {
-            gyingMetadataSyncService.enqueue(source, gying.getAutoSyncPage(), gying.getAutoSyncMaxItems());
+            gyingMetadataSyncService.enqueueAutomatic(source);
             result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
         } catch (Exception error) {
             addError(result, "gying auto sync " + source + ": " + error.getMessage());

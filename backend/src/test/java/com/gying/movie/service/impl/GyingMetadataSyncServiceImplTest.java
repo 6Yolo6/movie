@@ -62,4 +62,37 @@ class GyingMetadataSyncServiceImplTest {
         assertEquals("gying_mv_NEW1", request.getValue().getMovieId());
         assertEquals("AUTO", request.getValue().getSource());
     }
+    @Test
+    void automaticBatchResumesRemainingItemsAndPersistsNextPage() throws Exception {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.setEnabled(true);
+        properties.getGying().setAutoSyncPage(2);
+        properties.getGying().setAutoSyncEndPage(6);
+        properties.getGying().setAutoSyncMaxItems(15);
+        properties.getGying().setDiscoveryEnabled(false);
+        var tasks = mock(IResourceHubTaskService.class);
+        var workflow = mock(GyingSourceWorkflowService.class);
+        ObjectMapper mapper = new ObjectMapper();
+        var planner = new MetadataCrawlPlanner(tasks, mapper);
+        ResourceHubTask previous = new ResourceHubTask();
+        previous.setStatus("SUCCEEDED");
+        previous.setPayload(planner.attach("{\"page\":2,\"maxItems\":15}",
+                new MetadataCrawlPlanner.Position(2, 6, 2, 0, "PENDING", null)));
+        planner.completed(previous, 30, 15, 0);
+        when(tasks.getOne(any(), org.mockito.ArgumentMatchers.eq(false))).thenReturn(previous);
+        when(tasks.enqueue(any())).thenAnswer(call -> call.getArgument(0));
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, workflow,
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        ResourceHubTask task = service.enqueueAutomatic("HITS_MOVIE");
+        task.setId(20L);
+        when(tasks.getById(20L)).thenReturn(task);
+        when(workflow.syncCatalogMetadata("HITS_MOVIE", 2, 15, 15)).thenReturn(Map.of(
+                "pageSize", 30, "processed", 15, "inserted", 1, "linked", 14, "failed", 0));
+        assertEquals("SUCCEEDED", service.runTask(20L).getStatus());
+        var checkpoint = mapper.readTree(task.getPayload()).path("crawl");
+        assertEquals(3, checkpoint.path("nextPage").asInt());
+        assertEquals(0, checkpoint.path("nextOffset").asInt());
+        verify(workflow).syncCatalogMetadata("HITS_MOVIE", 2, 15, 15);
+        verify(tasks, org.mockito.Mockito.times(2)).updateById(task);
+    }
 }

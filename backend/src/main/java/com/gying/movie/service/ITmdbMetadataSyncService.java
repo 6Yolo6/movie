@@ -10,6 +10,8 @@ import java.util.List;
 public interface ITmdbMetadataSyncService {
     ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request);
 
+    ResourceHubTask enqueueAutomatic(String source);
+
     TmdbSyncResult runTask(Long taskId);
 
     MovieMetadata syncBestByKeyword(String keyword);

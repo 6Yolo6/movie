@@ -12,6 +12,7 @@ public class ResourceHubConfigRequest {
     private Boolean tmdbAutoSyncEnabled;
     private String tmdbAutoSyncSources;
     private Integer tmdbAutoSyncPage;
+    private Integer tmdbAutoSyncEndPage;
     private Integer tmdbAutoSyncMaxItems;
     private Integer tmdbAutoSyncIntervalHours;
     private Boolean tmdbAutoDiscoveryEnabled;
@@ -21,6 +22,7 @@ public class ResourceHubConfigRequest {
     private Boolean gyingAutoSyncEnabled;
     private String gyingAutoSyncSources;
     private Integer gyingAutoSyncPage;
+    private Integer gyingAutoSyncEndPage;
     private Integer gyingAutoSyncMaxItems;
     private Integer gyingAutoSyncIntervalHours;
     private Boolean workerEnabled;
