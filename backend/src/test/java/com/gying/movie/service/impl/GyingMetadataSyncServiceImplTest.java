@@ -21,7 +21,7 @@ import org.mockito.ArgumentCaptor;
 class GyingMetadataSyncServiceImplTest {
 
     @Test
-    void successfulCatalogSyncEnqueuesWebsitePublicationDiscovery() {
+    void successfulCatalogSyncDoesNotEnqueueCloudDiscoveryEvenWhenLegacyFlagIsEnabled() {
         ResourceHubProperties properties = new ResourceHubProperties();
         properties.setEnabled(true);
         properties.getGying().setDiscoveryEnabled(true);
@@ -56,11 +56,8 @@ class GyingMetadataSyncServiceImplTest {
         var result = service.runTask(task.getId());
 
         assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals(1, result.getDiscoveryTasksCreated());
-        ArgumentCaptor<ResourceDiscoveryRequest> request = ArgumentCaptor.forClass(ResourceDiscoveryRequest.class);
-        verify(discoveryService).enqueue(request.capture());
-        assertEquals("gying_mv_NEW1", request.getValue().getMovieId());
-        assertEquals("AUTO", request.getValue().getSource());
+        assertEquals(0, result.getDiscoveryTasksCreated());
+        org.mockito.Mockito.verifyNoInteractions(discoveryService, resourceLinkService);
     }
     @Test
     void automaticBatchResumesRemainingItemsAndPersistsNextPage() throws Exception {

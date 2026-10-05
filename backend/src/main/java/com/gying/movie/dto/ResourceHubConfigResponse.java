@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigResponse {
+    private java.util.List<GyingWeeklyTransferSchedule> weeklyTransferSchedules;
     private boolean xunleiAuthorizationConfigured;
     private String xunleiAuthorizationExpiresAt;
     private boolean xunleiAuthorizationExpired;

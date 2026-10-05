@@ -292,7 +292,7 @@ class GyingSourceWorkflowServiceTest {
         when(panSouClient.checkLinksByProvider(Map.of(url, "QUARK"))).thenReturn(Map.of(
                 url, new LinkCheckResult(url, true, false, "invalid")));
 
-        Map<String, Object> result = service.ensureMovieResource("tv", "dlvj");
+        Map<String, Object> result = service.ensureWeeklyMovieResource("tv", "dlvj");
 
         assertEquals("ALREADY_PUBLISHED_NEEDS_REPAIR", result.get("status"));
         assertEquals(true, result.get("repairRequired"));
@@ -572,9 +572,18 @@ class GyingSourceWorkflowServiceTest {
         when(movieService.getById("gying_mv_NEW1")).thenReturn(saved);
         when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
 
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "url", "magnet:?xt=urn:btih:fixture", "title", "磁力"),
+                Map.of("type", "TORRENT", "provider", "P2P", "url", "https://example.invalid/test.torrent", "title", "种子"),
+                Map.of("type", "DISK", "provider", "QUARK", "url", "https://pan.quark.cn/s/ignored"))));
         Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
 
         assertEquals(1, result.get("inserted"));
+        assertEquals(2, result.get("directResourceLinks"));
+        ArgumentCaptor<ResourceLink> links = ArgumentCaptor.forClass(ResourceLink.class);
+        verify(resourceLinkService, times(2)).save(links.capture());
+        assertEquals(List.of("MAGNET", "TORRENT"), links.getAllValues().stream().map(ResourceLink::getType).toList());
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
         assertEquals(List.of(saved.getId()), result.get("movieIds"));
         ArgumentCaptor<Map<String, Object>> payload = ArgumentCaptor.forClass(Map.class);
         verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
@@ -850,6 +859,26 @@ class GyingSourceWorkflowServiceTest {
         assertTrue(query.getValue().getSqlSegment().contains("id IN"));
         assertTrue(query.getValue().getSqlSegment().contains("poster_url"));
         assertTrue(query.getValue().getSqlSegment().contains("LIMIT 1"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void weeklyQuarkCandidateRequiresDurableOneShotPolicy(boolean persisted) {
+        MovieMetadata movie = movie("ONE", "周榜电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/movie/mv/ONE")).thenReturn(Map.of("title", "周榜电影", "ownResources", List.of(),
+                "resources", List.of(Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/fixture", "source_id", "SRC1", "title", "周榜电影"))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var discovery = new ResourceDiscoveryResult(); discovery.setId(8L); discovery.setMovieId(movie.getId());
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(discovery);
+        var transfer = new QuarkTransferTask(); transfer.setId(9L); transfer.setDiscoveryResultId(8L); transfer.setStatus("PENDING");
+        when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(transfer);
+        when(transferTaskService.updateById(transfer)).thenReturn(persisted);
+        var failed = new QuarkTransferRunResult(); failed.setFailed(1); failed.getErrors().add("fixture stopped before cloud writes");
+        when(transferRunnerService.submitOne(9L)).thenReturn(failed);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> service.ensureWeeklyMovieResource("mv", "ONE"));
+        assertTrue(transfer.getRequestPayload().contains("GYING_WEEKLY_ONE_SHOT"));
+        if (persisted) verify(transferRunnerService).submitOne(9L);
+        else verify(transferRunnerService, never()).submitOne(any());
     }
 
     private MovieMetadata movie(String id, String title, String category, String resourceStatus) {

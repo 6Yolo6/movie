@@ -107,9 +107,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             addErrors(result, synced.get("errors"));
             crawlPlanner.completed(task, number(synced.get("pageSize")),
                     result.getProcessed() + result.getFailed(), result.getFailed());
-            Object discoveryMovieIds = synced.containsKey("resourceDiscoveryMovieIds")
-                    ? synced.get("resourceDiscoveryMovieIds") : synced.get("movieIds");
-            enqueueDiscoveryTasks(result, discoveryMovieIds);
+            // Catalog metadata retains P2P links but never enqueues cloud discovery.
             String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
             finishTask(task, status, result.getFailed() > 0
                     ? result.getFailed() + " GYING item(s) failed during sync"

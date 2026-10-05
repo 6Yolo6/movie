@@ -117,11 +117,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             enqueueTmdbAutoSyncTasks(result);
             enqueueGyingAutoSyncTasks(result);
             runDueTasks(result);
-            reconcileDiscoveredTransferTasks(result);
-            runXunleiTransfers(result);
-            runQuarkTransfers(result);
-            publishResources(result);
-            retryPendingGyingPublications(result);
+            // Scheduled collection is metadata/P2P only. Never drain legacy cloud queues.
+            // Weekly GYING charts use their own bounded, individually scheduled workflow.
         } finally {
             result.setFinishedAt(LocalDateTime.now());
             running.set(false);
@@ -181,6 +178,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     @Override
     public Map<String, Object> retryDiscoveredTransfers(boolean force) {
+        if (!force) {
+            return skippedRetry(new LinkedHashMap<>(), "Automatic legacy transfers disabled; use weekly charts");
+        }
         resourceHubConfigService.reload();
         ResourceHubProperties.Worker worker = resourceHubProperties.getWorker();
         Map<String, Object> result = new LinkedHashMap<>();
@@ -423,6 +423,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private void runDueTasks(ResourceHubWorkerResult result) {
         List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC")
                 .eq("status", "PENDING")
                 .le("scheduled_at", LocalDateTime.now())
                 .orderByDesc("priority")

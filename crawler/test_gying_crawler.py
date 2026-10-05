@@ -271,5 +271,32 @@ class GyingExplicitResourceSyncTest(unittest.TestCase):
         scan.assert_not_called()
 
 
+
+
+
+class WeeklyPopularTest(unittest.TestCase):
+    def test_exact_weekly_scope_and_limit(self):
+        import json
+        from crawler.gying_crawler import parse_weekly_popular
+        for kind in ('mv', 'tv', 'ac'):
+            markup = '_obj.inlist=' + json.dumps({'ty': kind, 't': ['甲', '乙'], 'i': ['A1', 'B2']}) + ';_obj.hits={"by":"week"};'
+            rows = parse_weekly_popular(kind, markup, 1)
+            self.assertEqual(1, len(rows))
+            self.assertEqual(kind, rows[0]['typeCode'])
+            self.assertEqual('A1', rows[0]['mid'])
+            with self.assertRaises(RuntimeError):
+                parse_weekly_popular(kind, markup.replace('"week"', '"month"'), 1)
+    def test_challenge_and_empty_payload_fail_closed(self):
+        from crawler.gying_crawler import parse_weekly_popular
+        for markup in ('<title>Verification</title>', '_obj.inlist={"ty":"mv","t":[],"i":[]};_obj.hits={"by":"week"};'):
+            with self.assertRaises(RuntimeError):
+                parse_weekly_popular('mv', markup, 5)
+    @patch('crawler.gying_crawler.site_get')
+    def test_fetches_weekly_path_not_all_time_catalog(self, get):
+        from crawler.gying_crawler import fetch_weekly_popular
+        get.return_value = Mock(status_code=200, text='_obj.inlist={"ty":"tv","t":["测试"],"i":["A1"]};_obj.hits={"by":"week"};')
+        self.assertEqual('A1', fetch_weekly_popular('tv')[0]['mid'])
+        self.assertTrue(get.call_args.args[0].endswith('/hits/tv/week'))
+
 if __name__ == "__main__":
     unittest.main()

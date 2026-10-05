@@ -576,6 +576,7 @@
     "CSCORE_ANIME": "Composite-score anime"
   },
   "resourceHubTaskType": {
+    "WEEKLY_TRANSFER": "Weekly popular transfers",
     "METADATA_SYNC": "Metadata sync",
     "RESOURCE_DISCOVERY": "Resource discovery"
   },
@@ -962,5 +963,14 @@
   "resourceHubCrawlNext": "Position",
   "resourceHubCrawlState": "Latest task status",
   "resourceHubCrawlPosition": "Page {{page}} · from item {{item}}",
-  "resourceHubCrawlStatus": {"NOT_STARTED": "Not started", "PENDING": "Queued", "RUNNING": "Running", "SUCCEEDED": "Complete, awaiting next run", "FAILED": "Failed, position retained", "RETRY": "Partial failure, position retained", "CANCELED": "Canceled, position retained"}
+  "resourceHubCrawlStatus": {"NOT_STARTED": "Not started", "PENDING": "Queued", "RUNNING": "Running", "SUCCEEDED": "Complete, awaiting next run", "FAILED": "Failed, position retained", "RETRY": "Partial failure, position retained", "CANCELED": "Canceled, position retained"},
+  "resourceHubMetadataOnlyHelp": "Metadata collection saves movie details, posters and GYING magnet/torrent links only. It never creates cloud discovery, transfer, share or publishing jobs. The scheduled worker no longer drains legacy cloud queues. Explicit manual and QQ selections remain available.",
+  "resourceHubWeeklyTitle": "This week's popular · Cloud workflow",
+  "resourceHubWeeklyHelp": "Uses only the three GYING weekly charts: /hits/mv/week, /hits/tv/week and /hits/ac/week. Each runs independently, defaulting to the top 5 titles every 7 days. Existing shares are reused; additional providers are not filled automatically. New schedules and interval/enable changes wait one full interval. Failures do not cause frequent retries. Existing quark-auto-save follow-up schedules are separate and unchanged.",
+  "resourceHubWeeklyType": {"mv": "Movies · This week", "tv": "TV · This week", "ac": "Anime · This week"},
+  "resourceHubWeeklyEnabled": "Enabled",
+  "resourceHubWeeklyDays": "Interval (days)",
+  "resourceHubWeeklyLimit": "Top N per run",
+  "resourceHubWeeklyNext": "Next run",
+  "resourceHubWeeklyLast": "Last run"
 }

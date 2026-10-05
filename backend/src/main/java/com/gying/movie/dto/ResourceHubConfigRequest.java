@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ResourceHubConfigRequest {
+    private java.util.List<GyingWeeklyTransferSchedule> weeklyTransferSchedules;
     /** Runtime-only credentials. Blank values keep the current process value. */
     private String xunleiAuthorization;
     private String xunleiCaptchaToken;

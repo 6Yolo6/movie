@@ -1340,6 +1340,33 @@ def fetch_catalog_movies(type_code, sort="score", page=1, limit=30):
     return normalize_catalog_items(type_code, payload)[:safe_limit]
 
 
+def parse_weekly_popular(type_code, html, limit=5):
+    if type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid weekly chart type")
+    def embedded(name):
+        match = re.search(r"_obj\." + name + r"\s*=\s*", html)
+        if not match:
+            raise RuntimeError("Weekly chart payload missing")
+        return json.JSONDecoder().raw_decode(html[match.end():])[0]
+    section = embedded("inlist")
+    hits = embedded("hits")
+    if not isinstance(section, dict) or section.get("ty") != type_code or hits.get("by") != "week":
+        raise RuntimeError("Weekly chart scope mismatch")
+    items = normalize_catalog_items(type_code, {"inlist": section})
+    if not items:
+        raise RuntimeError("Weekly chart contains no usable entries")
+    return items[:min(max(int(limit), 1), 20)]
+
+
+def fetch_weekly_popular(type_code, limit=5):
+    if type_code not in ("mv", "tv", "ac"):
+        raise ValueError("invalid weekly chart type")
+    response = site_get(f"{BASE_URL}/hits/{type_code}/week", timeout=20)
+    if response.status_code != 200:
+        raise RuntimeError(f"Weekly chart HTTP {response.status_code}")
+    return parse_weekly_popular(type_code, response.text, limit)
+
+
 def find_series_seasons(type_code, mid, max_pages=20):
     """Exact normalized family only; search first so old series need not be in top charts."""
     anchor = fetch_movie_metadata(type_code, mid) or {}
@@ -1684,6 +1711,11 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
             if path == "/recent":
                 limit = int((query.get("limit") or ["30"])[0])
                 self.send_json(200, {"items": fetch_recent_movies(limit)})
+                return
+            if path == "/weekly-popular":
+                type_code = (query.get("typeCode") or ["mv"])[0]
+                limit = int((query.get("limit") or ["5"])[0])
+                self.send_json(200, {"items": fetch_weekly_popular(type_code, limit)})
                 return
             if path == "/catalog":
                 type_code = (query.get("typeCode") or ["mv"])[0]

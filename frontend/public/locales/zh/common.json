@@ -576,6 +576,7 @@
     "CSCORE_ANIME": "综合评分动漫"
   },
   "resourceHubTaskType": {
+    "WEEKLY_TRANSFER": "本周热门转存",
     "METADATA_SYNC": "元数据同步",
     "RESOURCE_DISCOVERY": "资源搜索"
   },
@@ -962,5 +963,14 @@
   "resourceHubCrawlNext": "采集位置",
   "resourceHubCrawlState": "最近任务状态",
   "resourceHubCrawlPosition": "第 {{page}} 页 · 第 {{item}} 条起",
-  "resourceHubCrawlStatus": {"NOT_STARTED": "尚未开始", "PENDING": "排队中", "RUNNING": "运行中", "SUCCEEDED": "已完成，等待下一轮", "FAILED": "失败，保留位置", "RETRY": "部分失败，保留位置", "CANCELED": "已取消，保留位置"}
+  "resourceHubCrawlStatus": {"NOT_STARTED": "尚未开始", "PENDING": "排队中", "RUNNING": "运行中", "SUCCEEDED": "已完成，等待下一轮", "FAILED": "失败，保留位置", "RETRY": "部分失败，保留位置", "CANCELED": "已取消，保留位置"},
+  "resourceHubMetadataOnlyHelp": "元数据采集仅保存影片资料、海报及 GYING 磁力/种子链接，不再创建网盘发现、转存、分享或发布任务。旧网盘队列不再由定时 Worker 自动推进；手动和 QQ 点选操作不受影响。",
+  "resourceHubWeeklyTitle": "本周热门 · 独立网盘工作流",
+  "resourceHubWeeklyHelp": "仅使用 GYING /hits/mv/week、/hits/tv/week、/hits/ac/week 三个本周热门榜单。各榜单独立计时，默认每 7 天处理前 5 部；优先复用已有分享，不自动补齐所有网盘。新建计划及修改间隔/开关后，从保存时重新等待完整间隔；失败也不会高频重跑。已有 quark-auto-save 追更计划独立运行，不在此处修改。",
+  "resourceHubWeeklyType": {"mv": "电影 · 本周热门", "tv": "剧集 · 本周热门", "ac": "动漫 · 本周热门"},
+  "resourceHubWeeklyEnabled": "启用",
+  "resourceHubWeeklyDays": "间隔（天）",
+  "resourceHubWeeklyLimit": "每轮前 N 部",
+  "resourceHubWeeklyNext": "下次执行",
+  "resourceHubWeeklyLast": "最近执行"
 }

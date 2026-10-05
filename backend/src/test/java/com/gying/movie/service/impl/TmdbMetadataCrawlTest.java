@@ -22,7 +22,7 @@ class TmdbMetadataCrawlTest {
     private TmdbMetadataSyncServiceImpl service() {
         properties.setEnabled(true);
         properties.getTmdb().setApiKey("test-only-placeholder");
-        properties.getTmdb().setAutoDiscoveryEnabled(false);
+        properties.getTmdb().setAutoDiscoveryEnabled(true);
         return new TmdbMetadataSyncServiceImpl(client, mock(PosterStorageService.class), properties,
                 movies, mock(IMovieSourceIdentityService.class), tasks,
                 mock(IResourceDiscoveryService.class), mock(IResourceDiscoveryResultService.class),
@@ -57,6 +57,7 @@ class TmdbMetadataCrawlTest {
         verify(client, never()).fetchDetails("movie", 1L);
         verify(client, never()).fetchDetails("movie", 3L);
         verify(movies).save(any());
+        verify(tasks, never()).enqueue(any());
         assertEquals(2, mapper.readTree(task.getPayload()).path("crawl").path("nextOffset").asInt());
     }
 

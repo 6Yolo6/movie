@@ -145,7 +145,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                     } else {
                         result.setUpdated(result.getUpdated() + 1);
                     }
-                    enqueueDiscoveryTask(movieResult.movie(), result);
+                    // Metadata collection never starts cloud discovery or transfer.
                 } catch (Exception itemError) {
                     result.setFailed(result.getFailed() + 1);
                     addError(result, item.getMediaType() + "/" + item.getTmdbId() + ": " + itemError.getMessage());

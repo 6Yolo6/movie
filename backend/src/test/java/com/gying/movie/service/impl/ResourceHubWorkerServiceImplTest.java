@@ -68,7 +68,7 @@ class ResourceHubWorkerServiceImplTest {
     }
 
     @Test
-    void runsXunleiBeforeQuarkSoQuarkBacklogCannotStarveIt() {
+    void scheduledAndForcedWorkerNeverDrainLegacyCloudQueues() {
         ResourceHubProperties properties = new ResourceHubProperties();
         properties.setEnabled(true);
         properties.getWorker().setEnabled(true);
@@ -90,9 +90,13 @@ class ResourceHubWorkerServiceImplTest {
 
         service.runOnce();
 
-        InOrder order = Mockito.inOrder(xunleiService, quarkService);
-        order.verify(xunleiService).submitPending(any(Integer.class));
-        order.verify(quarkService).submitPending(any(Integer.class));
+        service.runOnce(true);
+        Mockito.verifyNoInteractions(xunleiService, quarkService, publishService, discoveryService);
+        org.mockito.ArgumentCaptor<Wrapper<ResourceHubTask>> queries = org.mockito.ArgumentCaptor.forClass(Wrapper.class);
+        verify(taskService, Mockito.times(2)).list(queries.capture());
+        for (var query : queries.getAllValues()) {
+            org.junit.jupiter.api.Assertions.assertTrue(query.getCustomSqlSegment().contains("task_type"));
+        }
     }
 
     @Test
@@ -117,6 +121,13 @@ class ResourceHubWorkerServiceImplTest {
         when(fixture.taskService.count(any(Wrapper.class))).thenReturn(1L);
         fixture.service.runOnce();
         verify(fixture.gyingService, never()).enqueueAutomatic(any());
+    }
+
+    @Test void scheduledRetryDoesNotTouchAnyQueue() {
+        Fixture fixture = new Fixture();
+        var result = fixture.service.retryDiscoveredTransfers(false);
+        assertEquals("SKIPPED", result.get("status"));
+        Mockito.verifyNoInteractions(fixture.taskService, fixture.discoveryService, fixture.transferService, fixture.configService);
     }
 
     private static class Fixture {

@@ -70,6 +70,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     @Autowired(required = false)
     private IResourceHubTaskService taskService;
 
+    @Autowired(required = false)
+    private GyingWeeklyTransferSettings weeklyTransferSettings;
+
     public ResourceHubConfigServiceImpl(ResourceHubProperties properties, ISysConfigService sysConfigService) {
         this(properties, sysConfigService, new ObjectMapper());
     }
@@ -148,6 +151,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
 
+        if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
+            weeklyTransferSettings.validate(request.getWeeklyTransferSchedules());
+        }
         int[] tmdbRange = resolveRange(request.getTmdbAutoSyncPage(), request.getTmdbAutoSyncEndPage(),
                 tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
         int[] gyingRange = resolveRange(request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
@@ -281,6 +287,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             upsert(KEY_DISCOVERED_RETRY_CRON, value, "已发现资源定时重试的 Cron 表达式");
         }
 
+        if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
+            weeklyTransferSettings.update(request.getWeeklyTransferSchedules());
+        }
         return fromProperties();
     }
 
@@ -342,6 +351,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                     gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
             response.setMetadataCrawlProgress(progress);
         }
+        if (weeklyTransferSettings != null) response.setWeeklyTransferSchedules(weeklyTransferSettings.get());
         return response;
     }
 

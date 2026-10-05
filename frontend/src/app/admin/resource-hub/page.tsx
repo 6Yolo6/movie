@@ -61,7 +61,19 @@ interface MetadataCrawlProgress {
     taskId?: number | null;
 }
 
+interface WeeklyTransferSchedule {
+    typeCode: 'mv' | 'tv' | 'ac';
+    enabled: boolean;
+    intervalDays: number;
+    maxItems: number;
+    nextRunAt?: string;
+    lastRunAt?: string;
+    lastStatus?: string;
+    lastTaskId?: number;
+}
+
 interface ResourceHubConfig {
+    weeklyTransferSchedules?: WeeklyTransferSchedule[];
     metadataCrawlProgress?: MetadataCrawlProgress[];
     xunleiAuthorizationConfigured: boolean;
     xunleiAuthorizationExpiresAt?: string | null;
@@ -263,7 +275,7 @@ const TMDB_SOURCE_KEYS = [
 
 const GYING_SOURCE_KEYS = ['HITS_MOVIE', 'HITS_TV', 'HITS_ANIME', 'CSCORE_MOVIE', 'CSCORE_TV', 'CSCORE_ANIME'];
 
-const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY'];
+const TASK_TYPE_OPTIONS = ['METADATA_SYNC', 'RESOURCE_DISCOVERY', 'WEEKLY_TRANSFER'];
 const TASK_STATUS_OPTIONS = ['PENDING', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELED'];
 const DISCOVERY_STATUS_OPTIONS = ['DISCOVERED', 'SAVED', 'DUPLICATE', 'IGNORED', 'FAILED'];
 
@@ -351,6 +363,9 @@ export default function ResourceHubAdminPage() {
 
     const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => ({
         ...config,
+        weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
+            typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
+        })),
         tmdbAutoSyncEndPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
         gyingAutoSyncEndPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
         tmdbAutoSyncSources: config.tmdbAutoSyncSources
@@ -1327,6 +1342,8 @@ export default function ResourceHubAdminPage() {
                                     <Col xs={24} xl={14}>
                                         <Card title={t('resourceHubAutoSettings')} loading={loading}>
                                             <Form form={configForm} layout="vertical" onFinish={saveConfig}>
+                                                <Alert className="mb-4" type="info" showIcon
+                                                    title={t('resourceHubMetadataOnlyHelp')} />
                                                 <Row gutter={12}>
                                                     <Col xs={24} md={12}>
                                                         <Form.Item name="enabled" label={t('resourceHubMasterSwitch')} valuePropName="checked">
@@ -1340,16 +1357,6 @@ export default function ResourceHubAdminPage() {
                                                     </Col>
                                                     <Col xs={24} md={12}>
                                                         <Form.Item name="tmdbAutoSyncEnabled" label={t('resourceHubTmdbAutoSync')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={12}>
-                                                        <Form.Item name="tmdbAutoDiscoveryEnabled" label={t('resourceHubAutoDiscovery')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={12}>
-                                                        <Form.Item name="gyingDiscoveryEnabled" label={t('resourceHubGyingDiscovery')} valuePropName="checked">
                                                             <Switch />
                                                         </Form.Item>
                                                     </Col>
@@ -1467,32 +1474,28 @@ export default function ResourceHubAdminPage() {
                                                             <InputNumber min={1} max={20} className="w-full" />
                                                         </Form.Item>
                                                     </Col>
-                                                    <Col xs={12} md={8}>
-                                                        <Form.Item name="workerPublishLimit" label={t('resourceHubPublishLimit')}>
-                                                            <InputNumber min={1} max={100} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={6}>
-                                                        <Form.Item name="discoveredRetryEnabled" label={t('resourceHubRetryDiscoveredEnabled')} valuePropName="checked">
-                                                            <Switch />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={6}>
-                                                        <Form.Item name="discoveredRetryLimit" label={t('resourceHubRetryDiscoveredLimit')}>
-                                                            <InputNumber min={1} max={100} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={12} md={6}>
-                                                        <Form.Item name="discoveredRetryDelayMs" label={t('resourceHubRetryDiscoveredDelay')}>
-                                                            <InputNumber min={0} max={3600000} className="w-full" />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col xs={24} md={6}>
-                                                        <Form.Item name="discoveredRetryCron" label={t('resourceHubRetryDiscoveredCron')}>
-                                                            <Input />
-                                                        </Form.Item>
-                                                    </Col>
                                                 </Row>
+                                                <Card className="my-4" title={t('resourceHubWeeklyTitle')} data-testid="weekly-transfer-settings">
+                                                    <Alert className="mb-4" type="warning" showIcon title={t('resourceHubWeeklyHelp')} />
+                                                    <Form.List name="weeklyTransferSchedules">
+                                                        {(fields) => fields.map(({ key, name, ...rest }) => {
+                                                            const schedule = overview?.config.weeklyTransferSchedules?.[name];
+                                                            const type = schedule?.typeCode || ['mv', 'tv', 'ac'][name];
+                                                            return <Card key={key} size="small" className="mb-3" title={t(`resourceHubWeeklyType.${type}`)}>
+                                                                <Form.Item {...rest} name={[name, 'typeCode']} hidden><Input /></Form.Item>
+                                                                <Row gutter={12}>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'enabled']} label={t('resourceHubWeeklyEnabled')} valuePropName="checked"><Switch /></Form.Item></Col>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'intervalDays']} label={t('resourceHubWeeklyDays')}
+                                                                        rules={[{ required: true, type: 'integer', min: 1, max: 365 }]}><InputNumber min={1} max={365} precision={0} className="w-full" /></Form.Item></Col>
+                                                                    <Col xs={8}><Form.Item {...rest} name={[name, 'maxItems']} label={t('resourceHubWeeklyLimit')}
+                                                                        rules={[{ required: true, type: 'integer', min: 1, max: 20 }]}><InputNumber min={1} max={20} precision={0} className="w-full" /></Form.Item></Col>
+                                                                </Row>
+                                                                <div>{t('resourceHubWeeklyNext')}: {formatDate(schedule?.nextRunAt)}</div>
+                                                                <Text type="secondary">{t('resourceHubWeeklyLast')}: {formatDate(schedule?.lastRunAt)} / {t(`resourceHubCrawlStatus.${schedule?.lastStatus || 'NOT_STARTED'}`, { defaultValue: schedule?.lastStatus || '-' })}</Text>
+                                                            </Card>;
+                                                        })}
+                                                    </Form.List>
+                                                </Card>
                                                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
                                                     {t('resourceHubSaveSettings')}
                                                 </Button>

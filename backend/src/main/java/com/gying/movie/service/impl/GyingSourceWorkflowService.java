@@ -938,6 +938,18 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
+    /** Strict weekly chart input; never substitute all-time catalog or another chart. */
+    public List<Map<String, Object>> weeklyPopularCandidates(String typeCode, int limit) {
+        String type = normalizeTypeCode(typeCode);
+        return mapList(gyingSourceClient.get("/weekly-popular?typeCode=" + type
+                + "&limit=" + Math.min(Math.max(limit, 1), 20)).get("items"));
+    }
+
+    /** Reuse one existing share; do not fill every provider and consume duplicate cloud storage. */
+    public Map<String, Object> ensureWeeklyMovieResource(String typeCode, String mid) {
+        return ensurePrimaryMovieResource(typeCode, mid, true);
+    }
+
     public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
         Map<String, Object> result = ensurePrimaryMovieResource(typeCode, mid);
         return ensureMissingOwnedProviders(
@@ -945,6 +957,10 @@ public class GyingSourceWorkflowService {
     }
 
     private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid) {
+        return ensurePrimaryMovieResource(typeCode, mid, false);
+    }
+
+    private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid, boolean weekly) {
         GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
         String safeType = ingested.typeCode();
         String safeMid = ingested.mid();
@@ -985,7 +1001,7 @@ public class GyingSourceWorkflowService {
             Map<String, Object> selected = null;
             for (Map<String, Object> candidate : candidates) {
                 try {
-                    local = transferAndPublishLocally(movie, candidate);
+                    local = transferAndPublishLocally(movie, candidate, weekly);
                     selected = candidate;
                     break;
                 } catch (Exception error) {
@@ -1827,7 +1843,11 @@ public class GyingSourceWorkflowService {
     }
 
     private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate) {
-        TransferOutcome outcome = transferCandidate(movie, candidate);
+        return transferAndPublishLocally(movie, candidate, false);
+    }
+
+    private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
+        TransferOutcome outcome = transferCandidate(movie, candidate, weekly);
         ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(outcome.discovery().getId());
         if (publishResult.getFailed() > 0 || publishResult.getResourceIds().isEmpty()) {
             throw new IllegalStateException(firstText(
@@ -1838,6 +1858,10 @@ public class GyingSourceWorkflowService {
     }
 
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate) {
+        return transferCandidate(movie, candidate, false);
+    }
+
+    private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
         String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
         if ("XUNLEI".equals(provider)) {
@@ -1898,6 +1922,13 @@ public class GyingSourceWorkflowService {
             transferTaskService.save(transfer);
         }
         if (!hasText(transfer.getShareUrl())) {
+            if (weekly) {
+                // Do not register daily follow-ups for a weekly chart transfer.
+                transfer.setRequestPayload("{\"origin\":\"GYING_WEEKLY_ONE_SHOT\"}");
+                if (!transferTaskService.updateById(transfer)) {
+                    throw new IllegalStateException("Weekly one-shot transfer policy was not persisted");
+                }
+            }
             QuarkTransferRunResult transferResult = transferRunnerService.submitOne(transfer.getId());
             if (transferResult.getFailed() > 0) {
                 throw new IllegalStateException(firstText(

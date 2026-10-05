@@ -69,6 +69,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask capped = new XunleiTransferTask();
         capped.setId(10L);
         capped.setStatus("FAILED");
@@ -100,6 +104,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(12L);
         task.setMovieId("gying_tv_demo");
@@ -129,7 +137,8 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals(1, result.getSubmitted());
         assertEquals("stable-folder-id", task.getSavedPath());
         var order = inOrder(client);
-        order.verify(client, times(2)).awaitContent("stable-folder-id");
+        order.verify(client).awaitExpectedContent("stable-folder-id", java.util.List.of("episode-01.mkv", "episode-02.mp4"));
+        order.verify(client).awaitContent("stable-folder-id");
         order.verify(client).ensureTransferImage("stable-folder-id");
         order.verify(client).createShare("stable-folder-id");
     }
@@ -139,6 +148,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(13L);
         task.setMovieId("legacy-movie");
@@ -153,8 +166,8 @@ class XunleiTransferRunnerServiceImplTest {
                 .thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
         when(client.extractRestoredFileIds("restore-response"))
                 .thenReturn(java.util.List.of("restored-video-id"));
-        when(client.contentSummary("stable-folder-id"))
-                .thenReturn(new XunleiClient.ContentSummary(0, 0, 0));
+        when(client.directContentSummary("stable-folder-id"))
+                .thenReturn(new XunleiClient.ContentSummary(0, 3, 3));
         when(client.awaitContent("stable-folder-id"))
                 .thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
         when(client.createShare("stable-folder-id"))
@@ -176,6 +189,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(14L);
         task.setMovieId("retry-movie");
@@ -223,6 +240,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(2L);
         task.setStatus("SUCCEEDED");
@@ -248,6 +269,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(3L);
         task.setStatus("WAITING_SHARE");
@@ -280,6 +305,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
         IResourceLinkService linkService = mock(IResourceLinkService.class);
         XunleiTransferTask task = new XunleiTransferTask();
@@ -320,6 +349,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(4L);
         task.setStatus("WAITING_SHARE");
@@ -351,6 +384,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         IResourceDiscoveryResultService discoveryService = mock(IResourceDiscoveryResultService.class);
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(5L);
@@ -384,6 +421,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(6L);
         task.setStatus("FAILED");
@@ -412,6 +453,10 @@ class XunleiTransferRunnerServiceImplTest {
         ResourceHubProperties properties = new ResourceHubProperties();
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
+        when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        when(client.awaitRestoredFiles(any(), any(), org.mockito.ArgumentMatchers.anyLong(), any()))
+                .thenReturn(new XunleiClient.RestoredSelection(java.util.List.of("verified-video"),
+                        new XunleiClient.ContentSummary(0, 1, 1)));
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(90L);
         task.setMovieId("movie");
@@ -466,5 +511,51 @@ class XunleiTransferRunnerServiceImplTest {
         new XunleiTransferRunnerServiceImpl(properties, client, tasks,
                 mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class)).submitPending(5);
         verify(tasks).list(isA(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+    }
+
+    @Test void nestedPlacementRetriesExactTargetAfterRestartDespiteExistingVideos() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask(); task.setId(90L); task.setMovieId("fixture");
+        task.setStatus("PENDING"); task.setOriginalUrl("https://pan.xunlei.com/s/fixture");
+        when(tasks.getById(90L)).thenReturn(task); when(tasks.updateById(any(XunleiTransferTask.class))).thenReturn(true);
+        var placement = new XunleiClient.RestorePlacement("job", "season", "root", "response", "root",
+                java.util.List.of("episode.mp4"), 1L, false, java.util.List.of("Season 1"));
+        when(client.restore(any(), any())).thenReturn(new XunleiClient.RestoreResult("job", "response", "movie", "root",
+                java.util.List.of("episode.mp4"), 1L, false, java.util.List.of(placement)));
+        when(client.await("job")).thenReturn(new XunleiClient.RestoreStatus(true, "SUCCESS", "{}"));
+        when(client.extractRestoredFileIds("response")).thenReturn(java.util.List.of("new-episode"));
+        when(client.directContentSummary("season")).thenReturn(new XunleiClient.ContentSummary(0, 1, 1));
+        doThrow(new IllegalStateException("move pending")).doNothing().when(client).moveFiles(java.util.List.of("new-episode"), "season");
+        when(client.createShare("movie")).thenReturn("https://pan.xunlei.com/s/fixture-own");
+        var discovery = mock(IResourceDiscoveryResultService.class); var links = mock(IResourceLinkService.class);
+        var first = new XunleiTransferRunnerServiceImpl(properties, client, tasks, discovery, links);
+        assertEquals(1, first.submitOne(90L).getFailed());
+        assertEquals("WAITING_SHARE", task.getStatus());
+        org.junit.jupiter.api.Assertions.assertTrue(task.getResponsePayload().contains("season"));
+        var restarted = new XunleiTransferRunnerServiceImpl(properties, client, tasks, discovery, links);
+        assertEquals(1, restarted.submitOne(90L).getSubmitted());
+        verify(client, times(1)).restore(any(), any());
+        verify(client, times(2)).moveFiles(java.util.List.of("new-episode"), "season");
+        verify(client, never()).moveFiles(any(), eq("movie"));
+        verify(client).awaitExpectedContent("season", java.util.List.of("episode.mp4"));
+    }
+
+    @Test void legacyRecoveryMovesExactIdsEvenWhenTargetAlreadyHasVideos() {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        XunleiClient client = mock(XunleiClient.class);
+        IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
+        XunleiTransferTask task = new XunleiTransferTask(); task.setId(91L); task.setStatus("WAITING_SHARE");
+        task.setSavedPath("movie"); task.setResponsePayload("legacy");
+        when(tasks.getById(91L)).thenReturn(task);
+        when(client.extractRestoreRecoveries("legacy")).thenReturn(java.util.List.of(
+                new XunleiClient.RestoreRecovery("season", java.util.List.of("new-episode"))));
+        when(client.directContentSummary("season")).thenReturn(new XunleiClient.ContentSummary(0, 2, 2));
+        when(client.createShare("movie")).thenReturn("https://pan.xunlei.com/s/fixture-own");
+        var service = new XunleiTransferRunnerServiceImpl(properties, client, tasks,
+                mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class));
+        assertEquals(1, service.submitOne(91L).getSubmitted());
+        verify(client).moveFiles(java.util.List.of("new-episode"), "season"); verify(client, never()).restore(any(), any());
     }
 }
