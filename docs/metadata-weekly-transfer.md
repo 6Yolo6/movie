@@ -2,7 +2,9 @@
 
 ## 交付状态（2026-10-05）
 
-代码已实现并通过回归，尚未部署。线上仍是 backend/frontend `gying-metadata-crawl-*:20261004a` 与 source `gying-series-search-source:20260929a`。部署前只读安全扫描为 53 PASS / 11 FAIL / 0 UNKNOWN，本次停止生产替换；没有修改生产调度开关、追更配置或删除网盘文件。
+已按用户明确授权部署：backend `gying-weekly-transfer-backend:20261005b`，frontend/source `gying-weekly-transfer-{frontend,source}:20261005a`。首次上线发现周榜 JSON 超过生产配置字段 VARCHAR(500)，已改为版本化紧凑存储并补测试，后端修复版初始化成功（229 字符），未改数据库结构。代码提交 `e6dead5`、`1aaa401`。
+
+安全扫描仍为 53 PASS / 11 FAIL / 0 UNKNOWN；授权只针对本次应用上线，不表示既有安全风险已解决。仅替换三个相关服务，nginx 平滑重载；其余七个生产容器、全部环境和挂载未变。没有移动/删除网盘文件、手动转存/外部发布或改历史追更。
 
 ## 高频采集
 
@@ -41,7 +43,7 @@
 ]
 ```
 
-服务器忽略客户端提供的运行时间、状态和任务 ID，防止篡改为立即执行。计划存于现有 sys_config 的 `resource.hub.gying.weekly_transfer_schedules` JSON，不需要建表迁移。审计任务类型 `WEEKLY_TRANSFER`、来源 `GYING_WEEKLY`，普通 Worker 不消费此类型。source 新增需现有内部 token 的 GET `/weekly-popular?typeCode=mv&limit=5`。
+服务器忽略客户端提供的运行时间、状态和任务 ID，防止篡改为立即执行。计划存于现有 sys_config 的 `resource.hub.gying.weekly_transfer_schedules`，采用版本化紧凑 JSON 以适配 VARCHAR(500)，读取时兼容早期描述式 JSON，对外 API 仍为上述完整字段；不需要建表迁移。审计任务类型 `WEEKLY_TRANSFER`、来源 `GYING_WEEKLY`，普通 Worker 不消费此类型。source 新增需现有内部 token 的 GET `/weekly-popular?typeCode=mv&limit=5`。
 
 ## 既有追更的边界
 
@@ -53,7 +55,7 @@
 
 报告与私有审计材料位于本机 `E:/gying-tools/releases/metadata-only-weekly-20261004`，不提交网盘文件清单、分享地址、Cookie、凭据或运行原始数据。
 
-## 迅雷保存路径修复（2026-10-05，未部署）
+## 迅雷保存路径修复（2026-10-05，代码已部署）
 
 当前配置目标为“我的转存 / 影视剧资源分享(先转存后再查看) / GYing Resource Hub / 影片 / 原分享子目录”；“我的转存”下另一个同级 GYing Resource Hub 是空的旧目录，不是现用目标。
 
@@ -75,13 +77,15 @@
 
 ## 验证（2026-10-05）
 
-- Java 17 编译、全量打包测试 422 项，0 failures/errors，1 项 Redis 环境跳过；含目录分页、逐文件搬移确认、已有旧视频、整组完整性、季目录重试与重启、元数据不转存和周榜独立调度回归。
-- crawler 18 项单测通过；之前对真实三个周榜的只读解析材料保留，不能替代尚未部署的内部新接口验收。
+- Java 17 编译、全量打包测试 424 项，0 failures/errors，1 项 Redis 环境跳过；含目录分页、逐文件搬移确认、已有旧视频、整组完整性、季目录重试与重启、元数据不转存和周榜独立调度回归。
+- crawler 18 项单测通过；新 source 镜像 18 项测试通过；部署后的健康与 mv/tv/ac 三个真实周榜 GET 全部 200，每榜返回 5 条且类型正确。
 - frontend 类型检查/构建通过；lint 0 error、7 个既有 warning；4 组模拟 API 浏览器场景通过（中英文、390px 手机、旧接口兼容），覆盖各榜开关、天数、数量、校验和刷新保持。
-- 工作区密钥扫描 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL；生产安全门禁仍为 53 PASS / 11 FAIL / 0 UNKNOWN，因此未替换生产服务，未验证真实转存副作用。
+- 工作区密钥扫描 0 findings；运维就绪 10 PASS / 2 WARN / 0 FAIL；生产安全门禁仍为 53 PASS / 11 FAIL / 0 UNKNOWN，按用户随后明确授权完成本次上线；安全风险保留，未手动验证真实转存副作用。
 
 ## 部署和回滚
 
-安全门禁解除或另获明确的风险处理决定后，按 gying-project-ops 重跑快照/就绪/备份。仅替换 source、backend、frontend；先 source，再 backend/frontend，最后平滑重载 nginx 并验证真实入口。不要为验收手动执行真实转存或外部发布。
+部署完成：保留线上 TMDB 4～15 页、GYING 1～15 页、均 4 小时间隔及原开关；周榜首次初始化为各 7 天/前 5 部，nextRunAt 为 2026-10-12 11:50:35（Asia/Shanghai，实际领取以调度扫描为准），本次没有立即执行。后端最终 JAR hash 与测试产物一致，新版本三个服务日志未发现错误；本地/公网 12 项入口检查通过。候选镜像与本地生产入口各 4 组浏览器回归通过；公网站点中文桌面场景通过，但后续自动化导航间歇 ERR_CONNECTION_CLOSED，未宣称公网完整 4 组通过，curl IPv4 与 Tunnel ready 同时为 200。
 
-回滚保留当前三个生产镜像和外部配置备份。注意：回滚到旧 backend 会恢复旧 Worker 行为，因此必须结合采集/Worker 开关，避免旧发现和转存队列突然恢复执行；不要清空历史任务。新增 JSON 键可保留，不需删除数据。
+变更前备份 `G:/gying-backups/20261005T032935.839103Z` 的 5 个加密文件校验和/认证解密通过，SQL 含 25 表且完整结束；本次未重做隔离恢复。回滚覆盖文件及容器/挂载基线在本机发布材料目录。
+
+回滚目标为 backend/frontend `gying-metadata-crawl-*:20261004a`、source `gying-series-search-source:20260929a`，不要回退到本轮有配置长度问题的 backend `20261005a`。注意：回滚到旧 backend 会恢复旧 Worker 行为，因此必须结合采集/Worker 开关，避免旧发现和转存队列突然恢复执行；不要清空历史任务。新增 JSON 键可保留，不需删除数据。
