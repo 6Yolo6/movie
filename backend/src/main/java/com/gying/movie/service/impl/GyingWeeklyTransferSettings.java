@@ -41,8 +41,7 @@ public class GyingWeeklyTransferSettings {
             return defaults;
         }
         try {
-            var schedules = mapper.readValue(config.getConfigValue(),
-                    new TypeReference<List<GyingWeeklyTransferSchedule>>() {});
+            var schedules = decode(config.getConfigValue());
             validate(schedules);
             for (var schedule : schedules) LocalDateTime.parse(schedule.getNextRunAt());
             return schedules;
@@ -100,11 +99,40 @@ public class GyingWeeklyTransferSettings {
         save(all);
     }
 
+    private List<GyingWeeklyTransferSchedule> decode(String value) throws java.io.IOException {
+        var root = mapper.readTree(value);
+        // Read the original descriptive representation for compatibility with existing installations.
+        if (root.isArray()) return mapper.readValue(value, new TypeReference<List<GyingWeeklyTransferSchedule>>() {});
+        if (root.path("v").asInt(-1) != 1 || !root.path("s").isArray()) {
+            throw new IllegalArgumentException("Unsupported weekly schedule format");
+        }
+        var result = new ArrayList<GyingWeeklyTransferSchedule>();
+        for (var row : root.path("s")) {
+            if (!row.isArray() || row.size() != 8 || !row.get(0).isTextual() || !row.get(1).isBoolean()
+                    || !row.get(2).isInt() || !row.get(3).isInt() || !row.get(4).isTextual()) {
+                throw new IllegalArgumentException("Invalid compact weekly schedule");
+            }
+            var schedule = new GyingWeeklyTransferSchedule();
+            schedule.setTypeCode(row.get(0).asText()); schedule.setEnabled(row.get(1).asBoolean());
+            schedule.setIntervalDays(row.get(2).asInt()); schedule.setMaxItems(row.get(3).asInt());
+            schedule.setNextRunAt(row.get(4).asText()); schedule.setLastRunAt(row.get(5).asText(null));
+            schedule.setLastStatus(row.get(6).asText(null));
+            schedule.setLastTaskId(row.get(7).isNull() ? null : row.get(7).longValue());
+            result.add(schedule);
+        }
+        return result;
+    }
+
     private SysConfig row() { return configs.getOne(new QueryWrapper<SysConfig>().eq("config_key", KEY)); }
 
     private void save(List<GyingWeeklyTransferSchedule> schedules) {
         try {
-            String value = mapper.writeValueAsString(schedules);
+            // sys_config.config_value is VARCHAR(500); keep API DTO field names unchanged.
+            var compact = schedules.stream().map(s -> java.util.Arrays.asList(s.getTypeCode(), s.isEnabled(),
+                    s.getIntervalDays(), s.getMaxItems(), s.getNextRunAt(), s.getLastRunAt(),
+                    s.getLastStatus(), s.getLastTaskId())).toList();
+            String value = mapper.writeValueAsString(java.util.Map.of("v", 1, "s", compact));
+            if (value.length() > 500) throw new IllegalStateException("Weekly schedule exceeds config storage limit");
             SysConfig config = row();
             boolean created = config == null;
             if (created) { config = new SysConfig(); config.setConfigKey(KEY); }

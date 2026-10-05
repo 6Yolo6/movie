@@ -16,8 +16,8 @@ class GyingWeeklyTransferSettingsTest {
     private final GyingWeeklyTransferSettings settings = new GyingWeeklyTransferSettings(configs, mapper);
     GyingWeeklyTransferSettingsTest() {
         when(configs.getOne(any())).thenAnswer(call -> stored);
-        when(configs.save(any())).thenAnswer(call -> { stored = call.getArgument(0); stored.setId(1L); return true; });
-        when(configs.updateById(any())).thenAnswer(call -> { stored = call.getArgument(0); return true; });
+        when(configs.save(any())).thenAnswer(call -> { stored = call.getArgument(0); assertTrue(stored.getConfigValue().length() <= 500); stored.setId(1L); return true; });
+        when(configs.updateById(any())).thenAnswer(call -> { stored = call.getArgument(0); assertTrue(stored.getConfigValue().length() <= 500); return true; });
     }
     @Test void defaultsAreThreeWeeklyChartsAndDoNotRunImmediately() {
         var all = settings.get(); assertEquals(3, all.size());
@@ -78,5 +78,26 @@ class GyingWeeklyTransferSettingsTest {
         var all = settings.get(); String scheduled = all.get(0).getNextRunAt();
         all.get(0).setMaxItems(2); settings.update(all);
         assertEquals(scheduled, settings.get().get(0).getNextRunAt());
+    }
+    @Test void allRuntimeFieldsFitProductionVarchar500AndSurviveReload() throws Exception {
+        var all = settings.get();
+        for (var schedule : all) {
+            schedule.setNextRunAt("2026-10-12T11:42:56.123456789");
+            schedule.setLastRunAt("2026-10-05T11:42:56.123456789");
+            schedule.setLastStatus("SUCCEEDED"); schedule.setLastTaskId(Long.MAX_VALUE);
+            schedule.setIntervalDays(365); schedule.setMaxItems(20);
+        }
+        // Existing descriptive JSON is read, then transparently compacted on the next write.
+        stored.setConfigValue(mapper.writeValueAsString(all));
+        settings.finished("mv", "SUCCEEDED", Long.MAX_VALUE);
+        assertTrue(stored.getConfigValue().length() <= 500);
+        assertEquals(1, mapper.readTree(stored.getConfigValue()).path("v").asInt());
+        var restored = new GyingWeeklyTransferSettings(configs, mapper).get();
+        assertEquals(all, restored);
+        assertTrue(mapper.writeValueAsString(restored).contains("intervalDays"));
+    }
+    @Test void malformedCompactVersionFailsClosed() {
+        settings.get(); stored.setConfigValue("{\"v\":2,\"s\":[]}");
+        assertThrows(IllegalStateException.class, settings::claimDue);
     }
 }
