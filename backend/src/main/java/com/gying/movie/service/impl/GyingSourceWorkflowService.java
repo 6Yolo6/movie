@@ -81,6 +81,9 @@ public class GyingSourceWorkflowService {
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
 
     @Autowired
+    private P2pArchiveTaskService p2pArchiveTaskService;
+
+    @Autowired
     public GyingSourceWorkflowService(
             GyingSourceClient gyingSourceClient,
             TmdbClient tmdbClient,
@@ -330,9 +333,27 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
+    public Map<String, Object> syncMovieP2pResources(String movieId) {
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null || movie.getDeletedAt() != null || "DELETED".equals(movie.getStatus())) {
+            throw new IllegalArgumentException("Active movie required");
+        }
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("movie_id", movieId).eq("source", "GYING").in("match_status", List.of("AUTO", "CONFIRMED"))
+                .orderByDesc("confidence").last("LIMIT 1"), false);
+        if (identity == null || identity.getSourceType() == null || !Set.of("mv", "tv", "ac").contains(identity.getSourceType())
+                || identity.getExternalId() == null || !identity.getExternalId().matches("[A-Za-z0-9]+")) {
+            throw new IllegalStateException("Verified GYING movie identity required");
+        }
+        int count = syncGyingDirectResources(movieId, identity.getSourceType(), identity.getExternalId());
+        return Map.of("movieId", movieId, "directResourceLinks", count,
+                "status", count == 0 ? "NO_ELIGIBLE_SUBTITLED_P2P" : "ARCHIVE_QUEUED");
+    }
+
     private int syncGyingDirectResources(String movieId, String typeCode, String mid) {
         Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
         int saved = 0;
+        List<ResourceLink> selected = new ArrayList<>();
         for (Map<String, Object> item : mapList(payload.get("resources"))) {
             String url = firstText(
                     stringValue(item.get("url")),
@@ -372,6 +393,14 @@ public class GyingSourceWorkflowService {
                         .eq("type", "TORRENT").eq("provider", "P2P").isNull("deleted_at")
                         .orderByDesc("updated_at").last("LIMIT 1"), false);
             }
+            String collectionSlot = stringValue(item.get("collection_slot"));
+            if (link == null && collectionSlot != null && Set.of("1080P", "4K").contains(collectionSlot)) {
+                // A new release replaces this resolution slot instead of growing the catalog forever.
+                link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .eq("movie_id", movieId).eq("source", "GYING").eq("auto_collected", true)
+                        .eq("type", type).eq("provider", "P2P").eq("quality", collectionSlot)
+                        .isNull("deleted_at").orderByDesc("updated_at").last("LIMIT 1"), false);
+            }
             LocalDateTime now = LocalDateTime.now();
             if (link == null) {
                 link = new ResourceLink();
@@ -400,6 +429,7 @@ public class GyingSourceWorkflowService {
             }
             link.setName(trim(displayTitle, 255));
             link.setQuality(trim(quality, 50));
+            link.setSubtitle(trim(stringValue(item.get("subtitle")), 50));
             link.setType(type);
             link.setProvider("P2P");
             link.setUrl(url);
@@ -422,6 +452,10 @@ public class GyingSourceWorkflowService {
                 throw new IllegalStateException("GYING P2P resource was not persisted");
             }
             saved++;
+            selected.add(link);
+        }
+        if (p2pArchiveTaskService != null && !selected.isEmpty()) {
+            p2pArchiveTaskService.enqueue(movieId, typeCode, mid, selected);
         }
         return saved;
     }

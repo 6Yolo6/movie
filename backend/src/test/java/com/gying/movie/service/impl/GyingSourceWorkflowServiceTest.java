@@ -689,6 +689,26 @@ class GyingSourceWorkflowServiceTest {
         verify(resourceLinkService, never()).save(any(ResourceLink.class));
     }
 
+
+    @Test
+    void newerSelectedReleaseReusesResolutionSlotAndQueuesOnlyMetadataFiles() {
+        String url = "magnet:?xt=urn:btih:" + "b".repeat(40);
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P", "url", url,
+                "source_ref", "BTNEW", "quality", "1080P", "collection_slot", "1080P", "subtitle", "中文字幕（来源标注）")));
+        ResourceLink existing = new ResourceLink(); existing.setId(95L); existing.setMovieId("gying_mv_NEW1");
+        existing.setUrl("magnet:?xt=urn:btih:" + "a".repeat(40));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null, existing);
+        when(resourceLinkService.updateById(existing)).thenReturn(true);
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(95L, existing.getId()); assertEquals(url, existing.getUrl());
+        assertEquals("1080P", existing.getQuality()); assertEquals("中文字幕（来源标注）", existing.getSubtitle());
+        verify(resourceLinkService, never()).save(any());
+        verify(archives).enqueue("gying_mv_NEW1", "mv", "NEW1", List.of(existing));
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
     private void stubP2pCatalog(List<Map<String, Object>> resources) {
         MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
         when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))

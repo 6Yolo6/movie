@@ -122,6 +122,33 @@ public class XunleiClient {
     public record AuthorizationStatus(boolean configured, long expiresAt, boolean expired) {
     }
 
+    JsonNode p2pCreateFile(Map<String, Object> body) {
+        requireConfigured();
+        return request(HttpMethod.POST, "/files", body);
+    }
+
+    List<JsonNode> p2pChildren(String parent) { return listFolderChildren(parent); }
+
+    String p2pFolder(String preferredId, String fallbackPath) {
+        String parent;
+        if (hasText(preferredId)) {
+            if (!preferredId.matches("[A-Za-z0-9_-]+")) throw new IllegalArgumentException("Invalid Xunlei folder id");
+            parent = preferredId;
+        } else {
+            if (!hasText(fallbackPath) || "/".equals(fallbackPath)) throw new IllegalArgumentException("Movie folder required");
+            parent = ensureDirectory(fallbackPath).id();
+        }
+        if (parent.equals(findRestoreRootId())) throw new IllegalStateException("P2P files cannot be stored in restore root");
+        String name = "磁力种子";
+        String folder = findListedFolderId(parent, name);
+        if (hasText(folder)) return folder;
+        JsonNode created = request(HttpMethod.POST, "/files", Map.of("name", name, "parent_id", parent, "kind", "drive#folder"));
+        folder = firstText(created.path("id").asText(null), created.path("file").path("id").asText(null),
+                created.path("data").path("id").asText(null));
+        if (!hasText(folder)) throw new IllegalStateException("Xunlei P2P folder creation failed");
+        return folder;
+    }
+
     public RestoreResult restore(String shareUrl, String savePath) {
         requireConfigured();
         ShareInfo share = inspectShare(shareUrl);

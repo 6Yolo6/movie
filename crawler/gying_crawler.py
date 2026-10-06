@@ -1,6 +1,7 @@
 import requests
 import re
 import hashlib
+import base64
 import hmac
 import json
 import time
@@ -1018,6 +1019,47 @@ def normalize_content_list_resources(resources):
         })
     return normalized
 
+def has_chinese_subtitle_label(item):
+    text = " ".join(str(item.get(key) or "") for key in ("title", "subtitle", "subtitles"))
+    if re.search(r"(?i)无中文字幕|无中字|无字幕|不含中文字幕|不带中文字幕|没有字幕|未附字幕|no[ ._-]*(?:chinese[ ._-]*)?subtitles?", text):
+        return False
+    return bool(re.search(r"(?i)中文字幕|中字|简中|繁中|简繁|中英.{0,8}字幕|中英双字|简体中文.{0,4}字幕|繁体中文.{0,4}字幕|(?<![a-z])(?:chs|cht)(?![a-z])|chinese[ ._-]*subtitles?", text))
+
+
+def select_p2p_versions(resources):
+    """Keep at most one BT release each for 1080p and 4K; never infer unknown quality."""
+    other = []
+    groups = {}
+    for item in resources:
+        if item.get("type") not in ("MAGNET", "TORRENT") or item.get("provider") != "P2P":
+            other.append(item)
+            continue
+        text = " ".join(str(item.get(key) or "") for key in ("quality", "resolution", "title"))
+        if re.search(r"(?i)(?<![a-z0-9])(?:4k|2160p?)(?![a-z0-9])", text):
+            quality = "4K"
+        elif re.search(r"(?i)(?<![a-z0-9])1080p?(?![a-z0-9])", text):
+            quality = "1080P"
+        else:
+            continue
+        identity = str(item.get("source_ref") or item.get("source_id") or item.get("title") or item.get("url"))
+        group = groups.setdefault((quality, identity), {})
+        group.setdefault(item["type"], {**item, "quality": quality, "collection_slot": quality,
+                                      "chinese_subtitles": has_chinese_subtitle_label(item),
+                                      "subtitle": "中文字幕（来源标注）" if has_chinese_subtitle_label(item) else ""})
+    selected = []
+    for quality in ("1080P", "4K"):
+        candidates = [group for (q, _), group in groups.items() if q == quality]
+        if candidates:
+            # Explicit Chinese subtitles outrank a more complete but unsubtitled release.
+            best = max(candidates, key=lambda group: (any(r["chinese_subtitles"] for r in group.values()),
+                                                      len(group), "MAGNET" in group))
+            selected.extend(best[kind] for kind in ("MAGNET", "TORRENT") if kind in best)
+    # Do not archive a batch consisting entirely of uncertain/non-Chinese subtitles.
+    if not any(item["chinese_subtitles"] for item in selected):
+        return other
+    return other + selected
+
+
 def fetch_download_resources(type_code, mid, fallback_resources, target_user=None, strict=False):
     resolved_target_user = TARGET_USER if target_user is None else target_user
     url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
@@ -1070,7 +1112,87 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
     for resource in expanded:
         resource.setdefault("source_url", f"{BASE_URL}/{type_code}/{mid}")
         resource.setdefault("source_ref", resource.get("source_id") or "")
-    return expanded
+    return select_p2p_versions(expanded)
+
+def torrent_info_hash(content):
+    """Validate bounded bencode and hash the original info bytes, never the video data."""
+    if not content or len(content) > 2 * 1024 * 1024:
+        raise RuntimeError("Torrent metadata exceeds the allowed size")
+    info_span = None
+    def parse(pos, depth):
+        nonlocal info_span
+        if depth > 48 or pos >= len(content):
+            raise RuntimeError("Invalid torrent structure")
+        token = content[pos:pos + 1]
+        if token in (b'd', b'l'):
+            value = {} if token == b'd' else []
+            pos += 1
+            while pos < len(content) and content[pos:pos + 1] != b'e':
+                if token == b'd':
+                    key, pos = parse(pos, depth + 1)
+                    if not isinstance(key, bytes) or key in value:
+                        raise RuntimeError("Invalid torrent dictionary")
+                    start = pos
+                    item, pos = parse(pos, depth + 1)
+                    value[key] = item
+                    if depth == 0 and key == b'info': info_span = (start, pos)
+                else:
+                    item, pos = parse(pos, depth + 1); value.append(item)
+            if pos >= len(content): raise RuntimeError("Truncated torrent")
+            return value, pos + 1
+        if token == b'i':
+            end = content.find(b'e', pos + 1)
+            digits = content[pos + 1:end]
+            if end < 0 or not re.fullmatch(rb'-?(0|[1-9][0-9]{0,18})', digits):
+                raise RuntimeError("Invalid torrent integer")
+            return int(digits), end + 1
+        colon = content.find(b':', pos, min(pos + 12, len(content)))
+        if colon < 0 or not re.fullmatch(rb'0|[1-9][0-9]{0,8}', content[pos:colon]):
+            raise RuntimeError("Invalid torrent string")
+        end = colon + 1 + int(content[pos:colon])
+        if end > len(content): raise RuntimeError("Truncated torrent string")
+        return content[colon + 1:end], end
+    try:
+        decoded, end = parse(0, 0)
+        info = decoded.get(b'info') if isinstance(decoded, dict) else None
+        if end != len(content) or not info_span or not isinstance(info, dict):
+            raise RuntimeError("Torrent info dictionary missing")
+        pieces = info.get(b'pieces')
+        if not isinstance(pieces, bytes) or not pieces or len(pieces) % 20:
+            raise RuntimeError("Torrent v1 pieces missing")
+        return hashlib.sha1(content[info_span[0]:info_span[1]]).hexdigest()
+    except (IndexError, ValueError, TypeError) as error:
+        raise RuntimeError("Invalid torrent metadata") from error
+
+
+def fetch_torrent_file(type_code, mid, source_ref):
+    rows = fetch_download_resources(type_code, mid, [], target_user="", strict=True)
+    matches = [row for row in rows if row.get("source_ref") == source_ref]
+    torrent = next((row for row in matches if row.get("type") == "TORRENT"), None)
+    magnet = next((row for row in matches if row.get("type") == "MAGNET"), None)
+    if not torrent or not magnet:
+        raise RuntimeError("Selected torrent is no longer available")
+    url = torrent["url"]
+    parsed = urlparse(url)
+    if parsed.scheme != 'https' or parsed.netloc != urlparse(BASE_URL).netloc or not parsed.path.startswith('/dbt/' + source_ref + '/'):
+        raise RuntimeError("Torrent download endpoint is not allowed")
+    expected = parse_qs(urlparse(magnet['url']).query).get('xt', [''])[0].removeprefix('urn:btih:').lower()
+    if not re.fullmatch('[0-9a-f]{40}', expected): raise RuntimeError("Torrent magnet identity missing")
+    response = site_get(url, timeout=15, stream=True, allow_redirects=False)
+    try:
+        if response.status_code != 200: raise RuntimeError("Torrent download failed")
+        content = bytearray()
+        for chunk in response.iter_content(65536):
+            content.extend(chunk)
+            if len(content) > 2 * 1024 * 1024: raise RuntimeError("Torrent metadata exceeds the allowed size")
+    finally:
+        response.close()
+    content = bytes(content)
+    actual = torrent_info_hash(content)
+    if actual != expected: raise RuntimeError("Torrent does not match the selected magnet")
+    return {"sourceRef": source_ref, "infoHash": actual, "size": len(content),
+            "sha256": hashlib.sha256(content).hexdigest(), "dataBase64": base64.b64encode(content).decode('ascii')}
+
 
 def fetch_movie_resource_snapshot(type_code, mid):
     metadata = fetch_movie_metadata(type_code, mid) or {}
@@ -1783,6 +1905,10 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
             if match:
                 resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="", strict=True)
                 self.send_json(200, {"resources": resources})
+                return
+            match = re.fullmatch(r"/torrent-file/(mv|tv|ac)/([A-Za-z0-9]+)/([A-Za-z0-9]+)", path)
+            if match:
+                self.send_json(200, fetch_torrent_file(*match.groups()))
                 return
             match = re.fullmatch(r"/bt/([A-Za-z0-9]+)", path)
             if match:

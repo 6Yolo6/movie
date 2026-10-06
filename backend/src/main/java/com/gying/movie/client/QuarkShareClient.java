@@ -52,6 +52,61 @@ public class QuarkShareClient {
         this.quarkAutoSaveClient = quarkAutoSaveClient;
     }
 
+    JsonNode p2pRequest(String path, Map<String, Object> body) {
+        JsonNode result = post(quarkAutoSaveClient.getPrimaryCookie(), path, body);
+        ensureOk(result, "Quark P2P file operation failed");
+        return result;
+    }
+
+    List<JsonNode> p2pChildren(String parent) {
+        List<JsonNode> result = new ArrayList<>();
+        String cookie = quarkAutoSaveClient.getPrimaryCookie();
+        for (int page = 1; page <= 100; page++) {
+            JsonNode response = get(cookie, "/1/clouddrive/file/sort", Map.of("pdir_fid", parent,
+                    "_page", String.valueOf(page), "_size", "100", "_fetch_total", "1",
+                    "_fetch_sub_dirs", "0", "sort", "file_type:asc,updated_at:desc"));
+            ensureOk(response, "Quark P2P folder listing failed");
+            JsonNode items = response.path("data").path("list");
+            if (!items.isArray()) throw new IllegalStateException("Quark folder listing missing");
+            items.forEach(result::add);
+            if (items.size() < 100) return result;
+        }
+        throw new IllegalStateException("Quark P2P folder listing exceeded limit");
+    }
+
+    String p2pFolder(String preferredPath, String fallbackPath) {
+        String parent = "0";
+        if (hasText(preferredPath)) {
+            parent = resolvePath(quarkAutoSaveClient.getPrimaryCookie(), preferredPath).fid();
+        } else {
+            if (!hasText(fallbackPath) || "/".equals(fallbackPath)) throw new IllegalArgumentException("Movie folder required");
+            for (String segment : fallbackPath.split("/+")) {
+                if (!segment.isBlank()) parent = p2pChildFolder(parent, segment);
+            }
+        }
+        if ("0".equals(parent)) throw new IllegalStateException("P2P files cannot be stored in root");
+        return p2pChildFolder(parent, "磁力种子");
+    }
+
+    private String p2pChildFolder(String parent, String name) {
+        if (name.equals(".") || name.equals("..")) throw new IllegalArgumentException("Invalid folder segment");
+        for (JsonNode child : p2pChildren(parent)) {
+            if (child.path("dir").asBoolean() && name.equals(child.path("file_name").asText())) {
+                return child.path("fid").asText();
+            }
+        }
+        JsonNode data = p2pRequest("/1/clouddrive/file", Map.of("pdir_fid", parent,
+                "file_name", name, "dir_path", "", "dir_init_lock", false)).path("data");
+        String fid = data.path("fid").asText();
+        if (fid.isBlank()) throw new IllegalStateException("Quark movie folder creation failed");
+        return fid;
+    }
+
+    String p2pShare(String folder, String title) {
+        if (!properties.getQuark().isShareEnabled()) throw new IllegalStateException("Quark sharing disabled");
+        return createShare(quarkAutoSaveClient.getPrimaryCookie(), List.of(folder), title).getShareUrl();
+    }
+
     public QuarkShareResult createShareForPath(String savePath, String title) {
         if (!properties.getQuark().isShareEnabled()) {
             throw new IllegalStateException("Quark share creation is disabled");

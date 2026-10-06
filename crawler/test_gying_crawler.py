@@ -302,7 +302,7 @@ class WeeklyPopularTest(unittest.TestCase):
 class GyingCompactBtTest(unittest.TestCase):
     def payload(self):
         return {"hex": "fixture-ticket", "list": {
-            "m": ["a" * 40, "B" * 40], "t": ["电影 1080p", "剧集 4K"],
+            "m": ["a" * 40, "B" * 40], "t": ["电影 1080p 中文字幕", "剧集 4K 中英字幕"],
             "u": ["BT1", "BT2"], "k": [0, 0], "s": ["1G", "2G"],
         }}
 
@@ -314,7 +314,7 @@ class GyingCompactBtTest(unittest.TestCase):
         self.assertEqual("magnet:?xt=urn:btih:" + "b" * 40, rows[2]["url"])
         self.assertEqual(BASE_URL + "/dbt/BT1/fixture-ticket", rows[1]["url"])
         self.assertEqual(BASE_URL + "/bt/BT1", rows[0]["source_url"])
-        self.assertEqual("电影 1080p", rows[0]["title"])
+        self.assertEqual("电影 1080p 中文字幕", rows[0]["title"])
         self.assertTrue(all(x["provider"] == "P2P" and not x["is_own"] for x in rows))
         get.assert_not_called()
 
@@ -397,6 +397,103 @@ class GyingCompactBtTest(unittest.TestCase):
             with self.assertRaises(RuntimeError): expand_bt_resources(resources, strict=True)
         with patch("crawler.gying_crawler.fetch_bt_resources", return_value=[]):
             with self.assertRaises(RuntimeError): expand_bt_resources(resources, strict=True)
+
+
+
+class P2pReleaseSelectionTest(unittest.TestCase):
+    def release(self, identity, title):
+        return [{"source_ref": identity, "title": title, "provider": "P2P", "type": kind,
+                 "url": ("magnet:?xt=urn:btih:" if kind == "MAGNET" else "https://example.invalid/") + identity}
+                for kind in ("MAGNET", "TORRENT")]
+
+    def test_only_one_release_per_resolution_with_chinese_preferred(self):
+        from crawler.gying_crawler import select_p2p_versions
+        rows = (self.release("a", "Movie.1080p.English") + self.release("b", "Movie.1080p.中文字幕")
+                + self.release("c", "Movie.1080p.中英字幕") + self.release("d", "Movie.2160p.HDR")
+                + self.release("e", "Movie.720p.中字"))
+        result = select_p2p_versions(rows)
+        self.assertEqual(["b", "b", "d", "d"], [r["source_ref"] for r in result])
+        self.assertEqual(["1080P", "1080P", "4K", "4K"], [r["quality"] for r in result])
+        self.assertEqual("中文字幕（来源标注）", result[0]["subtitle"])
+
+    def test_without_explicit_chinese_subtitles_keeps_no_p2p_only_cloud(self):
+        from crawler.gying_crawler import select_p2p_versions
+        cloud = {"type": "DISK", "provider": "QUARK", "url": "https://pan.quark.cn/s/fixture"}
+        rows = self.release("a", "Movie.1080p.国语") + self.release("b", "Movie.4K.无中文字幕")
+        self.assertEqual([cloud], select_p2p_versions(rows + [cloud]))
+
+    def test_subtitle_markers_and_negative_labels(self):
+        from crawler.gying_crawler import has_chinese_subtitle_label
+        for title in ("内嵌中字", "简中", "繁中", "简繁英字幕", "CHS.ENG", "CHT", "Chinese.Subtitles"):
+            with self.subTest(title=title): self.assertTrue(has_chinese_subtitle_label({"title": title}))
+        for title in ("国语配音", "中文音轨", "中英双语配音", "中英音轨", "无中字", "无字幕", "无中文字幕", "no Chinese subtitles"):
+            with self.subTest(title=title): self.assertFalse(has_chinese_subtitle_label({"title": title}))
+
+    def test_only_unsupported_or_unknown_resolution_is_skipped(self):
+        from crawler.gying_crawler import select_p2p_versions
+        for title in ("Movie.720p.中字", "Movie.8K.中字", "Movie.中文字幕"):
+            self.assertEqual([], select_p2p_versions(self.release("a", title)))
+
+    def test_chinese_magnet_only_beats_uncertain_complete_pair(self):
+        from crawler.gying_crawler import select_p2p_versions
+        rows = self.release("a", "Movie.1080p.English") + self.release("b", "Movie.1080p.中字")[:1]
+        rows += self.release("c", "Movie.4K.简中") * 2
+        result = select_p2p_versions(rows)
+        self.assertEqual(["b", "c", "c"], [r["source_ref"] for r in result])
+
+
+
+class TorrentMetadataFileTest(unittest.TestCase):
+    def content(self):
+        info = b'd6:lengthi1e4:name1:x12:piece lengthi1e6:pieces20:' + b'x' * 20 + b'e'
+        return b'd4:info' + info + b'e', __import__('hashlib').sha1(info).hexdigest()
+
+    def test_info_hash_uses_original_bencoded_bytes(self):
+        from crawler.gying_crawler import torrent_info_hash
+        data, expected = self.content()
+        self.assertEqual(expected, torrent_info_hash(data))
+
+    def test_html_oversized_truncated_and_duplicate_info_are_rejected(self):
+        from crawler.gying_crawler import torrent_info_hash
+        good, _ = self.content()
+        for data in (b'<html>login</html>', b'd' + b'x' * (2 * 1024 * 1024), good[:-1], good + b'extra',
+                     b'd4:infod6:pieces20:' + b'x' * 20 + b'e4:infod6:pieces20:' + b'x' * 20 + b'ee'):
+            with self.subTest(size=len(data)):
+                with self.assertRaises(RuntimeError): torrent_info_hash(data)
+
+    def resources(self, expected):
+        from crawler.gying_crawler import BASE_URL
+        return [{"type": "MAGNET", "source_ref": "BT1", "url": "magnet:?xt=urn:btih:" + expected},
+                {"type": "TORRENT", "source_ref": "BT1", "url": BASE_URL + "/dbt/BT1/ticket"}]
+
+    def test_download_is_bounded_verified_and_has_no_redirects(self):
+        from crawler.gying_crawler import fetch_torrent_file
+        data, expected = self.content()
+        response = Mock(status_code=200); response.iter_content.return_value = [data]
+        with patch("crawler.gying_crawler.fetch_download_resources", return_value=self.resources(expected)),              patch("crawler.gying_crawler.site_get", return_value=response) as get:
+            result = fetch_torrent_file("mv", "MOVIE1", "BT1")
+        self.assertEqual(expected, result["infoHash"])
+        self.assertEqual(data, __import__('base64').b64decode(result["dataBase64"]))
+        self.assertFalse(get.call_args.kwargs["allow_redirects"])
+        self.assertTrue(get.call_args.kwargs["stream"])
+        response.close.assert_called_once()
+
+    def test_download_refuses_hash_mismatch_and_redirect_status(self):
+        from crawler.gying_crawler import fetch_torrent_file
+        data, expected = self.content()
+        for status, info_hash in ((302, expected), (200, "a" * 40)):
+            response = Mock(status_code=status); response.iter_content.return_value = [data]
+            with patch("crawler.gying_crawler.fetch_download_resources", return_value=self.resources(info_hash)),                  patch("crawler.gying_crawler.site_get", return_value=response):
+                with self.assertRaises(RuntimeError): fetch_torrent_file("mv", "MOVIE1", "BT1")
+            response.close.assert_called_once()
+
+    def test_download_denies_untrusted_endpoint_before_request(self):
+        from crawler.gying_crawler import fetch_torrent_file
+        _, expected = self.content(); resources = self.resources(expected)
+        resources[1]["url"] = "http://127.0.0.1/private.torrent"
+        with patch("crawler.gying_crawler.fetch_download_resources", return_value=resources),              patch("crawler.gying_crawler.site_get") as get:
+            with self.assertRaises(RuntimeError): fetch_torrent_file("mv", "MOVIE1", "BT1")
+        get.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()
