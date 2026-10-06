@@ -298,5 +298,105 @@ class WeeklyPopularTest(unittest.TestCase):
         self.assertEqual('A1', fetch_weekly_popular('tv')[0]['mid'])
         self.assertTrue(get.call_args.args[0].endswith('/hits/tv/week'))
 
+
+class GyingCompactBtTest(unittest.TestCase):
+    def payload(self):
+        return {"hex": "fixture-ticket", "list": {
+            "m": ["a" * 40, "B" * 40], "t": ["电影 1080p", "剧集 4K"],
+            "u": ["BT1", "BT2"], "k": [0, 0], "s": ["1G", "2G"],
+        }}
+
+    def test_real_parallel_shape_generates_magnets_and_downloads_without_bt_requests(self):
+        from crawler.gying_crawler import normalize_download_section, BASE_URL
+        with patch("crawler.gying_crawler.site_get") as get:
+            rows = normalize_download_section(self.payload(), "owned-account")
+        self.assertEqual(["MAGNET", "TORRENT", "MAGNET", "TORRENT"], [x["type"] for x in rows])
+        self.assertEqual("magnet:?xt=urn:btih:" + "b" * 40, rows[2]["url"])
+        self.assertEqual(BASE_URL + "/dbt/BT1/fixture-ticket", rows[1]["url"])
+        self.assertEqual(BASE_URL + "/bt/BT1", rows[0]["source_url"])
+        self.assertEqual("电影 1080p", rows[0]["title"])
+        self.assertTrue(all(x["provider"] == "P2P" and not x["is_own"] for x in rows))
+        get.assert_not_called()
+
+    def test_fetch_merges_compact_bt_and_existing_cloud_resources(self):
+        from crawler.gying_crawler import fetch_download_resources
+        response = Mock(status_code=200)
+        response.json.return_value = {"code": 200, "downlist": self.payload(), "panlist": {
+            "url": ["https://pan.quark.cn/s/fixture"], "name": ["cloud"], "user": ["owner"],
+        }}
+        with patch("crawler.gying_crawler.site_get", return_value=response) as get:
+            rows = fetch_download_resources("mv", "MOVIE1", [], target_user="")
+        self.assertEqual(5, len(rows))
+        self.assertEqual(2, sum(x["type"] == "MAGNET" for x in rows))
+        self.assertEqual(2, sum(x["type"] == "TORRENT" for x in rows))
+        self.assertEqual(1, get.call_count)
+
+    def test_folder_zip_and_missing_ticket_never_become_fake_torrents(self):
+        from crawler.gying_crawler import normalize_download_section
+        data = self.payload(); data["list"]["k"] = [1, 2]
+        self.assertEqual([], normalize_download_section(data))
+        data["list"]["k"] = [0, 0]; data.pop("hex")
+        self.assertEqual(["MAGNET", "MAGNET"], [r["type"] for r in normalize_download_section(data)])
+
+    def test_invalid_or_encoded_hash_and_misaligned_arrays_fail_closed(self):
+        from crawler.gying_crawler import normalize_download_section
+        data = self.payload(); data["list"]["m"][0] = "opaque-encrypted-value"
+        with self.assertRaises(RuntimeError): normalize_download_section(data)
+        data = self.payload(); data["list"]["t"].pop()
+        with self.assertRaises(RuntimeError): normalize_download_section(data)
+
+    def test_title_length_and_magnet_identity_stay_stable(self):
+        from crawler.gying_crawler import normalize_download_section
+        data = self.payload(); before = normalize_download_section(data)[0]["url"]
+        data["list"]["t"][0] = "长标题" * 200
+        row = normalize_download_section(data)[0]
+        self.assertEqual(before, row["url"])
+        self.assertEqual(255, len(row["title"]))
+
+
+    def test_strict_resource_fetch_rejects_transport_http_json_and_upstream_failures(self):
+        from crawler.gying_crawler import fetch_download_resources
+        responses = [Mock(status_code=503), Mock(status_code=200)]
+        responses[1].json.side_effect = ValueError("fixture HTML login page")
+        for payload in ({"code": 401}, {"code": 200}, [], {"code": 403, "downlist": []}):
+            response = Mock(status_code=200); response.json.return_value = payload
+            responses.append(response)
+        for response in responses:
+            with self.subTest(response=response), patch("crawler.gying_crawler.site_get", return_value=response):
+                with self.assertRaises(RuntimeError):
+                    fetch_download_resources("mv", "MOVIE1", [], target_user="", strict=True)
+        with patch("crawler.gying_crawler.site_get", side_effect=TimeoutError("fixture timeout")):
+            with self.assertRaisesRegex(RuntimeError, "resource request failed"):
+                fetch_download_resources("mv", "MOVIE1", [], target_user="", strict=True)
+
+    def test_strict_resource_fetch_accepts_explicit_empty_and_compact_resources(self):
+        from crawler.gying_crawler import fetch_download_resources
+        for payload, count in (({"code": 200, "downlist": [], "panlist": []}, 0),
+                               ({"code": 200, "downlist": self.payload()}, 4)):
+            response = Mock(status_code=200); response.json.return_value = payload
+            with patch("crawler.gying_crawler.site_get", return_value=response) as get:
+                rows = fetch_download_resources("mv", "MOVIE1", [], target_user="", strict=True)
+                self.assertEqual(count, len(rows))
+                self.assertEqual(1, get.call_count)
+
+    def test_resource_only_api_enables_strict_fetch(self):
+        from crawler.gying_crawler import GyingSourceApiHandler
+        handler = object.__new__(GyingSourceApiHandler)
+        handler.path = "/resources/mv/MOVIE1"
+        handler.authorized = Mock(return_value=True)
+        handler.send_json = Mock()
+        with patch("crawler.gying_crawler.fetch_download_resources", return_value=[]) as fetch:
+            handler.do_GET()
+        fetch.assert_called_once_with("mv", "MOVIE1", [], target_user="", strict=True)
+        handler.send_json.assert_called_once_with(200, {"resources": []})
+
+    def test_strict_bt_expansion_propagates_failure_and_empty_details(self):
+        from crawler.gying_crawler import expand_bt_resources, BASE_URL
+        resources = [{"url": BASE_URL + "/bt/BT1"}]
+        with patch("crawler.gying_crawler.fetch_bt_resources", side_effect=RuntimeError("fixture unavailable")):
+            with self.assertRaises(RuntimeError): expand_bt_resources(resources, strict=True)
+        with patch("crawler.gying_crawler.fetch_bt_resources", return_value=[]):
+            with self.assertRaises(RuntimeError): expand_bt_resources(resources, strict=True)
+
 if __name__ == "__main__":
     unittest.main()

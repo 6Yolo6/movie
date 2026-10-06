@@ -244,6 +244,7 @@ public class GyingSourceWorkflowService {
         int linked = 0;
         int failed = 0;
         int directResourceLinks = 0;
+        int directResourceFailures = 0;
         Set<String> movieIds = new LinkedHashSet<>();
         Set<String> resourceDiscoveryMovieIds = new LinkedHashSet<>();
         Set<String> insertedMovieIds = new LinkedHashSet<>();
@@ -273,6 +274,7 @@ public class GyingSourceWorkflowService {
                         directResourceLinks += syncGyingDirectResources(
                                 existing.getId(), typeCode, mid);
                     } catch (Exception resourceError) {
+                        directResourceFailures++;
                         if (errors.size() < 10) {
                             errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
                         }
@@ -294,6 +296,7 @@ public class GyingSourceWorkflowService {
                 try {
                     directResourceLinks += syncGyingDirectResources(targetMovieId, typeCode, mid);
                 } catch (Exception resourceError) {
+                    directResourceFailures++;
                     if (errors.size() < 10) {
                         errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
                     }
@@ -321,6 +324,7 @@ public class GyingSourceWorkflowService {
         result.put("insertedMovieIds", List.copyOf(insertedMovieIds));
         result.put("resourceDiscoveryMovieIds", List.copyOf(resourceDiscoveryMovieIds));
         result.put("directResourceLinks", directResourceLinks);
+        result.put("directResourceFailures", directResourceFailures);
         result.put("failed", failed);
         result.put("errors", errors);
         return result;
@@ -353,12 +357,21 @@ public class GyingSourceWorkflowService {
                     || !"P2P".equals(provider)) {
                 continue;
             }
+            String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
+                    stringValue(item.get("source_id")), ""), 100);
             String urlHash = ResourceHubHashUtils.sha256(url);
             ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                     .eq("movie_id", movieId)
                     .and(query -> query.eq("url_hash", urlHash).or().eq("url", url))
                     .isNull("deleted_at")
                     .last("LIMIT 1"), false);
+            if (link == null && "TORRENT".equals(type) && hasText(sourceRef)) {
+                // GYING /dbt download tickets rotate: refresh the same BT item instead of duplicating it.
+                link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .eq("movie_id", movieId).eq("source", "GYING").eq("source_ref", sourceRef)
+                        .eq("type", "TORRENT").eq("provider", "P2P").isNull("deleted_at")
+                        .orderByDesc("updated_at").last("LIMIT 1"), false);
+            }
             LocalDateTime now = LocalDateTime.now();
             if (link == null) {
                 link = new ResourceLink();
@@ -381,8 +394,6 @@ public class GyingSourceWorkflowService {
             if (hasText(quality) && !displayTitle.contains(quality)) {
                 displayTitle = displayTitle + " [" + quality + "]";
             }
-            String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
-                    stringValue(item.get("source_id")), ""), 100);
             if (hasText(sourceRef) && (displayTitle.equals("《" + movieTitle + "》磁力资源")
                     || displayTitle.equals("《" + movieTitle + "》种子资源"))) {
                 displayTitle = displayTitle + " #" + sourceRef;
@@ -399,8 +410,7 @@ public class GyingSourceWorkflowService {
             link.setLinkStatus("NORMAL");
             link.setReportCount(0);
             link.setSource("GYING");
-            link.setSourceRef(trim(firstText(stringValue(item.get("source_ref")),
-                    stringValue(item.get("source_id")), ""), 100));
+            link.setSourceRef(sourceRef);
             link.setSourceUrl(firstText(stringValue(item.get("source_url")),
                     "https://www.xn--wcv59z.com/" + typeCode + "/" + mid));
             link.setAutoCollected(true);
@@ -408,10 +418,8 @@ public class GyingSourceWorkflowService {
             link.setLastCheckError(null);
             link.setUpdatedAt(now);
             link.setDeletedAt(null);
-            if (link.getId() == null) {
-                resourceLinkService.save(link);
-            } else {
-                resourceLinkService.updateById(link);
+            if (!(link.getId() == null ? resourceLinkService.save(link) : resourceLinkService.updateById(link))) {
+                throw new IllegalStateException("GYING P2P resource was not persisted");
             }
             saved++;
         }

@@ -105,13 +105,20 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             result.setUpdated(number(synced.get("linked")));
             result.setFailed(number(synced.get("failed")));
             addErrors(result, synced.get("errors"));
+            int p2pFailures = number(synced.get("directResourceFailures"));
+            // Keep the original batch when metadata succeeds but its P2P links do not.
             crawlPlanner.completed(task, number(synced.get("pageSize")),
-                    result.getProcessed() + result.getFailed(), result.getFailed());
+                    result.getProcessed() + result.getFailed(), result.getFailed() + p2pFailures);
+            Map<String, Object> audit = objectMapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {});
+            audit.put("directResourceLinks", number(synced.get("directResourceLinks")));
+            audit.put("directResourceFailures", p2pFailures);
+            task.setPayload(objectMapper.writeValueAsString(audit));
             // Catalog metadata retains P2P links but never enqueues cloud discovery.
-            String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
+            String status = p2pFailures > 0 || (result.getProcessed() == 0 && result.getFailed() > 0)
+                    ? "FAILED" : "SUCCEEDED";
             finishTask(task, status, result.getFailed() > 0
                     ? result.getFailed() + " GYING item(s) failed during sync"
-                    : null);
+                    : p2pFailures > 0 ? p2pFailures + " GYING P2P item(s) failed; metadata saved" : null);
         } catch (Exception error) {
             finishTask(task, "FAILED", error.getMessage());
             result.setFailed(Math.max(result.getFailed(), 1));

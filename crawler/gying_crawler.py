@@ -423,7 +423,7 @@ def fetch_bt_resources(bt_id, title_hint=""):
     return resources
 
 
-def expand_bt_resources(resources, fallback_source_url=None):
+def expand_bt_resources(resources, fallback_source_url=None, strict=False):
     expanded = []
     for resource in resources or []:
         url = str(resource.get("url") or "").strip()
@@ -437,7 +437,11 @@ def expand_bt_resources(resources, fallback_source_url=None):
             bt_items = fetch_bt_resources(bt_id, resource.get("title") or "")
             if bt_items:
                 expanded.extend(bt_items)
+            elif strict:
+                raise RuntimeError("GYING BT detail contained no usable P2P links")
         except Exception as error:
+            if strict:
+                raise RuntimeError("GYING BT resource retrieval failed") from error
             print(f"      ⚠️ BT resource {bt_id} unavailable: {error}")
     return expanded
 
@@ -805,6 +809,42 @@ def normalize_download_item(item):
         "uploader": uploader,
     }
 
+def normalize_compact_bt_section(section):
+    """GYING downlist.list uses parallel m/t/u/k arrays, not url/name arrays.
+
+    m is the actual BTIH for kind 0. The site's own UI links to
+    /dbt/{u}/{hex} for torrent downloads; hex is refreshed by the upstream.
+    Never turn a folder/zip item or an opaque encoded value into a magnet.
+    """
+    rows = section.get("list")
+    if not isinstance(rows, dict) or not isinstance(rows.get("m"), list):
+        raise RuntimeError("Unsupported GYING compact BT payload")
+    hashes = rows["m"]
+    required = ("t", "u", "k")
+    if any(not isinstance(rows.get(key), list) or len(rows[key]) != len(hashes) for key in required):
+        raise RuntimeError("Incomplete GYING compact BT arrays")
+    result = []
+    ticket = str(section.get("hex") or "").strip()
+    for index, value in enumerate(hashes):
+        if rows["k"][index] not in (0, "0"):
+            continue
+        info_hash = str(value or "").strip()
+        source_id = str(rows["u"][index] or "").strip()
+        if not re.fullmatch(r"[0-9a-fA-F]{40}", info_hash) or not re.fullmatch(r"[A-Za-z0-9]+", source_id):
+            raise RuntimeError("Invalid GYING compact BT identity")
+        common = {
+            "source_id": source_id, "source_ref": source_id,
+            "source_url": f"{BASE_URL}/bt/{source_id}",
+            "title": bounded_text(rows["t"][index], 255, f"GYING BT {source_id}"),
+            "code": "", "provider": "P2P", "tname": "BT", "uploader": "", "is_own": False,
+        }
+        # Keep magnet identity stable when display titles change.
+        result.append({**common, "type": "MAGNET", "url": "magnet:?xt=urn:btih:" + info_hash.lower()})
+        if ticket and re.fullmatch(r"[A-Za-z0-9_-]{1,256}", ticket):
+            result.append({**common, "type": "TORRENT", "url": f"{BASE_URL}/dbt/{source_id}/{ticket}"})
+    return result
+
+
 def normalize_download_section(section, target_user=None):
     if isinstance(section, list):
         resources = []
@@ -821,6 +861,9 @@ def normalize_download_section(section, target_user=None):
 
     if not isinstance(section, dict):
         return []
+
+    if isinstance(section.get("list"), dict) and "m" in section["list"]:
+        return normalize_compact_bt_section(section)
 
     # Some GYING responses expose P2P links directly as magnet/torrent arrays.
     # Do not treat a normal parallel `url` array as a direct scalar value: doing
@@ -975,7 +1018,7 @@ def normalize_content_list_resources(resources):
         })
     return normalized
 
-def fetch_download_resources(type_code, mid, fallback_resources, target_user=None):
+def fetch_download_resources(type_code, mid, fallback_resources, target_user=None, strict=False):
     resolved_target_user = TARGET_USER if target_user is None else target_user
     url = f"{BASE_URL}/res/downurl/{type_code}/{mid}"
     try:
@@ -989,18 +1032,30 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
             },
         )
     except Exception as e:
+        if strict:
+            raise RuntimeError("GYING resource request failed") from e
         print(f"      ⚠️ Downurl request failed: {e}")
         return normalize_content_list_resources(fallback_resources)
 
     if resp.status_code != 200:
+        if strict:
+            raise RuntimeError(f"GYING resource HTTP {resp.status_code}")
         print(f"      ⚠️ Downurl HTTP {resp.status_code}; fallback to content_list resources.")
         return normalize_content_list_resources(fallback_resources)
 
     try:
         data = resp.json()
     except ValueError as e:
+        if strict:
+            raise RuntimeError("GYING resource response was not JSON") from e
         print(f"      ⚠️ Downurl JSON decode failed: {e}")
         return normalize_content_list_resources(fallback_resources)
+
+    if strict and (not isinstance(data, dict) or str(data.get("code", 200)) != "200"
+                   or not any(key in data for key in ("panlist", "downlist", "magnetlist", "btlist",
+                                                      "p2plist", "torrentlist", "magnet", "magnet_url",
+                                                      "torrent", "torrent_url", "download_url"))):
+        raise RuntimeError("GYING resource payload rejected or missing resource sections")
 
     resources = []
     for key in ("panlist", "downlist", "magnetlist", "btlist", "p2plist", "torrentlist"):
@@ -1011,7 +1066,7 @@ def fetch_download_resources(type_code, mid, fallback_resources, target_user=Non
             resources.extend(normalize_download_section(value, resolved_target_user))
 
     fallback = normalize_content_list_resources(fallback_resources)
-    expanded = expand_bt_resources(resources or fallback, f"{BASE_URL}/{type_code}/{mid}")
+    expanded = expand_bt_resources(resources or fallback, f"{BASE_URL}/{type_code}/{mid}", strict=strict)
     for resource in expanded:
         resource.setdefault("source_url", f"{BASE_URL}/{type_code}/{mid}")
         resource.setdefault("source_ref", resource.get("source_id") or "")
@@ -1726,7 +1781,7 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 return
             match = re.fullmatch(r"/resources/(mv|tv|ac)/([A-Za-z0-9]+)", path)
             if match:
-                resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="")
+                resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="", strict=True)
                 self.send_json(200, {"resources": resources})
                 return
             match = re.fullmatch(r"/bt/([A-Za-z0-9]+)", path)

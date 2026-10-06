@@ -576,6 +576,7 @@ class GyingSourceWorkflowServiceTest {
                 Map.of("type", "MAGNET", "provider", "P2P", "url", "magnet:?xt=urn:btih:fixture", "title", "磁力"),
                 Map.of("type", "TORRENT", "provider", "P2P", "url", "https://example.invalid/test.torrent", "title", "种子"),
                 Map.of("type", "DISK", "provider", "QUARK", "url", "https://pan.quark.cn/s/ignored"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
         Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
 
         assertEquals(1, result.get("inserted"));
@@ -589,6 +590,113 @@ class GyingSourceWorkflowServiceTest {
         verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
         assertEquals(false, payload.getValue().get("includeResources"));
         assertEquals("gying_mv_NEW1", payload.getValue().get("targetMovieId"));
+    }
+
+
+    @Test
+    void rotatingTorrentTicketUpdatesTheSameSourceResource() {
+        String oldUrl = "https://example.invalid/dbt/BT1/old-ticket";
+        String newUrl = "https://example.invalid/dbt/BT1/new-ticket";
+        stubP2pCatalog(List.of(Map.of("type", "TORRENT", "provider", "P2P", "url", oldUrl,
+                "source_ref", "BT1", "title", "目录电影 1080p")));
+        ResourceLink stored = new ResourceLink();
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false)))
+                .thenReturn(null, null, null, stored);
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> {
+            ResourceLink link = call.getArgument(0);
+            stored.setId(91L); stored.setMovieId(link.getMovieId()); stored.setCreatedAt(link.getCreatedAt());
+            return true;
+        });
+        when(resourceLinkService.updateById(stored)).thenReturn(true);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        var createdAt = stored.getCreatedAt();
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", List.of(
+                Map.of("type", "TORRENT", "provider", "P2P", "url", newUrl,
+                        "source_ref", "BT1", "title", "目录电影 4K"))));
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(91L, stored.getId());
+        assertEquals(newUrl, stored.getUrl());
+        assertEquals(com.gying.movie.utils.ResourceHubHashUtils.sha256(newUrl), stored.getUrlHash());
+        assertEquals(createdAt, stored.getCreatedAt());
+        assertEquals("BT1", stored.getSourceRef());
+        verify(resourceLinkService).save(any(ResourceLink.class));
+        verify(resourceLinkService).updateById(stored);
+        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>> queries =
+                ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(resourceLinkService, times(4)).getOne(queries.capture(), eq(false));
+        var fallback = queries.getAllValues().get(3);
+        String sql = fallback.getSqlSegment();
+        for (String column : List.of("movie_id", "source", "source_ref", "type", "provider", "deleted_at IS NULL")) {
+            assertTrue(sql.contains(column), sql);
+        }
+        assertTrue(fallback.getParamNameValuePairs().values()
+                .containsAll(List.of("gying_mv_NEW1", "GYING", "BT1", "TORRENT", "P2P")));
+        verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
+                xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void repeatedMagnetIsUpdatedByUrlWithoutTorrentIdentityFallback() {
+        String url = "magnet:?xt=urn:btih:" + "a".repeat(40);
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P", "url", url, "source_id", "BT1")));
+        ResourceLink existing = new ResourceLink(); existing.setId(92L); existing.setMovieId("gying_mv_NEW1");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(null, existing);
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
+        when(resourceLinkService.updateById(existing)).thenReturn(true);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        assertEquals(url, existing.getUrl());
+        assertEquals("BT1", existing.getSourceRef());
+        verify(resourceLinkService).save(any(ResourceLink.class));
+        verify(resourceLinkService).updateById(existing);
+        verify(resourceLinkService, times(2)).getOne(any(Wrapper.class), eq(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void unsuccessfulP2pPersistenceIsAuditedWithoutDiscardingMetadata(boolean update) {
+        stubP2pCatalog(List.of(Map.of("type", "MAGNET", "provider", "P2P",
+                "url", "magnet:?xt=urn:btih:" + "a".repeat(40))));
+        if (update) {
+            ResourceLink existing = new ResourceLink(); existing.setId(93L);
+            when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(existing);
+            when(resourceLinkService.updateById(existing)).thenReturn(false);
+        } else {
+            when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(false);
+        }
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(1, result.get("inserted"));
+        assertEquals(0, result.get("failed"));
+        assertEquals(0, result.get("directResourceLinks"));
+        assertEquals(1, result.get("directResourceFailures"));
+        assertTrue(result.get("errors").toString().contains("P2P resource was not persisted"));
+        verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
+                xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void existingMetadataAlsoAuditsUpstreamP2pFailure() {
+        stubP2pCatalog(List.of());
+        MovieMetadata existing = movie("tmdb_mv_123", "目录电影", "mv", "UNKNOWN");
+        existing.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(existing));
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenThrow(new IllegalStateException("fixture P2P unavailable"));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(1, result.get("linked"));
+        assertEquals(0, result.get("inserted"));
+        assertEquals(1, result.get("directResourceFailures"));
+        verify(gyingSourceClient, never()).post(eq("/ingest"), any());
+        verify(resourceLinkService, never()).save(any(ResourceLink.class));
+    }
+
+    private void stubP2pCatalog(List<Map<String, Object>> resources) {
+        MovieMetadata saved = movie("gying_mv_NEW1", "目录电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "NEW1", "title", "目录电影", "year", 2026))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(movieService.getById(saved.getId())).thenReturn(saved);
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", resources));
     }
 
     @Test
