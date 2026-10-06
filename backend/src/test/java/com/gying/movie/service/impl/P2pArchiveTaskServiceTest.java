@@ -75,6 +75,7 @@ class P2pArchiveTaskServiceTest {
         when(movies.getById("movie1")).thenReturn(movie);
         when(tasks.update(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(true);
         when(tasks.updateById(any(ResourceHubTask.class))).thenReturn(true);
+        when(tasks.update(any(ResourceHubTask.class), any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(true);
         when(links.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink) call.getArgument(0)).setId(50L); return true; });
         when(cloud.ensureFolder(eq("QUARK"), any(), anyString())).thenReturn("folder1");
         when(cloud.upload(eq("QUARK"), eq("folder1"), any())).thenReturn("fid1", "fid2");
@@ -100,6 +101,19 @@ class P2pArchiveTaskServiceTest {
         order.verify(cloud, times(2)).upload(eq("QUARK"), eq("folder1"), any());
         order.verify(cloud).createShare(eq("QUARK"), eq("folder1"), anyString()); order.verify(links).save(any(ResourceLink.class));
         verify(quark, never()).save(any()); verify(xunlei, never()).save(any());
+    }
+    @Test void successfulRetryExplicitlyClearsThePersistedFailureAudit() throws Exception {
+        ResourceHubTask task = runnableTask(); task.setStatus("FAILED"); task.setAttempts(1);
+        task.setLastError("Previous metadata upload failed");
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("errorCategory", "IllegalStateException"); task.setPayload(payload.toString());
+        service.runTask(task);
+        assertEquals("SUCCEEDED", task.getStatus()); assertEquals(2, task.getAttempts());
+        assertNull(task.getLastError()); assertFalse(mapper.readTree(task.getPayload()).has("errorCategory"));
+        var update = ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper.class);
+        verify(tasks).update(same(task), update.capture());
+        assertTrue(update.getValue().getSqlSet().contains("last_error="));
+        assertTrue(update.getValue().getParamNameValuePairs().containsValue(null));
     }
     @Test void partialUploadFailurePreservesCheckpointAndNeverPublishes() throws Exception {
         ResourceHubTask task = runnableTask();

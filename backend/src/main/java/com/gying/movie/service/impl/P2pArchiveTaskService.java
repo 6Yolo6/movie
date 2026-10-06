@@ -156,6 +156,7 @@ public class P2pArchiveTaskService {
             if (!(link.getId() == null ? links.save(link) : links.updateById(link))) throw new IllegalStateException("Archive share not persisted");
             payload.put("resourceLinkId", link.getId()); payload.put("fileCount", files.size());
             payload.put("totalBytes", files.stream().mapToLong(file -> file.bytes().length).sum());
+            payload.remove("errorCategory");
             payload.put("stage", "COMPLETE"); task.setStatus("SUCCEEDED"); task.setLastError(null); task.setFinishedAt(now); persist(task, payload);
         } catch (Exception error) {
             payload.put("stage", stage); payload.put("errorCategory", error.getClass().getSimpleName());
@@ -238,7 +239,11 @@ public class P2pArchiveTaskService {
     }
     private void persist(ResourceHubTask task, Map<String, Object> payload) {
         task.setPayload(json(payload)); task.setUpdatedAt(LocalDateTime.now());
-        if (!tasks.updateById(task)) throw new IllegalStateException("P2P archive checkpoint was not persisted");
+        // MyBatis skips null entity fields, so successful retries must explicitly clear the old error.
+        boolean saved = task.getLastError() == null
+                ? tasks.update(task, new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).set("last_error", null))
+                : tasks.updateById(task);
+        if (!saved) throw new IllegalStateException("P2P archive checkpoint was not persisted");
     }
     private String json(Object value) { try { return mapper.writeValueAsString(value); } catch (Exception error) { throw new IllegalStateException("Invalid P2P audit payload"); } }
     private static String title(MovieMetadata movie) { return movie.getTitleCn() == null || movie.getTitleCn().isBlank() ? movie.getId() : movie.getTitleCn(); }
