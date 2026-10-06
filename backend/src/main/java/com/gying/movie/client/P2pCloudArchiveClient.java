@@ -146,11 +146,15 @@ public class P2pCloudArchiveClient {
     static URI quarkStorageUri(JsonNode pre, boolean part) {
         URI endpoint = URI.create(required(pre, "upload_url"));
         String host = endpoint.getHost(), bucket = required(pre, "bucket"), key = required(pre, "obj_key");
-        if (host == null || !host.endsWith(".aliyuncs.com") || !bucket.matches("[a-z0-9-]{3,64}")
+        if (host == null || !("pds.quark.cn".equals(host) || host.endsWith(".aliyuncs.com"))
+                || endpoint.getRawUserInfo() != null || endpoint.getRawQuery() != null || endpoint.getRawFragment() != null
+                || endpoint.getPort() != -1 || !("http".equals(endpoint.getScheme()) || "https".equals(endpoint.getScheme()))
+                || !bucket.matches("[a-z0-9-]{3,64}")
                 || !key.matches("[A-Za-z0-9/_.=-]{1,512}")) throw new IllegalArgumentException("Untrusted Quark storage endpoint");
         var builder = UriComponentsBuilder.fromUriString("https://" + bucket + "." + host).path("/" + key);
         if (part) builder.queryParam("partNumber", 1);
-        return builder.queryParam("uploadId", required(pre, "upload_id")).build().encode().toUri();
+        return builder.queryParam("uploadId", "{uploadId}").encode()
+                .buildAndExpand(Map.of("uploadId", required(pre, "upload_id"))).toUri();
     }
     private void uploadXunlei(String folder, FileData file) throws Exception {
         JsonNode response = xunlei.p2pCreateFile(Map.of("kind", "drive#file", "parent_id", folder, "name", file.name(),

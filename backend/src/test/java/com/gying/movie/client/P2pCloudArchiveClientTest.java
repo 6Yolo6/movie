@@ -58,10 +58,24 @@ class P2pCloudArchiveClientTest {
         server.verify(); verify(quark).p2pRequest(eq("/1/clouddrive/file/upload/finish"), anyMap()); verifyNoInteractions(xunlei);
     }
     @Test void storageEndpointCannotPointToAnInternalOrUnrelatedHost() throws Exception {
-        for (String host : List.of("http://127.0.0.1", "https://evil.example", "http://169.254.169.254")) {
+        for (String host : List.of("http://127.0.0.1", "https://evil.example", "http://169.254.169.254", "https://pds.quark.cn.evil.example",
+                "https://evil.pds.quark.cn", "https://user@pds.quark.cn", "https://pds.quark.cn:8443",
+                "https://pds.quark.cn?override=true")) {
             var pre = mapper.valueToTree(Map.of("upload_url", host, "bucket", "fixture-bucket", "obj_key", "key", "upload_id", "id"));
             assertThrows(IllegalArgumentException.class, () -> P2pCloudArchiveClient.quarkStorageUri(pre, true));
         }
+    }
+    @Test void quarkPdsUploadHostUsesHttpsWithoutRelaxingHostValidation() {
+        var pre = mapper.valueToTree(Map.of("upload_url", "http://pds.quark.cn", "bucket", "fixture-bucket",
+                "obj_key", "fixture/key", "upload_id", "upload1"));
+        assertEquals("https://fixture-bucket.pds.quark.cn/fixture/key?partNumber=1&uploadId=upload1",
+                P2pCloudArchiveClient.quarkStorageUri(pre, true).toString());
+    }
+    @Test void uploadTicketReservedCharactersRemainOneQueryValue() {
+        var pre = mapper.valueToTree(Map.of("upload_url", "http://pds.quark.cn", "bucket", "fixture-bucket",
+                "obj_key", "fixture/key", "upload_id", "ticket+part/==&next"));
+        assertEquals("https://fixture-bucket.pds.quark.cn/fixture/key?uploadId=ticket%2Bpart%2F%3D%3D%26next",
+                P2pCloudArchiveClient.quarkStorageUri(pre, false).toString());
     }
     @Test void xunleiRequestsRawUploadAndNeverAnOfflineUrl() throws Exception {
         var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var file = text();
