@@ -2,14 +2,14 @@
 
 ## 交付状态（2026-10-05）
 
-已按用户明确授权部署：backend `gying-weekly-transfer-backend:20261005b`，frontend/source `gying-weekly-transfer-{frontend,source}:20261005a`。首次上线发现周榜 JSON 超过生产配置字段 VARCHAR(500)，已改为版本化紧凑存储并补测试，后端修复版初始化成功（229 字符），未改数据库结构。代码提交 `e6dead5`、`1aaa401`。
+初次已按用户明确授权部署：backend `gying-weekly-transfer-backend:20261005b`，frontend/source `gying-weekly-transfer-{frontend,source}:20261005a`。首次上线发现周榜 JSON 超过生产配置字段 VARCHAR(500)，已改为版本化紧凑存储并补测试，后端修复版初始化成功（229 字符），未改数据库结构。代码提交 `e6dead5`、`1aaa401`。2026-10-06 现役 backend/source 已叠加磁力种子归档更新，镜像与回滚见 `docs/current-project-status.md`，本节周榜视频隔离政策保持。
 
-安全扫描仍为 53 PASS / 11 FAIL / 0 UNKNOWN；授权只针对本次应用上线，不表示既有安全风险已解决。仅替换三个相关服务，nginx 平滑重载；其余七个生产容器、全部环境和挂载未变。没有移动/删除网盘文件、手动转存/外部发布或改历史追更。
+上述 10 月 5 日初次上线时安全扫描为 53 PASS / 11 FAIL / 0 UNKNOWN；授权只针对该次应用上线，不表示既有安全风险已解决。仅替换三个相关服务，nginx 平滑重载；其余七个生产容器、全部环境和挂载未变。没有移动/删除网盘文件、手动转存/外部发布或改历史追更。
 
 ## 高频采集
 
 - TMDB/GYING 自动范围采集和手动元数据任务不再排队云盘发现/转存。
-- GYING 继续保存影片元数据、海报以及可解析的 MAGNET/TORRENT 资源链接；不下载影片，不执行种子离线下载，不把磁力或种子交给网盘转存。
+- GYING 继续保存影片元数据、海报以及可解析的 MAGNET/TORRENT 资源链接；2026-10-06 新增独立 `P2P_ARCHIVE` 小文件队列，按 1080P/4K 与中文字幕条件把磁力文本和 torrent 元数据上传到影片目录并入库自有分享。仍不下载影片、不执行种子离线下载、不走视频转存，详见 [磁力与种子归档](p2p-cloud-archive.md)。
 - Worker 仅处理 METADATA_SYNC，不消费遗留 RESOURCE_DISCOVERY、转存、分享和发布队列。遗留记录保留，不重置状态。
 - 定时 discovered retry 不执行；明确手动发现、转存、修复及 QQ 按需链路保留。旧的 auto_discovery/discovered_retry 配置字段为兼容保留，但不能重新开启高频自动转存。
 - 原有起止页、页内续采、来源轮换与采集间隔保持独立。
