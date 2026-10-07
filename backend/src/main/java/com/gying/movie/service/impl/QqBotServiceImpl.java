@@ -367,14 +367,11 @@ public class QqBotServiceImpl implements IQqBotService {
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
         List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
-        // Website users can immediately use approved library resources. Do not wait for
-        // metadata providers, live share checks, discovery or transfers on this read-only path.
-        if (userKey != null && userKey.startsWith("web:")
-                || localCandidates.stream().anyMatch(candidate -> isUpcoming(candidate)
-                        || "TRAILER".equalsIgnoreCase(candidate.getResourceStatus()))) {
-            String libraryReply = tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
-            if (libraryReply != null) return libraryReply;
-        }
+        // Both QQ and website requests use approved library resources first.
+        // Explicit "资源" continuations have already branched above, so this
+        // read-only fast path never blocks a request for another version.
+        String libraryReply = tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
+        if (libraryReply != null) return libraryReply;
         MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         if (selectedCandidate != null && movie == null) {
             return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
@@ -757,15 +754,18 @@ public class QqBotServiceImpl implements IQqBotService {
                     buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), transferred)
                             + (remaining == null ? "" : continuationReply(remaining)), null);
         }
-        String detail = transferNotes.isEmpty()
-                ? "所选资源多次转存后仍失败，可能无资源、违规或分享内没有视频文件。"
-                : String.join("；", transferNotes);
+        String detail = transferNotes.stream()
+                .filter(note -> !note.startsWith("已"))
+                .map(this::userFacingTransferError)
+                .distinct().limit(2)
+                .collect(java.util.stream.Collectors.joining("；"));
+        if (detail.isBlank()) detail = "本次未能生成可用分享，请选择其他资源或稍后重试。";
         rememberFailedResourceSelection(userKey, candidates);
         String reply = containsInvalidShareError(transferNotes)
                 ? invalidResourceSelectionReply(candidates)
                 : "所选资源处理失败：" + detail + "\n请继续回复其他资源序号（1-"
                         + candidates.resources().size() + "），无需重新搜索。";
-        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, detail);
+        return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, String.join("；", transferNotes));
     }
 
     private void rememberFailedResourceSelection(String userKey, ResourceCandidates candidates) {
@@ -800,7 +800,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     return null;
                 }
                 submitXunleiTransferTask(task, transferNotes);
-                syncTaskShareToDiscovery(discovery, xunleiTransferTaskService.getById(task.getId()));
+                XunleiTransferTask completed = xunleiTransferTaskService.getById(task.getId());
+                if (completed == null || !hasText(completed.getShareUrl())) return null;
+                syncTaskShareToDiscovery(discovery, completed);
             } else {
                 QuarkTransferTask task = findOrCreateQqQuarkTask(discovery);
                 if (task == null) {
@@ -808,12 +810,14 @@ public class QqBotServiceImpl implements IQqBotService {
                     return null;
                 }
                 submitTransferTask(task, transferNotes);
-                syncTaskShareToDiscovery(discovery, quarkTransferTaskService.getById(task.getId()));
+                QuarkTransferTask completed = quarkTransferTaskService.getById(task.getId());
+                if (completed == null || !hasText(completed.getShareUrl())) return null;
+                syncTaskShareToDiscovery(discovery, completed);
             }
             ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryId);
             if (publishResult != null && publishResult.getFailed() > 0
                     && publishResult.getErrors() != null && !publishResult.getErrors().isEmpty()) {
-                transferNotes.add(safeError(publishResult.getErrors().get(0)));
+                transferNotes.add(publishResult.getErrors().get(0));
             }
             ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryId);
             if (refreshed != null && refreshed.getResourceLinkId() != null) {
@@ -935,7 +939,7 @@ public class QqBotServiceImpl implements IQqBotService {
             }
             if (result != null && result.getFailed() > 0
                     && result.getErrors() != null && !result.getErrors().isEmpty()) {
-                transferNotes.add(safeError(result.getErrors().get(0)));
+                transferNotes.add(result.getErrors().get(0));
             }
         } catch (Exception e) {
             transferNotes.add(userFacingTransferError(e.getMessage()));
@@ -943,7 +947,8 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void ensureShareUrl(QuarkTransferTask task, List<String> transferNotes) {
-        if (task == null || !resourceHubProperties.getQuark().isShareEnabled()) {
+        if (task == null || !"SUBMITTED".equalsIgnoreCase(task.getStatus())
+                || !resourceHubProperties.getQuark().isShareEnabled()) {
             return;
         }
         try {
@@ -952,7 +957,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 transferNotes.add("已创建我的夸克分享");
             }
         } catch (Exception e) {
-            transferNotes.add("创建分享失败：" + safeError(e.getMessage()));
+            transferNotes.add("创建分享失败：" + e.getMessage());
         }
     }
 
@@ -973,7 +978,7 @@ public class QqBotServiceImpl implements IQqBotService {
             }
             if (result != null && result.getFailed() > 0
                     && result.getErrors() != null && !result.getErrors().isEmpty()) {
-                transferNotes.add(safeError(result.getErrors().get(0)));
+                transferNotes.add(result.getErrors().get(0));
             }
         } catch (Exception e) {
             transferNotes.add(userFacingTransferError(e.getMessage()));
@@ -2167,13 +2172,13 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void addSavedPathNote(QuarkTransferTask task, List<String> transferNotes) {
-        if (task != null && hasText(task.getSavedPath())) {
+        if (task != null && hasText(task.getSavedPath()) && hasText(task.getShareUrl())) {
             transferNotes.add("已转存到 " + task.getSavedPath());
         }
     }
 
     private void addSavedPathNote(XunleiTransferTask task, List<String> transferNotes) {
-        if (task != null && hasText(task.getSavedPath())) {
+        if (task != null && hasText(task.getSavedPath()) && hasText(task.getShareUrl())) {
             transferNotes.add("已转存到 " + task.getSavedPath());
         }
     }
@@ -2370,40 +2375,44 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private String userFacingTransferError(String message) {
-        String detail = safeError(message);
-        String lower = detail.toLowerCase(Locale.ROOT);
-        if (isInvalidShareError(detail)) {
-            return "该分享已失效，不可访问";
+        String lower = java.util.Objects.toString(message, "").toLowerCase(Locale.ROOT);
+        // Classify the full diagnostic before truncation: task/source prefixes
+        // can otherwise hide the actual cause beyond the first 120 characters.
+        if (lower.contains("no transferred media") || lower.contains("no new matching")
+                || lower.contains("没有新的转存任务") || lower.contains("本次未转入视频")) {
+            return "转存失败：本次未转入视频，不代表原分享没有视频，请选择其他资源或联系管理员处理";
         }
-        if (lower.contains("no video")
-                || lower.contains("no transferred media")
-                || lower.contains("no new matching")
-                || lower.contains("没有视频")
-                || lower.contains("无视频")) {
+        if (lower.contains("target movie directory") || lower.contains("movie directory scan limit")
+                || lower.contains("target movie metadata") || lower.contains("未能确认目标影片子目录")) {
+            return "转存失败：未能确认目标影片子目录，已停止转存以避免混入其他影片";
+        }
+        if (lower.contains("share detail request failed") || lower.contains("read quark share directory")
+                || lower.contains("source directory listing") || lower.contains("暂时无法读取分享目录")) {
+            return "转存失败：暂时无法读取分享目录，未执行转存，请稍后重试";
+        }
+        if (lower.contains("saved quark folder") || lower.contains("saved folder")
+                || lower.contains("quark save path")) {
+            return "转存失败：保存目录暂不可用，不能据此判断原分享是否有视频";
+        }
+        if (isInvalidShareError(message)) return "该分享已失效，不可访问";
+        if (lower.contains("no video") || lower.contains("没有视频") || lower.contains("无视频")) {
             return "转存失败：分享内没有视频文件";
         }
-        if (lower.contains("违规")
-                || lower.contains("forbidden")
-                || lower.contains("violation")
-                || lower.contains("policy")
-                || lower.contains("blocked")) {
+        if (lower.contains("违规") || lower.contains("forbidden") || lower.contains("violation")
+                || lower.contains("policy") || lower.contains("blocked")) {
             return "转存失败：资源可能违规或已被平台拦截";
         }
-        if (lower.contains("not found")
-                || lower.contains("不存在")
-                || lower.contains("invalid")
-                || lower.contains("失效")
-                || lower.contains("分享为空")) {
-            return "转存失败：资源无效或已无资源";
+        if (lower.contains("提取码") || lower.contains("passcode")) {
+            return "转存失败：分享需要正确的提取码";
         }
-        return "转存失败：" + detail;
+        // Internal paths, exception chains and provider responses stay in task
+        // diagnostics, not the public QQ reply.
+        return "转存失败：本次未能生成可用分享，请稍后重试或选择其他资源";
     }
 
     private boolean isInvalidShareError(String message) {
-        String lower = firstText(message, "").toLowerCase(Locale.ROOT);
-        return lower.contains("read quark share directory failed")
-                || lower.contains("share detail request failed")
-                || lower.contains("好友已取消")
+        String lower = java.util.Objects.toString(message, "").toLowerCase(Locale.ROOT);
+        return lower.contains("好友已取消")
                 || lower.contains("分享已取消")
                 || lower.contains("分享已失效")
                 || lower.contains("分享不存在")

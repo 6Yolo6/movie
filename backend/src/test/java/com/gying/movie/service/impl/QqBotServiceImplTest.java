@@ -67,6 +67,7 @@ class QqBotServiceImplTest {
     private IResourceDiscoveryResultService discoveryResultService;
     private IQuarkTransferTaskService quarkTransferTaskService;
     private IQuarkTransferRunnerService quarkTransferRunnerService;
+    private IQuarkShareService quarkShareService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
     private IXunleiTransferRunnerService xunleiTransferRunnerService;
     private IResourceHubPublishService resourceHubPublishService;
@@ -88,6 +89,7 @@ class QqBotServiceImplTest {
         discoveryResultService = mock(IResourceDiscoveryResultService.class);
         quarkTransferTaskService = mock(IQuarkTransferTaskService.class);
         quarkTransferRunnerService = mock(IQuarkTransferRunnerService.class);
+        quarkShareService = mock(IQuarkShareService.class);
         xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         xunleiTransferRunnerService = mock(IXunleiTransferRunnerService.class);
         resourceHubPublishService = mock(IResourceHubPublishService.class);
@@ -107,7 +109,7 @@ class QqBotServiceImplTest {
                 resourceLinkService,
                 resourceDiscoveryService,
                 discoveryResultService,
-                mock(IQuarkShareService.class),
+                quarkShareService,
                 quarkTransferTaskService,
                 quarkTransferRunnerService,
                 xunleiTransferTaskService,
@@ -926,11 +928,13 @@ class QqBotServiceImplTest {
         quarkTask.setStatus("PENDING");
         when(quarkTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(quarkTask);
         when(quarkTransferRunnerService.submitOne(quarkTask.getId()))
-                .thenThrow(new IllegalStateException("read quark share directory failed"));
+                .thenThrow(new IllegalStateException("好友已取消分享"));
 
         XunleiTransferTask xunleiTask = new XunleiTransferTask();
         xunleiTask.setId(902L);
-        xunleiTask.setStatus("PENDING");
+        xunleiTask.setStatus("SUCCEEDED");
+        xunleiTask.setShareUrl("https://pan.xunlei.com/s/valid-owned");
+        when(xunleiTransferTaskService.getById(xunleiTask.getId())).thenReturn(xunleiTask);
         when(xunleiTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(xunleiTask);
         when(xunleiTransferRunnerService.submitOne(xunleiTask.getId())).thenReturn(successfulTransfer());
         ResourceLink ready = link(
@@ -1352,5 +1356,113 @@ class QqBotServiceImplTest {
         result.setTaskId(taskId);
         result.setErrors(List.of());
         return result;
+    }
+
+    @Test
+    void qqReleasedMovieReturnsAllApprovedLibraryDisksBeforeAnyExternalWork() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("88mD", "疯狂动物城", 2016);
+        local.setTitleEn("Zootopia"); local.setResourceStatus("AVAILABLE");
+        local.setReleaseDates("2016-03-04(中国大陆/美国)");
+        local.setTmdbId(null);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink quark = link("QUARK", "第一部 4K", "https://pan.quark.cn/s/library-regression");
+        ResourceLink xunlei = link("XUNLEI", "第一部 1080P", "https://pan.xunlei.com/s/library-regression");
+        ResourceLink baidu = link("BAIDU", "第一部原盘", "https://pan.baidu.com/s/library-regression");
+        List<ResourceLink> links = List.of(quark, xunlei, baidu);
+        links.forEach(link -> { link.setMovieId(local.getId()); link.setSource("ADMIN_MANUAL"); });
+        baidu.setSource("USER");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(links);
+
+        String reply = service.buildSearchReply("疯狂动物城", "qq:released-library");
+
+        assertTrue(reply.contains("资源库已有资源"));
+        links.forEach(link -> assertTrue(reply.contains(link.getUrl())));
+        assertTrue(reply.contains("发送“资源”继续"));
+        assertFalse(reply.contains("请选择资源"));
+        org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService,
+                resourceHubPublishService, quarkShareService);
+    }
+
+    @Test
+    void qqReleasedLibraryOnlyDiscoversAlternativesAfterExplicitResourceContinuation() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("released-more", "疯狂动物城", 2016);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink manual = link("QUARK", "已有视频", "https://pan.quark.cn/s/existing-regression");
+        manual.setMovieId(local.getId()); manual.setSource("ADMIN_MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual));
+        assertTrue(service.buildSearchReply("疯狂动物城", "qq:released-more").contains(manual.getUrl()));
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9801L));
+        ResourceDiscoveryRunResult result = emptyDiscovery(9801L); result.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9801L)).thenReturn(result);
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(discovery(
+                9802L, local.getId(), "QUARK", "疯狂动物城 2016 其他版本", "https://pan.quark.cn/s/alternative-regression")));
+
+        String reply = service.buildSearchReply("资源", "qq:released-more");
+
+        assertTrue(reply.contains("请选择资源")); assertTrue(reply.contains("其他版本"));
+        assertFalse(reply.contains("资源库已有资源（优先展示"));
+        verify(resourceDiscoveryService).enqueue(any());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void emptyTransferDestinationIsNotMisreportedAsAnEmptyOriginalShareOrPublishedAgain() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("empty-destination", "目标目录测试", 2016);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(9811L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(9811L); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(9811L)).thenReturn(found);
+        ResourceDiscoveryResult choice = discovery(9812L, local.getId(), "QUARK", "目标目录测试 4K", "https://pan.quark.cn/s/empty-target");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(choice));
+        when(discoveryResultService.getById(choice.getId())).thenReturn(choice);
+        QuarkTransferTask transfer = new QuarkTransferTask();
+        transfer.setId(9813L); transfer.setStatus("PENDING");
+        transfer.setSavedPath("/GYing QQ Temp/quark-9813");
+        when(quarkTransferTaskService.getOne(any(QueryWrapper.class), eq(false))).thenReturn(transfer);
+        when(quarkTransferTaskService.getById(transfer.getId())).thenReturn(transfer);
+        when(quarkTransferRunnerService.submitOne(transfer.getId())).thenAnswer(invocation -> {
+            String error = "Saved Quark folder has no transferred media files: /GYing QQ Temp/quark-9813";
+            transfer.setStatus("FAILED"); transfer.setLastError(error);
+            QuarkTransferRunResult failed = new QuarkTransferRunResult();
+            failed.setFailed(1); failed.setErrors(List.of("task 9813 share: " + error));
+            return failed;
+        });
+        service.buildSearchReply("目标目录测试", "qq:empty-destination");
+        String reply = service.buildSearchReply("1", "qq:empty-destination");
+        assertTrue(reply.contains("本次未转入视频"));
+        assertFalse(reply.contains("分享内没有视频文件"));
+        assertFalse(reply.contains("Saved Quark")); assertFalse(reply.contains("/GYing QQ Temp"));
+        assertFalse(reply.contains("已转存到"));
+        assertTrue(reply.contains("继续回复其他资源序号"));
+        org.mockito.Mockito.verifyNoInteractions(quarkShareService, resourceHubPublishService);
+    }
+
+    @Test
+    void transferErrorsSeparateDestinationSourceAndUnresolvedMovieScopeWithoutLeakingDetails() {
+        for (String prefix : List.of("", "任务说明".repeat(60))) {
+            String destination = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "Saved Quark folder has no transferred media files: /private/path");
+            assertTrue(destination.contains("本次未转入视频"));
+            assertFalse(destination.contains("/private"));
+            String scope = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "Quark source target movie directory could not be identified");
+            assertTrue(scope.contains("未能确认目标影片子目录"));
+            assertFalse(scope.contains("分享内没有视频文件"));
+        }
+        String actualEmptySource = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "Quark source has no video files");
+        assertTrue(actualEmptySource.contains("分享内没有视频文件"));
+        Boolean unavailableIsInvalid = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isInvalidShareError", "quark-auto-save share detail request failed");
+        assertFalse(unavailableIsInvalid);
+        String unknown = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "provider failure: /private/path secret=not-for-qq");
+        assertFalse(unknown.contains("private")); assertFalse(unknown.contains("secret"));
     }
 }
