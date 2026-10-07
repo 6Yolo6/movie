@@ -1365,7 +1365,9 @@ class QqBotServiceImplTest {
         local.setTitleEn("Zootopia"); local.setResourceStatus("AVAILABLE");
         local.setReleaseDates("2016-03-04(中国大陆/美国)");
         local.setTmdbId(null);
-        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        MovieMetadata sequel = movie("22B3", "疯狂动物城2", 2025);
+        sequel.setSeriesName("疯狂动物城"); sequel.setAliases("疯狂动物城/Zootopia 2");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(sequel, local));
         ResourceLink quark = link("QUARK", "第一部 4K", "https://pan.quark.cn/s/library-regression");
         ResourceLink xunlei = link("XUNLEI", "第一部 1080P", "https://pan.xunlei.com/s/library-regression");
         ResourceLink baidu = link("BAIDU", "第一部原盘", "https://pan.baidu.com/s/library-regression");
@@ -1465,4 +1467,34 @@ class QqBotServiceImplTest {
                 "userFacingTransferError", "provider failure: /private/path secret=not-for-qq");
         assertFalse(unknown.contains("private")); assertFalse(unknown.contains("secret"));
     }
+    @Test
+    void qqGenuineSamePrimaryTitlesStillRequireYearConfirmation() {
+        MovieMetadata first = movie("same-2024", "同名影片测试", 2024);
+        MovieMetadata second = movie("same-2025", "同名影片测试", 2025);
+        ResourceLink firstLink = link("XUNLEI", "旧版", "https://pan.xunlei.com/s/old"); firstLink.setMovieId(first.getId());
+        ResourceLink secondLink = link("QUARK", "新版", "https://pan.quark.cn/s/new"); secondLink.setMovieId(second.getId());
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(first, second));
+        when(movieService.getById(second.getId())).thenReturn(second);
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(firstLink, secondLink));
+        String candidates = service.buildSearchReply("同名影片测试", "qq:203");
+        assertTrue(candidates.contains("请选择要搜索的影片"));
+        assertFalse(candidates.contains(firstLink.getUrl())); assertFalse(candidates.contains(secondLink.getUrl()));
+        String reply = service.buildSearchReply("2", "qq:203");
+        assertTrue(reply.contains(secondLink.getUrl())); assertFalse(reply.contains(firstLink.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService, resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqLibraryCanStillResolveAnUnambiguousAliasWithoutAPrimaryTitleHit() {
+        MovieMetadata local = movie("zootopia-alias", "疯狂动物城", 2016);
+        local.setAliases("动物乌托邦/优兽大都会");
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink manual = link("QUARK", "第一部", "https://pan.quark.cn/s/alias-fixture");
+        manual.setMovieId(local.getId()); manual.setSource("ADMIN_MANUAL");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(manual));
+        String reply = service.buildSearchReply("动物乌托邦", "qq:alias-priority");
+        assertTrue(reply.contains("资源库已有资源")); assertTrue(reply.contains(manual.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService);
+    }
+
 }

@@ -463,6 +463,15 @@ public class QqBotServiceImpl implements IQqBotService {
         matches = matches.stream().filter(movie -> "ACTIVE".equalsIgnoreCase(movie.getStatus())
                 && movie.getDeletedAt() == null && !blockedMovie(movie)).toList();
         if (matches.isEmpty()) return null;
+        if (selected == null) {
+            // A sequel can share the original film's series name or alias. An
+            // exact primary title wins; genuine same-title/year variants still
+            // retain the ambiguity confirmation below.
+            List<MovieMetadata> primaryMatches = matches.stream().filter(movie ->
+                    MovieTitleMatcher.normalizedEquals(movie.getTitleCn(), keyword)
+                            || MovieTitleMatcher.normalizedEquals(movie.getTitleEn(), keyword)).toList();
+            if (!primaryMatches.isEmpty()) matches = primaryMatches;
+        }
         Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
         for (MovieMetadata movie : matches) {
             List<ResourceLink> links = loadLibraryResources(movie.getId(), userKey == null || !userKey.startsWith("web:"));
