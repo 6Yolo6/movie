@@ -372,7 +372,7 @@ public class QqBotServiceImpl implements IQqBotService {
         if (userKey != null && userKey.startsWith("web:")
                 || localCandidates.stream().anyMatch(candidate -> isUpcoming(candidate)
                         || "TRAILER".equalsIgnoreCase(candidate.getResourceStatus()))) {
-            String libraryReply = tryBuildWebLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
+            String libraryReply = tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
             if (libraryReply != null) return libraryReply;
         }
         MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
@@ -453,7 +453,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 buildNoResourceReply(movie, searchNotes), "no resource candidate");
     }
 
-    private String tryBuildWebLibraryReply(String userKey, String keyword,
+    private String tryBuildLibraryReply(String userKey, String keyword,
             MovieSearchCandidate selected, List<MovieMetadata> localCandidates) {
         List<MovieMetadata> matches;
         if (selected != null && hasText(selected.getLocalMovieId())) {
@@ -468,7 +468,7 @@ public class QqBotServiceImpl implements IQqBotService {
         if (matches.isEmpty()) return null;
         Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
         for (MovieMetadata movie : matches) {
-            List<ResourceLink> links = loadWebLibraryResources(movie.getId());
+            List<ResourceLink> links = loadLibraryResources(movie.getId(), userKey == null || !userKey.startsWith("web:"));
             if (!links.isEmpty()) resources.put(movie.getId(), links);
         }
         if (resources.isEmpty()) return null;
@@ -509,9 +509,10 @@ public class QqBotServiceImpl implements IQqBotService {
         return finishSearch(userKey, keyword, "LIBRARY_RESOURCE", movie.getId(), links.size(), reply.toString(), null);
     }
 
-    private List<ResourceLink> loadWebLibraryResources(String movieId) {
+    private List<ResourceLink> loadLibraryResources(String movieId, boolean cloudDiskOnly) {
         List<ResourceLink> stored = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId).eq("audit_status", 1).eq("status", "ACTIVE")
+                .eq(cloudDiskOnly, "type", "DISK")
                 .isNull("deleted_at")
                 .and(query -> query.isNull("link_status").or().eq("link_status", "NORMAL").or().eq("link_status", ""))
                 .orderByDesc("created_at").last("LIMIT 50"));
@@ -520,7 +521,8 @@ public class QqBotServiceImpl implements IQqBotService {
         for (ResourceLink link : stored) {
             if (link == null || !movieId.equals(link.getMovieId()) || !Integer.valueOf(1).equals(link.getAuditStatus())
                     || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
-                    || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())) continue;
+                    || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())
+                    || cloudDiskOnly && !isCloudDiskResource(link)) continue;
             try {
                 java.net.URI uri = java.net.URI.create(link.getUrl().trim());
                 String scheme = firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT);
@@ -530,6 +532,20 @@ public class QqBotServiceImpl implements IQqBotService {
             if (unique.size() == 10) break;
         }
         return List.copyOf(unique.values());
+    }
+
+    // Provider alone is insufficient: P2P metadata archives also use QUARK/XUNLEI shares.
+    private boolean isCloudDiskResource(ResourceLink link) {
+        if (link == null || !"DISK".equalsIgnoreCase(link.getType()) || !hasText(link.getUrl())) {
+            return false;
+        }
+        try {
+            java.net.URI uri = java.net.URI.create(link.getUrl().trim());
+            return Set.of("http", "https").contains(firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT))
+                    && hasText(uri.getHost());
+        } catch (IllegalArgumentException invalidUrl) {
+            return false;
+        }
     }
 
     private String finishSearch(
@@ -588,9 +604,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     "目前仅支持夸克和迅雷自有分享链接。", "unsupported cloud provider");
         }
         List<String> searchNotes = new ArrayList<>();
-        if (isUpcoming(movie)) {
-            String library = tryBuildWebLibraryReply(userKey, context.keyword(), null, List.of(movie));
-            if (library != null) return library;
+        // An explicit follow-up must not loop back to the library reply. A current
+        // video cloud share can override stale release metadata; P2P archives cannot.
+        if (isUpcoming(movie) && loadLibraryResources(movie.getId(), true).isEmpty()) {
             return finishSearch(userKey, context.keyword(), "TRAILER", movie.getId(), 0, buildUpcomingReply(movie), null);
         }
         ResourceCandidates candidates = activeResourceCandidates(userKey);
@@ -1484,6 +1500,8 @@ public class QqBotServiceImpl implements IQqBotService {
         return resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
                 .in("provider", providers)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
                 .orderByDesc("created_at")
@@ -1524,6 +1542,8 @@ public class QqBotServiceImpl implements IQqBotService {
         List<ResourceLink> relatedCandidates = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .ne("movie_id", movie.getId())
                 .in("provider", providers)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("source", "RESOURCE_HUB")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
@@ -1629,6 +1649,8 @@ public class QqBotServiceImpl implements IQqBotService {
         int limit = safeMaxResults(maxResults);
         QueryWrapper<ResourceLink> query = new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
+                .eq("type", "DISK")
+                .isNull("deleted_at")
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE");
         if (providers != null && !providers.isEmpty()) {
@@ -1669,7 +1691,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private boolean isOwnedShare(ResourceLink link) {
-        if (link == null || !OWNED_SHARE_PROVIDERS.contains(
+        if (!isCloudDiskResource(link) || !OWNED_SHARE_PROVIDERS.contains(
                 firstText(link.getProvider(), "").toUpperCase(Locale.ROOT))) {
             return false;
         }
@@ -1737,7 +1759,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private ResourceLink prepareResourceForReply(ResourceLink link) {
-        if (link == null || !hasText(link.getUrl())) {
+        if (!isCloudDiskResource(link)) {
             return null;
         }
         if (isPermanentInvalid(link)) {
