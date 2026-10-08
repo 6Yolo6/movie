@@ -152,7 +152,9 @@
 
 - 迅雷会话同步验收（2026-10-08）：17 项 Node 回归、21 项 Windows 检查及 5 项无网络/无生产挂载的容器写回测试通过。真实标签刷新、不写回验证和正式激活均成功；完整 refresh token 已写入，写回后同账户 Drive API 200/业务结构正常、权限 `10001:10001 / 600`。原计划任务再次执行为 `unchanged`、实际验证成功、退出 0，原两小时及登录触发已恢复，临时凭据叶文件清理为 0 残留；真实 Edge 进程保留。回滚/证据 `E:/gying-tools/releases/xunlei-browser-refresh-20261008`，没有业务容器替换、数据库变更、队列重置或外部发布。
 
-- P2P 停滞修复候选验收（2026-10-08，未部署）：Java 17 后端全量 495 项，0 失败/0 错误/1 项 Redis 环境跳过，打包通过；数据源 39 项通过。无网络、无生产挂载的 MySQL 8.0.46 fixture 验证 8 项通过，覆盖原行不变、大小写独立身份、唯一约束及迁移幂等。工作区密钥扫描 0 findings。内外网首页/正确影片列表入口和源健康只读正常；没有生产迁移、容器替换、任务重置或外部发布。安全门禁仍 11 FAIL，不标记上线或归档恢复成功。
+- P2P 停滞修复候选验收（2026-10-08，候选）：Java 17 后端全量 495 项，0 失败/0 错误/1 项 Redis 环境跳过，打包通过；数据源 39 项通过。无网络、无生产挂载的 MySQL 8.0.46 fixture 验证 8 项通过，覆盖原行不变、大小写独立身份、唯一约束及迁移幂等。工作区密钥扫描 0 findings。内外网首页/正确影片列表入口和源健康只读正常；
+
+- GYING P2P 采集停滞修复上线（2026-10-08，已部署）：代码 `457673a`（失败条目隔离 + 精确来源身份）、`8182cda`（迅雷会话刷新）。backend 由 `gying-qq-library-backend:20261007c` 换为 `gying-p2p-recovery-backend:20261008a`，source 由 `gying-p2p-source:20261006b` 换为 `gying-p2p-recovery-source:20261008a`；容器内 JAR/源码 hash 与候选一致、uid 10001、restart count 0，其余服务未重建，nginx 校验通过。迁移 `migration_source_identity_case_sensitive.sql` 已执行：`movie_source_identity.external_id` 改 `utf8mb4_bin`，唯一键与 2983 行不变，执行前确认无同键大小写变体并另存表级备份；应用回滚保留二进制排序规则。上线后首个 GYING 批次（CSCORE_ANIME）`SUCCEEDED`、`failed/deferred 0`，游标 page1 offset0→offset20；新入库影片触发夸克/迅雷归档 4305/4306 双双 `SUCCEEDED` 并写入 `GYING_P2P_ARCHIVE` 活动资源 4878/4879。未重置历史 58 条失败归档或重放旧转存，backend/source 无 ERROR/Exception，安全门禁仍 11 FAIL，不标记安全通过。发布/回滚材料 `E:/gying-tools/releases/p2p-workflow-recovery-20261008`。
 
 - GYING P2P 采集与网盘归档验收（2026-10-06，已部署）：后端全量 448 项，0 失败/0 错误/1 项 Redis 环境跳过；源镜像真实代码 37 项通过，secret scan 0 findings。电影《第六感》1080P/4K 均有来源中文字幕标注，夸克与迅雷各实存 2 个磁力文本、2 个 torrent，共 84,923 字节；影片路径、文件类型/大小与分享内四个文件均只读核验。自有资源 4333/4334 为 TORRENT、NORMAL、已审核；重复补采仍仅有原两条任务与两条归档资源。夸克实盘 PDS 主机已按精确白名单兼容，重试成功后旧错误已清除；没有下载视频或执行离线下载。内部服务正常，本地/公网 12 项入口检查通过，详情显示归档资源；后端/源直接缺 token 均 401，公网内部路径 404。安全复核仍为 53 PASS / 11 FAIL / 0 UNKNOWN，既有风险集合未变，不标记安全门禁通过。
 

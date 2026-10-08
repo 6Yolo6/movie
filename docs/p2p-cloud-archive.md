@@ -49,3 +49,21 @@
   自身续期、未重置历史归档队列；同步验收见 `xunlei-token-sync.md`。
 - 安全预检仍为 53 PASS / 11 FAIL / 0 UNKNOWN，生产部署及数据库迁移暂停。候选修复未改变线上
   配置、网盘文件或旧失败任务；正式维护前需备份、验证授权/下载/目录链路，再选择明确任务受控重试。
+
+### 2026-10-08 修复上线与首批验收（已部署）
+
+- backend 由 `gying-qq-library-backend:20261007c` 换为 `gying-p2p-recovery-backend:20261008a`，gying-source 由
+  `gying-p2p-source:20261006b` 换为 `gying-p2p-recovery-source:20261008a`；两容器以 `gying`/uid 10001 运行，
+  容器内 JAR/源码 hash 与候选镜像一致，restart count 0，其余服务未重建，nginx 校验通过。代码 `457673a` / `8182cda`。
+- 迁移 `migration_source_identity_case_sensitive.sql` 已执行：`movie_source_identity.external_id` 由
+  `utf8mb4_unicode_ci` 改为 `utf8mb4_bin`，唯一键 `uk_source_identity(source,source_type,external_id,season)`
+  与 2983 行保持（AUTO_INCREMENT 不变）；执行前确认无同键大小写变体并另存表级备份。应用回滚保留该二进制排序规则。
+- 上线后首个 GYING 批次（CSCORE_ANIME，18:00）`SUCCEEDED`，`failed 0 / deferred 0`，游标由
+  `page1 offset0` 前进到 `page1 offset20`；旧代码在同类失败上会整批停在原游标（例如 CSCORE_MOVIE page5 offset40）。
+- 同批次新入库影片「进击的巨人 第三季 Part.2」触发双盘归档：夸克任务 4305、迅雷任务 4306 均 `SUCCEEDED`，
+  各写入一条 `GYING_P2P_ARCHIVE` 活动资源（`resource_link` 4878/4879）；下一影片的夸克/迅雷任务已入队。
+- 未重置历史 58 条失败归档，未重放旧视频转存/发布；backend/gying-source 日志无 ERROR/Exception。
+- 发布目录 `E:/gying-tools/releases/p2p-workflow-recovery-20261008` 保存构建、加密备份、基线、迁移记录、部署与
+  回退脚本（`deploy.ps1` / `rollback.ps1`，回退镜像 `gying-qq-library-backend:20261007c` / `gying-p2p-source:20261006b`）。
+- 待续验：CSCORE_MOVIE / CSCORE_TV 游标在各自整点批次的前进，以及存在失败条目时的 `crawl.deferred` /
+  `itemRetryTaskIds` 隔离重试行为。
