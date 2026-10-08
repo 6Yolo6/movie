@@ -40,7 +40,7 @@
 
 - 元数据/周榜隔离与迅雷落位修复（已部署，2026-10-05）：高频 TMDB/GYING 仅采元数据、海报、磁力/种子链接，普通 Worker 不再消费旧云盘队列；电影/剧集/动漫三个 GYING 本周热门分别配置，默认各 7 天/前 5 部，首次计划 2026-10-12 11:50 左右，新夸克周榜不注册每日追更。迅雷逐文件确认目标位置、整组完整后分享，完整分页找目录，搬移/分享重试保留季目录和文件身份。该隔离能力已于 10 月 5 日上线，现役镜像见下文迁移与恢复基线；原历史追更仍独立运行，历史根目录文件未迁移，详见 `docs/metadata-weekly-transfer.md`。
 
-- 元数据范围续采（已部署，2026-10-04）：TMDB / GYING 支持 1–500 的起止页范围，各榜单独立保存页码与页内进度；完成当前页后翻页，到结束页或空页回到起始页。失败保留批次，手动单页任务不影响自动位置；单实例 backend 重启仅释放中断的自动范围元数据任务，不重置旧任务或转存。旧配置兼容为原页码的单页范围，详见 `docs/resource-hub.md`。
+- 元数据范围续采（已部署，2026-10-04；失败隔离于 10 月 8 日补强）：TMDB / GYING 支持 1–500 的起止页范围，各榜单独立保存页码与页内进度；完成页后翻页，到结束页或空页回到起始页。未持久化的失败保留批次；GYING 已保存到独立 `METADATA_ITEM_RETRY` 的失败可与主游标分离。手动单页任务不影响自动位置，启动恢复不重置旧视频/转存任务。
 - 迅雷自动队列在 SQL 中先排除已达重试上限的 FAILED 任务，再限制数量，按 `updated_at,id` 轮转，避免最早 200 条历史失败挡住新任务；合集入库名称保留明确季范围与清晰度（如「破产姐妹 第1-6季合集 1080p」）。
 - 「补全系列/剩余季」支持电影、剧集及动漫。GYING 按系列名搜索并刷新已有季，TMDB 以真实季信息或官方电影合集补缺；不创建推测续集、不隐式恢复已删除记录。剧集仍只按有效合集的明确季范围复用 URL/提取码（`COLLECTION_BINDING`），电影续集仅补元数据，不扩散资源、不转存或发布。
 
@@ -52,7 +52,7 @@
 - 管理员资源管理对失效或疑似失效的夸克、迅雷资源提供「修复并重分享」；成功后原位更新链接，并在存在 GYING 映射时同步发布。
 - 资源管理编辑实际绑定组：打开编辑器时回显全部已绑定季（同一分享的多个历史根节点合并回显）；影片较多时可输入关键词，从下方全库候选中点选加入（不限同系列，最多显示 24 条并提示其余命中），也支持按影片 ID 或完整标题直接追加。保存时校验 `bindingVersion`，并原位更新所选影片现有的同组资源及历史重复行，仅对新增绑定创建记录，不删除取消勾选的记录，也不改动其他网盘或版本。
 - 「已发现」转存任务支持单条与批量延迟重跑（每天 08:30 Asia/Shanghai 调度）；本轮存在 Authorization 过期或不可用的迅雷任务时整轮跳过，不启动转存；发布成功后继续同步 GYING，重跑数量与间隔由 `RESOURCE_HUB_DISCOVERED_RETRY_*` 控制。
-- GYING 目录自动同步支持热门与综合评分（电影/剧集/动漫）。2026-10-08 只读复核：当前启用三个综合评分来源 `CSCORE_MOVIE/TV/ANIME`，范围 1–15 页，每小时一批、最多 20 条，Resource Hub/Worker/GYING 自动开关均为 true；调度正常但三个批次因条目匹配失败停止推进，见「仍需处理」。
+- GYING 目录自动同步支持热门与综合评分（电影/剧集/动漫）。2026-10-08 已部署停滞修复，当前启用 `CSCORE_MOVIE/TV/ANIME`、范围 1–15 页、每小时一批、最多 20 条；动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）。只观察自然调度，未手动推进游标。
 - GYING 紧凑 `downlist.list` 磁力/种子解析与归档已部署（2026-10-06）：每片当前只选 1080P、4K 各一个版本，优先明确中文字幕且最终至少有一份；没有符合字幕条件的版本不归档，不把国语/配音视作字幕。磁力文本和真实 torrent 元数据由独立 `P2P_ARCHIVE` 队列上传到对应影片的 `磁力种子` 子目录；全部文件确认后才将自有夸克/迅雷分享入库，类型为 TORRENT、名称明确“不含视频”。不调用视频转存或 BT 离线下载，不批量删除历史记录/文件，详见 `docs/p2p-cloud-archive.md`。
 - 资源链接按「影片 + 链接」去重，同一网盘链接可绑定不同季或影片；分享表单支持 URL 自动识别网盘、一键粘贴分享文案与同系列绑定。
 
@@ -93,20 +93,21 @@
 
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
-- 生产安全审计（2026-09-28 复核）：`python tools/security/check_security.py --repo . --probe` 为 53 PASS / 11 FAIL / 0 UNKNOWN；新增 `cache_network_isolation` 检查把此前未计数的 Redis 共享网络风险纳入，原 10 项失败仍在。审计工具不放宽标准，缺失证据为 UNKNOWN，已确认的失败不会被混杂的异常元数据覆盖。
+- 生产安全审计（2026-10-08 续验）：新版 `tools/security/check_security.py --repo . --probe` 为 **59 PASS / 11 FAIL / 0 UNKNOWN**，原 11 项仍全未关闭。比旧 53 PASS 多出的 6 项为预期容器完整性和一个生产网络诊断容器的检查，不是生产整改。新增固定 `G01–G11` 台账，显式 false、缺失/重复证据、Docker 查询失败和 socket 改名挂载不再假通过；详见 `docs/security/hardening-gates.md`。
 - 凭据历史：扫描 1,278 个 Blob 命中 105 条规则（跨版本重复），当前工作区扫描为 0；可能有效的凭据仍需在 provider 侧轮换，历史重写另行审批。
 - 数据中心：2026-09-28 实测 MySQL 8.0.28，`gying` 库 25 张 InnoDB 表；三个应用容器仍共用 `gying_app`，本机现役凭据连接匹配 `gying_app@%`，grants 为 gying 库 SELECT/INSERT/UPDATE/DELETE/EXECUTE。实测 `require_secure_transport=OFF`、`local_infile=OFF`、`secure_file_priv=NULL`、MySQL/MySQL X bind address 均为 `*`。本轮只读，未修改账号、grants 或数据；MCP 只读身份沿用此前验收。
 - `docker compose -f docker-compose.prod.yml config --quiet` 已通过；语法与必需键通过不代表 Firewall、Access、MinIO policy 和恢复门禁通过。
 - Redis 与 PanSou 仅作为可重建依赖对待；2026-09-28 Redis 实际仍仅接入非 internal 的共享 `gying-movie_gying-net`，未迁入目标 `cache-net`，该差异已纳入扫描失败计数；未认证 PING 被拒绝。NapCat 不纳入验收。
 - 2026-09-28 Windows ActiveStore 复核：Public/Private Firewall 已启用、默认入站 Block、出站 Allow；Domain 未启用，本轮未改动。规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 仍在物理接口 `以太网`、`WLAN 2` 阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any）；原非 loopback 监听未改绑。9 月 25 日用户报告同网有线客户端到 `192.168.1.147` 的 6 端口全部 False、网站可打开并注册，仅为历史客户端证据；公网直连/IPv6 入站仍未验收。
+- Cloudflare Access（2026-10-08 只读）：既有受保护 DPAPI Token 文件已存在，Token 验证 active、Zone API 200，但目标账号 Access organization/identity providers/applications API 均 403。不是尚未录入 Token，也未证明 Access 已部署；公网匿名管理页面仍 200、管理员 API 401。需核对目标账号的 Access 权限/资源范围，不重复保存或扩大到所有账号，不在聊天发送凭据。云端应用/策略、OTP 和真实登录验收仍未完成。
 - 状态文档、Skill 与安全报告只记录键名、状态与结论，不记录原始日志、密钥或完整 SQL 输出。
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-08 只读复核）：backend `gying-qq-library-backend:20261007c`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。P2P 恢复候选仅已构建，未部署。
+- 当前在线镜像（2026-10-08 续验）：backend `gying-p2p-recovery-backend:20261008a`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-recovery-source:20261008a`。停滞修复已于 17:29 上线，不再是待部署候选；本次续验未重建生产服务。
 
 - 历史 P2P 部署基线（2026-10-06）：backend `gying-p2p-backend:20261006d`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。本轮仅替换 backend/source；nginx 平滑重载，其余 8 个容器 ID、启动时间、重启计数不变，所有环境与挂载保持。无架构迁移。功能提交 `bdc0ada`、夸克 PDS 上传兼容 `7f907c7`、成功重试错误清理 `228617b`；最新 JAR SHA-256 与测试产物一致。发布材料 `E:/gying-tools/releases/gying-p2p-20261006`；`rollback-d.ps1` 可回退后端到 c，`rollback-b.ps1` 可回退到初版 P2P 采集 a，原周榜镜像也保留。最新检查点 `G:/gying-backups/20261006T115631.510103Z` 的 7 个 age 文件 hash/认证解密通过、SQL 25 表可读；本轮未做恢复演练，也不覆盖远端网盘回滚。
-- 当前 GYING 数据源为 `gying-p2p-source:20261006b`。系列名称搜索、元数据季/部序号与电影 season=0 身份规则保持；新增紧凑 BT 筛选及受保护的种子元数据读取，非 root 身份与原环境配置保持。
+- 当前 GYING 数据源为 `gying-p2p-recovery-source:20261008a`。系列搜索、紧凑 BT 筛选、受保护种子读取与非 root 身份保持；10 月 8 日上线修复补强精确身份和季/Part 解析。`movie_source_identity.external_id` 已为 `utf8mb4_bin`，续验确认 `dWXo`（卡萨布兰卡）与 `dwXo`（蝙蝠侠）各绑定独立影片，身份 season 均为 0；剧集自然批次后复核《大明王朝1566》主表 season 已为 1。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -116,18 +117,20 @@
 
 ## 仍需处理
 
-- **P2P 停滞修复待部署（2026-10-08）**：已完成大小写敏感来源身份、Part/季号解析、超范围旧季号受控修正和独立 `METADATA_ITEM_RETRY` 的代码与测试；候选 backend/source 为 `gying-p2p-recovery-backend:20261008a` / `gying-p2p-recovery-source:20261008a`，尚未替换生产或执行数据库迁移。安全预检仍 53 PASS / 11 FAIL / 0 UNKNOWN，按门禁暂停上线；部署前需验证新备份并处理门禁，迁移仅调整 `movie_source_identity.external_id` 的比较规则，应用回滚保留此兼容性修正。材料在 `E:/gying-tools/releases/p2p-workflow-recovery-20261008`。
-- **历史磁力/种子失败队列（2026-10-08 只读）**：220 条任务覆盖 110 部影片，成功 162（夸克 106、迅雷 56）、失败 58（夸克 4、迅雷 54），失败均耗尽 3 次重试，没有 PENDING/RUNNING 或可自动重试项。最后新归档为 2026-10-07 15:53:22；12 条失败在元数据文件准备、45 条在迅雷影片目录定位、1 条在迅雷种子上传。未重置任务或重放旧视频；早期排查发现过期 access token；同日已修复浏览器同步、补齐 refresh token 并验证只读授权，但未触发 refresh-token 续期或重试历史归档。需先逐阶段验证授权、下载和目录，再按明确任务清单受控恢复，不能把入队或准备文件视作已上传。
+- **失败隔离线上分支待续验（2026-10-08）**：停滞修复与二进制来源身份迁移均已上线；动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）。自然批次尚未触发失败分支，线上隔离重试仍未实证；不为补验收而制造生产错误或重放旧队列。发布/回滚材料在 `E:/gying-tools/releases/p2p-workflow-recovery-20261008`，应用回滚保留二进制身份排序规则。
+- **历史磁力/种子失败队列（2026-10-08 续验）**：截至 2026-10-08 20:03:56+08:00，归档任务 228 条、成功 170、失败 58；既有耗尽重试的 58 条（夸克 4、迅雷 54）未重置。部署后新增归档资源 8 条，其中 8 条活动/已审核/NORMAL；不以资源行代替本轮远端分享内容复验。旧失败阶段及受控恢复约束见 `docs/p2p-cloud-archive.md`；恢复需明确任务清单，不重放历史视频/发布队列。
 
 - 元数据/周榜与迅雷后续验证（2026-10-05）：新版本已按用户授权部署，安全复核仍 53 PASS / 11 FAIL / 0 UNKNOWN，既有安全整改未完成。首次周榜执行仍待观察，未手动触发周榜视频转存/社交发布；GYING 自然补采状态见下条。迅雷根目录 798 个视频中 67 个有精确任务关联，历史迁移需重新核对分享绑定、备份原父目录并确认；夸克 2026-10-04 清单中 656 个发布关联目录保留，56 个未匹配发布仅人工确认、30 个空目录仍有追更，不能直接删除。公网浏览器自动化间歇 ERR_CONNECTION_CLOSED，完整 4 场景未验收；curl IPv4、Tunnel ready 和本地生产页面回归正常。
 
-- **元数据批次停滞与周榜待观察（2026-10-08）**：GYING 最近完成于 11:58:33，但电影停在第 5 页第 41 条、剧集第 2 页第 1 条、动漫第 1 页第 1 条。只读定位到 `dWXo/dwXo` 的大小写身份冲突、《大明王朝1566》旧季号 1566 及两条《进击的巨人》Part/季号冲突；失败保留整批导致反复更新旧资源。候选修复尚未上线，旧进度未手工推进。三个周榜原首次计划仍为 2026-10-12 11:50 左右，未手动触发视频转存或社交发布。
+- **周榜首次计划待观察**：此前记录的三个周榜首次计划为 2026-10-12 11:50 左右，尚未手动触发视频转存或社交发布；GYING 高频元数据停滞已修复，最新自然游标证据见本节首条，不再把旧卡死游标当作当前状态。
 
 - **历史入口故障观察（2026-10-06 复核）**：本轮宿主 backend、nginx、本地/公网首页与影片详情/API 均正常；公网详情已显示磁力种子双盘资源。未更改 Tunnel、代理/DNS、防火墙或凭据，不把一次验收认定为历史间歇故障根因已消除。2026-09-28 遗留的 Resource Hub/Xunlei RUNNING 记录未重置或重放，QQ 与历史视频任务全链路仍需独立验收。
 
 - **GYING 发布写入仍需验收**：单片全账号遍历导致的超时已修复并部署，真实 backend→source 单片查询实测 7.68 秒；目录和搜索正常。新 source 的自动 `/publish` 请求中另观察到 2 条 `RuntimeError` 上游错误，尚不能仅凭通用日志区分重复提交提示、网站拒绝或发布后复核失败。未手工重放发布，真实写入不标记通过；后续需按单条任务核对远端结果后再决定重试，避免重复副作用。
 - **迅雷配图实盘验收**：夸克配图复制已通过失败任务 `1583` 和 `1597` 的受控重试验证；`1583` 在部署后实际走完复制分支（原目录 0 张图/10 个视频，复核为 1 张图/10 个视频），分享令牌有效；迅雷指定位置源图已只读确认存在，但仍需选择可丢弃的迅雷临时资源或采集任务复核真实复制、重试幂等及最终分享可访问。
+- **Access 授权范围待核对**：2026-10-08 已确认本机有可解密的 active Token，Zone API 可读，但目标账号 Access 三类 API 均为 403。用户需核对该目标账号 Access: Apps and Policies 及 Organizations/Identity Providers/Groups 的权限和资源范围；不重复录入现有 Token、不自动轮换/覆盖凭据。调整授权后仍先只读检查组织/OTP/既有应用冲突，再审查创建、真实登录及回退方案。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
+- **端口改绑前置依赖（2026-10-08 复核）**：backend 的 `MINIO_ENDPOINT` 与 source 的 `GYING_MINIO_ENDPOINT` 仍经 `host.docker.internal:9000`；先迁移并验证内部调用，再改绑 MinIO，不能仅凭 alias 已存在操作。现有 Quark root-owned 私有配置卷须单独验证非 root 迁移；四个空数据隔离候选启动成功不覆盖生产卷。Access Token 已 active 但目标账号 API 403，分服务身份/policy 与恢复门禁也未闭环，不批量重建。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
 - **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。已取得用户报告的同网有线电脑 IPv4 测试：上述 6 端口均 False，网站可打开并可注册。该结论仅覆盖该客户端到 `192.168.1.147` 的不可连接结果，未单独排除路由/客户端隔离，也不是公网直连或 IPv6 测试；后两项继续保留待验收。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
@@ -150,9 +153,11 @@
 
 ## 验收
 
+- 安全门禁/P2P 续验工具（2026-10-08）：本次相关 Python 回归 78 项全部通过；四个真实隔离依赖候选均非 root/NNP/启动探针通过，Redis 另验匿名拒绝、认证/Lua 成功与 CONFIG 拒绝；候选无网络、无生产数据或真实凭据，已全部清理，不能替代生产卷/依赖迁移。线上入口 12/12 通过，backend/source 日志无 ERROR/Exception；6 个发布备份文件 hash 重验通过（本轮未解密/恢复）。主工具已在宿主执行，未重建业务容器、改变端口/网络/权限/凭据或手动发布。只读证据与隔离报告在 `tmp/continuation-20261008/`；操作入口见 `docs/security/hardening-gates.md`。
+
 - 迅雷会话同步验收（2026-10-08）：17 项 Node 回归、21 项 Windows 检查及 5 项无网络/无生产挂载的容器写回测试通过。真实标签刷新、不写回验证和正式激活均成功；完整 refresh token 已写入，写回后同账户 Drive API 200/业务结构正常、权限 `10001:10001 / 600`。原计划任务再次执行为 `unchanged`、实际验证成功、退出 0，原两小时及登录触发已恢复，临时凭据叶文件清理为 0 残留；真实 Edge 进程保留。回滚/证据 `E:/gying-tools/releases/xunlei-browser-refresh-20261008`，没有业务容器替换、数据库变更、队列重置或外部发布。
 
-- P2P 停滞修复候选验收（2026-10-08，候选）：Java 17 后端全量 495 项，0 失败/0 错误/1 项 Redis 环境跳过，打包通过；数据源 39 项通过。无网络、无生产挂载的 MySQL 8.0.46 fixture 验证 8 项通过，覆盖原行不变、大小写独立身份、唯一约束及迁移幂等。工作区密钥扫描 0 findings。内外网首页/正确影片列表入口和源健康只读正常；
+- P2P 停滞修复构建验收（2026-10-08，上线前执行）：Java 17 后端全量 495 项，0 失败/0 错误/1 项 Redis 环境跳过；数据源 39 项通过。隔离 MySQL 8.0.46 fixture 的 8 项验证覆盖原行不变、大小写独立身份、唯一约束及迁移幂等。对应版本随后已部署，本次续验未重跑该业务全量测试。
 
 - GYING P2P 采集停滞修复上线（2026-10-08，已部署）：代码 `457673a`（失败条目隔离 + 精确来源身份）、`8182cda`（迅雷会话刷新）。backend 由 `gying-qq-library-backend:20261007c` 换为 `gying-p2p-recovery-backend:20261008a`，source 由 `gying-p2p-source:20261006b` 换为 `gying-p2p-recovery-source:20261008a`；容器内 JAR/源码 hash 与候选一致、uid 10001、restart count 0，其余服务未重建，nginx 校验通过。迁移 `migration_source_identity_case_sensitive.sql` 已执行：`movie_source_identity.external_id` 改 `utf8mb4_bin`，唯一键与 2983 行不变，执行前确认无同键大小写变体并另存表级备份；应用回滚保留二进制排序规则。上线后首个 GYING 批次（CSCORE_ANIME）`SUCCEEDED`、`failed/deferred 0`，游标 page1 offset0→offset20；新入库影片触发夸克/迅雷归档 4305/4306 双双 `SUCCEEDED` 并写入 `GYING_P2P_ARCHIVE` 活动资源 4878/4879。未重置历史 58 条失败归档或重放旧转存，backend/source 无 ERROR/Exception，安全门禁仍 11 FAIL，不标记安全通过。发布/回滚材料 `E:/gying-tools/releases/p2p-workflow-recovery-20261008`。
 

@@ -1,5 +1,16 @@
 # GYing Movie 生产安全审计报告（Docker / Windows）
 
+## 最新续验（2026-10-08）
+
+- 本次生产只读复核仍保留原 11 个 FAIL；新版工具为 **59 PASS / 11 FAIL / 0 UNKNOWN**。多出的 6 PASS 是清单完整性与额外生产网络诊断容器的检查，不是已完成生产整改。固定台账/前置条件见 `docs/security/hardening-gates.md`。
+- 修复审计工具的显式 false 误判、缺失/异常 Docker 证据被漏掉、改名 socket 挂载等边界；相关回归 78 项全部通过。PanSou/Quark/MinIO/Redis 四个固定镜像的隔离非 root/NNP 候选已验证并清理，无网络、无生产挂载/凭据；不覆盖真实卷迁移、provider 或 OpenClaw 链路。
+- Access 并非没有 Token：既有 DPAPI Token 验证 active、Zone API 200，但目标账号 Access organization/providers/apps API 均 403。公网匿名后台仍 200；需核对 Access 权限/账号范围，未创建策略、改 Tunnel 或覆盖凭据。
+- P2P 修复实际在线镜像为 backend/source `gying-p2p-recovery-*:20261008a`；动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）。自然批次尚未触发失败分支，线上隔离重试仍未实证。旧 58 条失败归档未重置。
+- 真实本地/公网入口 12/12 通过，backend/source 未见 ERROR/Exception；既有迅雷计划任务 18:33 result 0，状态文件仍 `10001:10001 / 600`，不以 stat 归因写入者。6 项加密发布备份 hash 重验通过，本轮未重新解密/恢复。
+- 本次未重建生产服务、修改 DB/云端/防火墙/端口/卷权限/凭据，未手动发布或转存。以下为旧日期的历史审计与风险来源；当前状态以本节及 `docs/current-project-status.md` 为准。
+
+## 历史审计基线（2026-09-20 至 2026-09-28）
+
 - 审计日期：2026-09-20
 - 工作区：`D:\gying-movie\movie`
 - 目标架构：Windows + Docker Desktop + Cloudflare Tunnel

@@ -36,18 +36,18 @@
 - 发布目录 `E:/gying-tools/releases/gying-p2p-20261006` 保存构建、备份、真实目录/分享验收、去重和补传清单。只读查询 `resource_hub_task.task_type=P2P_ARCHIVE` 与 `resource_link.source=GYING_P2P_ARCHIVE` 跟进；不要重放旧视频转存、不要清空历史文件或重置所有失败任务。
 
 
-### 2026-10-08 停滞排查与修复准备（未部署）
+### 2026-10-08 上线前排查与修复准备（历史基线）
 
 - 只读复核：220 条归档任务、110 部影片；成功 162 条（夸克 106、迅雷 56），失败 58 条
   （夸克 4、迅雷 54），失败均已耗尽 3 次重试，没有 PENDING/RUNNING 或可自动重试项。
   最后新增原始 P2P 为 2026-10-07 15:46:40，最后新增网盘归档为 15:53:22。
-- 主要入口阻塞为三个 GYING 目录批次反复遇到 ID 大小写/季号匹配失败。待部署修复包含精确来源身份、
+- 主要入口阻塞为三个 GYING 目录批次反复遇到 ID 大小写/季号匹配失败。当时待部署的修复包含精确来源身份、
   季标优先于 Part 标号、独立失败条目队列；详见 `resource-hub.md` 和 `database.md`。
 - 历史归档失败阶段：12 条种子文件准备、45 条迅雷影片目录定位、1 条迅雷种子上传。
   这些阶段计数不是底层原因；不据此自动重置全部任务。早期排查发现过期 access token；同日已修复
   宿主机浏览器会话同步、补齐 refresh token，写回后同账户只读 Drive API 200。未测试 refresh-token
   自身续期、未重置历史归档队列；同步验收见 `xunlei-token-sync.md`。
-- 安全预检仍为 53 PASS / 11 FAIL / 0 UNKNOWN，生产部署及数据库迁移暂停。候选修复未改变线上
+- 上线前安全预检为 53 PASS / 11 FAIL / 0 UNKNOWN，当时曾暂停部署及迁移。该准备阶段未改变线上
   配置、网盘文件或旧失败任务；正式维护前需备份、验证授权/下载/目录链路，再选择明确任务受控重试。
 
 ### 2026-10-08 修复上线与首批验收（已部署）
@@ -65,5 +65,13 @@
 - 未重置历史 58 条失败归档，未重放旧视频转存/发布；backend/gying-source 日志无 ERROR/Exception。
 - 发布目录 `E:/gying-tools/releases/p2p-workflow-recovery-20261008` 保存构建、加密备份、基线、迁移记录、部署与
   回退脚本（`deploy.ps1` / `rollback.ps1`，回退镜像 `gying-qq-library-backend:20261007c` / `gying-p2p-source:20261006b`）。
-- 待续验：CSCORE_MOVIE / CSCORE_TV 游标在各自整点批次的前进，以及存在失败条目时的 `crawl.deferred` /
-  `itemRetryTaskIds` 隔离重试行为。
+- 首批验收未覆盖电影/剧集后续批次与自然失败隔离；最新续验见下节，不再把该阶段缺口视为全部当前状态。
+
+### 2026-10-08 续验与可重复检查
+
+- 动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）；自然批次尚未触发失败分支，线上隔离重试仍未实证。
+- `dWXo` 与 `dwXo` 已分别绑定《卡萨布兰卡》/《蝙蝠侠》，来源身份 season 均为 0；二进制列比较与实际两行共存均已验证。剧集自然批次后另查《大明王朝1566》主表 season 为 1。
+- 截至 2026-10-08 20:03:56+08:00，上线后新增归档资源 8 条，活动/已审核/NORMAL 为 8 条；旧 58 条失败任务未重置，未手动创建转存、分享或社交发布。当前任务 228 条、成功 170、失败 58。
+- `tools/inspect_p2p_progress.py` 使用受保护的非 root MySQL defaults 与 READ ONLY 一致性事务，检查工作量、真实下一游标和持久化重试引用。它不读取/输出原始 payload、URL、错误或凭据，不启动 Worker/重试；未见自然失败时仍明确保留 UNKNOWN。
+- `docs/security/hardening-gates.md` 记录原 11 个失败项、依赖隔离候选、独立部署前置条件与命令。当前线上门禁仍 11 FAIL；四个依赖的隔离启动通过不等于已改生产权限/端口/网络。
+- 本次新增/改造的是宿主验收工具和文档，不需要替换 backend/source；回滚仍使用既有发布目录的旧镜像/脚本，不撤销已兼容的二进制身份迁移。
