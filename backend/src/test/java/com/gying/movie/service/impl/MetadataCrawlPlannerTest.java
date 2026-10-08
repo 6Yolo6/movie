@@ -112,4 +112,20 @@ class MetadataCrawlPlannerTest {
         task.setPayload("bad-json");
         assertThrows(IllegalArgumentException.class, () -> planner.next("GYING", "HITS_MOVIE", 2, 4));
     }
+    @Test void durableIsolatedFailuresAllowProgressWithoutLosingFailureCount() throws Exception {
+        ResourceHubTask task = task(3, 15);
+        planner.completed(task, 30, 15, 2, 2);
+        var next = planner.next("GYING", "HITS_MOVIE", 2, 4);
+        assertEquals(4, next.page()); assertEquals(0, next.offset());
+        var audit = mapper.readTree(task.getPayload()).path("crawl");
+        assertEquals(2, audit.path("failed").asInt());
+        assertEquals(2, audit.path("deferred").asInt());
+    }
+
+    @Test void incompleteDeferralKeepsBatchAndInvalidCountsFailClosed() {
+        ResourceHubTask task = task(3, 15);
+        planner.completed(task, 30, 15, 2, 1);
+        assertEquals(15, planner.next("GYING", "HITS_MOVIE", 2, 4).offset());
+        assertThrows(IllegalArgumentException.class, () -> planner.completed(task, 30, 15, 1, 2));
+    }
 }

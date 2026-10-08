@@ -31,6 +31,7 @@ mysql -uroot -p gying < backend/src/main/resources/db/schema.sql
 15. `migration_gying_owned_share_source.sql`
 16. `migration_social_publishing.sql`
 17. `migration_resource_form.sql`
+18. `migration_source_identity_case_sensitive.sql`
 
 `migration_resource_reports.sql` 会增加资源质量字段、拒绝原因字段和 `resource_report` 举报表。
 `migration_resource_hub.sql` 会增加 Resource Hub 所需的 TMDB 标识、资源追踪字段和任务表。
@@ -44,3 +45,18 @@ mysql -uroot -p gying < backend/src/main/resources/db/schema.sql
 `migration_qq_automation.sql` 创建 QQBot 搜索/频道审计表及每日推荐配置默认值；`migration_resource_form.sql` 创建资源表单快速参数配置。两者都应在已有数据库中先检查表、索引和默认值，再执行。
 
 项目没有 Flyway/Liquibase 和可靠迁移历史表。已有数据库必须先比较表、字段、索引、默认值和中文注释，再按需执行增量 SQL；不能按文件名盲目重放。`migration_resource_hub.sql` 含存储过程和 `DELIMITER`，应通过 MySQL CLI 整文件执行。
+
+
+## 外部来源 ID 大小写修正（2026-10-08，待部署）
+
+GYING ID 是不透明标识，`dWXo` 与 `dwXo` 不能合并。增量迁移仅将
+`movie_source_identity.external_id` 改为 `utf8mb4_bin`；不改写 ID 值、不修改
+`movie_metadata.id` 或其他关联列。新库建表脚本采用相同列规则。
+
+执行前必须保存并验证加密备份，暂停元数据写入，核对列定义、原行内容和唯一索引。
+执行后检查原数据不变、精确查询、两种大小写可分别入库及相同 ID 仍受唯一约束；
+只读或 fixture 验证不等于生产已迁移。代码同时对查询和源站导入增加大小写冲突保护，
+迁移缺失时失败留审，不覆盖另一部影片。
+
+应用回滚保留此列修正；不要自动回滚到不区分大小写，否则新出现的合法大小写身份
+可能无法通过旧唯一索引。恢复旧比较规则属于需重新审查数据的单独维护操作。

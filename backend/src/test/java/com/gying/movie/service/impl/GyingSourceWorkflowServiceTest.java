@@ -78,6 +78,8 @@ class GyingSourceWorkflowServiceTest {
         panSouClient = mock(PanSouClient.class);
         movieService = mock(IMovieMetadataService.class);
         sourceIdentityService = mock(IMovieSourceIdentityService.class);
+        when(sourceIdentityService.save(any(MovieSourceIdentity.class))).thenReturn(true);
+        when(sourceIdentityService.updateById(any(MovieSourceIdentity.class))).thenReturn(true);
         resourceLinkService = mock(IResourceLinkService.class);
         discoveryService = mock(IResourceDiscoveryResultService.class);
         transferTaskService = mock(IQuarkTransferTaskService.class);
@@ -669,7 +671,8 @@ class GyingSourceWorkflowServiceTest {
         assertEquals(0, result.get("failed"));
         assertEquals(0, result.get("directResourceLinks"));
         assertEquals(1, result.get("directResourceFailures"));
-        assertTrue(result.get("errors").toString().contains("P2P resource was not persisted"));
+        assertTrue(result.get("errors").toString().contains("IllegalStateException"));
+        assertTrue(result.get("failedItems").toString().contains("stage=P2P"));
         verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
                 xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
     }
@@ -955,7 +958,11 @@ class GyingSourceWorkflowServiceTest {
         MovieSourceIdentity gying = new MovieSourceIdentity(); gying.setMovieId(movie.getId());
         gying.setSource("GYING"); gying.setSourceType("tv"); gying.setExternalId("DDBy");
         when(movieService.getById(movie.getId())).thenReturn(movie);
-        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(gying);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("TMDB") ? null : gying;
+        });
         when(gyingSourceClient.post(eq("/poster"), any())).thenReturn(Map.of("status", "UPDATED", "posterUrl", "tv/DDBy/384.avif"));
         assertEquals("tv/DDBy/384.avif", service.repairMoviePoster(movie.getId()).get("posterUrl"));
         assertEquals(103516L, movie.getTmdbId());
@@ -1017,5 +1024,95 @@ class GyingSourceWorkflowServiceTest {
         movie.setResourceStatus(resourceStatus);
         movie.setStatus("ACTIVE");
         return movie;
+    }
+    @Test
+    void caseInsensitivePrimaryIdHitNeverReusesAnotherMovie() {
+        MovieMetadata batman = movie("dwXo", "蝙蝠侠", "mv", "AVAILABLE"); batman.setYear(1989);
+        MovieMetadata casablanca = movie("tmdb_movie_289", "卡萨布兰卡", "mv", "AVAILABLE"); casablanca.setYear(1943);
+        casablanca.setActors(List.of("亨弗莱·鲍嘉"));
+        when(gyingSourceClient.get("/movie/mv/dWXo")).thenReturn(Map.of("mid", "dWXo", "title", "卡萨布兰卡",
+                "year", 1942, "actors", List.of("亨弗莱·鲍嘉")));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=5&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "dWXo", "title", "卡萨布兰卡", "year", 1942))));
+        when(movieService.getById("dWXo")).thenReturn(batman); // production CI primary key comparison
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(casablanca));
+        when(gyingSourceClient.get("/resources/mv/dWXo")).thenReturn(Map.of("resources", List.of()));
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 5, 20);
+        assertEquals(1, result.get("linked")); assertEquals(0, result.get("failed"));
+        assertEquals(List.of("tmdb_movie_289"), result.get("movieIds"));
+        ArgumentCaptor<MovieSourceIdentity> identity = ArgumentCaptor.forClass(MovieSourceIdentity.class);
+        verify(sourceIdentityService).save(identity.capture());
+        assertEquals("dWXo", identity.getValue().getExternalId());
+        assertEquals("tmdb_movie_289", identity.getValue().getMovieId());
+        ArgumentCaptor<Wrapper<MovieSourceIdentity>> queries = ArgumentCaptor.forClass(Wrapper.class);
+        verify(sourceIdentityService, org.mockito.Mockito.atLeast(2)).getOne(queries.capture(), eq(false));
+        assertTrue(queries.getAllValues().stream().anyMatch(q -> q.getSqlSegment().contains("BINARY external_id")));
+        verify(gyingSourceClient, never()).post(anyString(), anyMap());
+    }
+
+    @Test
+    void impossibleLegacySeasonIsRepairedOnlyAfterStrictPrimaryTitleAndYearMatch() {
+        MovieMetadata movie = movie("jP3n", "大明王朝1566", "tv", "AVAILABLE");
+        movie.setYear(2007); movie.setSeason(1566);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=cscore&page=2&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "tv", "mid", "jP3n", "title", "大明王朝1566", "year", 2007, "season", 1))));
+        when(movieService.getById("jP3n")).thenReturn(movie);
+        when(movieService.updateById(any(MovieMetadata.class))).thenReturn(true);
+        when(gyingSourceClient.get("/resources/tv/jP3n")).thenReturn(Map.of("resources", List.of()));
+        var result = service.syncCatalogMetadata("CSCORE_TV", 2, 20);
+        assertEquals(1, result.get("linked")); assertEquals(0, result.get("failed"));
+        ArgumentCaptor<MovieMetadata> patch = ArgumentCaptor.forClass(MovieMetadata.class);
+        verify(movieService).updateById(patch.capture());
+        assertEquals("jP3n", patch.getValue().getId()); assertEquals(1, patch.getValue().getSeason());
+        org.junit.jupiter.api.Assertions.assertNull(patch.getValue().getTitleCn());
+    }
+
+    @Test
+    void realSeasonMismatchIsRetainedAsAnIsolatedReviewItemNotOverwritten() {
+        MovieMetadata movie = movie("SERIES1", "同一剧", "tv", "AVAILABLE"); movie.setYear(2020); movie.setSeason(3);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "tv", "mid", "SERIES1", "title", "同一剧", "year", 2020, "season", 2))));
+        when(movieService.getById("SERIES1")).thenReturn(movie);
+        var result = service.syncCatalogMetadata("CSCORE_TV", 1, 20);
+        assertEquals(1, result.get("failed"));
+        assertTrue(result.get("failedItems").toString().contains("mid=SERIES1"));
+        assertTrue(result.get("failedItems").toString().contains("stage=METADATA"));
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
+        verify(sourceIdentityService, never()).save(any(MovieSourceIdentity.class));
+    }
+
+    @Test
+    void failedIdentityPersistenceCannotMasqueradeAsSuccessfulMetadataSync() {
+        MovieMetadata movie = movie("CASE1", "测试电影", "mv", "AVAILABLE"); movie.setYear(2020);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "CASE1", "title", "测试电影", "year", 2020))));
+        when(movieService.getById("CASE1")).thenReturn(movie);
+        when(sourceIdentityService.save(any(MovieSourceIdentity.class))).thenReturn(false);
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 1, 20);
+        assertEquals(1, result.get("failed")); assertEquals(0, result.get("linked"));
+        verify(gyingSourceClient, never()).get("/resources/mv/CASE1");
+    }
+    @Test
+    void nearYearSameTitleWithoutIndependentEvidenceRequiresReviewRatherThanDuplicateIngest() {
+        MovieMetadata movie = movie("canonical", "同名电影", "mv", "AVAILABLE"); movie.setYear(1943);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=1&limit=20"))
+                .thenReturn(Map.of("items", List.of(Map.of("typeCode", "mv", "mid", "SOURCE1", "title", "同名电影", "year", 1942))));
+        when(gyingSourceClient.get("/movie/mv/SOURCE1")).thenReturn(Map.of("mid", "SOURCE1", "title", "同名电影", "year", 1942));
+        var result = service.syncCatalogMetadata("CSCORE_MOVIE", 1, 20);
+        assertEquals(1, result.get("failed"));
+        verify(gyingSourceClient, never()).post(eq("/ingest"), anyMap());
+        verify(sourceIdentityService, never()).save(any(MovieSourceIdentity.class));
+    }
+
+    @Test
+    void isolatedRetryRefreshesStaleCandidateFromTheExactSource() {
+        MovieMetadata movie = movie("jP3n", "大明王朝1566", "tv", "AVAILABLE"); movie.setYear(2007); movie.setSeason(1);
+        when(movieService.getById("jP3n")).thenReturn(movie);
+        when(gyingSourceClient.get("/movie/tv/jP3n")).thenReturn(Map.of("mid", "jP3n", "title", "大明王朝1566", "year", 2007, "season", 1));
+        when(gyingSourceClient.get("/resources/tv/jP3n")).thenReturn(Map.of("resources", List.of()));
+        service.retryCatalogItem(Map.of("typeCode", "tv", "mid", "jP3n", "title", "old title", "year", 1900, "season", 99));
+        verify(gyingSourceClient).get("/resources/tv/jP3n");
+        verify(gyingSourceClient, never()).post(eq("/ingest"), anyMap());
     }
 }

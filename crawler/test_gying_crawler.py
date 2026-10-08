@@ -6,6 +6,7 @@ from crawler.gying_crawler import (
     parse_season,
     find_series_seasons,
     save_source_identity,
+    ingest_movie,
     list_my_pan_resources,
     gying_search_type,
     normalize_search_mode,
@@ -73,6 +74,13 @@ class GyingSearchParserTest(unittest.TestCase):
             ("星际迷航：奇异新世界 第四季", "tv", ("星际迷航：奇异新世界", 4)),
             ("示例动漫 Season 2", "ac", ("示例动漫", 2)),
             ("1917", "mv", ("1917", 1)),
+            ("大明王朝1566", "tv", ("大明王朝1566", 1)),
+            ("进击的巨人 第三季 Part.2", "ac", ("进击的巨人", 3)),
+            ("进击的巨人 最终季 Part.1", "ac", ("进击的巨人", None)),
+            ("Attack on Titan Season 3 Part.2", "ac", ("Attack on Titan", 3)),
+            ("Attack on Titan The Final Season Part.1", "ac", ("Attack on Titan", None)),
+            ("示例剧 Part.2", "tv", ("示例剧 Part.2", None)),
+            ("示例剧 第二十一季", "tv", ("示例剧", 21)),
             ("银翼杀手2049", "mv", ("银翼杀手2049", 1)),
         ]:
             self.assertEqual(expected, parse_season(title, kind))
@@ -94,12 +102,42 @@ class GyingSearchParserTest(unittest.TestCase):
     def test_movie_installment_number_does_not_change_identity_season(self):
         from unittest.mock import MagicMock
         db = MagicMock()
+        db.cursor.return_value.__enter__.return_value.fetchone.return_value = None
         save_source_identity(db, "canonical", "GYING", "mv", "source", 3)
         values = db.cursor.return_value.__enter__.return_value.execute.call_args.args[1]
         self.assertEqual(0, values[4])
         save_source_identity(db, "canonical", "GYING", "tv", "source", 3)
         values = db.cursor.return_value.__enter__.return_value.execute.call_args.args[1]
         self.assertEqual(3, values[4])
+
+    def test_identity_guard_rejects_case_collision_and_other_canonical(self):
+        from unittest.mock import MagicMock
+        for external, canonical in [("dwXo", "batman"), ("dWXo", "other-canonical")]:
+            db = MagicMock()
+            cursor = db.cursor.return_value.__enter__.return_value
+            cursor.fetchone.return_value = {"external_id": external, "movie_id": canonical}
+            with self.assertRaises(ValueError):
+                save_source_identity(db, "casablanca", "GYING", "mv", "dWXo", 0)
+            self.assertEqual(1, cursor.execute.call_count)  # no upsert that could remap Batman
+
+    @patch("crawler.gying_crawler.fetch_movie_metadata")
+    def test_ingest_never_overwrites_case_collision_or_revives_deleted_movie(self, metadata):
+        from unittest.mock import MagicMock
+        metadata.return_value = {"title": "卡萨布兰卡", "year": 1942}
+        for existing in [
+            {"id": "dwXo", "status": "ACTIVE", "deleted_at": None},
+            {"id": "dWXo", "status": "DELETED", "deleted_at": None},
+            {"id": "dWXo", "status": "ACTIVE", "deleted_at": "2026-01-01"},
+        ]:
+            db = MagicMock()
+            cursor = db.cursor.return_value.__enter__.return_value
+            cursor.fetchone.return_value = existing
+            with self.assertRaises(ValueError):
+                ingest_movie(db, "mv", "dWXo", upload_poster=False, target_movie_id="dWXo", include_resources=False)
+            self.assertEqual(1, cursor.execute.call_count)
+            self.assertIn("FOR UPDATE", cursor.execute.call_args.args[0])
+            db.rollback.assert_called_once()
+            db.commit.assert_not_called()
 
     def test_preserves_existing_owned_resource_source(self):
         self.assertEqual(

@@ -174,35 +174,37 @@ def upload_image_by_pattern(type_code, movie_id):
 CN_MAP = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
 
 def parse_season(text, type_code=None):
-    if not text: return None, None
-    # Explicit English season and numbered installments, including a subtitle.
-    english = re.search(r'^(.*?)\s+(?:Season\s*|S)(\d{1,2})(?:\s|$|[:：])', text, re.I)
+    if not text:
+        return None, None
+    text = text.strip()
+    # A season marker outranks a Part suffix: 第三季 Part.2 is season 3, not 2.
+    match = re.search(r'^(.*?)\s*第([0-9一二三四五六七八九十]+)季', text)
+    if match and match.group(1).strip():
+        token = match.group(2)
+        if token.isdigit():
+            value = int(token)
+        elif '十' in token:
+            tens, _, units = token.partition('十')
+            value = (CN_MAP.get(tens, 1) if tens else 1) * 10 + CN_MAP.get(units, 0)
+        else:
+            value = CN_MAP.get(token, 0)
+        if 0 < value <= 99:
+            return match.group(1).strip(), value
+    english = re.search(r'^(.*?)\s+(?:Season\s*|S)(\d{1,2})(?=\s|$|[:：])', text, re.I)
     if english and english.group(1).strip() and int(english.group(2)) > 0:
         return english.group(1).strip(), int(english.group(2))
+    # Final/Part labels do not identify a season ordinal. Keep it unknown rather
+    # than comparing an invented season 1/2 with a verified local season.
+    final = re.search(r'^(.*?)\s*(?:最终季|最終季|The\s+Final\s+Season|Final\s+Season)', text, re.I)
+    if final:
+        return final.group(1).strip() or text, None
+    if re.search(r'(?i)(?<![a-z])part\s*\.?\s*\d+', text):
+        return text, None
     installment = re.search(r'^(.*?[^\d\s])\s*(\d{1,2})(?:\s*[:：]\s*.+)?$', text)
     if installment and len(installment.group(1).strip()) >= 2 and 0 < int(installment.group(2)) <= 99:
         return installment.group(1).strip(), int(installment.group(2))
-    # 1. Digits: "第4季"
-    match = re.search(r'^(.*?)\s*第(\d+)季', text)
-    if match:
-        return match.group(1).strip(), int(match.group(2))
-    
-    # 2. Chinese: "第五季"
-    match_cn = re.search(r'^(.*?)\s*第([一二三四五六七八九十]+)季', text)
-    if match_cn:
-        num_str = match_cn.group(2)
-        val = 0
-        if len(num_str) == 1: val = CN_MAP.get(num_str, 0)
-        elif len(num_str) == 2:
-            if num_str[0] == '十': val = 10 + CN_MAP.get(num_str[1], 0)
-            elif num_str[1] == '十': val = CN_MAP.get(num_str[0], 0) * 10
-        elif len(num_str) == 3: # 二十一
-            val = CN_MAP.get(num_str[0],0)*10 + CN_MAP.get(num_str[2],0)
-        
-        return match_cn.group(1).strip(), val
-    
-    # 4. Default: Treat as Season 1 of itself
-    return text.strip(), 1
+    # Four-digit years/numbers in a title (大明王朝1566, 1984) are not seasons.
+    return text, 1
 
 def list_get(values, index, default=""):
     if not isinstance(values, list) or index >= len(values):
@@ -1595,6 +1597,16 @@ def save_source_identity(db, movie_id, source, source_type, external_id, season=
         season = 0
     try:
         with db.cursor() as cursor:
+            # Intentionally use the column's current comparison, then compare exact values.
+            # This also fails closed before the case-sensitive migration has been applied.
+            cursor.execute(
+                "SELECT movie_id, external_id FROM movie_source_identity "
+                "WHERE source=%s AND source_type=%s AND external_id=%s AND season=%s FOR UPDATE",
+                (source, source_type, str(external_id), int(season or 0)),
+            )
+            existing = cursor.fetchone()
+            if existing and (existing["external_id"] != str(external_id) or existing["movie_id"] != movie_id):
+                raise ValueError("Source identity collision requires review")
             cursor.execute(
                 """
                 INSERT INTO movie_source_identity (
@@ -1692,6 +1704,11 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
 
     try:
         with db.cursor() as cursor:
+            cursor.execute("SELECT id, status, deleted_at FROM movie_metadata WHERE id=%s FOR UPDATE", (movie_id,))
+            existing = cursor.fetchone()
+            if existing and (existing["id"] != movie_id or existing.get("deleted_at") is not None
+                             or existing.get("status") == "DELETED"):
+                raise ValueError("Local movie identity collision or deleted movie requires review")
             cursor.execute(sql_movie, values)
         for resource in resources:
             resource_url = (resource.get("url") or "").strip()

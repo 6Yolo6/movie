@@ -252,67 +252,32 @@ public class GyingSourceWorkflowService {
         Set<String> resourceDiscoveryMovieIds = new LinkedHashSet<>();
         Set<String> insertedMovieIds = new LinkedHashSet<>();
         List<String> errors = new ArrayList<>();
+        List<Map<String, Object>> failedItems = new ArrayList<>();
 
         for (Map<String, Object> candidate : candidates) {
             String mid = stringValue(candidate.get("mid"));
             try {
-                String title = stringValue(candidate.get("title"));
-                Integer year = integerValue(candidate.get("year"));
-                Integer season = "mv".equals(typeCode) ? null : integerValue(candidate.get("season"));
-                MovieMetadata existing = resolveLocalMovie(typeCode, mid, title, year);
-                if (existing != null) {
-                    GyingMetadataMatcher.SourceMetadata metadata = new GyingMetadataMatcher.SourceMetadata(
-                            typeCode, title, year, season, List.of(), List.of());
-                    GyingMetadataMatcher.MatchEvidence evidence = GyingMetadataMatcher.score(existing, metadata);
-                    if (!evidence.autoMatch()) {
-                        throw new IllegalStateException("GYING metadata did not pass strict local matching");
-                    }
-                    saveIdentity(existing.getId(), "GYING", typeCode, required(mid, "GYING movie id"), season,
-                            evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
-                    movieIds.add(existing.getId());
-                    if (!hasActiveDiskResource(existing.getId())) {
-                        resourceDiscoveryMovieIds.add(existing.getId());
-                    }
-                    try {
-                        directResourceLinks += syncGyingDirectResources(
-                                existing.getId(), typeCode, mid);
-                    } catch (Exception resourceError) {
-                        directResourceFailures++;
-                        if (errors.size() < 10) {
-                            errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
-                        }
-                    }
+                CatalogMovie resolved = resolveCatalogMovie(typeCode, candidate);
+                String movieId = resolved.movieId();
+                movieIds.add(movieId);
+                if (resolved.inserted()) {
+                    inserted++;
+                    insertedMovieIds.add(movieId);
+                } else {
                     linked++;
-                    continue;
                 }
-
-                String targetMovieId = gyingMovieId(typeCode, required(mid, "GYING movie id"));
-                gyingSourceClient.post("/ingest", Map.of(
-                        "typeCode", typeCode,
-                        "mid", mid,
-                        "targetMovieId", targetMovieId,
-                        "uploadPoster", true,
-                        "includeResources", false));
-                if (movieService.getById(targetMovieId) == null) {
-                    throw new IllegalStateException("GYING metadata was not saved: " + targetMovieId);
-                }
+                if (resolved.inserted() || !hasActiveDiskResource(movieId)) resourceDiscoveryMovieIds.add(movieId);
                 try {
-                    directResourceLinks += syncGyingDirectResources(targetMovieId, typeCode, mid);
+                    directResourceLinks += syncGyingDirectResources(movieId, typeCode, mid);
                 } catch (Exception resourceError) {
                     directResourceFailures++;
-                    if (errors.size() < 10) {
-                        errors.add(firstText(mid, "unknown") + " P2P: " + safeText(resourceError.getMessage()));
-                    }
+                    failedItems.add(catalogFailure(typeCode, candidate, "P2P", resourceError));
+                    if (errors.size() < 10) errors.add(mid + " P2P: " + resourceError.getClass().getSimpleName());
                 }
-                movieIds.add(targetMovieId);
-                insertedMovieIds.add(targetMovieId);
-                resourceDiscoveryMovieIds.add(targetMovieId);
-                inserted++;
             } catch (Exception error) {
                 failed++;
-                if (errors.size() < 10) {
-                    errors.add(firstText(mid, "unknown") + ": " + safeText(error.getMessage()));
-                }
+                failedItems.add(catalogFailure(typeCode, candidate, "METADATA", error));
+                if (errors.size() < 10) errors.add(firstText(mid, "unknown") + ": " + error.getClass().getSimpleName());
             }
         }
         Map<String, Object> result = new LinkedHashMap<>();
@@ -330,7 +295,114 @@ public class GyingSourceWorkflowService {
         result.put("directResourceFailures", directResourceFailures);
         result.put("failed", failed);
         result.put("errors", errors);
+        result.put("failedItems", failedItems);
         return result;
+    }
+
+    private record CatalogMovie(String movieId, boolean inserted) {}
+
+    /** Same idempotent metadata/P2P path for bounded, isolated item retries. */
+    public void retryCatalogItem(Map<String, Object> candidate) {
+        String typeCode = normalizeTypeCode(stringValue(candidate.get("typeCode")));
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        if (hasText(stringValue(snapshot.get("mid"))) && !mid.equals(stringValue(snapshot.get("mid")))) {
+            throw new IllegalStateException("Retry source identity changed");
+        }
+        Map<String, Object> fresh = new LinkedHashMap<>();
+        fresh.put("typeCode", typeCode); fresh.put("mid", mid);
+        for (String field : List.of("title", "year", "season")) if (snapshot.get(field) != null) fresh.put(field, snapshot.get(field));
+        CatalogMovie movie = resolveCatalogMovie(typeCode, fresh);
+        syncGyingDirectResources(movie.movieId(), typeCode, mid);
+    }
+
+    private CatalogMovie resolveCatalogMovie(String typeCode, Map<String, Object> candidate) {
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        String title = required(stringValue(candidate.get("title")), "GYING movie title");
+        Integer year = integerValue(candidate.get("year"));
+        Integer season = "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season")));
+        MovieMetadata existing = resolveLocalMovie(typeCode, mid, title, year);
+        CatalogMatch detailed = existing == null ? resolveNearYearCatalogMovie(typeCode, mid, title, year) : null;
+        if (detailed != null) existing = detailed.movie();
+        if (existing != null) {
+            var metadata = new GyingMetadataMatcher.SourceMetadata(typeCode, title, year, season, List.of(), List.of());
+            var evidence = detailed == null ? GyingMetadataMatcher.score(existing, metadata) : detailed.evidence();
+            if (!evidence.autoMatch()) {
+                detailed = resolveNearYearCatalogMovie(typeCode, mid, title, year);
+                if (detailed != null && existing.getId().equals(detailed.movie().getId())) evidence = detailed.evidence();
+            }
+            if (!evidence.autoMatch()) throw new IllegalStateException("GYING metadata did not pass strict local matching");
+            saveIdentity(existing.getId(), "GYING", typeCode, mid, season,
+                    evidence.score(), "STRICT_CATALOG_METADATA", "AUTO", evidence.reasons());
+            // Only repair impossible legacy ordinals after exact primary title + year validation.
+            // A legitimate season conflict remains a review item, never silently overwritten.
+            if (season != null && existing.getSeason() != null && existing.getSeason() > 99
+                    && title.equals(existing.getTitleCn()) && java.util.Objects.equals(year, existing.getYear())
+                    && year != null) {
+                MovieMetadata patch = new MovieMetadata();
+                patch.setId(existing.getId()); patch.setSeason(season);
+                if (!movieService.updateById(patch)) throw new IllegalStateException("Legacy season correction was not saved");
+                existing.setSeason(season);
+            }
+            return new CatalogMovie(existing.getId(), false);
+        }
+        String targetMovieId = gyingMovieId(typeCode, mid);
+        MovieMetadata target = movieService.getById(targetMovieId);
+        if (target != null && !targetMovieId.equals(target.getId())) {
+            throw new IllegalStateException("Case-sensitive local movie identity collision requires review");
+        }
+        gyingSourceClient.post("/ingest", Map.of("typeCode", typeCode, "mid", mid,
+                "targetMovieId", targetMovieId, "uploadPoster", true, "includeResources", false));
+        MovieMetadata saved = movieService.getById(targetMovieId);
+        if (saved == null || !targetMovieId.equals(saved.getId())) throw new IllegalStateException("GYING metadata was not saved");
+        return new CatalogMovie(targetMovieId, true);
+    }
+
+    private record CatalogMatch(MovieMetadata movie, GyingMetadataMatcher.MatchEvidence evidence) {}
+
+    /** A one-year release-date discrepancy needs cast/director evidence, not a lower match threshold. */
+    private CatalogMatch resolveNearYearCatalogMovie(String typeCode, String mid, String title, Integer year) {
+        if (!"mv".equals(typeCode) || year == null) return null;
+        List<MovieMetadata> candidates = movieService.list(new QueryWrapper<MovieMetadata>()
+                .ne("status", "DELETED").isNull("deleted_at")
+                .and(query -> query.eq("title_cn", title).or().eq("title_en", title))
+                .between("year", year - 1, year + 1).last("LIMIT 30")).stream()
+                .filter(movie -> movie.getYear() != null && Math.abs(movie.getYear() - year) <= 1
+                        && GyingMetadataMatcher.typeCompatible(movie.getCategory(), typeCode)
+                        && (MovieTitleMatcher.normalizedEquals(movie.getTitleCn(), title)
+                            || MovieTitleMatcher.normalizedEquals(movie.getTitleEn(), title)))
+                .toList();
+        if (candidates.isEmpty()) return null;
+        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
+        var source = sourceMetadata(typeCode, snapshot);
+        if (!MovieTitleMatcher.normalizedEquals(title, source.title()) || !year.equals(source.year())
+                || (hasText(stringValue(snapshot.get("mid"))) && !mid.equals(stringValue(snapshot.get("mid"))))) {
+            throw new IllegalStateException("Near-year source evidence requires review");
+        }
+        List<CatalogMatch> scored = candidates.stream()
+                .map(movie -> new CatalogMatch(movie, GyingMetadataMatcher.score(movie, source)))
+                .sorted((left, right) -> Integer.compare(right.evidence().score(), left.evidence().score())).toList();
+        CatalogMatch best = scored.get(0);
+        if (!best.evidence().autoMatch()
+                || !(best.evidence().reasons().contains("DIRECTOR") || best.evidence().reasons().contains("ACTOR"))
+                || (scored.size() > 1 && best.evidence().score() - scored.get(1).evidence().score() < 10)) {
+            throw new IllegalStateException("Near-year canonical match requires review");
+        }
+        return best;
+    }
+
+    private Map<String, Object> catalogFailure(String typeCode, Map<String, Object> candidate, String stage, Exception error) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("typeCode", typeCode);
+        item.put("mid", trim(stringValue(candidate.get("mid")), 100));
+        item.put("title", trim(stringValue(candidate.get("title")), 255));
+        if (integerValue(candidate.get("year")) != null) item.put("year", integerValue(candidate.get("year")));
+        if (integerValue(candidate.get("season")) != null) item.put("season", integerValue(candidate.get("season")));
+        item.put("stage", stage);
+        // Exception messages can include authenticated upstream URLs. Persist only a bounded category.
+        item.put("errorCategory", error.getClass().getSimpleName());
+        return item;
     }
 
     public Map<String, Object> syncMovieP2pResources(String movieId) {
@@ -1177,7 +1249,8 @@ public class GyingSourceWorkflowService {
         String safeType = normalizeTypeCode(typeCode);
         String safeMid = required(mid, "GYING movie id");
         MovieSourceIdentity known = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
-                .eq("source", "GYING").eq("source_type", safeType).eq("external_id", safeMid).last("LIMIT 1"), false);
+                .eq("source", "GYING").eq("source_type", safeType).eq("external_id", safeMid)
+                .apply("BINARY external_id = BINARY {0}", safeMid).last("LIMIT 1"), false);
         MovieMetadata owned = known == null ? movieService.getById(safeMid) : movieService.getById(known.getMovieId());
         if (owned != null && (owned.getDeletedAt() != null || "DELETED".equalsIgnoreCase(owned.getStatus())))
             throw new IllegalArgumentException("Deleted canonical metadata is not restored by series completion");
@@ -2298,6 +2371,7 @@ public class GyingSourceWorkflowService {
                     .eq("source", "GYING")
                     .eq("source_type", normalizedType)
                     .eq("external_id", mid)
+                    .apply("BINARY external_id = BINARY {0}", mid)
                     .in("match_status", List.of("AUTO", "CONFIRMED"))
                     .orderByDesc("confidence")
                     .last("LIMIT 1"), false);
@@ -2309,7 +2383,7 @@ public class GyingSourceWorkflowService {
             }
         }
         MovieMetadata byId = hasText(mid) ? movieService.getById(mid) : null;
-        if (byId != null && byId.getDeletedAt() == null && !"DELETED".equalsIgnoreCase(byId.getStatus())) {
+        if (byId != null && mid.equals(byId.getId()) && byId.getDeletedAt() == null && !"DELETED".equalsIgnoreCase(byId.getStatus())) {
             return byId;
         }
         if (!hasText(title)) {
@@ -2622,9 +2696,13 @@ public class GyingSourceWorkflowService {
                 .eq("source", source)
                 .eq("source_type", sourceType)
                 .eq("external_id", externalId)
+                .apply("BINARY external_id = BINARY {0}", externalId)
                 .eq("season", safeSeason)
                 .last("LIMIT 1"), false);
         LocalDateTime now = LocalDateTime.now();
+        if (identity != null && !externalId.equals(identity.getExternalId())) {
+            throw new IllegalStateException("Case-sensitive source identity collision requires migration");
+        }
         if (identity != null && identity.getMovieId() != null && !movieId.equals(identity.getMovieId())) {
             throw new IllegalStateException("Source identity belongs to another canonical movie");
         }
@@ -2643,7 +2721,9 @@ public class GyingSourceWorkflowService {
         identity.setEvidenceJson("{\"score\":" + confidence + ",\"reasons\":\""
                 + String.join(",", reasons) + "\"}");
         identity.setUpdatedAt(now);
-        if (identity.getId() == null) sourceIdentityService.save(identity); else sourceIdentityService.updateById(identity);
+        if (!(identity.getId() == null ? sourceIdentityService.save(identity) : sourceIdentityService.updateById(identity))) {
+            throw new IllegalStateException("Source identity was not persisted");
+        }
         return identity;
     }
 

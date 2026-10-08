@@ -54,6 +54,23 @@ class GyingMetadataMatcherTest {
         assertTrue(evidence.autoMatch());
     }
 
+    @Test
+    void titleDigitsAreNotASeasonAnchorButValidYearStillAllowsTheSameMovie() {
+        var source = new GyingMetadataMatcher.SourceMetadata("tv", "大明王朝1566", 2007, 1, List.of(), List.of());
+        assertTrue(GyingMetadataMatcher.score(movie("大明王朝1566", "tv", 2007, 1566), source).autoMatch());
+        assertFalse(GyingMetadataMatcher.score(movie("大明王朝1566", "tv", null, 1566),
+                new GyingMetadataMatcher.SourceMetadata("tv", "大明王朝1566", null, 1566, List.of(), List.of())).autoMatch());
+    }
+
+    @Test
+    void unknownFinalSeasonRequiresAnIndependentAnchorAndNeverOverridesKnownConflicts() {
+        MovieMetadata movie = movie("进击的巨人 最终季 Part.1", "ac", 2020, 5);
+        assertTrue(GyingMetadataMatcher.score(movie, new GyingMetadataMatcher.SourceMetadata(
+                "ac", movie.getTitleCn(), 2020, null, List.of(), List.of())).autoMatch());
+        assertFalse(GyingMetadataMatcher.score(movie, new GyingMetadataMatcher.SourceMetadata(
+                "ac", movie.getTitleCn(), 2020, 1, List.of(), List.of())).autoMatch());
+    }
+
     private MovieMetadata movie(String title, String category, Integer year, Integer season) {
         MovieMetadata movie = new MovieMetadata();
         movie.setTitleCn(title);

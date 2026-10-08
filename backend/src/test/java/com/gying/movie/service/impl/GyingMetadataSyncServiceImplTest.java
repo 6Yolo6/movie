@@ -139,4 +139,64 @@ class GyingMetadataSyncServiceImplTest {
         }
         org.mockito.Mockito.verifyNoInteractions(discovery, links);
     }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans = {false, true})
+    void partiallyFailedCatalogAdvancesOnlyAfterDurablePerItemRetry(boolean p2pFailure) throws Exception {
+        ResourceHubProperties properties = new ResourceHubProperties(); properties.setEnabled(true);
+        var tasks = mock(IResourceHubTaskService.class);
+        var workflow = mock(GyingSourceWorkflowService.class);
+        var retries = mock(GyingMetadataItemRetryService.class);
+        ObjectMapper mapper = new ObjectMapper();
+        var planner = new MetadataCrawlPlanner(tasks, mapper);
+        ResourceHubTask task = new ResourceHubTask(); task.setId(31L); task.setTaskType("METADATA_SYNC"); task.setSource("GYING");
+        task.setPayload(planner.attach("{\"source\":\"CSCORE_MOVIE\",\"page\":5,\"maxItems\":20}",
+                new MetadataCrawlPlanner.Position(1, 15, 5, 40, "PENDING", null)));
+        when(tasks.getById(31L)).thenReturn(task);
+        var failed = Map.<String,Object>of("typeCode", "mv", "mid", "dWXo", "title", "卡萨布兰卡", "year", 1942,
+                "stage", p2pFailure ? "P2P" : "METADATA", "errorCategory", "IllegalStateException");
+        when(workflow.syncCatalogMetadata("CSCORE_MOVIE", 5, 20, 40)).thenReturn(Map.of(
+                "pageSize", 48, "processed", p2pFailure ? 8 : 7, "failed", p2pFailure ? 0 : 1,
+                "directResourceFailures", p2pFailure ? 1 : 0, "failedItems", List.of(failed)));
+        when(retries.defer(any())).thenReturn(List.of(300L));
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, workflow,
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        service.setItemRetries(retries);
+        assertEquals("SUCCEEDED", service.runTask(31L).getStatus());
+        var audit = mapper.readTree(task.getPayload());
+        assertEquals(6, audit.path("crawl").path("nextPage").asInt());
+        assertEquals(1, audit.path("crawl").path("failed").asInt());
+        assertEquals(1, audit.path("crawl").path("deferred").asInt());
+        assertEquals(300, audit.path("itemRetryTaskIds").get(0).asInt());
+        assertEquals("dWXo", audit.path("failedItems").get(0).path("mid").asText());
+        org.junit.jupiter.api.Assertions.assertTrue(task.getLastError().contains("isolated retry"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"outage", "p2pOutage", "persistence", "missingEvidence"})
+    void noBatchAdvanceOnOutageOrIncompleteRetryCheckpoint(String failureMode) throws Exception {
+        ResourceHubProperties properties = new ResourceHubProperties(); properties.setEnabled(true);
+        var tasks = mock(IResourceHubTaskService.class);
+        var workflow = mock(GyingSourceWorkflowService.class);
+        var retries = mock(GyingMetadataItemRetryService.class);
+        ObjectMapper mapper = new ObjectMapper(); var planner = new MetadataCrawlPlanner(tasks, mapper);
+        ResourceHubTask task = new ResourceHubTask(); task.setId(32L); task.setTaskType("METADATA_SYNC"); task.setSource("GYING");
+        task.setPayload(planner.attach("{\"source\":\"CSCORE_MOVIE\",\"page\":5,\"maxItems\":20}",
+                new MetadataCrawlPlanner.Position(1, 15, 5, 40, "PENDING", null)));
+        when(tasks.getById(32L)).thenReturn(task);
+        var failed = Map.<String,Object>of("typeCode", "mv", "mid", "dWXo", "title", "卡萨布兰卡");
+        Map<String,Object> result = new java.util.HashMap<>();
+        result.put("pageSize", 48);
+        result.put("processed", "outage".equals(failureMode) ? 0 : "p2pOutage".equals(failureMode) ? 1 : 7);
+        result.put("failed", "p2pOutage".equals(failureMode) ? 0 : 1);
+        result.put("directResourceFailures", "p2pOutage".equals(failureMode) ? 1 : 0);
+        if (!"missingEvidence".equals(failureMode)) result.put("failedItems", List.of(failed));
+        when(workflow.syncCatalogMetadata("CSCORE_MOVIE", 5, 20, 40)).thenReturn(result);
+        if ("persistence".equals(failureMode)) when(retries.defer(any())).thenThrow(new IllegalStateException("Retry checkpoint unavailable"));
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, workflow,
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        service.setItemRetries(retries);
+        assertEquals("FAILED", service.runTask(32L).getStatus());
+        org.junit.jupiter.api.Assertions.assertFalse(mapper.readTree(task.getPayload()).path("crawl").has("nextPage"));
+        if (!"persistence".equals(failureMode)) org.mockito.Mockito.verifyNoInteractions(retries);
+    }
 }

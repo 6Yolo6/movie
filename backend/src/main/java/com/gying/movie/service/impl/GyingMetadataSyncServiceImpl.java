@@ -34,6 +34,10 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
     private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
     private final MetadataCrawlPlanner crawlPlanner;
+    private GyingMetadataItemRetryService itemRetries;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setItemRetries(GyingMetadataItemRetryService itemRetries) { this.itemRetries = itemRetries; }
 
     public GyingMetadataSyncServiceImpl(
             ResourceHubProperties properties,
@@ -106,19 +110,43 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             result.setFailed(number(synced.get("failed")));
             addErrors(result, synced.get("errors"));
             int p2pFailures = number(synced.get("directResourceFailures"));
-            // Keep the original batch when metadata succeeds but its P2P links do not.
+            int failures = result.getFailed() + p2pFailures;
+            List<Long> retryIds = List.of();
+            // A complete source outage retains its original batch. Isolate only partial failures,
+            // and never advance if the precise failed identities are absent or persistence failed.
+            if (failures > 0 && result.getProcessed() > p2pFailures && crawlPlanner.automatic(task)
+                    && itemRetries != null && synced.get("failedItems") instanceof List<?> items
+                    && items.size() == failures) {
+                List<Map<String, Object>> failedItems = new java.util.ArrayList<>();
+                for (Object item : items) {
+                    if (!(item instanceof Map<?, ?> value)) throw new IllegalArgumentException("Invalid failed item checkpoint");
+                    failedItems.add(objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {}));
+                }
+                retryIds = itemRetries.defer(failedItems);
+                if (retryIds.size() != failures) throw new IllegalStateException("Failed items were not fully checkpointed");
+            }
             crawlPlanner.completed(task, number(synced.get("pageSize")),
-                    result.getProcessed() + result.getFailed(), result.getFailed() + p2pFailures);
+                    result.getProcessed() + result.getFailed(), failures, retryIds.size());
             Map<String, Object> audit = objectMapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {});
             audit.put("directResourceLinks", number(synced.get("directResourceLinks")));
             audit.put("directResourceFailures", p2pFailures);
+            if (!retryIds.isEmpty()) audit.put("itemRetryTaskIds", retryIds);
+            // Persist only allowlisted per-item evidence, never raw upstream exceptions/credentials.
+            if (synced.get("failedItems") instanceof List<?> items && items.size() <= 20) {
+                List<Map<String, Object>> safeItems = new java.util.ArrayList<>();
+                for (Object value : items) if (value instanceof Map<?, ?> item) {
+                    safeItems.add(GyingMetadataItemRetryService.safeItem(
+                            objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {})));
+                }
+                audit.put("failedItems", safeItems);
+            }
             task.setPayload(objectMapper.writeValueAsString(audit));
-            // Catalog metadata retains P2P links but never enqueues cloud discovery.
-            String status = p2pFailures > 0 || (result.getProcessed() == 0 && result.getFailed() > 0)
-                    ? "FAILED" : "SUCCEEDED";
-            finishTask(task, status, result.getFailed() > 0
-                    ? result.getFailed() + " GYING item(s) failed during sync"
+            String status = failures > retryIds.size() ? "FAILED" : "SUCCEEDED";
+            finishTask(task, status, !retryIds.isEmpty()
+                    ? failures + " GYING item(s) deferred to isolated retry; catalog advanced"
+                    : result.getFailed() > 0 ? result.getFailed() + " GYING item(s) failed during sync"
                     : p2pFailures > 0 ? p2pFailures + " GYING P2P item(s) failed; metadata saved" : null);
+
         } catch (Exception error) {
             finishTask(task, "FAILED", error.getMessage());
             result.setFailed(Math.max(result.getFailed(), 1));

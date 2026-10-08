@@ -74,6 +74,12 @@ public final class MetadataCrawlPlanner {
 
     /** Mutate only; the caller persists payload and final status together with finishTask. */
     public void completed(ResourceHubTask task, int pageSize, int attempted, int failed) {
+        completed(task, pageSize, attempted, failed, 0);
+    }
+
+    /** Advance only after every failed item has a durable, isolated retry checkpoint. */
+    public void completed(ResourceHubTask task, int pageSize, int attempted, int failed, int deferred) {
+        if (deferred < 0 || deferred > failed) throw new IllegalArgumentException("Invalid deferred failure count");
         ObjectNode payload = read(task);
         if (!"RANGE".equals(payload.path("crawl").path("mode").asText())) {
             return;
@@ -83,7 +89,8 @@ public final class MetadataCrawlPlanner {
         crawl.put("pageSize", pageSize);
         crawl.put("attempted", attempted);
         crawl.put("failed", failed);
-        if (failed == 0) {
+        crawl.put("deferred", deferred);
+        if (failed == deferred) {
             int page = payload.path("page").asInt();
             int nextOffset = crawl.path("offset").asInt() + attempted;
             int nextPage = page;
