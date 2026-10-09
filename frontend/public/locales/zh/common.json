@@ -325,6 +325,8 @@
   "loginToViewFavorites": "请登录后查看我的收藏",
   "discoverMovies": "发现影片",
   "loadMore": "加载更多",
+  "moviesLoadFailed": "加载影片失败",
+  "movieFiltersLoadFailed": "加载筛选条件失败",
   "notifications": "通知",
   "notificationsHint": "查看资源审核结果、链接状态变更和评论回复。",
   "unreadNotifications": "只看未读",

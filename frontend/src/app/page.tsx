@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, Suspense } from 'react';
-import { Typography, Spin, Row, Col, Empty, Button, Carousel, Tag } from 'antd';
+import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import { Typography, Spin, Row, Col, Empty, Button, Carousel, Tag, Alert } from 'antd';
 import { DownOutlined, FilterOutlined, FireFilled, RightOutlined, StarFilled, UpOutlined } from '@ant-design/icons';
 import { useSearchParams, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
@@ -81,24 +81,22 @@ const RecentHotCarousel = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let active = true;
-    api('/api/movies/list?page=1&size=8&sort=recent_hot')
+    const controller = new AbortController();
+    api('/api/movies/list?page=1&size=8&sort=recent_hot', { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error(`Recent hot request failed: ${response.status}`);
         return response.json() as Promise<PaginatedResult<MovieMetadata>>;
       })
       .then((data) => {
-        if (active) setMovies(data.records || []);
+        if (!controller.signal.aborted) setMovies(data.records || []);
       })
       .catch(() => {
-        if (active) setMovies([]);
+        if (!controller.signal.aborted) setMovies([]);
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       });
-    return () => {
-      active = false;
-    };
+    return () => controller.abort();
   }, []);
 
   if (loading) {
@@ -202,38 +200,66 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
   const [movies, setMovies] = useState<MovieMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const activeRequest = useRef<AbortController | null>(null);
   const pageSize = 30;
 
   const paramString = params.toString();
 
   const loadMovies = useCallback(async (p: number = 1) => {
+    // A synchronous guard also covers repeated clicks before React re-renders.
+    if (activeRequest.current) return;
+    const controller = new AbortController();
+    activeRequest.current = controller;
     setLoading(true);
+    setFailed(false);
     try {
       const query = new URLSearchParams(paramString);
       query.set('page', String(p));
       query.set('size', String(pageSize));
-      const res = await api(`/api/movies/list?${query.toString()}`);
+      const res = await api(`/api/movies/list?${query.toString()}`, { signal: controller.signal });
+      if (!res.ok) throw new Error(`Movie list request failed: ${res.status}`);
       const data: PaginatedResult<MovieMetadata> = await res.json();
+      if (controller.signal.aborted) return;
       const records = data.records || [];
       setMovies(prev => p === 1 ? records : [...prev, ...records]);
       setHasMore(p * pageSize < data.total);
       setPage(p);
       setTotal(data.total);
     } catch (err) {
-      console.error(err);
-      setHasMore(false);
+      if (!controller.signal.aborted) {
+        console.error(err);
+        setFailed(true);
+      }
     } finally {
-      setLoading(false);
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        if (!controller.signal.aborted) setLoading(false);
+      }
     }
   }, [paramString]);
 
   useEffect(() => {
-    loadMovies(1);
+    void loadMovies(1);
+    return () => {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+    };
   }, [loadMovies]);
 
+  const retryNotice = failed ? (
+    <Alert
+      type="error"
+      showIcon
+      title={t('moviesLoadFailed')}
+      action={<Button onClick={() => loadMovies(page + 1)}>{t('retry')}</Button>}
+    />
+  ) : null;
+
   if (loading && movies.length === 0) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
+  if (failed && movies.length === 0) return retryNotice;
   if (movies.length === 0) return (
     <div className="py-20">
       <Empty
@@ -260,7 +286,8 @@ const MovieGrid = ({ params, highlightKeyword }: { params: URLSearchParams; high
           </Col>
         ))}
       </Row>
-      {hasMore && (
+      {retryNotice && <div className="mt-6">{retryNotice}</div>}
+      {hasMore && !failed && (
         <div className="text-center mt-8">
           <Button loading={loading} onClick={() => loadMovies(page + 1)}>
             {t('loadMore')}
@@ -276,7 +303,12 @@ const HomePageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [filterResult, setFilterResult] = useState<{
+    category: string | null;
+    attempt: number;
+    options: FilterOptions | null;
+  } | null>(null);
+  const [filterAttempt, setFilterAttempt] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const category = searchParams.get('category');
@@ -287,13 +319,30 @@ const HomePageContent = () => {
   const year = searchParams.get('year');
   const sort = searchParams.get('sort') || 'time';
 
+  // Do not show the previous category's options while a new request is pending.
+  const currentFilterResult = filterResult?.category === category && filterResult.attempt === filterAttempt
+    ? filterResult : null;
+  const filterOptions = currentFilterResult?.options;
+
   useEffect(() => {
+    const controller = new AbortController();
     const query = category ? `?category=${encodeURIComponent(category)}` : '';
-    api(`/api/movies/filters${query}`)
-      .then(res => res.json())
-      .then(data => setFilterOptions(data))
-      .catch(console.error);
-  }, [category]);
+    api(`/api/movies/filters${query}`, { signal: controller.signal })
+      .then(async res => {
+        if (!res.ok) throw new Error(`Movie filters request failed: ${res.status}`);
+        return res.json() as Promise<FilterOptions>;
+      })
+      .then(options => {
+        if (!controller.signal.aborted) setFilterResult({ category, attempt: filterAttempt, options });
+      })
+      .catch(error => {
+        if (!controller.signal.aborted) {
+          console.error(error);
+          setFilterResult({ category, attempt: filterAttempt, options: null });
+        }
+      });
+    return () => controller.abort();
+  }, [category, filterAttempt]);
 
   const updateParam = (key: string, val: string | null) => {
     const sp = new URLSearchParams(searchParams.toString());
@@ -312,11 +361,9 @@ const HomePageContent = () => {
   const showFilters = !!category || !!keyword || !!genre || !!region || !!language || !!year;
   const isLandingPage = !showFilters && !category && !keyword;
 
-  if (!filterOptions) return <div className="flex justify-center p-20"><Spin size="large" /></div>;
-
   const buildOptions = (key: keyof FilterOptions) => [
     { label: t('all'), value: null },
-    ...(filterOptions[key] || []).map((item) => ({ label: item, value: item })),
+    ...(filterOptions?.[key] || []).map((item) => ({ label: item, value: item })),
   ];
 
   return (
@@ -382,10 +429,23 @@ const HomePageContent = () => {
 
           {filtersOpen && (
             <div className="mt-3 border-t border-gray-200 dark:border-zinc-800 pt-3">
-              <FilterRow label={t('genre')} options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
-              <FilterRow label={t('region')} options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
-              <FilterRow label={t('language')} options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
-              <FilterRow label={t('year')} options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
+              {!currentFilterResult ? (
+                <div role="status" className="flex items-center gap-2"><Spin size="small" />{t('loading')}</div>
+              ) : !filterOptions ? (
+                <Alert
+                  type="error"
+                  showIcon
+                  title={t('movieFiltersLoadFailed')}
+                  action={<Button onClick={() => setFilterAttempt(attempt => attempt + 1)}>{t('retry')}</Button>}
+                />
+              ) : (
+                <>
+                  <FilterRow label={t('genre')} options={buildOptions('genres')} value={genre} onChange={(v) => updateParam('genre', v)} />
+                  <FilterRow label={t('region')} options={buildOptions('regions')} value={region} onChange={(v) => updateParam('region', v)} />
+                  <FilterRow label={t('language')} options={buildOptions('languages')} value={language} onChange={(v) => updateParam('language', v)} />
+                  <FilterRow label={t('year')} options={buildOptions('years')} value={year} onChange={(v) => updateParam('year', v)} />
+                </>
+              )}
             </div>
           )}
         </div>
@@ -405,7 +465,8 @@ const HomePageContent = () => {
         </div>
       ) : (
         <div className="min-h-[60vh]">
-          <MovieGrid params={new URLSearchParams(searchParams.toString())} highlightKeyword={keyword || undefined} />
+          {/* A query owns its own page cursor, data and pending requests. */}
+          <MovieGrid key={searchParams.toString()} params={new URLSearchParams(searchParams.toString())} highlightKeyword={keyword || undefined} />
         </div>
       )}
     </div>

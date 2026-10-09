@@ -256,17 +256,17 @@ public class FavoriteController {
         // Fetch movies
         List<String> movieIds = paged.getRecords().stream()
                 .map(UserFavorite::getMovieId)
+                .distinct()
                 .collect(Collectors.toList());
         List<MovieMetadata> movies = movieService.listByIds(movieIds);
         Map<String, MovieMetadata> movieMap = movies.stream()
                 .collect(Collectors.toMap(MovieMetadata::getId, m -> m));
 
-        // Get favorite counts for all movies
-        Map<String, Long> countMap = new HashMap<>();
-        for (String mid : movieIds) {
-            countMap.put(mid, favoriteService.count(new LambdaQueryWrapper<UserFavorite>()
-                    .eq(UserFavorite::getMovieId, mid)));
-        }
+        // Fetch page counts in one round trip instead of issuing one query per movie.
+        Map<String, Long> countMap = favoriteMapper.countByMovieIds(movieIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row.get("movie_id"),
+                        row -> ((Number) row.get("cnt")).longValue()));
 
         // Build result
         List<Map<String, Object>> records = new ArrayList<>();

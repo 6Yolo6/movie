@@ -325,6 +325,8 @@
   "loginToViewFavorites": "Please log in to view your favorites",
   "discoverMovies": "Discover Movies",
   "loadMore": "Load More",
+  "moviesLoadFailed": "Failed to load movies",
+  "movieFiltersLoadFailed": "Failed to load movie filters",
   "notifications": "Notifications",
   "notificationsHint": "Review resource audit updates, link status changes, and comment replies.",
   "unreadNotifications": "Unread only",

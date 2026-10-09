@@ -54,9 +54,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 .orderByDesc("created_at");
         Page<Comment> paged = this.page(commentPage, queryWrapper);
 
-        List<Long> rootIds = paged.getRecords().stream()
+        Set<Long> rootIds = paged.getRecords().stream()
                 .map(Comment::getId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
         // Fetch ALL non-root comments for this relateId (covers all nesting levels)
         List<Comment> allReplies = rootIds.isEmpty()
@@ -68,32 +68,30 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                         .ne("parent_id", 0L)
                         .orderByAsc("created_at"));
 
-        // Build parent->children map
-        Map<Long, List<Comment>> childrenByParent = allReplies.stream()
-                .collect(Collectors.groupingBy(Comment::getParentId));
-
-        // For each non-root comment, find its root ancestor
-        Map<Long, Long> commentToRoot = new HashMap<>();
+        // Index once: walking an ancestor chain must not scan every reply at each hop.
+        Map<Long, Comment> repliesById = new HashMap<>();
         for (Comment reply : allReplies) {
-            commentToRoot.put(reply.getId(), findRootAncestor(reply.getParentId(), rootIds, childrenByParent));
+            repliesById.put(reply.getId(), reply);
         }
 
-        // Group all replies by their root ancestor
+        // Retain the database's chronological order, but only enrich visible threads.
+        List<Comment> visibleReplies = new ArrayList<>();
         Map<Long, List<Comment>> repliesByRoot = new HashMap<>();
         for (Comment reply : allReplies) {
-            Long rootId = commentToRoot.get(reply.getId());
+            Long rootId = findRootAncestor(reply.getParentId(), rootIds, repliesById);
             if (rootId != null) {
                 repliesByRoot.computeIfAbsent(rootId, k -> new ArrayList<>()).add(reply);
+                visibleReplies.add(reply);
             }
         }
 
-        // Collect all user IDs
+        // Fetch profiles only for roots and replies that will be returned.
         Set<Long> userIds = new HashSet<>();
         paged.getRecords().stream()
                 .map(Comment::getUserId)
                 .filter(Objects::nonNull)
                 .forEach(userIds::add);
-        allReplies.stream()
+        visibleReplies.stream()
                 .map(Comment::getUserId)
                 .filter(Objects::nonNull)
                 .forEach(userIds::add);
@@ -105,11 +103,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         // Build a map of comment ID -> display nickname for reply-to references
         Map<Long, String> nicknameById = new HashMap<>();
-        Set<Long> rootIdSet = new HashSet<>(rootIds);
         for (Comment c : paged.getRecords()) {
             nicknameById.put(c.getId(), resolveNickname(c, userMap));
         }
-        for (Comment c : allReplies) {
+        for (Comment c : visibleReplies) {
             nicknameById.put(c.getId(), resolveNickname(c, userMap));
         }
 
@@ -121,7 +118,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     .map(reply -> {
                         CommentDisplayDTO replyDto = toDisplayDTO(reply, userMap);
                         // If this reply's parent is NOT the root, show who it replies to
-                        if (reply.getParentId() != null && !rootIdSet.contains(reply.getParentId())) {
+                        if (reply.getParentId() != null && !rootIds.contains(reply.getParentId())) {
                             replyDto.setReplyToNickname(nicknameById.get(reply.getParentId()));
                         }
                         return replyDto;
@@ -140,29 +137,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     /**
      * Walk up the parent chain to find which root comment this reply belongs to.
      */
-    private Long findRootAncestor(Long parentId, List<Long> rootIds, Map<Long, List<Comment>> childrenByParent) {
-        Set<Long> rootSet = new HashSet<>(rootIds);
-        if (rootSet.contains(parentId)) {
+    private Long findRootAncestor(Long parentId, Set<Long> rootIds, Map<Long, Comment> repliesById) {
+        if (rootIds.contains(parentId)) {
             return parentId;
         }
-        // Walk up: find the comment with this ID and check its parent
-        // Use the childrenByParent to look up comments by ID
-        long current = parentId;
-        int maxDepth = 20; // safety limit
-        while (maxDepth-- > 0) {
-            // Find the comment whose ID == current
-            Comment found = null;
-            for (List<Comment> children : childrenByParent.values()) {
-                for (Comment c : children) {
-                    if (c.getId() != null && c.getId() == current) {
-                        found = c;
-                        break;
-                    }
-                }
-                if (found != null) break;
-            }
+        Long current = parentId;
+        int maxDepth = 20; // Keep the existing safety limit for cycles/deep legacy threads.
+        while (current != null && maxDepth-- > 0) {
+            Comment found = repliesById.get(current);
             if (found == null) return null;
-            if (rootSet.contains(found.getParentId())) {
+            if (rootIds.contains(found.getParentId())) {
                 return found.getParentId();
             }
             current = found.getParentId();
