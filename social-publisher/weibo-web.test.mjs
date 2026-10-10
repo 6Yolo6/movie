@@ -104,3 +104,33 @@ test('reports response fields when Weibo omits an error message', async () => {
     /code=12345; response fields=ok,errno,data/,
   );
 });
+
+
+test('publication boundary is awaited before the Weibo request', async () => {
+  const calls = [];
+  const result = await publishWeiboWeb('fixture', {
+    config: { cookie: 'fixture-cookie', fingerprint: 'fixture-fp', endpoint: 'https://example.test/weibo' },
+    beforeSend: async () => { calls.push('gate'); },
+    fetchImpl: async () => {
+      calls.push('request');
+      return new Response(JSON.stringify({ ok: 1, data: { mblogid: 'fixture', user: { idstr: '123' } } }));
+    },
+  });
+  assert.deepEqual(calls, ['gate', 'request']); assert.equal(result.externalUrl, 'https://weibo.com/123/fixture');
+});
+
+test('a rejected publication boundary prevents the Weibo request', async () => {
+  await assert.rejects(publishWeiboWeb('fixture', {
+    config: { cookie: 'fixture-cookie', fingerprint: 'fixture-fp' },
+    beforeSend: async () => { throw new Error('claim rejected'); },
+    fetchImpl: () => assert.fail('must not publish'),
+  }), /claim rejected/);
+});
+
+test('Weibo validation fails before the publication boundary', async () => {
+  await assert.rejects(publishWeiboWeb('fixture', {
+    config: { cookie: '', fingerprint: '' },
+    beforeSend: () => assert.fail('must not cross boundary'),
+    fetchImpl: () => assert.fail('must not publish'),
+  }), /not configured/);
+});

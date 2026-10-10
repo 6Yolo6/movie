@@ -507,20 +507,21 @@ class TorrentMetadataFileTest(unittest.TestCase):
     def test_download_is_bounded_verified_and_has_no_redirects(self):
         from crawler.gying_crawler import fetch_torrent_file
         data, expected = self.content()
-        response = Mock(status_code=200); response.iter_content.return_value = [data]
+        response = Mock(status_code=200, content=data)
         with patch("crawler.gying_crawler.fetch_download_resources", return_value=self.resources(expected)),              patch("crawler.gying_crawler.site_get", return_value=response) as get:
             result = fetch_torrent_file("mv", "MOVIE1", "BT1")
         self.assertEqual(expected, result["infoHash"])
         self.assertEqual(data, __import__('base64').b64decode(result["dataBase64"]))
         self.assertFalse(get.call_args.kwargs["allow_redirects"])
         self.assertTrue(get.call_args.kwargs["stream"])
+        self.assertEqual(2 * 1024 * 1024, get.call_args.kwargs["max_response_bytes"])
         response.close.assert_called_once()
 
     def test_download_refuses_hash_mismatch_and_redirect_status(self):
         from crawler.gying_crawler import fetch_torrent_file
         data, expected = self.content()
         for status, info_hash in ((302, expected), (200, "a" * 40)):
-            response = Mock(status_code=status); response.iter_content.return_value = [data]
+            response = Mock(status_code=status, content=data)
             with patch("crawler.gying_crawler.fetch_download_resources", return_value=self.resources(info_hash)),                  patch("crawler.gying_crawler.site_get", return_value=response):
                 with self.assertRaises(RuntimeError): fetch_torrent_file("mv", "MOVIE1", "BT1")
             response.close.assert_called_once()

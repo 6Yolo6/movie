@@ -11,7 +11,7 @@ RUN npm install -g tencent-channel-cli@1.0.10
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
-COPY index.mjs security.mjs ./
+COPY index.mjs security.mjs publish-task.mjs publish-qq.mjs ./
 COPY weibo-web.mjs ./
 COPY weibo-login.mjs ./
 COPY weibo-sso-login.mjs ./

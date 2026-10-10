@@ -16,6 +16,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.dao.DuplicateKeyException;
@@ -61,9 +62,19 @@ public class SocialPublishingAdminController {
         authHelper.requireAdmin(token);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("targets", targetService.list(new QueryWrapper<SocialPublishTarget>().orderByAsc("id")));
-        result.put("posted", logService.count(new QueryWrapper<SocialPostLog>().eq("status", "POSTED")));
-        result.put("failed", logService.count(new QueryWrapper<SocialPostLog>().eq("status", "FAILED")));
-        result.put("pending", logService.count(new QueryWrapper<SocialPostLog>().eq("status", "PENDING")));
+        Map<String, Long> statusCounts = new LinkedHashMap<>();
+        for (Map<String, Object> row : logService.listMaps(new QueryWrapper<SocialPostLog>()
+                .select("status", "COUNT(*) AS cnt").groupBy("status"))) {
+            String status = (String) row.get("status");
+            if (status != null) {
+                statusCounts.merge(status.toUpperCase(Locale.ROOT), ((Number) row.get("cnt")).longValue(), Long::sum);
+            }
+        }
+        result.put("posted", statusCounts.getOrDefault("POSTED", 0L));
+        result.put("failed", statusCounts.getOrDefault("FAILED", 0L) + statusCounts.getOrDefault("PREPARE_FAILED", 0L));
+        result.put("pending", statusCounts.getOrDefault("PENDING", 0L));
+        result.put("processing", statusCounts.getOrDefault("PREPARING", 0L) + statusCounts.getOrDefault("PUBLISHING", 0L));
+        result.put("unknown", statusCounts.getOrDefault("UNKNOWN", 0L));
         result.put("postedLast24Hours", logService.count(new QueryWrapper<SocialPostLog>()
                 .eq("status", "POSTED")
                 .ge("posted_at", LocalDateTime.now().minusHours(24))));

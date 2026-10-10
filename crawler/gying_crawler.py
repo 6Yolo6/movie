@@ -630,27 +630,68 @@ def wait_for_site_request_slot():
     _SITE_LAST_REQUEST_AT = time.monotonic()
 
 
-def site_get(url, *, timeout=10, headers=None, **kwargs):
+def buffer_bounded_response(response, max_bytes):
+    """Bound decoded bytes before requests' text/JSON challenge probes can read them.
+
+    Cache the completed body using requests.Response's normal content fields so
+    text, json and content share the same bounded bytes (including on retries).
+    The caller owns response cleanup on both success and failure.
+    """
+    try:
+        declared_length = int(response.headers.get("Content-Length", ""))
+    except (TypeError, ValueError):
+        declared_length = None
+    if declared_length is not None and declared_length > max_bytes:
+        raise RuntimeError("Site response exceeds the allowed size")
+
+    content = bytearray()
+    for chunk in response.iter_content(chunk_size=min(65536, max_bytes + 1)):
+        if len(content) + len(chunk) > max_bytes:
+            raise RuntimeError("Site response exceeds the allowed size")
+        content.extend(chunk)
+    response._content = bytes(content)
+    response._content_consumed = True
+
+
+def site_get(url, *, timeout=10, headers=None, max_response_bytes=None, **kwargs):
+    if max_response_bytes is not None:
+        if isinstance(max_response_bytes, bool) or not isinstance(max_response_bytes, int) or max_response_bytes <= 0:
+            raise ValueError("max_response_bytes must be a positive integer")
+        # A non-streaming Session.get would consume the body before we can bound it.
+        kwargs["stream"] = True
     with _SITE_SESSION_LOCK:
         session = get_site_session()
         request_headers = headers or {}
-        wait_for_site_request_slot()
-        resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        resp = None
 
-        if is_pow_challenge_response(resp):
-            if solve_browser_pow(session, url):
-                wait_for_site_request_slot()
-                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        def request_response():
+            nonlocal resp
+            if resp is not None:
+                resp.close()
+                resp = None
+            wait_for_site_request_slot()
+            resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+            if max_response_bytes is not None:
+                buffer_bounded_response(resp, max_response_bytes)
+            return resp
 
-        if is_login_required_response(resp):
-            if login_site_session(session):
-                wait_for_site_request_slot()
-                resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
-                if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
-                    wait_for_site_request_slot()
-                    resp = session.get(url, timeout=timeout, headers=request_headers, **kwargs)
+        try:
+            request_response()
+            if is_pow_challenge_response(resp):
+                if solve_browser_pow(session, url):
+                    request_response()
 
-        return resp
+            if is_login_required_response(resp):
+                if login_site_session(session):
+                    request_response()
+                    if is_pow_challenge_response(resp) and solve_browser_pow(session, url):
+                        request_response()
+            return resp
+        except BaseException:
+            if resp is not None:
+                resp.close()
+            raise
+
 
 def site_post(url, *, data=None, timeout=15, headers=None, **kwargs):
     with _SITE_SESSION_LOCK:
@@ -1180,16 +1221,14 @@ def fetch_torrent_file(type_code, mid, source_ref):
         raise RuntimeError("Torrent download endpoint is not allowed")
     expected = parse_qs(urlparse(magnet['url']).query).get('xt', [''])[0].removeprefix('urn:btih:').lower()
     if not re.fullmatch('[0-9a-f]{40}', expected): raise RuntimeError("Torrent magnet identity missing")
-    response = site_get(url, timeout=15, stream=True, allow_redirects=False)
+    response = site_get(url, timeout=15, stream=True, allow_redirects=False,
+                        max_response_bytes=2 * 1024 * 1024)
     try:
         if response.status_code != 200: raise RuntimeError("Torrent download failed")
-        content = bytearray()
-        for chunk in response.iter_content(65536):
-            content.extend(chunk)
-            if len(content) > 2 * 1024 * 1024: raise RuntimeError("Torrent metadata exceeds the allowed size")
+        # site_get has already bounded this cached body before authentication probes.
+        content = response.content
     finally:
         response.close()
-    content = bytes(content)
     actual = torrent_info_hash(content)
     if actual != expected: raise RuntimeError("Torrent does not match the selected magnet")
     return {"sourceRef": source_ref, "infoHash": actual, "size": len(content),

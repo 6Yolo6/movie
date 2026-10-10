@@ -965,14 +965,43 @@
   "resourceHubCrawlNext": "采集位置",
   "resourceHubCrawlState": "最近任务状态",
   "resourceHubCrawlPosition": "第 {{page}} 页 · 第 {{item}} 条起",
-  "resourceHubCrawlStatus": {"NOT_STARTED": "尚未开始", "PENDING": "排队中", "RUNNING": "运行中", "SUCCEEDED": "已完成，等待下一轮", "FAILED": "失败，保留位置", "RETRY": "部分失败，保留位置", "CANCELED": "已取消，保留位置"},
+  "resourceHubCrawlStatus": {
+    "NOT_STARTED": "尚未开始",
+    "PENDING": "排队中",
+    "RUNNING": "运行中",
+    "SUCCEEDED": "已完成，等待下一轮",
+    "FAILED": "失败，保留位置",
+    "RETRY": "部分失败，保留位置",
+    "CANCELED": "已取消，保留位置"
+  },
   "resourceHubMetadataOnlyHelp": "元数据采集仅保存影片资料、海报及 GYING 磁力/种子链接，不再创建网盘发现、转存、分享或发布任务。旧网盘队列不再由定时 Worker 自动推进；手动和 QQ 点选操作不受影响。",
   "resourceHubWeeklyTitle": "本周热门 · 独立网盘工作流",
   "resourceHubWeeklyHelp": "仅使用 GYING /hits/mv/week、/hits/tv/week、/hits/ac/week 三个本周热门榜单。各榜单独立计时，默认每 7 天处理前 5 部；优先复用已有分享，不自动补齐所有网盘。新建计划及修改间隔/开关后，从保存时重新等待完整间隔；失败也不会高频重跑。已有 quark-auto-save 追更计划独立运行，不在此处修改。",
-  "resourceHubWeeklyType": {"mv": "电影 · 本周热门", "tv": "剧集 · 本周热门", "ac": "动漫 · 本周热门"},
+  "resourceHubWeeklyType": {
+    "mv": "电影 · 本周热门",
+    "tv": "剧集 · 本周热门",
+    "ac": "动漫 · 本周热门"
+  },
   "resourceHubWeeklyEnabled": "启用",
   "resourceHubWeeklyDays": "间隔（天）",
   "resourceHubWeeklyLimit": "每轮前 N 部",
   "resourceHubWeeklyNext": "下次执行",
-  "resourceHubWeeklyLast": "最近执行"
+  "resourceHubWeeklyLast": "最近执行",
+  "socialPublishingProcessing": "处理中",
+  "socialPublishingUnknown": "结果待核对",
+  "socialPublishingRetryPolicy": "仅待发布和明确未提交的准备失败任务可重试。处理中、结果待核对及历史失败任务须先核对外部平台，不要直接重置为待发布。",
+  "socialPublishingRetryBlocked": "此状态不可直接重试，请先核对外部平台结果。",
+  "socialPublishingResultRecorded": "请求已处理，请以发布记录中的确认状态为准。",
+  "socialPublishingStatus": {
+    "PENDING": "待发布",
+    "PREPARING": "准备中",
+    "PUBLISHING": "发布中",
+    "POSTED": "已发布",
+    "PREPARE_FAILED": "准备失败",
+    "UNKNOWN": "待核对",
+    "FAILED": "历史失败（待核对）"
+  },
+  "socialPublishingTargetUnavailable": "目标已停用或删除，无法重试。",
+  "socialPublishingEditSettings": "编辑发布设置",
+  "socialPublishingNoTargets": "暂无发布目标"
 }

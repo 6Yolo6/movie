@@ -398,7 +398,7 @@ CREATE TABLE `social_post_log` (
   `resource_link_id` bigint NOT NULL COMMENT '资源链接 ID',
   `movie_id` varchar(100) NOT NULL COMMENT '影片 ID',
   `title` varchar(500) DEFAULT NULL COMMENT '发布时影片标题',
-  `status` varchar(30) NOT NULL COMMENT '状态：PENDING、POSTED、FAILED',
+  `status` varchar(30) NOT NULL COMMENT '状态：PENDING、PREPARING、PUBLISHING、POSTED、PREPARE_FAILED、UNKNOWN、FAILED（历史待核验）',
   `external_url` varchar(1000) DEFAULT NULL COMMENT '外部帖子地址',
   `error_message` varchar(1000) DEFAULT NULL COMMENT '发布失败原因',
   `posted_at` datetime DEFAULT NULL COMMENT '成功发布时间',

@@ -100,6 +100,7 @@ export async function publishWeiboWeb(content, options = {}) {
     media: '',
     fp: config.fingerprint,
   });
+  await options.beforeSend?.();
   const response = await fetchImpl(config.endpoint, {
     method: 'POST',
     headers: {

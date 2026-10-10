@@ -1,4 +1,6 @@
 import http from 'node:http';
+import { createPublishTaskRunner } from './publish-task.mjs';
+import { publishQqPost } from './publish-qq.mjs';
 import { authenticated, validateConfiguration } from './security.mjs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -366,69 +368,41 @@ async function resolveQqDestination(row) {
   return { guildId: guild.guild_id, channelId: channel.channel_id };
 }
 
-async function publishQq(row, content, posterPath) {
-  const destination = await resolveQqDestination(row);
-  const contentFile = path.join(os.tmpdir(), `gying-social-${Date.now()}.txt`);
-  await fs.writeFile(contentFile, content, 'utf8');
-  try {
-    const args = [
-      'feed', 'publish-feed',
-      '--guild-id', String(destination.guildId),
-      '--channel-id', String(destination.channelId),
-      '--content-file', contentFile,
-    ];
-    if (posterPath) args.push('--image', posterPath);
-    args.push('--json');
-    const result = parseJsonOutput(await run('tencent-channel-cli', args, { env: qqEnvironment(row.account_key) }));
-    if (!result.success) throw new Error(compact(result.message || result.error || JSON.stringify(result)));
-    return {
-      externalUrl: result.data?.share_url || null,
-      result,
-    };
-  } finally {
-    await fs.rm(contentFile, { force: true });
-  }
+function reportCleanupError(error) {
+  console.error('security_event=publish_cleanup_failed', error?.constructor?.name || 'Error');
 }
 
-async function publishWeibo(row, content) {
-  return publishWeiboWeb(content);
-}
-
-async function publish(logId) {
-  const row = await loadPost(logId);
-  const content = render(row.template, row);
-  let posterPath = null;
-  try {
-    if (row.platform === 'QQ_CHANNEL') {
-      posterPath = await preparePoster(row.poster_url);
-      if (row.poster_url && !posterPath) {
-        throw new Error('QQ channel poster preparation failed');
+const publish = createPublishTaskRunner({
+  db: pool,
+  onPersistenceError(error) {
+    console.error('security_event=publish_state_write_failed', error?.constructor?.name || 'Error');
+  },
+  async work(logId, beforeSend) {
+    const row = await loadPost(logId);
+    const content = render(row.template, row);
+    let posterPath = null;
+    try {
+      let published;
+      if (row.platform === 'QQ_CHANNEL') {
+        posterPath = await preparePoster(row.poster_url);
+        if (row.poster_url && !posterPath) throw new Error('QQ channel poster preparation failed');
+        published = await publishQqPost(row, content, posterPath, {
+          beforeSend, resolveDestination: resolveQqDestination, run,
+          environment: qqEnvironment, parseOutput: parseJsonOutput, onCleanupError: reportCleanupError,
+        });
+      } else if (row.platform === 'WEIBO') {
+        published = await publishWeiboWeb(content, { beforeSend });
+      } else {
+        throw new Error(`Unsupported social platform ${row.platform}`);
+      }
+      return { ...published, platform: row.platform };
+    } finally {
+      if (posterPath) {
+        try { await fs.rm(posterPath, { force: true }); } catch (error) { reportCleanupError(error); }
       }
     }
-    const published = row.platform === 'QQ_CHANNEL'
-      ? await publishQq(row, content, posterPath)
-      : row.platform === 'WEIBO'
-        ? await publishWeibo(row, content)
-        : (() => { throw new Error(`Unsupported social platform ${row.platform}`); })();
-    await pool.query(
-      `UPDATE social_post_log
-          SET status = 'POSTED', external_url = ?, error_message = NULL, posted_at = NOW(), updated_at = NOW()
-        WHERE id = ?`,
-      [published.externalUrl, logId],
-    );
-    return { ok: true, logId, platform: row.platform, externalUrl: published.externalUrl };
-  } catch (error) {
-    await pool.query(
-      `UPDATE social_post_log
-          SET status = 'FAILED', error_message = ?, updated_at = NOW()
-        WHERE id = ?`,
-      [compact(error.message), logId],
-    );
-    throw error;
-  } finally {
-    if (posterPath) await fs.rm(posterPath, { force: true });
-  }
-}
+  },
+});
 
 async function health() {
   const result = { ok: true, qq: {}, weibo: {} };

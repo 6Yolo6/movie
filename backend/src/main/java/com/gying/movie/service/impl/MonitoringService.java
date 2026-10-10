@@ -38,7 +38,7 @@ public class MonitoringService {
         out.putAll(jdbc.queryForMap("SELECT COUNT(*) requestsToday, COUNT(DISTINCT visitor_hash) visitorsToday, SUM(event_type='PAGE_VIEW') pageViewsToday, SUM(status_code>=400 AND status_code<500) clientErrorsToday, SUM(status_code>=500) serverErrorsToday FROM site_access_log WHERE created_at>=CURDATE()"));
         out.putAll(jdbc.queryForMap("SELECT COUNT(*) searchesToday FROM site_search_log WHERE created_at>=CURDATE()"));
         out.putAll(jdbc.queryForMap("SELECT COUNT(*) resourceOperationsToday FROM resource_operation_log WHERE created_at>=CURDATE()"));
-        out.putAll(jdbc.queryForMap("SELECT SUM(status='POSTED') socialPostedToday, SUM(status='FAILED') socialFailedToday FROM social_post_log WHERE created_at>=CURDATE()"));
+        out.putAll(jdbc.queryForMap("SELECT SUM(status='POSTED') socialPostedToday, SUM(status IN ('FAILED','PREPARE_FAILED')) socialFailedToday FROM social_post_log WHERE created_at>=CURDATE()"));
         out.put("traffic",jdbc.queryForList("SELECT DATE(created_at) day,COUNT(*) requests,COUNT(DISTINCT visitor_hash) visitors,SUM(event_type='PAGE_VIEW') pageViews,SUM(status_code>=500) serverErrors FROM site_access_log WHERE created_at>=DATE_SUB(CURDATE(),INTERVAL 13 DAY) GROUP BY DATE(created_at) ORDER BY day"));
         out.put("hotSearches",hotSearches(LocalDate.now(),20));
         return out;

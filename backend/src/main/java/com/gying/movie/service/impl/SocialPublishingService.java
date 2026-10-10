@@ -15,14 +15,18 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SocialPublishingService {
+    private static final Set<String> RETRYABLE_STATES = Set.of("PENDING", "PREPARE_FAILED");
     private final ISocialPublishTargetService targetService;
     private final ISocialPostLogService logService;
     private final SocialPublisherClient publisherClient;
@@ -61,11 +65,19 @@ public class SocialPublishingService {
         result.put("logId", log.getId());
         result.put("title", log.getTitle());
         result.put("status", log.getStatus());
-        if (runNow) {
-            result.put("publisher", publisherClient.publish(log.getId()));
-            SocialPostLog refreshed = logService.getById(log.getId());
-            result.put("status", refreshed == null ? log.getStatus() : refreshed.getStatus());
+        if (runNow && isRetryable(log.getStatus())) {
+            Map<String, Object> published = publisherClient.publish(log.getId());
+            result.put("publisher", published);
+            if (published.get("status") instanceof String status && !status.isBlank()) {
+                result.put("status", status);
+            } else {
+                SocialPostLog refreshed = logService.getById(log.getId());
+                result.put("status", refreshed == null ? log.getStatus() : refreshed.getStatus());
+            }
         }
+        String status = String.valueOf(result.get("status"));
+        result.put("retryable", isRetryable(status));
+        result.put("blocked", !isRetryable(status) && !"POSTED".equals(status));
         return result;
     }
 
@@ -78,6 +90,8 @@ public class SocialPublishingService {
         int pending = 0;
         int skipped = 0;
         int failed = 0;
+        int processing = 0;
+        int unknown = 0;
         for (SocialPublishTarget target : targets) {
             try {
                 Map<String, Object> item = publishNext(target.getId(), runNow);
@@ -86,13 +100,16 @@ public class SocialPublishingService {
                     case "POSTED" -> posted++;
                     case "PENDING" -> pending++;
                     case "SKIPPED" -> skipped++;
-                    default -> failed++;
+                    case "PREPARE_FAILED" -> failed++;
+                    case "PREPARING", "PUBLISHING" -> processing++;
+                    default -> unknown++;
                 }
             } catch (Exception error) {
-                failed++;
+                // An HTTP failure does not prove that the publisher did not submit content.
+                unknown++;
                 items.add(Map.of(
                         "targetId", target.getId(),
-                        "status", "FAILED",
+                        "status", "UNKNOWN",
                         "error", safeMessage(error)));
             }
         }
@@ -102,6 +119,8 @@ public class SocialPublishingService {
         result.put("pending", pending);
         result.put("skipped", skipped);
         result.put("failed", failed);
+        result.put("processing", processing);
+        result.put("unknown", unknown);
         result.put("items", items);
         return result;
     }
@@ -111,10 +130,12 @@ public class SocialPublishingService {
         if (log == null) {
             throw new IllegalArgumentException("Social post log not found");
         }
-        log.setStatus("PENDING");
-        log.setErrorMessage(null);
-        log.setUpdatedAt(LocalDateTime.now());
-        logService.updateById(log);
+        if (!isRetryable(log.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Publication cannot be retried automatically; verify in-flight, unknown or historical outcomes first");
+        }
+        requireTarget(log.getTargetId());
+        // The publisher owns the atomic state transition. Never reset a possibly active attempt here.
         Map<String, Object> result = new LinkedHashMap<>(publisherClient.publish(logId));
         result.put("logId", logId);
         return result;
@@ -195,8 +216,9 @@ public class SocialPublishingService {
                     AND m.deleted_at IS NULL
                     AND COALESCE(m.status, 'ACTIVE') = 'ACTIVE'
                     AND NOT EXISTS (
-                      SELECT 1 FROM social_post_log posted
-                      WHERE posted.target_id = ? AND posted.movie_id = rl.movie_id AND posted.status = 'POSTED'
+                      SELECT 1 FROM social_post_log existing
+                      WHERE existing.target_id = ? AND existing.movie_id = rl.movie_id
+                        AND existing.status NOT IN ('PENDING', 'PREPARE_FAILED')
                     )
                 )
                 SELECT * FROM ranked_resources
@@ -214,27 +236,33 @@ public class SocialPublishingService {
                 .eq("target_id", target.getId())
                 .eq("resource_link_id", resourceId)
                 .last("LIMIT 1"), false);
-        if (log == null) {
-            log = new SocialPostLog();
-            log.setTargetId(target.getId());
-            log.setPlatform(target.getPlatform());
-            log.setResourceLinkId(resourceId);
-            log.setMovieId(String.valueOf(candidate.get("movie_id")));
-            log.setTitle(String.valueOf(candidate.get("title")));
-            log.setCreatedAt(LocalDateTime.now());
+        if (log != null) {
+            return log; // Keep ownership, final outcomes and historical failures intact.
         }
+        log = new SocialPostLog();
+        log.setTargetId(target.getId());
+        log.setPlatform(target.getPlatform());
+        log.setResourceLinkId(resourceId);
+        log.setMovieId(String.valueOf(candidate.get("movie_id")));
+        log.setTitle(String.valueOf(candidate.get("title")));
+        log.setCreatedAt(LocalDateTime.now());
         log.setStatus("PENDING");
-        log.setErrorMessage(null);
         log.setUpdatedAt(LocalDateTime.now());
         try {
-            logService.saveOrUpdate(log);
+            if (!logService.save(log)) throw new IllegalStateException("Social post could not be queued");
         } catch (DuplicateKeyException error) {
-            return logService.getOne(new QueryWrapper<SocialPostLog>()
+            SocialPostLog existing = logService.getOne(new QueryWrapper<SocialPostLog>()
                     .eq("target_id", target.getId())
                     .eq("resource_link_id", resourceId)
                     .last("LIMIT 1"), false);
+            if (existing == null) throw error;
+            return existing;
         }
         return log;
+    }
+
+    private boolean isRetryable(String status) {
+        return status != null && RETRYABLE_STATES.contains(status);
     }
 
     private LocalTime parseTime(String value) {

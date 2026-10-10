@@ -194,27 +194,29 @@ async function main() {
             } finally { await f.close(); }
         });
 
-        await run('filter errors stay local and can be retried on mobile', async () => {
-            let attempts = 0;
-            const f = await fixture(browser, { lang: 'zh', width: 375, filters: route => ++attempts === 1
-                ? json(route, {}, 503) : json(route, filters) });
-            try {
-                await f.page.goto(`${baseURL}/?category=mv`, { waitUntil: 'domcontentloaded' });
-                await movieLink(f.page, 'fixture-first').waitFor();
-                await f.page.getByTestId('movie-filters-toggle').click();
-                const notice = f.page.getByRole('alert').filter({ hasText: f.t.movieFiltersLoadFailed });
-                await notice.waitFor();
-                await notice.getByRole('button').click();
-                await f.page.getByText('fixture language', { exact: true }).waitFor();
-                assert.equal(attempts, 2);
-                assert.equal(await movieLink(f.page, 'fixture-first').count(), 1);
-                assert.ok(await f.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'No mobile horizontal overflow');
-                if (outputDir) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                    await f.page.screenshot({ path: path.join(outputDir, 'home-loading-mobile.png'), fullPage: true });
-                }
-            } finally { await f.close(); }
-        });
+        for (const width of [360, 375, 390, 430]) {
+            await run('filter errors stay local and can be retried on mobile ' + width, async () => {
+                let attempts = 0;
+                const f = await fixture(browser, { lang: 'zh', width, filters: route => ++attempts === 1
+                    ? json(route, {}, 503) : json(route, filters) });
+                try {
+                    await f.page.goto(`${baseURL}/?category=mv`, { waitUntil: 'domcontentloaded' });
+                    await movieLink(f.page, 'fixture-first').waitFor();
+                    await f.page.getByTestId('movie-filters-toggle').click();
+                    const notice = f.page.getByRole('alert').filter({ hasText: f.t.movieFiltersLoadFailed });
+                    await notice.waitFor();
+                    await notice.getByRole('button').click();
+                    await f.page.getByText('fixture language', { exact: true }).waitFor();
+                    assert.equal(attempts, 2);
+                    assert.equal(await movieLink(f.page, 'fixture-first').count(), 1);
+                    assert.ok(await f.page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'No mobile horizontal overflow');
+                    if (outputDir) {
+                        fs.mkdirSync(outputDir, { recursive: true });
+                        await f.page.screenshot({ path: path.join(outputDir, 'home-loading-mobile-' + width + '.png'), fullPage: true });
+                    }
+                } finally { await f.close(); }
+            });
+        }
         if (outputDir) {
             fs.mkdirSync(outputDir, { recursive: true });
             fs.writeFileSync(path.join(outputDir, 'home-loading-results.json'), JSON.stringify({ baseURL, results }, null, 2));

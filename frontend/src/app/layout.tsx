@@ -17,7 +17,7 @@ import SiteTelemetry from '../components/SiteTelemetry';
 import SiteFooter from '../components/SiteFooter';
 
 const RootLayout = ({ children }: React.PropsWithChildren) => (
-  <html lang="zh-CN">
+  <html lang="en">
     <body className="min-h-screen bg-background text-foreground transition-colors">
       <AntdRegistry>
         <I18nProvider>

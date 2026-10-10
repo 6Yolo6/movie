@@ -1,0 +1,12 @@
+.layout { min-width: 0; }
+
+@media (max-width: 767px) {
+    .layout :global(.ant-card-head-wrapper) { flex-wrap: wrap; gap: 8px; }
+    .layout :global(.ant-card-head-title) { white-space: normal; overflow-wrap: anywhere; }
+    .layout :global(.ant-card-extra) { width: 100%; margin-inline-start: 0; padding-bottom: 12px; }
+    .layout :global(.ant-card-extra .ant-btn) { width: 100%; min-height: 44px; height: auto; white-space: normal; }
+    .layout :global(.ant-card-body) { padding: 16px; }
+    .layout :global(.ant-select) { min-height: 44px; }
+    .layout :global(.ant-alert) { overflow-wrap: anywhere; }
+    .layout :global(.ant-statistic-title) { overflow-wrap: anywhere; }
+}
