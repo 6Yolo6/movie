@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-10-08
+更新时间：2026-10-11
 
 本文记录生产环境当前能力、运行约束、待处理事项与可复核的验收结论。一次性任务编号、单次发布流水和基础接口状态不长期保留；接口契约见 `docs/api.md`，部署与恢复流程见 `docs/deployment.md` 和 `.agents/skills/gying-project-ops/references/`。
 
@@ -26,6 +26,7 @@
 
 ### 片库与治理
 
+- 首屏与手机回归（2026-10-11 已部署）：i18n 初始 SSR/客户端快照统一，挂载后恢复已保存/浏览器语言；阻止旧首页请求覆盖新筛选，保留分页失败后的现有结果。中文 360/375/390/430px 首页回归通过，真机验收另列。
 - 分页、分类筛选、详情、收藏、评论、站内通知与管理员审核；影片、资源链接和来源身份均支持软删除并保留历史。
 - 首页三个分类按资源最近更新时间优先，并综合站内热度、TMDB 热度与可用评分；搜索/筛选页保留最新与评分排序。
 - 顶部搜索框提供「最近热门搜索」（近 7 天 Redis 热词合并，回退 `site_search_log`，公开接口 `GET /api/movies/hot-searches`）；搜索页与电影/剧集/动漫分类页的筛选项默认收起，仅常显排序，有已选条件时显示可逐个关闭的摘要与「清除全部」。
@@ -86,11 +87,14 @@
 
 ### 多平台发布
 
+- 发布状态保护（2026-10-11 已部署）：按日志 ID 原子认领，外部调用前持久化 PUBLISHING；仅 PENDING/PREPARE_FAILED 可安全重试，PREPARING/PUBLISHING/UNKNOWN/历史 FAILED 不自动重放，POSTED 返回既有结果。并非跨资源版本/同影片的全局 exactly-once。
+- 手机发布管理（<768px）改为可编辑目标卡片和日志卡片；主要操作至少 44px，长文本换行、筛选/分页可用，切换桌面不丢草稿，手机和桌面共用重试保护规则。候选及上线版本各 14 个发布场景通过；无真实发布操作。
 - 微博自动发布已启用，健康检查显示 configured/authenticated/ready 均为 true；未手工触发真实帖子以避免重复发布。
 - 旧 `secondary`、`qq-v3` QQ 频道目标已软停用（`enabled=0`），保留历史发布审计。
 
 ## 配置与安全
 
+- 2026-10-11 业务增量上线只替换四个应用，沿用现有环境/挂载/网络/端口/安全选项；G01–G11 与完整安全门禁仍未关闭，本轮未重跑完整安全扫描，不将应用上线或加密检查点当成整体安全通过。
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
 - 生产安全审计（2026-10-08 续验）：新版 `tools/security/check_security.py --repo . --probe` 为 **59 PASS / 11 FAIL / 0 UNKNOWN**，原 11 项仍全未关闭。比旧 53 PASS 多出的 6 项为预期容器完整性和一个生产网络诊断容器的检查，不是生产整改。新增固定 `G01–G11` 台账，显式 false、缺失/重复证据、Docker 查询失败和 socket 改名挂载不再假通过；详见 `docs/security/hardening-gates.md`。
@@ -104,10 +108,11 @@
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-08 续验）：backend `gying-p2p-recovery-backend:20261008a`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-recovery-source:20261008a`。停滞修复已于 17:29 上线，不再是待部署候选；本次续验未重建生产服务。
+- 当前在线镜像（2026-10-11）：backend `gying-code-optimization-backend:20261010a`、frontend `gying-code-optimization-frontend:20261010a`、source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a`，业务提交 `362090c`。构建日为 10 月 10 日，实际于 10 月 11 日协调切换；nginx 仅重载，其余 7 个容器身份/启动/重启计数与配置不变。详见 `docs/code-optimization-deployment-20261011.md`。
+- 当前应用恢复检查点：`G:/gying-backups/20261011T022133.799192Z` 的 10 个 age 文件 hash/认证解密通过，SQL 25 表及完成标记可读，配置归档 hash 与源文件一致；包含四个应用状态卷和运行参数，不是完整灾难恢复演练。发布/固定旧镜像/回退守护在 `E:/gying-tools/releases/code-optimization-20261010`；新发布状态、记录或配置变化必须先人工核对，不能仅回退某个发布组件。
 
 - 历史 P2P 部署基线（2026-10-06）：backend `gying-p2p-backend:20261006d`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。本轮仅替换 backend/source；nginx 平滑重载，其余 8 个容器 ID、启动时间、重启计数不变，所有环境与挂载保持。无架构迁移。功能提交 `bdc0ada`、夸克 PDS 上传兼容 `7f907c7`、成功重试错误清理 `228617b`；最新 JAR SHA-256 与测试产物一致。发布材料 `E:/gying-tools/releases/gying-p2p-20261006`；`rollback-d.ps1` 可回退后端到 c，`rollback-b.ps1` 可回退到初版 P2P 采集 a，原周榜镜像也保留。最新检查点 `G:/gying-backups/20261006T115631.510103Z` 的 7 个 age 文件 hash/认证解密通过、SQL 25 表可读；本轮未做恢复演练，也不覆盖远端网盘回滚。
-- 当前 GYING 数据源为 `gying-p2p-recovery-source:20261008a`。系列搜索、紧凑 BT 筛选、受保护种子读取与非 root 身份保持；10 月 8 日上线修复补强精确身份和季/Part 解析。`movie_source_identity.external_id` 已为 `utf8mb4_bin`，续验确认 `dWXo`（卡萨布兰卡）与 `dwXo`（蝙蝠侠）各绑定独立影片，身份 season 均为 0；剧集自然批次后复核《大明王朝1566》主表 season 已为 1。
+- 当前 GYING 数据源为 `gying-code-optimization-gying-source:20261010a`，2 MiB 限额已前置到登录/PoW 的 text/json 探测之前，并覆盖 GET 重试。系列搜索、紧凑 BT 筛选、受保护种子读取与非 root 身份保持；10 月 8 日上线修复补强精确身份和季/Part 解析。`movie_source_identity.external_id` 已为 `utf8mb4_bin`，续验确认 `dWXo`（卡萨布兰卡）与 `dwXo`（蝙蝠侠）各绑定独立影片，身份 season 均为 0；剧集自然批次后复核《大明王朝1566》主表 season 已为 1。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -117,6 +122,8 @@
 
 ## 仍需处理
 
+- **手机与发布边界**：当前证据为 Headless Edge 响应式视口，不等于 iOS Safari/Android 真机、真实账号编辑或外部发布验收。UNKNOWN/崩溃在途记录仍需人工核对；跨资源版本同影片去重和海报响应完整缓冲仍需独立改造。
+- **入口波动（2026-10-11）**：上线前 10:12:35 本机正常、公网短暂 530；未作任何 Tunnel/代理/DNS/凭据变更即自行恢复，连续 7 轮入口/拒绝检查通过后才开始切换。上线后入口正常，但间歇故障根因未关闭；不把本次部署当作该故障修复。
 - **失败隔离线上分支待续验（2026-10-08）**：停滞修复与二进制来源身份迁移均已上线；动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）。自然批次尚未触发失败分支，线上隔离重试仍未实证；不为补验收而制造生产错误或重放旧队列。发布/回滚材料在 `E:/gying-tools/releases/p2p-workflow-recovery-20261008`，应用回滚保留二进制身份排序规则。
 - **历史磁力/种子失败队列（2026-10-08 续验）**：截至 2026-10-08 20:03:56+08:00，归档任务 228 条、成功 170、失败 58；既有耗尽重试的 58 条（夸克 4、迅雷 54）未重置。部署后新增归档资源 8 条，其中 8 条活动/已审核/NORMAL；不以资源行代替本轮远端分享内容复验。旧失败阶段及受控恢复约束见 `docs/p2p-cloud-archive.md`；恢复需明确任务清单，不重放历史视频/发布队列。
 
@@ -144,6 +151,7 @@
 
 ## 长期不变量
 
+- 发布结果不确定时保留审计状态，不能把 UNKNOWN/PUBLISHING/历史 FAILED 批量改回 PENDING；backend 与 publisher 的状态机版本必须协调部署/回退。
 - `movie_metadata` 是影片主表，`resource_link` 是可用资源表，`movie_source_identity` 保存外部来源绑定；GYING 外部 ID 与本地 canonical 影片 ID 必须区分。
 - 资源状态与发布状态必须可追踪；失效修复优先原位更新，避免同片产生多条活动自有分享。
 - 自动化只处理明确匹配的影片与资源，不确定匹配必须转为人工候选。
@@ -152,6 +160,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 代码优化与手机适配（2026-10-11 已部署）：候选镜像内 source 54、publisher 31 项通过；候选与生产 nginx 上分别通过发布 14 + 首页 10 个 mock 浏览器场景。本机/公网 8 项真实入口、backend→source/publisher、frontend→backend 链路通过；四应用实际镜像/UID/环境/挂载/网络复核一致，日志无 ERROR/Exception。发布行与目标配置守护保持不变，未执行 SQL 迁移、重放历史任务或真实发布。业务全量 523 项（5 跳过）等实现阶段证据及本次恢复材料见 `docs/code-optimization-20261009-round2.md`、`docs/code-optimization-deployment-20261011.md`。
 
 - 安全门禁/P2P 续验工具（2026-10-08）：本次相关 Python 回归 78 项全部通过；四个真实隔离依赖候选均非 root/NNP/启动探针通过，Redis 另验匿名拒绝、认证/Lua 成功与 CONFIG 拒绝；候选无网络、无生产数据或真实凭据，已全部清理，不能替代生产卷/依赖迁移。线上入口 12/12 通过，backend/source 日志无 ERROR/Exception；6 个发布备份文件 hash 重验通过（本轮未解密/恢复）。主工具已在宿主执行，未重建业务容器、改变端口/网络/权限/凭据或手动发布。只读证据与隔离报告在 `tmp/continuation-20261008/`；操作入口见 `docs/security/hardening-gates.md`。
 
