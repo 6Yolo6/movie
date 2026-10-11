@@ -59,6 +59,13 @@
 - 重点检查 360/375/390/430px、小屏卡片、长文本、44px 操作区、筛选分页、桌面切换草稿保留，以及中英/明暗主题和无水合错误。按受影响页面扩展场景，不只测截图。
 - Headless Edge 的手机/平板视口不是 iOS Safari / Android 真机，也不是真实账号保存或外部发布验收。各类证据分别记录。
 
+### 监控与资源数量回归
+
+- 纯逻辑：`node --test tools/tests/monitoring-models.test.cjs`，覆盖日期、补齐零流量日期、状态、资源分类及中英文键名。
+- 浏览器：`node tools/tests/admin-monitoring-ui.cjs` 与 `node tools/tests/movie-resource-counts.browser.cjs`，使用 `PLAYWRIGHT_MODULE` 指向 Playwright/Playwright Core，`WEB_TEST_BASE_URL` 为无凭据 loopback 前端（默认 18080），`SCREENSHOT_DIR` 为仓库外输出目录。
+- 详情 SSR 需先运行 `node tools/tests/fixtures/monitoring-resources.cjs`（默认仅监听 `127.0.0.1:18085`），并令**隔离前端** `INTERNAL_API_URL` 指向它。Docker 候选使用独立 fixture 容器/网络，不连接生产网络；不得因为浏览器拦截 API 就让 SSR 连接生产 backend。
+- `MonitoringServiceMySqlTest` 为显式 opt-in：只接受 loopback 上名为 `monitoring_fixture_<数字>` 的全新空库，使用 `MONITORING_TEST_MYSQL_URL` 和环境中的临时 `MONITORING_TEST_MYSQL_PASSWORD`。建立自有的临时 MySQL 后再运行 Maven；不要复用已有库，不自动 DROP 或重置数据。未设置时测试跳过，不能计为真实 SQL 已验收。
+
 ### 真实 SQL 的隔离回归
 
 [发布状态机 MySQL fixture](../tools/tests/social-publishing-mysql.ps1) 从仓库根目录执行：

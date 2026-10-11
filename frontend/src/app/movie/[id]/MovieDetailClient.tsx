@@ -7,6 +7,7 @@ import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCi
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 import { api, readApiError } from '@/lib/api';
+import { groupResources, resourceCreatedDate } from '@/lib/resourceCategories';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
@@ -170,25 +171,28 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
 
     React.useEffect(() => {
         setResourceItems(resources);
-    }, [resources]);
-
-    React.useEffect(() => {
         if (!token || !movie.id) return;
+        const controller = new AbortController();
+        let active = true;
         api(`/api/resources/mine?movieId=${movie.id}&page=1&size=100`, {
             headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
         })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-                if (!data?.records) return;
+                if (!active || !Array.isArray(data?.records)) return;
                 setResourceItems(prev => {
                     const merged = new Map<number, ResourceLink>();
                     prev.forEach(item => merged.set(item.id, item));
-                    data.records.forEach((item: ResourceLink) => merged.set(item.id, item));
+                    data.records.forEach((item: ResourceLink) => {
+                        if (String(item.movieId) === String(movie.id)) merged.set(item.id, item);
+                    });
                     return Array.from(merged.values());
                 });
             })
             .catch(() => {});
-    }, [movie.id, token]);
+        return () => { active = false; controller.abort(); };
+    }, [movie.id, token, resources]);
 
     React.useEffect(() => {
         if (token && movie.id) {
@@ -259,13 +263,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         )
     }));
 
-    type LanguageKey = 'cn' | 'en';
-    const providers: Record<string, { cn: string, en: string }> = {
-        "BAIDU": { cn: t('百度网盘'), en: t('baiduNetdisk') },
-        "XUNLEI": { cn: t('迅雷云盘'), en: t('xunleiCloud') },
-        "QUARK": { cn: t('夸克网盘'), en: t('quarkCloud') },
-        "ALIYUN": { cn: t('阿里云盘'), en: t('aliyunDrive') },
-        "OTHER": { cn: t('其他'), en: t('other') }
+    const providers: Record<string, string> = {
+        BAIDU: t('baiduNetdisk'), XUNLEI: t('xunleiCloud'), QUARK: t('quarkCloud'),
+        ALIYUN: t('aliyunDrive'), OTHER: t('other'),
     };
 
     const sortedResourceItems = useMemo(() => {
@@ -273,23 +273,24 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
             const aOwn = user?.id != null && a.uploaderId === user.id;
             const bOwn = user?.id != null && b.uploaderId === user.id;
             if (aOwn !== bOwn) return aOwn ? -1 : 1;
-            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+            return (b.createdAt || '').localeCompare(a.createdAt || '');
         });
     }, [resourceItems, user?.id]);
 
     // Group Disk Resources by Provider
-    const diskResources = useMemo(() => sortedResourceItems.filter(r => r.type === 'DISK'), [sortedResourceItems]);
+    const resourceGroups = useMemo(() => groupResources(sortedResourceItems), [sortedResourceItems]);
+    const { disk: diskResources, p2p: p2pResources, online: onlineResources, other: otherResources } = resourceGroups;
     const groupedDiskResources = useMemo(() => {
         const groups: Record<string, ResourceLink[]> = {};
         diskResources.forEach(r => {
-            const p = r.provider || 'OTHER';
+            const p = r.provider?.trim().toUpperCase() || 'OTHER';
             if (!groups[p]) groups[p] = [];
             groups[p].push(r);
         });
         return groups;
     }, [diskResources]);
 
-    const p2pResources = useMemo(() => sortedResourceItems.filter(r => r.type !== 'DISK'), [sortedResourceItems]);
+
 
     const logResourceOperation = (item: ResourceLink, operationType: 'COPY' | 'SHARE') => {
         fetch('/api/monitoring/resource-operation', {
@@ -472,13 +473,13 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     };
 
     // Render Resource Card
-    const renderResourceCard = (item: ResourceLink, index: number) => (
-        <Card key={index} size="small" className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-gray-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all shadow-sm">
+    const renderResourceCard = (item: ResourceLink) => (
+        <Card key={item.id} size="small" className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-gray-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div className="flex flex-col gap-1 w-full sm:w-auto overflow-hidden">
                     <div className="flex items-center gap-2">
                         <Tag color={item.type === 'DISK' ? 'green' : (item.type === 'MAGNET' ? 'purple' : 'blue')} className="m-0 font-bold border-0">
-                            {item.type === 'DISK' ? (providers[item.provider as keyof typeof providers]?.[i18n.language as LanguageKey] || item.provider) : item.type}
+                            {item.type === 'DISK' ? (providers[item.provider?.toUpperCase()] || item.provider) : item.type}
                         </Tag>
                         {renderLinkStatusTag(item)}
                         <Text className="text-gray-800 dark:text-gray-200 font-medium truncate text-base">
@@ -498,7 +499,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         {[item.quality, item.subtitle, item.fileSize].filter(Boolean).map(meta => (
                             <Tag key={meta} className="m-0 border-0 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-300">{meta}</Tag>
                         ))}
-                        <span className="text-gray-400">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}</span>
+                        <span className="text-gray-400">{resourceCreatedDate(item.createdAt)}</span>
                     </Space>
                     {item.versionNote && <Text type="secondary" className="text-xs pl-1">{item.versionNote}</Text>}
                 </div>
@@ -530,9 +531,17 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         </Card>
     );
 
+    const resourceTabLabel = (category: string, label: string, count: number) => (
+        <span className="inline-flex items-center gap-2" data-resource-tab={category} data-resource-count={count}
+            aria-label={t('resourceCategoryCount', { category: label, count })}>
+            <span>{label}</span>
+            <span className="min-w-5 rounded-md bg-gray-200/70 px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums text-gray-600 dark:bg-zinc-700 dark:text-zinc-200">{count}</span>
+        </span>
+    );
+
     const diskTabItems = Object.keys(groupedDiskResources).map(providerKey => ({
         key: providerKey,
-        label: providers[providerKey]?.[i18n.language as LanguageKey] || providerKey,
+        label: resourceTabLabel(`provider-${providerKey}`, providers[providerKey] || providerKey, groupedDiskResources[providerKey].length),
         children: (
             <div className="flex flex-col gap-3 animate-fade-in">
                 {groupedDiskResources[providerKey].map(renderResourceCard)}
@@ -544,7 +553,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     if (Object.keys(groupedDiskResources).length > 1) {
         diskTabItems.unshift({
             key: 'ALL',
-            label: t('all'),
+            label: resourceTabLabel('provider-ALL', t('all'), diskResources.length),
             children: (
                 <div className="flex flex-col gap-3 animate-fade-in">
                     {diskResources.map(renderResourceCard)}
@@ -784,13 +793,13 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                     )}
                                 </div>
                                 <Tabs
-                                    defaultActiveKey="disk"
+                                    defaultActiveKey={diskResources.length ? 'disk' : p2pResources.length ? 'p2p' : onlineResources.length ? 'online' : otherResources.length ? 'other' : 'disk'}
                                     type="card"
                                     className="custom-tabs"
                                     items={[
                                         {
                                             key: 'disk',
-                                            label: <span className="px-2">{t('cloudDisk')}</span>,
+                                            label: resourceTabLabel('disk', t('cloudDisk'), diskResources.length),
                                             children: (
                                                 <div className="bg-white dark:bg-zinc-900 p-4 rounded-b-lg rounded-tr-lg border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[200px]">
                                                     {diskResources.length > 0 ? (
@@ -806,7 +815,7 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                         },
                                         {
                                             key: 'p2p',
-                                            label: <span className="px-2">{t('magnetTorrent')}</span>,
+                                            label: resourceTabLabel('p2p', t('magnetTorrent'), p2pResources.length),
                                             children: (
                                                 <div className="flex flex-col gap-3 bg-white dark:bg-zinc-900 p-4 rounded-b-lg rounded-tr-lg border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[200px]">
                                                     {p2pResources.length > 0 ? p2pResources.map(renderResourceCard) : (
@@ -818,6 +827,16 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                                 </div>
                                             )
                                         },
+                                        ...(onlineResources.length ? [{
+                                            key: 'online',
+                                            label: resourceTabLabel('online', t('onlinePlay'), onlineResources.length),
+                                            children: <div className="flex flex-col gap-3 rounded-lg bg-white p-4 dark:bg-zinc-900">{onlineResources.map(renderResourceCard)}</div>,
+                                        }] : []),
+                                        ...(otherResources.length ? [{
+                                            key: 'other',
+                                            label: resourceTabLabel('other', t('resourceOtherCategory'), otherResources.length),
+                                            children: <div className="flex flex-col gap-3 rounded-lg bg-white p-4 dark:bg-zinc-900">{otherResources.map(renderResourceCard)}</div>,
+                                        }] : []),
                                         {
                                             key: 'comments',
                                             label: <span className="px-2">{t('comments')}</span>,
@@ -917,11 +936,11 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         {resourceType === 'DISK' && (
                             <Form.Item name="provider" label={t('provider')} rules={[{ required: true }]}>
                                 <Select className="rounded-md" disabled={!inferResourceProvider(resourceUrl)}>
-                                    <Option value="BAIDU">{providers.BAIDU[i18n.language as LanguageKey]}</Option>
-                                    <Option value="QUARK">{providers.QUARK[i18n.language as LanguageKey]}</Option>
-                                    <Option value="XUNLEI">{providers.XUNLEI[i18n.language as LanguageKey]}</Option>
-                                    <Option value="ALIYUN">{providers.ALIYUN[i18n.language as LanguageKey]}</Option>
-                                    <Option value="OTHER">{providers.OTHER[i18n.language as LanguageKey]}</Option>
+                                    <Option value="BAIDU">{providers.BAIDU}</Option>
+                                    <Option value="QUARK">{providers.QUARK}</Option>
+                                    <Option value="XUNLEI">{providers.XUNLEI}</Option>
+                                    <Option value="ALIYUN">{providers.ALIYUN}</Option>
+                                    <Option value="OTHER">{providers.OTHER}</Option>
                                 </Select>
                             </Form.Item>
                         )}

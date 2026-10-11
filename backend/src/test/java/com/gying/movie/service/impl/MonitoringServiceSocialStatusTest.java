@@ -27,7 +27,8 @@ class MonitoringServiceSocialStatusTest {
         assertEquals(5L, result.get("socialPostedToday"));
         assertEquals(3L, result.get("socialFailedToday"));
         verify(jdbc).queryForMap(argThat((String sql) -> sql.contains("FROM social_post_log")
-                && sql.contains("SUM(status IN ('FAILED','PREPARE_FAILED')) socialFailedToday")
-                && !sql.contains("UNKNOWN")));
+                && sql.contains("SUM(status IN ('FAILED','PREPARE_FAILED')),0) socialFailedToday")
+                && sql.contains("SUM(status='UNKNOWN'),0) socialUnknownToday")
+                && sql.contains("SUM(status IN ('PENDING','PREPARING','PUBLISHING')),0) socialPendingToday")));
     }
 }
