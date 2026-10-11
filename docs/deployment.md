@@ -1,136 +1,86 @@
-# 部署文档
+# 部署与回滚
 
-## 环境与配置
+[文档导航](README.md) · [当前项目状态](current-project-status.md) · [开发测试](development.md) · [迁移与恢复](../MIGRATION.md)
 
-- JDK 17、Maven 3.9、Node.js 20、MySQL 8、Redis 6。
-- 本地开发分别使用 `backend/.env.example` 和 `frontend/.env.example`。
-- Docker 生产部署复制根目录 `.env.example` 为 `.env`；该文件是环境变量的完整清单。
-- 生产必须替换数据库/Redis 密码、`JWT_SECRET`、`APP_INTERNAL_TOKEN` 和各外部服务令牌。
-- 密钥、Cookie 和账号密码不得写入 Git、日志或 `sys_config`。
+## 1. 选择正确流程
 
-## 本地启动
+| 场景 | 使用范围 |
+| --- | --- |
+| 已有部署的业务增量 | 本文：验证候选 → 固定镜像 → 只替换受影响服务 → 真实入口验收 |
+| 新服务器、跨主机或灾难恢复 | [迁移手册](../MIGRATION.md)：隔离目标、恢复与数据切换 |
+| 表结构或数据变更 | [数据库](database.md)：单独审查增量、备份与恢复路径 |
+| 安全加固 | [安全导航](security/README.md)：完整门禁与逐项授权，不混入普通业务发布 |
+| 仅文档整理 | 链接/格式/事实一致性检查后提交；不重建服务或执行 SQL |
 
-```bash
-cd backend
-mvn spring-boot:run
+**门禁失败、测试失败、目标不清或操作难回退时，停止相应动作。** G01–G11 与完整安全门禁是不同范围；历史业务发布不意味着风险已消除，也不是以后跳过门禁的授权。实际版本、镜像和恢复检查点只在[当前状态](current-project-status.md)及对应部署报告维护。
 
-cd ../frontend
-npm install
-npm run dev
-```
+## 2. 部署前必须具备
 
-前端默认 `http://localhost:3000`，后端默认 `http://localhost:8880`。
+- 明确目标主机、实际检出目录、分支/提交、维护窗口和服务清单；保留无关工作树改动，不把未审查内容构建进候选。
+- 使用[运维 Skill](../.agents/skills/gying-project-ops/SKILL.md)建立脱敏快照，运行就绪检查；记录容器 ID、镜像 ID、启动时间、原有重启计数、UID、网络/端口及挂载。
+- 比较**实际有效配置**与仓库目标配置。现役部署使用显式 Compose 项目名 `gying-movie`、`docker-compose.prod.yml` 与经审查的运行覆盖文件；不能让目录名推导为另一个 `movie` 项目。
+- 按变更范围完成[测试](development.md)，先构建/验证候选，再替换线上。镜像使用唯一标签并核对 ID 或 digest；保留旧镜像及同一套运行参数。
+- 准备适用本次窗口的[加密备份](security/backup-plan.md)，验证清单、大小、hash 与完整认证解密；涉及恢复能力的门禁还需隔离恢复验证，不能用“备份文件存在”代替。
+- 协调相关写入方与在途任务：Resource Hub、网盘转存、backend 发布调度、宿主机频道计划及手工入口按影响范围核对。记录暂停前开关并准备恢复；不批量关闭无关任务，不重置旧 RUNNING/UNKNOWN。
+- 发布状态机涉及 backend/publisher 联动，必须先阅读[发布运维](social-publishing.md)。不能单边降级，也不能在外部结果不确定时强行切换。
 
-## Docker 生产部署
+## 3. Compose 与最小替换
 
-```bash
-cp .env.example .env
-# 填写真实值
-docker compose -f docker-compose.prod.yml config --quiet
-docker compose -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.prod.yml ps
-```
+仓库没有默认 `docker-compose.yml`。以下为 **PowerShell 模板**，覆盖文件与受影响服务必须来自本次审查，不是通用一键部署脚本：
 
-nginx 是对外入口。重建 backend 或 frontend 后重新创建 nginx，避免它继续使用旧容器地址。
+    $repo = git rev-parse --show-toplevel
+    Set-Location -LiteralPath $repo
+    $override = '<经审查的运行覆盖文件绝对路径>'
+    $compose = @('-p', 'gying-movie', '-f', 'docker-compose.prod.yml', '-f', $override)
+    docker compose @compose config --quiet
+    if ($LASTEXITCODE -ne 0) { throw 'Compose 校验失败，停止部署' }
+    docker compose @compose ps
 
-Compose 默认连接现有 MySQL、Redis、MinIO、PanSou 和 quark-auto-save。只有需要 Compose 创建依赖时才使用：
+只运行 `config --quiet`，不把包含真实环境值的完整 `config` 输出写入聊天或普通日志。配置解析通过不代表安全/数据门禁通过。
 
-```bash
-docker compose -f docker-compose.prod.yml --profile embedded-deps up -d
-```
+在候选、备份、写入协调及门禁均满足后，按清单替换：
 
-## Resource Hub
+    $affected = @('<本次受影响服务名>')
+    docker compose @compose up -d --no-deps --no-build --pull never @affected
+    if ($LASTEXITCODE -ne 0) { throw '替换未完成，保留现场并按回退方案处理' }
 
-关键配置类别以 `.env.example` 为准：
+- 覆盖文件必须将清单内每个服务固定到已验证镜像；`--no-build --pull never` 不会替你固定标签内容。
+- 不把不带服务清单的 `up -d --build` 当作日常升级；不要隐式启动 `embedded-deps`，已有外部依赖不得被替换或重复创建。
+- 环境变量修改需要核对实际容器加载。前端 `NEXT_PUBLIC_API_URL` 是构建参数：生产保持空值走同域，SSR 的 `INTERNAL_API_URL` 指向内部 backend。
+- 替换上游后，nginx 需要刷新容器地址。通常只校验和重载，不为此重建 nginx 或其他依赖：
 
-- `RESOURCE_HUB_*`：总开关、Worker、TMDB 同步和批量限制。
-- `TMDB_API_KEY`、`TMDB_API_BASE_URL`：TMDB。
-- `RESOURCE_HUB_PANSOU_*`、`PANSOU_API_*`：本地 PanSou 与外部 Panso API。
-- `QUARK_AUTO_SAVE_*`、`QUARK_SHARE_*`：转存、保存目录和自有分享。
-- `GYING_*`、`GYING_SOURCE_*`：GYING 账号、内部服务和目标发布者。
+    docker compose @compose exec -T nginx nginx -t
+    if ($LASTEXITCODE -ne 0) { throw 'nginx 配置无效，不执行重载' }
+    docker compose @compose exec -T nginx nginx -s reload
+    if ($LASTEXITCODE -ne 0) { throw 'nginx 重载失败，检查真实入口与回退条件' }
 
-先保持定时 Worker 关闭，通过后台手动跑一条计划保留资源，确认搜索、转存、自有分享和入库后再启用调度。quark-auto-save API Token 不等于夸克 Cookie；两者都要有效。
+## 4. 验收：由内到外
 
-生产 `quark-auto-save` 使用 `/app/config/quark_config.json` 持久卷，当前全局计划为 `0 8,18,20 * * *`。
-GYing 的剧集和动漫任务使用 `runweek: [1]`（每周一按上述三个时段执行）自动检查来源更新并周转存；正常任务缺省配置可通过管理 API `/update?token=...` 批量补齐。
-迁移前必须备份配置，只修改 `/GYing Resource Hub/tv/`、`/GYing Resource Hub/anime/` 下没有 `shareurl_ban` 且没有 `runweek` 的任务，保留 `runweek: []` 禁用任务和封禁任务不变。
-首次转存仍由 Resource Hub 手动任务直接执行，不受 `runweek` 过滤；更新来源后由周计划负责后续追更。API token 由 quark-auto-save WebUI 凭据派生，不能与夸克 Cookie 混用，也不得写入日志或文档。
+| 层级 | 必须核对 |
+| --- | --- |
+| 运行身份与配置 | 实际镜像/产物 hash、UID、环境摘要、挂载、端口/网络与审查一致 |
+| 内部读取链路 | backend → DB/Redis/MinIO/source/publisher；frontend SSR → backend |
+| 本机入口 | nginx 首页、详情、公共 API 和图片；不能只看容器 running |
+| 公网入口 | 同样的真实页面/接口；匿名管理 API 拒绝，内部/QQ 路径不暴露 |
+| 受影响 UI | 中英/明暗主题、手机和桌面、加载/失败路径及控制台错误 |
+| 任务与外部副作用 | 目标、发布日志及有关任务与维护前基线对照，区分原调度自然运行和人工测试 |
+| 未改服务 | 容器身份、启动/重启计数及配置保持基线；不假设所有历史重启计数都为零 |
 
-## GYING
+连续观察窗口与日志检查要记录具体时间。HTTP 200、单测、mock API 和视口截图不是同一种证据；尤其[发布状态](social-publishing.md)需读取业务结果，不通过试发帖子验证健康。
 
-`gying-source` 复用一个加锁 Session，处理 PoW 和登录。环境变量提供重启后的默认账号；管理员可在 `/admin/gying-source` 临时切换当前账号，密码和 Cookie 不持久化。
+真实转存、修复、扫码账号变更、群消息或发帖须另有明确范围和授权；没有执行则写“未验收”，不能写成功。Tunnel/代理出现间歇故障时保留独立问题，不归功于无关应用上线。
 
-“爬取我已发布资源”按钮复用 `gying_crawler.py` 的 `/my-resources` 分页和影片元数据入库链路；同步时按 GYING `source_id` 或 URL 去重，已有资源只计为跳过，不重复插入。
+## 5. 回滚与退出条件
 
-生产验证顺序：健康检查、候选读取、本人资源读取、单条无变更检查，最后才执行真实发布或修复。
+- 应用回滚前重新核对这段窗口内的数据、目标配置和外部结果；触发回退守护时先保留证据，不能自动恢复 SQL 或状态表。
+- 仅应用故障且数据契约兼容：恢复记录过的旧镜像和有效配置，只替换受影响服务并重载 nginx，再完成同样的真实入口验收。
+- 发布状态机联动回退按[发布文档](social-publishing.md#5-部署凭据更新与回滚)执行；新记录可能让旧版本不再安全。
+- `movie_source_identity.external_id` 的 `utf8mb4_bin` 在应用回滚时保留，详见[数据库](database.md#4-外部来源-id-大小写)。
+- 数据或外部副作用不兼容时停止自动回退，另行评审恢复/前向修复；禁止删除卷、清空历史、重放队列或全局 Docker 清理。
+- 按维护前记录恢复被临时暂停的开关，保留原本禁用的项目；不能为了验收擅自启用新的发布计划。
 
-## QQ 群
+## 6. 记录与交接
 
-- QQ 群每日推荐由 backend 调度器负责，不由 `social-publisher` 发送。启用后默认按 `09:00`（`Asia/Shanghai`）运行，管理端可配置 `qq.bot.daily_recommendation.enabled`、`time`、`count`、`group_ids` 和 `template`；保存配置后会在检查周期内补发，也可通过 `POST /api/admin/qq-automation/daily-recommendation/run` 立即触发。
-- 推荐模板支持 `{{title}}`、`{{year}}`、`{{genres}}`、`{{rating}}`、`{{summary}}`、`{{resources}}`、`{{detailUrl}}`。生产环境先设置 `APP_PUBLIC_BASE_URL`，默认模板不应把本地 `localhost` 地址发到群里。
-- QQ 官方主动群消息可能返回 `40034105`。这表示平台权限/消息模式尚未满足；后端会按配置尝试 NapCat 备用通道，但 NapCat 登录态不是新部署的默认依赖。验收必须包含真实群消息，而不只看接口返回或任务日志。
-- OpenClaw 补丁脚本会同步唯一安全运行时副本、清理旧插件加载路径、写入 Unicode 转义的搜索进度文本，并在 `/bot-*`、`/stop`、`/approve` 入口复核管理员白名单。升级插件或 Gateway 后重新执行：`tools/patch-openclaw-qqbot-gying.ps1`。
+部署报告至少写清提交、构建日/上线日、实际镜像与服务范围、备份及回退位置、测试种类/数量/skip、入口与日志观察、外部操作是否发生、未完成门禁。随后只更新[当前状态](current-project-status.md)的相关章节，历史材料进[历史索引](history/README.md)。
 
-- `QQ_BOT_*` 配置命令、限流、敏感词、回复通道和自动转存。
-- NapCat 上报到 `/api/qq-bot/onebot?token=...`，后端通过 OneBot HTTP 服务回复。
-- 官方 QQBot 出站需要 `GROUP_OPENID`，普通 QQ 群号不能替代。
-- OpenClaw 被动回复调用 `/api/qq-bot/search-reply`。运行 `tools/patch-openclaw-qqbot-gying.ps1` 会安装 `qrcode`、接管影视搜索/候选选择指令、为夸克链接发送二维码，并在未知或空 AT 时返回帮助；插件升级后需要重新执行。搜索收到后先回复“正在搜索资源，请稍后...”。
-- Docker 部署会把 Windows 可维护源同步到唯一的非 world-writable Linux 运行副本 `/home/node/.openclaw-runtime-plugins/qqbot-project`，同时从 `plugins.load.paths` 清理历史 QQBot runtime 路径并自动重启 Gateway。不得同时加载多份 `@tencent-connect/openclaw-qqbot`，否则旧副本可能抢先拦截消息，使搜索进度和指令补丁失效。
-- 群机器人先展示影片候选，用户选定影片后会展示年份、类型、地区、评分、简介和资源名称/画质候选；回复单个资源序号后才执行所选夸克或迅雷转存，成功回复也会带完整影片元数据。可用“夸克”或“迅雷”筛选，但不支持“夸克10”等数量批量转存。多次失败、无视频文件或违规/平台拦截会及时返回明确提示；群回复会 @ 对应用户，上下文有效期为 5 分钟。
-
-## 腾讯频道
-
-真实版块帖子由宿主机 `tencent-channel-cli` 发布：
-
-```powershell
-tools/publish-qq-channel-feed.ps1 `
-  -Title "Movie Title" `
-  -Link "https://pan.quark.cn/s/xxxx" `
-  -Intro "Short intro" `
-  -ChannelType movie
-```
-
-资源中心的“发到QQ频道”调用宿主机桥接：
-
-```powershell
-tools/register-qq-channel-publisher-bridge.ps1
-Invoke-RestMethod http://127.0.0.1:8092/health
-```
-
-后端使用 `QQ_CHANNEL_PUBLISHER_BASE_URL` 和 `QQ_CHANNEL_PUBLISHER_TOKEN`。桥接只处理指定 `PENDING` 日志；不可用时记录留给 `publish-latest-resource-to-qq-channel.ps1` 定时处理。
-
-## 多平台发布
-
-`social-publisher` 是独立容器，负责多个 QQ 频道账号和新浪微博，不复用或覆盖原宿主机 `tencent-channel-cli` 登录状态。
-
-关键配置：
-
-- `SOCIAL_PUBLISHER_BASE_URL`、`SOCIAL_PUBLISHER_TOKEN`：后端访问独立发布容器。
-- `QQ_CHANNEL_ACCOUNTS_ROOT`：容器内多个 QQ 账号的独立凭据目录，生产 compose 固定为 `/data/qq-accounts` 并挂载持久卷。
-- `WEIBO_WEB_COOKIE`：新浪微博网页端当前登录会话 Cookie，只写入部署环境，不写入数据库或 Git。
-- `WEIBO_WEB_XSRF_TOKEN`：可选；未配置时从 Cookie 中的 `XSRF-TOKEN` 自动读取。
-- `WEIBO_WEB_FINGERPRINT`：网页发帖请求中的浏览器 `fp` 参数，必须与当前会话配套。
-- `WEIBO_WEB_CLIENT_VERSION`、`WEIBO_WEB_USER_AGENT`：可选的网页客户端版本和 User-Agent 覆盖值。
-
-首次部署：
-
-```powershell
-docker compose -f docker-compose.prod.yml up -d --build social-publisher
-```
-
-QQ 登录信息按账号标识分别保存在 `social-publisher-qq-accounts` 卷；微博网页会话从部署环境读取。后台 `/admin/automation` 的“多平台发布”页签可新增 QQ 账号并生成授权二维码，扫码后自动轮询授权结果；移除账号时会删除该账号凭据并停用其频道目标，历史发布记录保留。页面还可维护频道、每日时间、每次条数、间隔和模板，并可对单个目标或全部目标手动发布下一条。候选按站内热度、TMDB 热度和资源录入时间排序；同一目标不会重复发布同一影片。
-
-微博凭据档案固定为 `default`；QQ 账号使用页面填写的 2-32 位账号标识，每个标识对应独立 `.qqcli` 登录目录。先完成扫码授权，再为该账号添加一个或多个频道目标。
-
-微博发布器固定向 `https://www.weibo.com/ajax/statuses/update` 发送网页表单请求，参数包括正文、公开可见性和浏览器 `fp`。当前仅发布文本和资源链接，不上传海报。响应中的登录失效、频率限制和安全验证会分类写入发布记录；遇到验证码时不会自动处理。
-
-Cookie 与 `fp` 会随网页登录状态变化而失效。更新 `.env` 后执行 `docker compose -f docker-compose.prod.yml up -d --build social-publisher` 重新加载；建议先手动发布一条确认成功，再开启微博目标自动发布。
-
-## 上线检查
-
-- 数据库和对象存储有可恢复备份。
-- nginx 只暴露需要的端口，HTTPS 和 CORS 指向生产域名。
-- MySQL、JVM 和容器时区均为 `Asia/Shanghai`。
-- 首页、登录、资源、评论、通知和管理页面正常。
-- `mvn test`、`npm run lint`、`npm run build` 通过。
-- 不用一次性公开资源验证自动发布。
+Resource Hub、P2P、迅雷会话和 QQ 的操作详情从[文档导航](README.md)进入，避免在本部署手册重复可变配置和真实发布命令。

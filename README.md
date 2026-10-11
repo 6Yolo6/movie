@@ -1,62 +1,43 @@
-# Gying Movie 片库
+# 影窝 · GYing Movie
 
-Gying Movie 是一个面向电影、剧集、动漫的片库资源管理项目。用户可以浏览片库、筛选影片、收藏影片、提交网盘/磁力/种子/在线播放资源、评论留言求资源；管理员可以审核资源、处理失效举报、管理评论、用户和系统配置。
+电影、剧集与动漫片库，集成资源治理、GYING 元数据采集、夸克/迅雷自有分享，以及 QQ 与多平台发布审计。英文界面品牌为 **FilmNest**。
 
-## 技术栈
+> 这是生产项目仓库。仓库配置代表预期状态，不等于线上已部署或安全门禁已通过；实际运行状态以带日期的验收记录为准。
 
-- 后端：Spring Boot 3.2、MyBatis Plus、MySQL、Redis、JWT
-- 前端：Next.js 16 App Router、React 19、Ant Design、Zustand、i18next
-- 数据：`movie_metadata`、`resource_link`、`resource_report`、`comment`、`user_favorite`、`user_notification`
+## 从这里开始
 
-## 核心功能
+| 目标 | 文档 |
+| --- | --- |
+| 了解当前部署、未完成事项与恢复检查点 | [当前项目状态](docs/current-project-status.md) |
+| 查找全部维护文档 | [文档导航](docs/README.md) |
+| 搭建隔离开发环境、运行测试 | [开发与测试](docs/development.md) |
+| 查询接口与数据库变更 | [接口](docs/api.md) · [数据库](docs/database.md) |
+| 更新已有部署或回滚 | [部署与回滚](docs/deployment.md) |
+| 迁移主机、初始化或灾难恢复 | [迁移与恢复](MIGRATION.md) |
+| 查看 11 项门禁与完整安全要求 | [安全文档](docs/security/README.md) |
 
-- 片库浏览：分页、分类、关键词、类型、地区、语言、年份、排序。
-- 动态筛选：`/api/movies/filters` 根据当前分类返回可用筛选项。
-- 资源提交：支持网盘、磁力、种子、在线播放；支持清晰度、字幕、大小、版本说明。
-- 审核闭环：管理员通过/拒绝资源，拒绝原因会通知上传者并在“我的投稿”展示。
-- 失效举报：登录用户可举报失效链接，管理员在“举报管理”中处理、误报或标记失效。
-- 评论留言：影片评论和留言板支持回复、点赞、删除，后台可管理评论状态。
-- 用户体系：注册验证码、登录、JWT 鉴权、角色、禁用/启用、管理员切换账号。
-- 收藏热门：用户收藏影片，热门页支持日/周/月/总榜。
-- 站内通知：审核结果、链接状态变化、评论回复写入通知中心。
-- 主题语言：前端支持日/夜主题和中英文切换。
+## 仓库结构
 
-## 快速启动
+| 路径 | 职责 |
+| --- | --- |
+| `backend/` | Java 17 / Spring Boot API、资源中心与任务编排 |
+| `frontend/` | Next.js / React 公共页面和管理界面 |
+| `crawler/` | Python GYING 数据源服务 |
+| `social-publisher/` | Node.js 独立发布器与发布状态保护 |
+| `tools/` | 运维、浏览器回归及隔离测试工具 |
+| `deploy/`、`docker-compose.prod.yml` | 部署配置与示例；不代表现役容器配置 |
+| `docs/`、`.agents/skills/gying-project-ops/` | 项目手册、历史证据与运维工作流 |
 
-1. 准备 MySQL 8、Redis 6、JDK 17、Maven 3.9、Node.js 20。
-2. 创建数据库并导入 `backend/src/main/resources/db/schema.sql`。
-3. 本地开发复制对应子项目环境变量示例；Docker 部署复制根目录 `.env.example`。
-4. 启动后端：
+## 开始开发前
 
-```bash
-cd backend
-mvn spring-boot:run
-```
+1. 使用独立检出目录和测试数据库/依赖，不在生产检出目录直接启动开发服务。
+2. 按[开发文档](docs/development.md)准备配置；不要复制生产 `.env`、Cookie 或账号凭据。
+3. 新库和已有库走不同路径：`schema.sql` **含 DROP TABLE，只能用于确认为空的隔离新库**，且仍有 QQ 日志表覆盖缺口，见[数据库说明](docs/database.md)。
+4. 仓库建表脚本**不创建默认管理员**，也不提供通用初始密码；不要把普通注册当作管理员初始化。
 
-5. 启动前端：
+## 维护边界
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-默认地址：前端 `http://localhost:3000`，后端 `http://localhost:8880`。
-
-默认管理员：`admin / admin123`。
-
-## 文档
-
-- [部署文档](docs/deployment.md)
-- [接口文档](docs/api.md)
-- [数据库迁移](docs/database.md)
-- [开发文档](docs/development.md)
-- [Resource Hub 架构](docs/resource-hub.md)
-- [当前项目状态](docs/current-project-status.md)
-
-## 验收命令
-
-```bash
-cd backend && mvn test
-cd frontend && npm run lint && npm run build
-```
+- 日常发布只替换受影响服务，固定镜像并保留回滚材料；不要全栈盲目重建或删除卷。
+- 自动化、真实转存、对外发布及破坏性数据库操作需按各自流程确认，不能用“测试一下”代替授权。
+- 手机视口回归不等于 iOS/Android 真机验证；应用上线不等于 G01–G11 或完整安全门禁闭环。
+- 文档整理不改变生产状态；历史操作和当时的授权不是下一次操作的授权。

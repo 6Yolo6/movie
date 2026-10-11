@@ -1,117 +1,45 @@
 # Docker 运维
 
-## 服务职责
+[部署与回滚](../../../../docs/deployment.md)是修改容器的主流程；本文用于只读盘点和定位。读取[当前状态](../../../../docs/current-project-status.md)确认实际拓扑，不把仓库 Compose 当成已部署事实。
 
-| 服务或容器 | 职责 | 预期暴露方式 |
-| --- | --- | --- |
-| `nginx` | 公网入口和反向代理 | 主机 `80`、`443` |
-| `frontend` | Next.js 服务 | 容器内部 `3000` |
-| `backend` | Spring Boot API | 主机 `BACKEND_PORT`，默认 `8880` |
-| `gying-source` | GYING 会话、搜索、采集和资源修复 | Compose 网络内部 `8091` |
-| `social-publisher` | 多 QQ 账号和新浪微博发布 | Compose 网络内部 `8093` |
-| `napcat` | 历史遗留 OneBot QQ 接入，当前停用 | 不启动、不验收、不迁移 |
-| `redis` | 缓存和运行依赖 | embedded profile 或外部服务 |
-| `pansou` | 资源搜索 | embedded profile 或外部 `8888` |
-| `quark-auto-save` | 夸克转存 | embedded profile 或外部 `5005` |
-| `minio-server` | 海报和对象存储 | 通常为外部 `9000`，控制台 `9001` |
-| OpenClaw Gateway | 官方 QQ Bot 桥接 | 独立 Compose 项目 |
+## 服务边界
 
-frontend 容器通常不直接作为公网站点；用户通过 nginx 访问。
+- nginx 是站点入口；当前 Tunnel 连接 loopback nginx，backend 的主机入口也为 loopback。不要按旧通用示例开放所有主机接口。
+- frontend、gying-source、social-publisher 通过内部网络提供服务；SSR 与浏览器使用不同 API 地址。
+- MySQL、Redis、MinIO、PanSou、quark-auto-save 和 OpenClaw 可能是独立实例；`embedded-deps` 不可盲启。
+- 原频道宿主机任务、backend QQBot 与独立发布器分别盘点。NapCat/旧卷仅记历史，不恢复、不删除。
 
-## 状态盘点
+## 只读盘点
 
-```powershell
-docker ps -a --format "{{.Names}}`t{{.Image}}`t{{.Status}}`t{{.Ports}}"
-docker compose -f docker-compose.prod.yml ps
-docker network ls
-docker volume ls
-```
+现役项目名为 `gying-movie`，仓库没有默认 Compose 文件：
 
-通过标签定位真实部署目录：
+    docker ps -a --format "{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+    docker compose -p gying-movie -f docker-compose.prod.yml ps
+    docker network ls
+    docker volume ls
 
-```powershell
-docker inspect gying-movie-backend-1 `
-  --format '{{json .Config.Labels}}'
-```
+上述 ps 用于盘点；任何重建/变更前都须加入经审查的实际覆盖文件，固定版本并完成部署门禁。查看容器时按标签定位项目/工作目录和挂载，仅报告必要字段；完整 `docker inspect` 或有效 Compose 配置含敏感值，不能直接输出。
 
-检查环境时只输出键名称。原始 `docker inspect` 可能包含密钥，不能直接粘贴到报告。
+按受影响服务和时间窗口读取日志并脱敏，不直接粘贴整段认证或 provider 响应。记录原容器 ID、启动时间和重启计数，复核时比较基线而不是强求全部为 0。
 
-## 安全命令
+## 真实链路检查
 
-```powershell
-# 查看日志
-docker compose -f docker-compose.prod.yml logs --tail=200 backend
-docker compose -f docker-compose.prod.yml logs --tail=200 frontend gying-source social-publisher nginx
+- 先查依赖与 source/publisher，再查 backend、frontend SSR、nginx 本机和公网入口。
+- source/publisher 不需要开放主机端口来测试；在现有容器内做受控只读探针。
+- 匿名 publisher health 只证明进程存活，详细就绪与内部业务接口需要认证；凭据只从已有受保护来源读取。
+- PanSou 根路径 404 不等于服务故障；Resource Hub 使用已知管理概览或带认证内部 health，不猜路径。
+- 网络、alias 和主机路由以实际挂载/依赖验证为准；`host.docker.internal` 不能出现在浏览器 API 地址中，也不能因 alias 存在就改绑生产 MinIO 端口。
+- 替换上游后 nginx 先测试再重载；不要通过全栈重建来刷新地址。
 
-# 不重建镜像，仅重启
-docker compose -f docker-compose.prod.yml restart backend
+## 状态与操作边界
 
-# 配置变化后重新创建
-docker compose -f docker-compose.prod.yml up -d --force-recreate backend
+- backend data、日志、QQ/微博状态卷和独立依赖挂载分开盘点；以真实卷名、目标目录和权限制定备份/恢复。
+- restart 不会重新加载已变化的容器环境；recreate/build 有运行中断和状态影响，都不是“安全查看命令”。具体步骤只从[部署流程](../../../../docs/deployment.md#3-compose-与最小替换)取用。
+- 共享网络或独立容器存在时，不能假定 `compose down` 无害；禁止日常维护使用 `down -v`、删除卷或全局清理。
+- 发布状态机的联动与不确定结果见[发布参考](social-publishing-operations.md)，不为探活执行 POST /posts 或重放任务。
 
-# 重建指定服务
-docker compose -f docker-compose.prod.yml up -d --build backend frontend gying-source social-publisher nginx
-```
+## 工具边界
 
-独立依赖使用 `docker logs`。关联不同容器事件时同时检查时间戳和时区。
+`backend/docker_mcp.py` 的普通 Compose 调用不能代替显式生产文件、项目名和运行覆盖。MCP 可用于可用的只读 Docker 查询；改变容器前使用可审查的明确命令，不依赖默认目录推导。
 
-## 健康检查
-
-当前本机可用的检查路径：
-
-```text
-http://127.0.0.1/
-http://127.0.0.1:8880/api/qq-bot/health
-http://127.0.0.1:5005/
-http://127.0.0.1:9000/minio/health/live
-http://127.0.0.1:18789/healthz
-```
-
-`gying-source` 和 `social-publisher` 默认不发布主机端口，从容器内部检查：
-
-```powershell
-docker compose -f docker-compose.prod.yml exec -T gying-source `
-  python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8091/health', timeout=8).status)"
-
-docker compose -f docker-compose.prod.yml exec -T social-publisher `
-  node -e "fetch('http://127.0.0.1:8093/health').then(r=>r.json()).then(console.log)"
-```
-
-PanSou 根路径返回 `404` 不代表服务异常。应检查容器、日志和已知 API。
-Resource Hub 内部状态优先通过管理概览或带认证的内部 health 验证，不能猜测路径。
-
-## 网络与主机访问
-
-- 应用容器共用 `gying-net`。
-- frontend 通过 `http://backend:8880` 访问 backend。
-- backend 通过 `http://gying-source:8091` 和内部 token 访问 GYING 服务。
-- backend 通过 `http://social-publisher:8093` 和独立 token 访问多平台发布服务。
-- 容器访问主机上独立依赖时使用 `host.docker.internal` 和 Compose 的 `host-gateway`。
-- 独立网络中的 OpenClaw 通过 `host.docker.internal:8880` 访问已暴露 backend。
-- 浏览器地址不能包含 `host.docker.internal`；应使用 nginx 或公网 MinIO/CDN 地址。
-
-## 持久化状态
-
-命名卷包含 backend 日志、`social-publisher-qq-accounts` QQ 凭据、`social-publisher-weibo` 会话和可选 embedded 依赖数据。独立容器可能挂载检出目录外的路径。
-`napcat-data` 是历史遗留卷，当前迁移不要导出或恢复；发现旧卷时只记录其存在，不把它列为上线依赖。
-迁移前记录每个挂载的源、目标、所有者和备份方法。
-
-存在独立容器或共享网络时，不能假定 `docker compose down` 无害。日常恢复禁止增加 `-v`。
-
-## Compose MCP 限制
-
-`backend/docker_mcp.py` 只在 `project_dir` 中运行普通 `docker compose`。
-由于本项目使用 `docker-compose.prod.yml`，其 `compose_ps/up/down` 无法自动选择生产文件，
-可能返回 `no configuration file provided`。可使用 MCP 查看 `docker_ps` 和日志，
-Compose 操作必须通过 shell 显式传入 `-f docker-compose.prod.yml`。
-
-## 常见排查
-
-- 端口冲突：启用 `embedded-deps` 前盘点全部容器。
-- backend 已改但行为未变：检查镜像创建时间、容器是否重建、配置键是否存在。
-- GYING 接口失败：检查 `gying-source` 日志、共享 Session、PoW、账号状态和 backend/source token 是否一致。
-- 多平台发布失败：检查 `social-publisher` 健康、内部 token、QQ 凭据卷和微博会话 readiness。
-- 浏览器 API 正常但详情页失败：检查 `INTERNAL_API_URL`。
-- nginx `504`：确认是否仍调用旧同步接口；长任务应返回 `jobId` 并轮询。
-- 时间偏移：检查 `TZ=Asia/Shanghai`、JVM 时区、JDBC 时区和 MySQL 时间。
-- NapCat 容器存在或退出：按历史遗留项处理，不重启；QQ 机器人故障应检查 OpenClaw Gateway 和后端 QQ 接口。
+故障按[排查参考](troubleshooting.md)定位；安全差异按[安全加固](security-hardening.md)逐项处理，不混入无关服务更新。
