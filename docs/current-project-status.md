@@ -106,7 +106,7 @@
 - `docker compose -f docker-compose.prod.yml config --quiet` 已通过；语法与必需键通过不代表 Firewall、Access、MinIO policy 和恢复门禁通过。
 - Redis 与 PanSou 仅作为可重建依赖对待；2026-09-28 Redis 实际仍仅接入非 internal 的共享 `gying-movie_gying-net`，未迁入目标 `cache-net`，该差异已纳入扫描失败计数；未认证 PING 被拒绝。NapCat 不纳入验收。
 - 2026-09-28 Windows ActiveStore 复核：Public/Private Firewall 已启用、默认入站 Block、出站 Allow；Domain 未启用，本轮未改动。规则 `GYing-Hardening-20260925-PhysicalSensitiveTCP` 仍在物理接口 `以太网`、`WLAN 2` 阻断入站 TCP 3306/33060/5005/8880/9000/9001（Profile Any）；原非 loopback 监听未改绑。9 月 25 日用户报告同网有线客户端到 `192.168.1.147` 的 6 端口全部 False、网站可打开并注册，仅为历史客户端证据；公网直连/IPv6 入站仍未验收。
-- Cloudflare Access（2026-10-08 只读）：既有受保护 DPAPI Token 文件已存在，Token 验证 active、Zone API 200，但目标账号 Access organization/identity providers/applications API 均 403。不是尚未录入 Token，也未证明 Access 已部署；公网匿名管理页面仍 200、管理员 API 401。需核对目标账号的 Access 权限/资源范围，不重复保存或扩大到所有账号，不在聊天发送凭据。云端应用/策略、OTP 和真实登录验收仍未完成。
+- Cloudflare Access（2026-10-13 20:59，Asia/Shanghai，账号侧已启用）：1 个 self-hosted 应用仅覆盖 `/admin`、`/api/admin`、`/api/resources/admin`、`/api/resources/*/audit` 及各自继承路径；1 条指定单邮箱 Allow，应用只关联并要求 One-time PIN，应用/策略会话 1 小时，HttpOnly 配置回读为 true、WARP 登录绕过为 false。API 回读与 22/22 入口探针通过，匿名后台跳转 Access；首页、注册、登录、公开 API 与 localhost 行为保持。现有 Token、全局登录会话/身份提供方及业务服务未改；真实邮箱登录、登录后网站 ADMIN 授权和 origin JWT 校验仍待验收。详见 [启用与回退记录](security/cloudflare-access-activation-20261013.md)。
 - 状态文档、Skill 与安全报告只记录键名、状态与结论，不记录原始日志、密钥或完整 SQL 输出。
 
 ### 迁移与恢复基线
@@ -140,9 +140,9 @@
 
 - **GYING 发布写入仍需验收**：单片全账号遍历导致的超时已修复并部署，真实 backend→source 单片查询实测 7.68 秒；目录和搜索正常。新 source 的自动 `/publish` 请求中另观察到 2 条 `RuntimeError` 上游错误，尚不能仅凭通用日志区分重复提交提示、网站拒绝或发布后复核失败。未手工重放发布，真实写入不标记通过；后续需按单条任务核对远端结果后再决定重试，避免重复副作用。
 - **迅雷配图实盘验收**：夸克配图复制已通过失败任务 `1583` 和 `1597` 的受控重试验证；`1583` 在部署后实际走完复制分支（原目录 0 张图/10 个视频，复核为 1 张图/10 个视频），分享令牌有效；迅雷指定位置源图已只读确认存在，但仍需选择可丢弃的迅雷临时资源或采集任务复核真实复制、重试幂等及最终分享可访问。
-- **Access 授权范围待核对**：2026-10-08 已确认本机有可解密的 active Token，Zone API 可读，但目标账号 Access 三类 API 均为 403。用户需核对该目标账号 Access: Apps and Policies 及 Organizations/Identity Providers/Groups 的权限和资源范围；不重复录入现有 Token、不自动轮换/覆盖凭据。调整授权后仍先只读检查组织/OTP/既有应用冲突，再审查创建、真实登录及回退方案。
+- **Access 后续验收**：2026-10-13 已完成限定管理路径的云端应用/单邮箱 OTP 策略与匿名边缘拦截，无需重复开通套餐、添加 OTP、录入或扩大 Token。请管理员本人从公网域名完成邮箱 PIN 登录，再验证网站 ADMIN 可访问、普通 USER 仍被拒绝；origin Access JWT 校验与 WAF 独立待办，本轮未改 Tunnel。1 小时是应用/策略会话，不保证每小时强制重新发码；全局会话保持原设置。
 - **安全加固门禁（Critical/High）**：按 `docs/security/deployment-checklist.md` 完成 Windows 防火墙公网/IPv6 入站验收与敏感端口改绑、DB 分服务身份与 grants、MinIO policy 与 root key 轮换、OpenClaw 接入内部网络、Cloudflare Access/WAF、Quark ACL 与 Cookie 轮换、加密备份与恢复演练；不得把部分上线写成整体安全闭环。
-- **端口改绑前置依赖（2026-10-08 复核）**：backend 的 `MINIO_ENDPOINT` 与 source 的 `GYING_MINIO_ENDPOINT` 仍经 `host.docker.internal:9000`；先迁移并验证内部调用，再改绑 MinIO，不能仅凭 alias 已存在操作。现有 Quark root-owned 私有配置卷须单独验证非 root 迁移；四个空数据隔离候选启动成功不覆盖生产卷。Access Token 已 active 但目标账号 API 403，分服务身份/policy 与恢复门禁也未闭环，不批量重建。
+- **端口改绑前置依赖（2026-10-08 复核）**：backend 的 `MINIO_ENDPOINT` 与 source 的 `GYING_MINIO_ENDPOINT` 仍经 `host.docker.internal:9000`；先迁移并验证内部调用，再改绑 MinIO，不能仅凭 alias 已存在操作。现有 Quark root-owned 私有配置卷须单独验证非 root 迁移；四个空数据隔离候选启动成功不覆盖生产卷。Access 账号侧已启用限定管理路径，真实邮箱登录/origin 校验与分服务身份/policy、恢复门禁仍未闭环，不批量重建。
 - **生产与目标配置差异**：quark 5005、独立 MinIO 9000/9001 仍监听非 loopback；OpenClaw/Redis/quark/PanSou/MinIO 缺少 `no-new-privileges`，其中 quark/PanSou/MinIO 存在 UID 0 进程；Redis 仍在共享网络而非 internal cache-net，需备份后逐项收紧。
 - **恢复门禁剩余项**：专用备份账号/私有 defaults、19 文件完整逻辑与持久数据备份、短暂冻结窗口和隔离 DB/MinIO 恢复已验证。仍需应用全链路、MySQL 系统账号重建、异机恢复及私钥离线保管；本机隔离验证不是整机灾难恢复。age 位于 `G:/gying-tools/age-v1.3.2`，配置为 `G:/gying-secrets/backup-config.json`；私钥在 F 盘受限目录且仍在线，不得在聊天中提供。
 - **防火墙剩余验收**：备份账号与防火墙单步已完成，不要重复创建账号或再次执行 `-Apply`。已实施尝试为 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`，包含变更前策略导出、成功结果与独立核验；活动标记已清除，watchdog 已退出，未回退。已取得用户报告的同网有线电脑 IPv4 测试：上述 6 端口均 False，网站可打开并可注册。该结论仅覆盖该客户端到 `192.168.1.147` 的不可连接结果，未单独排除路由/客户端隔离，也不是公网直连或 IPv6 测试；后两项继续保留待验收。需要撤销本次变更时，管理员使用配套 `Rollback-FirewallStep.ps1 -AttemptDirectory` 指向该目录，只恢复本次规则与 Public enabled/default-inbound，详见部署清单。
@@ -165,6 +165,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- Cloudflare Access（2026-10-13，账号侧已启用）：33 项应用/回退守护与 11 项路径预检测试通过；API 回读、22/22 入口检查及匿名邮箱登录页 200/邮箱输入框通过。10 个生产容器及 1 个既有诊断容器的身份/镜像/启动时间/重启次数均未变化，Tunnel 配置、DPAPI Token 与原方案 hash 不变。早先新建因 Cookie 字段名错配未通过回读，已完成精确对象真实回退（应用/策略恢复 0、11/11 入口通过），随后使用独立修正记录启用。20:59 安全扫描仍为 59 PASS / 11 FAIL，未关闭其余门禁；未替用户输入 OTP、未改 origin。[证据与回退](security/cloudflare-access-activation-20261013.md)。
 
 - 查询与异步列表优化（2026-10-12 实现／2026-10-13 交付，仅候选）：后端隔离全量 594 项（585 通过／9 跳过，0 失败）及额外编译通过；Node 合并回归 37 项通过，类型／lint／生产构建通过；生产预渲染产物离线浏览器 10/10 通过。预览服务启动被执行策略拒绝，未绕过，未验动态 SSR；本机／公网入口 6/6、10 个生产容器身份与启动状态均未改变，未部署。证据及限制见 `docs/code-optimization-20261012.md`。
 
