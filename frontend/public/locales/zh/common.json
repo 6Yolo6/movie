@@ -313,6 +313,7 @@
   "hotWeek": "周榜",
   "hotDay": "日榜",
   "hotEmpty": "暂无热门数据",
+  "hotLoadFailed": "加载热门榜失败",
   "myFavorites": "我的收藏",
   "myResources": "我的投稿",
   "myResourcesHint": "查看自己提交的资源、审核状态和链接健康状态。",

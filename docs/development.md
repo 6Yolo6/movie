@@ -44,6 +44,7 @@
 | --- | --- | --- |
 | `backend/` | `mvn test` | 后端回归；环境依赖导致的 skip 单独记录，不当作通过 |
 | `frontend/` | `npm ci` → `npx tsc --noEmit` → `npm run lint` → `npm run build` | 依次执行，任何失败先停止；没有 `npm test` 脚本 |
+| `frontend/` | `node --test tests/async-lists.test.mjs` | 热门榜与通知页异步边界；真实 React + 组件/API 替身，现有 Chromium 的独立临时配置，禁止网络；可用 `FRONTEND_TEST_BROWSER` 指定浏览器，不自动安装 |
 | `social-publisher/` | `npm ci` → `npm test` | `node --test`；不加载真实账号/生产数据库配置 |
 | 仓库根目录 | `python -m unittest discover -s crawler -p 'test_*.py'` | 使用 Python 3.12 测试环境并安装 `crawler/requirements.txt`；测试导入 `crawler.*`，不从 crawler 子目录运行 |
 | 仓库根目录 | `node --test tools/tests/i18n-hydration.test.cjs tools/tests/social-publishing-ui.test.cjs` | 首页水合与发布 UI/策略的定向回归；其他 `tools/tests/*.test.cjs` 按影响范围显式选择 |
@@ -65,6 +66,14 @@
 - 浏览器：`node tools/tests/admin-monitoring-ui.cjs` 与 `node tools/tests/movie-resource-counts.browser.cjs`，使用 `PLAYWRIGHT_MODULE` 指向 Playwright/Playwright Core，`WEB_TEST_BASE_URL` 为无凭据 loopback 前端（默认 18080），`SCREENSHOT_DIR` 为仓库外输出目录。
 - 详情 SSR 需先运行 `node tools/tests/fixtures/monitoring-resources.cjs`（默认仅监听 `127.0.0.1:18085`），并令**隔离前端** `INTERNAL_API_URL` 指向它。Docker 候选使用独立 fixture 容器/网络，不连接生产网络；不得因为浏览器拦截 API 就让 SSR 连接生产 backend。
 - `MonitoringServiceMySqlTest` 为显式 opt-in：只接受 loopback 上名为 `monitoring_fixture_<数字>` 的全新空库，使用 `MONITORING_TEST_MYSQL_URL` 和环境中的临时 `MONITORING_TEST_MYSQL_PASSWORD`。建立自有的临时 MySQL 后再运行 Maven；不要复用已有库，不自动 DROP 或重置数据。未设置时测试跳过，不能计为真实 SQL 已验收。
+
+### 热门榜与通知页完整浏览器回归
+
+- `node tools/tests/activity-pages.browser.cjs` 使用生产构建的真实 React / Ant Design 页面验证延迟响应、错误重试、未读筛选与“全部已读”回到第一页；覆盖英文桌面浅色、中文 390px 深色。
+- 推荐离线构建模式：设置 `ACTIVITY_PAGES_BUILD_DIR` 为独立前端构建的 `.next` 绝对路径。Playwright 在浏览器内仅提供预渲染页面、静态资源和假 API，不启动 HTTP 服务、不监听端口、不运行动态 SSR；产物旁的 `public/` 也必须来自该独立前端目录。
+- 也可省略该变量，使用已启动的独立 loopback Next 服务。构建／运行时 `INTERNAL_API_URL` 必须指向隔离 fixture 或不可连接的测试地址，不能用生产 SSR 服务；浏览器 mock 不隔离服务端请求。
+- `WEB_TEST_BASE_URL=http://127.0.0.1:18086` 指定无凭据 loopback 高端口（离线模式仅作为虚拟同源地址，无需监听）。依赖沿用现有 Playwright/Playwright Core，必要时指定 `PLAYWRIGHT_MODULE`，不安装或升级项目依赖。`ACTIVITY_PAGES_OUTPUT_DIR` 控制截图及 JSON 结果目录，默认在忽略的 `tmp/activity-pages-browser/`。
+- 外部浏览器请求被阻止；两种方式均不等于真实用户已读事务、生产部署或手机真机验收，离线模式额外不覆盖动态 SSR 服务链路。
 
 ### 真实 SQL 的隔离回归
 

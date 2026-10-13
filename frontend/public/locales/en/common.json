@@ -313,6 +313,7 @@
   "hotWeek": "This Week",
   "hotDay": "Today",
   "hotEmpty": "No trending data yet",
+  "hotLoadFailed": "Failed to load trending movies",
   "myFavorites": "My Favorites",
   "myResources": "My Submissions",
   "myResourcesHint": "Track your submitted resources, audit status, and link health.",

@@ -18,7 +18,8 @@ public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, Res
                 .eq("movie_id", movieId)
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
-                .ne("link_status", "INVALID"));
+                .isNull("deleted_at")
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")));
     }
 
     @Override

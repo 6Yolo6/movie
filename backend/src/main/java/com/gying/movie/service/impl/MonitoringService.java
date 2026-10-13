@@ -10,6 +10,8 @@ import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class MonitoringService {
+    private static final Logger log = LoggerFactory.getLogger(MonitoringService.class);
     private final JdbcTemplate jdbc;
     private final StringRedisTemplate redis;
     public MonitoringService(JdbcTemplate jdbc, StringRedisTemplate redis) { this.jdbc=jdbc; this.redis=redis; }
@@ -28,14 +31,31 @@ public class MonitoringService {
         catch(Exception ignored) { }
     }
     public void search(String keyword,long resultCount,HttpServletRequest request) {
-        String normalized=normalizeKeyword(keyword); if(normalized==null)return;
-        jdbc.update("INSERT INTO site_search_log(keyword,visitor_hash,source,result_count) VALUES (?,?,'WEB',?)",normalized,visitorHash(request),Math.max(0,Math.min(Integer.MAX_VALUE,resultCount)));
-        redis.opsForZSet().incrementScore("hot:search:"+LocalDate.now(),normalized,1D);
-        redis.expire("hot:search:"+LocalDate.now(),32,TimeUnit.DAYS);
+        String normalized = normalizeKeyword(keyword);
+        if (normalized == null) return;
+        // Neither telemetry store is a prerequisite for returning the movie query.
+        recordBestEffort("search database", () -> jdbc.update(
+                "INSERT INTO site_search_log(keyword,visitor_hash,source,result_count) VALUES (?,?,'WEB',?)",
+                normalized, visitorHash(request), Math.max(0, Math.min(Integer.MAX_VALUE, resultCount))));
+        recordBestEffort("search cache", () -> {
+            String key = "hot:search:" + LocalDate.now();
+            redis.opsForZSet().incrementScore(key, normalized, 1D);
+            redis.expire(key, 32, TimeUnit.DAYS);
+        });
     }
     public void resourceOperation(String movieId,Long resourceId,String type,String provider,String status,String error,HttpServletRequest request) {
-        jdbc.update("INSERT INTO resource_operation_log(visitor_hash,movie_id,resource_link_id,operation_type,provider,status,error_message) VALUES (?,?,?,?,?,?,?)",
-                visitorHash(request),cut(movieId,64),resourceId,cut(type,30),cut(provider,50),cut(status,30),cut(error,500));
+        recordBestEffort("resource operation database", () -> jdbc.update(
+                "INSERT INTO resource_operation_log(visitor_hash,movie_id,resource_link_id,operation_type,provider,status,error_message) VALUES (?,?,?,?,?,?,?)",
+                visitorHash(request), cut(movieId,64), resourceId, cut(type,30), cut(provider,50), cut(status,30), cut(error,500)));
+    }
+
+    private void recordBestEffort(String destination, Runnable action) {
+        try {
+            action.run();
+        } catch (RuntimeException error) {
+            // Exception messages and stack traces may contain private request or connection data.
+            log.warn("Unable to record {} telemetry: type={}", destination, error.getClass().getSimpleName());
+        }
     }
     public Map<String,Object> overview() {
         Map<String,Object> out = new LinkedHashMap<>();
