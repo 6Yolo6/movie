@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-10-13
+更新时间：2026-10-14
 
 本文只汇总已记录的生产能力、运行约束、待处理事项与可复核结论；各项证据保留原日期，本次文档整理不表示重新验收。
 
@@ -97,7 +97,7 @@
 
 ## 配置与安全
 
-- 2026-10-13 续验：本轮查询与异步列表修复仅完成实现／测试，未替换生产服务。10:21（Asia/Shanghai）安全扫描仍为 59 PASS / 11 FAIL，G01–G11 未关闭；入口与应用健康通过不代表完整安全门禁通过。
+- 2026-10-14 续验：查询与异步列表候选已通过真实 MySQL 隔离回归，仍未替换生产服务。最近完整安全扫描（2026-10-13 20:59，Asia/Shanghai）为 59 PASS / 11 FAIL；本轮未重跑完整安全扫描，G01–G11 未关闭，SQL 与入口健康通过不代表安全门禁通过。
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
 - 生产安全审计（2026-10-08 续验）：新版 `tools/security/check_security.py --repo . --probe` 为 **59 PASS / 11 FAIL / 0 UNKNOWN**，原 11 项仍全未关闭。比旧 53 PASS 多出的 6 项为预期容器完整性和一个生产网络诊断容器的检查，不是生产整改。新增固定 `G01–G11` 台账，显式 false、缺失/重复证据、Docker 查询失败和 socket 改名挂载不再假通过；详见 `docs/security/hardening-gates.md`。
@@ -111,7 +111,7 @@
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-13 只读复核）：backend `gying-monitoring-backend:20261011a`、frontend `gying-monitoring-frontend:20261011a`；source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a`。本轮 10 个生产容器 ID／镜像／启动／重启次数均未改变。监控与资源计数的既有上线证据见 `docs/monitoring-resource-counts-20261011.md`；此前四应用发布及回滚资料见 `docs/code-optimization-deployment-20261011.md`。
+- 当前在线镜像（2026-10-14 只读复核）：backend `gying-monitoring-backend:20261011a`、frontend `gying-monitoring-frontend:20261011a`；source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a`。本轮 10 个生产容器及 1 个既有诊断容器 ID／镜像／启动／重启次数均未改变。监控与资源计数的既有上线证据见 `docs/monitoring-resource-counts-20261011.md`；此前四应用发布及回滚资料见 `docs/code-optimization-deployment-20261011.md`。
 - 四应用发布恢复检查点（2026-10-11 清晨，历史）：`G:/gying-backups/20261011T022133.799192Z` 的 10 个 age 文件 hash/认证解密通过，SQL 25 表及完成标记可读，配置归档 hash 与源文件一致；包含四个应用状态卷和运行参数，不是完整灾难恢复演练。发布/固定旧镜像/回退守护在 `E:/gying-tools/releases/code-optimization-20261010`；新发布状态、记录或配置变化必须先人工核对，不能仅回退某个发布组件。
 
 - 历史 P2P 部署基线（2026-10-06）：backend `gying-p2p-backend:20261006d`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。本轮仅替换 backend/source；nginx 平滑重载，其余 8 个容器 ID、启动时间、重启计数不变，所有环境与挂载保持。无架构迁移。功能提交 `bdc0ada`、夸克 PDS 上传兼容 `7f907c7`、成功重试错误清理 `228617b`；最新 JAR SHA-256 与测试产物一致。发布材料 `E:/gying-tools/releases/gying-p2p-20261006`；`rollback-d.ps1` 可回退后端到 c，`rollback-b.ps1` 可回退到初版 P2P 采集 a，原周榜镜像也保留。最新检查点 `G:/gying-backups/20261006T115631.510103Z` 的 7 个 age 文件 hash/认证解密通过、SQL 25 表可读；本轮未做恢复演练，也不覆盖远端网盘回滚。
@@ -125,7 +125,7 @@
 
 ## 仍需处理
 
-- **查询与异步列表候选未部署（2026-10-13 交付）**：热门榜／通知页竞态与错误状态、非关键统计故障隔离、资源软删／空状态读取、按当前用户批量已读已完成实现与隔离测试；安全 11 个失败项仍阻止生产切换。真实 MySQL、动态 SSR 服务链路、账号已读事务和真机尚未验收，详见 `docs/code-optimization-20261012.md`。
+- **查询与异步列表候选未部署（2026-10-14 续验）**：热门榜／通知页竞态与错误状态、非关键统计故障隔离、资源软删／空状态读取、按当前用户批量已读已完成实现；隔离真实 MySQL 查询、已读更新、回滚、双并发及错误传播通过。安全 11 个失败项仍阻止生产切换；动态 SSR 服务链路、真实账号已读端到端和真机尚未验收，详见 `docs/code-optimization-20261012.md`。
 
 - **手机与发布边界**：当前证据为 Headless Edge 响应式视口，不等于 iOS Safari/Android 真机、真实账号编辑或外部发布验收。UNKNOWN/崩溃在途记录仍需人工核对；跨资源版本同影片去重和海报响应完整缓冲仍需独立改造。
 - **入口波动（2026-10-11）**：上线前 10:12:35 本机正常、公网短暂 530；未作任何 Tunnel/代理/DNS/凭据变更即自行恢复，连续 7 轮入口/拒绝检查通过后才开始切换。上线后入口正常，但间歇故障根因未关闭；不把本次部署当作该故障修复。
@@ -168,7 +168,7 @@
 
 - Cloudflare Access（2026-10-13，账号侧已启用）：33 项应用/回退守护与 11 项路径预检测试通过；API 回读、22/22 入口检查及匿名邮箱登录页 200/邮箱输入框通过。10 个生产容器及 1 个既有诊断容器的身份/镜像/启动时间/重启次数均未变化，Tunnel 配置、DPAPI Token 与原方案 hash 不变。早先新建因 Cookie 字段名错配未通过回读，已完成精确对象真实回退（应用/策略恢复 0、11/11 入口通过），随后使用独立修正记录启用。20:59 安全扫描仍为 59 PASS / 11 FAIL，未关闭其余门禁；未替用户输入 OTP、未改 origin。[证据与回退](security/cloudflare-access-activation-20261013.md)。
 
-- 查询与异步列表优化（2026-10-12 实现／2026-10-13 交付，仅候选）：后端隔离全量 594 项（585 通过／9 跳过，0 失败）及额外编译通过；Node 合并回归 37 项通过，类型／lint／生产构建通过；生产预渲染产物离线浏览器 10/10 通过。预览服务启动被执行策略拒绝，未绕过，未验动态 SSR；本机／公网入口 6/6、10 个生产容器身份与启动状态均未改变，未部署。证据及限制见 `docs/code-optimization-20261012.md`。
+- 查询与异步列表优化（2026-10-12 实现／2026-10-13 交付／2026-10-14 SQL 续验，仅候选）：10 月 14 日隔离后端全量 601 项（600 通过／1 项专用 Redis 依赖跳过，0 失败/异常）；新增查询边界 7 项、既有监控 MySQL 4 项均真实执行，额外编译及 fixture 守护 7 项通过。10 月 13 日前端 Node 37 项、类型／lint／生产构建与离线浏览器 10/10 证据保留，未验动态 SSR。10 月 14 日 312/312 源文件 hash 一致、2 个临时容器已清理；本机／公网入口 6/6、10 个生产及 1 个诊断容器保持不变，未部署。证据及限制见 `docs/code-optimization-20261012.md`。
 
 - 代码优化与手机适配（2026-10-11 已部署）：候选镜像内 source 54、publisher 31 项通过；候选与生产 nginx 上分别通过发布 14 + 首页 10 个 mock 浏览器场景。本机/公网 8 项真实入口、backend→source/publisher、frontend→backend 链路通过；四应用实际镜像/UID/环境/挂载/网络复核一致，日志无 ERROR/Exception。发布行与目标配置守护保持不变，未执行 SQL 迁移、重放历史任务或真实发布。业务全量 523 项（5 跳过）等实现阶段证据及本次恢复材料见 `docs/code-optimization-20261009-round2.md`、`docs/code-optimization-deployment-20261011.md`。
 

@@ -77,6 +77,23 @@
 
 ### 真实 SQL 的隔离回归
 
+#### 后端资源查询与通知已读（含监控 SQL）
+
+在仓库根目录使用 [MySQL fixture 工具](../tools/tests/query_boundaries_mysql.py)：
+
+    python -X utf8 tools/tests/query_boundaries_mysql.py
+    python -X utf8 tools/tests/query_boundaries_mysql.py --run
+    python -X utf8 tools/tests/query_boundaries_mysql.py --run --full-suite
+
+- 默认仅输出只读计划；`--run` 实际创建一次性 MySQL 与 Maven 容器，运行查询边界 7 项及监控 SQL 4 项；`--full-suite` 改为运行全量后端测试，成功后再单独执行 `mvn -o -q -DskipTests compile`。缺失/跳过必需 SQL 用例、测试失败、编译标记缺失或清理失败都以非零退出；其他可选依赖测试的 skip 单独汇总。
+- 前提：已有 Docker CLI、本地 `mysql:8.0` 与 `maven:3.9-eclipse-temurin-17` 镜像、完整离线 Maven 缓存（默认 `~/.m2/repository`；可用 `--maven-repository` 指定）。每次先解析并固定本地镜像 ID，禁止自动拉取/安装；不把 Maven settings、生产 .env、宿主凭据目录或生产卷带进容器。
+- MySQL 无网络、无宿主端口，数据只在 tmpfs；Maven 仅共享 fixture 的隔离 loopback，使用独立 allowlist 源码副本、只读依赖缓存与空 settings。两个容器均非 root、只读根文件系统并限制资源；不启动 Spring Boot 或生产调度器。
+- 查询测试在 DDL 前校验随机运行 ID、精确 loopback 库名、fixture hostname 与唯一 marker；通知表使用真实 migration/index。不要手工把环境变量指向已有数据库，不复用生产凭据，不 DROP/重置已有数据。
+- 结果写入忽略目录 `tmp/query-boundaries-mysql-<run-id>/`，包含源码 SHA-256、实际 Surefire 汇总、独立编译标记与清理结果。仅凭进程退出码不够，还应核对 `required_sql_verified`、全量模式的 `compile_verified` 和两个容器清理结果；不要输出或提交原始凭据。
+- 工具自身的无 Docker 安全测试：`python -X utf8 -m unittest discover -s tools/tests -p test_query_boundaries_mysql.py -v`。
+
+#### 发布状态机 SQL
+
 [发布状态机 MySQL fixture](../tools/tests/social-publishing-mysql.ps1) 从仓库根目录执行：
 
     ./tools/tests/social-publishing-mysql.ps1
