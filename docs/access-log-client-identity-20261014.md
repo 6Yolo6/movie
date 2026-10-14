@@ -2,7 +2,7 @@
 
 ## 范围与当前阶段
 
-用户要求保存原始 IP/UA，并在知悉既有安全检查为 59 PASS / 11 FAIL 后，明确批准只重建相关服务。当前为代码与隔离验收完成、生产切换待执行；不据此关闭 G01–G11 或其他独立安全门禁。
+用户要求保存原始 IP/UA，并在知悉既有安全检查为 59 PASS / 11 FAIL 后，明确批准只重建相关服务。已于 2026-10-14 20:53（Asia/Shanghai）完成生产切换与后续验收，业务源码提交 `926e61e`；不据此关闭 G01–G11 或其他独立安全门禁。
 
 仅涉及 backend/frontend 和 site_access_log 两个可空追加字段。nginx 如需刷新上游只做配置检查和平滑重载，不重建；source、publisher、依赖容器、宿主任务、云端策略和凭据不属于替换范围。候选以当前已提交的查询/异步列表修复为基线，不混入工作区未提交的安全工具或其他基础设施改动。
 
@@ -31,4 +31,17 @@
 
 ## 生产交付证据
 
-待候选镜像、备份、字段迁移、实际可信代理链、本机/公网入口和容器差异核验完成后更新。原始日志和敏感值不进入本文档或 Git。
+- 切换窗口 20:52:17–20:53:01（Asia/Shanghai）。仅停止/替换 backend、frontend；nginx 只执行配置检查和平滑重载。9 个其他容器（含既有诊断容器）ID、镜像、启动与原有重启计数均保持不变。
+- 实际镜像：`gying-access-identity-backend:20261014a`、`gying-access-identity-frontend:20261014a`；revision 均为 `926e61e1ee2f8299d1d333c23bc761ad65a330ea`。后端镜像内 JAR SHA-256 为 `ca83d7faa24c50c950248bfc92fca79a6bcd1c68f33cdc8811bbbdb215d3ed12`，318 个 class/resource 与已测编译产物逐字节一致。
+- 生产覆盖文件：`E:/gying-tools/releases/access-identity-20261014/deploy.json`。实际环境只增加 backend 的 `APP_TRUSTED_PROXIES`；保留其余环境、端口、卷、网络、运行 UID（10001/1001）与安全参数。nginx 传输对端用旧日志指纹预先证明，采用单地址 /32，未信任整个共享网段。
+- 加密检查点：`G:/gying-backups/20261014T125228.430856Z`，8/8 产物 hash 和完整认证解密通过（MySQL、backend 数据/日志卷、环境/Compose/切换配置与运行参数）。只冻结 backend 写入，不宣称完成跨服务灾难恢复。
+- MySQL 8.0.28/InnoDB Dynamic：两个可空字段以 INSTANT 追加，80,467 条旧记录的全部原字段内容 SHA-256 不变，旧身份字段全为 NULL；没有数据回填、删除或应用账号授权变更。
+- 新镜像监控 19/19、热门榜/通知 10/10 浏览器场景通过；生产 nginx 上监控再次 19/19。浏览器 API 均 mock，不使用真实管理员会话或执行通知写入；热门榜/通知的生产调用被高端口安全守护拒绝，未绕过，不能声称其生产浏览器 10 项已执行。
+- 真实公网同一 TLS 连接的 Cloudflare trace 与 API 日志 IP 一致，UA 完整回读，路径/Referer 查询参数未存储；直接 backend 请求自带 X-Forwarded-For/CF-Connecting-IP/X-Real-IP 不能伪造记录。公网伪造 CF 头探针被边缘 403 拒绝，而不是强求它穿透到应用。
+- 10 项本机/公网入口及边界检查通过：真实 API/首页 200，本机匿名管理日志 401，公网管理页/管理日志由 Access 返回 302，内部路径 404。backend→source/publisher 健康与 frontend→backend 实际读取通过；20:53–21:01 后端日志无 ERROR/Exception。
+- 截至 21:06，迁移后新增 API 日志 506 条，506 条含 IP/UA；其中 331 条 4xx 全部有原始身份字段。此为该观察时点快照，缺失 User-Agent 的将来请求仍应保存 NULL，不能伪造 UA。
+- 20:59 安全扫描仍为 59 PASS / 11 FAIL / 0 UNKNOWN；已披露的例外并未关闭 G01–G11。发布日志/目标配置和在途守护复验通过，保留既有陈旧 RUNNING，未人工触发真实发帖、转存或任务重放。
+- 回退文件 `E:/gying-tools/releases/access-identity-20261014/rollback.json` 固定旧镜像；执行前重跑回退/在途守护并核对最新业务结果。应用回退保留新增列和日志，不恢复旧 dump。
+- 专用测试容器与网络按标签/ID 清理，旧 18080 隔离前端已确认归属后停止；源码/日志/截图证据和回滚镜像保留。代码已推送，原始客户端日志与敏感值不进入 Git。
+
+验收材料与可复核工具位于 `E:/gying-tools/releases/access-identity-20261014/`（受限 ACL），包含 `candidate-images.json`、`migration-result.json`、`live-identity-verification.json`、`runtime-verification.json`、`runtime-chains.json`、`production-browser.json`、`new-log-coverage.json`、`security-after.json` 与 `evidence/`。

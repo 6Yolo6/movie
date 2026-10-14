@@ -75,6 +75,7 @@
 - 公开注册支持人数上限设置 `auth.register.max_users`（0=不限制，上限 0–100000，当前生产 500）；达到上限后只停止无邀请码的公开注册并给出明确提示，有效邀请码注册与管理员建号不受上限影响。
 - `/resource-search` 提供登录用户网页资源搜索：精确命中片库时优先返回已审核、活动、状态正常的资源，首轮不调用外部来源也不转存；界面只展示资源名称、提取码与二维码，不出现明文 URL 与复制/打开入口。任务异步执行、每 2 秒轮询、刷新续查，发送成功后清空已发送内容。
 - 后台监控页（2026-10-11 已部署重构）：统计卡、14 天趋势、各类日志 tab 保留；请求/错误统计只统计 `event_type='API'`，访客数与页面浏览量分开计数；概览带统计日期与 Asia/Shanghai 时区，发布结果区分已发布/失败/进行中/未确认，缺失日期零值补齐；日志改为服务端搜索、状态筛选与真实分页（带 `type` 时返回 `{records,total,page,size,pages}`，省略 `type` 保持旧结构），热门搜索在 Redis 不可用或缓存为空时回退当日 SQL；概览与日志独立加载、失败重试，30 秒自动刷新且在隐藏标签页暂停。
+- 访问日志原始客户端身份（2026-10-14 20:53 已部署）：追加 `client_ip`、`user_agent`；IP 来自显式可信 nginx 对端或直连地址，UA 最多 1024 个 Unicode 字符。ADMIN 日志分页/旧接口支持 IP/UA 搜索并禁止缓存，手机可展开 UA；旧日志保持 NULL，不由哈希回填。公网实际 IP/UA 回读与伪造头边界已验证，详见 `docs/access-log-client-identity-20261014.md`。
 - 系统设置可在线修改 `resource.search.rate_limit_per_minute`（每用户每分钟 1–60，默认 5，保存后即时生效）；资源序号选择与翻页不计入，选择影片、重新搜索或「查看其他资源」计入，QQ 搜索频率独立。
 - 账号自助能力（2026-09-26）：登录页与注册页已全量中英多语言（`login*`/`register*` 文案统一走 i18n，不再硬编码英文）；「我的资料」可修改绑定邮箱，需邮箱验证码且每 90 天限改 1 次，冷却期内返回 `emailChangeAvailableAt` 并由前端提示下次可修改时间；重置密码改为必须邮箱验证码（`POST /api/auth/reset-password/code` 发码，`POST /api/auth/reset-password` 携带 `emailCode`），成功后吊销该账号全部登录设备；`GET /api/auth/me` 追加 `email`、`emailUpdatedAt`、`emailChangeAvailableAt`、`emailVerificationEnabled`。
 - 昵称与登录（2026-09-26）：新增 `sys_user.nickname`，站内展示统一使用昵称（空白自动回退用户名），评论与回复、回复通知、资源上传者和管理端用户列表均按此规则；用户可在「我的资料」自行修改昵称（1–20 字符、禁止控制字符），用户名仅用于登录且不可修改；登录标识支持**用户名或邮箱**，注册用户名不允许含 `@` 以避免标识歧义；管理端编辑用户可改昵称，`keyword` 同时匹配用户名、昵称与邮箱。
@@ -97,7 +98,7 @@
 
 ## 配置与安全
 
-- 2026-10-14 续验：查询与异步列表候选已通过真实 MySQL 隔离回归，仍未替换生产服务。最近完整安全扫描（2026-10-13 20:59，Asia/Shanghai）为 59 PASS / 11 FAIL；本轮未重跑完整安全扫描，G01–G11 未关闭，SQL 与入口健康通过不代表安全门禁通过。
+- 2026-10-14 20:53（Asia/Shanghai）：经用户知悉风险后明确批准，仅替换 backend/frontend，上线原始 IP/UA 与已提交的查询/异步列表修复。20:59 完整安全扫描仍为 59 PASS / 11 FAIL / 0 UNKNOWN，G01–G11 未关闭；本次是限定业务例外，不是安全加固完成。
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
 - 已上线：nginx/backend 仅发布到 loopback，内部 QQ/internal 路径 404，匿名管理接口 401，应用容器非 root，backend/gying-source/social-publisher 使用非 root 数据库账号，MinIO 已接入应用网络且 backend 不再使用 root key。
 - 生产安全审计（2026-10-08 续验）：新版 `tools/security/check_security.py --repo . --probe` 为 **59 PASS / 11 FAIL / 0 UNKNOWN**，原 11 项仍全未关闭。比旧 53 PASS 多出的 6 项为预期容器完整性和一个生产网络诊断容器的检查，不是生产整改。新增固定 `G01–G11` 台账，显式 false、缺失/重复证据、Docker 查询失败和 socket 改名挂载不再假通过；详见 `docs/security/hardening-gates.md`。
@@ -111,7 +112,8 @@
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-14 只读复核）：backend `gying-monitoring-backend:20261011a`、frontend `gying-monitoring-frontend:20261011a`；source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a`。本轮 10 个生产容器及 1 个既有诊断容器 ID／镜像／启动／重启次数均未改变。监控与资源计数的既有上线证据见 `docs/monitoring-resource-counts-20261011.md`；此前四应用发布及回滚资料见 `docs/code-optimization-deployment-20261011.md`。
+- 当前在线镜像（2026-10-14 20:53 已部署）：backend `gying-access-identity-backend:20261014a`、frontend `gying-access-identity-frontend:20261014a`，业务源码提交 `926e61e`；source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a` 不变。生产使用 `-p gying-movie -f docker-compose.prod.yml -f E:/gying-tools/releases/access-identity-20261014/deploy.json`；覆盖文件仅固定两服务镜像及 backend 的 `APP_TRUSTED_PROXIES`，nginx 重建后须复核其精确地址。9 个未替换容器（含既有诊断容器）ID/镜像/启动/重启计数不变，nginx 仅校验并平滑重载。
+- 原始身份日志发布检查点（2026-10-14）：`G:/gying-backups/20261014T125228.430856Z` 的 8 个加密产物 hash/完整认证解密通过，仅暂停 backend 取得应用回退快照，不是全链路灾难恢复。增量迁移追加两列，80,467 条原日志内容哈希不变且身份字段保持 NULL；旧镜像与回退配置位于 `E:/gying-tools/releases/access-identity-20261014/`，回退保留新列和日志，不覆盖旧库。
 - 四应用发布恢复检查点（2026-10-11 清晨，历史）：`G:/gying-backups/20261011T022133.799192Z` 的 10 个 age 文件 hash/认证解密通过，SQL 25 表及完成标记可读，配置归档 hash 与源文件一致；包含四个应用状态卷和运行参数，不是完整灾难恢复演练。发布/固定旧镜像/回退守护在 `E:/gying-tools/releases/code-optimization-20261010`；新发布状态、记录或配置变化必须先人工核对，不能仅回退某个发布组件。
 
 - 历史 P2P 部署基线（2026-10-06）：backend `gying-p2p-backend:20261006d`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。本轮仅替换 backend/source；nginx 平滑重载，其余 8 个容器 ID、启动时间、重启计数不变，所有环境与挂载保持。无架构迁移。功能提交 `bdc0ada`、夸克 PDS 上传兼容 `7f907c7`、成功重试错误清理 `228617b`；最新 JAR SHA-256 与测试产物一致。发布材料 `E:/gying-tools/releases/gying-p2p-20261006`；`rollback-d.ps1` 可回退后端到 c，`rollback-b.ps1` 可回退到初版 P2P 采集 a，原周榜镜像也保留。最新检查点 `G:/gying-backups/20261006T115631.510103Z` 的 7 个 age 文件 hash/认证解密通过、SQL 25 表可读；本轮未做恢复演练，也不覆盖远端网盘回滚。
@@ -125,7 +127,7 @@
 
 ## 仍需处理
 
-- **查询与异步列表候选未部署（2026-10-14 续验）**：热门榜／通知页竞态与错误状态、非关键统计故障隔离、资源软删／空状态读取、按当前用户批量已读已完成实现；隔离真实 MySQL 查询、已读更新、回滚、双并发及错误传播通过。安全 11 个失败项仍阻止生产切换；动态 SSR 服务链路、真实账号已读端到端和真机尚未验收，详见 `docs/code-optimization-20261012.md`。
+- **查询与异步列表后续验收（2026-10-14 已部署）**：查询边界、通知批量已读及热门榜/通知页竞态修复已随两服务业务例外上线；真实 MySQL 与候选浏览器回归通过，前端到后端实际读取链路已复核。真实账号已读事务端到端及手机真机仍未验收，详见 `docs/code-optimization-20261012.md`；不能把本次发布写成安全门禁通过。
 
 - **手机与发布边界**：当前证据为 Headless Edge 响应式视口，不等于 iOS Safari/Android 真机、真实账号编辑或外部发布验收。UNKNOWN/崩溃在途记录仍需人工核对；跨资源版本同影片去重和海报响应完整缓冲仍需独立改造。
 - **入口波动（2026-10-11）**：上线前 10:12:35 本机正常、公网短暂 530；未作任何 Tunnel/代理/DNS/凭据变更即自行恢复，连续 7 轮入口/拒绝检查通过后才开始切换。上线后入口正常，但间歇故障根因未关闭；不把本次部署当作该故障修复。
@@ -166,9 +168,11 @@
 
 ## 验收
 
+- 原始 IP/UA（2026-10-14 已部署）：后端 613 通过/1 专用 Redis 集成跳过，额外编译通过；监控在独立构建、候选镜像和生产 nginx 入口各 19/19 浏览器场景通过（API mock，不代替真实登录）。真实公网请求的 IP 与同连接 Cloudflare trace 一致、UA 精确回读，查询参数未存储；直接伪造头无效，公网伪造 CF 头被边缘拒绝。10 项真实入口/边界探针、内部依赖健康、实际非 root UID、环境/卷/网络核验通过；20:53–21:01 后端无 ERROR/Exception。21:06 快照新增 506 条 API 日志（含 331 条 4xx）均有 IP/UA。回退守护再次通过，未触发真实转存/发布，原 11 项安全失败保留。
+
 - Cloudflare Access（2026-10-13，账号侧已启用）：33 项应用/回退守护与 11 项路径预检测试通过；API 回读、22/22 入口检查及匿名邮箱登录页 200/邮箱输入框通过。10 个生产容器及 1 个既有诊断容器的身份/镜像/启动时间/重启次数均未变化，Tunnel 配置、DPAPI Token 与原方案 hash 不变。早先新建因 Cookie 字段名错配未通过回读，已完成精确对象真实回退（应用/策略恢复 0、11/11 入口通过），随后使用独立修正记录启用。20:59 安全扫描仍为 59 PASS / 11 FAIL，未关闭其余门禁；未替用户输入 OTP、未改 origin。[证据与回退](security/cloudflare-access-activation-20261013.md)。
 
-- 查询与异步列表优化（2026-10-12 实现／2026-10-13 交付／2026-10-14 SQL 续验，仅候选）：10 月 14 日隔离后端全量 601 项（600 通过／1 项专用 Redis 依赖跳过，0 失败/异常）；新增查询边界 7 项、既有监控 MySQL 4 项均真实执行，额外编译及 fixture 守护 7 项通过。10 月 13 日前端 Node 37 项、类型／lint／生产构建与离线浏览器 10/10 证据保留，未验动态 SSR。10 月 14 日 312/312 源文件 hash 一致、2 个临时容器已清理；本机／公网入口 6/6、10 个生产及 1 个诊断容器保持不变，未部署。证据及限制见 `docs/code-optimization-20261012.md`。
+- 查询与异步列表优化（2026-10-12 实现／2026-10-14 20:53 已部署）：原 `5297ec8` 与 `dff04c3` 候选随 `926e61e` 发布。后端全量 614 项（613 通过、1 项专用 Redis 依赖跳过）包含真实查询边界 SQL；热门榜/通知候选镜像 10/10 浏览器场景与真实 React 异步边界回归通过。历史 SQL 续验和未验范围见 `docs/code-optimization-20261012.md`，本次发布与回滚材料见 `docs/access-log-client-identity-20261014.md`。
 
 - 代码优化与手机适配（2026-10-11 已部署）：候选镜像内 source 54、publisher 31 项通过；候选与生产 nginx 上分别通过发布 14 + 首页 10 个 mock 浏览器场景。本机/公网 8 项真实入口、backend→source/publisher、frontend→backend 链路通过；四应用实际镜像/UID/环境/挂载/网络复核一致，日志无 ERROR/Exception。发布行与目标配置守护保持不变，未执行 SQL 迁移、重放历史任务或真实发布。业务全量 523 项（5 跳过）等实现阶段证据及本次恢复材料见 `docs/code-optimization-20261009-round2.md`、`docs/code-optimization-deployment-20261011.md`。
 
