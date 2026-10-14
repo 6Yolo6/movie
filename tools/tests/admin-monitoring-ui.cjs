@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright-core');
 const { base, fixture, json, waitFor, deferred } = require('./fixtures/browser.cjs');
-const { overview, logPage } = require('./fixtures/monitoring-resources.cjs');
+const { overview, logPage, logs } = require('./fixtures/monitoring-resources.cjs');
 const out = process.env.SCREENSHOT_DIR;
 const results = [];
 const queryInput = page => page.locator('[data-log-stream] input.ant-input:visible');
@@ -129,6 +129,33 @@ async function loaded(f) {
             await f.page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' }); document.dispatchEvent(new Event('visibilitychange')); });
             await waitFor(() => f.requests.filter(r => r.path.endsWith('/overview')).length > before);
             results.push('automatic refresh pauses in hidden tabs and resumes on visibility'); await f.done();
+        }
+        for (const options of [{ lang: 'zh', width: 1440 }, { lang: 'zh', width: 360 }, { lang: 'en', width: 390, theme: 'dark' }]) {
+            const f = await fixture(browser, options); const { page } = f; await loaded(f);
+            const agent = logs.access[0].user_agent;
+            if (options.width < 768) {
+                const card = page.locator('[data-log-card]:visible').first();
+                assert.ok((await card.innerText()).includes('2001:db8::42'));
+                await card.locator('[data-user-agent-detail] summary').click();
+                assert.equal(await card.locator('[data-user-agent-detail] p').innerText(), agent);
+            } else {
+                const legacy = page.locator('.ant-table-tbody tr[data-row-key="access:89"]');
+                assert.equal(await legacy.locator('td').nth(3).innerText(), '—');
+                assert.equal(await legacy.locator('td').nth(7).innerText(), '—');
+                assert.ok((await page.locator('.ant-table-thead').innerText()).includes(f.t.monitoring.columns.client_ip));
+            }
+            assert.equal(await page.locator('[data-log-stream="access"] img[src="x"]').count(), 0);
+            assert.equal(await page.evaluate(() => globalThis.__uaInjected), undefined);
+            await f.overflow();
+            for (const q of ['2001:db8::42', 'RawIdentity%_!']) {
+                await queryInput(page).fill(q); await queryInput(page).press('Enter');
+                await waitFor(() => f.requests.some(r => r.params.type === 'access' && r.params.q === q));
+                await page.waitForFunction(() => document.querySelector('[data-log-total]')?.textContent.replace(/[^0-9]/g, '') === '1');
+                assert.equal(await page.locator(options.width < 768 ? '[data-log-card]:visible' : '.ant-table-tbody .ant-table-row:visible').count(), 1);
+            }
+            if (out) await page.screenshot({ path: path.join(out, 'monitoring-identity-' + options.lang + '-' + options.width + '.png'), fullPage: true });
+            results.push('raw IP/UA search, Unicode, legacy nulls and XSS-safe rendering ' + options.lang + '/' + options.width);
+            await f.done();
         }
         for (const options of [{ lang: 'zh', width: 360 }, { lang: 'zh', width: 375 }, { lang: 'en', width: 390, theme: 'dark' }, { lang: 'zh', width: 430 }, { lang: 'en', width: 1440, theme: 'dark' }]) {
             const f = await fixture(browser, options); await loaded(f);

@@ -48,6 +48,17 @@ class MonitoringServiceLogPageTest {
         assertFalse(jdbc.queries.get(1).sql().contains("user_agent_hash"));
     }
 
+    @Test void rawIdentityIsAdminSelectableAndSearchRemainsParameterized() {
+        service.logPage("access", "agent%_!'", "failure", 1, 20);
+        assertTrue(jdbc.queries.get(0).sql().contains("client_ip LIKE ?"));
+        assertTrue(jdbc.queries.get(0).sql().contains("user_agent LIKE ?"));
+        assertEquals(5, jdbc.queries.get(0).args().size());
+        assertTrue(jdbc.queries.get(0).args().stream().allMatch("%agent!%!_!!'%"::equals));
+        assertFalse(jdbc.queries.get(0).sql().contains("agent%_!"));
+        assertTrue(jdbc.queries.get(1).sql().contains("created_at,client_ip,user_agent FROM site_access_log"));
+        assertFalse(jdbc.queries.get(1).sql().contains("user_agent_hash"));
+    }
+
     @Test void searchIsBoundAndLikeWildcardsAreLiteral() {
         service.logPage("resourceOperations", "  O'Reilly%_!  ", "failure", 1, 20);
         assertFalse(jdbc.queries.get(0).sql().contains("O'Reilly"));

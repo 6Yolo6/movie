@@ -47,7 +47,7 @@ class FixtureSafetyTest(unittest.TestCase):
                 (root / ('TEST-' + name + '.xml')).write_text(
                     f'<testsuite name="example.{name}" tests="{count}" failures="0" errors="0" skipped="0"/>', encoding='utf-8')
             result = fixture.summary(root)
-            self.assertEqual(11, result['totals']['passed'])
+            self.assertEqual(sum(fixture.REQUIRED_TESTS.values()), result['totals']['passed'])
             self.assertEqual(0, result['totals']['skipped'])
             file = root / 'TEST-QueryBoundaryMySqlTest.xml'
             file.write_text('<testsuite name="example.QueryBoundaryMySqlTest" tests="7" failures="0" errors="0" skipped="7"/>', encoding='utf-8')
@@ -101,7 +101,7 @@ class FixtureSafetyTest(unittest.TestCase):
             totals = fixture.summary(root)['totals']
             self.assertEqual(2, totals['failures'])
             self.assertEqual(2, totals['errors'])
-            self.assertEqual(7, totals['passed'])
+            self.assertEqual(sum(fixture.REQUIRED_TESTS.values()) - 2 * len(fixture.REQUIRED_TESTS), totals['passed'])
 
 
 if __name__ == '__main__':

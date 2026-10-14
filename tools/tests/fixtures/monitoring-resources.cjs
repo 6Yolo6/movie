@@ -9,7 +9,9 @@ const overview = {
     hotSearches: [{ keyword: '沙丘 2', count: 31 }, { keyword: '繁花', count: 24 }, { keyword: 'The Long Search Term '.repeat(6), count: 12 }],
 };
 const logs = {
-    access: Array.from({ length: 91 }, (_, index) => ({ id: 91 - index, request_path: index === 90 ? '/api/past-fifty' : '/api/movies/' + (91 - index), method: 'GET', status_code: index % 10 === 0 ? 500 : 200, duration_ms: 42, event_type: 'API', created_at: day + 'T08:30:12' })),
+    access: Array.from({ length: 91 }, (_, index) => ({ client_ip: index === 0 ? '2001:db8::42' : index === 1 ? '192.0.2.41' : null,
+        user_agent: index === 0 ? 'RawIdentity%_! / "quoted" \\ 😀 ' + 'VeryLongAgentSegment'.repeat(25) + '<img src=x onerror="globalThis.__uaInjected=true">' : index === 1 ? 'Fixture Mobile/1.0' : null,
+        id: 91 - index, request_path: index === 90 ? '/api/past-fifty' : '/api/movies/' + (91 - index), method: 'GET', status_code: index % 10 === 0 ? 500 : 200, duration_ms: 42, event_type: 'API', created_at: day + 'T08:30:12' })),
     searches: [{ id: 2, keyword: '沙丘 2', source: 'WEB', result_count: 3, created_at: day + 'T08:30:12' }, { id: 1, keyword: '繁花', source: 'WEB', result_count: 0, created_at: day + 'T08:30:00' }],
     resourceOperations: [{ id: 2, movie_id: 'fixture-mixed', resource_link_id: 2, operation_type: 'SHARE', provider: 'quark', status: 'SUCCESS', created_at: day + 'T08:30:12' }, { id: 1, movie_id: 'fixture-mixed', resource_link_id: 1, operation_type: 'SAVE', provider: 'xunlei', status: 'FAILED', error_message: '分享链接已失效 / Long failure detail '.repeat(12), created_at: day + 'T08:30:00' }],
     qqSearches: [{ id: 2, keyword: 'Fixture movie', movie_id: 'fixture-mixed', resource_count: 3, status: 'LIBRARY_RESOURCE', created_at: day + 'T08:30:12' }, { id: 1, keyword: 'Missing movie', status: 'NO_RESOURCE', resource_count: 0, created_at: day + 'T08:30:00' }],

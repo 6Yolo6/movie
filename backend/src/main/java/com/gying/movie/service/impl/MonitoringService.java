@@ -26,8 +26,9 @@ public class MonitoringService {
     public MonitoringService(JdbcTemplate jdbc, StringRedisTemplate redis) { this.jdbc=jdbc; this.redis=redis; }
 
     public void access(String path,String method,int status,long duration,HttpServletRequest request,String eventType) {
-        try { jdbc.update("INSERT INTO site_access_log(request_path,method,status_code,visitor_hash,user_agent_hash,referer,duration_ms,event_type) VALUES (?,?,?,?,?,?,?,?)",
-                safePath(path),cut(method,10),status,visitorHash(request),RegistrationService.sha256(header(request,"User-Agent")),safePath(header(request,"Referer")),duration,eventType); }
+        try { jdbc.update("INSERT INTO site_access_log(request_path,method,status_code,visitor_hash,user_agent_hash,referer,duration_ms,event_type,client_ip,user_agent) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                safePath(path),cut(method,10),status,visitorHash(request),RegistrationService.sha256(header(request,"User-Agent")),safePath(header(request,"Referer")),duration,eventType,
+                clientIp(request),rawUserAgent(request)); }
         catch(Exception ignored) { }
     }
     public void search(String keyword,long resultCount,HttpServletRequest request) {
@@ -149,7 +150,7 @@ public class MonitoringService {
     public Map<String,Object> logs(String q,int page,int size) {
         String term=q==null?"":q.trim(); int limit=Math.min(Math.max(size,1),100),offset=(Math.max(page,1)-1)*limit; String like="%"+term+"%";
         Map<String,Object> out=new LinkedHashMap<>();
-        out.put("access",jdbc.queryForList("SELECT id,request_path,method,status_code,duration_ms,event_type,created_at FROM site_access_log WHERE ?='' OR request_path LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?",term,like,limit,offset));
+        out.put("access",jdbc.queryForList("SELECT id,request_path,method,status_code,duration_ms,event_type,created_at,client_ip,user_agent FROM site_access_log WHERE ?='' OR request_path LIKE ? OR client_ip LIKE ? OR user_agent LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?",term,like,like,like,limit,offset));
         out.put("searches",jdbc.queryForList("SELECT id,keyword,source,result_count,created_at FROM site_search_log WHERE ?='' OR keyword LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?",term,like,limit,offset));
         out.put("resourceOperations",jdbc.queryForList("SELECT id,movie_id,resource_link_id,operation_type,provider,status,error_message,created_at FROM resource_operation_log WHERE ?='' OR movie_id LIKE ? OR operation_type LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?",term,like,like,limit,offset));
         out.put("qqSearches",jdbc.queryForList("SELECT id,keyword,status,movie_id,resource_count,failure_reason,created_at FROM qq_bot_search_log WHERE ?='' OR keyword LIKE ? OR status LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?",term,like,like,limit,offset));
@@ -201,8 +202,8 @@ public class MonitoringService {
         if (type == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown log type");
         return switch (type) {
             case "access" -> new LogDefinition("site_access_log",
-                    "id,request_path,method,status_code,duration_ms,event_type,created_at",
-                    List.of("request_path", "method", "CAST(status_code AS CHAR)"));
+                    "id,request_path,method,status_code,duration_ms,event_type,created_at,client_ip,user_agent",
+                    List.of("request_path", "method", "CAST(status_code AS CHAR)", "client_ip", "user_agent"));
             case "searches" -> new LogDefinition("site_search_log",
                     "id,keyword,source,result_count,created_at", List.of("keyword", "source"));
             case "resourceOperations" -> new LogDefinition("resource_operation_log",
@@ -251,7 +252,15 @@ public class MonitoringService {
     }
 
     public static String visitorHash(HttpServletRequest r){return RegistrationService.sha256(clientIp(r)+"|"+header(r,"User-Agent"));}
+    // Only the security filter may resolve forwarded IPs; never read client-supplied IP headers here.
     private static String clientIp(HttpServletRequest r){return ClientIpResolver.resolved(r);}
+    private static String rawUserAgent(HttpServletRequest r) {
+        String value = r.getHeader("User-Agent");
+        if (value == null) return null;
+        // Preserve the received header; bound by Unicode characters, not UTF-16 halves.
+        int length = value.codePointCount(0, value.length());
+        return length <= 1024 ? value : value.substring(0, value.offsetByCodePoints(0, 1024));
+    }
     private static String header(HttpServletRequest r,String name){String v=r.getHeader(name);return v==null?"":v;}
     private static String normalizeKeyword(String s){if(s==null)return null;String v=s.trim().replaceAll("\\s+"," ");return v.length()<2||v.length()>100?null:v;}
     private static String safePath(String value) {

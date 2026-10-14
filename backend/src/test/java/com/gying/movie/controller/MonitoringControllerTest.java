@@ -43,6 +43,18 @@ class MonitoringControllerTest {
         verify(service).logs(null, 1, 20);
         verifyNoMoreInteractions(service);
     }
+    @Test void administratorsCanReadRawIdentityAsDataNotMarkup() throws Exception {
+        when(service.logPage("access", null, "all", 1, 20)).thenReturn(Map.of(
+                "records", List.of(Map.of("id", 1L, "client_ip", "2001:db8::8", "user_agent", "Fixture <script>not markup</script>")),
+                "total", 1, "page", 1, "size", 20));
+        mvc.perform(get("/api/admin/monitoring/logs").param("type", "access")
+                .header("Authorization", "Bearer fixture-admin"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.records[0].client_ip").value("2001:db8::8"))
+                .andExpect(jsonPath("$.records[0].user_agent").value("Fixture <script>not markup</script>"));
+    }
+
     @Test void anonymousAndOrdinaryUsersCannotReadEitherMode() throws Exception {
         for (String suffix : List.of("", "?type=access")) {
             mvc.perform(get("/api/admin/monitoring/logs" + suffix)).andExpect(status().isUnauthorized());

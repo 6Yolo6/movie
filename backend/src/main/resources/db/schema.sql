@@ -519,6 +519,8 @@ CREATE TABLE IF NOT EXISTS `site_access_log` (
   `referer` varchar(500) DEFAULT NULL COMMENT '来源页面',
   `duration_ms` bigint NOT NULL DEFAULT 0 COMMENT '处理耗时毫秒',
   `event_type` varchar(30) NOT NULL DEFAULT 'API' COMMENT 'API 或 PAGE_VIEW',
+  `client_ip` varchar(45) DEFAULT NULL COMMENT '来源IP：可信代理链解析或直连地址；历史为空',
+  `user_agent` varchar(1024) DEFAULT NULL COMMENT '原始User-Agent，最多1024个字符；历史为空',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '访问时间',
   PRIMARY KEY (`id`),
   KEY `idx_access_created` (`created_at`),

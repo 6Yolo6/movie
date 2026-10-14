@@ -24,7 +24,7 @@ RUN_LABEL = 'com.gying.fixture.run'
 KIND = 'query-boundaries-mysql'
 MYSQL_HOSTNAME = 'gying-query-fixture'
 IMAGES = {'mysql': 'mysql:8.0', 'maven': 'maven:3.9-eclipse-temurin-17'}
-REQUIRED_TESTS = {'QueryBoundaryMySqlTest': 7, 'MonitoringServiceMySqlTest': 4}
+REQUIRED_TESTS = {'QueryBoundaryMySqlTest': 7, 'MonitoringServiceMySqlTest': 7}
 INSPECT = ('{"id":{{json .Id}},"labels":{{json .Config.Labels}},'
            '"network":{{json .HostConfig.NetworkMode}},"ports":{{json .HostConfig.PortBindings}},'
            '"mounts":{{json .Mounts}},"tmpfs":{{json .HostConfig.Tmpfs}},'

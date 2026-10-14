@@ -100,3 +100,17 @@ test('resource dates are identical in SSR and browsers regardless of OS locale',
     for (const date of ['2026-10-11T08:30:12', '2026-10-11 08:30:12', '2026-10-11']) assert.equal(resourceCreatedDate(date), '2026-10-11');
     for (const date of [null, undefined, 'invalid', {}]) assert.equal(resourceCreatedDate(date), '—');
 });
+
+test('raw access identity and legacy null values survive parsing without HTML conversion', () => {
+    const agent = 'Fixture%_! <img src=x onerror="not code"> 中文';
+    const value = parseLogPage({ records: [{ id: 1, client_ip: '2001:db8::42', user_agent: agent },
+        { id: 2, client_ip: null, user_agent: null }], total: 2, page: 1, size: 20 });
+    assert.equal(value.records[0].user_agent, agent);
+    assert.equal(value.records[0].client_ip, '2001:db8::42');
+    assert.equal(value.records[1].client_ip, null);
+    assert.equal(value.records[1].user_agent, null);
+    for (const q of ['2001:db8::42', agent]) {
+        const url = new URL(logUrl({ type: 'access', q, status: 'all', page: 1, size: 20 }), 'http://localhost');
+        assert.equal(url.searchParams.get('q'), q);
+    }
+});

@@ -161,7 +161,7 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 
 - `GET /api/admin/monitoring/overview`：今日概览及近 14 天趋势，返回 `date`、`timeZone`、各今日统计、`traffic`、`hotSearches`。`requestsToday`/趋势 `requests` 只统计 `event_type=API`；页面浏览单独统计，访客按页面浏览中的 `visitor_hash` 去重；4xx/5xx 仅来自 API。
 - 发布摘要按今日创建的记录计数：`socialPostedToday=POSTED`、`socialFailedToday=FAILED/PREPARE_FAILED`、`socialPendingToday=PENDING/PREPARING/PUBLISHING`、`socialUnknownToday=UNKNOWN`。成功率的分母仅为已发布 + 失败，不把处理中或未知结果算成失败；本监控页没有重试或发帖动作。
-- `GET /api/admin/monitoring/logs?type=access&q=&status=all&page=1&size=20`：只查询指定日志流，返回 `{records,total,page,size,pages}`。`type` 为 `access/searches/resourceOperations/qqSearches/socialPosts`；旧调用不传 `type` 时仍返回原多类数组结构。
+- `GET /api/admin/monitoring/logs?type=access&q=&status=all&page=1&size=20`：只查询指定日志流，返回 `{records,total,page,size,pages}`。`type` 为 `access/searches/resourceOperations/qqSearches/socialPosts`；旧调用不传 `type` 时仍返回原多类数组结构。访问日志追加 `client_ip`、`user_agent`，关键词搜索覆盖 IP/UA；历史值为 null，UA 最多 1024 个 Unicode 字符。仅 ADMIN 可读，响应为 `Cache-Control: no-store`；IP 只采用可信代理解析结果或直连地址，不信任任意请求头。
 - `q` 为最多 100 字符的字面量子串（`%`、`_`、`!` 不展开为通配符），查询字段随日志类型变化。筛选在计数与分页前执行，不限于最近 50 条；`size` 限制为 1–100，越界页钳制到末页，空结果页为 1。
 - 通用 `status=all/success/failure`：访问日志为 2xx–3xx / 4xx–5xx，站内搜索为有结果 / 无结果；发布成功为 POSTED，失败为 FAILED/PREPARE_FAILED。仅平台发布额外支持 `pending`（PENDING/PREPARING/PUBLISHING）、`attention`（UNKNOWN）。无效类型或不适用的状态过滤返回 400。
 - `GET /api/admin/monitoring/hot-searches?date=YYYY-MM-DD&limit=20`：指定日期热词；Redis 为空或故障时按该日边界回退数据库，不影响其他概览查询。

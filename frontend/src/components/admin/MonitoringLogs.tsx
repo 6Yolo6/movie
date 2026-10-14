@@ -10,7 +10,7 @@ import { count, formatMonitoringTime, LOG_KEYS, statusColor } from '@/lib/monito
 import type { LogKey, LogPage, LogQuery, LogRow, Numeric, StatusFilter } from '@/lib/monitoring';
 
 const FIELDS: Record<LogKey, string[]> = {
-    access: ['created_at', 'method', 'request_path', 'status_code', 'duration_ms', 'event_type'],
+    access: ['created_at', 'method', 'request_path', 'client_ip', 'status_code', 'duration_ms', 'event_type', 'user_agent'],
     searches: ['created_at', 'keyword', 'source', 'result_count', 'id'],
     resourceOperations: ['created_at', 'movie_id', 'resource_link_id', 'operation_type', 'provider', 'status', 'error_message'],
     qqSearches: ['created_at', 'keyword', 'status', 'movie_id', 'resource_count', 'failure_reason'],
@@ -18,7 +18,7 @@ const FIELDS: Record<LogKey, string[]> = {
 };
 const TITLES: Record<LogKey, string> = { access: 'request_path', searches: 'keyword', resourceOperations: 'operation_type', qqSearches: 'keyword', socialPosts: 'title' };
 const isError = (field: string) => field === 'error_message' || field === 'failure_reason';
-const isLong = (field: string) => ['request_path', 'keyword', 'title'].includes(field) || isError(field);
+const isLong = (field: string) => ['request_path', 'keyword', 'title', 'user_agent'].includes(field) || isError(field);
 
 export function MonitoringLogs({ query, onQuery, data, loading, error, updatedAt, onRetry }: {
     query: LogQuery; onQuery: (query: LogQuery) => void; data: LogPage | null;
@@ -54,6 +54,7 @@ export function MonitoringLogs({ query, onQuery, data, loading, error, updatedAt
         if (field === 'status') return <Tag className="!m-0 !whitespace-normal !break-words" color={statusColor(value, query.type)}>{t(`monitoring.statuses.${text.toUpperCase()}`, { defaultValue: text })}</Tag>;
         if (field === 'status_code') return <Tag className="!m-0" color={Number(value) >= 500 ? 'red' : Number(value) >= 400 ? 'orange' : Number(value) >= 200 ? 'green' : 'default'}>{text}</Tag>;
         if (field === 'duration_ms') return <span className={`tabular-nums ${Number(value) >= 1000 ? 'text-rose-500' : ''}`}>{text} ms</span>;
+        if (field === 'client_ip') return <span className="break-all font-mono text-xs">{text}</span>;
         if (field === 'method') return <Tag className="!m-0" color={text === 'GET' ? 'blue' : 'cyan'}>{text}</Tag>;
         if (['provider', 'source', 'platform', 'operation_type', 'event_type'].includes(field)) {
             const key = field === 'event_type' && text === 'VIEW' ? 'PAGE_VIEW' : text.toUpperCase();
@@ -64,7 +65,7 @@ export function MonitoringLogs({ query, onQuery, data, loading, error, updatedAt
         return <span className="break-all">{text}</span>;
     };
     const columns: ColumnsType<LogRow> = FIELDS[query.type].map(field => ({ title: label(field), key: field,
-        dataIndex: field, width: isLong(field) ? undefined : field.endsWith('_at') ? 172 : 115,
+        dataIndex: field, width: field === 'client_ip' ? 175 : field === 'user_agent' ? 300 : isLong(field) ? undefined : field.endsWith('_at') ? 172 : 115,
         render: (_value, row) => render(field, row) }));
     const filtered = Boolean(query.q || query.status !== 'all');
     const empty = <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(filtered ? 'monitoring.noMatches' : 'monitoring.empty')}>
@@ -94,7 +95,7 @@ export function MonitoringLogs({ query, onQuery, data, loading, error, updatedAt
         {loading && !data ? <Skeleton active paragraph={{ rows: 5 }} /> : data && <>
             <div className="hidden min-w-0 md:block">
                 <Table<LogRow> size="middle" rowKey={row => `${query.type}:${row.id}`} loading={loading} dataSource={records}
-                    columns={columns} scroll={{ x: 920 }} locale={{ emptyText: empty }} pagination={false} />
+                    columns={columns} scroll={{ x: query.type === 'access' ? 1300 : 920 }} locale={{ emptyText: empty }} pagination={false} />
             </div>
             <div className="space-y-3 md:hidden" data-mobile-logs>{records.length ? records.map(row => {
                 const titleField = TITLES[query.type];
@@ -108,9 +109,13 @@ export function MonitoringLogs({ query, onQuery, data, loading, error, updatedAt
                         </span>
                         {row.status != null ? render('status', row) : row.status_code != null ? render('status_code', row) : null}
                     </div>
-                    <dl className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">{FIELDS[query.type].filter(field => ![titleField, 'created_at', 'id', 'status', 'status_code'].includes(field) && !isError(field)).map(field =>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">{FIELDS[query.type].filter(field => ![titleField, 'created_at', 'id', 'status', 'status_code', 'user_agent'].includes(field) && !isError(field)).map(field =>
                         <div key={field} className="min-w-0"><dt className="mb-1 text-[11px] text-slate-400 dark:text-zinc-500">{label(field)}</dt><dd className="break-all">{render(field, row)}</dd></div>
                     )}</dl>
+                    {query.type === 'access' && <details className="mt-3 border-t border-slate-100 pt-2 dark:border-zinc-800" data-user-agent-detail>
+                        <summary className="cursor-pointer py-2 text-xs text-slate-500 dark:text-zinc-400">{t('monitoring.userAgentDetail')}</summary>
+                        <p className="mt-2 whitespace-pre-wrap break-all font-mono text-xs leading-5">{String(row.user_agent || '—')}</p>
+                    </details>}
                     {['error_message', 'failure_reason'].map(field => row[field] ? <details key={field} className="mt-3 border-t border-slate-100 pt-2 dark:border-zinc-800">
                         <summary className="cursor-pointer py-1 text-xs text-rose-500">{t('monitoring.errorDetail')}</summary>
                         <p className="mt-2 text-xs leading-5 whitespace-pre-wrap break-all text-rose-500">{String(row[field])}</p>

@@ -1092,8 +1092,8 @@
     "logs": {
       "access": {
         "title": "Access logs",
-        "description": "Page views and API requests",
-        "hint": "Search path, method or status code"
+        "description": "API requests and page views. Raw IP / User-Agent are admin-only; older records may be empty. Forwarded IPs are accepted only from configured trusted proxies.",
+        "hint": "Search path, method, status, IP or User-Agent"
       },
       "searches": {
         "title": "Site searches",
@@ -1137,7 +1137,9 @@
       "failure_reason": "Failure reason",
       "platform": "Platform",
       "title": "Title",
-      "posted_at": "Published at"
+      "posted_at": "Published at",
+      "client_ip": "Client IP",
+      "user_agent": "User-Agent"
     },
     "statuses": {
       "SUCCESS": "Success",
@@ -1207,7 +1209,8 @@
       "SUBMIT": "Submit resource",
       "REPAIR": "Repair resource",
       "DELETE": "Delete resource"
-    }
+    },
+    "userAgentDetail": "View full User-Agent"
   },
   "resourceOtherCategory": "Other resources",
   "resourceCategoryCount": "{{category}}: {{count}} resources"

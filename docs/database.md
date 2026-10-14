@@ -31,10 +31,11 @@
 
 ## 3. 增量文件清单
 
-以下 **23 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
+以下 **24 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
 
 | 文件 | 主要用途 |
 | --- | --- |
+| [`migration_access_log_client_identity.sql`](../backend/src/main/resources/db/migration_access_log_client_identity.sql) | 为访问日志追加可空的客户端 IP / User-Agent；不回填历史，先预检和备份，再部署应用 |
 | [`migration_comments_login_devices.sql`](../backend/src/main/resources/db/migration_comments_login_devices.sql) | 评论类型、安全约束与登录设备授权表 |
 | [`migration_favorites.sql`](../backend/src/main/resources/db/migration_favorites.sql) | 收藏表与影片热度字段 |
 | [`migration_fix_qq_channel_template_mojibake.sql`](../backend/src/main/resources/db/migration_fix_qq_channel_template_mojibake.sql) | 修正历史 QQ 频道默认模板乱码 |
@@ -78,7 +79,13 @@ GYING ID 是不透明、大小写敏感的标识，`dWXo` 与 `dwXo` 必须独�
 
 **应用回滚保留二进制排序规则。** 自动恢复到不区分大小写的旧规则可能合并合法身份或触发唯一键冲突；恢复旧规则必须单独审查现有数据。
 
-## 5. 其他长期约束
+## 5. 访问日志客户端身份
+
+`migration_access_log_client_identity.sql` 在 `site_access_log` 末尾分别追加 `client_ip VARCHAR(45) NULL`、`user_agent VARCHAR(1024) NULL`，明确要求 `ALGORITHM=INSTANT`，不允许自动降级为重建表。已有同名列必须先核对类型、可空性、默认值和字符集，不能仅因列存在就当作兼容。
+
+先完成加密备份与完整认证解密，再使用已有授权维护身份执行增量；不要扩大应用账号权限。旧日志保持 NULL，不能由哈希反推原值。新后端依赖这两列，因此迁移必须先于应用切换；回退应用时保留新增列和新日志，不执行 DROP COLUMN 或旧库覆盖。可信代理配置和验收见[本次交付记录](access-log-client-identity-20261014.md)。
+
+## 6. 其他长期约束
 
 - 主表、资源和来源身份均保留历史；删除和合并先 dry-run，优先软删除/关联迁移。
 - 发布状态不确定时不能批量改回 PENDING，见[发布状态机](social-publishing.md#2-状态机与重试边界)。

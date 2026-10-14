@@ -1092,8 +1092,8 @@
     "logs": {
       "access": {
         "title": "访问日志",
-        "description": "页面浏览与 API 请求",
-        "hint": "按请求路径、方法或状态码搜索"
+        "description": "API 请求与页面浏览记录。原始 IP / User-Agent 仅供管理员排查；历史记录可能为空，转发 IP 仅采信已验证的代理链。",
+        "hint": "搜索路径、方法、状态码、IP 或 User-Agent"
       },
       "searches": {
         "title": "站内搜索",
@@ -1137,7 +1137,9 @@
       "failure_reason": "失败原因",
       "platform": "平台",
       "title": "标题",
-      "posted_at": "发布时间"
+      "posted_at": "发布时间",
+      "client_ip": "客户端 IP",
+      "user_agent": "User-Agent"
     },
     "statuses": {
       "SUCCESS": "成功",
@@ -1207,7 +1209,8 @@
       "SUBMIT": "提交资源",
       "REPAIR": "修复资源",
       "DELETE": "删除资源"
-    }
+    },
+    "userAgentDetail": "查看完整 User-Agent"
   },
   "resourceOtherCategory": "其他资源",
   "resourceCategoryCount": "{{category}}：{{count}} 个资源"
