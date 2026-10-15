@@ -30,8 +30,22 @@ python -X utf8 tools/tests/test_qq_channel_multidrive.py
 
 ## 运行基线与部署状态
 
-2026-10-15 只读确认：原计划任务读取 `D:/gying-movie/movie/tools/publish-latest-resource-to-qq-channel.ps1`；自动发布启用，每日 09:00、每轮 3 篇、篇间隔 300 秒、候选数 5，下一次计划为 2026-10-16 09:00（Asia/Shanghai）。现有模板含 `{{link}}`。频道审计 278 条 POSTED、1 条 FAILED；本次未重试或重置历史记录。
+2026-10-15 19:44:42（Asia/Shanghai）已上线。用户在获知现有 11 项安全失败后明确要求“直接上线”，本次只替换原频道三个宿主脚本；代码提交为 `fc5ef04`，与独立已推送候选 `68de6d7` 的树完全一致。运维就绪检查 11 PASS / 1 WARN / 0 FAIL；全局安全扫描仍 59 PASS / 11 FAIL / 0 UNKNOWN，本次授权不关闭安全待办。
 
-当前为独立候选，尚未替换计划任务读取的在线脚本。运维就绪检查 11 PASS / 1 WARN / 0 FAIL；全局安全扫描仍 59 PASS / 11 FAIL / 0 UNKNOWN。按部署规则保留上线门禁，不把历史业务例外当成本次授权。
+`GYing QQ Channel Auto Post` 仍读取 `D:/gying-movie/movie/tools/publish-latest-resource-to-qq-channel.ps1`，每日 09:00、每轮 3 篇、篇间隔 300 秒、候选数 5；下次为 2026-10-16 09:00。计划任务 XML 的部署前后 SHA-256 相同，现有模板含 `{{link}}`，未改目标或调度配置。
 
-上线仅需在现有发布互斥锁内备份并原子替换有关宿主脚本，核验内容 hash 与 PowerShell 5.1 解析；没有受影响的 Docker 服务，不执行容器重建。脚本或接口自检不能代表频道内真实帖已验收。回退仅恢复本次脚本备份，保留发布审计、状态文件和后来生成的帖子。
+切换在原 `Global\GYingQqChannelAutoPost` 互斥锁内执行：先安装公共 helper，再原子替换 feed 与自动发布入口。三个在线脚本的 SHA-256 与通过测试的候选一致，语法解析通过；独立 PowerShell 5.1 子进程调用真实入口，在父进程持锁时确认正常跳过，未进入数据库或外部发布分支。首次原子替换因空备份路径的 PowerShell/.NET 参数绑定失败；核对两个入口仍为旧版后恢复全部基线，改用明确临时备份路径，文件替换验证及随后上线通过。
+
+上线后再次执行实际 helper 生成的 MySQL 只读查询：两部影片均返回百度/夸克/UC/迅雷各一条；配置、频道审计（278 POSTED / 1 FAILED，最后成功 2026-10-15 09:10:10）与本地发布状态文件均未改变。11 个容器的 ID、镜像、启动时间和重启次数不变，本机首页/API 与公网首页均 200。没有受影响的 Docker 服务，未重建容器、修改数据库或触发真实发帖。频道内实际展示仍待原计划自然运行后验收。
+
+## 回退与证据
+
+发布材料在 `E:/gying-tools/releases/qq-channel-multi-drive-20261015`：`release-manifest.json` 固定候选/旧脚本 hash，`previous/tools/` 保存两个原入口，`candidate/` 保存候选；`activate-result.json` 与 `post-deploy-verification.json` 保存脱敏验收。部署前确认工作树中原有 21 个无关改动未变；状态文档仅提交本次新增事实，无关改动继续保留。
+
+若需回退，在确认没有在途发布且当前脚本 hash 仍匹配本次材料后执行：
+
+```powershell
+& 'E:/gying-tools/releases/qq-channel-multi-drive-20261015/Manage-ChannelRelease.ps1' -Mode Rollback
+```
+
+回退脚本获取同一互斥锁，拒绝未知文件版本，恢复两个原入口并移除本次新增 helper；仅变更代码，保留发布审计、状态文件及后来生成的帖子。完成后需核对入口、记录实际 Git 差异并提交回退，不能通过恢复旧数据库来撤销外部帖子。上线过程中已实测恢复基线及 hash 校验。
