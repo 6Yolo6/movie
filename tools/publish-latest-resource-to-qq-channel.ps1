@@ -1,4 +1,4 @@
-param(
+﻿param(
     [int]$Limit = 0,
     [long]$PostLogId = 0,
     [string]$StateFile = "$env:USERPROFILE\.gying\qq-channel-posted.txt",
@@ -6,6 +6,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "qq-channel-resources.ps1")
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 if (-not $RunLogFile) {
@@ -325,6 +326,7 @@ function Resolve-MediaTypeLabel {
 }
 
 $published = 0
+$handledMovieIds = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
 $rowIndex = 0
 $totalRows = @($rows).Count
 foreach ($row in @($rows)) {
@@ -338,6 +340,10 @@ foreach ($row in @($rows)) {
     }
     $resourceId = $parts[0]
     $movieId = $parts[1]
+    if ($handledMovieIds.Contains($movieId)) {
+        Write-RunLog "SKIP duplicate movie in current run movie=$movieId"
+        continue
+    }
     if ($postedIds.Contains($resourceId) -and -not $pendingIds.Contains($resourceId)) {
         continue
     }
@@ -352,6 +358,21 @@ foreach ($row in @($rows)) {
     Write-RunLog "POST start resource=$resourceId movie=$movieId channelType=$channelType poster=$([bool]$posterUrl)"
 
     try {
+        # Read all current providers immediately before composing this one movie post.
+        $env:MYSQL_PWD = if ($envMap["GYING_DB_PASSWORD"]) { $envMap["GYING_DB_PASSWORD"] } else { $envMap["DB_PASSWORD"] }
+        try {
+            $resourceRows = @(Invoke-GyingMysql (Get-QqChannelResourcesSql -MovieId $movieId))
+        } finally {
+            Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
+        }
+        $resources = @(ConvertFrom-QqChannelResourceRows -Rows $resourceRows)
+        if ($resources.Count -eq 0) {
+            Write-RunLog "SKIP movie has no currently eligible disk resources movie=$movieId"
+            [void]$handledMovieIds.Add($movieId)
+            continue
+        }
+        # A failed or uncertain first attempt must not be repeated through another row in this run.
+        [void]$handledMovieIds.Add($movieId)
         & (Join-Path $PSScriptRoot "publish-qq-channel-feed.ps1") `
             -Title $title `
             -Link $link `
@@ -363,7 +384,8 @@ foreach ($row in @($rows)) {
             -GuildId $guildId `
             -MovieChannelId $movieChannelId `
             -TvChannelId $tvChannelId `
-            -ContentTemplate $postTemplate
+            -ContentTemplate $postTemplate `
+            -Resources $resources
 
         $logSql = "INSERT INTO qq_channel_post_log (resource_link_id, movie_id, title, link_url, channel_type, channel_id, status, posted_at, created_at) VALUES ($resourceId, '$(Escape-Sql $movieId)', '$(Escape-Sql $title)', '$(Escape-Sql $link)', '$(Escape-Sql $channelType)', '$(Escape-Sql $channelId)', 'POSTED', NOW(), NOW()) ON DUPLICATE KEY UPDATE status='POSTED', error_message=NULL, posted_at=NOW(), created_at=created_at;"
         $env:MYSQL_PWD = if ($envMap["GYING_DB_PASSWORD"]) { $envMap["GYING_DB_PASSWORD"] } else { $envMap["DB_PASSWORD"] }
