@@ -281,6 +281,23 @@ public class QuarkAutoSaveClient {
             if (resolved != null) {
                 return resolved;
             }
+            // An obfuscated first-season title must still identify its own subtree.
+            String name=item.path("file_name").asText("");
+            if (season == 1 && com.gying.movie.utils.ObfuscatedTitleMatcher.matches(name, seriesTitle)
+                    && !SeasonSearchUtils.hasSeasonMarker(name) && !SeasonSearchUtils.isCollectionResource(name)) {
+                String scoped=baseShareUrl + "#/list/share/" + fid;
+                JsonNode content = getShareDetailData(scoped).path("list");
+                // This path is transferred recursively: every child must be in the proven scope.
+                // Nested folders need their own season/title decision; never accept them by spelling alone.
+                boolean video = false;
+                boolean nested = false;
+                if (content.isArray()) for (JsonNode child : content) {
+                    nested |= child.path("dir").asBoolean(false);
+                    video |= !child.path("dir").asBoolean(false) && isVideoFile(child.path("file_name").asText(""));
+                }
+                if (video && !nested && !hasConflictingSeasonMarker(content, 1)) return scoped;
+                throw new IllegalStateException("Quark identified title directory has no verified direct video scope");
+            }
         }
         return null;
     }
@@ -362,6 +379,7 @@ public class QuarkAutoSaveClient {
     }
 
     private boolean matchesMovieTitle(String name, String title) {
+        if (com.gying.movie.utils.ObfuscatedTitleMatcher.matches(name, title)) return true;
         // Preserve token boundaries while allowing release-name punctuation.
         // Normalizing first would concatenate "2.2016" and hide a sequel number.
         String separators = "[\\s\\p{Punct}，。！？、：；（）《》【】「」『』]*";

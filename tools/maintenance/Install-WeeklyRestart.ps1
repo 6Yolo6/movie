@@ -5,6 +5,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'TaskVerification.ps1')
 $configPath = (Resolve-Path -LiteralPath $ConfigFile).Path
 $config = Get-Content -Raw -Encoding UTF8 -LiteralPath $configPath | ConvertFrom-Json
 $controller = Join-Path $PSScriptRoot 'weekly_restart.py'
@@ -72,7 +73,13 @@ try {
     }
     $actual = Get-ScheduledTask -TaskName $names[0]
     $next = (Get-ScheduledTaskInfo -TaskName $names[0]).NextRunTime
-    if ($actual.Settings.StartWhenAvailable -or $actual.Principal.RunLevel -ne 'Highest' -or $actual.Principal.LogonType -ne 'Interactive' -or $next -ne $start.LocalDateTime) { throw 'Registered task verification failed.' }
+    $verification = [ordered]@{ startWhenAvailable=$actual.Settings.StartWhenAvailable; runLevel=[string]$actual.Principal.RunLevel; logonType=[string]$actual.Principal.LogonType; nextRunTime=$next.ToString('o'); expectedNextRunTime=$start.LocalDateTime.ToString('o') }
+    $offset = ($next - $start.LocalDateTime).TotalSeconds
+    $verification['scheduledOffsetSeconds'] = $offset
+    $verification | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $rollback 'verification.json') -Encoding UTF8
+    # The scheduler on this host reports a 30-second execution offset. Keep the exact
+    # configured boundary and allow only the first minute of the reviewed trigger.
+    if ($actual.Settings.StartWhenAvailable -or $actual.Principal.RunLevel -ne 'Highest' -or $actual.Principal.LogonType -ne 'Interactive' -or -not (Test-WeeklyTaskTime $start $actual.Triggers[0].StartBoundary $next)) { throw ('Registered task verification failed: ' + ($verification | ConvertTo-Json -Compress)) }
     $report.mode = 'registered'
     $report['nextRunTime'] = $next.ToString('yyyy-MM-dd HH:mm:ss')
     $report['evidence'] = $rollback

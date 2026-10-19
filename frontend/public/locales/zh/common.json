@@ -1214,5 +1214,25 @@
     "userAgentDetail": "查看完整 User-Agent"
   },
   "resourceOtherCategory": "其他资源",
-  "resourceCategoryCount": "{{category}}：{{count}} 个资源"
+  "resourceCategoryCount": "{{category}}：{{count}} 个资源",
+  "navAiAssistant": "AI 助手",
+  "aiDescription": "用自然语言查片、了解剧情和查找片库存量资源。",
+  "aiWelcome": "想找哪部影片？",
+  "aiExample1": "搜索星际穿越，列出片名和年份",
+  "aiExample2": "搜索流浪地球，并查看可用资源",
+  "aiNewChat": "新对话",
+  "aiQueued": "正在排队…",
+  "aiThinking": "正在查询片库并生成回答…",
+  "aiFailed": "AI 查询失败，请稍后重试",
+  "aiOffline": "AI 助手暂未连接，连接恢复后可继续提问",
+  "aiCatalogEvidence": "片库查询记录",
+  "aiPartial": "部分结果",
+  "aiViewDetails": "查看详情",
+  "aiOpenResource": "打开资源",
+  "aiCode": "提取码",
+  "aiPlaceholder": "输入片名或继续追问…",
+  "aiSend": "发送",
+  "aiHint": "Enter 发送 · Shift+Enter 换行 · 网盘状态来自片库记录，未实时核验",
+  "aiLoading": "正在加载 AI 助手…",
+  "aiLogin": "登录后即可使用 AI 片库助手"
 }

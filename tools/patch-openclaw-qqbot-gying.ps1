@@ -202,6 +202,9 @@ function extractGyingTextCommand(content) {
     if (resourcePreferencePattern.test(normalized)) {
         return normalized;
     }
+    if (/^(?:帮|请|能|可以|有没有|有无|想|我想|麻烦|找一下|搜索一下|搜索.*(?:资源|吗)|搜.*(?:资源|吗))/u.test(normalized)) {
+        return normalized.length <= 75 ? "自然语言：" + normalized : null;
+    }
     for (const prefix of ["\u641c", "\u627e"]) {
         if (normalized === prefix) {
             return "";
@@ -210,7 +213,7 @@ function extractGyingTextCommand(content) {
             return normalized.slice(prefix.length).trim();
         }
     }
-    return null;
+    return normalized.length <= 75 ? "自然语言：" + normalized : null;
 }
 '@
 $helperPattern = '(?s)(?:function buildGyingDefaultReply\(\)|(?:async\s+)?function runGyingMovieSearch\(ctx, keyword\)).*?(?=// ============ 内置指令 ============)'

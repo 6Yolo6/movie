@@ -1214,5 +1214,25 @@
     "userAgentDetail": "View full User-Agent"
   },
   "resourceOtherCategory": "Other resources",
-  "resourceCategoryCount": "{{category}}: {{count}} resources"
+  "resourceCategoryCount": "{{category}}: {{count}} resources",
+  "navAiAssistant": "AI Assistant",
+  "aiDescription": "Find movies, read details and ask about catalog resources.",
+  "aiWelcome": "Which movie are you looking for?",
+  "aiExample1": "Find Interstellar and list titles and years",
+  "aiExample2": "Find The Wandering Earth and its resources",
+  "aiNewChat": "New chat",
+  "aiQueued": "Queued…",
+  "aiThinking": "Searching the catalog…",
+  "aiFailed": "AI query failed. Please try again.",
+  "aiOffline": "AI assistant is offline. Try again when connected.",
+  "aiCatalogEvidence": "Catalog evidence",
+  "aiPartial": "Partial results",
+  "aiViewDetails": "View details",
+  "aiOpenResource": "Open resource",
+  "aiCode": "Code",
+  "aiPlaceholder": "Enter a title or ask a follow-up…",
+  "aiSend": "Send",
+  "aiHint": "Enter to send · Shift+Enter for a new line · Resource status comes from catalog records",
+  "aiLoading": "Loading AI assistant…",
+  "aiLogin": "Sign in to use the AI catalog assistant"
 }

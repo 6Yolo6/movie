@@ -68,6 +68,7 @@ public final class ResourceTitleMatcher {
             addCandidate(expectedTitles, normalizeTitle(alias));
         }
         for (String expected : expectedTitles) {
+            if (ObfuscatedTitleMatcher.matches(extractHeadline(resourceTitle), expected)) return true;
             if (expected.length() >= 2 && normalizedResourceTitle.contains(expected)) {
                 return true;
             }

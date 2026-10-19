@@ -409,6 +409,38 @@ class QuarkAutoSaveClientTest {
                 "https://pan.quark.cn/s/fixture", "疯狂动物城", "Zootopia", null, 2016));
     }
 
+    @Test void selectsObfuscatedMovieSubdirectoryAndStillRejectsWrongYearAndCollection() {
+        var tree=Map.of(
+          "root", "[{\"fid\":\"movie\",\"file_name\":\"一个–部门的DS (2026)\",\"dir\":true}]",
+          "movie", "[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]");
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/movie",movieTree(tree).resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2026).shareUrl());
+        assertThrows(IllegalStateException.class,()->movieTree(tree).resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2025));
+        var collection=movieTree(Map.of("root","[{\"fid\":\"all\",\"file_name\":\"一个–部门的DS 合集 (2026)\",\"dir\":true}]","all","[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]"));
+        assertThrows(IllegalStateException.class,()->collection.resolveMovieShareUrl("https://pan.quark.cn/s/fixture","一个部门的诞生",null,null,2026));
+    }
+
+    @Test void selectsObfuscatedAnimeDirectoryAndRejectsSecondSeasonContents() {
+        String label="黑-A-召-喚-師Z地-下-戀-愛-中";
+        var tree=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true},{\"fid\":\"other\",\"file_name\":\"其他影片\",\"dir\":true}]",
+            "target","[{\"fid\":\"v\",\"file_name\":\"01.mkv\",\"dir\":false}]");
+        assertEquals("https://pan.quark.cn/s/fixture#/list/share/target",movieTree(tree).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        var wrong=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true}]",
+            "target","[{\"fid\":\"v\",\"file_name\":\"S02E01.mkv\",\"dir\":false}]");
+        assertThrows(IllegalStateException.class,()->movieTree(wrong).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        var mixed=Map.of("root",tree.get("root"),"target","[{\"file_name\":\"01.mkv\",\"dir\":false},{\"fid\":\"foreign\",\"file_name\":\"其他电影\",\"dir\":true}]",
+            "foreign","[{\"file_name\":\"movie.mkv\",\"dir\":false}]","other","[]");
+        assertThrows(IllegalStateException.class,()->movieTree(mixed).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+    }
+
+    @Test void keepsExecutableOnlyShareOutOfTheVideoTransferScope() {
+        String label="黑-A-召-喚-師Z地-下-戀-愛-中";
+        var executable=Map.of("root","[{\"fid\":\"target\",\"file_name\":\""+label+"\",\"dir\":true}]",
+            "target","[{\"file_name\":\"Dark Summoner S01E01.DDRT.exe\",\"dir\":false},{\"fid\":\"unpack\",\"file_name\":\"下载后解压\",\"dir\":true}]",
+            "unpack","[]");
+        assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
+        assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,"【更新至 02 集】【黑暗召唤师在地下恋爱中】","黑暗召唤师在地下恋爱中"));
+    }
+
     private QuarkAutoSaveClient movieTree(Map<String, String> directories) {
         ResourceHubProperties properties = new ResourceHubProperties();
         properties.getQuark().setToken("test-token");

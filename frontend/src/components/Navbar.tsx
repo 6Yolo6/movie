@@ -6,7 +6,7 @@ import { SITE_NAME } from '../lib/site';
 import { App, Avatar, Badge, Button, Drawer, Dropdown, Form, Input, MenuProps, Modal, Select, Space, Switch, Tag, Tooltip } from 'antd';
 import {
     BellOutlined, CloudDownloadOutlined, CloudSyncOutlined, CloudUploadOutlined, CommentOutlined, DatabaseOutlined, ExclamationCircleOutlined, FireOutlined, HeartOutlined, HomeOutlined,
-    LoginOutlined, LogoutOutlined, MenuOutlined, MoonOutlined, SunOutlined, TranslationOutlined,
+    LoginOutlined, LogoutOutlined, MenuOutlined, MoonOutlined, SunOutlined, TranslationOutlined, RobotOutlined,
     NotificationOutlined, PlaySquareOutlined, DesktopOutlined, SwapOutlined, UserOutlined, VideoCameraOutlined,
 } from '@ant-design/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -194,6 +194,7 @@ export default function Navbar() {
         { href: '/?category=ac', label: t('anime'), icon: <VideoCameraOutlined /> },
         { href: '/hot', label: t('hot'), icon: <FireOutlined /> },
         { href: '/resource-search', label: t('navSearchResources'), icon: <CloudDownloadOutlined /> },
+        { href: '/ai-assistant', label: t('navAiAssistant'), icon: <RobotOutlined /> },
     ];
 
     const userMenuItems: MenuProps['items'] = [

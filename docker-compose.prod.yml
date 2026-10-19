@@ -53,6 +53,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?Set a scoped MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY}
       APP_INTERNAL_TOKEN: ${APP_INTERNAL_TOKEN:?Set APP_INTERNAL_TOKEN}
+      APP_AI_BRIDGE_TOKEN: ${APP_AI_BRIDGE_TOKEN:-}
       GYING_SOURCE_API_TOKEN: ${GYING_SOURCE_API_TOKEN:?Set GYING_SOURCE_API_TOKEN}
     # Host-only diagnostics/Windows publishers. OpenClaw MUST use the shared Docker network.
     ports:

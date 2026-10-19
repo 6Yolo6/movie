@@ -7,7 +7,8 @@
 - 控制器、安装器与恢复日志已实现；24 项隔离安全测试（含真实 Windows Job 超时终止其自有 worker/子进程）通过。
 - 配置的备份公钥与私钥已通过内存中的随机小文件认证加解密测试，没有输出或落地私钥/明文。
 - 同镜像、无网络/卷/端口的诊断 fixture 收到 SIGTERM 后退出 143；11 个原有容器的 ID、启动时间和运行状态不变。
-- 2026-10-19 完整 readiness 通过（11 个现役容器、本地 AI 四服务、备份身份与无遗留维护日志）。两项任务仍未注册：本次正常 UAC 提权请求被用户取消，未绕过权限。管理员可运行下方精确安装命令，仅注册任务、不立即重启。
+- 2026-10-19 完整 readiness 通过（11 个现役容器、本地 AI 四服务、备份身份与无遗留维护日志）。当日通过正常 UAC 成功注册两项任务，均为 Ready、ASUS Interactive/Highest；每周任务禁止补跑、禁止强制结束，恢复任务为登录后延迟 90 秒。
+- 首次安装误报来自 Windows 的 `NextRunTime=2026-10-25 09:30:30`，XML `StartBoundary` 仍为精确的 `2026-10-25T09:30:00+08:00`。核验保留精确边界，只接受同一分钟内非负执行偏移；8 项偏移/错误边界测试通过。注册证据位于 `G:/gying-tools/restart-20261018/installation-20261019-215841`。
 - 没有进行生产停服/整机重启演练；真实周日重启与登录恢复仍待首次自然运行验收。现有其他安全整改事项不因此关闭。
 
 ## 控制边界
@@ -52,7 +53,7 @@ python -X utf8 tools/maintenance/weekly_restart.py --config G:/gying-tools/resta
 & tools/maintenance/Install-WeeklyRestart.ps1 -ConfigFile G:/gying-tools/restart-20261018/config.json
 ```
 
-管理员 PowerShell 中安装；这一命令仅注册任务：
+以下是已完成的安装命令记录；同名任务已存在，不要重复执行 `-Apply`：
 
 ```powershell
 & D:/gying-movie/movie/tools/maintenance/Install-WeeklyRestart.ps1 -ConfigFile G:/gying-tools/restart-20261018/config.json -Apply

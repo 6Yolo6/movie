@@ -12,6 +12,7 @@
 | 新库/增量 SQL | [数据库](database.md) | 表集合、迁移清单、大小写身份约束 |
 | 已有生产环境增量发布 | [部署与回滚](deployment.md) | 固定版本、最小替换、真实入口验收 |
 | Windows 每周优雅重启 | [计划与恢复](weekly-graceful-restart.md) | 周日 09:30、失败取消、登录后按基线恢复 |
+| 本地 AI 与混合目录识别 | [实现和验收](ai-assistant-20261019.md) | 项目查片/详情问答、OpenClaw 自然搜索、转存范围边界 |
 | 主机迁移/灾难恢复 | [迁移手册](../MIGRATION.md) | 加密备份、隔离恢复、分阶段切换 |
 | Resource Hub 日常维护 | [影视资源中心](resource-hub.md) | 搜索、转存、自有分享和治理 |
 | 元数据与每周视频计划 | [元数据与周榜转存](metadata-weekly-transfer.md) | 元数据采集和视频转存的边界 |
