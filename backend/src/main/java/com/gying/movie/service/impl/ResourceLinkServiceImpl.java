@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.mapper.ResourceLinkMapper;
 import com.gying.movie.service.IResourceLinkService;
+import com.gying.movie.utils.GyingTorrentLinks;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -19,7 +20,8 @@ public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, Res
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at")
-                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")));
+                .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")))
+                .stream().filter(link -> !GyingTorrentLinks.isAccountDownload(link.getUrl())).toList();
     }
 
     @Override

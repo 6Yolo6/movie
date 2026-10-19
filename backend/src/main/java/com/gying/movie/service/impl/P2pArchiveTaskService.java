@@ -58,8 +58,12 @@ public class P2pArchiveTaskService {
             task.setTaskType(TYPE); task.setSource(provider); task.setMovieId(movieId); task.setKeyword(fingerprint);
             task.setPriority(3); task.setMaxAttempts(3);
             Map<String, Object> payload = new LinkedHashMap<>();
-            payload.put("version", 1); payload.put("typeCode", typeCode); payload.put("mid", mid);
-            payload.put("fingerprint", fingerprint); payload.put("resourceIds", selected.stream().map(ResourceLink::getId).toList());
+            payload.put("version", 2); payload.put("typeCode", typeCode); payload.put("mid", mid);
+            payload.put("fingerprint", fingerprint);
+            payload.put("resourceIds", selected.stream().map(ResourceLink::getId).filter(Objects::nonNull).toList());
+            // Persist only the paired magnet ID. The authenticated URL never enters the database.
+            payload.put("torrentMagnetIds", selected.stream().filter(link -> link.getId() == null)
+                    .map(torrent -> pairedMagnet(torrent, selected).getId()).toList());
             payload.put("policy", "1080P_4K_AT_LEAST_ONE_CHINESE_SUBTITLE_METADATA_FILES_ONLY");
             task.setPayload(json(payload));
             ResourceHubTask saved = tasks.enqueue(task);
@@ -98,12 +102,11 @@ public class P2pArchiveTaskService {
         String stage = "LOAD_SELECTION";
         try {
             payload = mapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {});
-            List<ResourceLink> selected = new ArrayList<>();
-            for (Object id : (List<?>) payload.get("resourceIds")) selected.add(links.getById(Long.valueOf(id.toString())));
-            validateSelection(task.getMovieId(), selected);
+            List<ResourceLink> selected = loadSelection(payload);
             if (!Objects.equals(payload.get("fingerprint"), fingerprint(selected))) {
                 task.setStatus("CANCELED"); task.setLastError("Selected P2P release was superseded"); persist(task, payload); return;
             }
+            validateSelection(task.getMovieId(), selected);
             MovieMetadata movie = movies.getById(task.getMovieId());
             if (movie == null || movie.getDeletedAt() != null || "DELETED".equals(movie.getStatus())) {
                 throw new IllegalStateException("Movie is not active");
@@ -165,6 +168,48 @@ public class P2pArchiveTaskService {
         }
     }
 
+    List<ResourceLink> loadSelection(Map<String, Object> payload) {
+        Object version = payload.getOrDefault("version", 1);
+        if (!(Integer.valueOf(1).equals(version) || Integer.valueOf(2).equals(version))) {
+            throw new IllegalArgumentException("Unsupported P2P archive version");
+        }
+        if (!(payload.get("resourceIds") instanceof List<?> ids) || ids.isEmpty() || ids.size() > 4) {
+            throw new IllegalArgumentException("Invalid P2P resource references");
+        }
+        List<ResourceLink> selected = new ArrayList<>();
+        for (Object id : ids) selected.add(links.getById(Long.valueOf(id.toString())));
+        if (Integer.valueOf(2).equals(version)) {
+            if (!(payload.get("torrentMagnetIds") instanceof List<?> torrentIds) || torrentIds.size() > 2) {
+                throw new IllegalArgumentException("Invalid torrent magnet references");
+            }
+            for (Object id : torrentIds) {
+                long magnetId = Long.parseLong(id.toString());
+                ResourceLink magnet = selected.stream().filter(link -> link != null && "MAGNET".equals(link.getType())
+                        && Objects.equals(magnetId, link.getId())).findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Torrent magnet reference missing"));
+                selected.add(torrentDescriptor(magnet));
+            }
+        }
+        return selected;
+    }
+
+    static ResourceLink torrentDescriptor(ResourceLink magnet) {
+        ResourceLink torrent = new ResourceLink();
+        torrent.setMovieId(magnet.getMovieId()); torrent.setType("TORRENT");
+        torrent.setProvider(magnet.getProvider()); torrent.setSource(magnet.getSource());
+        torrent.setSourceRef(magnet.getSourceRef()); torrent.setQuality(magnet.getQuality());
+        torrent.setSubtitle(magnet.getSubtitle()); torrent.setStatus(magnet.getStatus());
+        torrent.setAuditStatus(magnet.getAuditStatus()); torrent.setDeletedAt(magnet.getDeletedAt());
+        return torrent;
+    }
+
+    private static ResourceLink pairedMagnet(ResourceLink torrent, List<ResourceLink> selected) {
+        return selected.stream().filter(link -> link != null && "MAGNET".equals(link.getType())
+                && Objects.equals(link.getSourceRef(), torrent.getSourceRef())
+                && Objects.equals(link.getQuality(), torrent.getQuality())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Torrent requires a matching magnet"));
+    }
+
     List<FileData> prepareFiles(MovieMetadata movie, Map<String, Object> payload, List<ResourceLink> selected) {
         List<FileData> files = new ArrayList<>();
         for (ResourceLink link : selected) {
@@ -196,12 +241,19 @@ public class P2pArchiveTaskService {
         if (selected == null || selected.isEmpty() || selected.size() > 4) throw new IllegalArgumentException("At most two P2P releases are allowed");
         Set<String> slots = new HashSet<>();
         for (ResourceLink link : selected) {
-            if (link == null || link.getId() == null || !Objects.equals(movieId, link.getMovieId()) || link.getDeletedAt() != null
+            if (link == null || (link.getId() == null && !("TORRENT".equals(link.getType()) && link.getUrl() == null))
+                    || !Objects.equals(movieId, link.getMovieId()) || link.getDeletedAt() != null
                     || !"P2P".equals(link.getProvider()) || !"GYING".equals(link.getSource())
                     || !("MAGNET".equals(link.getType()) || "TORRENT".equals(link.getType()))
                     || !("1080P".equals(link.getQuality()) || "4K".equals(link.getQuality()))
                     || !"ACTIVE".equals(link.getStatus()) || !Objects.equals(1, link.getAuditStatus())
                     || !slots.add(link.getQuality() + ":" + link.getType())) throw new IllegalArgumentException("Invalid bounded P2P selection");
+            if ("TORRENT".equals(link.getType())) {
+                if (link.getSourceRef() == null || !link.getSourceRef().matches("[A-Za-z0-9]+")) {
+                    throw new IllegalArgumentException("Stable BT identity required");
+                }
+                pairedMagnet(link, selected);
+            }
         }
         if (selected.stream().noneMatch(P2pArchiveTaskService::hasChinese)) throw new IllegalArgumentException("Explicit Chinese subtitles required");
     }

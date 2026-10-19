@@ -42,7 +42,7 @@ class ResourceLinkServiceImplTest {
         List<ResourceLink> rows = List.of(legacy);
         when(mapper.selectList(any(Wrapper.class))).thenReturn(rows);
 
-        assertSame(rows, service.getResourcesByMovieId(movieId));
+        assertEquals(rows, service.getResourcesByMovieId(movieId));
 
         ArgumentCaptor<Wrapper<ResourceLink>> query = ArgumentCaptor.forClass(Wrapper.class);
         verify(mapper).selectList(query.capture());

@@ -10,6 +10,7 @@
   "viewDetails": "View details",
   "messageBoard": "Messages",
   "navSearchResources": "Resource search",
+  "resourceSearchLoginRequired": "Please log in to search resources and save temporary shares.",
   "messageBoardHint": "Leave resource requests, missing-link reports, or general feedback here.",
   "searchMovies": "Search movies...",
   "signIn": "Sign In",

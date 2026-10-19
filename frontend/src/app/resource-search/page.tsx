@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { App, Alert, Button, Card, Input, QRCode, Tag, Typography } from 'antd';
 import type { InputRef } from 'antd';
@@ -240,12 +242,23 @@ const serverHydration = () => false;
 
 function ResourceSearchContent() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const mounted = useSyncExternalStore(subscribeHydration, clientHydration, serverHydration);
     const searchParams = useSearchParams();
     const entryKeyword = (searchParams.get('q') || '').trim().slice(0, 120);
     const autoSearch = entryKeyword.length > 0 && searchParams.get('auto') === '1';
     if (!mounted) return <main className="mx-auto max-w-4xl px-4 py-10" aria-busy="true">正在加载资源搜索…</main>;
-    if (!user) return <main className="mx-auto max-w-4xl px-4 py-10"><Card title="搜索影片资源">请先登录后使用资源搜索与临时转存。</Card></main>;
+    if (!user) {
+        const returnPath = `/resource-search${searchParams.size ? `?${searchParams.toString()}` : ''}`;
+        return <main className="mx-auto max-w-4xl px-4 py-10">
+            <Card title={t('navSearchResources')} data-testid="resource-search-login">
+                <Alert type="info" showIcon title={t('resourceSearchLoginRequired')} className="mb-4" />
+                <Link href={`/login?redirect=${encodeURIComponent(returnPath)}`}>
+                    <Button type="primary" size="large">{t('loginSubmit')}</Button>
+                </Link>
+            </Card>
+        </main>;
+    }
     return <SearchConversation key={`${user.id}:${entryKeyword}`} userId={user.id} entryKeyword={entryKeyword} autoSearch={autoSearch} />;
 }
 

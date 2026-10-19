@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -595,46 +596,71 @@ class GyingSourceWorkflowServiceTest {
     }
 
 
-    @Test
-    void rotatingTorrentTicketUpdatesTheSameSourceResource() {
-        String oldUrl = "https://example.invalid/dbt/BT1/old-ticket";
-        String newUrl = "https://example.invalid/dbt/BT1/new-ticket";
-        stubP2pCatalog(List.of(Map.of("type", "TORRENT", "provider", "P2P", "url", oldUrl,
-                "source_ref", "BT1", "title", "目录电影 1080p")));
-        ResourceLink stored = new ResourceLink();
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false)))
-                .thenReturn(null, null, null, stored);
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+            "https://www.xn--wcv59z.com/dbt/naWV",
+            "https://mirror.example/dbt/BT1/rotating-ticket",
+            "https://mirror.example/DBT/BT1?ticket=fixture",
+            "https://mirror.example/%64bt/BT1/ticket"})
+    void accountOnlyTorrentIsNeverStoredOrUsedAsPublicResource(String url) {
+        stubP2pCatalog(List.of(Map.of("type", "TORRENT", "provider", "P2P", "url", url,
+                "source_ref", "BT1", "title", "目录电影 1080p 中字")));
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(0, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        verifyNoInteractions(resourceLinkService, archives, discoveryService, transferTaskService,
+                transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void archiveReceivesPairedTorrentWithoutPersistingItsAccountUrl(boolean legacySource) {
+        Map<String, Object> magnet = new java.util.LinkedHashMap<>(Map.of("type", "MAGNET", "provider", "P2P",
+                "url", "magnet:?xt=urn:btih:" + "a".repeat(40), "source_ref", "BT1",
+                "quality", "1080P", "subtitle", "中文字幕（来源标注）"));
+        magnet.put("archive_torrent", !legacySource);
+        Map<String, Object> torrent = Map.of("type", "TORRENT", "provider", "P2P",
+                "url", "https://www.xn--wcv59z.com/dbt/BT1/ticket", "source_ref", "BT1");
+        stubP2pCatalog(legacySource ? List.of(torrent, magnet) : List.of(magnet));
         when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> {
-            ResourceLink link = call.getArgument(0);
-            stored.setId(91L); stored.setMovieId(link.getMovieId()); stored.setCreatedAt(link.getCreatedAt());
-            return true;
+            ((ResourceLink) call.getArgument(0)).setId(91L); return true;
         });
-        when(resourceLinkService.updateById(stored)).thenReturn(true);
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
         assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
-        var createdAt = stored.getCreatedAt();
-        when(gyingSourceClient.get("/resources/mv/NEW1")).thenReturn(Map.of("resources", List.of(
-                Map.of("type", "TORRENT", "provider", "P2P", "url", newUrl,
-                        "source_ref", "BT1", "title", "目录电影 4K"))));
-        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
-        assertEquals(91L, stored.getId());
-        assertEquals(newUrl, stored.getUrl());
-        assertEquals(com.gying.movie.utils.ResourceHubHashUtils.sha256(newUrl), stored.getUrlHash());
-        assertEquals(createdAt, stored.getCreatedAt());
-        assertEquals("BT1", stored.getSourceRef());
-        verify(resourceLinkService).save(any(ResourceLink.class));
-        verify(resourceLinkService).updateById(stored);
-        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>> queries =
-                ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
-        verify(resourceLinkService, times(4)).getOne(queries.capture(), eq(false));
-        var fallback = queries.getAllValues().get(3);
-        String sql = fallback.getSqlSegment();
-        for (String column : List.of("movie_id", "source", "source_ref", "type", "provider", "deleted_at IS NULL")) {
-            assertTrue(sql.contains(column), sql);
-        }
-        assertTrue(fallback.getParamNameValuePairs().values()
-                .containsAll(List.of("gying_mv_NEW1", "GYING", "BT1", "TORRENT", "P2P")));
+        var saved = ArgumentCaptor.forClass(ResourceLink.class);
+        verify(resourceLinkService).save(saved.capture());
+        assertEquals("MAGNET", saved.getValue().getType());
+        var selection = ArgumentCaptor.forClass(List.class);
+        verify(archives).enqueue(eq("gying_mv_NEW1"), eq("mv"), eq("NEW1"), selection.capture());
+        List<ResourceLink> selected = selection.getValue();
+        assertEquals(2, selected.size());
+        ResourceLink internal = selected.get(1);
+        assertEquals("TORRENT", internal.getType()); assertEquals("BT1", internal.getSourceRef());
+        assertNull(internal.getId()); assertNull(internal.getUrl());
+        P2pArchiveTaskService.validateSelection("gying_mv_NEW1", selected);
         verifyNoInteractions(discoveryService, transferTaskService, transferRunnerService,
                 xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void legacySourceTorrentSubtitleEvidenceIsPreservedOnThePairedMagnet() {
+        stubP2pCatalog(List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "source_ref", "BT1", "quality", "1080P",
+                        "url", "magnet:?xt=urn:btih:" + "a".repeat(40)),
+                Map.of("type", "TORRENT", "provider", "P2P", "source_ref", "BT1", "quality", "1080P",
+                        "url", "https://www.xn--wcv59z.com/dbt/BT1/ticket", "subtitle", "中文字幕（来源标注）")));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> {
+            ((ResourceLink) call.getArgument(0)).setId(91L); return true;
+        });
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        assertEquals(1, service.syncCatalogMetadata("HITS_MOVIE", 1, 10).get("directResourceLinks"));
+        var selection = ArgumentCaptor.forClass(List.class);
+        verify(archives).enqueue(eq("gying_mv_NEW1"), eq("mv"), eq("NEW1"), selection.capture());
+        List<ResourceLink> selected = selection.getValue();
+        assertTrue(selected.stream().allMatch(P2pArchiveTaskService::hasChinese));
+        P2pArchiveTaskService.validateSelection("gying_mv_NEW1", selected);
     }
 
     @Test

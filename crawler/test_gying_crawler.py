@@ -481,6 +481,70 @@ class P2pReleaseSelectionTest(unittest.TestCase):
 
 
 
+class AccountTorrentExportTest(unittest.TestCase):
+    def rows(self, url):
+        return [{"type": "MAGNET", "provider": "P2P", "source_ref": "BT1",
+                 "url": "magnet:?xt=urn:btih:" + "a" * 40},
+                {"type": "TORRENT", "provider": "P2P", "source_ref": "BT1", "url": url}]
+
+    def test_export_replaces_account_download_with_archive_flag_without_mutating_internal_pair(self):
+        from crawler.gying_crawler import export_download_resources
+        for url in ("https://www.xn--wcv59z.com/dbt/naWV", "https://mirror.invalid/dbt/BT1/ticket",
+                    "https://mirror.invalid/DBT/BT1", "https://mirror.invalid/%64bt/BT1"):
+            with self.subTest(url=url):
+                internal = self.rows(url)
+                public = export_download_resources(internal)
+                self.assertEqual(1, len(public)); self.assertTrue(public[0]["archive_torrent"])
+                self.assertEqual(internal[0]["url"], public[0]["url"])
+                self.assertNotIn("archive_torrent", internal[0]); self.assertEqual(url, internal[1]["url"])
+                self.assertNotIn("/dbt", str(public))
+
+    def test_magnet_only_public_torrent_and_cloud_archive_are_preserved(self):
+        from crawler.gying_crawler import export_download_resources
+        rows = self.rows("https://files.invalid/movie.torrent")
+        rows += [{"type": "TORRENT", "provider": "QUARK", "url": "https://pan.quark.cn/s/fixture"}]
+        self.assertEqual(rows, export_download_resources(rows))
+        self.assertEqual(rows[:1], export_download_resources(rows[:1]))
+        self.assertEqual([], export_download_resources(self.rows("https://mirror.invalid/dbt/BT1")[1:]))
+
+    def test_common_ingest_guard_rejects_account_download_even_for_owned_cli_items(self):
+        from crawler.gying_crawler import should_ingest_resource
+        for owned in (True, False):
+            for url in ("https://www.xn--wcv59z.com/dbt/naWV", "https://mirror.invalid/%64bt/BT1"):
+                item = {**self.rows(url)[1], "is_own": owned}
+                self.assertFalse(should_ingest_resource(item))
+        for item in self.rows("https://files.invalid/movie.torrent"):
+            self.assertTrue(should_ingest_resource(item))
+
+    def test_torrent_only_subtitle_evidence_survives_export_for_same_bt_and_quality(self):
+        from crawler.gying_crawler import select_p2p_versions, export_download_resources
+        rows = self.rows("https://www.xn--wcv59z.com/dbt/BT1/ticket")
+        rows[0]["title"] = "Movie.1080p"
+        rows[1]["title"] = "Movie.1080p.中文字幕"
+        selected = select_p2p_versions(rows)
+        self.assertEqual(2, len(selected))
+        public = export_download_resources(selected)
+        self.assertEqual(1, len(public)); self.assertTrue(public[0]["archive_torrent"])
+        self.assertEqual("中文字幕（来源标注）", public[0]["subtitle"])
+        self.assertEqual("", selected[0]["subtitle"])
+        selected[1]["quality"] = "4K"
+        self.assertNotIn("archive_torrent", export_download_resources(selected)[0])
+
+    def test_resource_and_bt_endpoints_never_export_account_downloads(self):
+        from crawler.gying_crawler import GyingSourceApiHandler
+        rows = self.rows("https://www.xn--wcv59z.com/dbt/BT1/ticket")
+        for path, fetcher in (("/resources/mv/MOVIE1", "fetch_download_resources"), ("/bt/BT1", "fetch_bt_resources")):
+            with self.subTest(path=path):
+                handler = object.__new__(GyingSourceApiHandler)
+                handler.path = path; handler.authorized = Mock(return_value=True); handler.send_json = Mock()
+                with patch("crawler.gying_crawler." + fetcher, return_value=rows): handler.do_GET()
+                status, payload = handler.send_json.call_args.args
+                self.assertEqual(200, status)
+                self.assertEqual(1, len(payload["resources"]))
+                self.assertTrue(payload["resources"][0]["archive_torrent"])
+                self.assertNotIn("/dbt", str(payload))
+
+
 class TorrentMetadataFileTest(unittest.TestCase):
     def content(self):
         info = b'd6:lengthi1e4:name1:x12:piece lengthi1e6:pieces20:' + b'x' * 20 + b'e'

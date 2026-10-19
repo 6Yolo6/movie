@@ -10,6 +10,7 @@
   "viewDetails": "查看详情",
   "messageBoard": "留言",
   "navSearchResources": "搜索资源",
+  "resourceSearchLoginRequired": "请先登录后使用资源搜索与临时转存。",
   "messageBoardHint": "可以在这里留言求资源、反馈失效链接或提出建议。",
   "searchMovies": "搜索影片...",
   "signIn": "登录",

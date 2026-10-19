@@ -14,7 +14,7 @@ from minio import Minio
 from io import BytesIO
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse, urljoin
+from urllib.parse import parse_qs, urlparse, urljoin, unquote
 
 # ================= Configuration =================
 # MySQL Configuration
@@ -267,6 +267,8 @@ def should_ingest_resource(resource):
     if not isinstance(resource, dict):
         return False
     url = str(resource.get("url") or "").strip()
+    if is_account_torrent_download(url):
+        return False
     provider = detect_provider_from_url(
         url, resource.get("provider") or detect_provider(resource.get("tname", "")))
     link_type = resource.get("type") or detect_resource_type(url, provider)
@@ -1235,9 +1237,42 @@ def fetch_torrent_file(type_code, mid, source_ref):
             "sha256": hashlib.sha256(content).hexdigest(), "dataBase64": base64.b64encode(content).decode('ascii')}
 
 
+def is_account_torrent_download(url):
+    try:
+        parsed = urlparse(str(url or "").strip())
+        path = unquote(parsed.path).lower()
+        return parsed.scheme.lower() in ("http", "https") and (path == "/dbt" or path.startswith("/dbt/"))
+    except ValueError:
+        return False
+
+
+def export_download_resources(resources):
+    """Expose magnets and public links; account-only torrent URLs stay inside the fetcher."""
+    def version_key(item):
+        return (item.get("source_ref") or item.get("source_id"), item.get("quality") or item.get("collection_slot"))
+    torrents = {version_key(item): item for item in resources
+                if item.get("type") == "TORRENT" and item.get("provider") == "P2P"
+                and is_account_torrent_download(item.get("url"))}
+    result = []
+    for item in resources:
+        if is_account_torrent_download(item.get("url")):
+            continue
+        exported = dict(item)
+        ref = item.get("source_ref") or item.get("source_id")
+        if (item.get("type") == "MAGNET" and item.get("provider") == "P2P"
+                and ref and re.fullmatch(r"[A-Za-z0-9]+", str(ref)) and version_key(item) in torrents):
+            exported["archive_torrent"] = True
+            # The same BT release may label subtitles only on its torrent entry.
+            if has_chinese_subtitle_label(torrents[version_key(item)]):
+                exported["chinese_subtitles"] = True
+                exported["subtitle"] = "中文字幕（来源标注）"
+        result.append(exported)
+    return result
+
+
 def fetch_movie_resource_snapshot(type_code, mid):
     metadata = fetch_movie_metadata(type_code, mid) or {}
-    resources = fetch_download_resources(type_code, mid, [], target_user="")
+    resources = export_download_resources(fetch_download_resources(type_code, mid, [], target_user=""))
     # Ownership comes from this movie's detail resources. Do not scan the account's
     # content list here: it makes every detail/publish check proportional to account size.
     # The site also rejects duplicate submissions at the publish endpoint.
@@ -1737,7 +1772,7 @@ def ingest_movie(db, type_code, mid, upload_poster=True, target_movie_id=None, i
         series_name,
         season,
     )
-    resources = fetch_download_resources(type_code, mid, []) if include_resources else []
+    resources = export_download_resources(fetch_download_resources(type_code, mid, [])) if include_resources else []
     inserted = 0
     updated = 0
 
@@ -1960,7 +1995,7 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
             match = re.fullmatch(r"/resources/(mv|tv|ac)/([A-Za-z0-9]+)", path)
             if match:
                 resources = fetch_download_resources(match.group(1), match.group(2), [], target_user="", strict=True)
-                self.send_json(200, {"resources": resources})
+                self.send_json(200, {"resources": export_download_resources(resources)})
                 return
             match = re.fullmatch(r"/torrent-file/(mv|tv|ac)/([A-Za-z0-9]+)/([A-Za-z0-9]+)", path)
             if match:
@@ -1971,7 +2006,7 @@ class GyingSourceApiHandler(BaseHTTPRequestHandler):
                 self.send_json(200, {
                     "btId": match.group(1),
                     "sourceUrl": f"{BASE_URL}/bt/{match.group(1)}",
-                    "resources": fetch_bt_resources(match.group(1)),
+                    "resources": export_download_resources(fetch_bt_resources(match.group(1))),
                 })
                 return
             if path == "/search":

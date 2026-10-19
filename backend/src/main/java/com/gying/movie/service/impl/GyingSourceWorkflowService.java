@@ -33,6 +33,7 @@ import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.GyingTorrentLinks;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -426,7 +428,18 @@ public class GyingSourceWorkflowService {
         Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
         int saved = 0;
         List<ResourceLink> selected = new ArrayList<>();
-        for (Map<String, Object> item : mapList(payload.get("resources"))) {
+        Set<String> archiveTorrentRefs = new LinkedHashSet<>();
+        Set<String> archiveChineseVersions = new LinkedHashSet<>();
+        List<Map<String, Object>> resources = mapList(payload.get("resources"));
+        for (Map<String, Object> item : resources) {
+            if ("TORRENT".equalsIgnoreCase(stringValue(item.get("type")))
+                    && "P2P".equalsIgnoreCase(firstText(stringValue(item.get("provider")), "P2P"))
+                    && "中文字幕（来源标注）".equals(stringValue(item.get("subtitle")))) {
+                archiveChineseVersions.add(firstText(stringValue(item.get("source_ref")), stringValue(item.get("source_id")))
+                        + ":" + firstText(stringValue(item.get("quality")), stringValue(item.get("resolution"))));
+            }
+        }
+        for (Map<String, Object> item : resources) {
             String url = firstText(
                     stringValue(item.get("url")),
                     stringValue(item.get("magnet")),
@@ -452,6 +465,14 @@ public class GyingSourceWorkflowService {
             }
             String sourceRef = trim(firstText(stringValue(item.get("source_ref")),
                     stringValue(item.get("source_id")), ""), 100);
+            if (GyingTorrentLinks.isAccountDownload(url)) {
+                // Compatibility with older source services: never persist an account-only URL.
+                if ("TORRENT".equals(type) && hasText(sourceRef) && sourceRef.matches("[A-Za-z0-9]+")) archiveTorrentRefs.add(sourceRef);
+                continue;
+            }
+            if ("MAGNET".equals(type) && Boolean.TRUE.equals(item.get("archive_torrent"))) {
+                archiveTorrentRefs.add(sourceRef);
+            }
             String urlHash = ResourceHubHashUtils.sha256(url);
             ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                     .eq("movie_id", movieId)
@@ -459,7 +480,7 @@ public class GyingSourceWorkflowService {
                     .isNull("deleted_at")
                     .last("LIMIT 1"), false);
             if (link == null && "TORRENT".equals(type) && hasText(sourceRef)) {
-                // GYING /dbt download tickets rotate: refresh the same BT item instead of duplicating it.
+                // Public torrent mirrors can rotate: reuse the stable BT identity.
                 link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                         .eq("movie_id", movieId).eq("source", "GYING").eq("source_ref", sourceRef)
                         .eq("type", "TORRENT").eq("provider", "P2P").isNull("deleted_at")
@@ -501,7 +522,10 @@ public class GyingSourceWorkflowService {
             }
             link.setName(trim(displayTitle, 255));
             link.setQuality(trim(quality, 50));
-            link.setSubtitle(trim(stringValue(item.get("subtitle")), 50));
+            String subtitle = "MAGNET".equals(type) && hasText(sourceRef)
+                    && archiveChineseVersions.contains(sourceRef + ":" + quality)
+                    ? "中文字幕（来源标注）" : stringValue(item.get("subtitle"));
+            link.setSubtitle(trim(subtitle, 50));
             link.setType(type);
             link.setProvider("P2P");
             link.setUrl(url);
@@ -527,6 +551,12 @@ public class GyingSourceWorkflowService {
             selected.add(link);
         }
         if (p2pArchiveTaskService != null && !selected.isEmpty()) {
+            List<ResourceLink> torrentDescriptors = selected.stream()
+                    .filter(link -> "MAGNET".equals(link.getType()) && archiveTorrentRefs.contains(link.getSourceRef()))
+                    .filter(link -> selected.stream().noneMatch(other -> "TORRENT".equals(other.getType())
+                            && Objects.equals(other.getSourceRef(), link.getSourceRef())))
+                    .map(P2pArchiveTaskService::torrentDescriptor).toList();
+            selected.addAll(torrentDescriptors);
             p2pArchiveTaskService.enqueue(movieId, typeCode, mid, selected);
         }
         return saved;

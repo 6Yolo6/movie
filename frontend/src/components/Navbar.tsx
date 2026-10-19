@@ -193,7 +193,7 @@ export default function Navbar() {
         { href: '/?category=tv', label: t('tvShows'), icon: <DesktopOutlined /> },
         { href: '/?category=ac', label: t('anime'), icon: <VideoCameraOutlined /> },
         { href: '/hot', label: t('hot'), icon: <FireOutlined /> },
-        ...(user ? [{ href: '/resource-search', label: t('navSearchResources'), icon: <CloudDownloadOutlined /> }] : []),
+        { href: '/resource-search', label: t('navSearchResources'), icon: <CloudDownloadOutlined /> },
     ];
 
     const userMenuItems: MenuProps['items'] = [

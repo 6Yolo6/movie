@@ -128,6 +128,72 @@ class P2pArchiveTaskServiceTest {
         ResourceHubTask task = runnableTask(); when(source.get(anyString())).thenReturn(Map.of("infoHash", "b".repeat(40), "dataBase64", "ZA==", "sha256", "fixture"));
         service.runTask(task); assertEquals("FAILED", task.getStatus()); verifyNoInteractions(cloud);
     }
+    @Test void internalTorrentUsesMagnetIdAndPreservesLegacyFingerprint() throws Exception {
+        List<ResourceLink> legacy = selection();
+        List<ResourceLink> selected = List.of(legacy.get(0), P2pArchiveTaskService.torrentDescriptor(legacy.get(0)));
+        assertEquals(P2pArchiveTaskService.fingerprint(legacy), P2pArchiveTaskService.fingerprint(selected));
+        when(tasks.enqueue(any())).thenAnswer(call -> { ResourceHubTask task = call.getArgument(0); task.setId(10L); return task; });
+        service.enqueue("movie1", "mv", "MID1", selected);
+        var created = ArgumentCaptor.forClass(ResourceHubTask.class);
+        verify(tasks, times(2)).enqueue(created.capture());
+        var payload = mapper.readTree(created.getValue().getPayload());
+        assertEquals(2, payload.path("version").asInt());
+        assertEquals("[1]", payload.path("resourceIds").toString());
+        assertEquals("[1]", payload.path("torrentMagnetIds").toString());
+        assertFalse(created.getValue().getPayload().contains("/dbt"));
+        assertFalse(created.getValue().getPayload().contains("ticket"));
+        verifyNoInteractions(cloud, source);
+    }
+
+    ResourceHubTask versionTwoTask() throws Exception {
+        ResourceHubTask task = runnableTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("version", 2);
+        payload.putArray("resourceIds").add(1);
+        payload.putArray("torrentMagnetIds").add(1);
+        task.setPayload(payload.toString());
+        return task;
+    }
+
+    @Test void newQueueArchivesRealTorrentWithoutLoadingLegacyTorrentRow() throws Exception {
+        ResourceHubTask task = versionTwoTask(); service.runTask(task);
+        assertEquals("SUCCEEDED", task.getStatus());
+        verify(links, never()).getById(2L);
+        verify(source).get("/torrent-file/mv/MID1/BT1");
+        var files = ArgumentCaptor.forClass(P2pCloudArchiveClient.FileData.class);
+        verify(cloud, times(2)).upload(eq("QUARK"), eq("folder1"), files.capture());
+        assertEquals(List.of(".txt", ".torrent"), files.getAllValues().stream()
+                .map(file -> file.name().substring(file.name().lastIndexOf('.'))).toList());
+        assertFalse(task.getPayload().contains("/dbt/"));
+    }
+
+    @Test void missingTorrentPairFailsBeforeAnyCloudWork() throws Exception {
+        ResourceHubTask task = versionTwoTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.putArray("torrentMagnetIds").add(99); task.setPayload(payload.toString());
+        service.runTask(task);
+        assertEquals("FAILED", task.getStatus()); verifyNoInteractions(cloud, source);
+        var unpaired = List.of(P2pArchiveTaskService.torrentDescriptor(selection().get(0)));
+        assertThrows(IllegalArgumentException.class, () -> service.enqueue("movie1", "mv", "MID1", unpaired));
+    }
+
+    @Test void replacedMagnetCancelsNewQueueBeforeDownloadingOrUploading() throws Exception {
+        ResourceHubTask task = versionTwoTask();
+        ResourceLink replaced = selection().get(0); replaced.setUrl("magnet:?xt=urn:btih:" + "b".repeat(40));
+        when(links.getById(1L)).thenReturn(replaced);
+        service.runTask(task);
+        assertEquals("CANCELED", task.getStatus()); verifyNoInteractions(cloud, source);
+    }
+
+    @Test void legacyQueueCancelsWhenOnlyMagnetSlotWasReplaced() throws Exception {
+        ResourceHubTask task = runnableTask();
+        ResourceLink replaced = selection().get(0); replaced.setSourceRef("BTNEW");
+        replaced.setUrl("magnet:?xt=urn:btih:" + "b".repeat(40));
+        when(links.getById(1L)).thenReturn(replaced);
+        service.runTask(task);
+        assertEquals("CANCELED", task.getStatus()); verifyNoInteractions(cloud, source);
+    }
+
     @Test void schedulerHonorsWorkerDisabledAndRejectsLegacyTasks() {
         properties.getWorker().setEnabled(false); service.runDue(); verifyNoInteractions(tasks, cloud);
         ResourceHubTask task = new ResourceHubTask(); task.setTaskType("RESOURCE_DISCOVERY");

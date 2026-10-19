@@ -1238,6 +1238,31 @@ class QqBotServiceImplTest {
     }
 
     @Test
+    void webLibraryHidesAccountTorrentLinksButKeepsMagnetsAndOwnArchives() {
+        MovieMetadata local = movie("account-torrent-web", "种子入口测试", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink account = link("P2P", "需账号种子", "https://www.xn--wcv59z.com/dbt/BT1");
+        account.setType("TORRENT"); account.setSource("GYING");
+        ResourceLink magnet = link("P2P", "可用磁力", "magnet:?xt=urn:btih:" + "a".repeat(40));
+        magnet.setType("MAGNET");
+        ResourceLink archive = link("QUARK", "磁力种子不含视频", "https://pan.quark.cn/s/p2p-archive");
+        archive.setType("TORRENT"); archive.setSource("GYING_P2P_ARCHIVE");
+        List<ResourceLink> rows = List.of(account, magnet, archive);
+        rows.forEach(link -> link.setMovieId(local.getId()));
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(rows);
+        String reply = service.buildSearchReply("种子入口测试", "web:account-torrent");
+        assertTrue(reply.contains("资源库已有资源"));
+        assertFalse(reply.contains(account.getUrl())); assertFalse(reply.contains(account.getName()));
+        assertTrue(reply.contains(magnet.getUrl())); assertTrue(reply.contains(archive.getUrl()));
+        var query = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(resourceLinkService).list(query.capture());
+        assertTrue(query.getValue().getSqlSegment().contains("NOT REGEXP"));
+        assertTrue(query.getValue().getParamNameValuePairs().containsValue("^https?://[^/]+/dbt(/|[?#]|$)"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, panSouClient,
+                quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
     void webLibraryDoesNotExposeUnapprovedDeletedInvalidUnsafeOrOtherMovieResources() {
         MovieMetadata local = movie("visible-only", "资源可见性测试", 2024);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));

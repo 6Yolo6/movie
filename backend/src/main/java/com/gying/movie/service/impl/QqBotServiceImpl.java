@@ -519,6 +519,7 @@ public class QqBotServiceImpl implements IQqBotService {
         List<ResourceLink> stored = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId).eq("audit_status", 1).eq("status", "ACTIVE")
                 .eq(cloudDiskOnly, "type", "DISK")
+                .apply("LOWER(url) NOT REGEXP {0}", "^https?://[^/]+/dbt(/|[?#]|$)")
                 .isNull("deleted_at")
                 .and(query -> query.isNull("link_status").or().eq("link_status", "NORMAL").or().eq("link_status", ""))
                 .orderByDesc("created_at").last("LIMIT 50"));
@@ -528,6 +529,7 @@ public class QqBotServiceImpl implements IQqBotService {
             if (link == null || !movieId.equals(link.getMovieId()) || !Integer.valueOf(1).equals(link.getAuditStatus())
                     || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
                     || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())
+                    || com.gying.movie.utils.GyingTorrentLinks.isAccountDownload(link.getUrl())
                     || cloudDiskOnly && !isCloudDiskResource(link)) continue;
             try {
                 java.net.URI uri = java.net.URI.create(link.getUrl().trim());
