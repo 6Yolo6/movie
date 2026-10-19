@@ -26,7 +26,7 @@ GYING `/dbt/` 登录专用 TORRENT 下载 URL 不再进入新资源或归档任�
 - 候选镜像真实 React/Ant Design：中文/英文、390px/1440px、深色/浅色四场景通过。所有 API 为 fixture，验证游客菜单、登录提示、原搜索参数、mock 登录后只发出一次原关键词查询，无页面错误或横向溢出。
 - 生产 Headless Edge 的本机和公网游客菜单、登录提示、返回参数各通过；没有使用真实登录凭据或提交搜索转存。
 - 本机与公网首页、资源搜索页、片库列表和影片详情共 8 项 GET 均为 200。`gying_tv_vkN9` 资源从 36 条（16 条 `/dbt/`）变为 20 条（0 条 `/dbt/`、16 条磁力、2 条归档），其他公开资源保留。
-- source 受保护只读资源接口返回 118 条、0 条账号下载链接、2 个 `archive_torrent` 标记。上线后自然采集新增 40 个 v2 归档任务；排队不表示远端归档成功，没有手动重放/转存/发布。
+- source 受保护只读资源接口返回 118 条、0 条账号下载链接、2 个 `archive_torrent` 标记。上线后自然采集新增 40 个 v2 归档任务，最终只读快照为 29 SUCCEEDED / 1 RUNNING / 10 PENDING，全部 payload 不含 `/dbt/`。任务成功是后端流水线审计，本轮未逐个复验远端分享文件；排队不表示远端归档成功，没有手动重放/转存/发布。
 - 历史账号链接 5,258 条保持；`social_post_log` 216 POSTED / 12 FAILED / 3 UNKNOWN 在发布前后保持。原 9 个非受影响容器身份、启动和重启计数先确认一致；随后单独停掉零客户端的隔离测试 MySQL `gying-query-mysql-c43cc988fc3e`，保留容器及数据，不属于生产服务。
 - 21:25:30 以后三个服务日志检查无 ERROR/Traceback/unhandled_exception，backend 1 条 WARN。安全扫描上线前后均 59 PASS / 11 FAIL / 0 UNKNOWN，按原聊天披露后的本次业务发布授权执行，不代表安全整改完成。
 - 本地 AI 恢复受管理的四个服务后，真实 `searchMovies` 和 `getMovieDetails` 均成功，有本次查询来源；没有调用写入工具。
