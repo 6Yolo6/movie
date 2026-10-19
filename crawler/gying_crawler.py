@@ -9,6 +9,7 @@ import os
 import argparse
 import html as html_lib
 import threading
+import signal
 import pymysql
 from minio import Minio
 from io import BytesIO
@@ -1889,7 +1890,7 @@ def mark_resource_published(db, resource_id, source_id, type_code, mid):
     db.commit()
 
 class BoundedThreadingHTTPServer(ThreadingHTTPServer):
-    daemon_threads = True
+    daemon_threads = False
     request_queue_size = 32
     _slots = threading.BoundedSemaphore(32)
 
@@ -1908,6 +1909,26 @@ class BoundedThreadingHTTPServer(ThreadingHTTPServer):
             super().process_request_thread(request, client_address)
         finally:
             self._slots.release()
+
+
+def serve_source(server):
+    stopped = threading.Event()
+    previous = {}
+
+    def stop(signum, frame):
+        stopped.set()
+
+    server.timeout = 0.5
+    for signum in (signal.SIGTERM, signal.SIGINT):
+        previous[signum] = signal.signal(signum, stop)
+    try:
+        while not stopped.is_set():
+            server.handle_request()
+    finally:
+        # Stop accepting requests, then wait for existing handlers to finish.
+        server.server_close()
+        for signum, handler in previous.items():
+            signal.signal(signum, handler)
 
 
 class GyingSourceApiHandler(BaseHTTPRequestHandler):
@@ -2369,7 +2390,7 @@ def main():
             raise SystemExit("Configure non-root GYING_DB_USER and GYING_DB_PASSWORD")
         server = BoundedThreadingHTTPServer((args.host, args.port), GyingSourceApiHandler)
         print(f"Gying source API listening on {args.host}:{args.port}")
-        server.serve_forever()
+        serve_source(server)
         return
     if command == "publish":
         print(json.dumps(publish_pan_resource(
