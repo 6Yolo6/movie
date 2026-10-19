@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-10-15
+更新时间：2026-10-19
 
 本文只汇总已记录的生产能力、运行约束、待处理事项与可复核结论；各项证据保留原日期，本次文档整理不表示重新验收。
 
@@ -35,7 +35,7 @@
 - 新注册账号固定为 `USER`，新增/修改/删除资源仅 `PUBLISHER` 与 `ADMIN` 可执行；管理员可在 `/admin/users` 直接建号（USER/PUBLISHER），不受邀请码与注册开关限制。管理员发布资源不计入 `resource.max.per.user`。
 - 影片元数据页支持跨页多选（最多 100 部）、所选缺图补全及确认后刷新已有海报；新增单片 GYING 元数据同步。GYING 对应影片/季的详情与海报优先，严格匹配后绑定 GYING 与 TMDB 到同一 canonical 记录；TMDB 回退使用独立季海报对象，不复用整剧或其他季图片。
 - 用户内容、注册/邀请、登录设备、留言与评论管理均已上线；Resend 已接入已验证的 `gyinghub.dpdns.org` 发件域并启用邮箱验证码，163 等邮箱投递正常，Gmail 因免费域声誉暂拒收。
-- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，登录用户在抽屉中进入「搜索资源」，顶栏不重复展示该入口；留言页默认类型为「综合留言」，留言频率可在后台配置（`comment.rate_limit_per_minute`，默认 5 次/分钟），内容经 HTML 白名单清洗。首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
+- 前端品牌为「影窝」，切换英语语言时显示「FilmNest」，两者不并排展示；站点图标含 SVG favicon 与 Apple touch icon。首页热门轮播跟随明暗主题（浅色白底、深色黑底），手机端隐藏海报与长简介，保证文字与操作按钮完整可用。左侧抽屉与汉堡按钮在所有屏幕宽度可用，游客与登录用户均可在抽屉中进入「搜索资源」，游客进入后提示登录并提供返回原搜索页的登录按钮，顶栏不重复展示该入口；留言页默认类型为「综合留言」，留言频率可在后台配置（`comment.rate_limit_per_minute`，默认 5 次/分钟），内容经 HTML 白名单清洗。首页与电影/剧集/动漫分类页不显示片库结果总数，仅在关键词搜索时显示匹配数量。
 
 - 全站页脚统一展示「联系方式」与「留言」，顶栏及左侧抽屉不再重复留言入口；页脚两项默认中性灰色、仅悬停高亮，不受全局超链接蓝色覆盖；联系方式弹窗展示原始 QQ 群 JPG 和 `2031798793@qq.com`，提示邮箱不常看、QQ 群优先，适配中英双语、明暗主题与手机屏幕。
 
@@ -56,6 +56,7 @@
 - 资源管理编辑实际绑定组：打开编辑器时回显全部已绑定季（同一分享的多个历史根节点合并回显）；影片较多时可输入关键词，从下方全库候选中点选加入（不限同系列，最多显示 24 条并提示其余命中），也支持按影片 ID 或完整标题直接追加。保存时校验 `bindingVersion`，并原位更新所选影片现有的同组资源及历史重复行，仅对新增绑定创建记录，不删除取消勾选的记录，也不改动其他网盘或版本。
 - 「已发现」转存任务支持单条与批量延迟重跑（每天 08:30 Asia/Shanghai 调度）；本轮存在 Authorization 过期或不可用的迅雷任务时整轮跳过，不启动转存；发布成功后继续同步 GYING，重跑数量与间隔由 `RESOURCE_HUB_DISCOVERED_RETRY_*` 控制。
 - GYING 目录自动同步支持热门与综合评分（电影/剧集/动漫）。2026-10-08 已部署停滞修复，当前启用 `CSCORE_MOVIE/TV/ANIME`、范围 1–15 页、每小时一批、最多 20 条；动漫 page1 offset0→page1 offset20（failed 0 / deferred 0）；电影 page5 offset40→page6 offset0（failed 0 / deferred 0）；剧集 page2 offset0→page2 offset20（failed 0 / deferred 0）。只观察自然调度，未手动推进游标。
+- GYING 账号种子下载隔离（2026-10-19 已部署）：`/dbt/` 链接不再写入新资源或任务 payload；历史行从公开详情与搜索结果过滤、保留旧任务引用，磁力及自有种子归档分享继续展示。v2 归档保存磁力 ID，稳定 BT 标识只用于内部真实种子下载；source 支持 SIGTERM/SIGINT 请求排空。详见 [部署与回退](resource-search-p2p-deployment-20261019.md)。
 - GYING 紧凑 `downlist.list` 磁力/种子解析与归档已部署（2026-10-06）：每片当前只选 1080P、4K 各一个版本，优先明确中文字幕且最终至少有一份；没有符合字幕条件的版本不归档，不把国语/配音视作字幕。磁力文本和真实 torrent 元数据由独立 `P2P_ARCHIVE` 队列上传到对应影片的 `磁力种子` 子目录；全部文件确认后才将自有夸克/迅雷分享入库，类型为 TORRENT、名称明确“不含视频”。不调用视频转存或 BT 离线下载，不批量删除历史记录/文件，详见 `docs/p2p-cloud-archive.md`。
 - 资源链接按「影片 + 链接」去重，同一网盘链接可绑定不同季或影片；分享表单支持 URL 自动识别网盘、一键粘贴分享文案与同系列绑定。
 - 影片详情页按内容而非传输方式分类计数（2026-10-11 已部署）：网盘与磁力/种子两个主分类始终显示精确数量（含 0 与超过 99），经夸克/迅雷归档的种子仍计入磁力/种子；在线播放与未知类型各自独立成分类，不并入磁力/种子；只有磁力的影片默认选中磁力/种子分类；provider 分组数量随当前分类联动。资源创建日期按后端 `yyyy-MM-dd` 原样显示，避免 SSR 与浏览器时区差异导致英文页面水合不一致。
@@ -73,7 +74,7 @@
 
 - 支持邀请码、注册开关与角色策略；邀请码 DATETIME 与 `LocalDateTime`/`Timestamp` 兼容，密码要求与后端一致（至少 12 字符、最多 72 UTF-8 字节）。
 - 公开注册支持人数上限设置 `auth.register.max_users`（0=不限制，上限 0–100000，当前生产 500）；达到上限后只停止无邀请码的公开注册并给出明确提示，有效邀请码注册与管理员建号不受上限影响。
-- `/resource-search` 提供登录用户网页资源搜索：精确命中片库时优先返回已审核、活动、状态正常的资源，首轮不调用外部来源也不转存；界面只展示资源名称、提取码与二维码，不出现明文 URL 与复制/打开入口。任务异步执行、每 2 秒轮询、刷新续查，发送成功后清空已发送内容。
+- `/resource-search` 入口对游客可见，游客提示登录且不调用搜索 API，登录后返回原关键词页面（2026-10-19 已部署）；提供登录用户网页资源搜索：精确命中片库时优先返回已审核、活动、状态正常的资源，首轮不调用外部来源也不转存；界面只展示资源名称、提取码与二维码，不出现明文 URL 与复制/打开入口。任务异步执行、每 2 秒轮询、刷新续查，发送成功后清空已发送内容。
 - 后台监控页（2026-10-11 已部署重构）：统计卡、14 天趋势、各类日志 tab 保留；请求/错误统计只统计 `event_type='API'`，访客数与页面浏览量分开计数；概览带统计日期与 Asia/Shanghai 时区，发布结果区分已发布/失败/进行中/未确认，缺失日期零值补齐；日志改为服务端搜索、状态筛选与真实分页（带 `type` 时返回 `{records,total,page,size,pages}`，省略 `type` 保持旧结构），热门搜索在 Redis 不可用或缓存为空时回退当日 SQL；概览与日志独立加载、失败重试，30 秒自动刷新且在隐藏标签页暂停。
 - 访问日志原始客户端身份（2026-10-14 20:53 已部署）：追加 `client_ip`、`user_agent`；IP 来自显式可信 nginx 对端或直连地址，UA 最多 1024 个 Unicode 字符。ADMIN 日志分页/旧接口支持 IP/UA 搜索并禁止缓存，手机可展开 UA；旧日志保持 NULL，不由哈希回填。公网实际 IP/UA 回读与伪造头边界已验证，详见 `docs/access-log-client-identity-20261014.md`。
 - 系统设置可在线修改 `resource.search.rate_limit_per_minute`（每用户每分钟 1–60，默认 5，保存后即时生效）；资源序号选择与翻页不计入，选择影片、重新搜索或「查看其他资源」计入，QQ 搜索频率独立。
@@ -115,12 +116,12 @@
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-14 20:53 已部署）：backend `gying-access-identity-backend:20261014a`、frontend `gying-access-identity-frontend:20261014a`，业务源码提交 `926e61e`；source `gying-code-optimization-gying-source:20261010a`、publisher `gying-code-optimization-social-publisher:20261010a` 不变。生产使用 `-p gying-movie -f docker-compose.prod.yml -f E:/gying-tools/releases/access-identity-20261014/deploy.json`；覆盖文件仅固定两服务镜像及 backend 的 `APP_TRUSTED_PROXIES`，nginx 重建后须复核其精确地址。9 个未替换容器（含既有诊断容器）ID/镜像/启动/重启计数不变，nginx 仅校验并平滑重载。
+- 当前在线镜像（2026-10-19 21:22 上线，source 21:25 更新）：backend `gying-resource-p2p-backend:20261019a`、frontend `gying-resource-p2p-frontend:20261019a`（代码 `cbec6b1`）、source `gying-resource-p2p-source:20261019b`（退出处理 `20880e7`）；publisher `gying-code-optimization-social-publisher:20261010a` 保持。有效覆盖 `E:/gying-tools/releases/resource-search-p2p-20261019/deploy.json`，显式 `-p gying-movie -f docker-compose.prod.yml`，环境/挂载/网络/端口保持且保留可信 nginx 地址。检查点 `G:/gying-backups/20261019T132109.901502Z` 8 项加密产物 hash 与完整认证解密通过；旧镜像及 `rollback.json` 保留。旧 backend 不支持 v2 任务，回退前须暂停相关采集/Worker 并核对新任务，不恢复旧库。
 - 原始身份日志发布检查点（2026-10-14）：`G:/gying-backups/20261014T125228.430856Z` 的 8 个加密产物 hash/完整认证解密通过，仅暂停 backend 取得应用回退快照，不是全链路灾难恢复。增量迁移追加两列，80,467 条原日志内容哈希不变且身份字段保持 NULL；旧镜像与回退配置位于 `E:/gying-tools/releases/access-identity-20261014/`，回退保留新列和日志，不覆盖旧库。
 - 四应用发布恢复检查点（2026-10-11 清晨，历史）：`G:/gying-backups/20261011T022133.799192Z` 的 10 个 age 文件 hash/认证解密通过，SQL 25 表及完成标记可读，配置归档 hash 与源文件一致；包含四个应用状态卷和运行参数，不是完整灾难恢复演练。发布/固定旧镜像/回退守护在 `E:/gying-tools/releases/code-optimization-20261010`；新发布状态、记录或配置变化必须先人工核对，不能仅回退某个发布组件。
 
 - 历史 P2P 部署基线（2026-10-06）：backend `gying-p2p-backend:20261006d`、frontend `gying-weekly-transfer-frontend:20261005a`、source `gying-p2p-source:20261006b`。本轮仅替换 backend/source；nginx 平滑重载，其余 8 个容器 ID、启动时间、重启计数不变，所有环境与挂载保持。无架构迁移。功能提交 `bdc0ada`、夸克 PDS 上传兼容 `7f907c7`、成功重试错误清理 `228617b`；最新 JAR SHA-256 与测试产物一致。发布材料 `E:/gying-tools/releases/gying-p2p-20261006`；`rollback-d.ps1` 可回退后端到 c，`rollback-b.ps1` 可回退到初版 P2P 采集 a，原周榜镜像也保留。最新检查点 `G:/gying-backups/20261006T115631.510103Z` 的 7 个 age 文件 hash/认证解密通过、SQL 25 表可读；本轮未做恢复演练，也不覆盖远端网盘回滚。
-- 当前 GYING 数据源为 `gying-code-optimization-gying-source:20261010a`，2 MiB 限额已前置到登录/PoW 的 text/json 探测之前，并覆盖 GET 重试。系列搜索、紧凑 BT 筛选、受保护种子读取与非 root 身份保持；10 月 8 日上线修复补强精确身份和季/Part 解析。`movie_source_identity.external_id` 已为 `utf8mb4_bin`，续验确认 `dWXo`（卡萨布兰卡）与 `dwXo`（蝙蝠侠）各绑定独立影片，身份 season 均为 0；剧集自然批次后复核《大明王朝1566》主表 season 已为 1。
+- 当前 GYING 数据源为 `gying-resource-p2p-source:20261019b`，2 MiB 限额已前置到登录/PoW 的 text/json 探测之前，并覆盖 GET 重试。系列搜索、紧凑 BT 筛选、受保护种子读取与非 root 身份保持；10 月 8 日上线修复补强精确身份和季/Part 解析。`movie_source_identity.external_id` 已为 `utf8mb4_bin`，续验确认 `dWXo`（卡萨布兰卡）与 `dwXo`（蝙蝠侠）各绑定独立影片，身份 season 均为 0；剧集自然批次后复核《大明王朝1566》主表 season 已为 1。
 - 迁移快照 `migration-data\20260914-081539`：SHA-256 清单 4832/4832 通过，缺失 0、不匹配 0；迁移时点 `movie_metadata=1631`、`resource_link=2165`，迁移前回滚备份 `E:\gying-data\gying-pre-deploy-20260914.sql`。
 - 已恢复的持久化数据：MinIO、backend-data、social-publisher 两个凭据卷、quark-auto-save 配置、OpenClaw 配置/认证与本机 MCP 配置；backend 日志只归档未恢复。
 - 回滚材料包含 MySQL dump 与 `.env` 的 Windows DPAPI CurrentUser 加密副本，仅能在原主机/账号解密，不等同异机灾难恢复；未执行 `docker compose down -v`，未删除任何卷。
@@ -129,6 +130,8 @@
 - 独立 MySQL 完整逻辑恢复的 25 张表行数与逐表 CHECKSUM 均一致，数据库对象数量和中文往返通过；无网络 MinIO 恢复后健康正常、1 张公开图片 SHA-256 一致、私有元数据 403。测试 MySQL 已关闭、MinIO 测试容器已移除；受限恢复目录 `G:/gying-tools/security-20260925/{full-mysql-restore,full-minio-restore}` 保留。早先候选恢复副本清理被执行策略拒绝，本轮没有绕过重试。
 
 ## 仍需处理
+
+- **每周优雅重启注册（2026-10-19）**：控制器 24 项测试及完整 readiness 通过，首次未来执行为 2026-10-25 09:30、错过不补跑、ASUS 手动登录后恢复。Windows UAC 提权被用户取消，两项任务未注册，需管理员运行已准备的安装器；本轮没有整机重启。详见 [运行与安装](weekly-graceful-restart.md)。
 
 - **QQ 频道多网盘真实展示待续验**：三个宿主脚本已于 2026-10-15 19:44 上线，27 项行为测试及真实 MySQL 只读选取通过；下一次原计划为 2026-10-16 09:00，每轮 3 篇。未手工试发，需在自然运行后核对频道正文及审计，不把脚本入口自检写成真实发帖验收。
 
@@ -172,6 +175,8 @@
 - 任务已注册不等于已运行；被禁用的调度器、Worker、计划任务与机器人必须在文档中显式区分。
 
 ## 验收
+
+- 搜索资源/种子隔离（2026-10-19 已部署）：后端 632 项（617 通过、15 Redis/MySQL 专用依赖跳过）、Python 60 项、前端类型/Lint/构建通过；候选四场景与生产本机/公网游客入口通过。真实详情样本 16 条账号下载链接已隐藏、16 条磁力及 2 条归档保留；source 118 条结果无账号链接且含两个归档标记，自然采集新增 40 个 v2 任务。历史 5,258 条账号行保留，发布审计 216 POSTED/12 FAILED/3 UNKNOWN 保持。三服务日志无 ERROR，安全扫描仍 59 PASS/11 FAIL；没有手工转存或发布。检查点及精确镜像见[发布记录](resource-search-p2p-deployment-20261019.md)。
 
 - QQ 频道多网盘（2026-10-15 已上线，代码 fc5ef04 / 候选 68de6d7）：27 项离线行为测试通过；上线前后 MySQL 8.0.28 非 root、READ ONLY 两片查询均返回百度/夸克/UC/迅雷各一条。三个在线脚本 hash 与候选一致、PowerShell 5.1 入口在父进程持锁时正确跳过；计划任务 XML、发布状态文件和审计（278 POSTED / 1 FAILED）、11 个容器身份/镜像/启动时间/重启次数不变，本机首页/API 与公网首页 200。回退目录 E:/gying-tools/releases/qq-channel-multi-drive-20261015；未真实发帖或修改数据库，原 11 项安全失败保留。
 
