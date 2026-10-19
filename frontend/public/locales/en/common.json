@@ -1215,7 +1215,7 @@
   },
   "resourceOtherCategory": "Other resources",
   "resourceCategoryCount": "{{category}}: {{count}} resources",
-  "navAiAssistant": "AI Assistant",
+  "navAiAssistant": "AI Assistant (Private beta)",
   "aiDescription": "Find movies, read details and ask about catalog resources.",
   "aiWelcome": "Which movie are you looking for?",
   "aiExample1": "Find Interstellar and list titles and years",

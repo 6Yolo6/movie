@@ -1215,7 +1215,7 @@
   },
   "resourceOtherCategory": "其他资源",
   "resourceCategoryCount": "{{category}}：{{count}} 个资源",
-  "navAiAssistant": "AI 助手",
+  "navAiAssistant": "AI 助手（内测中）",
   "aiDescription": "用自然语言查片、了解剧情和查找片库存量资源。",
   "aiWelcome": "想找哪部影片？",
   "aiExample1": "搜索星际穿越，列出片名和年份",

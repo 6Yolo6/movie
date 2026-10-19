@@ -10,7 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
 interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; }
-interface Answer { answer: string; model: string; evidence: Evidence[]; }
+interface Answer { answer: string; evidence: Evidence[]; }
 interface Turn { question: string; result?: Answer; error?: string; }
 interface Job { jobId: string; status: string; result?: Answer; message?: string; }
 const subscribe = () => () => {};
@@ -84,7 +84,7 @@ function Conversation() {
                 {turns.map((turn, index) => <section key={index}>
                     <div className="ml-auto max-w-[90%] whitespace-pre-wrap break-words rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/40">{turn.question}</div>
                     {turn.result && <div className="mt-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
-                        <Tag>{turn.result.model}</Tag><p className="whitespace-pre-wrap break-words leading-7">{turn.result.answer}</p>
+                        <p className="whitespace-pre-wrap break-words leading-7">{turn.result.answer}</p>
                         {turn.result.evidence.map((evidence, n) => <div key={n} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                             <p className="text-xs text-slate-500">{t('aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <Link key={movie.id} href={`/movie/${encodeURIComponent(movie.id)}`} className="mb-2 block rounded-lg bg-slate-50 p-3 text-blue-600 dark:bg-slate-800 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>)}
