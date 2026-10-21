@@ -94,7 +94,6 @@ public class AiAssistantService {
                 || !"gying".equals(result.path("scope").asText())) fail(400, "无效的片库回答");
         ObjectNode output = mapper.createObjectNode();
         output.put("answer", result.path("answer").asText("").substring(0, Math.min(12000, result.path("answer").asText("").length())));
-        output.put("model", result.path("model").asText("").substring(0, Math.min(80, result.path("model").asText("").length())));
         var evidence = output.putArray("evidence");
         boolean toolFailed = false;
         for (JsonNode step : result.path("trace")) {
@@ -136,6 +135,7 @@ public class AiAssistantService {
         request.set("history", history.isMissingNode() ? mapper.createArrayNode() : history.deepCopy());
         return request;
     }
+    public JsonNode validatedRequest(JsonNode input) { return validate(input); }
     private void expire() {
         Instant now = clock.instant();
         jobs.values().removeIf(j -> j.finished != null && now.isAfter(j.finished.plusSeconds(900)));

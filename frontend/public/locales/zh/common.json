@@ -1216,7 +1216,7 @@
   "resourceOtherCategory": "其他资源",
   "resourceCategoryCount": "{{category}}：{{count}} 个资源",
   "navAiAssistant": "AI 助手（内测中）",
-  "aiDescription": "用自然语言查片、了解剧情和查找片库存量资源。",
+  "aiDescription": "用自然语言查片、浏览完整系列、询问详情和已有资源，或获取附有理由的推荐。",
   "aiWelcome": "想找哪部影片？",
   "aiExample1": "搜索星际穿越，列出片名和年份",
   "aiExample2": "搜索流浪地球，并查看可用资源",
@@ -1234,5 +1234,10 @@
   "aiSend": "发送",
   "aiHint": "Enter 发送 · Shift+Enter 换行 · 网盘状态来自片库记录，未实时核验",
   "aiLoading": "正在加载 AI 助手…",
-  "aiLogin": "登录后即可使用 AI 片库助手"
+  "aiLogin": "登录后即可使用 AI 片库助手",
+  "aiRecommendExample": "根据我的偏好推荐电影",
+  "aiGuessYouLike": "猜你喜欢",
+  "aiRecommendationReasons": "推荐理由",
+  "aiRating": "评分",
+  "aiResourceCount": "片库资源"
 }

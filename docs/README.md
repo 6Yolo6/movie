@@ -13,6 +13,7 @@
 | 已有生产环境增量发布 | [部署与回滚](deployment.md) | 固定版本、最小替换、真实入口验收 |
 | Windows 每周优雅重启 | [计划与恢复](weekly-graceful-restart.md) | 周日 09:30、失败取消、登录后按基线恢复 |
 | 本地 AI 与混合目录识别 | [实现和验收](ai-assistant-20261019.md) | 项目查片/详情问答、OpenClaw 自然搜索、转存范围边界 |
+| AI 完整找片与猜你喜欢 | [实现与上线](ai-recommendations-20261020.md) | 分页检索、画像、可解释混合推荐与回退证据 |
 | 主机迁移/灾难恢复 | [迁移手册](../MIGRATION.md) | 加密备份、隔离恢复、分阶段切换 |
 | Resource Hub 日常维护 | [影视资源中心](resource-hub.md) | 搜索、转存、自有分享和治理 |
 | 元数据与每周视频计划 | [元数据与周榜转存](metadata-weekly-transfer.md) | 元数据采集和视频转存的边界 |

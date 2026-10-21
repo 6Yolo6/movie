@@ -1216,7 +1216,7 @@
   "resourceOtherCategory": "Other resources",
   "resourceCategoryCount": "{{category}}: {{count}} resources",
   "navAiAssistant": "AI Assistant (Private beta)",
-  "aiDescription": "Find movies, read details and ask about catalog resources.",
+  "aiDescription": "Search titles and complete series, ask about details and existing resources, or get recommendations with reasons.",
   "aiWelcome": "Which movie are you looking for?",
   "aiExample1": "Find Interstellar and list titles and years",
   "aiExample2": "Find The Wandering Earth and its resources",
@@ -1234,5 +1234,10 @@
   "aiSend": "Send",
   "aiHint": "Enter to send · Shift+Enter for a new line · Resource status comes from catalog records",
   "aiLoading": "Loading AI assistant…",
-  "aiLogin": "Sign in to use the AI catalog assistant"
+  "aiLogin": "Sign in to use the AI catalog assistant",
+  "aiRecommendExample": "Recommend movies for me",
+  "aiGuessYouLike": "For you",
+  "aiRecommendationReasons": "Recommendation reasons",
+  "aiRating": "Rating",
+  "aiResourceCount": "Catalog resources"
 }

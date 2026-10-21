@@ -1,6 +1,6 @@
 # 当前项目状态
 
-更新时间：2026-10-19
+更新时间：2026-10-21
 
 本文只汇总已记录的生产能力、运行约束、待处理事项与可复核结论；各项证据保留原日期，本次文档整理不表示重新验收。
 
@@ -28,7 +28,7 @@
 
 ### 本地 AI 与目录识别
 
-- 2026-10-19 本机 AI 片库连接修复已部署；项目 `/ai-assistant` 查片/详情/资源连续问答、outbound 队列与 OpenClaw 自然片名提取已具备，GYing/backend/frontend/Gateway 新功能尚未上线。专用生产桥接凭据未启用。
+- 本机片库桥接、项目 `/ai-assistant` 与 OpenClaw 自然搜片已于 2026-10-19/20 上线，专用生产桥接认证已启用。2026-10-20 18:12 追加完整分页找片与“猜你喜欢”：收藏/时间衰减浏览、内容与共同收藏混合推荐、冷启动、多样性重排和逐片理由；登录后使用，标注内测，不显示模型名称。本机 Vue 仅提供本地查询。[实现与上线验收](ai-recommendations-20261020.md)。
 - 混合目录名按全片名、繁简、拼音/首字母及有限偏旁对齐，仍校验年份/季/续集/合集/视频范围；实盘 `858ng` MKV 子目录可定位，`GnVK` 两条 `.exe`/解压目录拒绝并阻止回退整分享。未转存或重放历史记录。[实现和验收](ai-assistant-20261019.md)。
 - 每周重启安装误报已修复，两项任务 Ready；首个计划 XML 为 2026-10-25 09:30，Windows 报告执行 09:30:30，保留禁止补跑/强制结束。尚未整机重启或自然登录恢复验收。[计划记录](weekly-graceful-restart.md)。
 
@@ -107,6 +107,7 @@
 
 ## 配置与安全
 
+- AI 业务发布（2026-10-20，2026-10-21 续验）：延续用户已明确批准的 AI 功能范围，仅替换 backend/frontend；部署时安全扫描仍 59 PASS / 11 FAIL / 0 UNKNOWN，原门禁未关闭。独立桥接认证、本机/公网登录边界与回退材料见 [上线记录](ai-recommendations-20261020.md)。
 - 2026-10-15 19:44（Asia/Shanghai）：用户在披露既有安全门禁失败后明确要求直接上线，仅替换 QQ 频道三个宿主脚本；全局只读扫描仍为 59 PASS / 11 FAIL / 0 UNKNOWN，原 11 项不关闭。候选与回退、原计划和数据保持情况见[频道部署记录](qq-channel-multi-drive.md)。
 - 2026-10-14 20:53（Asia/Shanghai）：经用户知悉风险后明确批准，仅替换 backend/frontend，上线原始 IP/UA 与已提交的查询/异步列表修复。20:59 完整安全扫描仍为 59 PASS / 11 FAIL / 0 UNKNOWN，G01–G11 未关闭；本次是限定业务例外，不是安全加固完成。
 - 敏感值边界：`.env`、Cloudflare credentials、MySQL defaults、Quark/迅雷/QQ/微博 Cookie 与 token 只报告路径与键名，不写入仓库、日志或本文档。
@@ -122,7 +123,7 @@
 
 ### 迁移与恢复基线
 
-- 当前在线镜像（2026-10-19 21:22 上线，source 21:25 更新）：backend `gying-resource-p2p-backend:20261019a`、frontend `gying-resource-p2p-frontend:20261019a`（代码 `cbec6b1`）、source `gying-resource-p2p-source:20261019b`（退出处理 `20880e7`）；publisher `gying-code-optimization-social-publisher:20261010a` 保持。有效覆盖 `E:/gying-tools/releases/resource-search-p2p-20261019/deploy.json`，显式 `-p gying-movie -f docker-compose.prod.yml`，环境/挂载/网络/端口保持且保留可信 nginx 地址。检查点 `G:/gying-backups/20261019T132109.901502Z` 8 项加密产物 hash 与完整认证解密通过；旧镜像及 `rollback.json` 保留。旧 backend 不支持 v2 任务，回退前须暂停相关采集/Worker 并核对新任务，不恢复旧库。
+- 当前在线镜像（2026-10-20 18:12 上线、2026-10-21 续验）：backend `sha256:ab1b5c6abee4cb17e966a4a5e9a479db21df72cd49c00bd5834e1897c9e242ba`、frontend `sha256:cdd6346fcbdba8209fec41aa71dacfa6b06874ff9727f14f23d4bf995d2f53ca`；source `gying-resource-p2p-source:20261019b`、publisher `gying-code-optimization-social-publisher:20261010a` 保持。有效覆盖 `E:/gying-tools/releases/ai-recommendations-20261020/deploy.json`，显式 `-p gying-movie -f docker-compose.prod.yml`，环境/挂载/网络/端口及可信 nginx 配置保持。检查点 `G:/gying-backups/20261020T101133.216772Z` 7 项加密产物完整认证解密及续验 hash 通过；旧镜像和 `rollback-deploy.json` 保留。[本次回退范围](ai-recommendations-20261020.md)。更早的 P2P 检查点 `G:/gying-backups/20261019T132109.901502Z` 保留；降级到不支持 v2 的旧 backend 前须暂停相关采集/Worker 并核对新任务，不恢复旧库。
 - 原始身份日志发布检查点（2026-10-14）：`G:/gying-backups/20261014T125228.430856Z` 的 8 个加密产物 hash/完整认证解密通过，仅暂停 backend 取得应用回退快照，不是全链路灾难恢复。增量迁移追加两列，80,467 条原日志内容哈希不变且身份字段保持 NULL；旧镜像与回退配置位于 `E:/gying-tools/releases/access-identity-20261014/`，回退保留新列和日志，不覆盖旧库。
 - 四应用发布恢复检查点（2026-10-11 清晨，历史）：`G:/gying-backups/20261011T022133.799192Z` 的 10 个 age 文件 hash/认证解密通过，SQL 25 表及完成标记可读，配置归档 hash 与源文件一致；包含四个应用状态卷和运行参数，不是完整灾难恢复演练。发布/固定旧镜像/回退守护在 `E:/gying-tools/releases/code-optimization-20261010`；新发布状态、记录或配置变化必须先人工核对，不能仅回退某个发布组件。
 
@@ -137,7 +138,7 @@
 
 ## 仍需处理
 
-- **AI 配套上线**：候选构建、真实本地模型/片库、五组浏览器与实盘只读目录验收完成，代码已提交；安全复验仍 59 PASS/11 FAIL/0 UNKNOWN，本次尚无例外授权。批准后仅替换 backend/frontend、配置独立桥接 token、更新 OpenClaw 源/唯一安全运行副本/Gateway，再验真实入口。source/publisher 不涉及。群出站/网盘转存未手工验收；旧失败行未重置。[交付和回退材料](ai-assistant-20261019.md)。
+- **AI 后续效果验收**：完整找片与推荐已上线，真实片库只读、候选/生产页面及内部真实模型队列通过；网站真实用户会话的个性化端到端、推荐准确率/点击反馈和群内实际出站仍未验收。原安全门禁继续独立处理，历史失败行不重置。[证据与回退](ai-recommendations-20261020.md)。
 
 - **每周重启自然运行验收**：两项任务已于 2026-10-19 注册，首个触发为 2026-10-25 09:30（Windows 报告 09:30:30），错过不补跑、ASUS 手动登录后恢复；尚未进行整机重启与首次自然恢复验收。详见 [运行与安装](weekly-graceful-restart.md)。
 
@@ -184,7 +185,7 @@
 
 ## 验收
 
-- AI 与混合目录（2026-10-19 候选完成）：本地 Maven 47、前端历史 5、Router 6、Node 生命周期 2 项通过；GYing 先前全量 639 通过/15 专用依赖跳过，最终相关 42 项通过，324 包内 class/resource hash 校验。真实 Qwen 搜索及空闲 15 秒后详情/两条资源追问、自然片名提取和批量拒绝通过；中英/明暗/手机桌面/匿名等五组候选浏览器通过。实际 `858ng` 两个视频子目录选择、`GnVK` 两个可执行文件目录拒绝；无下载/执行/转存/群消息。安装时间测试 8 项与维护 Python 24 项通过。生产配置回退 4 个 age 文件认证通过，新生产一致性检查点待切换窗口生成；在线仍为原版本，完整安全门禁未关闭。[详细证据](ai-assistant-20261019.md)。
+- AI 找片与推荐（2026-10-20 上线、2026-10-21 续验）：后端 658 项（638 通过/20 专用依赖跳过）、另 5 项隔离 MySQL 通过；332 包内 class/resource hash 一致。真实片库中文蜘蛛侠 20 项、分页无重复、个人/冷启动各 12 项及理由通过；候选/生产本机/公网各五组浏览器 API fixture 场景与 26 项真实入口通过。生产内部自然搜片完成真实模型/存量资源链路，转存/发布审计不变；11 个容器及配置保持部署基线。7 个 age 检查点认证与续验 hash 通过、旧镜像保留；原 11 项安全失败未关闭。[上线与限制](ai-recommendations-20261020.md)。
 
 - 搜索资源/种子隔离（2026-10-19 已部署）：后端 632 项（617 通过、15 Redis/MySQL 专用依赖跳过）、Python 60 项、前端类型/Lint/构建通过；候选四场景与生产本机/公网游客入口通过。真实详情样本 16 条账号下载链接已隐藏、16 条磁力及 2 条归档保留；source 118 条结果无账号链接且含两个归档标记，自然采集新增 40 个 v2 任务（29 成功、1 运行、10 待执行，payload 均不含账号下载 URL；远端文件未逐一复验）。历史 5,258 条账号行保留，发布审计 216 POSTED/12 FAILED/3 UNKNOWN 保持。三服务日志无 ERROR，安全扫描仍 59 PASS/11 FAIL；没有手工转存或发布。检查点及精确镜像见[发布记录](resource-search-p2p-deployment-20261019.md)。
 

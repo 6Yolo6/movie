@@ -13,17 +13,22 @@ import org.springframework.web.bind.annotation.*;
 public class AiAssistantController {
     private final AuthHelper auth; private final AiBridgeAuth internal;
     private final RedisRateLimiter limits; private final AiAssistantService assistant;
-    public AiAssistantController(AuthHelper auth, AiBridgeAuth internal, RedisRateLimiter limits, AiAssistantService assistant) {
-        this.auth=auth; this.internal=internal; this.limits=limits; this.assistant=assistant;
+    private final com.gying.movie.service.impl.CatalogAiService catalog;
+    public AiAssistantController(AuthHelper auth, AiBridgeAuth internal, RedisRateLimiter limits, AiAssistantService assistant, com.gying.movie.service.impl.CatalogAiService catalog) {
+        this.auth=auth; this.internal=internal; this.limits=limits; this.assistant=assistant; this.catalog=catalog;
     }
     @GetMapping("/api/ai/status")
     public Map<String, Object> status(@RequestHeader(value="Authorization", required=false) String token) {
-        auth.requireUser(token); return assistant.availability();
+        auth.requireUser(token); var status=new java.util.HashMap<String,Object>(assistant.availability());
+        status.put("catalogAvailable",true); return status;
     }
     @PostMapping("/api/ai/query")
     public ResponseEntity<Map<String, Object>> query(@RequestBody JsonNode body, @RequestHeader(value="Authorization", required=false) String token) {
         var user=auth.requireUser(token);
         limits.require("ai-user", user.getId().toString(), 6, Duration.ofMinutes(1));
+        JsonNode request=assistant.validatedRequest(body);
+        Map<String,Object> result=catalog.answer(user.getId(),request);
+        if(result!=null)return ResponseEntity.ok(result);
         return ResponseEntity.accepted().body(assistant.submit(user.getId(), body));
     }
     @GetMapping("/api/ai/jobs/{id}")

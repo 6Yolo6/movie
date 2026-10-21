@@ -178,3 +178,17 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 - `PUT /api/admin/users/{id}/password`：仅 ADMIN 可重置指定用户密码，请求 `{password}`；密码至少 12 字符且不超过 72 UTF-8 字节。成功后调用统一 `resetPassword`，密钥哈希更新并吊销该用户全部登录设备；返回 `{message, userId, sessionsRevoked:true, self}`，`self` 表示管理员重置的是自己（当前会话同样失效）。非法输入 400，用户不存在 404。
 - `GET /api/admin/config`：读取系统设置；搜索频率和留言频率未配置时分别返回虚拟默认值 5，不在读取时写数据库。
 - `PUT /api/admin/config/{key}`：以 `text/plain` 保存配置。`resource.search.rate_limit_per_minute` 接受 1–60，`comment.rate_limit_per_minute` 接受 1–120；非法值 400，未存在的配置在保存时新增。
+
+
+## AI 片库助手
+
+全部 `/api/ai/**` 使用网站用户 Bearer JWT，游客 401。页面标注内测；回答不返回模型名称。
+
+- `GET /api/ai/status`：返回模型队列的 `available/busy` 和 `catalogAvailable=true`；确定性找片/推荐可独立于模型提供。
+- `POST /api/ai/query`：`{message,history}`，message 1–1000 字符、history 最多八条，仅 user/assistant、总预算 10,000 字符。明确片名或推荐请求立即返回 HTTP 200 的 `{jobId,status:"SUCCEEDED",result}`；详情/资源追问进入队列，HTTP 202，轮询 `GET /api/ai/jobs/{id}`。任务仅所属用户可读，6 次/分钟。
+- `GET /api/ai/search?keyword=&page=1&size=20`：完整标题/英文名/别名/系列名检索。keyword 1–60 字符，size 钳制为 1–30，页码钳制到有效页；返回 answer、evidence 和 `catalog:{kind:"search",keyword,total,page,pages,size}`。30 次/分钟。
+- `GET /api/ai/recommendations`：最多 12 项，返回 `catalog.kind="recommendation"`、personalized 与逐片 reasons。收藏及近期浏览画像、内容/共同收藏、评分/热度与多样性重排；10 次/分钟。自然语言 query 另可携年份、分类、类型与高分约束。
+- `POST /api/ai/views`：仅 `{movieId}`，登录用户实际详情浏览记录。影片须活动且未软删除；30 分钟内同用户/影片按 SQL 去重，返回 `{ok:true,recorded:boolean}`，30 次/分钟。不使用访客 IP 推断用户。
+- `evidence[].queriedAt` 是本次查询时间；资源 NORMAL 与数量来自片库存量过滤，未对外部分享实时验活。
+
+`/api/internal/ai/**` 只允许专用 `X-AI-Bridge-Token`，公网 nginx 返回 404；本机桥接主动轮询固定回环，不公开 Ollama 或助手监听。算法与当前上限见 [实现与上线](ai-recommendations-20261020.md)。

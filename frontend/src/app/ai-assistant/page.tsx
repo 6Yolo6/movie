@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { Alert, Button, Card, Input, Tag } from 'antd';
+import { Alert, Button, Card, Input, Tag, Pagination } from 'antd';
 import { RobotOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
 
-interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; }
+interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
 interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; }
-interface Answer { answer: string; evidence: Evidence[]; }
+interface Catalog { kind: string; keyword?: string; total: number; page?: number; pages?: number; size?: number; personalized?: boolean; }
+interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; }
 interface Turn { question: string; result?: Answer; error?: string; }
 interface Job { jobId: string; status: string; result?: Answer; message?: string; }
 const subscribe = () => () => {};
@@ -26,18 +27,34 @@ function Conversation() {
     const [turns, setTurns] = useState<Turn[]>([]);
     const [busy, setBusy] = useState(false);
     const [available, setAvailable] = useState<boolean | null>(null);
+    const [paging, setPaging] = useState<number | null>(null);
+    const mounted = useRef(true);
     const [error, setError] = useState('');
     const [progress, setProgress] = useState('');
     const controller = useRef<AbortController | null>(null);
     const locked = useRef(false);
     const tail = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        let active = true;
-        const probe = async () => { try { const response = await api('/api/ai/status'); if (response.ok && active) setAvailable((await response.json()).available); } catch { if (active) setAvailable(false); } };
+        let active = true; mounted.current = true;
+        const probe = async () => { try { const response = await api('/api/ai/status'); if (response.ok && active) { const status = await response.json(); setAvailable(status.available || status.catalogAvailable); } } catch { if (active) setAvailable(false); } };
         void probe(); const timer = setInterval(() => void probe(), 15000);
-        return () => { active = false; clearInterval(timer); controller.current?.abort(); };
+        return () => { active = false; mounted.current = false; clearInterval(timer); controller.current?.abort(); };
     }, []);
     useEffect(() => { tail.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns, progress]);
+    async function pageResults(index: number, page: number) {
+        const catalog = turns[index]?.result?.catalog;
+        if (!catalog?.keyword || locked.current) return;
+        locked.current = true; setPaging(index); setError('');
+        const abort = new AbortController(); controller.current = abort;
+        try {
+            const response = await api(`/api/ai/search?keyword=${encodeURIComponent(catalog.keyword)}&page=${page}&size=${catalog.size || 20}`, { signal: abort.signal });
+            if (!response.ok) throw new Error(await readApiError(response, t('aiFailed')));
+            const result: Answer = await response.json();
+            if (mounted.current) setTurns(old => old.map((turn, i) => i === index ? { ...turn, result } : turn));
+        } catch (failure) {
+            if (!abort.signal.aborted) setError(failure instanceof Error ? failure.message : t('aiFailed'));
+        } finally { if (mounted.current) { setPaging(null); locked.current = false; } }
+    }
     async function send(question = input.trim()) {
         if (!question || locked.current) return;
         locked.current = true; setBusy(true); setError(''); setInput(''); setProgress(t('aiQueued'));
@@ -45,7 +62,9 @@ function Conversation() {
         const history: { role: string; content: string }[] = [];
         let budget = 10000 - question.length;
         for (const turn of turns.filter(turn => turn.result).slice(-4).reverse()) {
-            const answer = (turn.result?.answer || '').slice(0, 6000);
+            const movies = turn.result?.evidence.flatMap(item => item.movies || (item.movie ? [item.movie] : [])) || [];
+            const references = movies.map((movie, i) => `${i + 1}. ${movie.titleCn || movie.titleEn} (${movie.year || ''}) 片库 ID: ${movie.id}`).join('\n');
+            const answer = [turn.result?.answer, references].filter(Boolean).join('\n').slice(0, 6000);
             if (turn.question.length + answer.length > budget) break;
             history.unshift({ role: 'user', content: turn.question }, { role: 'assistant', content: answer });
             budget -= turn.question.length + answer.length;
@@ -75,11 +94,12 @@ function Conversation() {
         } finally { if (!abort.signal.aborted) { setBusy(false); setProgress(''); locked.current = false; } }
     }
     return <main className="mx-auto max-w-4xl px-4 py-8">
-        <div className="mb-5 flex items-center justify-between gap-3"><h1 className="m-0 text-2xl font-semibold"><RobotOutlined className="mr-2 text-blue-500" />{t('navAiAssistant')}</h1><Button disabled={busy} onClick={() => { setTurns([]); setError(''); }}>{t('aiNewChat')}</Button></div>
+        <div className="mb-5 flex items-center justify-between gap-3"><h1 className="m-0 text-2xl font-semibold"><RobotOutlined className="mr-2 text-blue-500" />{t('navAiAssistant')}</h1><Button disabled={busy || paging !== null} onClick={() => { setTurns([]); setError(''); }}>{t('aiNewChat')}</Button></div>
         <p className="text-sm text-slate-500">{t('aiDescription')}</p>
+        <Button className="mb-4" disabled={busy || paging !== null} onClick={() => void send(t('aiRecommendExample'))}>{t('aiGuessYouLike')}</Button>
         {available === false && <Alert type="warning" showIcon title={t('aiOffline')} className="mb-4" />}
         <Card>
-            {turns.length === 0 && <div className="py-8 text-center"><p>{t('aiWelcome')}</p><div className="flex flex-wrap justify-center gap-2">{[t('aiExample1'), t('aiExample2')].map(example => <Button key={example} onClick={() => { setInput(example); }}>{example}</Button>)}</div></div>}
+            {turns.length === 0 && <div className="py-8 text-center"><p>{t('aiWelcome')}</p><div className="flex flex-wrap justify-center gap-2">{[t('aiExample1'), t('aiExample2'), t('aiRecommendExample')].map(example => <Button key={example} onClick={() => { setInput(example); }}>{example}</Button>)}</div></div>}
             <div aria-live="polite" className="space-y-6">
                 {turns.map((turn, index) => <section key={index}>
                     <div className="ml-auto max-w-[90%] whitespace-pre-wrap break-words rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/40">{turn.question}</div>
@@ -87,16 +107,21 @@ function Conversation() {
                         <p className="whitespace-pre-wrap break-words leading-7">{turn.result.answer}</p>
                         {turn.result.evidence.map((evidence, n) => <div key={n} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                             <p className="text-xs text-slate-500">{t('aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
-                            {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <Link key={movie.id} href={`/movie/${encodeURIComponent(movie.id)}`} className="mb-2 block rounded-lg bg-slate-50 p-3 text-blue-600 dark:bg-slate-800 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>)}
+                            {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
+                                <Link href={`/movie/${encodeURIComponent(movie.id)}`} className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
+                                {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
+                                {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
+                            </div>)}
                             {evidence.resources?.map((resource, r) => { const url = safeUrl(resource.url); return url && <a key={r} href={url} target="_blank" rel="noopener noreferrer" className="mb-2 block break-all text-blue-600 dark:text-blue-400">{resource.provider} · {resource.name || t('aiOpenResource')}{resource.code && ` · ${t('aiCode')}: ${resource.code}`}</a>; })}
                         </div>)}
+                        {turn.result.catalog?.kind === 'search' && (turn.result.catalog.pages || 0) > 1 && <div className="mt-4 flex justify-center" aria-busy={paging === index}><Pagination simple current={turn.result.catalog.page} total={turn.result.catalog.total} pageSize={turn.result.catalog.size} showSizeChanger={false} disabled={busy || paging !== null} onChange={page => void pageResults(index, page)} /></div>}
                     </div>}
                     {turn.error && <Alert type="error" title={turn.error} showIcon className="mt-3" />}
                 </section>)}
                 <div ref={tail} />
             </div>
             {error && <p role="alert" className="text-red-500">{error}</p>}
-            <div className="mt-6 flex items-end gap-2"><Input.TextArea value={input} onChange={event => setInput(event.target.value)} maxLength={1000} autoSize={{ minRows: 2, maxRows: 5 }} placeholder={t('aiPlaceholder')} aria-label={t('aiPlaceholder')} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} /><Button type="primary" icon={<SendOutlined />} loading={busy} disabled={!input.trim() || available === false} onClick={() => void send()}>{t('aiSend')}</Button></div>
+            <div className="mt-6 flex items-end gap-2"><Input.TextArea value={input} onChange={event => setInput(event.target.value)} maxLength={1000} autoSize={{ minRows: 2, maxRows: 5 }} placeholder={t('aiPlaceholder')} aria-label={t('aiPlaceholder')} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} /><Button type="primary" icon={<SendOutlined />} loading={busy} disabled={!input.trim() || available === false || paging !== null} onClick={() => void send()}>{t('aiSend')}</Button></div>
             <p role="status" className="mb-0 mt-2 text-xs text-slate-500">{progress || t('aiHint')}</p>
         </Card>
     </main>;

@@ -80,6 +80,11 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
     const { message } = App.useApp();
     const { t, i18n } = useTranslation();
 
+    useEffect(() => {
+        if (!token || !movie.id) return;
+        void api('/api/ai/views', { method: 'POST', body: JSON.stringify({ movieId: movie.id }) }).catch(() => undefined);
+    }, [movie.id, token]);
+
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
