@@ -1239,5 +1239,10 @@
   "aiGuessYouLike": "For you",
   "aiRecommendationReasons": "Recommendation reasons",
   "aiRating": "Rating",
-  "aiResourceCount": "Catalog resources"
+  "aiResourceCount": "Catalog resources",
+  "relatedMovies": "Related titles",
+  "relatedMoviesFailed": "Related titles could not be loaded",
+  "noRelatedMovies": "No related titles yet",
+  "noMagnetResources": "No magnet resources",
+  "noTorrentResources": "No torrent resources"
 }

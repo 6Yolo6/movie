@@ -85,6 +85,22 @@ public class CatalogAiService {
         var movies=evidence.putArray("movies");for(Ranked r:ranked){ObjectNode item=view(r.movie());item.set("reasons",mapper.valueToTree(r.reasons()));movies.add(item);}
         return result;
     }
+    public List<ObjectNode> related(String movieId, int limit) {
+        if (movieId == null || !movieId.matches("[A-Za-z0-9_-]{1,64}"))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid movie");
+        List<Film> seeds = jdbc.query("SELECT " + columns() + " FROM movie_metadata m WHERE m.id=? AND m.status='ACTIVE' AND m.deleted_at IS NULL", this::film, movieId);
+        if (seeds.isEmpty())
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Movie not found");
+        Film seed = seeds.get(0);
+        List<Film> candidates = new ArrayList<>(catalog().stream()
+                .filter(f -> !f.id().equals(seed.id()) && Objects.equals(f.category(), seed.category()))
+                .filter(f -> similarity(seed, f) > .10 || seed.seriesName() != null && !seed.seriesName().isBlank() && seed.seriesName().equals(f.seriesName()))
+                .toList());
+        candidates.add(seed);
+        return recommend(candidates, Map.of(seed.id(), 3D), Set.of(seed.id()), List.of(),
+                Constraints.none(), Math.max(1, Math.min(12, limit))).stream()
+                .map(r -> view(r.movie())).toList();
+    }
     private synchronized List<Film> catalog() {
         if(System.currentTimeMillis()-refreshed<60000&&!cached.isEmpty())return cached;
         List<Film> films=jdbc.query("SELECT "+columns()+" FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",this::film);

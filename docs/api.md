@@ -12,6 +12,7 @@
 - `GET /api/movies/filters?category=`：动态筛选项。
 - `GET /api/movies/hot-searches?days=7&limit=8`：顶部搜索框的“最近热门搜索”，公开接口，无需登录，与 `/api/movies` 共用搜索限流。返回 `[{keyword,count}]` 按次数降序，数据取近 N 天 Redis `hot:search:<date>` ZSet 合并求和，Redis 为空或异常时回退 MySQL `site_search_log`；`days` 取值 1-30，`limit` 取值 1-20。
 - `GET /api/movies/{id}`：影片详情和已审核资源。
+- `GET /api/movies/{id}/recommendations?limit=8`：公开只读相关推荐，返回影片数组（`id/titleCn/category/year/posterUrl/genres/rating/resourceCount`）；按当前影片内容及系列关系选择，排除自身、停用和软删除影片。默认 8 项，limit 限定为 1–12；无候选返回空数组，影片不存在返回 404、非法 ID 返回 400。
 - `GET /api/movies/series?name=`：剧集季信息。
 - `POST /api/favorites/toggle?movieId=`：收藏/取消收藏。
 - `GET /api/favorites/hot?period=day|week|month|all`：站内收藏热门。

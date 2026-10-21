@@ -108,7 +108,7 @@ function Conversation() {
                         {turn.result.evidence.map((evidence, n) => <div key={n} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                             <p className="text-xs text-slate-500">{t('aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
-                                <Link href={`/movie/${encodeURIComponent(movie.id)}`} className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
+                                <Link href={`/movie/${encodeURIComponent(movie.id)}`} target="_blank" rel="noopener noreferrer" className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
                                 {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
                                 {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
                             </div>)}

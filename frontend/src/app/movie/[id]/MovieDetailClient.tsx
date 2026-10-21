@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, Tag, Typography, Descriptions, Button, Space, Tabs, Modal, Form, Input, Select, App, Divider, Tooltip, Dropdown, MenuProps, Popconfirm } from 'antd';
 import type { InputRef } from 'antd';
-import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, LinkOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { DownloadOutlined, StarFilled, CloudUploadOutlined, CopyOutlined, PlayCircleOutlined, DownOutlined, UpOutlined, CheckOutlined, HeartOutlined, HeartFilled, WarningOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { MovieDetailDTO, MovieMetadata, ResourceLink } from '@/types';
 import { useAuthStore } from '@/store/authStore';
 import { api, readApiError } from '@/lib/api';
@@ -11,6 +11,7 @@ import { groupResources, resourceCreatedDate } from '@/lib/resourceCategories';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CommentSection from '@/components/CommentSection';
+import RelatedMovies from '@/components/RelatedMovies';
 import { useTranslation } from 'react-i18next';
 import { inferResourceProvider, insertQuickParam, materializeQuickParam, normalizeResourceUrlWithCode, parseResourceQuickParams, readResourceClipboard, RESOURCE_QUICK_PARAMS } from '@/lib/resourceForm';
 
@@ -536,6 +537,9 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
         </Card>
     );
 
+    const magnetResources = p2pResources.filter(item => item.type?.trim().toUpperCase() === 'MAGNET');
+    const torrentResources = p2pResources.filter(item => item.type?.trim().toUpperCase() === 'TORRENT');
+
     const resourceTabLabel = (category: string, label: string, count: number) => (
         <span className="inline-flex items-center gap-2" data-resource-tab={category} data-resource-count={count}
             aria-label={t('resourceCategoryCount', { category: label, count })}>
@@ -823,12 +827,10 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                                             label: resourceTabLabel('p2p', t('magnetTorrent'), p2pResources.length),
                                             children: (
                                                 <div className="flex flex-col gap-3 bg-white dark:bg-zinc-900 p-4 rounded-b-lg rounded-tr-lg border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[200px]">
-                                                    {p2pResources.length > 0 ? p2pResources.map(renderResourceCard) : (
-                                                        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                                                            <LinkOutlined className="text-4xl mb-2 opacity-50" />
-                                                            <Text type="secondary">{t('noP2P')}</Text>
-                                                        </div>
-                                                    )}
+                                                    <Tabs key={movie.id} defaultActiveKey={magnetResources.length ? 'magnet' : torrentResources.length ? 'torrent' : 'magnet'} size="small" className="inner-tabs" items={[
+                                                        { key: 'magnet', label: resourceTabLabel('magnet', t('magnet'), magnetResources.length), children: <div className="flex flex-col gap-3">{magnetResources.length ? magnetResources.map(renderResourceCard) : <p className="py-10 text-center text-gray-400">{t('noMagnetResources')}</p>}</div> },
+                                                        { key: 'torrent', label: resourceTabLabel('torrent', t('torrent'), torrentResources.length), children: <div className="flex flex-col gap-3">{torrentResources.length ? torrentResources.map(renderResourceCard) : <p className="py-10 text-center text-gray-400">{t('noTorrentResources')}</p>}</div> },
+                                                    ]} />
                                                 </div>
                                             )
                                         },
@@ -870,6 +872,8 @@ export default function MovieDetailClient({ data }: { data: MovieDetailDTO }) {
                         </div>
                     </div>
                 </div>
+
+                <RelatedMovies key={movie.id} movieId={movie.id} />
 
                 {/* Upload Modal */}
                 <Modal

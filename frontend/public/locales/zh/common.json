@@ -1239,5 +1239,10 @@
   "aiGuessYouLike": "猜你喜欢",
   "aiRecommendationReasons": "推荐理由",
   "aiRating": "评分",
-  "aiResourceCount": "片库资源"
+  "aiResourceCount": "片库资源",
+  "relatedMovies": "相关推荐",
+  "relatedMoviesFailed": "相关推荐暂时无法加载",
+  "noRelatedMovies": "暂无相关推荐",
+  "noMagnetResources": "暂无磁力资源",
+  "noTorrentResources": "暂无种子资源"
 }

@@ -71,6 +71,18 @@ class CatalogAiMySqlTest {
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM resource_operation_log WHERE user_id=77",Integer.class));
         assertTrue(catalog.recommendations(77L,CatalogRecommendationEngine.Constraints.none(),12).path("catalog").path("personalized").asBoolean());
     }
+    @Test void relatedTitlesArePublicRelevantAndExcludeSelfDeletedAndInactive() {
+        var service = new CatalogAiService(jdbc, mapper);
+        var controller = new com.gying.movie.controller.MovieRecommendationController(service);
+        var related = controller.recommendations("spider_1", 8);
+        assertEquals(8, related.size());
+        assertTrue(related.stream().allMatch(m -> m.path("category").asText().equals("mv") && m.path("genres").toString().contains("科幻")));
+        assertTrue(related.stream().noneMatch(m -> Set.of("spider_1", "alias", "gone", "inactive", "romance").contains(m.path("id").asText())));
+        assertEquals(12, controller.recommendations("spider_1", 100).size());
+        assertTrue(controller.recommendations("romance", 8).isEmpty());
+        assertEquals(404, assertThrows(ResponseStatusException.class, () -> controller.recommendations("gone", 8)).getStatusCode().value());
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> controller.recommendations("../bad", 8)).getStatusCode().value());
+    }
     @Test void authenticationAndRequestValidationPrecedeRecording() {
         var auth=mock(AuthHelper.class);when(auth.requireUser(null)).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
         when(auth.requireUser("owner")).thenReturn(new AuthUser(78L,"fixture","USER"));
