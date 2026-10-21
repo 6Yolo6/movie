@@ -1216,7 +1216,7 @@
   "resourceOtherCategory": "Other resources",
   "resourceCategoryCount": "{{category}}: {{count}} resources",
   "navAiAssistant": "AI Assistant (Private beta)",
-  "aiDescription": "Search titles and complete series, ask about details and existing resources, or get recommendations with reasons.",
+  "aiDescription": "Search by title, plot, year and runtime, see matching evidence, or get recommendations based on favorites and recent views.",
   "aiWelcome": "Which movie are you looking for?",
   "aiExample1": "Find Interstellar and list titles and years",
   "aiExample2": "Find The Wandering Earth and its resources",
@@ -1230,7 +1230,7 @@
   "aiViewDetails": "View details",
   "aiOpenResource": "Open resource",
   "aiCode": "Code",
-  "aiPlaceholder": "Enter a title or ask a follow-up…",
+  "aiPlaceholder": "Enter a title, plot description or viewing preferences…",
   "aiSend": "Send",
   "aiHint": "Enter to send · Shift+Enter for a new line · Resource status comes from catalog records",
   "aiLoading": "Loading AI assistant…",
@@ -1244,5 +1244,6 @@
   "relatedMoviesFailed": "Related titles could not be loaded",
   "noRelatedMovies": "No related titles yet",
   "noMagnetResources": "No magnet resources",
-  "noTorrentResources": "No torrent resources"
+  "noTorrentResources": "No torrent resources",
+  "aiNaturalSearchExample": "Find recent sci-fi movies about time travel under 2 hours"
 }

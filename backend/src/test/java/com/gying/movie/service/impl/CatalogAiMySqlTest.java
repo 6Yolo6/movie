@@ -29,7 +29,7 @@ class CatalogAiMySqlTest {
         assertEquals("gying-query-fixture",jdbc.queryForObject("SELECT @@hostname",String.class));
         assertEquals(List.of("fixture_marker"),jdbc.queryForList("SHOW TABLES",String.class));
         assertEquals(id,jdbc.queryForObject("SELECT run_id FROM fixture_marker",String.class));
-        jdbc.execute("CREATE TABLE movie_metadata(id VARCHAR(64) PRIMARY KEY,title_cn VARCHAR(255),title_en VARCHAR(255),aliases JSON,series_name VARCHAR(255),year INT,season INT,category VARCHAR(8),poster_url VARCHAR(255),genres JSON,directors JSON,actors JSON,douban_score DOUBLE,imdb_score DOUBLE,tmdb_vote_average DOUBLE,tmdb_popularity DOUBLE,popularity INT,status VARCHAR(20),deleted_at DATETIME) CHARACTER SET utf8mb4");
+        jdbc.execute("CREATE TABLE movie_metadata(id VARCHAR(64) PRIMARY KEY,title_cn VARCHAR(255),title_en VARCHAR(255),aliases JSON,series_name VARCHAR(255),year INT,season INT,category VARCHAR(8),poster_url VARCHAR(255),genres JSON,directors JSON,actors JSON,summary TEXT,regions JSON,languages JSON,runtime VARCHAR(100),douban_score DOUBLE,imdb_score DOUBLE,tmdb_vote_average DOUBLE,tmdb_popularity DOUBLE,popularity INT,status VARCHAR(20),deleted_at DATETIME) CHARACTER SET utf8mb4");
         jdbc.execute("CREATE TABLE resource_link(id BIGINT PRIMARY KEY,movie_id VARCHAR(64),status VARCHAR(20),audit_status INT,deleted_at DATETIME,link_status VARCHAR(20))");
         jdbc.execute("CREATE TABLE user_favorite(user_id BIGINT,movie_id VARCHAR(64),created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
         jdbc.execute("CREATE TABLE resource_operation_log(id BIGINT AUTO_INCREMENT PRIMARY KEY,user_id BIGINT,movie_id VARCHAR(64),operation_type VARCHAR(20),status VARCHAR(20) DEFAULT 'SUCCESS',created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
@@ -38,6 +38,8 @@ class CatalogAiMySqlTest {
         jdbc.update("UPDATE movie_metadata SET deleted_at=NOW() WHERE id='gone'");jdbc.update("UPDATE movie_metadata SET aliases='[\"蜘蛛侠\"]' WHERE id='alias'");
         jdbc.update("INSERT INTO resource_link VALUES(1,'spider_1','ACTIVE',1,NULL,'NORMAL'),(2,'spider_1','ACTIVE',0,NULL,'NORMAL'),(3,'spider_1','ACTIVE',1,NULL,'INVALID')");
         jdbc.update("INSERT INTO user_favorite(user_id,movie_id) VALUES(1,'spider_1'),(2,'romance')");
+        jdbc.update("UPDATE movie_metadata SET summary='宇航员穿越时空寻找人类新的家园',runtime='118分钟',regions='[\"美国\"]',languages='[\"英语\"]' WHERE id='spider_1'");
+        jdbc.update("UPDATE movie_metadata SET summary='时间循环中的机器人',runtime='100分钟',year=2024 WHERE id='spider_2'");
         catalog=new CatalogAiService(jdbc,mapper);
     }
     @Test void completeSearchHasNoThreeRowLimitAndPagesDoNotOverlap() {
@@ -92,5 +94,26 @@ class CatalogAiMySqlTest {
         assertThrows(ResponseStatusException.class,()->controller.view(null,mapper.createObjectNode().put("movieId","spider_1")));
         assertThrows(ResponseStatusException.class,()->controller.view("owner",mapper.createObjectNode().put("movieId","spider_1").put("userId",1)));
         assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM resource_operation_log WHERE user_id=78",Integer.class));
+    }
+
+    @Test void plotSearchUsesRealSummaryAndStablePages() {
+        var result=catalog.naturalSearch("找关于太空的科幻电影，不超过两小时",1,20);
+        assertEquals("natural_search",result.path("catalog").path("kind").asText());
+        assertEquals(1,result.path("catalog").path("total").asInt());
+        var movie=result.path("evidence").get(0).path("movies").get(0);
+        assertEquals("spider_1",movie.path("id").asText());assertTrue(movie.path("summary").asText().contains("宇航员"));
+        assertFalse(movie.path("reasons").isEmpty());
+        var first=catalog.naturalSearch("找高分科幻电影",1,7);
+        Set<String> ids=new HashSet<>();int pages=first.path("catalog").path("pages").asInt();
+        for(int n=1;n<=pages;n++)catalog.naturalSearch("找高分科幻电影",n,7).path("evidence").get(0).path("movies").forEach(m->assertTrue(ids.add(m.path("id").asText())));
+        assertEquals(first.path("catalog").path("total").asInt(),ids.size());
+    }
+    @Test void recentMindBendingScenarioAndNoAnswerStayGrounded() {
+        var result=catalog.answer(1L,mapper.createObjectNode().put("message","找近几年偏烧脑、时长不超过两小时的科幻电影"));
+        var answer=(com.fasterxml.jackson.databind.JsonNode)result.get("result");
+        assertEquals("spider_2",answer.path("evidence").get(0).path("movies").get(0).path("id").asText());
+        assertEquals(0,catalog.naturalSearch("找关于量子海豚火山的电影",1,20).path("catalog").path("total").asInt());
+        var auth=mock(AuthHelper.class);when(auth.requireUser(null)).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
+        assertThrows(ResponseStatusException.class,()->new CatalogAiController(auth,catalog,jdbc,mock(RedisRateLimiter.class)).naturalSearch(null,"",1,20));
     }
 }

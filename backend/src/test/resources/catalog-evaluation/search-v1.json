@@ -1,0 +1,789 @@
+{
+  "version": "synthetic-search-v1",
+  "dataKind": "invented metadata; not real catalog judgments",
+  "seed": 20261021,
+  "films": [
+    {
+      "id": "orbit",
+      "titleCn": "远航者",
+      "titleEn": "Voyagers",
+      "year": 2024,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "冒险"
+      ],
+      "rating": 8.6,
+      "runtimeMinutes": 110,
+      "summary": "宇航员进入太空穿越虫洞，寻找新的星球。",
+      "directors": [
+        "诺兰"
+      ],
+      "actors": [
+        "甲"
+      ],
+      "regions": [
+        "美国"
+      ],
+      "languages": [
+        "英语"
+      ],
+      "aliases": "远航计划",
+      "popularity": 30
+    },
+    {
+      "id": "loop",
+      "titleCn": "第七次黎明",
+      "titleEn": "Seventh Dawn",
+      "year": 2023,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "悬疑"
+      ],
+      "rating": 8.4,
+      "runtimeMinutes": 105,
+      "summary": "调查员陷入时间循环，每次醒来都有相同的一天。",
+      "directors": [
+        "李明"
+      ],
+      "actors": [
+        "乙"
+      ],
+      "regions": [
+        "中国大陆"
+      ],
+      "languages": [
+        "汉语普通话"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "dream",
+      "titleCn": "记忆迷宫",
+      "titleEn": "Memory Maze",
+      "year": 2010,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "悬疑"
+      ],
+      "rating": 8.7,
+      "runtimeMinutes": 140,
+      "summary": "一名侦探在梦境和记忆之间寻找真相。",
+      "directors": [
+        "诺兰"
+      ],
+      "actors": [
+        "丙"
+      ],
+      "regions": [
+        "美国"
+      ],
+      "languages": [
+        "英语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "robot",
+      "titleCn": "最后的机械师",
+      "titleEn": "Last Mechanic",
+      "year": 2025,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "剧情"
+      ],
+      "rating": 8.1,
+      "runtimeMinutes": 95,
+      "summary": "机器人获得人工智能意识，与人类共同生活。",
+      "directors": [
+        "李明"
+      ],
+      "actors": [
+        "丁"
+      ],
+      "regions": [
+        "日本"
+      ],
+      "languages": [
+        "日语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "alien",
+      "titleCn": "访客之夜",
+      "titleEn": "Visitor Night",
+      "year": 2016,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "惊悚"
+      ],
+      "rating": 8.2,
+      "runtimeMinutes": 116,
+      "summary": "科学家与外星人进行首次接触。",
+      "directors": [
+        "王林"
+      ],
+      "actors": [
+        "戊"
+      ],
+      "regions": [
+        "美国"
+      ],
+      "languages": [
+        "英语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "disaster",
+      "titleCn": "风暴之后",
+      "titleEn": "After the Storm",
+      "year": 2022,
+      "category": "mv",
+      "genres": [
+        "科幻",
+        "动作"
+      ],
+      "rating": 7.8,
+      "runtimeMinutes": 118,
+      "summary": "末日灾难摧毁城市，人类努力生存。",
+      "directors": [
+        "陈涛"
+      ],
+      "actors": [
+        "甲"
+      ],
+      "regions": [
+        "中国大陆"
+      ],
+      "languages": [
+        "汉语普通话"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "revenge",
+      "titleCn": "归来的剑客",
+      "titleEn": "Returning Swordsman",
+      "year": 2019,
+      "category": "mv",
+      "genres": [
+        "动作",
+        "剧情"
+      ],
+      "rating": 8.0,
+      "runtimeMinutes": 108,
+      "summary": "失去家人的剑客寻找仇人报仇。",
+      "directors": [
+        "陈涛"
+      ],
+      "actors": [
+        "乙"
+      ],
+      "regions": [
+        "中国大陆"
+      ],
+      "languages": [
+        "汉语普通话"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "warm",
+      "titleCn": "小镇食堂",
+      "titleEn": "Town Kitchen",
+      "year": 2024,
+      "category": "mv",
+      "genres": [
+        "剧情",
+        "家庭"
+      ],
+      "rating": 8.5,
+      "runtimeMinutes": 98,
+      "summary": "温暖的食堂帮助孤独的人，邻里收获温情。",
+      "directors": [
+        "赵林"
+      ],
+      "actors": [
+        "丙"
+      ],
+      "regions": [
+        "日本"
+      ],
+      "languages": [
+        "日语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "detective",
+      "titleCn": "雨中线索",
+      "titleEn": "Clues in Rain",
+      "year": 2021,
+      "category": "mv",
+      "genres": [
+        "悬疑",
+        "犯罪"
+      ],
+      "rating": 8.3,
+      "runtimeMinutes": 115,
+      "summary": "侦探追踪凶手，破案线索藏在一封信中。",
+      "directors": [
+        "王林"
+      ],
+      "actors": [
+        "丁"
+      ],
+      "regions": [
+        "英国"
+      ],
+      "languages": [
+        "英语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "zombie",
+      "titleCn": "夜城求生",
+      "titleEn": "Night City",
+      "year": 2025,
+      "category": "mv",
+      "genres": [
+        "恐怖",
+        "科幻"
+      ],
+      "rating": 7.5,
+      "runtimeMinutes": 100,
+      "summary": "丧尸占领城市，幸存者寻找避难所。",
+      "directors": [
+        "赵林"
+      ],
+      "actors": [
+        "戊"
+      ],
+      "regions": [
+        "韩国"
+      ],
+      "languages": [
+        "韩语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "heist",
+      "titleCn": "蓝色金库",
+      "titleEn": "Blue Vault",
+      "year": 2018,
+      "category": "mv",
+      "genres": [
+        "犯罪",
+        "动作"
+      ],
+      "rating": 8.2,
+      "runtimeMinutes": 112,
+      "summary": "盗窃高手准备一场精密的银行劫案。",
+      "directors": [
+        "王林"
+      ],
+      "actors": [
+        "甲"
+      ],
+      "regions": [
+        "法国"
+      ],
+      "languages": [
+        "法语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "youth",
+      "titleCn": "夏日课间",
+      "titleEn": "Summer Break",
+      "year": 2023,
+      "category": "mv",
+      "genres": [
+        "剧情",
+        "爱情"
+      ],
+      "rating": 8.0,
+      "runtimeMinutes": 102,
+      "summary": "青春校园里，少年成长并遇见初恋。",
+      "directors": [
+        "李明"
+      ],
+      "actors": [
+        "乙"
+      ],
+      "regions": [
+        "日本"
+      ],
+      "languages": [
+        "日语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "comedy",
+      "titleCn": "周末旅行",
+      "titleEn": "Weekend Trip",
+      "year": 2020,
+      "category": "mv",
+      "genres": [
+        "喜剧",
+        "冒险"
+      ],
+      "rating": 8.0,
+      "runtimeMinutes": 99,
+      "summary": "朋友旅行中的笑话和欢乐冒险。",
+      "directors": [
+        "赵林"
+      ],
+      "actors": [
+        "丙"
+      ],
+      "regions": [
+        "中国大陆"
+      ],
+      "languages": [
+        "汉语普通话"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "show",
+      "titleCn": "宇宙值班室",
+      "titleEn": "Space Shift",
+      "year": 2025,
+      "category": "tv",
+      "genres": [
+        "科幻",
+        "喜剧"
+      ],
+      "rating": 8.8,
+      "runtimeMinutes": null,
+      "summary": "太空站中的工作和欢乐生活。",
+      "directors": [
+        "李明"
+      ],
+      "actors": [
+        "丁"
+      ],
+      "regions": [
+        "美国"
+      ],
+      "languages": [
+        "英语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "anime",
+      "titleCn": "星河少年",
+      "titleEn": "Star Child",
+      "year": 2024,
+      "category": "ac",
+      "genres": [
+        "动画",
+        "科幻"
+      ],
+      "rating": 8.4,
+      "runtimeMinutes": 90,
+      "summary": "少年乘坐机器人探索宇宙。",
+      "directors": [
+        "赵林"
+      ],
+      "actors": [
+        "戊"
+      ],
+      "regions": [
+        "日本"
+      ],
+      "languages": [
+        "日语"
+      ],
+      "aliases": "",
+      "popularity": 30
+    },
+    {
+      "id": "unknown",
+      "titleCn": "未知旅途",
+      "titleEn": "Unknown Journey",
+      "year": 2024,
+      "category": "mv",
+      "genres": [
+        "科幻"
+      ],
+      "rating": 9,
+      "runtimeMinutes": null,
+      "summary": "宇航员进入太空。",
+      "directors": [],
+      "actors": [],
+      "regions": [],
+      "languages": [],
+      "aliases": "",
+      "popularity": 30
+    }
+  ],
+  "cases": [
+    {
+      "id": "q01",
+      "split": "development",
+      "query": "远航者",
+      "relevant": [
+        "orbit"
+      ]
+    },
+    {
+      "id": "q02",
+      "split": "development",
+      "query": "搜索 Memory Maze",
+      "relevant": [
+        "dream"
+      ]
+    },
+    {
+      "id": "q03",
+      "split": "development",
+      "query": "找关于太空的电影",
+      "relevant": [
+        "orbit",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q04",
+      "split": "development",
+      "query": "找关于时间循环的科幻电影",
+      "relevant": [
+        "loop"
+      ]
+    },
+    {
+      "id": "q05",
+      "split": "development",
+      "query": "找关于机器人的科幻电影",
+      "relevant": [
+        "robot"
+      ]
+    },
+    {
+      "id": "q06",
+      "split": "development",
+      "query": "找关于外星人的科幻电影",
+      "relevant": [
+        "alien"
+      ]
+    },
+    {
+      "id": "q07",
+      "split": "development",
+      "query": "找末日科幻电影",
+      "relevant": [
+        "disaster"
+      ]
+    },
+    {
+      "id": "q08",
+      "split": "development",
+      "query": "找复仇电影",
+      "relevant": [
+        "revenge"
+      ]
+    },
+    {
+      "id": "q09",
+      "split": "development",
+      "query": "找治愈电影",
+      "relevant": [
+        "warm"
+      ]
+    },
+    {
+      "id": "q10",
+      "split": "development",
+      "query": "找侦探电影",
+      "relevant": [
+        "detective",
+        "dream"
+      ]
+    },
+    {
+      "id": "q11",
+      "split": "development",
+      "query": "找丧尸电影",
+      "relevant": [
+        "zombie"
+      ]
+    },
+    {
+      "id": "q12",
+      "split": "development",
+      "query": "找抢劫电影",
+      "relevant": [
+        "heist"
+      ]
+    },
+    {
+      "id": "q13",
+      "split": "development",
+      "query": "找成长电影",
+      "relevant": [
+        "youth"
+      ]
+    },
+    {
+      "id": "q14",
+      "split": "development",
+      "query": "找2024年的高分科幻电影",
+      "relevant": [
+        "orbit",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q15",
+      "split": "development",
+      "query": "找近几年偏烧脑、时长不超过两小时的科幻电影",
+      "relevant": [
+        "loop"
+      ]
+    },
+    {
+      "id": "q16",
+      "split": "development",
+      "query": "找科幻电影，不要恐怖",
+      "relevant": [
+        "orbit",
+        "loop",
+        "dream",
+        "robot",
+        "alien",
+        "disaster",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q17",
+      "split": "development",
+      "query": "找诺兰导演的科幻电影",
+      "relevant": [
+        "orbit",
+        "dream"
+      ]
+    },
+    {
+      "id": "q18",
+      "split": "development",
+      "query": "找高分日本电影",
+      "relevant": [
+        "robot",
+        "warm",
+        "youth"
+      ]
+    },
+    {
+      "id": "q19",
+      "split": "development",
+      "query": "找2010到2020年的科幻电影",
+      "relevant": [
+        "dream",
+        "alien"
+      ]
+    },
+    {
+      "id": "q20",
+      "split": "development",
+      "query": "找关于量子海豚火山的电影",
+      "relevant": []
+    },
+    {
+      "id": "q21",
+      "split": "evaluation",
+      "query": "远航计划",
+      "relevant": [
+        "orbit"
+      ]
+    },
+    {
+      "id": "q22",
+      "split": "evaluation",
+      "query": "搜索 蓝色金库",
+      "relevant": [
+        "heist"
+      ]
+    },
+    {
+      "id": "q23",
+      "split": "evaluation",
+      "query": "Find movies about space",
+      "relevant": [
+        "orbit",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q24",
+      "split": "evaluation",
+      "query": "Find sci-fi movies about time travel",
+      "relevant": [
+        "loop"
+      ]
+    },
+    {
+      "id": "q25",
+      "split": "evaluation",
+      "query": "找包含人工智能的电影",
+      "relevant": [
+        "robot"
+      ]
+    },
+    {
+      "id": "q26",
+      "split": "evaluation",
+      "query": "找讲述报仇的电影",
+      "relevant": [
+        "revenge"
+      ]
+    },
+    {
+      "id": "q27",
+      "split": "evaluation",
+      "query": "找温情电影",
+      "relevant": [
+        "warm"
+      ]
+    },
+    {
+      "id": "q28",
+      "split": "evaluation",
+      "query": "找探案电影",
+      "relevant": [
+        "detective"
+      ]
+    },
+    {
+      "id": "q29",
+      "split": "evaluation",
+      "query": "找僵尸电影",
+      "relevant": [
+        "zombie"
+      ]
+    },
+    {
+      "id": "q30",
+      "split": "evaluation",
+      "query": "找银行盗窃的电影",
+      "relevant": [
+        "heist"
+      ]
+    },
+    {
+      "id": "q31",
+      "split": "evaluation",
+      "query": "找青春电影",
+      "relevant": [
+        "youth"
+      ]
+    },
+    {
+      "id": "q32",
+      "split": "evaluation",
+      "query": "找近3年的高分科幻电影，不超过120分钟",
+      "relevant": [
+        "orbit",
+        "robot"
+      ]
+    },
+    {
+      "id": "q33",
+      "split": "evaluation",
+      "query": "找2023年的悬疑电影",
+      "relevant": [
+        "loop"
+      ]
+    },
+    {
+      "id": "q34",
+      "split": "evaluation",
+      "query": "找科幻电影，不看恐怖和惊悚",
+      "relevant": [
+        "orbit",
+        "loop",
+        "dream",
+        "robot",
+        "disaster",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q35",
+      "split": "evaluation",
+      "query": "找2015年以前的科幻电影",
+      "relevant": [
+        "dream"
+      ]
+    },
+    {
+      "id": "q36",
+      "split": "evaluation",
+      "query": "找2020年之后的高分科幻电影",
+      "relevant": [
+        "orbit",
+        "loop",
+        "robot",
+        "unknown"
+      ]
+    },
+    {
+      "id": "q37",
+      "split": "evaluation",
+      "query": "找英语科幻电影，不超过两小时",
+      "relevant": [
+        "orbit",
+        "alien"
+      ]
+    },
+    {
+      "id": "q38",
+      "split": "evaluation",
+      "query": "找美国的高分科幻电影，时长不超过120分钟",
+      "relevant": [
+        "orbit",
+        "alien"
+      ]
+    },
+    {
+      "id": "q39",
+      "split": "evaluation",
+      "query": "Find recent sci-fi movies about time travel under 2 hours",
+      "relevant": [
+        "loop"
+      ]
+    },
+    {
+      "id": "q40",
+      "split": "evaluation",
+      "query": "找海底钢琴龙的电影",
+      "relevant": []
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
 interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; }
-interface Catalog { kind: string; keyword?: string; total: number; page?: number; pages?: number; size?: number; personalized?: boolean; }
+interface Catalog { kind: string; keyword?: string; query?: string; total: number; page?: number; pages?: number; size?: number; personalized?: boolean; }
 interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; }
 interface Turn { question: string; result?: Answer; error?: string; }
 interface Job { jobId: string; status: string; result?: Answer; message?: string; }
@@ -43,11 +43,12 @@ function Conversation() {
     useEffect(() => { tail.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [turns, progress]);
     async function pageResults(index: number, page: number) {
         const catalog = turns[index]?.result?.catalog;
-        if (!catalog?.keyword || locked.current) return;
+        if (!(catalog?.keyword || catalog?.query) || locked.current) return;
         locked.current = true; setPaging(index); setError('');
         const abort = new AbortController(); controller.current = abort;
         try {
-            const response = await api(`/api/ai/search?keyword=${encodeURIComponent(catalog.keyword)}&page=${page}&size=${catalog.size || 20}`, { signal: abort.signal });
+            const route = catalog.kind === 'natural_search' ? `natural-search?query=${encodeURIComponent(catalog.query || '')}` : `search?keyword=${encodeURIComponent(catalog.keyword || '')}`;
+            const response = await api(`/api/ai/${route}&page=${page}&size=${catalog.size || 20}`, { signal: abort.signal });
             if (!response.ok) throw new Error(await readApiError(response, t('aiFailed')));
             const result: Answer = await response.json();
             if (mounted.current) setTurns(old => old.map((turn, i) => i === index ? { ...turn, result } : turn));
@@ -99,7 +100,7 @@ function Conversation() {
         <Button className="mb-4" disabled={busy || paging !== null} onClick={() => void send(t('aiRecommendExample'))}>{t('aiGuessYouLike')}</Button>
         {available === false && <Alert type="warning" showIcon title={t('aiOffline')} className="mb-4" />}
         <Card>
-            {turns.length === 0 && <div className="py-8 text-center"><p>{t('aiWelcome')}</p><div className="flex flex-wrap justify-center gap-2">{[t('aiExample1'), t('aiExample2'), t('aiRecommendExample')].map(example => <Button key={example} onClick={() => { setInput(example); }}>{example}</Button>)}</div></div>}
+            {turns.length === 0 && <div className="py-8 text-center"><p>{t('aiWelcome')}</p><div className="flex flex-wrap justify-center gap-2">{[t('aiNaturalSearchExample'), t('aiExample1'), t('aiRecommendExample')].map(example => <Button key={example} onClick={() => { setInput(example); }}>{example}</Button>)}</div></div>}
             <div aria-live="polite" className="space-y-6">
                 {turns.map((turn, index) => <section key={index}>
                     <div className="ml-auto max-w-[90%] whitespace-pre-wrap break-words rounded-2xl bg-blue-50 p-4 dark:bg-blue-950/40">{turn.question}</div>
@@ -110,11 +111,12 @@ function Conversation() {
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
                                 <Link href={`/movie/${encodeURIComponent(movie.id)}`} target="_blank" rel="noopener noreferrer" className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
                                 {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
+                                {movie.summary && <p className="mb-1 mt-2 whitespace-pre-wrap break-words text-sm text-slate-600 dark:text-slate-300">{movie.summary}</p>}
                                 {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
                             </div>)}
                             {evidence.resources?.map((resource, r) => { const url = safeUrl(resource.url); return url && <a key={r} href={url} target="_blank" rel="noopener noreferrer" className="mb-2 block break-all text-blue-600 dark:text-blue-400">{resource.provider} · {resource.name || t('aiOpenResource')}{resource.code && ` · ${t('aiCode')}: ${resource.code}`}</a>; })}
                         </div>)}
-                        {turn.result.catalog?.kind === 'search' && (turn.result.catalog.pages || 0) > 1 && <div className="mt-4 flex justify-center" aria-busy={paging === index}><Pagination simple current={turn.result.catalog.page} total={turn.result.catalog.total} pageSize={turn.result.catalog.size} showSizeChanger={false} disabled={busy || paging !== null} onChange={page => void pageResults(index, page)} /></div>}
+                        {turn.result.catalog && ['search', 'natural_search'].includes(turn.result.catalog.kind) && (turn.result.catalog.pages || 0) > 1 && <div className="mt-4 flex justify-center" aria-busy={paging === index}><Pagination simple current={turn.result.catalog.page} total={turn.result.catalog.total} pageSize={turn.result.catalog.size} showSizeChanger={false} disabled={busy || paging !== null} onChange={page => void pageResults(index, page)} /></div>}
                     </div>}
                     {turn.error && <Alert type="error" title={turn.error} showIcon className="mt-3" />}
                 </section>)}

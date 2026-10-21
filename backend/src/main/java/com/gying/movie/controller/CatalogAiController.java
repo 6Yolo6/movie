@@ -23,6 +23,12 @@ public class CatalogAiController {
                              @RequestParam(defaultValue="1")int page,@RequestParam(defaultValue="20")int size){
         var user=auth.requireUser(token);limiter.require("ai-search",user.getId().toString(),30,Duration.ofMinutes(1));return catalog.search(keyword,page,size);
     }
+    @GetMapping("/natural-search")
+    public ObjectNode naturalSearch(@RequestHeader(value="Authorization",required=false)String token,@RequestParam String query,
+                                    @RequestParam(defaultValue="1")int page,@RequestParam(defaultValue="20")int size) {
+        var user=auth.requireUser(token);limiter.require("ai-search",user.getId().toString(),30,Duration.ofMinutes(1));
+        return catalog.naturalSearch(query,page,size);
+    }
     @GetMapping("/recommendations")
     public ObjectNode recommendations(@RequestHeader(value="Authorization",required=false)String token){
         var user=auth.requireUser(token);limiter.require("ai-recommend",user.getId().toString(),10,Duration.ofMinutes(1));return catalog.recommendations(user.getId(),Constraints.none(),12);

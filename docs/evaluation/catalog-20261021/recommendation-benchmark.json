@@ -1,0 +1,12 @@
+{
+  "legacyMedianMs" : 415.7289,
+  "algorithm" : "content-features-v2",
+  "samples" : 5,
+  "dataKind" : "synthetic fixed 2000 films, 60 seeds; not production latency",
+  "seed" : 20261021,
+  "films" : 2000,
+  "seeds" : 60,
+  "warmups" : 2,
+  "featureIndexBuildMs" : 57.7854,
+  "featuresMedianMs" : 81.0494
+}

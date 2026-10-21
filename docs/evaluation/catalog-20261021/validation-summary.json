@@ -1,0 +1,99 @@
+{
+  "builtOn": "2026-10-21",
+  "deployedOn": "2026-10-22",
+  "timeZone": "Asia/Shanghai",
+  "backend": {
+    "tests": 672,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 27,
+    "passed": 645
+  },
+  "isolatedMysql": {
+    "tests": 8,
+    "passed": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "ownedContainersRemoved": true
+  },
+  "frontend": {
+    "typegen": "passed",
+    "typescript": "passed",
+    "lint": "passed with 7 existing warnings",
+    "build": "passed"
+  },
+  "backendImage": "sha256:3b5fe68645457f4333c12a36608312f4d3c6c7f500c265b9063347cba7d3af4d",
+  "frontendImage": "sha256:e032edbdd5f0e7007bd4429f36de8145e1aa480e3c75ec59ba9a23817ec66000",
+  "candidate": {
+    "browser": [
+      {
+        "test": "movie-resource-counts.browser.cjs",
+        "exit": 0
+      },
+      {
+        "test": "movie-related-navigation.browser.cjs",
+        "exit": 0
+      },
+      {
+        "test": "catalog-search.browser.cjs",
+        "exit": 0
+      }
+    ],
+    "imageArtifactsMatched": 375,
+    "unchangedDependencyManifestVerified": true,
+    "status": "passed",
+    "frontendImage": "sha256:e032edbdd5f0e7007bd4429f36de8145e1aa480e3c75ec59ba9a23817ec66000",
+    "ssrFixtureIsolated": true,
+    "network": "dedicated bridge; no production dependencies; browser external requests blocked",
+    "ownedFixtureRemoved": true
+  },
+  "backendArtifact": {
+    "status": "passed",
+    "jarSha256": "a5712a548e4db82af3046356986e97398380c0d1ee3ffac0500a0dc086d72add",
+    "classResourcesMatched": 341,
+    "productionRecreated": false
+  },
+  "production": {
+    "entryChecks": 32,
+    "realLoginVerified": false,
+    "catalogUiApi": "fixture responses against deployed pages",
+    "publicDetailApi": "real read-only requests"
+  },
+  "logs": {
+    "startedAt": "2026-10-21T16:07:22.216680+00:00",
+    "endedAt": "2026-10-21T16:14:04.516896+00:00",
+    "logs": [
+      {
+        "service": "gying-movie-backend-1",
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      {
+        "service": "gying-movie-frontend-1",
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      {
+        "service": "gying-movie-nginx-1",
+        "errorLines": 0,
+        "exceptionLines": 0
+      }
+    ],
+    "unaffectedContainers": 9,
+    "auditUnchanged": true,
+    "noManualTransfersOrExternalPosts": true,
+    "busy": [
+      [],
+      []
+    ]
+  },
+  "security": {
+    "PASS": 59,
+    "FAIL": 11,
+    "UNKNOWN": 0,
+    "preExistingFailuresUnchanged": true
+  },
+  "rollbackCheckpoint": "G:/gying-backups/20261021T160733.115483Z",
+  "authenticatedBackupArtifacts": 7
+}

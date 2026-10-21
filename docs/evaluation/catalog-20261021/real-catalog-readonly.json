@@ -1,0 +1,153 @@
+{
+  "readOnlyDatabase": true,
+  "fakeAuthFixture": true,
+  "productionLoginVerified": false,
+  "modelInvoked": false,
+  "titleSearch": {
+    "total": 20,
+    "kind": "search"
+  },
+  "titleContainsConceptPreserved": true,
+  "naturalPagesUnique": 21,
+  "naturalQueries": [
+    {
+      "query": "找关于太空探索的科幻电影",
+      "total": 100,
+      "returned": 7,
+      "seconds": 14.64,
+      "topTitles": [
+        "太空凶宅",
+        "太空旅客",
+        "异形：夺命舰"
+      ],
+      "filters": {
+        "genres": [
+          "科幻"
+        ],
+        "category": "mv",
+        "year": null,
+        "minRating": 0.0,
+        "yearFrom": null,
+        "yearTo": null,
+        "maxRuntime": null,
+        "excludedGenres": [],
+        "directors": [],
+        "actors": [],
+        "regions": [],
+        "languages": []
+      }
+    },
+    {
+      "query": "找近几年偏烧脑、时长不超过两小时的科幻电影",
+      "total": 1,
+      "returned": 1,
+      "seconds": 0.031,
+      "topTitles": [
+        "星河入梦"
+      ],
+      "filters": {
+        "genres": [
+          "科幻"
+        ],
+        "category": "mv",
+        "year": null,
+        "minRating": 0.0,
+        "yearFrom": 2022,
+        "yearTo": 2026,
+        "maxRuntime": 120,
+        "excludedGenres": [],
+        "directors": [],
+        "actors": [],
+        "regions": [],
+        "languages": []
+      }
+    },
+    {
+      "query": "找2010到2020年的高分科幻电影，不要恐怖",
+      "total": 33,
+      "returned": 7,
+      "seconds": 0.031,
+      "topTitles": [
+        "星际穿越",
+        "机动战士高达 THE ORIGIN Ⅴ 激战 鲁姆会战",
+        "凉宫春日的消失"
+      ],
+      "filters": {
+        "genres": [
+          "科幻"
+        ],
+        "category": "mv",
+        "year": null,
+        "minRating": 8.0,
+        "yearFrom": 2010,
+        "yearTo": 2020,
+        "maxRuntime": null,
+        "excludedGenres": [
+          "恐怖"
+        ],
+        "directors": [],
+        "actors": [],
+        "regions": [],
+        "languages": []
+      }
+    },
+    {
+      "query": "Find sci-fi movies about time travel under 2 hours",
+      "total": 18,
+      "returned": 7,
+      "seconds": 0.032,
+      "topTitles": [
+        "时空大挪移",
+        "穿越时空的少女",
+        "时空奇旅"
+      ],
+      "filters": {
+        "genres": [
+          "科幻"
+        ],
+        "category": "mv",
+        "year": null,
+        "minRating": 0.0,
+        "yearFrom": null,
+        "yearTo": null,
+        "maxRuntime": 120,
+        "excludedGenres": [],
+        "directors": [],
+        "actors": [],
+        "regions": [],
+        "languages": []
+      }
+    },
+    {
+      "query": "找关于量子海豚火山的电影",
+      "total": 0,
+      "returned": 0,
+      "seconds": 0.062,
+      "topTitles": [],
+      "filters": {
+        "genres": [],
+        "category": "mv",
+        "year": null,
+        "minRating": 0.0,
+        "yearFrom": null,
+        "yearTo": null,
+        "maxRuntime": null,
+        "excludedGenres": [],
+        "directors": [],
+        "actors": [],
+        "regions": [],
+        "languages": []
+      }
+    }
+  ],
+  "personalized": {
+    "returned": 12,
+    "seconds": 2.703
+  },
+  "coldStart": {
+    "returned": 12,
+    "seconds": 0.891
+  },
+  "status": "passed",
+  "fixtureStopped": true
+}

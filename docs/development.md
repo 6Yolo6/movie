@@ -75,6 +75,14 @@
 - `WEB_TEST_BASE_URL=http://127.0.0.1:18086` 指定无凭据 loopback 高端口（离线模式仅作为虚拟同源地址，无需监听）。依赖沿用现有 Playwright/Playwright Core，必要时指定 `PLAYWRIGHT_MODULE`，不安装或升级项目依赖。`ACTIVITY_PAGES_OUTPUT_DIR` 控制截图及 JSON 结果目录，默认在忽略的 `tmp/activity-pages-browser/`。
 - 外部浏览器请求被阻止；两种方式均不等于真实用户已读事务、生产部署或手机真机验收，离线模式额外不覆盖动态 SSR 服务链路。
 
+### 推荐特征与自然语言搜索回归
+
+- 在无生产 `.env` 的隔离 backend 副本执行 `mvn -Dtest=CatalogRecommendationEngineTest,NaturalMovieQueryTest,CatalogEvaluationTest test`；全量交付仍执行 `mvn package` 与显式 `mvn -DskipTests compile`。
+- `CatalogEvaluationTest` 读取版本化 `src/test/resources/catalog-evaluation/search-v1.json`，输出 `target/catalog-evaluation/search-report.json` 与 `recommendation-benchmark.json`。题集是实现时编写的合成样本，两个 split 不代表独立盲测；比较包括冻结旧推荐实现和相同影片/种子输入，不把测量波动当线上收益。
+- 从根目录运行 `python -X utf8 tools/tests/catalog_mysql.py` 输出计划，添加 `--run` 创建无宿主端口/无生产凭据的隔离 fixture，只验证 8 项 `CatalogAiMySqlTest`；必需用例跳过或清理失败均失败。环境要求与下一节 MySQL fixture 相同，不连接已有库。
+- `node tools/tests/catalog-search.browser.cjs` 使用独立生产构建。设 `CATALOG_BUILD_DIR` 为 `.next` 的绝对路径，其相邻 `public` 必须来自同一构建；`CATALOG_OUTPUT_DIR` 指向仓库外，`PLAYWRIGHT_MODULE` 指定已有 Playwright Core、Edge。`CATALOG_BASE_URL` 默认为 loopback 18080，仅是虚拟同源地址，无需启动服务；全部页面/资源/API 被测试路由提供，外部请求拒绝。
+- 覆盖中英/明暗主题 390/1440px、自然分页、分页失败保留原结果、资料片段、新标签、推荐、模型离线与游客登录提示。动态 SSR/最终镜像/网站账号登录分别验证，不由此测试推导通过。
+
 ### 真实 SQL 的隔离回归
 
 #### 后端资源查询与通知已读（含监控 SQL）

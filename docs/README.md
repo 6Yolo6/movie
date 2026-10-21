@@ -14,6 +14,8 @@
 | Windows 每周优雅重启 | [计划与恢复](weekly-graceful-restart.md) | 周日 09:30、失败取消、登录后按基线恢复 |
 | 本地 AI 与混合目录识别 | [实现和验收](ai-assistant-20261019.md) | 项目查片/详情问答、OpenClaw 自然搜索、转存范围边界 |
 | AI 完整找片与猜你喜欢 | [实现与上线](ai-recommendations-20261020.md) | 分页检索、画像、可解释混合推荐与回退证据 |
+| 推荐特征与自然语言影视搜索 | [交付与评测](catalog-features-search-20261021.md) | 用户特征、条件解析/BM25、合成评测、上线与简历措辞 |
+| AI 求职项目补强路线 | [原分析归档](ai-career-project-analysis-20261016.md) | 2026-10-16 原计划；当前进度从本轮报告复核 |
 | 主机迁移/灾难恢复 | [迁移手册](../MIGRATION.md) | 加密备份、隔离恢复、分阶段切换 |
 | Resource Hub 日常维护 | [影视资源中心](resource-hub.md) | 搜索、转存、自有分享和治理 |
 | 元数据与每周视频计划 | [元数据与周榜转存](metadata-weekly-transfer.md) | 元数据采集和视频转存的边界 |

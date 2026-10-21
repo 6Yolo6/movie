@@ -1216,7 +1216,7 @@
   "resourceOtherCategory": "其他资源",
   "resourceCategoryCount": "{{category}}：{{count}} 个资源",
   "navAiAssistant": "AI 助手（内测中）",
-  "aiDescription": "用自然语言查片、浏览完整系列、询问详情和已有资源，或获取附有理由的推荐。",
+  "aiDescription": "输入片名、剧情描述、年份和时长条件找片，查看匹配依据，或获取根据收藏与浏览生成的推荐。",
   "aiWelcome": "想找哪部影片？",
   "aiExample1": "搜索星际穿越，列出片名和年份",
   "aiExample2": "搜索流浪地球，并查看可用资源",
@@ -1230,7 +1230,7 @@
   "aiViewDetails": "查看详情",
   "aiOpenResource": "打开资源",
   "aiCode": "提取码",
-  "aiPlaceholder": "输入片名或继续追问…",
+  "aiPlaceholder": "输入片名、剧情描述或筛选条件…",
   "aiSend": "发送",
   "aiHint": "Enter 发送 · Shift+Enter 换行 · 网盘状态来自片库记录，未实时核验",
   "aiLoading": "正在加载 AI 助手…",
@@ -1244,5 +1244,6 @@
   "relatedMoviesFailed": "相关推荐暂时无法加载",
   "noRelatedMovies": "暂无相关推荐",
   "noMagnetResources": "暂无磁力资源",
-  "noTorrentResources": "暂无种子资源"
+  "noTorrentResources": "暂无种子资源",
+  "aiNaturalSearchExample": "找近几年偏烧脑、时长不超过两小时的科幻电影"
 }

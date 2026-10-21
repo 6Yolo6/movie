@@ -188,8 +188,9 @@ GYING 精确搜索页；TMDB canonical 影片会先按标题、类型、年份�
 - `GET /api/ai/status`：返回模型队列的 `available/busy` 和 `catalogAvailable=true`；确定性找片/推荐可独立于模型提供。
 - `POST /api/ai/query`：`{message,history}`，message 1–1000 字符、history 最多八条，仅 user/assistant、总预算 10,000 字符。明确片名或推荐请求立即返回 HTTP 200 的 `{jobId,status:"SUCCEEDED",result}`；详情/资源追问进入队列，HTTP 202，轮询 `GET /api/ai/jobs/{id}`。任务仅所属用户可读，6 次/分钟。
 - `GET /api/ai/search?keyword=&page=1&size=20`：完整标题/英文名/别名/系列名检索。keyword 1–60 字符，size 钳制为 1–30，页码钳制到有效页；返回 answer、evidence 和 `catalog:{kind:"search",keyword,total,page,pages,size}`。30 次/分钟。
-- `GET /api/ai/recommendations`：最多 12 项，返回 `catalog.kind="recommendation"`、personalized 与逐片 reasons。收藏及近期浏览画像、内容/共同收藏、评分/热度与多样性重排；10 次/分钟。自然语言 query 另可携年份、分类、类型与高分约束。
+- `GET /api/ai/natural-search?query=&page=1&size=20`：登录用户的描述检索，query 1–1000 字符，size 钳制 1–30，页码钳制；与标题搜索共用每用户 30 次/分钟。直接返回 answer、evidence 与 `catalog:{kind:"natural_search",query,total,page,pages,size,indexVersion,filters,catalogTruncated}`；非法年份范围/时长返回 400，无结果为 total=0、pages=0、page=1。`filters` 为实际识别的 genres/category/year/minRating/yearFrom/yearTo/maxRuntime/excludedGenres/directors/actors/regions/languages，未识别口语不保证执行。最长时长单位分钟，缺失时长不能满足；近几年为当前年起五个日历年，高分为存量最大评分至少 8。词法 BM25/主题扩展，无 embedding，原简介片段与命中理由见 evidence。
+- `GET /api/ai/recommendations`：最多 12 项，返回 `catalog.kind="recommendation"`、personalized、`featureVersion="content-features-v2"` 与逐片 reasons。收藏及近期浏览画像、内容/共同收藏、评分/热度与多样性重排；10 次/分钟。通过 `POST /api/ai/query` 的描述可带已支持的筛选；主题描述返回 natural_search，纯已识别条件推荐使用用户特征。
 - `POST /api/ai/views`：仅 `{movieId}`，登录用户实际详情浏览记录。影片须活动且未软删除；30 分钟内同用户/影片按 SQL 去重，返回 `{ok:true,recorded:boolean}`，30 次/分钟。不使用访客 IP 推断用户。
 - `evidence[].queriedAt` 是本次查询时间；资源 NORMAL 与数量来自片库存量过滤，未对外部分享实时验活。
 
-`/api/internal/ai/**` 只允许专用 `X-AI-Bridge-Token`，公网 nginx 返回 404；本机桥接主动轮询固定回环，不公开 Ollama 或助手监听。算法与当前上限见 [实现与上线](ai-recommendations-20261020.md)。
+`/api/internal/ai/**` 只允许专用 `X-AI-Bridge-Token`，公网 nginx 返回 404；本机桥接主动轮询固定回环，不公开 Ollama 或助手监听。推荐特征、词法自然搜索与当前上限见 [本轮实现与上线](catalog-features-search-20261021.md)；原桥接流程见 [前序实现](ai-recommendations-20261020.md)。

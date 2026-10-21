@@ -15,7 +15,19 @@ import static com.gying.movie.service.impl.CatalogRecommendationEngine.*;
 public class CatalogAiService {
     private final JdbcTemplate jdbc;
     private final ObjectMapper mapper;
-    private volatile List<Film> cached=List.of();
+    private static final class Snapshot {
+        private final List<Film> films;
+        private final FeatureIndex features;
+        private volatile CatalogTextIndex text;
+        private Snapshot(List<Film> films) {this.films=films;this.features=new FeatureIndex(films);}
+        private List<Film> films() {return films;}
+        private FeatureIndex features() {return features;}
+        private synchronized CatalogTextIndex text() {
+            if(text==null)text=new CatalogTextIndex(films);
+            return text;
+        }
+    }
+    private volatile Snapshot cached;
     private volatile long refreshed;
     @org.springframework.beans.factory.annotation.Value("${minio.url-prefix:}")
     private String posterPrefix;
@@ -46,8 +58,23 @@ public class CatalogAiService {
     }
     public Map<String,Object> answer(Long userId,JsonNode request) {
         Intent intent=intent(request.path("message").asText());
+        String raw=request.path("message").asText();
+        if(raw.matches("(?is).*(?:批量|转存|删除|执行|发布|https?://|magnet:).*"))return null;
+        if(NaturalMovieQuery.shouldSearch(raw)&&intent!=null&&!intent.recommend()) {
+            ObjectNode titles=search(intent.keyword(),1,20);
+            if(titles.path("catalog").path("total").asLong()>0)
+                return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",titles);
+        }
+        if(NaturalMovieQuery.shouldSearch(raw)&&!raw.matches("(?is).*(?:推荐|猜你喜欢|recommend|suggest).*")) {
+            return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",naturalSearch(raw,1,20));
+        }
         if(intent==null)return null;
-        ObjectNode result=intent.recommend()?recommendations(userId,intent.constraints(),12):search(intent.keyword(),1,20);
+        ObjectNode result;
+        String message=request.path("message").asText();
+        if(NaturalMovieQuery.shouldSearch(message)) {
+            var plan=parseQuery(message);
+            result=intent.recommend()&&plan.text().isBlank()?recommendations(userId,plan.constraints(),12):naturalSearch(message,1,20);
+        } else result=intent.recommend()?recommendations(userId,intent.constraints(),12):search(intent.keyword(),1,20);
         return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",result);
     }
     public ObjectNode search(String keyword,int page,int size) {
@@ -68,7 +95,7 @@ public class CatalogAiService {
         return result;
     }
     public ObjectNode recommendations(Long userId,Constraints constraints,int limit) {
-        List<Film> catalog=catalog();
+        Snapshot snapshot=snapshot();
         Map<String,Double> profile=new LinkedHashMap<>();Set<String> excluded=new HashSet<>();
         jdbc.query("SELECT movie_id FROM user_favorite WHERE user_id=? ORDER BY created_at DESC LIMIT 100",rs->{String id=rs.getString(1);profile.put(id,3D);excluded.add(id);},userId);
         jdbc.query("SELECT movie_id,MAX(created_at) seen FROM resource_operation_log WHERE user_id=? AND operation_type='VIEW' AND status='SUCCESS' AND created_at>=DATE_SUB(NOW(),INTERVAL 90 DAY) GROUP BY movie_id ORDER BY seen DESC LIMIT 100",rs->{
@@ -76,11 +103,11 @@ public class CatalogAiService {
         },userId);
         // Co-favorite support >= 2 is enforced by the engine; no other user identity is exposed.
         List<Interaction> interactions=jdbc.query("SELECT user_id,movie_id FROM user_favorite WHERE user_id<>? ORDER BY created_at DESC LIMIT 50000",(rs,n)->new Interaction(rs.getString(1),rs.getString(2)),userId);
-        List<Ranked> ranked=recommend(catalog,profile,excluded,interactions,constraints,Math.max(1,Math.min(30,limit)));
-        Set<String> catalogIds=new HashSet<>();catalog.forEach(f->catalogIds.add(f.id()));
-        boolean personalized=profile.keySet().stream().anyMatch(catalogIds::contains);
+        UserFeatures features=snapshot.features().features(profile);
+        List<Ranked> ranked=snapshot.features().recommend(features,excluded,interactions,constraints,Math.max(1,Math.min(30,limit)));
+        boolean personalized=features.personalized();
         ObjectNode result=mapper.createObjectNode().put("answer",ranked.isEmpty()?"暂时没有符合这些条件的影片。试试放宽年份、类型或评分。":personalized?"根据你的收藏、近期浏览和本次偏好，为你推荐以下影片；每部都附有推荐理由。":"先根据本次偏好、片库评分和热度推荐。收藏喜欢的影片或浏览详情后，猜你喜欢会逐步结合你的偏好。");
-        result.putObject("catalog").put("kind","recommendation").put("personalized",personalized).put("total",ranked.size());
+        result.putObject("catalog").put("kind","recommendation").put("personalized",personalized).put("total",ranked.size()).put("featureVersion",VERSION);
         ObjectNode evidence=result.putArray("evidence").addObject().put("tool","recommendMovies").put("queriedAt",Instant.now().toString());
         var movies=evidence.putArray("movies");for(Ranked r:ranked){ObjectNode item=view(r.movie());item.set("reasons",mapper.valueToTree(r.reasons()));movies.add(item);}
         return result;
@@ -101,16 +128,34 @@ public class CatalogAiService {
                 Constraints.none(), Math.max(1, Math.min(12, limit))).stream()
                 .map(r -> view(r.movie())).toList();
     }
-    private synchronized List<Film> catalog() {
-        if(System.currentTimeMillis()-refreshed<60000&&!cached.isEmpty())return cached;
-        List<Film> films=jdbc.query("SELECT "+columns()+" FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",this::film);
-        cached=List.copyOf(films);refreshed=System.currentTimeMillis();return cached;
+    private List<Film> catalog() { return snapshot().films(); }
+    private synchronized Snapshot snapshot() {
+        if(System.currentTimeMillis()-refreshed<60000&&cached!=null)return cached;
+        List<Film> films=List.copyOf(jdbc.query("SELECT "+columns()+" FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",this::film));
+        Snapshot next=new Snapshot(films);
+        cached=next;refreshed=System.currentTimeMillis();return next;
+    }
+    private NaturalMovieQuery.Plan parseQuery(String query) {
+        try { return NaturalMovieQuery.parse(query); }
+        catch(IllegalArgumentException e) { throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,e.getMessage()); }
+    }
+    public ObjectNode naturalSearch(String query,int page,int size) {
+        var plan=parseQuery(query);Snapshot snapshot=snapshot();List<CatalogTextIndex.Hit> hits=snapshot.text().search(plan);
+        int safeSize=Math.max(1,Math.min(30,size)),pages=(hits.size()+safeSize-1)/safeSize;
+        int safePage=Math.max(1,Math.min(Math.max(1,pages),page));int start=(safePage-1)*safeSize;
+        ObjectNode result=mapper.createObjectNode().put("answer",hits.isEmpty()?"片库暂无符合描述和筛选条件的影片。请减少条件或换个描述。":"根据片名、简介与已识别条件找到 "+hits.size()+" 部影片；匹配依据见下方。");
+        var metadata=result.putObject("catalog").put("kind","natural_search").put("query",plan.query()).put("total",hits.size()).put("page",safePage).put("pages",pages).put("size",safeSize).put("indexVersion",CatalogTextIndex.VERSION);
+        metadata.set("filters",mapper.valueToTree(plan.constraints()));metadata.put("catalogTruncated",snapshot.films().size()==50000);
+        var evidence=result.putArray("evidence").addObject().put("tool","naturalSearchMovies").put("queriedAt",Instant.now().toString()).put("total",hits.size()).put("returned",Math.min(safeSize,hits.size()-start));
+        var movies=evidence.putArray("movies");
+        for(var hit:hits.subList(start,Math.min(start+safeSize,hits.size()))) {var item=view(hit.movie());item.set("reasons",mapper.valueToTree(hit.reasons()));if(!hit.snippet().isBlank())item.put("summary",hit.snippet());movies.add(item);}
+        return result;
     }
     private String columns() {
-        return "m.id,m.title_cn,m.title_en,m.year,m.category,m.poster_url,m.series_name,m.genres,m.directors,m.actors,GREATEST(COALESCE(m.douban_score,0),COALESCE(m.imdb_score,0),COALESCE(m.tmdb_vote_average,0)) rating,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources";
+        return "m.id,m.title_cn,m.title_en,m.year,m.category,m.poster_url,m.series_name,m.genres,m.directors,m.actors,m.summary,m.aliases,m.regions,m.languages,m.runtime,GREATEST(COALESCE(m.douban_score,0),COALESCE(m.imdb_score,0),COALESCE(m.tmdb_vote_average,0)) rating,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources";
     }
     private Film film(java.sql.ResultSet rs,int n)throws java.sql.SQLException {
-        return new Film(rs.getString("id"),rs.getString("title_cn"),rs.getString("title_en"),(Integer)rs.getObject("year"),rs.getString("category"),rs.getString("poster_url"),rs.getString("series_name"),list(rs.getString("genres")),list(rs.getString("directors")),list(rs.getString("actors")),rs.getDouble("rating"),rs.getDouble("heat"),rs.getInt("resources"));
+        return new Film(rs.getString("id"),rs.getString("title_cn"),rs.getString("title_en"),(Integer)rs.getObject("year"),rs.getString("category"),rs.getString("poster_url"),rs.getString("series_name"),list(rs.getString("genres")),list(rs.getString("directors")),list(rs.getString("actors")),rs.getDouble("rating"),rs.getDouble("heat"),rs.getInt("resources"),rs.getString("summary"),rs.getString("aliases"),list(rs.getString("regions")),list(rs.getString("languages")),NaturalMovieQuery.runtimeMinutes(rs.getString("runtime")));
     }
     private List<String> list(String value) {try {return value==null?List.of():mapper.readValue(value,mapper.getTypeFactory().constructCollectionType(List.class,String.class));}catch(Exception e){return List.of();}}
     private ObjectNode view(Film f) {
