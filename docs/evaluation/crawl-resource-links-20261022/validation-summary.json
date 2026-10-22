@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Shanghai",
+  "codeCommit": "706ae3ea728144235d7423ddc49512e425ae19b5",
+  "branch": "codex/security",
+  "backendTests": {
+    "tests": 687,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 686
+  },
+  "compileVerified": true,
+  "queryBoundaryMySqlTests": 7,
+  "monitoringMySqlTests": 7,
+  "frontend": {
+    "typegen": true,
+    "typecheck": true,
+    "lintErrors": 0,
+    "existingLintWarnings": 7,
+    "build": "isolated webpack production build",
+    "offlineCrawlBrowserCases": 4,
+    "offlineLinksBrowserCases": 3,
+    "resourceUiUnitTests": 9
+  },
+  "candidate": {
+    "backendClassResourcesMatched": 342,
+    "frontendStaticFilesMatched": 95
+  },
+  "production": {
+    "deployedAtLocal": "2026-10-22 21:22",
+    "verifiedAtLocal": "2026-10-22 21:34",
+    "images": {
+      "gying-movie-frontend-1": "sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1",
+      "gying-movie-backend-1": "sha256:18a8c2e0e4966277102aa71c9ad1ef4a29fff2928cdaba07edfdb3e784dbbe5b"
+    },
+    "entryChecks": 22,
+    "dependencyChecks": 3,
+    "jarSha256": "dd25e16ab02f6f50c40e2cf910a1b2da0dfeac955546f5c0c93952fb467f0b99",
+    "staticFilesMatched": 95,
+    "independentRangeConfigUnchanged": true,
+    "existingCrawlRows": 5,
+    "existingCrawlRowsUnchanged": true,
+    "auditUnchanged": true,
+    "unaffectedContainers": 9,
+    "effectiveConfigurationPreserved": true,
+    "logs": {
+      "gying-movie-backend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-frontend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-gying-source-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-social-publisher-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      }
+    }
+  },
+  "productionBrowser": {
+    "publicResourceLinks": "passed; real HTML/static, mocked APIs, zh/dark/390",
+    "originResourceHub": "passed; real HTML/static, mocked APIs, zh/dark/390"
+  },
+  "backup": {
+    "directory": "G:/gying-backups/20261022T132212.039731Z",
+    "artifacts": 9,
+    "allAuthenticated": true,
+    "disasterRecoveryDrill": false
+  },
+  "security": {
+    "summary": {
+      "PASS": 59,
+      "FAIL": 11,
+      "UNKNOWN": 0
+    },
+    "existingFailuresUnchanged": true,
+    "approval": "本轮用户明确批准：通过部署；仅 backend/frontend 业务发布"
+  },
+  "limits": {
+    "authenticatedBusinessApiTested": false,
+    "realTransfers": 0,
+    "realPosts": 0,
+    "mobileDeviceTested": false
+  },
+  "evidenceDirectory": "E:/gying-tools/releases/crawl-resource-links-20261022"
+}

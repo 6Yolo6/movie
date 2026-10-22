@@ -26,7 +26,7 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 - `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后继续下一页，空页仍回 start。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
 - overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
 
-2026-10-22 独立范围与进度保留已完成代码和隔离验证，尚未部署；[验收](crawl-resource-links-20261022.md)。
+2026-10-22 21:22 独立范围与进度保留已部署；21:34只读复核5条原自动任务及范围配置保持不变；[验收](crawl-resource-links-20261022.md)。
 
 ### 剧集自动追更
 
@@ -44,7 +44,7 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 
 /admin/resource-hub：配置/采集进度、任务/发现筛选、批量发布/重跑/频道、缺资源补全、失效修复和 dry-run 清理。/admin/gying-source 独立；真实发帖/转存不是只读验收。
 
-搜索资源自有结果按网盘、磁力、种子和在线资源分组；网盘托管的种子归档标明不含视频。网页保留二维码并显示可点击链接，长地址仍可点击；历史地址经过协议校验。2026-10-22 已实现，待部署。
+搜索资源自有结果按网盘、磁力、种子和在线资源分组；网盘托管的种子归档标明不含视频。网页保留二维码并显示可点击链接，长地址仍可点击；历史地址经过协议校验。2026-10-22 21:22 已部署；公网页面/静态资源配合mock API验收通过，真实转存/下载未执行。
 
 ### GYING 单条隔离重试
 

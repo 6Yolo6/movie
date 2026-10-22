@@ -2,7 +2,7 @@
 
 更新时间：2026-10-22
 
-时区：Asia/Shanghai。最近本轮生产验收为 2026-10-22 13:37–13:48；前序验收为 00:07–00:26，其他事实保留原证据日期。本轮仅复验受影响的 AI 与页面链路。
+时区：Asia/Shanghai。最近本轮生产切换为 2026-10-22 21:22，入口和数据验收为 21:33–21:34，安全复核为21:34；前序验收为13:37–13:48及00:07–00:26，其他事实保留原证据日期。本轮复验受影响的采集进度、资源链接和页面链路。
 
 [导航](README.md) · [API](api.md) · [部署](deployment.md) · [安全](security/README.md) · [历史](history/README.md)
 
@@ -29,10 +29,10 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 领域 | 已实现/部署能力 | 专项说明 |
 | --- | --- | --- |
-| 片库 | 电影/剧集/动漫分页筛选、热搜、收藏评论通知、资源审核、软删除、来源归一 | [API](api.md)、[数据库](database.md) |
+| 片库 | 电影/剧集/动漫分页筛选、热搜、收藏评论通知、资源审核、软删除、来源归一；资源搜索二维码和可点击链接，网盘/磁力/种子分组 | [API](api.md)、[数据库](database.md) |
 | 页面 | 中英品牌/明暗主题/响应式、竞态保护；AI/相关推荐新标签页；磁力/种子分别计数 | [详情验收](movie-detail-enhancements-20261021.md) |
 | AI | 登录片库助手、标题完整分页；收藏/衰减浏览稀疏特征与混合推荐；条件解析 + ICU/BM25 简介检索、原文片段和理由；详情/状态追问走前序受控本机桥接 | [当前成果](catalog-features-search-20261021.md)、[前序桥接](ai-assistant-20261019.md) |
-| 采集与治理 | TMDB/GYING 起止页 1–500、页内游标、独立失败元数据重试；电影合集/剧集季严格消歧；失效云盘分享原位修复 | [资源中心](resource-hub.md) |
+| 采集与治理 | TMDB/GYING 每来源独立起止页 1–500、修改范围保留范围内页码/游标、独立失败元数据重试；电影合集/剧集季严格消歧；失效云盘分享原位修复 | [资源中心](resource-hub.md) |
 | 网盘视频 | 三个 GYING 周榜独立计划；手动发现/QQ 按需转存保留；新视频完整落位后自有分享，旧夸克追更独立 | [采集/周榜](metadata-weekly-transfer.md) |
 | P2P | 来源磁力/种子解析、1080P/4K 小文件归档；账号 `/dbt/` 下载 URL 从公开结果及新任务隔离，旧引用保留 | [采集](gying-p2p-collection.md)、[归档](p2p-cloud-archive.md) |
 | QQ/发布 | 搜片→候选→用户选择单资源才转存；backend 每日推荐/原频道 CLI/独立 QQ 微博发布器分开；不确定发布阻断重试 | [发布](social-publishing.md)、[多盘正文](qq-channel-multi-drive.md) |
@@ -44,7 +44,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 ## 配置与安全
 
 - 2026-10-22 安全扫描 **59 PASS / 11 FAIL / 0 UNKNOWN**，G01–G11 原失败全保留。本轮用户知悉后明确批准仅业务发布，不能复用为以后越过门禁的授权。[机器台账](security/hardening-gates.md)、[风险](security/risk-register.md)。
-- nginx/backend 为 loopback，应用非 root；internal/QQ 公网路径 404，匿名管理 API 401。Quark/MinIO 仍非 loopback，五依赖缺 NNP、三依赖有 root 进程，Redis 仍在共享网络。
+- nginx/backend 为 loopback，应用非 root；internal/QQ 公网路径 404，源站匿名管理 API 401，公网管理路径由Access拦截。Quark/MinIO 仍非 loopback，五依赖缺 NNP、三依赖有 root 进程，Redis 仍在共享网络。
 - 2026-09-28 MySQL 8.0.28、25 InnoDB 表；三应用共用 `gying_app@%`，库级 SELECT/INSERT/UPDATE/DELETE/EXECUTE；TLS 强制关闭、local_infile 关闭、secure_file_priv=NULL。专用 localhost 备份账号已验证，分服务身份/grants 尚未完成。
 - 2026-09-25/28 Public/Private Firewall 与物理网卡六敏感端口拒绝规则已验证；同网有线客户端报告不可连接。公网直连/IPv6 未验收，不重复 Apply。Quark config 父目录 root `0700` 已收紧，文件自身权限/非 root/旧 Cookie 撤销未完成。
 - 2026-10-13 账号侧 Access 已启用：四类管理路径、单邮箱 OTP、应用/策略 1 小时；回读/匿名拦截通过。本人登录、网站 ADMIN/USER、origin JWT/WAF 待验收，不重复创建或录入 Token。
@@ -56,12 +56,12 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 服务 | 当前镜像 |
 | --- | --- |
-| backend | `sha256:570dcf70e0e6c08e045cc671725d29dc9152046866fcd9748f7b257197bb742c` |
-| frontend | `sha256:355aa60994a34af082f9ee12cd9376078dfa544f26f3ca31df1693dd88aebb8e` |
+| backend | `sha256:18a8c2e0e4966277102aa71c9ad1ef4a29fff2928cdaba07edfdb3e784dbbe5b` |
+| frontend | `sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 
-本轮 13:37 切换 backend/frontend，本地 AI 最终包于 13:47 切换；回退材料 `E:/gying-tools/releases/ai-research-20261022/`，检查点 `G:/gying-backups/20261022T053706.234649Z` 7份age认证通过，其他服务不变。前序功能提交 `add5d78`，文档校正 `dc13094`；2026-10-22 00:07–00:08 只替换 backend/frontend，9 个其余容器不变。有效覆盖及旧镜像回退文件在 `E:/gying-tools/releases/catalog-features-search-20261021/`；检查点 `G:/gying-backups/20261021T160733.115483Z` 的 7 份 age 产物 hash/完整认证解密通过。[前序验收](catalog-features-search-20261021.md)。
+本轮21:22仅切换backend/frontend，功能提交 `706ae3e`；实际覆盖和旧镜像回退材料 `E:/gying-tools/releases/crawl-resource-links-20261022/`，检查点 `G:/gying-backups/20261022T132212.039731Z` 9份age的哈希/完整认证解密通过（含两个发布状态卷）。其余9个容器运行身份/启动/重启不变，应用有效配置摘要不变；[本轮验收](crawl-resource-links-20261022.md)。前序13:37切换backend/frontend，本地AI最终包13:47切换；回退材料 `E:/gying-tools/releases/ai-research-20261022/`，检查点 `G:/gying-backups/20261022T053706.234649Z` 7份age认证通过。前序功能提交 `add5d78`，文档校正 `dc13094`；2026-10-22 00:07–00:08 只替换 backend/frontend，9 个其余容器不变。有效覆盖及旧镜像回退文件在 `E:/gying-tools/releases/catalog-features-search-20261021/`；检查点 `G:/gying-backups/20261021T160733.115483Z` 的 7 份 age 产物 hash/完整认证解密通过。[前序验收](catalog-features-search-20261021.md)。
 
 2026-09-25 完整逻辑/持久数据检查点 `G:/gying-backups/20260925T030328.719395Z`：19 文件约 372 MiB、冻结约 31 秒；25 表行数/CHECKSUM 和隔离 MinIO 单图验证通过。应用/系统账号/异机灾难恢复及私钥离线保管仍未完成。当前发布检查点与完整恢复范围不同，见[备份方案](security/backup-plan.md)。旧镜像、迁移资料和前序检查点见[历史索引](history/README.md)，兼容应用回退不覆盖新 SQL。
 
@@ -69,7 +69,6 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 事项 | 必须补的证据/工作 |
 | --- | --- |
-| 本轮待上线 | 2026-10-22 已实现各来源独立范围/范围内进度保留、资源搜索二维码和链接并分组；隔离验证通过。门禁仍 59 PASS / 11 FAIL / 0 UNKNOWN，未替换服务，需本轮限定业务发布确认。[验收](crawl-resource-links-20261022.md) |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
 | AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、持久调用审计；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
 | 每周重启 | 已注册，首个 XML 计划 2026-10-25 09:30（Windows 显示 09:30:30）；真实重启/ASUS 登录恢复未验收，错过不补跑 |
@@ -93,7 +92,9 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
-最新本轮：677项/676通过/1依赖跳过/0失败，独立MySQL9项及compile通过；前端构建与四组页面、32入口通过，真实库为只读fixture。本地 AI 53 项 verify 通过，13:48 实际模型回答的摘录和 URL 与来源逐一一致；独立人工留出未完成。[本轮验收](ai-search-web-20261022.md)。
+最新本轮：后端687项/686通过/1依赖跳过/0失败，真实独立MySQL查询边界7项、监控7项及compile通过；前端typegen/tsc/lint/独立webpack生产构建通过，离线资源中心4组/链接3组、资源UI单测9项通过。生产jar与已审查镜像一致（342类/资源），95个前端静态文件匹配；本机/公网22入口及3内部依赖检查通过。线上HTML/静态配合mock API的公网资源链接/源站资源中心390px验收通过，真实登录业务API、真机、下载/转存/发布未执行。21:22–21:34四应用ERROR/Exception均0，5条原自动任务/独立范围配置及发布转存审计不变；[验收](crawl-resource-links-20261022.md)、[机器摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)。
+
+前序AI验收：677项/676通过/1依赖跳过/0失败，独立MySQL9项及compile通过；前端构建与四组页面、32入口通过，真实库为只读fixture。本地 AI 53 项 verify 通过，13:48 实际模型回答的摘录和 URL 与来源逐一一致；独立人工留出未完成。[本轮验收](ai-search-web-20261022.md)。
 
 前序：后端 672 项（645 通过/27 跳过/0 失败），独立 MySQL 8/8，compile、前端 typegen/tsc/lint/build 通过；341 包内和 375 前端文件匹配；候选 17、本机/公网各 13 页面场景，32 真实入口通过。AI 页面 API 为 fixture；真实库只读、匿名鉴权与实际网站登录的边界分别记录。00:07:22–00:14:04 三服务无 ERROR/Exception，审计不变；00:26 复核远端与入口通过。[完整结果](catalog-features-search-20261021.md)、[可随仓库复现的摘要](evaluation/catalog-20261021/validation-summary.json)。
 
