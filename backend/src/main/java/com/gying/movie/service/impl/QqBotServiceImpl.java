@@ -503,12 +503,7 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
         reply.append("\n\n资源库已有资源（优先展示，无需重新搜索或转存）：");
-        for (ResourceLink link : links) {
-            reply.append("\n- ").append(firstText(link.getName(), title(movie)))
-                    .append(" [").append(resourceProviderLabel(link.getProvider())).append("]")
-                    .append("\n  ").append(link.getUrl());
-            if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
-        }
+        appendGroupedResources(reply, links, title(movie));
         reply.append(userKey != null && userKey.startsWith("web:")
                 ? "\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。"
                 : "\n\n需要其他版本或网盘，可发送“资源”继续。");
@@ -2111,17 +2106,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
         if (!ownedChoices.isEmpty()) {
             reply.append("\n\n资源库已有资源（可直接使用）：");
-            for (ResourceChoice choice : ownedChoices) {
-                ResourceLink link = choice.resourceLink();
-                reply.append("\n- ").append(displayResourceChoiceName(choice, title(movie)))
-                        .append(" [").append(resourceProviderLabel(choice.provider())).append("]");
-                if (hasText(link.getUrl())) {
-                    reply.append("\n  ").append(link.getUrl());
-                }
-                if (hasText(link.getCode())) {
-                    reply.append("\n  提取码：").append(link.getCode());
-                }
-            }
+            appendGroupedResources(reply, ownedChoices.stream().map(ResourceChoice::resourceLink).toList(), title(movie));
             reply.append("\n\n如需其他版本或网盘，请继续回复下面的资源序号：");
         } else {
             reply.append("\n\n请选择资源（回复序号后再返回对应资源）：");
@@ -2148,6 +2133,38 @@ public class QqBotServiceImpl implements IQqBotService {
         return trim(name, 100);
     }
 
+    private String resourceKind(ResourceLink link) {
+        if (link.getUrl() != null && link.getUrl().toLowerCase(Locale.ROOT).startsWith("magnet:")) return "MAGNET";
+        if ("MAGNET".equalsIgnoreCase(link.getType())) return "MAGNET";
+        if ("TORRENT".equalsIgnoreCase(link.getType())) return "TORRENT";
+        return "ONLINE".equalsIgnoreCase(link.getType()) ? "ONLINE" : "DISK";
+    }
+
+    private String resourceKindLabel(String kind) {
+        return switch (kind) {
+            case "MAGNET" -> "磁力资源";
+            case "TORRENT" -> "种子资源（仅种子/磁力文件，不含视频）";
+            case "ONLINE" -> "在线资源";
+            default -> "网盘资源";
+        };
+    }
+
+    private void appendGroupedResources(StringBuilder reply, List<ResourceLink> links, String movieTitle) {
+        for (String kind : List.of("DISK", "MAGNET", "TORRENT", "ONLINE")) {
+            var group = links.stream().filter(link -> kind.equals(resourceKind(link))).toList();
+            if (group.isEmpty()) continue;
+            reply.append("\n\n").append(resourceKindLabel(kind)).append("：");
+            for (ResourceLink link : group) {
+                reply.append("\n- ").append(firstText(link.getName(), movieTitle));
+                if ("DISK".equals(kind) || "TORRENT".equals(kind)) {
+                    reply.append(" [").append(resourceProviderLabel(link.getProvider())).append("]");
+                }
+                if (hasText(link.getUrl())) reply.append("\n  ").append(link.getUrl());
+                if (hasText(link.getCode())) reply.append("\n  提取码：").append(link.getCode());
+            }
+        }
+    }
+
     private String resourceProviderLabel(String provider) {
         return firstText(
                 provider == null ? null : QqResourcePreferenceParser.label(provider.toUpperCase(Locale.ROOT)),
@@ -2168,7 +2185,11 @@ public class QqBotServiceImpl implements IQqBotService {
             appendLine(reply, "简介", trim(movie.getSummary(), 180));
         }
         reply.append("\n\n已选择资源：").append(firstText(link.getName(), resolvedTitle));
-        reply.append("\n网盘：").append(firstText(link.getProvider(), "未知"));
+        String kind = resourceKind(link);
+        reply.append("\n资源类型：").append(resourceKindLabel(kind));
+        if ("DISK".equals(kind) || "TORRENT".equals(kind)) {
+            reply.append("\n网盘：").append(resourceProviderLabel(link.getProvider()));
+        }
         if (hasText(link.getUrl())) {
             reply.append("\n").append(link.getUrl());
         }

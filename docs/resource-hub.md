@@ -23,8 +23,10 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 - `1 ≤ start ≤ end ≤ 500`；旧 auto_sync_page/*AutoSyncPage 为起始页，新 end_page/*AutoSyncEndPage 为结束页。缺 end 保持单页；旧客户端单页更新不扩大范围；非法配置 400。
 - provider+榜单独立页码/偏移；每间隔轮换一榜，单批 TMDB/GYING 各最多 20。完成页翻页，到 end/空页回 start；榜单变化不是一致性快照，写入仍幂等。
 - payload.crawl 保存批次/范围/下一位置并与最终状态一起落库。TMDB 失败留原位；GYING 仅在失败条目都持久化 METADATA_ITEM_RETRY 后推进，记录 itemRetryTaskIds、failed/deferred。全失败/缺身份/隔离保存失败不推进；手动单页不带 crawl，不改自动位置。
-- 改范围从新 start 起，旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
+- `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后继续下一页，空页仍回 start。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
 - overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
+
+2026-10-22 独立范围与进度保留已完成代码和隔离验证，尚未部署；[验收](crawl-resource-links-20261022.md)。
 
 ### 剧集自动追更
 
@@ -41,6 +43,8 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 ## 管理界面
 
 /admin/resource-hub：配置/采集进度、任务/发现筛选、批量发布/重跑/频道、缺资源补全、失效修复和 dry-run 清理。/admin/gying-source 独立；真实发帖/转存不是只读验收。
+
+搜索资源自有结果按网盘、磁力、种子和在线资源分组；网盘托管的种子归档标明不含视频。网页保留二维码并显示可点击链接，长地址仍可点击；历史地址经过协议校验。2026-10-22 已实现，待部署。
 
 ### GYING 单条隔离重试
 

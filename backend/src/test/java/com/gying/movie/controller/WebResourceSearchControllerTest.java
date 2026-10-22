@@ -50,6 +50,24 @@ class WebResourceSearchControllerTest {
         assertFalse(job.toString().contains("private upstream"));
     }
 
+    @Test void categorizedRepliesExposeNamesAndDistinguishCloudHostedTorrentFiles() throws Exception {
+        when(auth.requireUser("owner")).thenReturn(new AuthUser(1L, "fixture", "USER"));
+        when(service.buildSearchReply(anyString(), anyString())).thenReturn(
+                "网盘资源：\n- 正片 [夸克]\nhttps://pan.quark.cn/s/video\n"
+                + "磁力资源：\n- 原始磁力\nmagnet:?xt=urn:btih:fixture\n"
+                + "种子资源（仅种子/磁力文件，不含视频）：\n- 种子归档 [迅雷]\nhttps://pan.xunlei.com/s/torrent");
+        String id = (String) controller.query(Map.of("keyword", "movie"), "owner").getBody().get("jobId");
+        var result = completed(id);
+        @SuppressWarnings("unchecked")
+        var links = (java.util.List<Map<String, String>>) result.get("links");
+        assertEquals(3, links.size());
+        assertEquals("正片", links.get(0).get("name"));
+        assertEquals("DISK", links.get(0).get("type"));
+        assertEquals("MAGNET", links.get(1).get("type"));
+        assertEquals("TORRENT", links.get(2).get("type"));
+        assertEquals("https://pan.xunlei.com/s/torrent", links.get(2).get("url"));
+    }
+
     private Map<String, Object> completed(String id) throws Exception {
         for (int i = 0; i < 200; i++) {
             var result = controller.getJob(id, "owner");

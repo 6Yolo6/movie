@@ -137,14 +137,26 @@ public class WebResourceSearchController {
     private List<Map<String, String>> extractLinks(String reply) {
         List<Map<String, String>> links = new ArrayList<>();
         if (reply == null || reply.isBlank()) return links;
-        Matcher matcher = URL.matcher(reply);
-        while (matcher.find() && links.size() < 10) {
-            String value = matcher.group().replaceAll("[\\s\\],；。]+$", "");
-            if (value.isBlank() || links.stream().anyMatch(item -> value.equals(item.get("url")))) continue;
-            Map<String, String> item = new LinkedHashMap<>();
-            item.put("url", value);
-            item.put("name", "资源链接 " + (links.size() + 1));
-            links.add(item);
+        String kind = "DISK";
+        String name = null;
+        for (String line : reply.split("\\r?\\n")) {
+            String text = line.trim();
+            if (text.equals("网盘资源：") || text.equals("资源类型：网盘资源")) kind = "DISK";
+            else if (text.equals("磁力资源：") || text.equals("资源类型：磁力资源")) kind = "MAGNET";
+            else if (text.startsWith("种子资源（") || text.startsWith("资源类型：种子资源（")) kind = "TORRENT";
+            else if (text.equals("在线资源：") || text.equals("资源类型：在线资源")) kind = "ONLINE";
+            if (text.startsWith("- ")) name = text.substring(2).replaceFirst("\\s+\\[[^\\]]+\\]$", "");
+            if (text.startsWith("已选择资源：")) name = text.substring("已选择资源：".length());
+            Matcher matcher = URL.matcher(line);
+            while (matcher.find() && links.size() < 10) {
+                String value = matcher.group().replaceAll("[\\s\\],；。]+$", "");
+                if (value.isBlank() || links.stream().anyMatch(item -> value.equals(item.get("url")))) continue;
+                Map<String, String> item = new LinkedHashMap<>();
+                item.put("url", value);
+                item.put("name", name == null || name.isBlank() ? "资源链接 " + (links.size() + 1) : name);
+                item.put("type", value.regionMatches(true, 0, "magnet:", 0, 7) ? "MAGNET" : kind);
+                links.add(item);
+            }
         }
         return links;
     }

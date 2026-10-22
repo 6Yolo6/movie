@@ -89,7 +89,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     @Override
     public ResourceHubTask enqueueAutomatic(String source) {
         var config = resourceHubProperties.getTmdb();
-        var position = crawlPlanner.next("TMDB", source, config.getAutoSyncPage(), config.getAutoSyncEndPage());
+        var range = config.rangeFor(source);
+        var position = crawlPlanner.next("TMDB", source, range.startPage(), range.endPage());
         ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
         request.setSource(source);
         request.setPage(position.page());

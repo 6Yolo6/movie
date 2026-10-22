@@ -1522,4 +1522,24 @@ class QqBotServiceImplTest {
         org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService);
     }
 
+    @Test void libraryReplySeparatesVideoDisksMagnetsAndTorrentArchives() {
+        MovieMetadata local = movie("mixed-links", "分类资源影片", 2024);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        ResourceLink disk = link("QUARK", "正片", "https://pan.quark.cn/s/video");
+        ResourceLink magnet = link(null, "原始磁力", "magnet:?xt=urn:btih:fixture");
+        ResourceLink torrent = link("XUNLEI", "种子归档", "https://pan.xunlei.com/s/torrent");
+        disk.setType("DISK"); magnet.setType("MAGNET"); torrent.setType("TORRENT");
+        for (ResourceLink link : List.of(disk, magnet, torrent)) link.setMovieId(local.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(torrent, magnet, disk));
+        String reply = service.buildSearchReply("分类资源影片", "web:mixed-links");
+        assertTrue(reply.contains("网盘资源："));
+        assertTrue(reply.contains("磁力资源："));
+        assertTrue(reply.contains("种子资源（仅种子/磁力文件，不含视频）："));
+        assertTrue(reply.indexOf(disk.getUrl()) < reply.indexOf("磁力资源："));
+        assertTrue(reply.indexOf(magnet.getUrl()) > reply.indexOf("磁力资源："));
+        assertTrue(reply.indexOf(torrent.getUrl()) > reply.indexOf("种子资源（"));
+        assertFalse(reply.contains("原始磁力 [网盘]"));
+        org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService, panSouClient);
+    }
+
 }

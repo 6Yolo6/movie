@@ -63,10 +63,9 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
         await page.waitForSelector('[data-testid="resource-qr-card"] canvas');
         assert.ok(await page.evaluate(() => {
             const panel = document.querySelector('[data-testid="search-conversation"]');
-            return !panel.innerText.includes('https://pan.quark.cn') && !panel.innerText.includes('复制链接')
-                && !panel.innerText.includes('打开链接') && !panel.querySelector('a[href*="pan.quark.cn"]');
+            return panel.innerText.includes('https://pan.quark.cn') && panel.querySelector('a[href*="pan.quark.cn"]')?.target === '_blank';
         }));
-        console.log('PASS QR rendered automatically, no plaintext resource URLs/copy/open actions');
+        console.log('PASS QR and clickable resource links rendered automatically');
 
         await clickChoice('资源');await page.waitForSelector('button[data-command="下一页"]:not([disabled])');
         assert.equal(requests[4],'资源');assert.equal(await page.$$eval('[data-testid="search-turn"]',x=>x.length),5);
@@ -89,7 +88,7 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
         await page.waitForFunction(() => document.body.textContent.includes('资源库已有资源（优先展示'));
         await page.waitForSelector('button[data-command="资源"]:not([disabled])');
         assert.ok(await page.$eval('button[data-command="资源"]:not([disabled])', el => el.textContent.includes('搜索其他资源')));
-        assert.ok(await page.evaluate(() => !document.querySelector('[data-testid="search-conversation"]').innerText.includes('https://')));
+        assert.ok(await page.evaluate(() => !!document.querySelector('[data-testid="search-conversation"] a[href="https://pan.quark.cn/s/library-fixture"]')));
         if(process.env.WEB_TEST_SCREENSHOT_DIR) {
             await page.evaluate(()=>{const panel=document.querySelector('[data-testid="search-conversation"]');panel.scrollTop=panel.scrollHeight;});
             await page.screenshot({path:path.join(process.env.WEB_TEST_SCREENSHOT_DIR,'resource-search-qr-mobile.png'),fullPage:true});

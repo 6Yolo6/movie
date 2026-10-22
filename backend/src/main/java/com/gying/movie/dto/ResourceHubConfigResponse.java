@@ -15,6 +15,7 @@ public class ResourceHubConfigResponse {
     private boolean tmdbConfigured;
     private boolean tmdbAutoSyncEnabled;
     private String tmdbAutoSyncSources;
+    private java.util.Map<String, MetadataCrawlRange> tmdbAutoSyncRanges;
     private int tmdbAutoSyncPage;
     private int tmdbAutoSyncEndPage;
     private int tmdbAutoSyncMaxItems;
@@ -25,6 +26,7 @@ public class ResourceHubConfigResponse {
     private boolean gyingDiscoveryEnabled;
     private boolean gyingAutoSyncEnabled;
     private String gyingAutoSyncSources;
+    private java.util.Map<String, MetadataCrawlRange> gyingAutoSyncRanges;
     private int gyingAutoSyncPage;
     private int gyingAutoSyncEndPage;
     private int gyingAutoSyncMaxItems;

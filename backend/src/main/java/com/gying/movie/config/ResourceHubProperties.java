@@ -1,6 +1,8 @@
 package com.gying.movie.config;
 
 import lombok.Data;
+import com.gying.movie.dto.MetadataCrawlRange;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
@@ -24,6 +26,11 @@ public class ResourceHubProperties {
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
         private int autoSyncPage = 1;
         private int autoSyncEndPage;
+        private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();
+
+        public MetadataCrawlRange rangeFor(String source) {
+            return autoSyncRanges.getOrDefault(source, new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage()));
+        }
 
         // Missing range configuration preserves the legacy single-page scope.
         public int getAutoSyncEndPage() {
@@ -45,6 +52,11 @@ public class ResourceHubProperties {
         private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         private int autoSyncPage = 1;
         private int autoSyncEndPage;
+        private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();
+
+        public MetadataCrawlRange rangeFor(String source) {
+            return autoSyncRanges.getOrDefault(source, new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage()));
+        }
 
         // Missing range configuration preserves the legacy single-page scope.
         public int getAutoSyncEndPage() {

@@ -69,6 +69,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 事项 | 必须补的证据/工作 |
 | --- | --- |
+| 本轮待上线 | 2026-10-22 已实现各来源独立范围/范围内进度保留、资源搜索二维码和链接并分组；隔离验证通过。门禁仍 59 PASS / 11 FAIL / 0 UNKNOWN，未替换服务，需本轮限定业务发布确认。[验收](crawl-resource-links-20261022.md) |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
 | AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、持久调用审计；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
 | 每周重启 | 已注册，首个 XML 计划 2026-10-25 09:30（Windows 显示 09:30:30）；真实重启/ASUS 登录恢复未验收，错过不补跑 |

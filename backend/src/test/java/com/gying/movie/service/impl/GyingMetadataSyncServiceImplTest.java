@@ -199,4 +199,20 @@ class GyingMetadataSyncServiceImplTest {
         org.junit.jupiter.api.Assertions.assertFalse(mapper.readTree(task.getPayload()).path("crawl").has("nextPage"));
         if (!"persistence".equals(failureMode)) org.mockito.Mockito.verifyNoInteractions(retries);
     }
+    @Test void automaticEnqueueUsesIndependentMovieAndTvRanges() throws Exception {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true);
+        properties.getGying().setAutoSyncRanges(Map.of(
+                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(80, 300),
+                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(45, 200)));
+        var tasks = mock(IResourceHubTaskService.class);
+        when(tasks.enqueue(any())).thenAnswer(call -> call.getArgument(0));
+        var mapper = new ObjectMapper();
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, mock(GyingSourceWorkflowService.class),
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        var movie = mapper.readTree(service.enqueueAutomatic("HITS_MOVIE").getPayload());
+        var tv = mapper.readTree(service.enqueueAutomatic("HITS_TV").getPayload());
+        assertEquals(80, movie.path("page").asInt());
+        assertEquals(45, tv.path("page").asInt());
+        assertEquals(200, tv.path("crawl").path("endPage").asInt());
+    }
 }

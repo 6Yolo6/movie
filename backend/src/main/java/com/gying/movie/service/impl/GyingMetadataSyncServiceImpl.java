@@ -63,7 +63,8 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
     @Override
     public ResourceHubTask enqueueAutomatic(String source) {
         var config = properties.getGying();
-        var position = crawlPlanner.next("GYING", source, config.getAutoSyncPage(), config.getAutoSyncEndPage());
+        var range = config.rangeFor(source);
+        var position = crawlPlanner.next("GYING", source, range.startPage(), range.endPage());
         return enqueue(source, position.page(), config.getAutoSyncMaxItems(), position);
     }
 

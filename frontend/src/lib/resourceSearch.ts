@@ -1,4 +1,5 @@
-export interface SearchLink { url: string; name: string; }
+export type SearchLinkType = 'DISK' | 'MAGNET' | 'TORRENT' | 'ONLINE';
+export interface SearchLink { url: string; name: string; type?: SearchLinkType; }
 export interface SearchTurn {
     id: string;
     command: string;
@@ -27,12 +28,15 @@ export function safeSearchLinks(value: unknown): SearchLink[] {
                 : url.hostname === 'pan.xunlei.com' ? '迅雷分享' : url.protocol === 'magnet:' ? '磁力链接' : '资源链接';
             const name = typeof item.name === 'string' && !/^资源链接\s*\d+$/.test(item.name)
                 ? item.name.slice(0, 160) : provider;
-            return [{ url: item.url, name }];
+            const type: SearchLinkType = url.protocol === 'magnet:' ? 'MAGNET'
+                : ['DISK', 'MAGNET', 'TORRENT', 'ONLINE'].includes(item.type) ? item.type
+                    : /磁力|种子/.test(name) ? 'TORRENT' : 'DISK';
+            return [{ url: item.url, name, type }];
         } catch { return []; }
     }).slice(0, 10);
 }
 
-/** Resource addresses are encoded in QR only, never rendered in reply text or labels. */
+/** Keep prose and labels readable; validated addresses are rendered as links in resource cards. */
 export function stripSearchUrls(text: string): string {
     return text.replace(/(?:https?:\/\/|magnet:\?)[^\s<>]+/gi, '').replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, '\n\n');
 }

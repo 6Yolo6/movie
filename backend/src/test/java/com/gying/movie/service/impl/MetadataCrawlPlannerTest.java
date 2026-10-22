@@ -77,12 +77,12 @@ class MetadataCrawlPlannerTest {
         assertEquals(3, planner.next("GYING", "HITS_MOVIE", 2, 4).page());
     }
 
-    @Test void rangeChangeResetsPosition() {
+    @Test void rangeChangePreservesPositionWithinNewBounds() {
         planner.completed(task(3, 15), 30, 15, 0);
         var next = planner.next("GYING", "HITS_MOVIE", 1, 7);
-        assertEquals(1, next.page());
+        assertEquals(4, next.page());
         assertEquals(0, next.offset());
-        assertEquals("NOT_STARTED", next.status());
+        assertEquals("SUCCEEDED", next.status());
     }
 
     @Test void activeOrCanceledTaskRetainsOriginalPosition() {
@@ -127,5 +127,48 @@ class MetadataCrawlPlannerTest {
         planner.completed(task, 30, 15, 2, 1);
         assertEquals(15, planner.next("GYING", "HITS_MOVIE", 2, 4).offset());
         assertThrows(IllegalArgumentException.class, () -> planner.completed(task, 30, 15, 1, 2));
+    }
+
+    @Test void rangeChangesPreserveIndependentMovieAndTvOffsetsForBothProviders() {
+        for (String provider : new String[] {"TMDB", "GYING"}) {
+            ResourceHubTask movie = checkpoint(150, 12, "SUCCEEDED");
+            ResourceHubTask tv = checkpoint(121, 7, "FAILED");
+            doAnswer(call -> {
+                QueryWrapper<ResourceHubTask> query = call.getArgument(0);
+                query.getCustomSqlSegment();
+                return query.getParamNameValuePairs().containsValue("MOVIE") ? movie : tv;
+            }).when(tasks).getOne(any(), eq(false));
+            assertEquals(150, planner.next(provider, "MOVIE", 100, 500).page());
+            assertEquals(12, planner.next(provider, "MOVIE", 100, 500).offset());
+            assertEquals(121, planner.next(provider, "TV", 100, 500).page());
+            assertEquals(7, planner.next(provider, "TV", 100, 500).offset());
+            assertEquals(151, planner.next(provider, "MOVIE", 151, 500).page());
+            assertEquals(121, planner.next(provider, "TV", 100, 500).page());
+        }
+    }
+
+    @Test void extendingCompletedEndContinuesForwardButEmptyPageStillWraps() {
+        ResourceHubTask task = task(4, 15);
+        planner.completed(task, 30, 15, 0);
+        assertEquals(5, planner.next("GYING", "HITS_MOVIE", 2, 8).page());
+        planner.completed(task, 0, 0, 0);
+        assertEquals(2, planner.next("GYING", "HITS_MOVIE", 2, 8).page());
+    }
+
+    @Test void shrinkingBoundsResetsOnlyAnOutOfRangeCheckpoint() {
+        planner.completed(task(3, 15), 30, 15, 0);
+        var next = planner.next("GYING", "HITS_MOVIE", 1, 3);
+        assertEquals(1, next.page());
+        assertEquals(0, next.offset());
+        assertEquals("NOT_STARTED", next.status());
+    }
+
+    private ResourceHubTask checkpoint(int page, int offset, String status) {
+        ResourceHubTask task = new ResourceHubTask();
+        task.setId((long) page);
+        task.setStatus(status);
+        task.setPayload(planner.attach("{\"page\":" + page + "}",
+                new MetadataCrawlPlanner.Position(1, 500, page, offset, status, null)));
+        return task;
     }
 }

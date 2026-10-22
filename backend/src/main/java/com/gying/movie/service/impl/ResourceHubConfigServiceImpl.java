@@ -12,6 +12,7 @@ import com.gying.movie.service.IResourceHubTaskService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import com.gying.movie.dto.MetadataCrawlProgress;
+import com.gying.movie.dto.MetadataCrawlRange;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.annotation.PostConstruct;
@@ -37,6 +38,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_AUTO_APPROVE = "resource.hub.auto_approve";
     private static final String KEY_TMDB_AUTO_SYNC_ENABLED = "resource.hub.tmdb.auto_sync_enabled";
     private static final String KEY_TMDB_AUTO_SYNC_SOURCES = "resource.hub.tmdb.auto_sync_sources";
+    private static final String KEY_TMDB_AUTO_SYNC_RANGES = "resource.hub.tmdb.auto_sync_ranges";
     private static final String KEY_TMDB_AUTO_SYNC_PAGE = "resource.hub.tmdb.auto_sync_page";
     private static final String KEY_TMDB_AUTO_SYNC_END_PAGE = "resource.hub.tmdb.auto_sync_end_page";
     private static final String KEY_TMDB_AUTO_SYNC_MAX_ITEMS = "resource.hub.tmdb.auto_sync_max_items";
@@ -47,6 +49,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_GYING_DISCOVERY_ENABLED = "resource.hub.gying.discovery_enabled";
     private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
     private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
+    private static final String KEY_GYING_AUTO_SYNC_RANGES = "resource.hub.gying.auto_sync_ranges";
     private static final String KEY_GYING_AUTO_SYNC_PAGE = "resource.hub.gying.auto_sync_page";
     private static final String KEY_GYING_AUTO_SYNC_END_PAGE = "resource.hub.gying.auto_sync_end_page";
     private static final String KEY_GYING_AUTO_SYNC_MAX_ITEMS = "resource.hub.gying.auto_sync_max_items";
@@ -107,6 +110,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 500));
         tmdb.setAutoSyncEndPage(Math.max(tmdb.getAutoSyncPage(),
                 readInt(KEY_TMDB_AUTO_SYNC_END_PAGE, tmdb.getAutoSyncEndPage(), 1, 500)));
+        tmdb.setAutoSyncRanges(readRanges(KEY_TMDB_AUTO_SYNC_RANGES, "TMDB", tmdb.getAutoSyncRanges()));
         tmdb.setAutoSyncMaxItems(readInt(KEY_TMDB_AUTO_SYNC_MAX_ITEMS, tmdb.getAutoSyncMaxItems(), 1, 100));
         tmdb.setAutoSyncIntervalHours(readInt(KEY_TMDB_AUTO_SYNC_INTERVAL_HOURS, tmdb.getAutoSyncIntervalHours(), 1, 720));
         tmdb.setAutoDiscoveryEnabled(readBoolean(KEY_TMDB_AUTO_DISCOVERY_ENABLED, tmdb.isAutoDiscoveryEnabled()));
@@ -118,6 +122,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
         gying.setAutoSyncEndPage(Math.max(gying.getAutoSyncPage(),
                 readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, 500)));
+        gying.setAutoSyncRanges(readRanges(KEY_GYING_AUTO_SYNC_RANGES, "GYING", gying.getAutoSyncRanges()));
         gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
         gying.setAutoSyncIntervalHours(readInt(
                 KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, gying.getAutoSyncIntervalHours(), 1, 720));
@@ -159,6 +164,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         int[] gyingRange = resolveRange(request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
                 gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
 
+        var tmdbRanges = mergeRanges("TMDB", tmdb.getAutoSyncRanges(), request.getTmdbAutoSyncRanges());
+        var gyingRanges = mergeRanges("GYING", gying.getAutoSyncRanges(), request.getGyingAutoSyncRanges());
+
         // Credentials are intentionally runtime-only. They are never written to sys_config.
         if (xunlei != null) {
             if (hasText(request.getXunleiAuthorization())) {
@@ -191,6 +199,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             tmdb.setAutoSyncEndPage(tmdbRange[1]);
             upsert(KEY_TMDB_AUTO_SYNC_PAGE, Integer.toString(tmdbRange[0]), "TMDB 自动采集起始页码");
             upsert(KEY_TMDB_AUTO_SYNC_END_PAGE, Integer.toString(tmdbRange[1]), "TMDB 自动采集结束页码（含）");
+        }
+        if (request.getTmdbAutoSyncRanges() != null) {
+            upsert(KEY_TMDB_AUTO_SYNC_RANGES, writeRanges(tmdbRanges), "TMDB 各来源独立采集页码范围");
+            tmdb.setAutoSyncRanges(tmdbRanges);
         }
         if (request.getTmdbAutoSyncMaxItems() != null) {
             int value = clamp(request.getTmdbAutoSyncMaxItems(), 1, 100);
@@ -236,6 +248,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             gying.setAutoSyncEndPage(gyingRange[1]);
             upsert(KEY_GYING_AUTO_SYNC_PAGE, Integer.toString(gyingRange[0]), "GYING 自动采集起始页码");
             upsert(KEY_GYING_AUTO_SYNC_END_PAGE, Integer.toString(gyingRange[1]), "GYING 自动采集结束页码（含）");
+        }
+        if (request.getGyingAutoSyncRanges() != null) {
+            upsert(KEY_GYING_AUTO_SYNC_RANGES, writeRanges(gyingRanges), "GYING 各来源独立采集页码范围");
+            gying.setAutoSyncRanges(gyingRanges);
         }
         if (request.getGyingAutoSyncMaxItems() != null) {
             int value = clamp(request.getGyingAutoSyncMaxItems(), 1, 20);
@@ -319,6 +335,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));
         response.setTmdbAutoSyncEnabled(tmdb.isAutoSyncEnabled());
         response.setTmdbAutoSyncSources(tmdb.getAutoSyncSources());
+        var tmdbRanges = new LinkedHashMap<String, MetadataCrawlRange>();
+        MetadataCrawlRange.sources("TMDB").forEach(source -> tmdbRanges.put(source, tmdb.rangeFor(source)));
+        response.setTmdbAutoSyncRanges(tmdbRanges);
         response.setTmdbAutoSyncPage(tmdb.getAutoSyncPage());
         response.setTmdbAutoSyncEndPage(tmdb.getAutoSyncEndPage());
         response.setTmdbAutoSyncMaxItems(tmdb.getAutoSyncMaxItems());
@@ -329,6 +348,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setGyingDiscoveryEnabled(gying.isDiscoveryEnabled());
         response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
         response.setGyingAutoSyncSources(gying.getAutoSyncSources());
+        var gyingRanges = new LinkedHashMap<String, MetadataCrawlRange>();
+        MetadataCrawlRange.sources("GYING").forEach(source -> gyingRanges.put(source, gying.rangeFor(source)));
+        response.setGyingAutoSyncRanges(gyingRanges);
         response.setGyingAutoSyncPage(gying.getAutoSyncPage());
         response.setGyingAutoSyncEndPage(gying.getAutoSyncEndPage());
         response.setGyingAutoSyncMaxItems(gying.getAutoSyncMaxItems());
@@ -346,9 +368,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             var planner = new MetadataCrawlPlanner(taskService, objectMapper);
             var progress = new ArrayList<MetadataCrawlProgress>();
             addProgress(progress, planner, "TMDB", tmdb.getAutoSyncSources(),
-                    tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
+                    tmdb::rangeFor);
             addProgress(progress, planner, "GYING", gying.getAutoSyncSources(),
-                    gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
+                    gying::rangeFor);
             response.setMetadataCrawlProgress(progress);
         }
         if (weeklyTransferSettings != null) response.setWeeklyTransferSchedules(weeklyTransferSettings.get());
@@ -417,10 +439,49 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     }
 
     private void addProgress(java.util.List<MetadataCrawlProgress> progress, MetadataCrawlPlanner planner,
-            String provider, String sources, int start, int end) {
+            String provider, String sources, java.util.function.Function<String, MetadataCrawlRange> rangeFor) {
         if (sources != null) {
             Arrays.stream(sources.split(",")).map(String::trim).filter(value -> !value.isEmpty()).distinct()
-                    .forEach(source -> progress.add(planner.progress(provider, source, start, end)));
+                    .forEach(source -> {
+                        var range = rangeFor.apply(source);
+                        progress.add(planner.progress(provider, source, range.startPage(), range.endPage()));
+                    });
+        }
+    }
+
+    private Map<String, MetadataCrawlRange> readRanges(String key, String provider,
+            Map<String, MetadataCrawlRange> defaults) {
+        String json = sysConfigService.getConfigValue(key, "");
+        if (json == null || json.isBlank()) return defaults;
+        try {
+            var type = objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, MetadataCrawlRange.class);
+            Map<String, MetadataCrawlRange> stored = objectMapper.readValue(json, type);
+            if (stored == null) throw new IllegalArgumentException("Missing ranges");
+            return mergeRanges(provider, Map.of(), stored);
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid saved metadata ranges: " + key, e);
+        }
+    }
+
+    private Map<String, MetadataCrawlRange> mergeRanges(String provider, Map<String, MetadataCrawlRange> current,
+            Map<String, MetadataCrawlRange> requested) {
+        if (requested == null) return current;
+        var ranges = new LinkedHashMap<>(current);
+        requested.forEach((source, range) -> {
+            if (!MetadataCrawlRange.sources(provider).contains(source) || range == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "采集来源或页码范围无效");
+            }
+            resolveRange(range.startPage(), range.endPage(), 1, 1);
+            ranges.put(source, range);
+        });
+        return Map.copyOf(ranges);
+    }
+
+    private String writeRanges(Map<String, MetadataCrawlRange> ranges) {
+        try {
+            return objectMapper.writeValueAsString(ranges);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid metadata ranges", e);
         }
     }
 

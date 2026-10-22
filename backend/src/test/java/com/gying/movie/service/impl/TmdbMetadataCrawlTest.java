@@ -81,4 +81,19 @@ class TmdbMetadataCrawlTest {
         assertEquals(2, mapper.readTree(next.getPayload()).path("crawl").path("offset").asInt());
         assertEquals(2, mapper.readTree(next.getPayload()).path("page").asInt());
     }
+    @Test void automaticEnqueueUsesEachCatalogsOwnBounds() throws Exception {
+        properties.getTmdb().setAutoSyncPage(1);
+        properties.getTmdb().setAutoSyncEndPage(500);
+        properties.getTmdb().setAutoSyncRanges(java.util.Map.of(
+                "POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(151, 500),
+                "POPULAR_TV", new com.gying.movie.dto.MetadataCrawlRange(121, 400)));
+        when(client.normalizeSource(anyString())).thenAnswer(call -> call.getArgument(0));
+        when(tasks.enqueue(any())).thenAnswer(call -> call.getArgument(0));
+        var service = service();
+        var movie = mapper.readTree(service.enqueueAutomatic("POPULAR_MOVIE").getPayload());
+        var tv = mapper.readTree(service.enqueueAutomatic("POPULAR_TV").getPayload());
+        assertEquals(151, movie.path("page").asInt());
+        assertEquals(121, tv.path("page").asInt());
+        assertEquals(400, tv.path("crawl").path("endPage").asInt());
+    }
 }

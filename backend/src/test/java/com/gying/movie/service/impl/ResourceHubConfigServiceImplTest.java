@@ -123,4 +123,76 @@ class ResourceHubConfigServiceImplTest {
                     org.springframework.web.server.ResponseStatusException.class, () -> service.updateConfig(request));
         }
     }
+
+    @Test void perSourceRangesSurviveRestartAndPartialEditsLeaveOtherSourcesUntouched() {
+        var values = new java.util.HashMap<String, String>();
+        var storage = mock(ISysConfigService.class);
+        org.mockito.Mockito.when(storage.getConfigValue(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString())).thenAnswer(call ->
+                values.getOrDefault(call.getArgument(0), call.getArgument(1)));
+        org.mockito.Mockito.when(storage.save(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
+            com.gying.movie.entity.SysConfig config = call.getArgument(0);
+            values.put(config.getConfigKey(), config.getConfigValue());
+            return true;
+        });
+        var properties = new ResourceHubProperties();
+        var service = new ResourceHubConfigServiceImpl(properties, storage);
+        var request = new ResourceHubConfigRequest();
+        request.setTmdbAutoSyncRanges(java.util.Map.of(
+                "POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(151, 500),
+                "POPULAR_TV", new com.gying.movie.dto.MetadataCrawlRange(121, 400)));
+        request.setGyingAutoSyncRanges(java.util.Map.of(
+                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(80, 300),
+                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(45, 200)));
+        service.updateConfig(request);
+        request = new ResourceHubConfigRequest();
+        request.setTmdbAutoSyncRanges(java.util.Map.of("POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(160, 500)));
+        service.updateConfig(request);
+        var restarted = new ResourceHubProperties();
+        var response = new ResourceHubConfigServiceImpl(restarted, storage).getConfig();
+        assertEquals(160, response.getTmdbAutoSyncRanges().get("POPULAR_MOVIE").startPage());
+        assertEquals(121, restarted.getTmdb().rangeFor("POPULAR_TV").startPage());
+        assertEquals(80, restarted.getGying().rangeFor("HITS_MOVIE").startPage());
+        assertEquals(45, restarted.getGying().rangeFor("HITS_TV").startPage());
+        assertEquals(1, restarted.getTmdb().rangeFor("TOP_RATED_TV").startPage());
+    }
+
+    @Test void invalidSourceRangesAreRejectedBeforeCredentialsOrSwitchesChange() {
+        for (var ranges : java.util.List.of(
+                java.util.Map.of("POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(150, 100)),
+                java.util.Map.of("HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(1, 500)),
+                java.util.Map.of("POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(1, 501)))) {
+            var properties = new ResourceHubProperties();
+            var storage = mock(ISysConfigService.class);
+            var service = new ResourceHubConfigServiceImpl(properties, storage);
+            var request = new ResourceHubConfigRequest();
+            request.setEnabled(true);
+            request.setXunleiAuthorization("replacement");
+            request.setTmdbAutoSyncRanges(ranges);
+            org.junit.jupiter.api.Assertions.assertThrows(
+                    org.springframework.web.server.ResponseStatusException.class, () -> service.updateConfig(request));
+            org.junit.jupiter.api.Assertions.assertFalse(properties.isEnabled());
+            org.junit.jupiter.api.Assertions.assertNull(properties.getXunlei().getAuthorization());
+            verifyNoInteractions(storage);
+        }
+    }
+
+    @Test void progressUsesTheSamePerSourceBoundsAsAutomaticScheduling() {
+        var properties = new ResourceHubProperties();
+        properties.getTmdb().setAutoSyncSources("POPULAR_MOVIE,POPULAR_TV");
+        properties.getTmdb().setAutoSyncRanges(java.util.Map.of(
+                "POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(151, 500),
+                "POPULAR_TV", new com.gying.movie.dto.MetadataCrawlRange(121, 400)));
+        var storage = mock(ISysConfigService.class);
+        org.mockito.Mockito.when(storage.getConfigValue(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString())).thenAnswer(call -> call.getArgument(1));
+        var service = new ResourceHubConfigServiceImpl(properties, storage);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "taskService",
+                mock(com.gying.movie.service.IResourceHubTaskService.class));
+        var progress = service.getConfig().getMetadataCrawlProgress();
+        assertEquals(151, progress.get(0).startPage());
+        assertEquals(151, progress.get(0).nextPage());
+        assertEquals(121, progress.get(1).startPage());
+        assertEquals(121, progress.get(1).nextPage());
+    }
 }

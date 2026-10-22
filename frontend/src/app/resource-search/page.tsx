@@ -15,19 +15,38 @@ import { useAuthStore } from '../../store/authStore';
 interface SearchJob { jobId: string; status: string; reply?: string; links?: SearchLink[]; message?: string; }
 
 function ResourceLinks({ links }: { links: SearchLink[] }) {
-    return <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {links.map((link, index) => {
-            const host = new URL(link.url).hostname;
-            const app = host === 'pan.quark.cn' ? '夸克 App' : host === 'pan.xunlei.com' ? '迅雷 App' : '对应手机 App';
-            return <div key={link.url} data-testid="resource-qr-card" className="flex min-w-0 flex-col items-center rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-center dark:border-blue-950 dark:bg-blue-950/20">
-                <div className="mb-3 flex max-w-full items-center gap-2"><QrcodeOutlined className="shrink-0 text-blue-500" /><Typography.Text strong className="break-words">{stripSearchUrls(link.name) || '资源分享'}</Typography.Text><Tag bordered={false}>{index + 1}</Tag></div>
-                {new TextEncoder().encode(link.url).length <= 1000
-                    ? <div className="rounded-xl bg-white p-2" aria-label={`${app}扫码二维码`}><QRCode value={link.url} size={180} errorLevel="M" color="#111827" bgColor="#ffffff" /></div>
-                    : <Alert type="warning" showIcon title="该资源地址过长，无法生成清晰二维码，请选择其他资源" />}
-                <p className="mb-0 mt-3 text-sm font-medium text-blue-600 dark:text-blue-400">请使用{app}扫一扫</p>
-            </div>;
+    const groups = [
+        { type: 'DISK', title: '网盘资源', action: '打开网盘链接' },
+        { type: 'MAGNET', title: '磁力资源', action: '打开磁力链接' },
+        { type: 'TORRENT', title: '种子资源', action: '打开种子资源' },
+        { type: 'ONLINE', title: '在线资源', action: '打开资源链接' },
+    ];
+    return <div className="mt-4 space-y-4">
+        {groups.map(group => {
+            const items = links.filter(link => (link.type || 'DISK') === group.type);
+            if (!items.length) return null;
+            return <section key={group.type} data-testid={`resource-links-${group.type.toLowerCase()}`}>
+                <Typography.Title level={5}>{group.title}</Typography.Title>
+                {group.type === 'TORRENT' && <p className="text-xs text-slate-500">仅种子/磁力文件，不含视频；可通过对应客户端下载。</p>}
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {items.map(link => {
+                        const url = new URL(link.url);
+                        const app = url.hostname === 'pan.quark.cn' ? '夸克 App' : url.hostname === 'pan.xunlei.com' ? '迅雷 App' : '对应手机 App';
+                        const magnet = url.protocol === 'magnet:';
+                        return <div key={link.url} data-testid="resource-qr-card" className="flex min-w-0 flex-col items-center rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-center dark:border-blue-950 dark:bg-blue-950/20">
+                            <div className="mb-3 flex max-w-full items-center gap-2"><QrcodeOutlined className="shrink-0 text-blue-500" /><Typography.Text strong className="break-words">{stripSearchUrls(link.name) || group.title}</Typography.Text></div>
+                            {new TextEncoder().encode(link.url).length <= 1000
+                                ? <div className="rounded-xl bg-white p-2" aria-label={`${group.title}二维码`}><QRCode value={link.url} size={180} errorLevel="M" color="#111827" bgColor="#ffffff" /></div>
+                                : <Alert type="info" showIcon title="地址较长，请使用下方链接打开" />}
+                            <p className="mb-0 mt-3 text-sm font-medium text-blue-600 dark:text-blue-400">{magnet ? '请使用支持磁力下载的客户端打开' : `可使用${app}扫一扫，或点击下方链接`}</p>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-11 items-center text-sm font-medium text-blue-600 underline dark:text-blue-400">{group.action}</a>
+                            <a href={link.url} target="_blank" rel="noopener noreferrer" className="mt-1 max-w-full break-all text-xs text-slate-500 underline dark:text-slate-400">{link.url}</a>
+                        </div>;
+                    })}
+                </div>
+            </section>;
         })}
-        {links.length > 0 && <p className="text-xs text-slate-500 sm:col-span-2">扫码后请及时保存；临时分享会按系统设置清理，二维码以实际访问结果为准。</p>}
+        {links.some(link => link.type === 'DISK') && <p className="text-xs text-slate-500">网盘分享请及时保存；临时分享会按系统设置清理，链接以实际访问结果为准。</p>}
     </div>;
 }
 
@@ -200,8 +219,8 @@ function SearchConversation({ userId, entryKeyword = '', autoSearch = false }: {
     const latest = turns[turns.length - 1];
     return <main className="mx-auto max-w-4xl px-3 py-5 sm:px-6 sm:py-8">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-            <div><Typography.Title level={3} className="!mb-1">搜索影片资源</Typography.Title><p className="text-sm text-slate-500">先查片库已有资源 → 手机 App 扫码保存</p></div>
-            <Tag color="blue">夸克 / 迅雷</Tag>
+            <div><Typography.Title level={3} className="!mb-1">搜索影片资源</Typography.Title><p className="text-sm text-slate-500">先查片库已有资源 → 点击链接或扫码保存</p></div>
+            <Tag color="blue">网盘 / 磁力 / 种子</Tag>
         </div>
         <Card styles={{ body: { padding: 0 } }} className="overflow-hidden shadow-sm">
             <div ref={scrollRef} data-testid="search-conversation" className="space-y-6 overflow-y-auto overscroll-contain p-4 sm:p-6" style={{ minHeight: 260, maxHeight: 'min(65dvh, 760px)' }}>

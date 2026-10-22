@@ -31,12 +31,17 @@ public final class MetadataCrawlPlanner {
         }
         JsonNode payload = read(latest);
         JsonNode crawl = payload.path("crawl");
-        if (crawl.path("startPage").asInt() != start || crawl.path("endPage").asInt() != end) {
-            return new Position(start, end, start, 0, "NOT_STARTED", null);
-        }
         boolean complete = "SUCCEEDED".equals(latest.getStatus()) && crawl.has("nextPage");
         int page = complete ? crawl.path("nextPage").asInt(start) : payload.path("page").asInt(start);
         int offset = complete ? crawl.path("nextOffset").asInt() : crawl.path("offset").asInt();
+        // Extending the end after a completed pass continues beyond the old end.
+        // An empty upstream page still ends the pass; failed/in-flight batches keep their position.
+        int previousEnd = crawl.path("endPage").asInt();
+        if (complete && end > previousEnd && payload.path("page").asInt() == previousEnd
+                && page == crawl.path("startPage").asInt() && crawl.path("pageSize").asInt() > 0) {
+            page = previousEnd + 1;
+            offset = 0;
+        }
         if (page < start || page > end || offset < 0 || offset > 10000) {
             return new Position(start, end, start, 0, "NOT_STARTED", null);
         }

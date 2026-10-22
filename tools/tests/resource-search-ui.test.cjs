@@ -57,3 +57,16 @@ test('library-first reply offers explicit external search and removes all resour
     assert.ok(!text.includes('https://') && !text.includes('magnet:'));
     assert.ok(text.includes('1234'));
 });
+
+test('classifies magnets by protocol and preserves torrent archive metadata across history', () => {
+    const links = safeSearchLinks([
+        {url:'magnet:?xt=urn:btih:fixture',name:'磁力',type:'DISK'},
+        {url:'https://pan.xunlei.com/s/torrent',name:'种子归档',type:'TORRENT'},
+        {url:'https://pan.quark.cn/s/video',name:'正片',type:'DISK'},
+    ]);
+    assert.equal(links[0].type, 'MAGNET');
+    assert.equal(links[1].type, 'TORRENT');
+    assert.equal(links[2].type, 'DISK');
+    const history = readSearchHistory(JSON.stringify([{id:'mixed',command:'片名',label:'片名',status:'done',reply:'回复',links,createdAt:1}]));
+    assert.equal(history[0].links[1].type, 'TORRENT');
+});
