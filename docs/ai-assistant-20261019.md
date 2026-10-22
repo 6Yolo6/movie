@@ -1,44 +1,21 @@
 # 本地 AI、项目问答与目录识别
 
-日期：2026-10-19，Asia/Shanghai。下文保留首轮候选证据；用户当日随后批准上线，backend/frontend、独立桥接凭据与 OpenClaw 配套于 2026-10-19/20 完成部署。2026-10-20 追加完整找片与推荐，2026-10-21 续验结果见 [上线记录](ai-recommendations-20261020.md)。部署时安全复验仍为 59 PASS / 11 FAIL / 0 UNKNOWN，原门禁未关闭。
+2026-10-19/20已部署；[标题推荐](ai-recommendations-20261020.md)、[当前自然搜索](catalog-features-search-20261021.md)、[完整旧证据](history/snapshots/20261022/docs/ai-assistant-20261019.md)。
 
 ## 能力与边界
 
-项目增加 `/ai-assistant` 页面和菜单，登录用户可查片、询问详情与存量资源并连续追问。每轮必须真实执行 `searchMovies` 或 `getMovieDetails`，展示查询时间、影片入口与接口原始资源；链接 NORMAL 仅代表片库存量状态，不表示本次检查了外部网盘。失败轮次不会进入历史；新对话清空本页内存，用户切换重新建立会话。
+/ai-assistant登录问答，前序模型每轮真实searchMovies/getMovieDetails并展示时间/片库证据；NORMAL仅存量非实时验活。失败不入历史，用户切换/新对话清内存。本机桥接主动轮询loopback，APP_AI_BRIDGE_TOKEN/X-AI-Bridge-Token只授权internal/ai，不复用通用内部token，不公开Ollama/MCP。网页6次/分钟、队列8活动/单执行/200结果/15分钟，完成丢问题历史/trace，nginx拒公开internal。
 
-网页通过 backend 认证问答队列调用本机助手。本机 `GyingBridge` 主动轮询回环 `127.0.0.1:8880`；Ollama、MCP、助手不增加公开监听。专用 `APP_AI_BRIDGE_TOKEN` / `X-AI-Bridge-Token` 只授权 `/api/internal/ai/**`，不能复用 `APP_INTERNAL_TOKEN`。网页每用户 6 次/分钟，队列最多 8 个活动、单执行、200 个保留任务；结果 15 分钟过期，完成后丢弃提问历史和原始内部 trace。nginx 继续拒绝公开内部路径。
-
-OpenClaw 补丁让明确自然语言问题进入同一片名提取队列，随后调用原有 QQ 单片、单资源选择流程。提取词必须出现在原句，禁止根据剧情猜名或执行批量、转存、发布、命令、URL；序号、网盘筛选和原管理员白名单保留。生产插件仍使用唯一安全运行副本；首轮候选只验证复制源插件，批准后源/运行副本/Gateway 均已更新并验证。未发群消息。
-
-目录名新增全片名对齐：NFKC、繁简、标点、拼音/首字母及有限偏旁组合，至少一半且不少于 3 个汉字锚点；不接受纯首字母、局部标题、错续集或任意前后缀。有限排序前缀只允许与首字拼音一致的一位英文字母加空格。年份、合集、季号、视频文件和目录转存边界继续校验。新增夸克第一季分支只接受已确认的直接视频范围，识别目录但内容不合格时拒绝，不能回退分享根目录。迅雷目录解析未新增规则；共同资源标题关联可使用新匹配器。
+OpenClaw自然提词必须原句出现，不猜剧情名/批量/URL/命令/转存发布；原序号/provider/管理员保护保留，源+唯一安全运行副本+Gateway共同验。目录NFKC/繁简/拼音/有限偏旁，全名至少半数且≥3汉字锚点，纯首字母/局部/错续集拒绝；年份/季/视频检查仍有效，不能内容拒绝后退整分享。
 
 ## 实盘只读结果
 
-| 片库 ID | 来源样本 | 候选结论 |
-| --- | --- | --- |
-| `858ng` 一个部门的诞生 | discovery `6609`，`一个–部门的DS (2026)`，子目录包含 Dog Day Evening 2026 MKV 与配图 | 定位到该子目录，保留年份与视频检查 |
-| `858ng` | discovery `6610`，正常中文目录，含 2026 MKV | 定位到该子目录 |
-| `GnVK` 黑暗召唤师在地下恋爱中 | discovery `8160`，`黑-A-召-喚-師Z地-下-戀-愛-中` | 名称可识别；当前仅见 `.exe` 与解压目录，视频转存拒绝 |
-| `GnVK` | discovery `8161`，`H 黑-A-召-喚-師Z地-下-戀-愛-中 1080P` | 有限排序前缀可识别；同样不能以“更新至 02 集”回退整分享 |
-
-只使用 READ ONLY SQL、`get_share_detail` 和候选目录解析器；没有下载/执行 `.exe`、转存、修改资源行或重放历史任务。未知偏旁、无法确认视频范围的资源继续拒绝。
+858ng混合“一个–部门的DS(2026)”与正常目录定位到2026 MKV；GnVK混写目录虽识别名称，但仅exe/解压内容拒绝，不能因“更新02”退整分享。READ ONLY/share-detail/解析器，不下载执行exe/转存/重放。
 
 ## 已完成修复和验收
 
-- 每周重启安装误报已修复，两项任务 Ready；XML 精确边界为 2026-10-25 09:30，Windows NextRunTime 为 09:30:30，仅放宽为同分钟非负偏移。24 Python + 8 PowerShell 测试通过，未重启电脑。[计划记录](weekly-graceful-restart.md)。
-- 本地 AI 片库连接复现为 Docker 转发空闲 keep-alive EOF，改为新回环连接。真实 Qwen 搜索星际穿越及空闲 15 秒后详情/两条资源追问通过；本机 Vue 真实查片/详情、历史/模式切换通过。一次本机模式读取请求未调用工具并回答无法确认，未将此场景记为通过。
-- 本地 Maven verify 47 项、前端历史 5 项、Router 6 项、Node 生命周期 2 项通过；前端构建成功。后端使用按 SHA-256 保存的运行副本，避免打包覆盖运行 JAR；真实请求排空发生于 23:25:29，完整回答 23:25:33 返回后才写 stopped；随后恢复四服务健康。
-- GYing 先前全量 639 通过/15 专用依赖跳过，最终相关定向 42 项全部通过，包含 Spring 构造注入、跨用户/lease/过期/证据校验、目录与 `.exe` 拒绝。候选 JAR 中 324 个 class/resource 与构建目录 hash 一致。
-- 前端类型、Lint、构建通过；既有 7 条 Lint warning 保留。Edge 五组隔离回归覆盖中英/明暗/390 与 1440px、匿名登录、history、失败/离线、新对话和无 pageerror/横向溢出；真实模型结果作为展示数据，用户身份/API 路由为 fixture。
-- OpenClaw 复制源文件补丁重复应用 hash 不变，两个 ES module 语法通过；11 个提取/分流样例、3 个管理员通过、3 个未授权拒绝、4 个管理命令分类及 UTF-8 进度通过。未真实群出站。
-- 就绪检查 11 通过/1 历史 schema warning/0 失败；两仓库工作树密钥扫描无命中。完整生产安全门禁仍未关闭。
+真实本地模型新回环连接修EOF，星际穿越/空闲15秒追问通过；一次未调用工具不计通过。local Maven47、前端历史5/Router6/生命周期2及构建；GYing先前639通过/15skip、最终定向42、JAR324文件；前端5组mock；插件11提词/3ADMIN/3拒绝/4命令/UTF8。24Python+8PowerShell重启任务偏移修复，未整机重启。[维护计划](weekly-graceful-restart.md)。
 
 ## 部署与回退
 
-候选及脱敏证据：`E:/gying-tools/releases/ai-assistant-20261019`。最终 hash 在该目录 `backend-package-result.json`、`image-backend.json`、`image-frontend.json` 与 `release-review.json` 固定；不得使用此前测试过程中被替换的同名标签。
-
-本地助手提交 `e709d8c` 已推送，旧运行包在 `G:/local-ai-agent/backups/ai-catalog-20261019/before.jar`。生产旧 backend/frontend 精确镜像分别为 `sha256:d8445ad41f657c22acc977f3028079b97fc198cfeb7fe1da1b5b17f34559d439` 与 `sha256:747aca93ccafaf536d820864f3db28b17f4b060b534ebb014778b19ddd5f3e07`。
-
-生产 `.env`、运行参数、OpenClaw 配置与源/唯一运行副本已流式加密到 `G:/gying-backups/ai-assistant-config-20261019-232528`，4 个文件完整认证解密通过；此为在线配置回退材料，不替代切换窗口内数据库一致性检查点。
-
-首轮上线后：用户已于 2026-10-19 明确批准，独立桥接 token、backend/frontend 和 OpenClaw 配套完成部署；source 当时优雅排空后恢复原镜像，publisher 未替换。完整找片/推荐的现役镜像、检查点及 2026-10-21 生产入口/模型队列证据以 [上线记录](ai-recommendations-20261020.md) 为准。真实群消息和网盘转存未作为健康探针。
+材料 `E:/gying-tools/releases/ai-assistant-20261019` 固定候选hash；本地助手e709d8c、旧运行包 `G:/local-ai-agent/backups/ai-catalog-20261019/before.jar`；外部配置检查点 `G:/gying-backups/ai-assistant-config-20261019-232528` 四age认证通过，仅配置非一致性DB灾备。backend/frontend/独立桥接/OpenClaw已部署，source排空后原镜像恢复、publisher不替换。后续镜像/恢复从最新状态查；原安全59/11/0未闭环，未群出站/网盘转存。

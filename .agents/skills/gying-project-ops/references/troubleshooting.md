@@ -1,104 +1,59 @@
 # 故障排查
 
+[现状](../../../../docs/current-project-status.md) · [完整旧事故/回退记录](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/troubleshooting.md)
+
 ## 事故处理顺序
 
-1. 暂停高风险自动化：Resource Hub Worker、频道计划任务和机器人自动转存。
-2. 记录时间、环境、现象、最近正常提交和近期变更。
-3. 重启前保存容器状态和日志。
-4. 从依赖向外检查：MySQL、Redis、存储、外部 API、backend、frontend、nginx、机器人和频道。
-5. 每次只改变一个层级。
-6. 重新验证最初的用户可见现象。
-7. 在 `docs/current-project-status.md` 记录原因、修复、证据和剩余风险。
-
-不能一次重启所有服务，否则会丢失证据并掩盖故障边界。
+时间/主机/提交/容器基线→依赖/内部→backend/SSR→nginx本机→Tunnel/公网→副作用/日志。先只读、按范围处理，保留配置/加密回退；容器Up/单次200不能关闭事故。
 
 ## 现象矩阵
 
-| 现象 | 可能边界 | 检查项 |
-| --- | --- | --- |
-| 整站不可用 | nginx、端口、应用容器 | nginx 日志、80/443、上游容器 |
-| 前端可加载但 `/api` 失败 | nginx 到 backend | backend 日志、`backend:8880`、数据库启动 |
-| 浏览器 API 正常但详情 SSR 失败 | frontend 内部 API | `INTERNAL_API_URL=http://backend:8880` |
-| backend 启动后出现 mapper SQL 错误 | 架构漂移 | 在线字段和索引与实体、SQL 对比 |
-| MySQL 时间偏差 8 小时 | 容器、JVM、JDBC 时区 | `TZ`、`JAVA_OPTS`、JDBC、`NOW()` 与 `UTC_TIMESTAMP()` |
-| Resource Hub 提示缺少 Key | backend 环境过期或目标错误 | 检查运行容器配置键并重建 |
-| GYING 健康但候选失败 | Session、PoW、登录或内部 token | `gying-source` 日志、`/account` 状态、backend/source token |
-| PanSou 根路径 `404` | 检查路径错误 | 容器日志和已知 API |
-| 夸克任务已提交但未转存 | Cookie 或账号配置 | WebUI Cookie、API token、最终配置 |
-| 分享任务没有 `share_id` | 空目录、Cookie 或 API 故障 | 目录内容、任务错误、Cookie |
-| 重试显示完成但没有活动资源 | 旧逻辑跳过、任务缺失或分享未生成 | 重建任务并检查自有分享和 `resource_link` |
-| 单片分享包含整套合集 | 未定位目标子目录或未收窄 `fid` | 标题/年份/季号、目录树、提交参数和最终分享内容 |
-| 待入库或待转存数量异常 | 状态过滤语义 | 状态、分享链接、资源绑定条件，先 reconcile dry-run |
-| 缺资源批量任务被截断 | 请求超过每批 20 部 | 前端选择数、请求体和后端逐条结果 |
-| 发现或修复出现 nginx `504` | 调用了旧同步接口 | 确认返回 `jobId` 并轮询 |
-| 修复后产生重复资源 | 重放或 canonical 匹配错误 | source URL/hash、旧失效行、发布行为 |
-| 官方 QQ 主动消息返回 `40034105` | 平台权限或消息模式 | 使用带 `msg_id` 的被动回复或授权 |
-| NapCat 容器存在或退出 | 历史遗留服务仍被误启动 | 不重启 NapCat；检查 OpenClaw Gateway、后端 QQ 接口和 QQBot 配置 |
-| OpenClaw 重启循环 | gateway 配置 | `gateway.mode=local`、`gateway.bind=lan` 并重建 |
-| OpenClaw 升级后搜索失效 | 本地插件补丁被覆盖 | 重新应用脚本或部署正式插件 |
-| QQ 频道帖子乱码 | Windows CLI 编码 | UTF-8 content file，避免 stdin JSON |
-| 计划任务存在但没有发帖 | 任务禁用或授权过期 | 任务状态、管理员启用、CLI 登录 |
-| 多平台发布容器 401 | 内部 token 不一致 | backend 与容器的 `SOCIAL_PUBLISHER_TOKEN` |
-| QQ 发布账号未就绪 | 凭据卷、扫码授权或未加入频道 | 账号目录、授权状态、目标频道 |
-| 微博发布失败 | Cookie/fingerprint 过期、限流或安全验证 | `/health` readiness、失败日志；验证码人工处理 |
-| 多平台同片重复发布 | 目标或影片去重异常 | 唯一键、目标 ID、资源 ID 和历史日志 |
-| MySQL MCP 报 `1045` 和 password NO | MCP 缺少密码环境 | `GYING_DB_PASSWORD` 并重启 MCP |
-| MCP Compose 找不到配置 | Compose 文件名非默认 | shell 显式使用 `-f` |
-| Docker 依赖端口冲突 | embedded 与外部服务重复 | `docker ps -a`、profile、映射端口 |
-| 公网 `530`、cloudflared 反复 `failed to dial to edge with quic: timeout` | 本机代理（Clash TUN fake-IP）把 `cfd.argotunnel.com` 解析成 `198.18.0.0/15` 地址，QUIC/UDP 经代理超时 | 计划任务参数加 `--protocol http2`（该参数已从 `--help` 隐藏但仍有效；`config.yml` 可能被 ACL 设为只读），重启任务后用 `http://127.0.0.1:20241/ready` 与 `cloudflared_tunnel_ha_connections` 复核 |
-| `git push` 报 `Connection closed by remote host`（对端 198.18.x.x） | 同一个代理 fake-IP 拦截 22 端口 | 改用 `ssh://git@ssh.github.com:443/<owner>/<repo>.git`，或全局 `insteadOf` 映射 |
+| 现象 | 定位 |
+| --- | --- |
+| MySQL1045/passwordNO | MCP专用身份/密码键/宿主环境，不改grant试错 |
+| GYING5xx/超时 | source会话/短熔断/来源结果，AUTO可PanSou但显式GYING失败不冒成功 |
+| 分享不可用/WAITING_SHARE | 分provider核保存目录/本轮文件完整/分享/任务，HTTP200不代业务 |
+| publisher200/UNKNOWN | 查持久化状态/远端，不重试在途/历史FAILED |
+| 本机好/公网530、ready503 | HA连接/代理/DNS/边缘网络，不先改业务/Access凭据 |
+| git SSH22被fake-IP关闭 | 用已信任ssh.github.com:443单次配置，不擅改全局remote/insteadOf |
+| 相同片/季错配 | 大小写身份/年份/季/主创/canonical，不删历史消歧 |
 
 ## 日志命令
 
 ```powershell
-# cloudflared 隧道连接状态（未显式配置时 metrics 默认监听 20241）
 Invoke-WebRequest http://127.0.0.1:20241/ready -UseBasicParsing
-(Invoke-WebRequest http://127.0.0.1:20241/metrics -UseBasicParsing).Content -split "`n" | Select-String 'ha_connections'
+docker compose -p gying-movie -f docker-compose.prod.yml logs --tail=200 backend gying-source social-publisher frontend nginx
 ```
 
-```powershell
-docker compose -f docker-compose.prod.yml logs --tail=200 backend
-docker compose -f docker-compose.prod.yml logs --tail=200 gying-source
-docker compose -f docker-compose.prod.yml logs --tail=200 social-publisher
-docker compose -f docker-compose.prod.yml logs --tail=200 frontend
-docker compose -f docker-compose.prod.yml logs --tail=200 nginx
-docker logs --tail 200 gying-pansou
-docker logs --tail 200 gying-quark-auto-save
-docker logs --tail 200 openclaw-openclaw-gateway-1
-```
+涉及配置变更用已审查覆盖；独立PanSou/Quark/OpenClaw按实际名字读取窗口。metrics核ha_connections。分享只脱敏摘要，禁Cookie/token/body/完整URL参数。
 
-分享日志前删除 Cookie、token、Authorization、用户隐私和带访问参数的完整 URL。
+## Docker 恢复后端口空响应与 Tunnel fake-IP 漂移
+
+09月30历史两独立问题：容器内部HTTP正常但宿主8880/5005 curl52，vpnkit仍旧IP；先记身份/配置/挂载/转发日志、无新在途后按授权逐原容器重启注册，每项验宿主，backend变化后nginx测试/重载。不要扩大端口/删卷/全Docker重启。
+
+HTTP2 Tunnel缓存漂移198.18地址时，对照当前DNS/目标/代理；不是所有超时都QUIC。限定dns.fake-ip-filter `+.argotunnel.com`，blacklist模式/现有项/生成顺序先核，不关TUN或固定边缘IP。受限Clash配置 `%APPDATA%/io.github.clash-verge-rev.clash-verge-rev`、profiles/Merge.yaml DNS；Mihomo -t验证/授权本地控制重载，确认region1/2.v2真实IP再按范围重启原Tunnel清缓存。历史回退 `E:/gying-tools/releases/entrypoint-recovery-20260930/Rollback-ProxyDns.ps1` 默认检查，Apply遇后续hash变化必须合并；DPAPI仅原主机/账号。
+
+## Tunnel 边缘连接被代理节点绑架（TUN 默认路由）
+
+10月14 17:17–17:23公网530/1033、机场测速超时、HA归零；代理恢复后自动重连。查service日志7844 match-Match超时/ready/源站分层，不改Token/Access。
+
+持久规则仅 DOMAIN-SUFFIX argotunnel.com 和198.41.192.0/24、198.41.200.0/24的IP-CIDR no-resolve，prepend置最前；rules/groups订阅增强只支持prepend/append/delete，Merge深合并中的prepend-rules无效。fallback `GYing-Tunnel` 原机场→DIRECT，以Cloudflare trace健康检查；保留TLS/HTTP2/其他策略。修改增强文件后重启客户端，核生成时间、rules前三/7844 connections IPCIDR/chains及连续公网。不要直接改生成clash-verge.yaml；配置可能含secret，加密备份仅路径/hash。原回退tmp/tunnel-diagnose-20261014/backup，删本次prepend后重启，后续用户配置不覆盖。
 
 ## 数据安全排查
 
-- 先使用 `SELECT` 和 dry-run。
-- 同时检查少量样本和汇总数量。
-- 重置卡住任务前先核实外部副作用。
-- 重复清理要人工复核标题、别名和季信息。
-- 失效链接要区分验证器不可用、疑似失效、保存目录为空和确认失效。
-- 不能把可观测性问题变成删除或无限重试循环。
+SELECT/dry-run+汇总及少量样本；重跑先核远端副作用，区分验证器故障/疑似失效/真无文件。重复按标题/别名/季核canonical，优先软处理；不把观测不足改成删除/无限重试。
 
 ## 近期功能专项排查
 
-- 单条失效资源修复返回成功但链接不可用：检查对应 `quark_transfer_task`/`xunlei_transfer_task`、`saved_path`、新 URL 验证结果和 `resource_link.link_status`；确认 provider 没有被错误地按另一网盘处理。
-- 资源已重分享但 GYING 未同步：查看接口返回的 `gyingUpdated` 和消息，核对 `movie_source_identity` 映射、GYING 账号和 `/res/pan/add` 审计；没有明确映射时这是预期结果。
-- QQ 每日推荐保存后未出站：先在 `/api/admin/qq-automation/daily-recommendation/run` 手动触发，检查目标群配置、后端日志和官方错误码；`40034105` 表示主动消息权限/模式问题，不应只靠重启后端解决。
-- QQ 搜索进度提示乱码：重新执行 `tools/patch-openclaw-qqbot-gying.ps1`，确认运行时副本使用 JavaScript Unicode 转义并重启 Gateway。
-- OpenClaw 管理命令被普通成员执行：核对 QQ 号与群 `member_openid` 是否同时进入 `allowFrom`、`ownerAllowFrom` 或 `commands.allowFrom.qqbot`；确认 `/bot-*`、`/stop`、`/approve` 在插件入口二次校验并拒绝未授权请求。
+- repair-invalid分双盘，核任务/saved_path、新URL/NORMAL/url_hash；gyingUpdated=false先查映射/账号/res/pan/add，无映射可预期。
+- QQ每日推荐核sys_config目标/篇数/时间/模板、官方主动权限/错误码；40034105不是重启可解决。手动run真实消息，不能默认排障试发，NapCat不备用。
+- QQ进度乱码/越权：核源/唯一运行插件/Gateway配置、Unicode转义、allowFrom/ownerAllowFrom/commands.allowFrom.qqbot的QQ/member_openid，插件二次拒/bot-*/stop/approve。补丁/重启需当前范围。
+- 自然搜冷启动/误召回先核TTL/50k截断/filters与词覆盖，不把词法映射当embedding或模型生成；[成果](../../../../docs/catalog-features-search-20261021.md)。
 
 ## 编码
 
-Markdown、SQL、JSON 和 PowerShell 文件操作都显式使用 UTF-8。
-连续异常汉字或问号表示可能出现 mojibake，应根据已知原文修复，
-不能反复转码已损坏字符串。
+UTF8读写，已乱码按已知原文修，不能反复转码猜测。
 
 ## 关闭事故
 
-满足以下条件后才能关闭：
-
-- 原始故障路径已验证；
-- 日志中没有立即复发；
-- 自动化已明确重新启用或记录为关闭；
-- 备份和回滚状态明确；
-- 未完成工作已记录；
-- 状态文档与在线证据不再矛盾。
+原路径/连续日志无立即复发、任务恢复原状态或明确关闭、回退可用、数据/外部效果明确、待办和状态一致；真实群消息/网盘操作不从health通过推断。

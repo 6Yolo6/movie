@@ -1,85 +1,57 @@
 # 安全加固部署检查清单
 
-> 执行提醒（2026-10-08）：下文保留的“Public Firewall 仍关闭/尚未执行”等防火墙准备文字属于历史阶段。本次只读已看到 Public/Private 启用；不要据旧文字重复运行 `-Apply`。先核对当前有效策略与最新状态，公网/IPv6 等缺证据项仍不得勾选。
-
-固定编号 `G01–G11`、只读进度工具、隔离候选与分步前置条件见 [11 项门禁与续验](hardening-gates.md)。机器台账只覆盖原 11 个容器/网络项，不代替本清单的 Access、身份、Firewall 和恢复验收。
-
-> 这是部署门禁，不是“已部署”证明。当前生产尚未完成本清单。
-
-2026-09-25 复核：nginx/backend loopback、应用非 root、MinIO alias 和部分入口已验证；迅雷补丁已随 backend:20260924c 上线，在线状态文件为 600。检查项仍按实际证据逐项验收，不把此清单视为全量上线证明。Public Firewall 仍关闭，Redis 仍在共享网络，专用备份账号、完整 gying 逻辑/持久数据备份与隔离恢复已通过；Firewall、Access、应用身份/policy 等仍需独立闭环，目前不得批量重建生产。
+完整清单尚未闭环。最近机器扫描 2026-10-22：59 PASS/11 FAIL/0 UNKNOWN；[G01–G11](hardening-gates.md)只覆盖容器/网络，以下门禁仍逐次验收。
 
 ## A. 变更前
 
-- [ ] 读取 `docs/current-project-status.md`、根目录 `docker-security-report.md` 和本清单。
-- [ ] 确认分支/提交、维护窗口、回滚点；`git status --short` 已记录。
-- [x] 本机使用 G 盘备份配置与便携 age，官方摘要、受限 ACL、`mysql-backup.cnf` 和 `gying_backup@localhost` 的登录/grants 已验证（2026-09-25）。
-- [ ] 不接受 `G:/gying-backups/security-20260925-partial` 替代完整恢复点：已验证 16 个加密文件、25 张表、MinIO 单图；仍缺完整 DB 对象、跨服务静默一致性与离线私钥。
-- [x] 用户已本机执行备份账号开通；只新增 localhost 备份身份并导出防火墙，不改应用/root 账号。账号与私有 defaults 已由本任务复核。
-- [x] 当前完整逻辑/持久数据备份位于 `G:/gying-backups/20260925T030328.719395Z`：19 文件、短时冻结窗口、hash/解密、25 表行数/CHECKSUM、对象数量与隔离 MinIO 抽样均通过；MySQL 系统账号、离线私钥和完整应用/异机验收不在此勾选覆盖范围。
-- [ ] 生产 `.env`、Cloudflare config、MySQL defaults、age 私钥 ACL 已核对；不打印值。
-- [ ] 运行 `python -X utf8 tools/security/scan_secrets.py`，当前工作区无命中。
-- [ ] 现有容器、端口、网络、卷和 Windows Firewall 已截图/脱敏记录。
+- [ ] 读取当前状态、审计摘要，确认目标/提交/范围/维护窗口；保留无关改动。
+- [ ] 采集实际容器/镜像/配置/卷/端口/网络/在途基线，保护凭据。
+- [ ] 本轮适用完整检查点：manifest/hash、认证解密、所需隔离恢复，不用历史 partial 替代。
+- [ ] 当前 secrets 扫描、受限文件 ACL、回退兼容性及执行条件通过。
 
 ## B. 身份和密钥
 
-- [ ] DB 已创建 `gying_app`、`gying_source`、`gying_social`、readonly、backup 账号；每个独立强密码。
-- [ ] `CURRENT_USER()`/`SHOW GRANTS` 验证通过，应用不再是 root。
-- [ ] MinIO scoped key/policy 已创建；root key 已有轮换计划。
-- [ ] Redis 密码/ACL、JWT、内部 token、QQ/Quark/第三方 token 已从外部 secret 注入。
-- [ ] GYING Source token 非空且 source 缺 token 时请求拒绝。
-- [ ] Quark Cookie 卷 ACL/文件模式收紧，旧 Cookie 已按需要撤销。
-- [ ] 迅雷状态文件先备份；外部同步与 backend 自身持久化都经实际重复写入验证 owner `10001:10001`、mode `600`，不输出内容。补丁已部署；2026-09-25 09:27、10:33 同步任务均退出 0，两次 stat 均为 `600`，但 backend 自身独立重复写入证据仍缺，保留未完成。
+- [ ] 应用分服务非 root DB 身份、窄 Host/最小 grants；readonly/backup 单独使用。
+- [ ] MinIO scoped/anonymous policy、root key 轮换/旧 key 验证。
+- [ ] Redis ACL/JWT/internal/QQ/Quark 各用途独立、外部受限注入、缺失拒绝。
+- [ ] Quark 单文件权限/非 root/NNP/旧 Cookie；迅雷两写链路重复私有原子写回与实际同账户授权。
+
+9/25 已完成 localhost 备份账号及 Quark root 父目录 0700，不重复创建/Apply；父目录拒绝不等于单文件 600。10/8 迅雷写回/当前会话通过，不能代替自然失效路径。
 
 ## C. 依赖和网络迁移
 
-- [ ] MinIO 备份后接入 `gying-net` alias `minio`；9000/9001 不再监听所有接口。
-- [ ] Redis 从共享 `gying-net` 迁入 `cache-net`（internal=true），backend 连接、认证/ACL 和限流验证通过；没有宿主发布不等于网络已隔离。
-- [ ] OpenClaw 接入应用网络，调用 `http://backend:8880/api/qq-bot/search-reply`；不依赖 backend 公网/宿主机端口。
-- [ ] Windows Firewall Public profile 启用；3306/33060/9000/9001/8880/5005 无不必要公网入站规则。已准备 `G:/gying-tools/security-20260925/Apply-FirewallStep.ps1 -Apply`（仅物理网卡入站阻断、不改出站、不重建容器，健康失败/超时自动回退）；自动 UAC 启动未成功，当前仍未执行，需管理员本机运行。
-- [ ] Cloudflare Tunnel 仅指向 `127.0.0.1:80`；Access/WAF/默认 deny 已在账号侧验证。2026-10-08 只读复验：既有 DPAPI Token 为 active、Zone API 200，但目标账号 Access organization/providers/apps 均 403；需核对 Access 权限/资源范围，而非重复录入同一 Token。未修改云端策略；实际 OTP/既有应用冲突/登录和回退仍未验收。
+- [ ] MinIO 真实消费者先移入内部 endpoint，data/config/policy 通过后收窄 9000/9001。
+- [ ] Redis cache-net、认证/Lua/所有消费者、失联 fail closed。
+- [ ] OpenClaw 内网调用/唯一插件/权限；其他依赖逐项 NNP/非 root/私有卷。
+- [ ] 公网直连/IPv6 敏感端口拒绝，与 Tunnel/本机 Firewall 分开验收。
+
+### Windows 防火墙单步执行与故障定位
+
+9/25 规则已实施，不重复 Apply。原记录/回退目录 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`；本机有效策略/健康及同网客户端报告通过，公网/IPv6、真实回退仍未验证。
+
+只读 CheckOnly 使用已配套发布的 Apply-FirewallStep.ps1/firewall_health.ps1/Rollback-FirewallStep.ps1；健康检查接受 Quark 同源 /login 的 302，不接受任意重定向；TLS 不降级。回退只删除本次规则、恢复本次 Public enabled/default-inbound，不导入覆盖全策略。完整 watchdog/路径/命令见[原文](../history/snapshots/20261022/docs/security/deployment-checklist.md)。
 
 ## D. Compose 预检和发布
 
-用合成值做语法验证，不把真实值写入输出：
-
-```powershell
-# 在隔离 PowerShell 进程设置必需键，然后执行
- docker compose -f docker-compose.prod.yml config --quiet
-```
-
-- [ ] 未提供必需生产键时 Compose/生产 validator 会失败，而不是启动默认凭据。
-- [ ] `docker compose -f docker-compose.prod.yml up -d --build backend frontend gying-source social-publisher nginx` 前已确认依赖网络/账号。
-- [ ] 不执行 `down -v`、volume 删除、全局 prune、DROP/TRUNCATE。
-- [ ] 每个服务按顺序重建并观察日志；失败回滚到旧镜像/容器，不删除卷。
+- [ ] 显式项目/生产文件/已审查覆盖，config --quiet、固定 ID，无 pull/build/全栈重建。
+- [ ] 新/恢复环境关闭所有自动化；实际读取 sys_config，单一写入方、在途协调。
+- [ ] 候选真实卷副本/身份/配置与回退通过，再逐服务切换；nginx -t 后平滑重载。
 
 ## E. 入口验收
 
-```powershell
-python -X utf8 tools/security/check_security.py --repo . --probe
-python -X utf8 tools/security/test_nginx.py
-```
-
-- [ ] `/` 200；公开列表 API 200。
-- [ ] 未认证 `/api/admin/users` 为 401/边缘拒绝。
-- [ ] `/api/internal/**`、`/api/qq-bot/**` 为 404，不能看到 health 诊断。
-- [ ] 私有媒体/非图片对象 404/403；公开图片 GET/HEAD 成功，带 query 不被上游接收。
-- [ ] API 登录/搜索/写入超限返回 429，并有 `Retry-After`。
-- [ ] CORS 只允许正式 origin；伪造 forwarded headers 不改变客户端身份。
-- [ ] Redis 未认证 PING 被拒绝；Redis 故障时限流接口 fail closed。
-- [ ] backend/source/social 运行用户非 root；无 privileged/socket 挂载；发布端口均 loopback或无发布。
+- [ ] 内部依赖 → backend → SSR → 本机 nginx → 公网 → 受影响登录/UI/日志。
+- [ ] 匿名管理拒绝、internal/QQ 404、图片范围、私有对象拒绝；有效身份/端口/环境一致。
+- [ ] 未改容器和原调度保持；外部结果/审计核对，模拟与实际业务分开。
 
 ## F. Cloudflare/外部链路
 
-- [ ] 未登录管理员请求被 Access 拦截（2026-09-25 公网 `/admin/movies` 仍为 200，尚未取得拦截证据）；Access 登录后普通 USER 仍不能调用 ADMIN API。
-- [ ] 直接访问主机公网 IP 的 8880/5005/9000/9001/3306 被防火墙拒绝。
-- [ ] MinIO 控制台未进入 Tunnel；Cloudflare catch-all 返回 404。
-- [ ] OpenClaw QQ 搜索走内部 token；每用户一分钟 5 次限流生效。
-- [ ] 公开首页、影片列表、图片、评论和登录在真实域名上通过；不触发真实外部发帖/转存，除非维护窗口明确批准。
+- [ ] 本人 OTP 登录与网站 ADMIN/USER，origin JWT/WAF、路径继承/冲突；不扩大公开管理范围。
+- [ ] 所需真实消息/转存/发帖按独立批准范围验收，不作为默认健康探针。
+
+10/13 Access 单邮箱/管理路径/匿名边缘保护已启用，不重复录入 Token 或创建对象。
 
 ## G. 收尾
 
-- [ ] `docker ps`、Compose 状态、日志、Windows Firewall、Cloudflare 配置和数据库 grants 再次脱敏记录。
-- [ ] 执行前端/social npm audit；运行 Java/Python/容器扫描（工具不可用时明确记录）。
-- [ ] 加密备份 `verify_backup.py` 通过，并安排真实解密/恢复演练；不要把 hash 验证写成恢复成功。
-- [ ] 更新 `docs/current-project-status.md`：明确“代码已具备/配置已写入/容器已重建/真实链路已验证”。
-- [ ] 保存回滚路径、剩余风险和下次复核日期。
+- [ ] 保留原失败/UNKNOWN、回退材料、绝对时间/版本/结果；更新风险与当前状态。
+- [ ] 恢复原启用开关，保留原禁用目标；不重置任务、不恢复旧 SQL、不删卷。
+- [ ] 定期 CVE/恢复/外部攻击面复验；本轮业务例外不标记整体安全完成。

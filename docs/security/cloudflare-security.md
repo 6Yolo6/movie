@@ -1,80 +1,29 @@
-# Cloudflare Tunnel / Access 安全设计
+# Cloudflare Tunnel / Access
 
-## 最新状态（2026-10-13 20:59，Asia/Shanghai）
+## 最新状态（2026-10-13，Asia/Shanghai）
 
-- 已启用账号侧限定管理路径应用：仅四类管理路径、1 个管理员邮箱、OTP、1 小时应用/策略会话；API 回读和匿名边缘拦截通过，公开入口不变。
-- 现有 Token、全局登录会话、身份提供方、DNS/Tunnel 和业务服务未修改。此前 403、缺 Token 或“尚未创建”的记录属于各自日期的历史阶段，不应据此重复录入或扩大授权。
-- 管理员本人 OTP 登录、登录后网站 ADMIN/USER 授权、origin JWT 校验与 WAF 仍待独立验收；不能标记整体安全加固完成。
-- 实际范围、22 项入口检查、失败尝试的真实回退、当前回退命令见 [2026-10-13 启用验收](cloudflare-access-activation-20261013.md)。
+账号侧已启用 1 个 self-hosted 应用、1 条单邮箱 Allow，OTP、应用/策略 1h；四类管理路径回读与匿名拦截通过。本人 OTP 登录、网站 ADMIN/USER、origin JWT、WAF 未闭环。已有 Token/方案无需重复录入、申请或扩大授权。[22 项入口和精确回退](cloudflare-access-activation-20261013.md)。
 
-## 1. 历史入口基线（2026-09-20）
+## 目标暴露面
 
-在线配置位于仓库外：`E:\gying-tools\cloudflared\config.yml`。截至 2026-09-20，观测到一个 hostname：
-
-```text
-gyinghub.dpdns.org -> http://127.0.0.1:80
-catch-all -> http_status:404
-```
-
-没有在该 origin 配置中发现 Access origin-validation 段；Cloudflare 账号侧 Access Application、Policy、WAF 和 rate limiting 没有纳入本次本机检查。公网探针的 403/网络错误只能说明接受结果未闭环，不能证明 Access 已启用。
-
-## 2. 目标暴露面
-
-| 路径/服务 | 公网目标 | 处理 |
-| --- | --- | --- |
-| `/`、公开前端静态资源 | 允许 | Cloudflare → loopback nginx → frontend |
-| 公开影片/评论/列表 API | 允许但限流 | 精确 CORS、nginx + Redis 限流、参数边界 |
-| `/media/<image-prefix>/<image>` | 允许 | 仅图片前缀/扩展，清空 query，GET/HEAD |
-| `/admin/**`、`/api/admin/**`、资源审核/管理 | Access + ADMIN JWT | 未登录在边缘拒绝；即使绕过边缘，Spring 仍需 ADMIN |
-| `/api/internal/**`、`/api/qq-bot/**` | 禁止公网 | Tunnel ingress 和 nginx 都返回 404；机器人走内部网络 |
-| MySQL 3306/33060、Redis 6379 | 禁止 | 不写入 ingress；Windows 防火墙/监听进一步限制 |
-| MinIO 9001 控制台、S3 管理 API | 禁止公网 | 本机/内部管理；图片由 nginx 受控代理 |
-| Docker API/socket、OpenClaw 管理 Gateway | 禁止公网 | loopback/本机管理；不配置 Tunnel route |
-| quark-auto-save UI | 禁止公网 | loopback + 本机/Access 管理，不能把 Cookie UI 暴露给 Internet |
-
-## 3. Ingress 模板
-
-`deploy/cloudflared-config.example.yml` 是模板，不是可直接替换的线上配置。上线前替换 tunnel UUID、credentials path、team name 和 audience，并在 Cloudflare 账号侧创建相同路径的 Access Application/Policy。
-
-顺序必须是：内部 deny → 管理 Access → 普通公开路由 → catch-all 404。每次修改后：
-
-```powershell
-cloudflared tunnel ingress validate --config E:\gying-tools\cloudflared\config.yml
-cloudflared tunnel ingress rule https://gyinghub.dpdns.org/admin/users
-cloudflared tunnel ingress rule https://gyinghub.dpdns.org/api/internal/resource-hub/health
-```
-
-如果本机版本不支持上述子命令，使用同版本 `cloudflared tunnel --config ... ingress validate` 的等价形式，并把输出脱敏保存。
-
-## 4. Access policy
-
-建议至少建立三个策略：
-
-1. **管理员 Application**：`/admin/*`、`/api/admin/*`、`/api/resources/admin/*`、资源审核路径；仅指定管理员邮箱/组或硬件 MFA；默认 deny；短会话；禁止匿名。
-2. **维护 Service Token Application**：只给明确的 CI/维护客户端，限定路径和 HTTP 方法；token 不写 URL/query，不写日志。
-3. **公开 Application**：普通页面和公开 API；不把管理员路径作为同一条“允许所有”规则的例外。
-
-Access 是入口身份层，不替代 backend JWT、ADMIN 角色、内部 token 或 nginx 路径拒绝。边缘规则和 origin 规则必须重复关键 deny，防止误配时内部端点泄漏。
-
-## 5. Origin 和 Windows 主机
-
-- Tunnel origin 只监听 loopback；Cloudflare Tunnel 进程凭据位于仓库外，ACL 仅允许当前账号/SYSTEM。
-- Windows 网络配置必须把不必要的 Public profile 规则改为显式允许；对 3306/33060、9000/9001、8880、5005 做 inbound deny 或 loopback-only。
-- 不以“Cloudflare 隐藏了域名”作为防火墙替代；攻击者可直接扫描主机公网地址。
-- nginx `trusted-tunnel-peers.conf` 只允许复核过的 loopback/Docker peer；网络迁移后必须重新确认 peer IP，不能改为 `0.0.0.0/0` 或全部 RFC1918。
-
-## 6. 验收矩阵
-
-| 请求 | 预期 |
+| 路径/服务 | 边界 |
 | --- | --- |
-| 未登录 `GET /` | 200 |
-| 未登录公开列表 API | 200/按限流返回 |
-| 未登录 `/admin/` | Cloudflare Access 拦截，不到 origin；直接 origin 也不能绕过业务认证 |
-| 未登录 `/api/admin/users` | 401 或边缘拒绝 |
-| 任意 `/api/internal/*`、`/api/qq-bot/*` | 404，且不泄露 health/诊断 |
-| MinIO 控制台域名/9001 | 无公网路由/连接失败 |
-| 直接公网 `:8880/:5005/:9000/:9001` | 防火墙拒绝 |
-| Access 登录后普通 USER 调管理员 API | 403/401，不能仅凭 Access 放行 |
-| 公开图片带恶意 query | 返回图片或对象错误，但上游不能看到 query/token |
+| 首页、注册登录、公开影片 API | Cloudflare → loopback nginx；保留限流/参数边界 |
+| 图片 | 固定前缀/扩展、GET/HEAD、上游不接收 query |
+| /admin、/api/admin、/api/resources/admin、/api/resources/*/audit | Access 入口身份 + 网站 ADMIN JWT，包含根及继承子路径 |
+| /api/internal、/api/qq-bot | 公网 404，专用内部认证 |
+| MySQL/Redis/MinIO 控制台、Docker、OpenClaw、Quark UI | 无公网 Tunnel 路由 |
 
-每次验收记录绝对时间、Cloudflare Ray ID（如有）、origin 日志 request ID 和结果，不记录 token/cookie。
+Access 不替代网站角色或 internal token；本机 nginx 不经过边缘 Access，管理 API 仍需 JWT。公开路径不新建整站 Allow/Bypass，更具体应用必须检查冲突。
+
+## Ingress 模板
+
+实际配置 `E:/gying-tools/cloudflared/config.yml`、原 HTTP/2 宿主任务；`deploy/cloudflared-config.example.yml` 是目标模板，不直接覆盖线上。配置顺序为内部 deny → 管理 Access 校验 → 普通路由 → catch-all 404；origin JWT audience/team 校验需单独准备检查点。
+
+可信 nginx peer 使用明确来源，网络迁移后重新验证，禁止全部 RFC1918/0.0.0.0/0。Tunnel/Firewall 分开验收；Cloudflare 域名隐藏不替代主机拒绝入站。10/14 代理兜底和事故处理见[排障](../../.agents/skills/gying-project-ops/references/troubleshooting.md)。
+
+## 验收矩阵
+
+检查公开页面/API/图片、匿名后台跳转、Access 后网站 ADMIN 可用/USER 拒绝、内部/QQ 公网 404、管理控制面无路由、公网/IPv6 敏感端口拒绝。记录时间/状态/request ID，凭据不进入 URL/日志。公网普通 Python UA 曾 403，真实浏览器入口通过；不能单凭一个状态码推定策略原因。
+
+旧准备、权限 403、恢复与命令版本见[原文](../history/snapshots/20261022/docs/security/cloudflare-security.md)。历史 Access 申请只属于准备阶段，当前按已启用对象只读核验。

@@ -1,17 +1,23 @@
-# 历史记录
+# 历史证据索引
 
-[文档首页](../README.md) · [当前项目状态](../current-project-status.md)
+[现行手册](../README.md) · [当前状态](../current-project-status.md)
 
-> 本目录及下列报告用于追溯，不是当前运行态或可直接执行的操作手册。原验收日期、未完成项和副作用边界继续有效；历史授权不能自动复用。
+日期是原验收时点，报告中的镜像、计数、授权和“当前”不代表现在。当前操作按专项手册执行，历史失败与未验收项不因归档关闭。
 
-| 时点 | 记录 | 如何使用 |
-| --- | --- | --- |
-| 2026-10-19 | [搜索资源与种子隔离上线](../resource-search-p2p-deployment-20261019.md) | 游客登录入口、历史账号链接过滤、v2 归档与回退 |
-| 2026-10-18–19 | [API 4xx 只读排查](../api-4xx-investigation-20261018.md) | 评论错误路径来源、独立 5xx 与续查口径 |
-| 2026-10-11 | [代码优化与手机适配上线](../code-optimization-deployment-20261011.md) | 实际部署、镜像、入口验证和恢复检查点 |
-| 2026-10-09–10 | [第二批优化与手机适配](../code-optimization-20261009-round2.md) | 实现及候选测试证据；是否上线以 10 月 11 日记录为准 |
-| 2026-10-09 | [第一批分析与优化](../code-optimization-20261009.md) | 当时的分析范围、代码和测试结果，不作全量审计承诺 |
-| 截至 2026-10-08 | [历史运维验收](operations-through-20261008.md) | 从状态手册归档的原始验收及回滚线索 |
-| 2026-09 迁移记录 | [旧迁移资料索引](migration-guide-before-20261011.md) | 旧主机路径、快照和原手册溯源；不是现行迁移流程 |
+| 日期 | 记录 |
+| --- | --- |
+| 2026-10-21 实现 / 22 部署 | [推荐特征与自然语言搜索](../catalog-features-search-20261021.md) |
+| 2026-10-21 | [详情推荐、子标签与新标签页](../movie-detail-enhancements-20261021.md) |
+| 2026-10-20 / 21 续验 | [AI 标题分页与推荐](../ai-recommendations-20261020.md) |
+| 2026-10-19 | [AI 桥接与目录识别](../ai-assistant-20261019.md) · [资源/种子隔离](../resource-search-p2p-deployment-20261019.md) |
+| 2026-10-18 / 19 续查 | [4xx/5xx 只读调查](../api-4xx-investigation-20261018.md) |
+| 2026-10-16 分析 | [AI 求职路线摘要](../ai-career-project-analysis-20261016.md) |
+| 2026-10-15 | [原频道多网盘正文](../qq-channel-multi-drive.md) |
+| 2026-10-14 | [原始 IP/UA](../access-log-client-identity-20261014.md) · [查询与异步优化](../code-optimization-20261012.md) |
+| 2026-10-13 | [Access 启用](../security/cloudflare-access-activation-20261013.md) |
+| 2026-10-11 | [优化上线](../code-optimization-deployment-20261011.md) · [监控/分类计数](../monitoring-resource-counts-20261011.md) |
+| 2026-10-09 / 10 | [首轮优化](../code-optimization-20261009.md) · [第二轮](../code-optimization-20261009-round2.md) |
+| 至 2026-10-08 | [历史运维](operations-through-20261008.md) · [P2P](../p2p-cloud-archive.md) · [迅雷](../xunlei-token-sync.md) |
+| 2026-09 | [旧迁移索引](migration-guide-before-20261011.md) · [安全审计快照](snapshots/20261022/docker-security-report.md) |
 
-现行流程分别见[部署](../deployment.md)、[迁移与恢复](../../MIGRATION.md)、[数据库](../database.md)、[多平台发布](../social-publishing.md)。安全问题继续在[安全门禁](../security/hardening-gates.md)与[当前状态的待处理项](../current-project-status.md#仍需处理)跟踪，不因归档而关闭。
+[2026-10-22 文档整理记录](documentation-refresh-20261022.md)包含所有整理前原文快照。历史操作命令仅用于追溯；真实发布/转存、重置、凭据与数据恢复需要当前任务范围和有效检查点。

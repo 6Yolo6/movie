@@ -1,43 +1,17 @@
 # 影窝 · GYing Movie
 
-电影、剧集与动漫片库，集成资源治理、GYING 元数据采集、夸克/迅雷自有分享，以及 QQ 与多平台发布审计。英文界面品牌为 **FilmNest**。
+电影、剧集和动漫片库，提供检索、个性化推荐、资源治理、GYING 采集与夸克/迅雷自有分享。英文品牌为 FilmNest。
 
-> 这是生产项目仓库。仓库配置代表预期状态，不等于线上已部署或安全门禁已通过；实际运行状态以带日期的验收记录为准。
-
-## 从这里开始
-
-| 目标 | 文档 |
+| 需要做什么 | 从这里开始 |
 | --- | --- |
-| 了解当前部署、未完成事项与恢复检查点 | [当前项目状态](docs/current-project-status.md) |
-| 查找全部维护文档 | [文档导航](docs/README.md) |
-| 搭建隔离开发环境、运行测试 | [开发与测试](docs/development.md) |
-| 查询接口与数据库变更 | [接口](docs/api.md) · [数据库](docs/database.md) |
-| 更新已有部署或回滚 | [部署与回滚](docs/deployment.md) |
-| 迁移主机、初始化或灾难恢复 | [迁移与恢复](MIGRATION.md) |
-| 查看 11 项门禁与完整安全要求 | [安全文档](docs/security/README.md) |
+| 了解系统、在线版本和待办 | [项目状态](docs/current-project-status.md) |
+| 查全部文档 | [文档导航](docs/README.md) |
+| 开发、测试 | [开发手册](docs/development.md) · [前端](frontend/README.md) |
+| 对接接口、修改数据库 | [API](docs/api.md) · [数据库](docs/database.md) |
+| 发布、回滚、迁移 | [部署](docs/deployment.md) · [迁移恢复](MIGRATION.md) |
+| 安全与故障 | [安全导航](docs/security/README.md) · [排障](.agents/skills/gying-project-ops/references/troubleshooting.md) |
+| AI 项目成果与原计划 | [本轮成果](docs/catalog-features-search-20261021.md) · [求职路线](docs/ai-career-project-analysis-20261016.md) |
 
-## 仓库结构
+`backend/` 为 Java 17 / Spring Boot API；`frontend/` 为 Next.js；`crawler/` 为 Python 数据源；`social-publisher/` 为独立发布器；`tools/` 为测试及运维工具。
 
-| 路径 | 职责 |
-| --- | --- |
-| `backend/` | Java 17 / Spring Boot API、资源中心与任务编排 |
-| `frontend/` | Next.js / React 公共页面和管理界面 |
-| `crawler/` | Python GYING 数据源服务 |
-| `social-publisher/` | Node.js 独立发布器与发布状态保护 |
-| `tools/` | 运维、浏览器回归及隔离测试工具 |
-| `deploy/`、`docker-compose.prod.yml` | 部署配置与示例；不代表现役容器配置 |
-| `docs/`、`.agents/skills/gying-project-ops/` | 项目手册、历史证据与运维工作流 |
-
-## 开始开发前
-
-1. 使用独立检出目录和测试数据库/依赖，不在生产检出目录直接启动开发服务。
-2. 按[开发文档](docs/development.md)准备配置；不要复制生产 `.env`、Cookie 或账号凭据。
-3. 新库和已有库走不同路径：`schema.sql` **含 DROP TABLE，只能用于确认为空的隔离新库**，且仍有 QQ 日志表覆盖缺口，见[数据库说明](docs/database.md)。
-4. 仓库建表脚本**不创建默认管理员**，也不提供通用初始密码；不要把普通注册当作管理员初始化。
-
-## 维护边界
-
-- 日常发布只替换受影响服务，固定镜像并保留回滚材料；不要全栈盲目重建或删除卷。
-- 自动化、真实转存、对外发布及破坏性数据库操作需按各自流程确认，不能用“测试一下”代替授权。
-- 手机视口回归不等于 iOS/Android 真机验证；应用上线不等于 G01–G11 或完整安全门禁闭环。
-- 文档整理不改变生产状态；历史操作和当时的授权不是下一次操作的授权。
+使用独立检出与测试依赖开发，禁止复制生产凭据。`schema.sql` 含 DROP，只能用于确认空的新库，且缺两张 QQ 日志表；没有默认管理员。生产配置和历史报告不能代替在线证据。发布仅替换受影响服务，保留加密检查点；真实转存、发帖、凭据变更及破坏性操作按各专项流程执行。

@@ -22,6 +22,7 @@ Next.js App Router 前端，使用 React、Ant Design、Zustand 和 i18next。�
 
 依次执行，任一失败先处理，不把后续成功掩盖为整套通过：
 
+    npx next typegen
     npx tsc --noEmit
     npm run lint
     npm run build

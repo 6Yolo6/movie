@@ -1,74 +1,46 @@
 # Windows 每周优雅重启
 
-本机计划为每周日 **09:30（Asia/Shanghai）**；本轮准备的首个未来触发时间是 **2026-10-25 09:30**。2026-10-18 的时间已过，不能补跑。计划要求接通交流电且 ASUS 会话已登录；错过不补跑。Windows 保持 ASUS 手动登录，不设置自动登录，也不保存空密码。
+每周日09:30 Asia/Shanghai，首个XML计划2026-10-25 09:30（Windows显示09:30:30）；10月18已过不补。交流电/ASUS已登录、手动登录、不设置自动登录或保存空密码。[完整原证据/控制边界](history/snapshots/20261022/docs/weekly-graceful-restart.md)。
 
 ## 当前验收状态（2026-10-19）
 
-- 控制器、安装器与恢复日志已实现；24 项隔离安全测试（含真实 Windows Job 超时终止其自有 worker/子进程）通过。
-- 配置的备份公钥与私钥已通过内存中的随机小文件认证加解密测试，没有输出或落地私钥/明文。
-- 同镜像、无网络/卷/端口的诊断 fixture 收到 SIGTERM 后退出 143；11 个原有容器的 ID、启动时间和运行状态不变。
-- 2026-10-19 完整 readiness 通过（11 个现役容器、本地 AI 四服务、备份身份与无遗留维护日志）。当日通过正常 UAC 成功注册两项任务，均为 Ready、ASUS Interactive/Highest；每周任务禁止补跑、禁止强制结束，恢复任务为登录后延迟 90 秒。
-- 首次安装误报来自 Windows 的 `NextRunTime=2026-10-25 09:30:30`，XML `StartBoundary` 仍为精确的 `2026-10-25T09:30:00+08:00`。核验保留精确边界，只接受同一分钟内非负执行偏移；8 项偏移/错误边界测试通过。注册证据位于 `G:/gying-tools/restart-20261018/installation-20261019-215841`。
-- 没有进行生产停服/整机重启演练；真实周日重启与登录恢复仍待首次自然运行验收。现有其他安全整改事项不因此关闭。
+24隔离安全测试（含本轮Windows Job子树超时）+8偏移测试、公私钥内存认证、同镜像无网卷诊断SIGTERM143、readiness11容器/本机AI四服务通过；11原容器不变。UAC注册每周/登录恢复两任务Ready、Interactive/Highest，禁止补跑/强制结束、登录延迟90秒。安装证据 `G:/gying-tools/restart-20261018/installation-20261019-215841`。任务注册不等真实运行；未生产停服/整机重启，周日/登录自然验收待补。
 
 ## 控制边界
 
-运行前验证主机、时区、程序/配置、MySQL 和入口、容器白名单、宿主计划任务、本机 AI 生命周期、备份身份。只有周日 09:30–09:39 可以开始，最终发出重启前必须仍在 10:30 之前；错过窗口直接取消，计划任务 `StartWhenAvailable=false`。
+- 开始仅周日09:30–09:39，发重启须10:30前，过窗取消（StartWhenAvailable=false）。校验主机/时区/程序配置/MySQL/入口/白名单/宿主任务/AI/备份，失败取消，不强杀业务。
+- 记录ID/镜像/开关/原生MySQL-Redis启动类型；仅暂停Tunnel/原频道/Xunlei任务新调度。原已停止但Auto的mysqlzt/Redis暂Manual，恢复类型不主动启动。
+- 本机AI实例握手停frontend/router/backend；Ollama无安全控制台，应用停/连接清零/模型卸载后保进程待正常关机，不宣称提前退出。
+- 容器按nginx/frontend/OpenClaw/backend/publisher/source/Quark/诊断/PanSou/MinIO/Redis排空；业务docker stop --timeout -1防自动SIGKILL，worker写同请求/ID/启动会话完成收据。控制器超时取消，恢复等匹配收据，不凭暂时stopped启动造成迟到误停。
+- 诊断gying-xunlei-path-probe-20261006唯一例外不恢复：精确ID/镜像/命令hash/restart=no，核PID1唯一tail后SIGTERM子进程；留容器/文件且停止，不能自动重建/删。
 
-先记录容器 ID/镜像、宿主任务启用状态、本机 AI 实例及运行开关、原生 MySQL/Redis 启动类型。仅暂停 GYing Cloudflare Tunnel、GYing QQ Channel Auto Post、GYing Xunlei Token Sync 的新调度。原本停止但配置自动启动的 mysqlzt/Redis 暂改 Manual，恢复时还原原启动类型而不主动启动。
+仅忽略两条精确旧在途，任字段/更新时间改变即不忽略；其他在途取消，不改任务：
 
-本机 AI 的 frontend/router/backend 通过实例绑定的生命周期握手停止。当前 Ollama 没有可安全附着的独立控制台：应用完成停止、连接清零并成功卸载模型后，保持该受管理进程运行，交给 Windows 正常关机；这不宣称 Ollama 已提前退出。任何检查失败均取消重启，不强杀服务。
+| 表 | ID / 状态 / 更新时间 |
+| --- | --- |
+| resource_hub_task | 3426 / RUNNING / 2026-09-28 19:56:43 |
+| xunlei_transfer_task | 434 / RUNNING / 2026-09-28 20:45:54 |
 
-容器按 nginx、frontend、OpenClaw、backend、publisher、source、Quark、诊断占位、PanSou、MinIO、Redis 的顺序退出；业务容器使用 `docker stop --timeout -1`，不让 Docker 自动 SIGKILL。独立 worker 写完成收据；控制器超时取消重启，恢复器必须等同一请求、容器 ID、启动会话的完成收据，不能仅凭 inspect 一时显示 stopped 就启动它。
-
-唯一不恢复的例外是一次性诊断占位 `gying-xunlei-path-probe-20261006`。其启动命令包含不可重复执行的 `mkdir /tmp/probe`，并非业务服务。外部配置精确绑定它的 ID、镜像、命令 SHA-256 和 `restart=no`，核实 PID 1 仅等待唯一 `tail -f /dev/null` 子进程后向该子进程发 SIGTERM。容器与文件保留，周重启后维持 stopped；如要再次诊断，另行审查启动方式，不能自动重建或删除。
-
-关闭写入方前后检查在途业务记录。仅忽略两条已核实的陈旧记录，匹配表、ID、状态和精确更新时间，任一变化即不再忽略：
-
-| 表 | ID | 状态 | 更新时间 |
-| --- | --- | --- | --- |
-| resource_hub_task | 3426 | RUNNING | 2026-09-28 19:56:43 |
-| xunlei_transfer_task | 434 | RUNNING | 2026-09-28 20:45:54 |
-
-不修改、重放或重置这些记录。存在其他在途任务时取消当次重启。
-
-所有容器退出后生成新加密备份。备份及认证验证共享 15 分钟预算；自有 Python/age/tar/Docker 客户端通过启动握手后才被允许运行，整个进程树位于单独 Windows Job。超时仅终止该 Job 的临时备份进程，以及同时匹配随机 label、精确名称、只读挂载、无网络的本轮 Docker 归档器；不涉及任何既有业务进程/容器。超时或失败的 manifest 标为 maintenance_aborted，并取消重启进入恢复。备份成功要求 manifest 完整、SHA-256 一致，并对每个 age 文件认证解密到空设备；不自动恢复数据库。然后正常停止 MySQL、Docker Desktop，调用 `shutdown.exe /r /t 0`，不带 `/f`。用户未保存的程序可阻止系统重启。
+全部停后新age备份/认证共享15分钟预算；自有worker握手在独立Windows Job，超时只终止本Job备份进程与匹配随机label/名称/只读挂载/无网的归档容器，不动业务。失败manifest maintenance_aborted、取消重启进恢复；成功要求清单/hash/每age完整认证到空设备。正常停MySQL/DockerDesktop，shutdown /r /t 0不带/f，未保存应用可阻止关机；不自动恢复DB。
 
 ## 恢复与失败
 
-全局操作系统文件锁防止主控制器、watchdog 与登录恢复同时改动。失败后保留可重试日志；watchdog 在同一启动会话内尝试恢复。若存在尚未返回的 Docker 停止请求，保持保守等待，不制造延迟误停。
-
-ASUS 手动登录后，恢复任务延迟 90 秒启动。先启动 MySQL、Docker Desktop，再依赖顺序恢复**基线中正在运行的相同 ID/镜像容器**；身份改变即拒绝自动处理。不执行 compose up，不恢复停止的旧容器，不启动 NapCat，不重置业务记录。
-
-只恢复基线启用的本机 AI 服务；服务健康通过后还原原生服务启动类型和三个宿主任务原启用状态。只按原状态启动 Tunnel，不手动触发 QQ 发布或迅雷同步。最终验证本机 API、Tunnel readiness 和公网入口。原有系统自动启动行为仍受 Windows 自身控制，本工具不设置自动登录。
+OS锁协调控制器/watchdog/登录恢复，保可重试日志；未完Docker停止保守等待。ASUS登录90秒后启MySQL/Desktop，按依赖恢复基线原运行且同ID/镜像容器，身份变拒绝；不用compose up/停旧容器/NapCat/队列重置。仅原启用AI，健康后还原原生启动类型及三任务开关，按原状态启Tunnel、不手触QQ/Xunlei；核API/ready/公网。系统自身Auto行为另记，不设自动登录。
 
 ## 安装、检查和撤销
 
-本机配置位于 `G:/gying-tools/restart-20261018/config.json`，只引用受保护的凭据文件；不把密钥值写入配置或仓库。安装器会为运行副本、配置和日志设置仅 ASUS/SYSTEM/Administrators 可访问的目录权限。
-
-先执行技术 readiness（报告在途任务，但此模式不要求此刻空闲）：
+配置 `G:/gying-tools/restart-20261018/config.json` 引受限凭据，runtime/config/log ACL仅ASUS/SYSTEM/Administrators。只读技术readiness报告在途但不要求此刻空闲：
 
 ```powershell
 python -X utf8 tools/maintenance/weekly_restart.py --config G:/gying-tools/restart-20261018/config.json --readiness
 & tools/maintenance/Install-WeeklyRestart.ps1 -ConfigFile G:/gying-tools/restart-20261018/config.json
 ```
 
-以下是已完成的安装命令记录；同名任务已存在，不要重复执行 `-Apply`：
-
-```powershell
-& D:/gying-movie/movie/tools/maintenance/Install-WeeklyRestart.ps1 -ConfigFile G:/gying-tools/restart-20261018/config.json -Apply
-```
-
-安装器拒绝覆盖同名任务；先注册恢复任务再注册每周任务，核验 NextRunTime、Interactive/Highest 和禁止补跑。失败时仅删除本轮新建任务并还原配置。成功后将 XML 与结果保存在外部 installation 目录。它不会绕过 UAC，也不能从非管理员进程宣称安装成功。
-
-取消未来计划时仅禁用 `GYing Weekly Graceful Restart`；若存在未完成维护日志，应保留 `GYing Maintenance Recovery` 并先处理恢复。日志目录为外部配置的 `stateRoot`。手动恢复入口：
+已安装不重复Apply；安装拒同名/先恢复后每周，UAC/精确XML及同分钟非负偏移校验，失败只撤本轮新任务。取消未来只禁GYing Weekly Graceful Restart；未完日志保留Maintenance Recovery先恢复，stateRoot保存日志。手动恢复有实际状态变化：
 
 ```powershell
 python -X utf8 G:/gying-tools/restart-20261018/runtime/weekly_restart.py --config G:/gying-tools/restart-20261018/config.json --recover
-```
-
-不要对当前生产运行 `--execute` 或 `--rehearse` 来“测试”。隔离测试：
-
-```powershell
 python -X utf8 -m unittest discover -s tools/maintenance/tests -v
 ```
+
+不以当前生产--execute/--rehearse补测试；完整安装/撤销及身份/预算证明从原文核验。

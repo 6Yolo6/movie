@@ -1,85 +1,50 @@
 # Resource Hub 架构
 
-[文档导航](README.md) · [数据库](database.md) · [当前项目状态](current-project-status.md)
-
-Resource Hub 在现有片库模型上补充元数据采集、资源发现、转存和发布，不另建影视主模型。
+[导航](README.md) · [接口](api.md#resource-hub) · [数据库](database.md) · [现状](current-project-status.md)
 
 ## 数据规则
 
-- `movie_metadata` 保存影视元数据；`resource_link` 保存可用链接。
-- `popularity` 是站内收藏热度，TMDB 热度和评分使用 `tmdb_*` 字段。
-- TMDB 数据先按 TMDB ID、剧集名、标题、别名和年份匹配 canonical 影片。
-- 自动资源使用 `resource_discovery_result`、`quark_transfer_task` 和 `xunlei_transfer_task` 保留发现与转存轨迹。
-- 自动发布资源标记来源，核心记录只软删除。
+canonical 主模型为 movie_metadata/resource_link；外部身份独立保存在 movie_source_identity。站内 popularity 与 tmdb_* 分开；发现/双盘任务保留轨迹。自动视频资源先验证自有分享，核心记录软删除，不确定匹配进入人工候选。
 
 ## 流水线
 
-1. TMDB 自动同步按配置间隔轮询一个来源，使多个来源分散到全天执行；管理员也可手动选择来源。
-2. 跳过已有可用资源、可发布发现或近期重复任务。
-3. 合并本地 PanSou 与外部 Panso API 结果并按 URL 去重。
-4. 校验标题相关性和源链接状态，保存发现结果。
-5. 为夸克或迅雷结果创建对应转存任务；夸克运行 quark-auto-save，迅雷调用当前账号的 Drive API。
-6. 确认保存目录有内容并创建自有分享；迅雷公开分享接口未验证时停在 `WAITING_SHARE`。
-7. 仅将可用自有分享发布到 `resource_link`，不得回退发布第三方迅雷或夸克源链接。
-8. 无资源影片保持 `TRAILER`，可从缺资源页重新处理。
+| 触发 | 处理范围 |
+| --- | --- |
+| 高频 TMDB/GYING、手动元数据 | 元数据/海报/原始 P2P；独立小文件 P2P_ARCHIVE，不发现或转存视频 |
+| 普通 Worker | METADATA_SYNC；不消费旧发现/转存/发布，定时 discovered retry 不执行 |
+| 三个 GYING 周榜 | 独立 WEEKLY_TRANSFER 视频计划，默认各 7 天/前 5 部；不新增夸克每日追更 |
+| 手动发现/修复、QQ 按需 | 候选→确认→按 provider 转存→完整落位→自有分享→resource_link；外部源 URL 不直接入库 |
+| 历史夸克追更 | 独立上游任务继续，不能因新策略推断已停用 |
+
+[周榜/迅雷落位](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md)。分享未确认停在 WAITING_SHARE，排队/HTTP 200 不算完成。
 
 ### 元数据页码范围与断点续采
 
-- 采集设置中的 TMDB / GYING 分别支持「起始页」「结束页（含）」，合法范围为 `1 ≤ 起始页 ≤ 结束页 ≤ 500`。旧的 `auto_sync_page` / `*AutoSyncPage` 字段保留，含义变为起始页；新增 `resource.hub.{tmdb,gying}.auto_sync_end_page` 和 `tmdbAutoSyncEndPage` / `gyingAutoSyncEndPage`。
-- 缺少结束页时按原页码初始化为单页范围，不自动扩大已有配置。后台保存会校验完整范围，非法范围返回 HTTP 400；只修改旧单页字段的旧客户端仍保持单页行为。
-- 每个 provider + 榜单独立保存页码和页内偏移。每个调度间隔仍只轮换一个榜单，沿用每轮数量上限；一页尚未处理完时续采余下条目，再进入下一页。TMDB 单批实际最多 20 条，GYING 单批最多 20 条。
-- 完成结束页或遇到空页后回到起始页。榜单顺序可能随时间改变，位置不是上游内容快照；片库写入仍按已有 canonical / 来源身份规则去重。
-- 自动任务在 `resource_hub_task.payload.crawl` 保存范围、批次偏移和成功后的下一位置；与任务最终状态一并持久化。TMDB 失败保留原批次；GYING 的失败隔离逻辑（2026-10-08 已部署）在部分条目失败时，只有将每个失败项保存为独立 `METADATA_ITEM_RETRY` 任务后才推进，其 ID 记入 `itemRetryTaskIds`，真实失败数与已隔离数分别保留在 `crawl.failed/deferred`。整批失败、缺失条目标识或独立任务保存失败仍保留原位置。手动单页任务不带 `crawl`，不会改动自动位置。
-- 修改范围后从新起始页重新开始；已排队或运行的旧任务按原范围完成。停用、重新启用或进程重启保留历史进度。当前单实例 backend 启动时仅将本进程启动之前遗留的 **自动范围元数据** RUNNING 任务标记为 FAILED，让正常调度按开关和间隔续采；不自动重置旧式手动任务、资源发现或转存任务。多 backend 实例需先实现分布式锁/租约，不能直接复用此恢复方式。
-- 管理概览的 `config.metadataCrawlProgress` 返回各来源的范围、下次页码、起始条目、最近任务状态和任务 ID；后台「自动采集进度」表展示已保存配置的状态。运行中显示当前批次，`RETRY` 表示部分失败且位置保留。
-- 范围续采配置本身不新增表结构。旧版本会忽略新增结束页/任务 JSON 并退回固定单页；回滚需审查所跨版本，保留配置和任务审计。来源 ID 的二进制排序规则是独立迁移，应用回滚不得撤销，见[数据库约束](database.md#4-外部来源-id-大小写)。
+- `1 ≤ start ≤ end ≤ 500`；旧 auto_sync_page/*AutoSyncPage 为起始页，新 end_page/*AutoSyncEndPage 为结束页。缺 end 保持单页；旧客户端单页更新不扩大范围；非法配置 400。
+- provider+榜单独立页码/偏移；每间隔轮换一榜，单批 TMDB/GYING 各最多 20。完成页翻页，到 end/空页回 start；榜单变化不是一致性快照，写入仍幂等。
+- payload.crawl 保存批次/范围/下一位置并与最终状态一起落库。TMDB 失败留原位；GYING 仅在失败条目都持久化 METADATA_ITEM_RETRY 后推进，记录 itemRetryTaskIds、failed/deferred。全失败/缺身份/隔离保存失败不推进；手动单页不带 crawl，不改自动位置。
+- 改范围从新 start 起，旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
+- overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
 
 ### 剧集自动追更
 
-- `quark-auto-save` 的任务按 `savepath` 区分 GYing 剧集/动漫目录；正常任务配置 `runweek: [1]` 后，每周一由全局计划自动检查来源分享并转存新增剧集文件。
-- `runweek: []` 表示明确禁用，`shareurl_ban` 表示平台封禁；这两类任务不在批量周更迁移范围内。
-- `update_subdir`、`pattern: "$TV_MAGIC"` 等原任务字段继续保留，确保新增文件按剧集目录和集数规则命名。
-- `update_subdir: ".*"` 会匹配每一级已存在的源/目标同名目录并递归检查新增文件；若某一级目录名不匹配，递归在该级停止。新集直接位于当前目录时仍按文件 `pattern` 检查。
-- 候选标题明确标注多季合集、全季或全集时，夸克跳过当前季子目录收窄并递归保存整个来源到剧名根目录；迅雷沿用整份来源的视频遍历转存。普通单季候选仍只保存对应季。
-- Resource Hub 的首次转存/手动重试直接传递任务列表，不等待周计划；来源更新后才由 `runweek` 负责周期追更。
+历史 quark-auto-save 任务按 savepath，runweek=[1] 周一；[] 明确禁用，shareurl_ban 封禁，不批量改这些任务。保留 pattern/$TV_MAGIC/update_subdir；`.*` 递归只进入同名层级，目录不匹配则停止。明确全季合集可保存完整来源到剧名根，普通单季仅保存目标季；迅雷遍历整来源视频。首次转存/手动重试即时执行，来源后续新增才由历史周期处理。
 
 ## 恢复与去重
 
 ### 失效资源单条修复
 
-管理员可调用 `POST /api/resources/admin/{id}/repair-invalid` 修复单条 `INVALID` 或 `SUSPECTED_INVALID` 的云盘资源。后端按资源 `provider` 分流夸克和迅雷，优先复用已有转存目录/任务原位生成新分享，更新原 `resource_link`，并在存在明确 GYING 影片映射时继续同步发布。
+`POST /api/resources/admin/{id}/repair-invalid` 仅 ADMIN、INVALID/SUSPECTED_INVALID，分 QUARK/XUNLEI，优先复用保存目录原位重分享。验收新 URL 可访问、url_hash 更新、link_status=NORMAL、任务状态与 GYING 返回；无明确映射可修成功但 gyingUpdated=false。批量返回 jobId，轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`。
 
-修复验收至少检查：新 URL 可访问、`url_hash` 已更新、`link_status=NORMAL`、对应转存任务状态和 GYING 返回结果。没有 GYING 映射时允许资源修复成功但 `gyingUpdated=false`；不得把第三方原始链接直接写入正式资源。批量 `POST /api/resources/admin/repair-invalid` 仍返回 `jobId`，必须轮询 `/api/resources/admin/repair-invalid/jobs/{jobId}`。
-
-- 空目录或分享失败先重跑原转存，仍失败时重新搜索并创建替代发现。
-- 同一影片避免重复原始 URL、自有分享和并行转存任务。
-- 失效资源优先原位更新；替代资源成功后归并关系并软停用重复行。
-- 历史影片合并先 dry-run，优先保留非 `tmdb_*` 的片库记录。
+空目录/分享失败先查原任务与远端结果再重跑；替代资源成功后迁移关系/软停重复。按影片+URL/自有分享/在途任务去重。影片合并先 dry-run，优先保留非 tmdb_* canonical；禁止批量重置 UNKNOWN/历史失败。
 
 ## 管理界面
 
-`/admin/resource-hub` 提供：
-
-- 服务和 Worker 状态、批量限制与运行配置。
-- 近 24 小时 TMDB 同步、任务失败、资源发现和入库统计，以及最近/下次采集时间。
-- TMDB 手动同步、单片搜索和任务列表。
-- 发现结果筛选、时间排序、可点击链接与批量发布/重试/发 QQ。
-- 缺网盘资源影片检查，以及 GYING/PanSou 补全。
-- 失效检测、重分享和重复数据 dry-run 清理。
-
-GYING 站点工作流单独位于 `/admin/gying-source`，接口细节见 [API 文档](api.md)。
-
+/admin/resource-hub：配置/采集进度、任务/发现筛选、批量发布/重跑/频道、缺资源补全、失效修复和 dry-run 清理。/admin/gying-source 独立；真实发帖/转存不是只读验收。
 
 ### GYING 单条隔离重试
 
-代码已于 2026-10-08 部署，来源 ID 大小写迁移也已完成；[历史验收](history/operations-through-20261008.md)保留上线证据。自然批次尚未实证触发失败隔离分支，该待验收项继续保留在[当前状态](current-project-status.md#仍需处理)，不为补验收制造生产失败或重放旧队列。
-
-- 队列类型 `METADATA_ITEM_RETRY`，只运行元数据与原始 P2P 补采，不执行旧视频转存或对外发帖。
-- 每分钟最多取一条到期任务，失败退避 30 分钟、最多 3 次；按大小写敏感来源身份的 SHA-256 去重。
-  已耗尽失败任务保持审计记录，不因目录再次经过就重置次数；正常目录轮回仍会重新检查该影片。
-- 重试读取精确来源 ID 的最新标题、年份、季号，避免永远复用错误的旧快照；原失败阶段和异常类别留在任务 payload。
-- Resource Hub、Worker 或 GYING 自动采集关闭时不运行；单实例启动只恢复本类型中断任务，不触碰旧转存/发布队列。
-- 批次 `SUCCEEDED` 且 `crawl.deferred > 0` 表示其他条目已处理、失败项已持久化隔离，并非所有影片已成功。
-  全部失败或无法完成隔离时为 `FAILED`。查询 `itemRetryTaskIds` 和独立任务状态定位仍需处理的影片。
-- 严格匹配阈值不降低。年份差一年的同名电影必须有详情中的演员/导演独立证据；真实季号冲突仍待审。
-  四位片名数字不作为季号锚点；仅在主标题和年份完全一致、来源给出有效季号时修正旧的超范围季号。
+- METADATA_ITEM_RETRY 仅元数据/P2P，每分钟最多一条到期项；30 分钟退避、最多 3 次，大小写身份 SHA-256 去重。耗尽保留，不重置次数；自然目录轮回仍会再检查影片。
+- 重试读取精确 ID 的最新主创/标题/年份/季，保留原失败阶段。Resource Hub/Worker/GYING 自动采集任一关闭不运行，启动恢复仅本类型。
+- SUCCEEDED 且 crawl.deferred>0 仅代表失败已隔离；通过 itemRetryTaskIds 追踪。严格匹配不降阈值；同名差一年须演员/导演独立证据；季冲突待审，四位片名数字不当季锚点。
+- 10 月 8 日已部署；自然失败隔离尚未实证，不制造生产失败。[历史](history/operations-through-20261008.md)、[完整原文](history/snapshots/20261022/docs/resource-hub.md)。
