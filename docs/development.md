@@ -49,6 +49,10 @@ activity-pages.browser.cjs：真实React/AntD生产构建、延迟/重试/未读
 
 根目录 `python -X utf8 tools/tests/catalog_mysql.py` 只计划，--run执行8项CatalogAiMySqlTest。catalog-search.browser覆盖中英/明暗390/1440、分页失败保留/资料片段/新标签/推荐/模型离线/游客；全部API替身，动态SSR/镜像/真实用户另验。
 
+### Agent执行与真实调用回归
+
+根目录 `python -X utf8 tools/ai/evaluate_agent.py` 默认只打印计划；`python -X utf8 -m unittest discover -s tools/tests -p test_agent_evaluation.py -v`为离线评测器测试；`python -X utf8 tools/ai/evaluate_agent.py --run --repeat 2 --output tmp/agent-evaluation/report.json`才访问既有loopback助手和只读工具。需要助手已健康运行，实际工具清单必须是三个只读影视工具；不启Spring/调度、不使用真实账号或桥接密钥、不重试推理。业务code与实际证据判分，失败/未完成非零退出；7场景8轮为实施者回归，非独立人工留出。详见[路线与边界](ai-strengthening-roadmap-20261022.md)。
+
 ### 真实 SQL 的隔离回归
 
 #### 后端资源查询与通知已读（含监控 SQL）

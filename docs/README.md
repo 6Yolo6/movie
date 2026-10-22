@@ -16,7 +16,7 @@
 | QQ 与发布 | [多平台发布](social-publishing.md) · [频道多网盘](qq-channel-multi-drive.md) | 三条独立链路、状态与重试 |
 | 主机会话与维护 | [迅雷](xunlei-token-sync.md) · [每周重启](weekly-graceful-restart.md) | 同账户同步、优雅停止与登录恢复 |
 | 安全 | [安全导航](security/README.md) | 风险、G01–G11、身份、备份与事件响应 |
-| AI 与求职成果 | [查询/联网补强](ai-search-web-20261022.md) · [推荐/自然搜索](catalog-features-search-20261021.md) · [原路线摘要](ai-career-project-analysis-20261016.md) | 特征、评测、证据、未交付阶段 |
+| AI 与求职成果 | [强化路线/Agent评测](ai-strengthening-roadmap-20261022.md) · [查询/联网补强](ai-search-web-20261022.md) · [推荐/自然搜索](catalog-features-search-20261021.md) · [原路线摘要](ai-career-project-analysis-20261016.md) | 特征、评测、证据、未交付阶段 |
 | 运维工作流 | [运维 Skill](../.agents/skills/gying-project-ops/SKILL.md) | 按任务加载专项参考 |
 
 ## 阅读规则

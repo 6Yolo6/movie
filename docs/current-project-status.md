@@ -71,6 +71,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | --- | --- |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
 | AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、持久调用审计；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
+| AI下一阶段 | 已新增[强化路线/真实Agent回归](ai-strengthening-roadmap-20261022.md)，先补任务持久化、租约与重启恢复，再独立评测、同数据检索/RAG对比、只读影视MCP和服务化；当前内存队列/回执不宣称已恢复 |
 | 每周重启 | 已注册，首个 XML 计划 2026-10-25 09:30（Windows 显示 09:30:30）；真实重启/ASUS 登录恢复未验收，错过不补跑 |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、三周榜首轮结果、QQ 每日推荐官方消息权限/群内出站、临时转存到期清理；未手动试发补验收 |
 | 失败与历史队列 | 自然元数据失败隔离分支仍缺线上证据；2026-10-08 的 58 条耗尽归档失败、2026-09-28 旧 RUNNING 保留，重试须精确任务范围 |
@@ -92,7 +93,9 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
-最新本轮：后端687项/686通过/1依赖跳过/0失败，真实独立MySQL查询边界7项、监控7项及compile通过；前端typegen/tsc/lint/独立webpack生产构建通过，离线资源中心4组/链接3组、资源UI单测9项通过。生产jar与已审查镜像一致（342类/资源），95个前端静态文件匹配；本机/公网22入口及3内部依赖检查通过。线上HTML/静态配合mock API的公网资源链接/源站资源中心390px验收通过，真实登录业务API、真机、下载/转存/发布未执行。21:22–21:34四应用ERROR/Exception均0，5条原自动任务/独立范围配置及发布转存审计不变；[验收](crawl-resource-links-20261022.md)、[机器摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)。
+2026-10-22 23:07 AI强化首轮：独立评测工具18项离线行为测试通过；实际loopback助手/只读片库与百科工具7场景8轮重复两次，16/16程序校验通过。题集为实施者回归，12次成功回答仍待人工复核；未覆盖网站登录/站内队列/MCP或独立人工质量。仅脚本和文档交付，无应用镜像/配置/部署变更；[证据](evaluation/agent-harness-20261022/README.md)。
+
+最近应用部署验收（21:22–21:34）：后端687项/686通过/1依赖跳过/0失败，真实独立MySQL查询边界7项、监控7项及compile通过；前端typegen/tsc/lint/独立webpack生产构建通过，离线资源中心4组/链接3组、资源UI单测9项通过。生产jar与已审查镜像一致（342类/资源），95个前端静态文件匹配；本机/公网22入口及3内部依赖检查通过。线上HTML/静态配合mock API的公网资源链接/源站资源中心390px验收通过，真实登录业务API、真机、下载/转存/发布未执行。21:22–21:34四应用ERROR/Exception均0，5条原自动任务/独立范围配置及发布转存审计不变；[验收](crawl-resource-links-20261022.md)、[机器摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)。
 
 前序AI验收：677项/676通过/1依赖跳过/0失败，独立MySQL9项及compile通过；前端构建与四组页面、32入口通过，真实库为只读fixture。本地 AI 53 项 verify 通过，13:48 实际模型回答的摘录和 URL 与来源逐一一致；独立人工留出未完成。[本轮验收](ai-search-web-20261022.md)。
 

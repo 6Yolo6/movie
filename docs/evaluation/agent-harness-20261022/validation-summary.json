@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Shanghai",
+  "repositoryBaseCommit": "28e5740ea046d98533c650b6c4337a491b9b8958",
+  "localAgentCommit": "047aeb10558d5193b7f4670dee1090cb845d86ee",
+  "offlineTests": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0
+  },
+  "realAgentEvaluation": {
+    "turns": 16,
+    "mechanicalPasses": 16,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 12,
+    "latencySampleCount": 16,
+    "p50Ms": 2531.0,
+    "p95Ms": 10187.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate"
+  },
+  "completedAllTurns": true,
+  "sourceSha256": {
+    "tools/ai/evaluate_agent.py": "1c8b6419b8c8cbc5a08b215783905e90d405b483d8b52253b9467b1ad2507d2c",
+    "tools/tests/test_agent_evaluation.py": "250b21b988476b30f3d9e3b891e7fa3e3bd800026ce020b4ad3be89b0b7b1d8d",
+    "docs/evaluation/agent-harness-20261022/cases.json": "af43bd2ce113f194b53d65ce46527dd59dc76951ad90608ae3c7e0b9c556d3fa"
+  },
+  "deployment": {
+    "affectedApplicationServices": [],
+    "reason": "Standalone evaluation tooling; existing runtime exercised, no application image or runtime configuration changed"
+  },
+  "scope": "Actual local assistant and read-only tool chain; excludes website login/queue/MCP and independent human answer grading",
+  "secretScanFindings": 0,
+  "entryRecheck": [
+    {
+      "entry": "http://127.0.0.1:5000/api/health",
+      "status": 200,
+      "scope": "HTTP availability only"
+    },
+    {
+      "entry": "http://127.0.0.1:8880/api/movies/list?keyword=Interstellar&size=1",
+      "status": 200,
+      "scope": "HTTP availability only"
+    },
+    {
+      "entry": "http://127.0.0.1/ai-assistant",
+      "status": 200,
+      "scope": "HTTP availability only"
+    },
+    {
+      "entry": "https://gyinghub.dpdns.org/ai-assistant",
+      "status": 200,
+      "scope": "HTTP availability only"
+    }
+  ]
+}
