@@ -35,14 +35,25 @@ public class AiAssistantController {
     public Map<String, Object> job(@PathVariable String id, @RequestHeader(value="Authorization", required=false) String token) {
         return assistant.get(auth.requireUser(token).getId(), id);
     }
+    @DeleteMapping("/api/ai/jobs/{id}")
+    public Map<String,Object> cancel(@PathVariable String id, @RequestHeader(value="Authorization",required=false) String token) {
+        return assistant.cancel(auth.requireUser(token).getId(),id);
+    }
+    @PostMapping("/api/internal/ai/jobs/{id}/renew")
+    public Map<String,Object> renew(@PathVariable String id,@RequestBody JsonNode body,
+            @RequestHeader(value="X-AI-Bridge-Token",required=false) String token) {
+        internal.require(token); return assistant.renew(id,body.path("lease").asText());
+    }
     @PostMapping("/api/internal/ai/heartbeat")
     public Map<String, Object> heartbeat(@RequestHeader(value="X-AI-Bridge-Token", required=false) String token) {
         internal.require(token); assistant.heartbeat(); return Map.of("ok",true);
     }
     @PostMapping("/api/internal/ai/claim")
-    public Map<String, Object> claim(@RequestHeader(value="X-AI-Bridge-Token", required=false) String token) {
-        internal.require(token); return assistant.claim();
+    public Map<String, Object> claim(@RequestBody(required=false) JsonNode body,
+            @RequestHeader(value="X-AI-Bridge-Token", required=false) String token) {
+        internal.require(token); return assistant.claim(body!=null && body.path("leaseProtocol").asInt()==1);
     }
+    public Map<String,Object> claim(String token) { return claim(null,token); }
     @PostMapping("/api/internal/ai/jobs/{id}")
     public Map<String, Object> complete(@PathVariable String id, @RequestBody JsonNode body, @RequestHeader(value="X-AI-Bridge-Token", required=false) String token) {
         internal.require(token);

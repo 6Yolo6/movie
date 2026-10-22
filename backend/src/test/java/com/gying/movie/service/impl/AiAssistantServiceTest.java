@@ -46,7 +46,7 @@ class AiAssistantServiceTest {
   var view=service.get(1L,id);assertEquals("SUCCEEDED",view.get("status"));
   assertFalse(view.toString().contains("private-loopback"));assertFalse(view.toString().contains("arguments"));
  }
- @Test void expiresAbandonedClaimsAndRejectsLateCompletion() {
+ @Test void expiresLegacyClaimsAndRejectsLateCompletion() {
   class MutableClock extends Clock { Instant now=Instant.parse("2026-10-19T00:00:00Z"); public ZoneId getZone(){return ZoneOffset.UTC;} public Clock withZone(ZoneId z){return this;} public Instant instant(){return now;} }
   var clock=new MutableClock();var service=new AiAssistantService(mapper,clock); service.heartbeat();
   String id=(String)service.submit(1L,input("电影")).get("jobId");var claim=service.claim();clock.now=clock.now.plusSeconds(211);

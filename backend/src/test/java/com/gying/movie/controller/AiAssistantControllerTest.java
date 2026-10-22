@@ -10,6 +10,18 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class AiAssistantControllerTest {
+ @Test void renewalProtocolAndCancelRequireTheirRespectiveIdentities() {
+  var mapper=new ObjectMapper();var service=mock(AiAssistantService.class);var auth=mock(AuthHelper.class);
+  var internal=new AiBridgeAuth("fixture-only-dedicated-ai-credential-0001");
+  var controller=new AiAssistantController(auth,internal,mock(RedisRateLimiter.class),service,mock(com.gying.movie.service.impl.CatalogAiService.class));
+  var protocol=mapper.createObjectNode().put("leaseProtocol",1);
+  assertThrows(ResponseStatusException.class,()->controller.claim(protocol,"wrong"));verifyNoInteractions(service);
+  controller.claim(protocol,"fixture-only-dedicated-ai-credential-0001");verify(service).claim(true);
+  controller.claim("fixture-only-dedicated-ai-credential-0001");verify(service).claim(false);
+  assertThrows(ResponseStatusException.class,()->controller.renew("job",mapper.createObjectNode().put("lease","lease"),"wrong"));
+  controller.renew("job",mapper.createObjectNode().put("lease","lease"),"fixture-only-dedicated-ai-credential-0001");verify(service).renew("job","lease");
+  when(auth.requireUser("owner")).thenReturn(new AuthUser(1L,"owner","USER"));controller.cancel("job","owner");verify(service).cancel(1L,"job");
+ }
  @Test void requiresUserSessionBeforeQueueingAndDedicatedBridgeTokenForInternalRoutes() {
   var auth=mock(AuthHelper.class);var limits=mock(RedisRateLimiter.class);var service=new AiAssistantService(new ObjectMapper());
   var internal=new AiBridgeAuth("fixture-only-dedicated-ai-credential-0001");

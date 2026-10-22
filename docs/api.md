@@ -126,9 +126,12 @@ ADMIN、no-store；直接 JSON。overview 今日/14 天、date/timeZone；请求
 | --- | --- |
 | GET status | available/busy、catalogAvailable=true |
 | POST query；GET jobs/{id} | message 1–1000，history ≤8 条 user/assistant、总预算 10000 字符；确定性结果 200 SUCCEEDED，模型队列 202；6 次/分钟、任务仅本人 |
+| DELETE jobs/{id} | 取消本人模型任务，终态 FAILED；跨用户 404，旧回执拒绝；候选契约尚未部署 |
 | GET search | keyword 1–60；page/size 默认 1/20、size 1–30、有效页钳制；kind=search；30 次/分钟 |
 | GET natural-search | query 1–1000、同分页与搜索 bucket；kind=natural_search、filters/indexVersion/catalogTruncated；非法范围/时长 400，空 total=0/pages=0/page=1 |
 | GET recommendations | 本人收藏/90 天衰减浏览，最多 12、featureVersion；10 次/分钟；排除收藏/已看、冷启动保留 |
 | POST views | 仅 `{movieId}`，1–64字母数字下划线连字符，额外字段400；30次/分钟，30分钟SQL去重（无唯一约束）；返ok/recorded |
 
 自然搜索执行已识别类型/分类/年份范围/评分/最长分钟/排除类型/有限主创地区语言；近几年=当前年起五个日历年，高分≥8，评分取存量最大值；缺失/单集时长不通过最大时长。ICU/BM25+有限主题扩展，片库快照 TTL 60 秒/最多 50000、达到上限标注截断，返回原文片段/理由，不保证任意口语理解。[实现与评测边界](catalog-features-search-20261021.md)。
+
+候选可靠性扩展：query 可选 `requestKey` 为本人模型队列提供保留窗口内幂等；新增专用桥接续期协议。启用、取消/恢复语义及部署状态见[执行可靠性](ai-execution-reliability-20261022.md)。现役内存队列能力仍按当前状态记录。

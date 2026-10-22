@@ -54,6 +54,9 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY}
       APP_INTERNAL_TOKEN: ${APP_INTERNAL_TOKEN:?Set APP_INTERNAL_TOKEN}
       APP_AI_BRIDGE_TOKEN: ${APP_AI_BRIDGE_TOKEN:-}
+      # Disabled unless an operator supplies both a private key mount and persistent queue path.
+      APP_AI_STATE_FILE: ${APP_AI_STATE_FILE:-}
+      APP_AI_STATE_KEY_FILE: ${APP_AI_STATE_KEY_FILE:-}
       GYING_SOURCE_API_TOKEN: ${GYING_SOURCE_API_TOKEN:?Set GYING_SOURCE_API_TOKEN}
     # Host-only diagnostics/Windows publishers. OpenClaw MUST use the shared Docker network.
     ports:

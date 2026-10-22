@@ -71,7 +71,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | --- | --- |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
 | AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、持久调用审计；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
-| AI下一阶段 | 已新增[强化路线/真实Agent回归](ai-strengthening-roadmap-20261022.md)，先补任务持久化、租约与重启恢复，再独立评测、同数据检索/RAG对比、只读影视MCP和服务化；当前内存队列/回执不宣称已恢复 |
+| AI下一阶段 | [可靠性候选](ai-execution-reliability-20261022.md)已实现加密任务/回执、可续期租约、有限重试、取消/幂等与进程退出恢复；59/11/0门禁阻断上线，现役仍为内存队列。中间步骤/长期审计及真实账号恢复待验收；[路线](ai-strengthening-roadmap-20261022.md) |
 | 每周重启 | 已注册，首个 XML 计划 2026-10-25 09:30（Windows 显示 09:30:30）；真实重启/ASUS 登录恢复未验收，错过不补跑 |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、三周榜首轮结果、QQ 每日推荐官方消息权限/群内出站、临时转存到期清理；未手动试发补验收 |
 | 失败与历史队列 | 自然元数据失败隔离分支仍缺线上证据；2026-10-08 的 58 条耗尽归档失败、2026-09-28 旧 RUNNING 保留，重试须精确任务范围 |
@@ -92,6 +92,8 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 - MySQL/JVM/容器时区一并核对；任务注册/运行、HTTP/业务成功、模拟/真实、备份/恢复分别记录。
 
 ## 验收
+
+2026-10-22 23:22–23:53 AI可靠性候选：隔离MySQL全量695项（694通过/1依赖跳过/0失败），含8项恢复测试及7查询/7监控SQL；最后回执续期边界与鉴权调整另跑16项全部通过并打包。本机Agent verify 60/60（含7项恢复测试），评测器18/18；真实独立JVM退出仅合成fixture/替身模型。两个候选JAR及后端镜像存 `E:/gying-tools/releases/ai-reliability-20261022/`；安全复检59/11/0，依规则停止生产替换，未创建密钥或启用持久化；现役镜像/包保持前序，本机与源站存活复查通过。恢复语义和证据见[候选报告](ai-execution-reliability-20261022.md)、[机器摘要](evaluation/ai-reliability-20261022/validation-summary.json)。
 
 2026-10-22 23:07 AI强化首轮：独立评测工具18项离线行为测试通过；实际loopback助手/只读片库与百科工具7场景8轮重复两次，16/16程序校验通过。题集为实施者回归，12次成功回答仍待人工复核；未覆盖网站登录/站内队列/MCP或独立人工质量。仅脚本和文档交付，无应用镜像/配置/部署变更；[证据](evaluation/agent-harness-20261022/README.md)。
 
