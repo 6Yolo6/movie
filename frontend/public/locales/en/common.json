@@ -1245,5 +1245,9 @@
   "noRelatedMovies": "No related titles yet",
   "noMagnetResources": "No magnet resources",
   "noTorrentResources": "No torrent resources",
-  "aiNaturalSearchExample": "Find recent sci-fi movies about time travel under 2 hours"
+  "aiNaturalSearchExample": "Find recent sci-fi movies about time travel under 2 hours",
+  "aiNoResources": "No available resources in the catalog. Search for this title directly.",
+  "aiSearchResources": "Search resources",
+  "aiWebEvidence": "Web sources",
+  "aiExecutionTrace": "View query trace"
 }

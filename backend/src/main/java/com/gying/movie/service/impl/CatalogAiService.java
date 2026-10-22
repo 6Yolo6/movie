@@ -19,7 +19,8 @@ public class CatalogAiService {
         private final List<Film> films;
         private final FeatureIndex features;
         private volatile CatalogTextIndex text;
-        private Snapshot(List<Film> films) {this.films=films;this.features=new FeatureIndex(films);}
+        private final long generation;
+        private Snapshot(List<Film> films) {this.films=films;this.features=new FeatureIndex(films);this.generation=System.currentTimeMillis();}
         private List<Film> films() {return films;}
         private FeatureIndex features() {return features;}
         private synchronized CatalogTextIndex text() {
@@ -36,11 +37,11 @@ public class CatalogAiService {
     private static final Set<String> GENRES=Set.of("科幻","动作","喜剧","爱情","悬疑","惊悚","恐怖","动画","冒险","犯罪","剧情","奇幻","战争","历史","纪录片","家庭");
     public static Intent intent(String message) {
         String text=Normalizer.normalize(message==null?"":message,Normalizer.Form.NFKC).trim();
-        if(text.isBlank()||text.length()>1000)return null;
+        if(text.isBlank()||text.length()>1000||NaturalMovieQuery.isFollowup(text))return null;
         if(text.matches("(?is).*(?:批量|转存|删除|执行|发布|https?://|magnet:).*"))return null;
         boolean recommendation=text.matches("(?is).*(?:推荐|猜你喜欢|随便看|看什么|看点什么|值得看|recommend|suggest).*" );
         Set<String> genres=new TreeSet<>();for(String genre:GENRES)if(text.contains(genre))genres.add(genre);
-        recommendation |= !genres.isEmpty() && text.matches("(?s).*(?:想看|想找|找点|看点|有什么|有哪些).*(?:电影|影片|片子|剧集|动漫).*" );
+        recommendation |= !genres.isEmpty() && text.matches("(?s).*(?:想看|想找|找点|看点|有什么|有哪些).*(?:电影|影片|片子|剧集|动漫|片).*" );
         if(recommendation) {
             String category=text.contains("动漫")?"ac":text.contains("电视剧")||text.contains("剧集")?"tv":text.contains("电影")?"mv":null;
             Integer year=null;var yearMatch=java.util.regex.Pattern.compile("(?:19|20)\\d{2}").matcher(text);
@@ -60,13 +61,19 @@ public class CatalogAiService {
         Intent intent=intent(request.path("message").asText());
         String raw=request.path("message").asText();
         if(raw.matches("(?is).*(?:批量|转存|删除|执行|发布|https?://|magnet:).*"))return null;
-        if(NaturalMovieQuery.shouldSearch(raw)&&intent!=null&&!intent.recommend()) {
-            ObjectNode titles=search(intent.keyword(),1,20);
-            if(titles.path("catalog").path("total").asLong()>0)
-                return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",titles);
-        }
-        if(NaturalMovieQuery.shouldSearch(raw)&&!raw.matches("(?is).*(?:推荐|猜你喜欢|recommend|suggest).*")) {
-            return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",naturalSearch(raw,1,20));
+        if(raw.matches("(?is).*(?:联网|网上|百科|维基|web search|online|wikipedia).*"))return null;
+        if(NaturalMovieQuery.shouldSearch(raw)) {
+            // A complete known title can contain genre/theme words (e.g. 爱情公寓).
+            if(intent!=null&&!intent.recommend()&&intent.keyword().length()<=60) {
+                String keyword=intent.keyword();
+                Long exact=jdbc.queryForObject("SELECT COUNT(*) FROM movie_metadata WHERE status='ACTIVE' AND deleted_at IS NULL AND (title_cn=? OR title_en=?)",Long.class,keyword,keyword);
+                if(exact!=null&&exact>0)return completed(search(keyword,1,20),"title");
+            }
+            // Structured preferences and plot descriptions must never query the whole sentence as a title.
+            var plan=parseQuery(raw);
+            ObjectNode result=intent!=null&&intent.recommend()&&plan.text().isBlank()
+                    ?recommendations(userId,plan.constraints(),12):naturalSearch(raw,1,20);
+            return completed(result,"natural_query");
         }
         if(intent==null)return null;
         ObjectNode result;
@@ -75,7 +82,16 @@ public class CatalogAiService {
             var plan=parseQuery(message);
             result=intent.recommend()&&plan.text().isBlank()?recommendations(userId,plan.constraints(),12):naturalSearch(message,1,20);
         } else result=intent.recommend()?recommendations(userId,intent.constraints(),12):search(intent.keyword(),1,20);
-        return Map.of("jobId",UUID.randomUUID().toString(),"status","SUCCEEDED","result",result);
+        return completed(result,intent.recommend()?"recommendation":"title");
+    }
+    private Map<String,Object> completed(ObjectNode result,String route) {
+        String id=UUID.randomUUID().toString();result.put("requestId",id);
+        var trace=result.putArray("trace");
+        trace.addObject().put("requestId",id).put("kind","routing").put("name",route).put("status","success").put("timestamp",Instant.now().toString());
+        for(JsonNode evidence:result.path("evidence"))trace.addObject().put("requestId",id).put("kind","tool")
+                .put("name",evidence.path("tool").asText()).put("status","success").put("timestamp",evidence.path("queriedAt").asText())
+                .putObject("result").put("total",evidence.path("total").asLong()).put("returned",evidence.path("movies").size());
+        return Map.of("jobId",id,"status","SUCCEEDED","result",result);
     }
     public ObjectNode search(String keyword,int page,int size) {
         if(keyword==null||keyword.isBlank()||keyword.length()>60)throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,"请输入有效片名");
@@ -132,7 +148,8 @@ public class CatalogAiService {
     private synchronized Snapshot snapshot() {
         if(System.currentTimeMillis()-refreshed<60000&&cached!=null)return cached;
         List<Film> films=List.copyOf(jdbc.query("SELECT "+columns()+" FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",this::film));
-        Snapshot next=new Snapshot(films);
+        // Preserve a built text index when a TTL refresh returns identical catalog data.
+        Snapshot next=cached!=null&&cached.films().equals(films)?cached:new Snapshot(films);
         cached=next;refreshed=System.currentTimeMillis();return next;
     }
     private NaturalMovieQuery.Plan parseQuery(String query) {
@@ -145,7 +162,7 @@ public class CatalogAiService {
         int safePage=Math.max(1,Math.min(Math.max(1,pages),page));int start=(safePage-1)*safeSize;
         ObjectNode result=mapper.createObjectNode().put("answer",hits.isEmpty()?"片库暂无符合描述和筛选条件的影片。请减少条件或换个描述。":"根据片名、简介与已识别条件找到 "+hits.size()+" 部影片；匹配依据见下方。");
         var metadata=result.putObject("catalog").put("kind","natural_search").put("query",plan.query()).put("total",hits.size()).put("page",safePage).put("pages",pages).put("size",safeSize).put("indexVersion",CatalogTextIndex.VERSION);
-        metadata.set("filters",mapper.valueToTree(plan.constraints()));metadata.put("catalogTruncated",snapshot.films().size()==50000);
+        metadata.set("filters",mapper.valueToTree(plan.constraints()));metadata.put("catalogTruncated",snapshot.films().size()==50000);metadata.put("indexGeneration",snapshot.generation);
         var evidence=result.putArray("evidence").addObject().put("tool","naturalSearchMovies").put("queriedAt",Instant.now().toString()).put("total",hits.size()).put("returned",Math.min(safeSize,hits.size()-start));
         var movies=evidence.putArray("movies");
         for(var hit:hits.subList(start,Math.min(start+safeSize,hits.size()))) {var item=view(hit.movie());item.set("reasons",mapper.valueToTree(hit.reasons()));if(!hit.snippet().isBlank())item.put("summary",hit.snippet());movies.add(item);}

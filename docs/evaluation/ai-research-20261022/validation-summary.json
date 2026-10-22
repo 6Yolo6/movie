@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-22",
+  "backendTests": {
+    "tests": 677,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 676
+  },
+  "compile": true,
+  "localTests": {
+    "tests": 53,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "frontend": [
+    "typegen",
+    "tsc",
+    "lint (7 existing warnings)",
+    "webpack build"
+  ],
+  "browser": "candidate and image/public site: zh/en light/dark 390/1440 and anonymous; API fixtures",
+  "realDatabase": "read-only fixture, actor/name/title/plot/recommendation queries passed; not real website login",
+  "entryChecks": 32,
+  "backendImage": "sha256:570dcf70e0e6c08e045cc671725d29dc9152046866fcd9748f7b257197bb742c",
+  "frontendImage": "sha256:355aa60994a34af082f9ee12cd9376078dfa544f26f3ca31df1693dd88aebb8e",
+  "backup": "G:\\gying-backups\\20261022T053706.234649Z",
+  "security": {
+    "PASS": 59,
+    "FAIL": 11,
+    "UNKNOWN": 0
+  },
+  "independentHumanHoldout": "not completed",
+  "embeddingDocumentRagApiKeys": "not delivered"
+}

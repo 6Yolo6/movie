@@ -42,6 +42,15 @@ class CatalogAiMySqlTest {
         jdbc.update("UPDATE movie_metadata SET summary='时间循环中的机器人',runtime='100分钟',year=2024 WHERE id='spider_2'");
         catalog=new CatalogAiService(jdbc,mapper);
     }
+    @AfterAll static void removeOnlyThisTestClassTables() {
+        if(jdbc==null)return;
+        String id=System.getenv("QUERY_BOUNDARY_FIXTURE_ID");
+        assertEquals("gying-query-fixture",jdbc.queryForObject("SELECT @@hostname",String.class));
+        assertEquals("query_boundary_fixture_"+id,jdbc.queryForObject("SELECT DATABASE()",String.class));
+        assertEquals(id,jdbc.queryForObject("SELECT run_id FROM fixture_marker",String.class));
+        // Only this marked network-none fixture owns these tables; leave its marker intact.
+        for(String table:List.of("resource_operation_log","user_favorite","resource_link","movie_metadata"))jdbc.execute("DROP TABLE "+table);
+    }
     @Test void completeSearchHasNoThreeRowLimitAndPagesDoNotOverlap() {
         var first=catalog.search("蜘蛛侠",1,20);var last=catalog.search("蜘蛛侠",3,20);
         assertEquals(46,first.path("catalog").path("total").asInt());assertEquals(20,first.path("evidence").get(0).path("movies").size());
@@ -115,5 +124,16 @@ class CatalogAiMySqlTest {
         assertEquals(0,catalog.naturalSearch("找关于量子海豚火山的电影",1,20).path("catalog").path("total").asInt());
         var auth=mock(AuthHelper.class);when(auth.requireUser(null)).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
         assertThrows(ResponseStatusException.class,()->new CatalogAiController(auth,catalog,jdbc,mock(RedisRateLimiter.class)).naturalSearch(null,"",1,20));
+    }
+    @Test void realSqlActorAndShortGenreQueriesReturnFilmsWithMissingResourceStatus() {
+        jdbc.update("INSERT INTO movie_metadata(id,title_cn,category,genres,actors,douban_score,status) VALUES('actor_case','演员专用样本','mv','[\"悬疑\"]','[\"小罗伯特·唐尼\"]',8.8,'ACTIVE')");
+        var service=new CatalogAiService(jdbc,mapper);
+        for(String query:List.of("想看几部高分悬疑片","小罗伯特唐尼演的片")) {
+            var response=service.answer(999L,mapper.createObjectNode().put("message",query));
+            var result=(com.fasterxml.jackson.databind.JsonNode)response.get("result");
+            assertEquals("actor_case",result.path("evidence").get(0).path("movies").get(0).path("id").asText());
+            assertEquals(0,result.path("evidence").get(0).path("movies").get(0).path("resourceCount").asInt());
+            assertNotEquals("search",result.path("catalog").path("kind").asText());
+        }
     }
 }

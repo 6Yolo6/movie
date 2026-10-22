@@ -53,4 +53,18 @@ class AiAssistantServiceTest {
   assertEquals("FAILED",service.get(1L,id).get("status"));
   assertThrows(ResponseStatusException.class,()->service.complete(id,(String)claim.get("lease"),mapper.createObjectNode()));
  }
+ @Test void webEvidenceAndSafeTraceAreReturnedOnlyToTheJobOwner() {
+  var service=new AiAssistantService(mapper);service.heartbeat();
+  String id=(String)service.submit(1L,input("联网查剧情")).get("jobId");var claim=service.claim();
+  var result=mapper.createObjectNode().put("scope","gying").put("answer","联网资料").put("requestId","trace-example");
+  var step=result.putArray("trace").addObject().put("kind","tool").put("name","searchMovieWeb").put("status","success").put("durationMs",10);
+  step.putObject("arguments").put("private","secret");
+  var data=step.putObject("result").put("ok",true).putObject("data").put("queriedAt","2026-10-22T05:00:00Z");
+  data.putArray("webResults").addObject().put("title","影片").put("url","https://zh.wikipedia.org/wiki/Test").put("snippet","剧情片段");
+  service.complete(id,(String)claim.get("lease"),result);
+  var output=(com.fasterxml.jackson.databind.JsonNode)service.get(1L,id).get("result");
+  assertEquals("searchMovieWeb",output.path("evidence").get(0).path("tool").asText());
+  assertEquals(1,output.path("trace").size());assertFalse(output.toString().contains("secret"));
+  assertThrows(ResponseStatusException.class,()->service.get(2L,id));
+ }
 }

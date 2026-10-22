@@ -39,4 +39,23 @@ class NaturalMovieQueryTest {
         assertFalse(NaturalMovieQuery.shouldSearch("第二部有什么资源"));
         assertTrue(NaturalMovieQuery.shouldSearch("找关于时间旅行的电影"));
     }
+    @Test void shortGenreWordsCountsAndActorPhrasesBecomeFilters() {
+        for(String query:List.of("想看几部高分悬疑片","想找3部高分悬疑片","高分悬疑片","帮我找两部动作片")) {
+            assertTrue(NaturalMovieQuery.shouldSearch(query),query);
+            var plan=NaturalMovieQuery.parse(query,clock);assertEquals("mv",plan.constraints().category());assertTrue(plan.text().isBlank(),plan.text());
+        }
+        var actor=NaturalMovieQuery.parse("小罗伯特唐尼演的片",clock);
+        assertTrue(NaturalMovieQuery.shouldSearch("小罗伯特唐尼演的片"));
+        assertEquals(Set.of("小罗伯特唐尼"),actor.constraints().actors());assertEquals("mv",actor.constraints().category());assertTrue(actor.text().isBlank(),actor.text());
+        assertEquals(Set.of("小罗伯特·唐尼"),NaturalMovieQuery.parse("帮我找小罗伯特·唐尼主演的电影",clock).constraints().actors());
+        assertFalse(NaturalMovieQuery.shouldSearch("《爱情公寓》"));
+        assertFalse(NaturalMovieQuery.shouldSearch("这部有哪些高分推荐"));
+    }
+    @Test void actorMiddleDotsAreEquivalentButDifferentNamesStaySeparate() {
+        var plan=NaturalMovieQuery.parse("小罗伯特唐尼演的片",clock);
+        var film=new CatalogRecommendationEngine.Film("m","影片",null,2024,"mv",null,null,List.of(),List.of(),List.of("小罗伯特·唐尼"),8.5,1,0);
+        assertTrue(plan.constraints().matches(film));
+        var other=new CatalogRecommendationEngine.Film("n","另一影片",null,2024,"mv",null,null,List.of(),List.of(),List.of("罗伯特·帕丁森"),8.5,1,0);
+        assertFalse(plan.constraints().matches(other));
+    }
 }

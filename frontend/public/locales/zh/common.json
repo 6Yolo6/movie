@@ -1245,5 +1245,9 @@
   "noRelatedMovies": "暂无相关推荐",
   "noMagnetResources": "暂无磁力资源",
   "noTorrentResources": "暂无种子资源",
-  "aiNaturalSearchExample": "找近几年偏烧脑、时长不超过两小时的科幻电影"
+  "aiNaturalSearchExample": "找近几年偏烧脑、时长不超过两小时的科幻电影",
+  "aiNoResources": "片库暂无可用资源，可直接搜索资源。",
+  "aiSearchResources": "搜索这部的资源",
+  "aiWebEvidence": "联网资料来源",
+  "aiExecutionTrace": "查看查询记录"
 }

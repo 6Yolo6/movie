@@ -2,7 +2,7 @@
 
 更新时间：2026-10-22
 
-时区：Asia/Shanghai。最近生产验收为 2026-10-22 00:07–00:26；其他事实保留原证据日期。文档整理不意味着重做所有链路验收。
+时区：Asia/Shanghai。最近本轮生产验收为 2026-10-22 13:37–13:48；前序验收为 00:07–00:26，其他事实保留原证据日期。本轮仅复验受影响的 AI 与页面链路。
 
 [导航](README.md) · [API](api.md) · [部署](deployment.md) · [安全](security/README.md) · [历史](history/README.md)
 
@@ -50,16 +50,18 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 - 2026-10-13 账号侧 Access 已启用：四类管理路径、单邮箱 OTP、应用/策略 1 小时；回读/匿名拦截通过。本人登录、网站 ADMIN/USER、origin JWT/WAF 待验收，不重复创建或录入 Token。
 - 2026-10-22 工作区密钥扫描 0；历史扫描的 1,278 Blob/105 重复规则命中属于旧证据，轮换和历史重写未闭环。真实 `.env`、Cookie、JWT、API Key、备份私钥、完整 inspect 只在外部受限存储，不写入文档。
 
+2026-10-22 本轮已部署短语/演员分流、对话无资源搜索入口、联网百科及安全调用轨迹；[验收](ai-search-web-20261022.md)。59/11/0再次确认，用户本轮明确批准先业务部署，原失败继续保留。
+
 ### 当前部署与恢复基线
 
 | 服务 | 当前镜像 |
 | --- | --- |
-| backend | `sha256:3b5fe68645457f4333c12a36608312f4d3c6c7f500c265b9063347cba7d3af4d` |
-| frontend | `sha256:e032edbdd5f0e7007bd4429f36de8145e1aa480e3c75ec59ba9a23817ec66000` |
+| backend | `sha256:570dcf70e0e6c08e045cc671725d29dc9152046866fcd9748f7b257197bb742c` |
+| frontend | `sha256:355aa60994a34af082f9ee12cd9376078dfa544f26f3ca31df1693dd88aebb8e` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 
-功能提交 `add5d78`，文档校正 `dc13094`；2026-10-22 00:07–00:08 只替换 backend/frontend，9 个其余容器不变。有效覆盖及旧镜像回退文件在 `E:/gying-tools/releases/catalog-features-search-20261021/`；检查点 `G:/gying-backups/20261021T160733.115483Z` 的 7 份 age 产物 hash/完整认证解密通过。[本轮验收](catalog-features-search-20261021.md)。
+本轮 13:37 切换 backend/frontend，本地 AI 最终包于 13:47 切换；回退材料 `E:/gying-tools/releases/ai-research-20261022/`，检查点 `G:/gying-backups/20261022T053706.234649Z` 7份age认证通过，其他服务不变。前序功能提交 `add5d78`，文档校正 `dc13094`；2026-10-22 00:07–00:08 只替换 backend/frontend，9 个其余容器不变。有效覆盖及旧镜像回退文件在 `E:/gying-tools/releases/catalog-features-search-20261021/`；检查点 `G:/gying-backups/20261021T160733.115483Z` 的 7 份 age 产物 hash/完整认证解密通过。[前序验收](catalog-features-search-20261021.md)。
 
 2026-09-25 完整逻辑/持久数据检查点 `G:/gying-backups/20260925T030328.719395Z`：19 文件约 372 MiB、冻结约 31 秒；25 表行数/CHECKSUM 和隔离 MinIO 单图验证通过。应用/系统账号/异机灾难恢复及私钥离线保管仍未完成。当前发布检查点与完整恢复范围不同，见[备份方案](security/backup-plan.md)。旧镜像、迁移资料和前序检查点见[历史索引](history/README.md)，兼容应用回退不覆盖新 SQL。
 
@@ -68,7 +70,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | 事项 | 必须补的证据/工作 |
 | --- | --- |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
-| AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、调用轨迹；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
+| AI/求职 | 冷索引重建与误召回、独立人工留出题集/真实点击、真实账号多轮端到端、持久调用审计；embedding/文档 RAG/API Key/配额/企业合成评分未交付 |
 | 每周重启 | 已注册，首个 XML 计划 2026-10-25 09:30（Windows 显示 09:30:30）；真实重启/ASUS 登录恢复未验收，错过不补跑 |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、三周榜首轮结果、QQ 每日推荐官方消息权限/群内出站、临时转存到期清理；未手动试发补验收 |
 | 失败与历史队列 | 自然元数据失败隔离分支仍缺线上证据；2026-10-08 的 58 条耗尽归档失败、2026-09-28 旧 RUNNING 保留，重试须精确任务范围 |
@@ -90,6 +92,8 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
-最新：后端 672 项（645 通过/27 跳过/0 失败），独立 MySQL 8/8，compile、前端 typegen/tsc/lint/build 通过；341 包内和 375 前端文件匹配；候选 17、本机/公网各 13 页面场景，32 真实入口通过。AI 页面 API 为 fixture；真实库只读、匿名鉴权与实际网站登录的边界分别记录。00:07:22–00:14:04 三服务无 ERROR/Exception，审计不变；00:26 复核远端与入口通过。[完整结果](catalog-features-search-20261021.md)、[可随仓库复现的摘要](evaluation/catalog-20261021/validation-summary.json)。
+最新本轮：677项/676通过/1依赖跳过/0失败，独立MySQL9项及compile通过；前端构建与四组页面、32入口通过，真实库为只读fixture。本地 AI 53 项 verify 通过，13:48 实际模型回答的摘录和 URL 与来源逐一一致；独立人工留出未完成。[本轮验收](ai-search-web-20261022.md)。
+
+前序：后端 672 项（645 通过/27 跳过/0 失败），独立 MySQL 8/8，compile、前端 typegen/tsc/lint/build 通过；341 包内和 375 前端文件匹配；候选 17、本机/公网各 13 页面场景，32 真实入口通过。AI 页面 API 为 fixture；真实库只读、匿名鉴权与实际网站登录的边界分别记录。00:07:22–00:14:04 三服务无 ERROR/Exception，审计不变；00:26 复核远端与入口通过。[完整结果](catalog-features-search-20261021.md)、[可随仓库复现的摘要](evaluation/catalog-20261021/validation-summary.json)。
 
 前序部署、测试数量和检查点集中在[历史索引](history/README.md)。按任务运行[开发测试](development.md)、[运维快照/就绪](../.agents/skills/gying-project-ops/SKILL.md)、[安全只读扫描](security/hardening-gates.md)；文档整理只检查链接、契约、迁移库存与脱敏，不重建服务。

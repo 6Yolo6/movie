@@ -39,4 +39,21 @@ class CatalogAiServiceTest {
         verify(jdbc).queryForObject(contains("deleted_at IS NULL"),eq(Long.class),eq("%蜘蛛侠!%!_%"),eq("%蜘蛛侠!%!_%"),eq("%蜘蛛侠!%!_%"),eq("%蜘蛛侠!%!_%"));
         assertThrows(ResponseStatusException.class,()->service.search(" ",1,20));
     }
+    @SuppressWarnings("unchecked")
+    @Test void actualUserQueriesNeverFallThroughToSentenceTitleLookup() {
+        var jdbc=mock(JdbcTemplate.class);var mapper=new ObjectMapper();var service=new CatalogAiService(jdbc,mapper);
+        var mystery=new CatalogRecommendationEngine.Film("m","悬疑样本",null,2024,"mv",null,null,List.of("悬疑"),List.of(),List.of("小罗伯特·唐尼"),8.5,1,0);
+        when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(List.of(mystery));
+        for(String query:List.of("想看几部高分悬疑片","小罗伯特唐尼演的片")) {
+            var response=service.answer(1L,mapper.createObjectNode().put("message",query));
+            var result=(com.fasterxml.jackson.databind.JsonNode)response.get("result");
+            assertNotEquals("search",result.path("catalog").path("kind").asText());
+            assertEquals(1,result.path("evidence").get(0).path("movies").size());
+            assertEquals(0,result.path("evidence").get(0).path("movies").get(0).path("resourceCount").asInt());
+            assertTrue(result.path("trace").isArray());
+        }
+        verify(jdbc,never()).queryForObject(contains("LIKE"),eq(Long.class),any(),any(),any(),any());
+        assertNull(service.answer(1L,mapper.createObjectNode().put("message","这部电影剧情是什么")));
+        assertNull(service.answer(1L,mapper.createObjectNode().put("message","联网查询星际穿越剧情")));
+    }
 }

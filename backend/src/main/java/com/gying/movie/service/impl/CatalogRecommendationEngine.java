@@ -41,8 +41,12 @@ public final class CatalogRecommendationEngine {
                     && contains(f.directors(),directors) && contains(f.actors(),actors)
                     && contains(f.regions(),regions) && contains(f.languages(),languages);
         }
+        private static String nameKey(String value) {
+            return java.text.Normalizer.normalize(value,java.text.Normalizer.Form.NFKC)
+                    .toLowerCase(Locale.ROOT).replaceAll("[\\p{P}\\s]", "");
+        }
         private static boolean contains(List<String> values,Set<String> wanted) {
-            return wanted.stream().allMatch(w->values!=null&&values.stream().anyMatch(v->v.toLowerCase(Locale.ROOT).contains(w.toLowerCase(Locale.ROOT))));
+            return wanted.stream().allMatch(w->values!=null&&values.stream().anyMatch(v->nameKey(v).contains(nameKey(w))));
         }
     }
     private static Set<String> set(List<String> items) { return items == null ? new TreeSet<>() : new TreeSet<>(items); }

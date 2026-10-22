@@ -42,8 +42,8 @@ public final class NaturalMovieQuery {
         }
         String category=null;
         if(categoryText.matches("(?s).*(?:动漫|动画片|\\banime\\b).*"))category="ac";
-        else if(categoryText.matches("(?s).*(?:电视剧|剧集|\\btv series\\b|\\bshows?\\b).*"))category="tv";
-        else if(categoryText.matches("(?s).*(?:电影|影片|片子|\\bfilms?\\b|\\bmovies?\\b).*"))category="mv";
+        else if(categoryText.matches("(?s).*(?:电视剧|剧集|电视剧|演的剧|主演的剧|\\btv series\\b|\\bshows?\\b).*"))category="tv";
+        else if(categoryText.matches("(?s).*(?:电影|影片|片子|(?:科幻|动作|喜剧|爱情|悬疑|惊悚|恐怖|冒险|犯罪|剧情|奇幻|战争|历史|家庭)片|(?:演的|演过的|主演的|出演的|参演的|导演的|执导的)片|\\bfilms?\\b|\\bmovies?\\b).*"))category="mv";
         Integer year=null,from=null,to=null,maxRuntime=null;double rating=0;int current=LocalDate.now(clock).getYear();
         Matcher range=Pattern.compile("((?:19|20)\\d{2})\\s*(?:到|至|[-~–])\\s*((?:19|20)\\d{2})\\s*年?").matcher(text);
         if(range.find()) {from=Integer.valueOf(range.group(1));to=Integer.valueOf(range.group(2));text=range.replaceAll(" ");structured=true;}
@@ -66,25 +66,36 @@ public final class NaturalMovieQuery {
         if(score.find()) {rating=Double.parseDouble(score.group(1));text=score.replaceAll(" ");structured=true;}
         if(text.contains("高分")||text.contains("high rated")||text.contains("high-rated")) {rating=Math.max(rating,8);text=text.replace("高分"," ").replace("high rated"," ").replace("high-rated"," ");structured=true;}
         Set<String> directors=new TreeSet<>(),actors=new TreeSet<>(),regions=new TreeSet<>(),languages=new TreeSet<>();
-        Matcher director=Pattern.compile("([\\p{IsHan}·]{2,12})(?:导演|执导)(?:的)?").matcher(text);
-        if(director.find()) {String name=director.group(1).replaceFirst("^(?:帮我找|我想看|想看|找|由)","");directors.add(name);text=director.replaceAll(" ");structured=true;}
-        Matcher actor=Pattern.compile("([\\p{IsHan}·]{2,12})(?:主演|出演)(?:的)?").matcher(text);
-        if(actor.find()) {String name=actor.group(1).replaceFirst("^(?:帮我找|我想看|想看|找|由)","");actors.add(name);text=actor.replaceAll(" ");structured=true;}
+        Matcher director=Pattern.compile("([\\p{IsHan}·]{2,20}?)(?:导演|执导)(?:的)?").matcher(text);
+        if(director.find()) {String name=director.group(1).replaceFirst("^(?:请帮我找|帮我找|我想看|我想找|想看|想找|有哪些|有什么|看看|找|看|由)","");directors.add(name);text=director.replaceAll(" ");structured=true;}
+        Matcher actor=Pattern.compile("([\\p{IsHan}·]{2,20}?)(?:主演|出演|参演|演过|演)(?:的)?").matcher(text);
+        if(actor.find()) {String name=actor.group(1).replaceFirst("^(?:请帮我找|帮我找|我想看|我想找|想看|想找|有哪些|有什么|看看|找|看|由)","");actors.add(name);text=actor.replaceAll(" ");structured=true;}
         for(var entry:Map.of("美国","美国","日本","日本","韩国","韩国","英国","英国","法国","法国","国产","中国大陆").entrySet()) {
             if(text.contains(entry.getKey())) {regions.add(entry.getValue());text=text.replace(entry.getKey()," ");structured=true;}
         }
         for(String language:List.of("英语","日语","韩语","粤语","汉语普通话"))if(text.contains(language)){languages.add(language);text=text.replace(language," ");structured=true;}
-        text=text.replaceAll("(?:不超过|少于|最多|以内|以下|帮我找|帮我搜|请搜索|搜索一下|我想看|我想找|找一下|想看|想找|我要看|找点|看点|有什么|有哪些|讲述|关于|偏|的|年|时长|电影|影片|片子|电视剧|剧集|动漫|推荐|一下)"," ")
+        text=text.replaceAll("(?:[几一二两三四五六七八九十0-9]+\\s*(?:部|个)|不超过|少于|最多|以内|以下|帮我找|帮我搜|请搜索|搜索一下|我想看|我想找|找一下|想看|想找|我要看|找点|看点|有什么|有哪些|讲述|关于|剧情像|剧情是|有没有|有没有一些|偏|的|年|时长|电影|影片|片子|电视剧|剧集|动漫|推荐|一下|[，,。！？!?；;、]|(?<=\\s)片(?=\\s|$))"," ")
                 .replaceAll("(?i)\\b(?:find|search|for|about|want|watch|i|a|an|the|movies?|films?|please|tv|series|recommend)\\b"," ").replaceAll("\\s+"," ").trim();
         if(from!=null&&to!=null&&from>to)throw new IllegalArgumentException("年份范围不正确");
         if(maxRuntime!=null&&(maxRuntime<1||maxRuntime>600))throw new IllegalArgumentException("时长条件超出支持范围");
         return new Plan(query,text,new Constraints(genres,category,year,rating,from,to,maxRuntime,excluded,directors,actors,regions,languages),structured);
     }
+    public static boolean isFollowup(String query) {
+        return query != null && query.matches("(?is).*(?:这部|这些|刚才|刚刚|上面|上一部|前面|片库.?id|第[一二三四五六七八九十0-9]+[部个项]).*");
+    }
     public static boolean shouldSearch(String query) {
-        if(query==null)return false;
-        if(query.matches("(?is).*(?:这部|刚才|上面|上一部|片库.?id|详情|简介|有哪些资源|评分是多少|第[一二三四五六七八九十0-9]+[部个项]).*"))return false;
-        return query.matches("(?is).*(?:近.{0,3}年|时长|不超过|小时|分钟|烧脑|太空|穿越|复仇|末日|治愈|讲述|关于|不要|不看|排除|评分.{0,4}[0-9]|[0-9]{4}.?[到至~-].?[0-9]{4}|(?:导演|执导|主演|出演)的|sci-fi|science fiction|under [0-9]|about ).*")
-                || query.matches("(?is).*(?:想看|想找|找点|看点|有什么|有哪些|find|search).*(?:科幻|悬疑|动作|喜剧|恐怖|爱情|犯罪).*(?:电影|影片|片子|剧集|动漫|movies|films).*");
+        if(query == null || query.isBlank() || isFollowup(query)) return false;
+        // Quoted titles stay title searches, even when a name contains a genre or theme.
+        if(query.contains("《") && query.contains("》") || query.contains("“") && query.contains("”") || query.contains("\"")) return false;
+        if(query.matches("(?is).*(?:详情|简介|有哪些资源|评分是多少).*") && !query.matches("(?s).*(?:讲述|关于|剧情像|剧情是).*") ) return false;
+        Plan plan=parse(query);
+        if(plan.structured()) {
+            boolean request=query.matches("(?is).*(?:想看|想找|找|搜|看点|有什么|有哪些|推荐|recommend|suggest|find|search).*");
+            boolean filmWord=query.matches("(?is).*(?:电影|影片|片子|剧集|电视剧|动漫|片$|movies?|films?).*");
+            if(request || filmWord || query.matches("(?s).*(?:高分|评分|不看|不要|排除|时长|近.{0,3}年).*") ) return true;
+        }
+        return query.matches("(?is).*(?:近.{0,3}年|时长|不超过|小时|分钟|烧脑|太空|穿越|复仇|末日|治愈|讲述|关于|剧情像|剧情是|主角|男主|女主|凶手|侦探|案件|结局|反转|失忆|梦境|循环|机器人|外星人|不要|不看|排除|评分.{0,4}[0-9]|[0-9]{4}.?[到至~-].?[0-9]{4}|(?:导演|执导|主演|出演)的|sci-fi|science fiction|under [0-9]|about ).*")
+                || query.matches("(?s).*(?:一[个人群]|主角|男主|女主|凶手|侦探|案件|结局|反转|失忆|梦境|循环|机器人|外星人).*(?:电影|影片|片子|故事|的片).*");
     }
     public static Integer runtimeMinutes(String runtime) {
         if(runtime==null)return null;

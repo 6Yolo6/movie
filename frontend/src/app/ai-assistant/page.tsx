@@ -9,9 +9,11 @@ import { useAuthStore } from '../../store/authStore';
 
 interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
-interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; }
+interface WebSource { title: string; url: string; snippet?: string; }
+interface Trace { kind: string; name: string; status: string; durationMs?: number; }
+interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; webResults?: WebSource[]; }
 interface Catalog { kind: string; keyword?: string; query?: string; total: number; page?: number; pages?: number; size?: number; personalized?: boolean; }
-interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; }
+interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; requestId?: string; trace?: Trace[]; }
 interface Turn { question: string; result?: Answer; error?: string; }
 interface Job { jobId: string; status: string; result?: Answer; message?: string; }
 const subscribe = () => () => {};
@@ -107,15 +109,18 @@ function Conversation() {
                     {turn.result && <div className="mt-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
                         <p className="whitespace-pre-wrap break-words leading-7">{turn.result.answer}</p>
                         {turn.result.evidence.map((evidence, n) => <div key={n} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                            <p className="text-xs text-slate-500">{t('aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
+                            <p className="text-xs text-slate-500">{t(evidence.webResults ? 'aiWebEvidence' : 'aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
                                 <Link href={`/movie/${encodeURIComponent(movie.id)}`} target="_blank" rel="noopener noreferrer" className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
                                 {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
+                                {movie.resourceCount === 0 && <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-sm text-slate-500">{t('aiNoResources')}</span><Link href={`/resource-search?q=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-blue-300 px-3 text-sm text-blue-600 dark:text-blue-400">{t('aiSearchResources')}</Link></div>}
                                 {movie.summary && <p className="mb-1 mt-2 whitespace-pre-wrap break-words text-sm text-slate-600 dark:text-slate-300">{movie.summary}</p>}
                                 {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
                             </div>)}
+                            {evidence.webResults?.map(source => { const url = safeUrl(source.url); return url && /^https?:/.test(url) && <div key={url} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><a href={url} target="_blank" rel="noopener noreferrer" className="break-words text-blue-600 dark:text-blue-400">{source.title}</a>{source.snippet && <p className="mb-0 mt-2 whitespace-pre-wrap break-words text-sm">{source.snippet}</p>}</div>; })}
                             {evidence.resources?.map((resource, r) => { const url = safeUrl(resource.url); return url && <a key={r} href={url} target="_blank" rel="noopener noreferrer" className="mb-2 block break-all text-blue-600 dark:text-blue-400">{resource.provider} · {resource.name || t('aiOpenResource')}{resource.code && ` · ${t('aiCode')}: ${resource.code}`}</a>; })}
                         </div>)}
+                        {turn.result.trace && <details className="mt-4 text-xs text-slate-500"><summary className="cursor-pointer py-2">{t('aiExecutionTrace')}</summary><ol className="mt-2 space-y-1 pl-4">{turn.result.trace.map((step, i) => <li key={i}>{step.name} · {step.status}{step.durationMs !== undefined && ` · ${step.durationMs} ms`}</li>)}</ol></details>}
                         {turn.result.catalog && ['search', 'natural_search'].includes(turn.result.catalog.kind) && (turn.result.catalog.pages || 0) > 1 && <div className="mt-4 flex justify-center" aria-busy={paging === index}><Pagination simple current={turn.result.catalog.page} total={turn.result.catalog.total} pageSize={turn.result.catalog.size} showSizeChanger={false} disabled={busy || paging !== null} onChange={page => void pageResults(index, page)} /></div>}
                     </div>}
                     {turn.error && <Alert type="error" title={turn.error} showIcon className="mt-3" />}

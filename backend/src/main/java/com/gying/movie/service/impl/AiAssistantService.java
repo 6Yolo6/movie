@@ -94,17 +94,26 @@ public class AiAssistantService {
                 || !"gying".equals(result.path("scope").asText())) fail(400, "无效的片库回答");
         ObjectNode output = mapper.createObjectNode();
         output.put("answer", result.path("answer").asText("").substring(0, Math.min(12000, result.path("answer").asText("").length())));
+        if(result.path("requestId").asText().matches("[A-Za-z0-9-]{1,64}"))output.put("requestId",result.path("requestId").asText());
+        var safeTrace=output.putArray("trace");
+        for(JsonNode step:result.path("trace")) {
+            if(safeTrace.size()>=40)break;
+            if(!Set.of("model","tool","error").contains(step.path("kind").asText()))continue;
+            var entry=safeTrace.addObject();
+            for(String key:List.of("kind","name","status","timestamp"))entry.put(key,step.path(key).asText().substring(0,Math.min(100,step.path(key).asText().length())));
+            if(step.path("durationMs").isNumber())entry.put("durationMs",Math.max(0,step.path("durationMs").asLong()));
+        }
         var evidence = output.putArray("evidence");
         boolean toolFailed = false;
         for (JsonNode step : result.path("trace")) {
             if (!"tool".equals(step.path("kind").asText())) continue;
             String name = step.path("name").asText();
-            if (!Set.of("searchMovies", "getMovieDetails").contains(name)) fail(400, "回答包含未授权工具");
+            if (!Set.of("searchMovies", "getMovieDetails", "searchMovieWeb").contains(name)) fail(400, "回答包含未授权工具");
             JsonNode tool = step.path("result");
             if (!tool.path("ok").asBoolean()) { toolFailed = true; continue; }
             JsonNode data = tool.path("data");
             ObjectNode entry = evidence.addObject().put("tool", name).put("queriedAt", data.path("queriedAt").asText());
-            for (String key : List.of("movies", "movie", "resources", "resourceSummary", "total", "returned", "truncated"))
+            for (String key : List.of("movies", "movie", "resources", "resourceSummary", "total", "returned", "truncated", "webResults"))
                 if (data.has(key)) entry.set(key, data.get(key).deepCopy());
         }
         if (result.has("error") || toolFailed || evidence.isEmpty() || output.path("answer").asText().isBlank()) {
