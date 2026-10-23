@@ -95,6 +95,8 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
+2026-10-23 20:18–20:31 GYING手动补齐候选：ensure与按影片/资源ID修复共用双盘有效性检查、失效原位修复及P2P同步；后端706项（705通过/1依赖跳过/0失败）、58项工作流与14项真实MySQL、独立compile和JAR打包通过；前端tsc/页面lint通过，完整构建受Windows提交内存耗尽阻挡，已停止。安全59/11/0保持，按门禁未部署、未做真实转存/发布；现役镜像和前序回退材料保留。[候选验收](gying-manual-completion-20261023.md)、[机器摘要](evaluation/gying-manual-completion-20261023/validation-summary.json)。
+
 2026-10-23晚间评测交付：57项离线行为/完整性测试通过；9场景10轮本机回归重复2次20/20程序检查、16回答待人工复核。30用户独立题保持原文拆44轮，普通USER网站实际88轮全部执行、84程序通过/4任务失败/0未执行，84回答待人工复核；详见[独立验收](evaluation/human-holdout-v1/README.md)与[机器摘要](evaluation/human-holdout-v1/validation-summary.json)。10,432条有效元数据只读事务快照不含用户/资源URL；线上仍用活库。首段本机/网站运行重叠存在负载干扰，不做SLA或无负载性能结论；未使用留出题调prompt，未冻结模型回答。应用源码/镜像未变，逐题人工评分、同数据retriever对比/真实UI仍待；[完整链路](ai-system-chain-20261023.md)。
 
 2026-10-23 12:43–12:54：同候选获批后仅替换两个后端，启用私有加密状态；16真实源站/公网入口与新Agent模型8/8通过。两条终态在平滑重启后状态/attempt不变，两侧密文认证通过；真实内部自然查询/批量拒绝、10个未改容器和转存/发布审计通过。五服务短窗口ERROR/Exception为0；安全59/11/0保持。网站真实登录及生产崩溃/回执丢失未验收，见[部署](ai-reliability-deployment-20261023.md)。

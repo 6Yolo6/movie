@@ -389,9 +389,9 @@ export default function GyingSourcePage() {
             const items = (repair.items as PublishedResource[]) || [];
             setHealth({
                 checked: Number(repair.checked || items.length),
-                valid: 0,
+                valid: Number(repair.valid || 0),
                 invalid: Number(repair.invalid || 0),
-                unclear: 0,
+                unclear: Number(repair.unclear || 0),
                 items,
             });
         }

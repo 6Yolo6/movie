@@ -69,6 +69,7 @@ class GyingSourceWorkflowServiceTest {
     private IResourceHubPublishService publishService;
     private IXunleiTransferTaskService xunleiTransferTaskService;
     private IXunleiTransferRunnerService xunleiTransferRunnerService;
+    private IQuarkShareService shareService;
     private GyingSourceWorkflowService service;
 
     @BeforeEach
@@ -86,7 +87,7 @@ class GyingSourceWorkflowServiceTest {
         transferTaskService = mock(IQuarkTransferTaskService.class);
         transferRunnerService = mock(IQuarkTransferRunnerService.class);
         publishService = mock(IResourceHubPublishService.class);
-        IQuarkShareService shareService = mock(IQuarkShareService.class);
+        shareService = mock(IQuarkShareService.class);
         xunleiTransferTaskService = mock(IXunleiTransferTaskService.class);
         xunleiTransferRunnerService = mock(IXunleiTransferRunnerService.class);
         service = new GyingSourceWorkflowService(
@@ -182,7 +183,14 @@ class GyingSourceWorkflowServiceTest {
                                 "url", local.getUrl()))));
         when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", "EGER"));
         when(movieService.getById("EGER")).thenReturn(movie);
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("XUNLEI") ? null : local;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(Map.of(local.getUrl(), "QUARK"))).thenReturn(Map.of(
+                local.getUrl(), new LinkCheckResult(local.getUrl(), true, true, "valid")));
         when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of(
                 "action", "published",
                 "sourceId", "NEW01",
@@ -190,7 +198,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureMovieResource("mv", "EGER");
 
-        assertEquals("PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals(42L, result.get("resourceId"));
         assertEquals(false, result.get("transferMode"));
         verify(transferRunnerService, never()).submitOne(any());
@@ -214,12 +222,6 @@ class GyingSourceWorkflowServiceTest {
                         "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
                 .thenReturn(Map.of(
                         "title", movie.getTitleCn(),
-                        "resources", List.of(
-                                Map.of("source_id", "Q1", "provider", "QUARK", "title", "夸克", "url", quarkUrl),
-                                Map.of("source_id", "X1", "provider", "XUNLEI", "title", "迅雷", "url", xunleiUrl)),
-                        "ownResources", List.of(Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"))))
-                .thenReturn(Map.of(
-                        "title", movie.getTitleCn(),
                         "resources", List.of(),
                         "ownResources", List.of(
                                 Map.of("source_id", "OWN-Q1", "url", quarkUrl, "provider", "QUARK"),
@@ -234,7 +236,13 @@ class GyingSourceWorkflowServiceTest {
         when(resourceLinkService.getOne(any(Wrapper.class), eq(false)))
                 .thenReturn(localQuark)
                 .thenReturn((ResourceLink) null);
-        when(panSouClient.checkLinksByProvider(any())).thenReturn(Map.of());
+        when(resourceLinkService.updateById(any(ResourceLink.class))).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            Map<String, LinkCheckResult> checks = new java.util.LinkedHashMap<>();
+            links.forEach((url, provider) -> checks.put(url, new LinkCheckResult(url, true, true, "valid")));
+            return checks;
+        });
 
         ResourceDiscoveryResult discovery = new ResourceDiscoveryResult();
         discovery.setId(101L);
@@ -273,7 +281,7 @@ class GyingSourceWorkflowServiceTest {
         Map<String, Object> result = service.ensureMovieResource("tv", "XL1");
 
         assertEquals("PUBLISHED", result.get("status"));
-        assertEquals(1, result.get("providersPublished"));
+        assertEquals(2, result.get("providersPublished"));
         verify(xunleiTransferRunnerService).submitOne(task.getId());
         verify(transferRunnerService, never()).submitOne(any());
         verify(gyingSourceClient, times(2)).post(eq("/publish"), any());
@@ -354,14 +362,21 @@ class GyingSourceWorkflowServiceTest {
         when(movieService.getById("x01w")).thenReturn(null);
         when(movieService.getById(canonical.getId())).thenReturn(canonical);
         when(movieService.list(any(Wrapper.class))).thenReturn(List.of(canonical));
-        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("XUNLEI") ? null : local;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(Map.of(local.getUrl(), "QUARK"))).thenReturn(Map.of(
+                local.getUrl(), new LinkCheckResult(local.getUrl(), true, true, "valid")));
         when(gyingSourceClient.post(eq("/publish"), any())).thenReturn(Map.of(
                 "sourceId", "GHOST1",
                 "site", Map.of("code", 200)));
 
         Map<String, Object> result = service.ensureMovieResource("mv", "x01w");
 
-        assertEquals("PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals(canonical.getId(), result.get("localMovieId"));
         ArgumentCaptor<Map<String, Object>> ingestPayload = ArgumentCaptor.forClass(Map.class);
         verify(gyingSourceClient).post(eq("/ingest"), ingestPayload.capture());
@@ -503,7 +518,7 @@ class GyingSourceWorkflowServiceTest {
 
         Map<String, Object> result = service.ensureLocalMovieResource(movie.getId());
 
-        assertEquals("ALREADY_PUBLISHED", result.get("status"));
+        assertEquals("PARTIAL", result.get("status"));
         assertEquals("0pEK", result.get("mid"));
         ArgumentCaptor<MovieSourceIdentity> identities =
                 ArgumentCaptor.forClass(MovieSourceIdentity.class);
@@ -861,9 +876,10 @@ class GyingSourceWorkflowServiceTest {
                 Map.of("typeCode", "mv", "mid", "EGER")));
 
         assertEquals(1, result.get("checked"));
-        assertEquals(1, result.get("succeeded"));
+        assertEquals(0, result.get("succeeded"));
+        assertEquals(1, result.get("partial"));
         assertTrue(((List<?>) result.get("items")).size() == 1);
-        verify(gyingSourceClient, times(2)).get("/movie/mv/EGER");
+        verify(gyingSourceClient).get("/movie/mv/EGER");
     }
 
     @Test
@@ -1141,4 +1157,199 @@ class GyingSourceWorkflowServiceTest {
         verify(gyingSourceClient).get("/resources/tv/jP3n");
         verify(gyingSourceClient, never()).post(eq("/ingest"), anyMap());
     }
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void bothManualActionsSkipConfirmedVideoSharesAndIdempotentlyCollectP2p(boolean repair) {
+        MovieMetadata movie = stubManualMovie("COMPLETE", ownedVideo("QUARK", "OWN-Q", "q"),
+                ownedVideo("XUNLEI", "OWN-X", "x"));
+        String magnet = "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567";
+        ResourceLink p2p = new ResourceLink(); p2p.setId(90L); p2p.setMovieId(movie.getId());
+        when(gyingSourceClient.get("/resources/mv/COMPLETE")).thenReturn(Map.of("resources", List.of(
+                Map.of("type", "MAGNET", "provider", "P2P", "url", magnet, "source_ref", "BT1", "quality", "1080P"))));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue(magnet) ? p2p : null;
+        });
+        when(resourceLinkService.updateById(p2p)).thenReturn(true);
+        confirmShares();
+        for (int i = 0; i < 2; i++) {
+            Map<String, Object> result = manualAction("COMPLETE", repair);
+            assertEquals("ALREADY_PUBLISHED", result.get("status"));
+            assertEquals(2, result.get("skipped"));
+            assertEquals(1, result.get("directResourceLinks"));
+            assertEquals("SYNCED", result.get("p2pStatus"));
+            assertEquals(0, result.get("failed"));
+        }
+        assertEquals(movie.getId(), p2p.getMovieId());
+        assertEquals("P2P", p2p.getProvider()); assertEquals("NORMAL", p2p.getLinkStatus());
+        verify(resourceLinkService, times(2)).updateById(p2p);
+        verify(resourceLinkService, never()).save(any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verify(gyingSourceClient, never()).post(eq("/update"), any());
+        ArgumentCaptor<Map<String, Object>> ingests = ArgumentCaptor.forClass(Map.class);
+        verify(gyingSourceClient, times(2)).post(eq("/ingest"), ingests.capture());
+        assertTrue(ingests.getAllValues().stream().allMatch(value -> Boolean.FALSE.equals(value.get("includeResources"))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void unknownShareIsReportedWithoutRepublishingOrDuplicatingVideo(boolean repair) {
+        Map<String, Object> quark = ownedVideo("QUARK", "OWN-Q", "unknown");
+        Map<String, Object> xunlei = ownedVideo("XUNLEI", "OWN-X", "valid");
+        MovieMetadata movie = stubManualMovie("UNKNOWN", quark, xunlei);
+        ResourceLink local = new ResourceLink(); local.setId(20L); local.setMovieId(movie.getId());
+        local.setLinkStatus("INVALID"); local.setUrl(String.valueOf(quark.get("url")));
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("OWN-Q") ? local : null;
+        });
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, !url.contains("unknown"), !url.contains("unknown"), "fixture"));
+        });
+        Map<String, Object> result = manualAction("UNKNOWN", repair);
+        assertEquals("CHECK_REQUIRED", result.get("status")); assertEquals(1, result.get("unclear"));
+        assertEquals(1, result.get("skipped")); assertEquals(0, result.get("failed"));
+        assertEquals("INVALID", local.getLinkStatus());
+        verify(resourceLinkService, never()).updateById(local);
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verify(gyingSourceClient, never()).post(eq("/update"), any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void invalidVideoShareIsResharedInPlaceAndTheOtherProviderIsSkipped(String provider) {
+        String other = "QUARK".equals(provider) ? "XUNLEI" : "QUARK";
+        Map<String, Object> dead = ownedVideo(provider, "DEAD", "dead");
+        Map<String, Object> good = ownedVideo(other, "GOOD", "good");
+        MovieMetadata movie = stubManualMovie("REPAIR", dead, good);
+        String oldUrl = String.valueOf(dead.get("url"));
+        String newUrl = String.valueOf(ownedVideo(provider, "DEAD", "new").get("url"));
+        ResourceLink local = new ResourceLink(); local.setId(21L); local.setMovieId(movie.getId());
+        local.setProvider(provider); local.setUrl(oldUrl); local.setLinkStatus("NORMAL");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?>) call.getArgument(0);
+            query.getSqlSegment();
+            return query.getParamNameValuePairs().containsValue("DEAD") || query.getParamNameValuePairs().containsValue(oldUrl) ? local : null;
+        });
+        when(resourceLinkService.updateById(local)).thenReturn(true);
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, true, !oldUrl.equals(url), "fixture"));
+        });
+        if ("QUARK".equals(provider)) {
+            QuarkTransferTask task = new QuarkTransferTask(); task.setId(22L); task.setMovieId(movie.getId());
+            task.setSavedPath("/fixture/movie"); task.setShareUrl(oldUrl);
+            when(transferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(task);
+            when(transferTaskService.updateById(task)).thenReturn(true);
+            when(shareService.ensureShareUrl(task)).thenReturn(newUrl);
+        } else {
+            XunleiTransferTask task = new XunleiTransferTask(); task.setId(23L); task.setMovieId(movie.getId());
+            task.setSavedPath("fixture-folder"); task.setShareUrl(oldUrl);
+            when(xunleiTransferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(task);
+            when(xunleiTransferTaskService.updateById(task)).thenReturn(true);
+            when(xunleiTransferTaskService.getById(task.getId())).thenReturn(task);
+            when(xunleiTransferRunnerService.submitOne(task.getId())).thenAnswer(call -> {
+                assertNull(task.getShareUrl()); assertNull(task.getShareUrlHash());
+                task.setShareUrl(newUrl); return new QuarkTransferRunResult();
+            });
+        }
+        when(gyingSourceClient.get("/movie/mv/REPAIR")).thenReturn(
+                Map.of("title", movie.getTitleCn(), "ownResources", List.of(dead, good)),
+                Map.of("ownResources", List.of(ownedVideo(provider, "DEAD", "new"), good)));
+        Map<String, Object> result = service.ensureMovieResource("mv", "REPAIR");
+        assertEquals("PUBLISHED", result.get("status"), result.toString()); assertEquals(1, result.get("repaired"));
+        assertEquals(1, result.get("reshared")); assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("failed")); assertEquals("NORMAL", local.getLinkStatus());
+        assertEquals(newUrl, local.getUrl()); assertEquals("DEAD", local.getSourceRef());
+        verify(resourceLinkService, never()).save(any());
+        verify(transferRunnerService, never()).submitOne(any());
+        verifyNoInteractions(publishService);
+        verify(gyingSourceClient).post(eq("/update"), any());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test
+    void repairKeysResolveResourceIdsAndDeduplicateTheOwningMovie() {
+        stubManualMovie("KEYS", ownedVideo("QUARK", "QID", "q"), ownedVideo("XUNLEI", "XID", "x"));
+        confirmShares();
+        when(gyingSourceClient.get(eq("/my-resources"), anyMap())).thenReturn(Map.of("items", List.of(
+                Map.of("source_id", "QID", "type_code", "mv", "mid", "KEYS"),
+                Map.of("source_id", "XID", "type_code", "mv", "mid", "KEYS"),
+                Map.of("source_id", "UNREQUESTED", "type_code", "mv", "mid", "OTHER"))));
+        Map<String, Object> result = service.repairPublishedResourcesByKeys(List.of("MV/KEYS", "QID", "XID", "MISSING", "QID"));
+        assertEquals(1, result.get("checked")); assertEquals(4, result.get("requested"));
+        assertEquals(List.of("MISSING"), result.get("notFound")); assertEquals(2, result.get("skipped"));
+        verify(gyingSourceClient).get("/movie/mv/KEYS");
+        verify(gyingSourceClient, never()).get("/movie/mv/OTHER");
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void missingSourceIdsNeverTriggerUnboundedMovieCompletion() {
+        when(gyingSourceClient.get(eq("/my-resources"), anyMap())).thenReturn(Map.of("items", List.of()));
+        Map<String, Object> result = service.repairPublishedResourcesByKeys(List.of("MISSING"));
+        assertEquals(0, result.get("checked")); assertEquals(List.of("MISSING"), result.get("notFound"));
+        assertEquals(0, result.get("unclear")); verifyNoInteractions(movieService, transferRunnerService, xunleiTransferRunnerService);
+        verify(gyingSourceClient, never()).post(anyString(), any());
+    }
+
+    @Test
+    void failedP2pCollectionDoesNotPreventIndependentVideoHealthChecks() {
+        stubManualMovie("P2PFAIL", ownedVideo("QUARK", "Q", "q"), ownedVideo("XUNLEI", "X", "x"));
+        confirmShares();
+        when(gyingSourceClient.get("/resources/mv/P2PFAIL")).thenThrow(new IllegalStateException("fixture unavailable"));
+        Map<String, Object> result = service.ensureMovieResource("mv", "P2PFAIL");
+        assertEquals("PARTIAL", result.get("status")); assertEquals("FAILED", result.get("p2pStatus"));
+        assertEquals(1, result.get("failed")); assertEquals(0, result.get("providerFailures"));
+        assertEquals(2, result.get("skipped"));
+    }
+
+    @Test
+    void failedProviderIsCountedAsFailureInBatchCompletion() {
+        stubManualMovie("FAIL", ownedVideo("QUARK", "DEAD", "dead"));
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            String url = links.keySet().iterator().next();
+            return Map.of(url, new LinkCheckResult(url, true, false, "invalid"));
+        });
+        Map<String, Object> result = service.ensureMovieResources(List.of(Map.of("typeCode", "mv", "mid", "FAIL")));
+        assertEquals(0, result.get("succeeded")); assertEquals(1, result.get("failed"));
+        assertEquals("FAILED", ((List<Map<String, Object>>) result.get("items")).get(0).get("status"));
+    }
+
+    private MovieMetadata stubManualMovie(String id, Map<String, Object>... own) {
+        MovieMetadata movie = movie(id, "测试电影", "mv", "UNKNOWN");
+        when(movieService.getById(id)).thenReturn(movie);
+        when(gyingSourceClient.get("/movie/mv/" + id)).thenReturn(Map.of(
+                "title", movie.getTitleCn(), "resources", List.of(), "ownResources", List.of(own)));
+        when(gyingSourceClient.get("/resources/mv/" + id)).thenReturn(Map.of("resources", List.of()));
+        return movie;
+    }
+
+    private Map<String, Object> ownedVideo(String provider, String id, String suffix) {
+        return Map.of("source_id", id, "provider", provider, "type", "DISK", "url",
+                "QUARK".equals(provider) ? "https://pan.quark.cn/s/" + suffix : "https://pan.xunlei.com/s/" + suffix);
+    }
+
+    private Map<String, Object> manualAction(String id, boolean repair) {
+        if (!repair) return service.ensureMovieResource("mv", id);
+        return ((List<Map<String, Object>>) service.repairPublishedResourcesByKeys(List.of("mv/" + id)).get("movieResults")).get(0);
+    }
+
+    private void confirmShares() {
+        when(panSouClient.checkLinksByProvider(any())).thenAnswer(call -> {
+            Map<String, String> links = call.getArgument(0);
+            Map<String, LinkCheckResult> checks = new java.util.LinkedHashMap<>();
+            links.forEach((url, provider) -> checks.put(url, new LinkCheckResult(url, true, true, "valid")));
+            return checks;
+        });
+    }
+
 }

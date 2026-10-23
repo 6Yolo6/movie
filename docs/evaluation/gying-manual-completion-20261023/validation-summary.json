@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Shanghai",
+  "backend": {
+    "totals": {
+      "tests": 706,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 705
+    },
+    "workflow": {
+      "tests": 58,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "mysqlQueries": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "mysqlMonitoring": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "compile": true,
+    "fixtureCleanup": true
+  },
+  "frontend": {
+    "typescript": "PASS",
+    "pageEslint": "PASS",
+    "productionBuild": "BLOCKED: Windows commit memory exhausted, SWC paging-file load failure; stopped isolated build"
+  },
+  "security": {
+    "PASS": 59,
+    "FAIL": 11,
+    "UNKNOWN": 0
+  },
+  "productionDeployed": false,
+  "realTransferOrPublishingTested": false,
+  "releasePath": "E:\\gying-tools\\releases\\gying-manual-completion-20261023",
+  "package": {
+    "runId": "2f25cf17e7ef",
+    "network": "none",
+    "productionReplaced": false,
+    "exit": 0,
+    "sha256": "aa34016a48e8aedfbf9fffa7e1deec9e462d051928d19977c97edbb8bdf90490",
+    "classResourcesMatched": 344,
+    "fixtureRemoved": true
+  },
+  "backendImage": {
+    "tag": "gying-manual-completion-backend:20261023",
+    "imageId": "sha256:89f127f9e023c966d02422202ce9cdf18755afe046b5203b2cef3ea33de386f3",
+    "baseImageId": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15",
+    "productionReplaced": false,
+    "jarSha256Verified": "aa34016a48e8aedfbf9fffa7e1deec9e462d051928d19977c97edbb8bdf90490"
+  }
+}

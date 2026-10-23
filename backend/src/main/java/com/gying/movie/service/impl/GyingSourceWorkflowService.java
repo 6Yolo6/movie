@@ -626,11 +626,10 @@ public class GyingSourceWorkflowService {
                 items.add(ensureMovieResource(
                         stringValue(candidate.get("typeCode")),
                         stringValue(candidate.get("mid"))));
-                if ("PARTIAL".equals(stringValue(items.get(items.size() - 1).get("status")))) {
-                    partial++;
-                } else {
-                    succeeded++;
-                }
+                String status = stringValue(items.get(items.size() - 1).get("status"));
+                if ("FAILED".equals(status)) failed++;
+                else if (Set.of("PARTIAL", "CHECK_REQUIRED", "NO_TRANSFERABLE_RESOURCE").contains(status)) partial++;
+                else succeeded++;
             } catch (Exception error) {
                 Map<String, Object> failedItem = new LinkedHashMap<>(candidate);
                 failedItem.put("status", "FAILED");
@@ -1094,14 +1093,86 @@ public class GyingSourceWorkflowService {
         return ensurePrimaryMovieResource(typeCode, mid, true);
     }
 
+    /** Both manual entry points complete each video provider and collect P2P metadata. */
     public Map<String, Object> ensureMovieResource(String typeCode, String mid) {
-        Map<String, Object> result = ensurePrimaryMovieResource(typeCode, mid);
-        return ensureMissingOwnedProviders(
-                normalizeTypeCode(typeCode), required(mid, "GYING movie id"), result);
+        GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, false);
+        Map<String, Object> result = movieMetadataResult(ingested);
+        List<String> errors = new ArrayList<>();
+        try {
+            int saved = syncGyingDirectResources(ingested.movie().getId(), ingested.typeCode(), ingested.mid());
+            result.put("directResourceLinks", saved);
+            result.put("p2pStatus", saved == 0 ? "NO_RESOURCE" : "SYNCED");
+        } catch (Exception error) {
+            result.put("directResourceLinks", 0);
+            result.put("p2pStatus", "FAILED");
+            errors.add("P2P: " + safeText(error.getMessage()));
+        }
+        List<Map<String, Object>> providerResults = new ArrayList<>();
+        for (String provider : List.of("QUARK", "XUNLEI")) {
+            try {
+                providerResults.add(ensureVideoProvider(ingested, provider));
+            } catch (ShareCheckUnavailableException error) {
+                providerResults.add(new LinkedHashMap<>(Map.of("provider", provider, "status", "CHECK_REQUIRED",
+                        "unclear", 1, "error", safeText(error.getMessage()))));
+            } catch (Exception error) {
+                providerResults.add(new LinkedHashMap<>(Map.of("provider", provider, "status", "FAILED",
+                        "failed", 1, "error", safeText(error.getMessage()))));
+            }
+        }
+        int published = 0;
+        int repaired = 0;
+        int reshared = 0;
+        int retransferred = 0;
+        int skipped = 0;
+        int providerFailures = 0;
+        int unclear = 0;
+        int missing = 0;
+        boolean available = false;
+        for (Map<String, Object> item : providerResults) {
+            String status = stringValue(item.get("status"));
+            int valid = countValue(item, "valid");
+            int itemRepaired = countValue(item, "repaired");
+            if ("PUBLISHED".equals(status) || valid > 0 || itemRepaired > 0) available = true;
+            if ("PUBLISHED".equals(status)) published++;
+            if ("NO_CANDIDATE".equals(status)) missing++;
+            skipped += valid;
+            repaired += itemRepaired;
+            reshared += countValue(item, "reshared");
+            retransferred += countValue(item, "retransferred");
+            providerFailures += countValue(item, "failed");
+            unclear += countValue(item, "unclear");
+            if ("FAILED".equals(status)) {
+                errors.add(item.get("provider") + ": " + safeText(stringValue(item.get("error"))));
+            }
+            if (Set.of("PUBLISHED", "REPAIRED").contains(status) && !result.containsKey("resourceId")) {
+                for (String field : List.of("resourceId", "sourceId", "transferMode", "sourceCandidateId", "transferErrors")) {
+                    if (item.containsKey(field)) result.put(field, item.get(field));
+                }
+            }
+        }
+        if (available) markMovieAvailable(ingested.movie());
+        int failed = providerFailures + ("FAILED".equals(result.get("p2pStatus")) ? 1 : 0);
+        result.put("providerResults", providerResults);
+        result.put("providersPublished", published);
+        result.put("providersMissing", missing);
+        result.put("providerFailures", providerFailures);
+        result.put("repaired", repaired + published);
+        result.put("reshared", reshared);
+        result.put("retransferred", retransferred);
+        result.put("skipped", skipped);
+        result.put("failed", failed);
+        result.put("unclear", unclear);
+        result.put("errors", errors);
+        result.put("status", failed > 0 ? (available ? "PARTIAL" : "FAILED")
+                : unclear > 0 ? "CHECK_REQUIRED"
+                : missing > 0 ? (available ? "PARTIAL" : "NO_TRANSFERABLE_RESOURCE")
+                : published > 0 || repaired > 0 ? "PUBLISHED" : "ALREADY_PUBLISHED");
+        return result;
     }
 
-    private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid) {
-        return ensurePrimaryMovieResource(typeCode, mid, false);
+    private int countValue(Map<String, Object> result, String field) {
+        Integer value = integerValue(result.get(field));
+        return value == null ? 0 : value;
     }
 
     private Map<String, Object> ensurePrimaryMovieResource(String typeCode, String mid, boolean weekly) {
@@ -1177,99 +1248,145 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
-    private Map<String, Object> ensureMissingOwnedProviders(
-            String typeCode, String mid, Map<String, Object> result) {
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        if (snapshot == null || snapshot.isEmpty()) {
+    private Map<String, Object> ensureVideoProvider(GyingMovieMetadata ingested, String provider) {
+        MovieMetadata movie = ingested.movie();
+        List<Map<String, Object>> own = mapList(ingested.snapshot().get("ownResources")).stream()
+                .filter(item -> provider.equals(resourceProvider(item)))
+                .filter(this::isVideoResource).toList();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("provider", provider);
+        if (!own.isEmpty()) {
+            Map<String, Object> checked = checkMoviePublishedResources(ingested.typeCode(), ingested.mid(), own);
+            result.putAll(checked);
+            if (countValue(checked, "invalid") > 0) {
+                Map<String, Object> repair = repairCheckedPublishedResources(checked);
+                result.putAll(repair);
+                int failed = countValue(repair, "failed") + countValue(repair, "skipped");
+                int unclear = countValue(checked, "unclear") + countValue(repair, "unclear");
+                result.put("failed", failed);
+                result.put("unclear", unclear);
+                result.put("status", failed > 0 ? "FAILED" : unclear > 0 ? "CHECK_REQUIRED" : "REPAIRED");
+                if (failed > 0) result.put("error", firstText(
+                        String.join("; ", stringList(repair.get("errors"))),
+                        mapList(repair.get("items")).stream()
+                                .map(item -> stringValue(item.get("repairError"))).filter(this::hasText)
+                                .findFirst().orElse(null), "Invalid published share could not be repaired"));
+            } else {
+                result.put("status", countValue(checked, "unclear") > 0 ? "CHECK_REQUIRED" : "ALREADY_PUBLISHED");
+            }
+            // An existing unknown/failed share is never treated as missing and duplicated.
             return result;
         }
-        List<Map<String, Object>> resources = mapList(snapshot.get("resources"));
-        Set<String> ownedProviders = mapList(snapshot.get("ownResources")).stream()
-                .map(this::resourceProvider)
-                .filter(Set.of("QUARK", "XUNLEI")::contains)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        MovieMetadata movie = movieService.getById(
-                required(stringValue(result.get("localMovieId")), "local movie id"));
-        if (movie == null) {
-            throw new IllegalStateException("Movie not found after GYING ensure: " + result.get("localMovieId"));
-        }
 
-        List<Map<String, Object>> providerResults = new ArrayList<>();
-        int published = 0;
-        int failed = 0;
-        for (String provider : List.of("QUARK", "XUNLEI")) {
-            Map<String, Object> providerResult = new LinkedHashMap<>();
-            providerResult.put("provider", provider);
-            if (ownedProviders.contains(provider)) {
-                providerResult.put("status", "ALREADY_PUBLISHED");
-                providerResults.add(providerResult);
-                continue;
+        ResourceLink local = findPublishableLocalResource(movie.getId(), provider);
+        if (local != null) {
+            Map<String, Object> localItem = new LinkedHashMap<>();
+            localItem.put("url", local.getUrl());
+            localItem.put("provider", provider);
+            LinkCheckResult check = checkShareLinks(List.of(localItem)).get(local.getUrl());
+            updatePublishedLinkHealth(local, check);
+            if (check == null || !check.checked()) {
+                result.put("status", "CHECK_REQUIRED");
+                result.put("unclear", 1);
+                result.put("resourceId", local.getId());
+                return result;
             }
-
-            List<Map<String, Object>> candidates = selectTransferCandidates(resources.stream()
+            if (!check.valid()) local = null;
+        }
+        boolean transferred = false;
+        if (local == null) {
+            List<Map<String, Object>> candidates = selectTransferCandidates(mapList(ingested.snapshot().get("resources")).stream()
                     .filter(item -> provider.equals(resourceProvider(item)))
-                    .toList());
+                    .filter(this::isVideoResource).toList());
             if (candidates.isEmpty()) {
-                providerResult.put("status", "NO_CANDIDATE");
-                providerResults.add(providerResult);
-                continue;
+                result.put("status", "NO_CANDIDATE");
+                return result;
             }
-
-            try {
-                ResourceLink local = findPublishableLocalResource(movie.getId(), provider);
-                Map<String, Object> selected = null;
-                List<String> transferErrors = new ArrayList<>();
-                if (local == null) {
-                    for (Map<String, Object> candidate : candidates) {
-                        try {
-                            local = transferAndPublishLocally(movie, candidate);
-                            selected = candidate;
-                            break;
-                        } catch (Exception error) {
-                            transferErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
-                                    + ": " + safeText(error.getMessage()));
-                        }
-                    }
+            List<String> transferErrors = new ArrayList<>();
+            for (Map<String, Object> candidate : candidates) {
+                try {
+                    local = transferAndPublishLocally(movie, candidate);
+                    result.put("sourceCandidateId", candidate.get("source_id"));
+                    transferred = true;
+                    break;
+                } catch (ShareCheckUnavailableException error) {
+                    throw error;
+                } catch (Exception error) {
+                    transferErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
+                            + ": " + safeText(error.getMessage()));
                 }
-                if (local == null) {
-                    throw new IllegalStateException("All " + provider + " transfer candidates failed: "
-                            + String.join("; ", transferErrors));
-                }
-                Map<String, Object> publishedResult = publishLocalResource(typeCode, mid, movie, local);
-                String sourceId = required(stringValue(publishedResult.get("sourceId")),
-                        "published GYING source id");
-                verifyPublishedUpdate(typeCode, mid, sourceId, local.getUrl());
-                providerResult.put("status", "PUBLISHED");
-                providerResult.put("resourceId", local.getId());
-                providerResult.put("sourceId", sourceId);
-                providerResult.put("transferMode", selected != null);
-                if (selected != null) {
-                    providerResult.put("sourceCandidateId", selected.get("source_id"));
-                }
-                if (!transferErrors.isEmpty()) {
-                    providerResult.put("transferErrors", transferErrors);
-                }
-                ownedProviders.add(provider);
-                published++;
-            } catch (Exception error) {
-                providerResult.put("status", "FAILED");
-                providerResult.put("error", safeText(error.getMessage()));
-                failed++;
             }
-            providerResults.add(providerResult);
+            result.put("transferErrors", transferErrors);
+            if (local == null) throw new IllegalStateException("All " + provider + " transfer candidates failed: "
+                    + String.join("; ", transferErrors));
         }
-
-        result.put("providerResults", providerResults);
-        result.put("providersPublished", published);
-        result.put("providerFailures", failed);
-        if (failed > 0) {
-            result.put("status", ownedProviders.isEmpty() ? "FAILED" : "PARTIAL");
-        } else if (published > 0) {
-            result.put("status", Boolean.TRUE.equals(result.get("repairRequired"))
-                    ? "PUBLISHED_NEEDS_REPAIR" : "PUBLISHED");
-            markMovieAvailable(movie);
-        }
+        requireConfirmedValid(local.getUrl(), provider);
+        Map<String, Object> published = publishLocalResource(ingested.typeCode(), ingested.mid(), movie, local);
+        String sourceId = required(stringValue(published.get("sourceId")), "published GYING source id");
+        verifyPublishedUpdate(ingested.typeCode(), ingested.mid(), sourceId, local.getUrl());
+        result.put("status", "PUBLISHED");
+        result.put("resourceId", local.getId());
+        result.put("sourceId", sourceId);
+        result.put("transferMode", transferred);
+        result.put("url", local.getUrl());
+        result.put("retransferred", transferred ? 1 : 0);
         return result;
+    }
+
+    private boolean isVideoResource(Map<String, Object> item) {
+        String type = stringValue(item.get("type"));
+        return !hasText(type) || "DISK".equalsIgnoreCase(type);
+    }
+
+    private Map<String, LinkCheckResult> checkShareLinks(List<Map<String, Object>> items) {
+        Map<String, String> links = new LinkedHashMap<>();
+        for (Map<String, Object> item : items) {
+            String url = stringValue(item.get("url"));
+            if (hasText(url)) links.putIfAbsent(url, resourceProvider(item));
+        }
+        if (links.isEmpty()) return Map.of();
+        try {
+            Map<String, LinkCheckResult> checks = panSouClient.checkLinksByProvider(links);
+            return checks == null ? Map.of() : checks;
+        } catch (Exception unavailable) {
+            return Map.of();
+        }
+    }
+
+    private Map<String, Object> checkMoviePublishedResources(
+            String typeCode, String mid, List<Map<String, Object>> own) {
+        Map<String, LinkCheckResult> checks = checkShareLinks(own);
+        List<Map<String, Object>> items = new ArrayList<>();
+        int valid = 0;
+        int invalid = 0;
+        int unclear = 0;
+        for (Map<String, Object> source : own) {
+            Map<String, Object> item = new LinkedHashMap<>(source);
+            item.put("type_code", typeCode);
+            item.put("mid", mid);
+            item.put("provider", resourceProvider(source));
+            LinkCheckResult check = checks.get(stringValue(source.get("url")));
+            String status = check == null || !check.checked() ? "UNCLEAR" : check.valid() ? "VALID" : "INVALID";
+            item.put("checkStatus", status);
+            item.put("checkMessage", check == null ? null : safeText(check.message()));
+            if ("VALID".equals(status)) valid++;
+            else if ("INVALID".equals(status)) invalid++;
+            else unclear++;
+            ResourceLink local = findLocalPublishedResource(item);
+            updatePublishedLinkHealth(local, check);
+            items.add(item);
+        }
+        return new LinkedHashMap<>(Map.of("items", items, "checked", items.size(),
+                "valid", valid, "invalid", invalid, "unclear", unclear));
+    }
+
+    private void updatePublishedLinkHealth(ResourceLink local, LinkCheckResult check) {
+        if (local == null || check == null || !check.checked()) return;
+        local.setLinkStatus(check.valid() ? "NORMAL" : "INVALID");
+        local.setValidatedAt(LocalDateTime.now());
+        local.setLastCheckError(check.valid() ? null : safeText(check.message()));
+        local.setUpdatedAt(LocalDateTime.now());
+        if (!resourceLinkService.updateById(local)) throw new IllegalStateException("Share health was not persisted");
     }
 
     private GyingMovieMetadata ingestMovieMetadata(
@@ -1623,11 +1740,7 @@ public class GyingSourceWorkflowService {
         return repairCheckedPublishedResources(checked);
     }
 
-    /**
-     * Repair a movie as a whole.  Unlike the resource-id endpoint this also
-     * fills a missing provider, so an invalid Quark link and a missing Xunlei
-     * link can be fixed in one operation.
-     */
+    /** Complete each selected movie using the same workflow as the ensure action. */
     public Map<String, Object> repairPublishedResourcesByMovieKeys(List<String> movieKeys) {
         if (movieKeys == null || movieKeys.isEmpty()) {
             throw new IllegalArgumentException("At least one movie key is required");
@@ -1638,7 +1751,9 @@ public class GyingSourceWorkflowService {
         int skipped = 0;
         int reshared = 0;
         int retransferred = 0;
+        int unclear = 0;
         List<String> errors = new ArrayList<>();
+        if (movieKeys.size() > 100) throw new IllegalArgumentException("At most 100 movie keys are allowed");
         for (String key : new LinkedHashSet<>(movieKeys)) {
             try {
                 String[] parts = requiredMovieKey(key);
@@ -1649,10 +1764,7 @@ public class GyingSourceWorkflowService {
                 retransferred += integerValue(item.get("retransferred")) == null ? 0 : integerValue(item.get("retransferred"));
                 skipped += integerValue(item.get("skipped")) == null ? 0 : integerValue(item.get("skipped"));
                 failed += integerValue(item.get("failed")) == null ? 0 : integerValue(item.get("failed"));
-                stringList(item.get("xunleiErrors")).stream()
-                        .map(error -> key + ": " + error)
-                        .limit(Math.max(0, 20 - errors.size()))
-                        .forEach(errors::add);
+                unclear += countValue(item, "unclear");
                 if (hasText(stringValue(item.get("repairError"))) && errors.size() < 20) {
                     errors.add(key + ": " + stringValue(item.get("repairError")));
                 }
@@ -1673,38 +1785,82 @@ public class GyingSourceWorkflowService {
         result.put("retransferred", retransferred);
         result.put("skipped", skipped);
         result.put("failed", failed);
+        result.put("unclear", unclear);
         result.put("items", items);
         result.put("errors", errors);
         return result;
     }
 
+    /** Resolve resource IDs to their owning movie, and complete each movie only once. */
     public Map<String, Object> repairPublishedResourcesByKeys(List<String> keys) {
-        if (keys == null || keys.isEmpty()) {
-            throw new IllegalArgumentException("At least one resource ID or movie key is required");
+        if (keys == null || keys.isEmpty() || keys.size() > 100) {
+            throw new IllegalArgumentException("Between 1 and 100 resource IDs or movie keys are required");
         }
-        List<String> movieKeys = keys.stream()
-                .filter(value -> value != null && value.matches("(?i)(mv|tv|ac)/.+"))
-                .toList();
-        List<String> sourceIds = keys.stream()
-                .filter(value -> value == null || !value.matches("(?i)(mv|tv|ac)/.+"))
-                .toList();
-        if (movieKeys.isEmpty()) return repairPublishedResourcesBySourceIds(sourceIds);
-        if (sourceIds.isEmpty()) return repairPublishedResourcesByMovieKeys(movieKeys);
-        Map<String, Object> resources = repairPublishedResourcesBySourceIds(sourceIds);
-        Map<String, Object> movies = repairPublishedResourcesByMovieKeys(movieKeys);
-        Map<String, Object> result = new LinkedHashMap<>();
-        for (String field : List.of("checked", "repaired", "reshared", "retransferred", "skipped", "failed")) {
-            int left = integerValue(resources.get(field)) == null ? 0 : integerValue(resources.get(field));
-            int right = integerValue(movies.get(field)) == null ? 0 : integerValue(movies.get(field));
-            result.put(field, left + right);
+        Set<String> movieKeys = new LinkedHashSet<>();
+        List<String> sourceIds = new ArrayList<>();
+        for (String value : keys) {
+            String key = required(value, "resource ID or movie key").trim();
+            if (key.matches("(?i)(mv|tv|ac)/.+")) {
+                String[] parts = requiredMovieKey(key);
+                movieKeys.add(parts[0] + "/" + parts[1]);
+            } else sourceIds.add(requiredSourceId(key));
         }
-        List<Map<String, Object>> items = new ArrayList<>(mapList(resources.get("items")));
-        items.addAll(mapList(movies.get("items")));
-        result.put("items", items);
-        List<String> errors = new ArrayList<>();
-        errors.addAll(stringList(resources.get("errors")));
-        errors.addAll(stringList(movies.get("errors")));
-        result.put("errors", errors.stream().limit(20).toList());
+        List<String> notFound = new ArrayList<>();
+        if (!sourceIds.isEmpty()) {
+            Set<String> normalized = normalizeSourceIds(sourceIds);
+            Map<String, Object> response = gyingSourceClient.get("/my-resources", Map.of(
+                    "limit", 1000, "sourceIds", String.join(",", normalized)));
+            Set<String> found = new LinkedHashSet<>();
+            for (Map<String, Object> item : mapList(response.get("items"))) {
+                String id = stringValue(item.get("source_id"));
+                if (!normalized.contains(id)) continue;
+                String[] parts = requiredMovieKey(stringValue(item.get("type_code")) + "/" + stringValue(item.get("mid")));
+                movieKeys.add(parts[0] + "/" + parts[1]);
+                found.add(id);
+            }
+            normalized.stream().filter(id -> !found.contains(id)).forEach(notFound::add);
+        }
+        Map<String, Object> result = movieKeys.isEmpty()
+                ? new LinkedHashMap<>(Map.of("checked", 0, "repaired", 0, "reshared", 0, "retransferred", 0,
+                        "skipped", 0, "failed", 0, "unclear", 0, "items", List.of(), "errors", List.of()))
+                : repairPublishedResourcesByMovieKeys(new ArrayList<>(movieKeys));
+        List<Map<String, Object>> movies = mapList(result.get("items"));
+        List<Map<String, Object>> resources = new ArrayList<>();
+        for (Map<String, Object> movie : movies) {
+            for (Map<String, Object> provider : mapList(movie.get("providerResults"))) {
+                for (Map<String, Object> checked : mapList(provider.get("items"))) {
+                    Map<String, Object> item = new LinkedHashMap<>(checked);
+                    item.put("gyingResourceId", movie.get("movieKey"));
+                    item.put("movie_title", movie.get("title"));
+                    if ("REPAIRED".equals(item.get("repairStatus"))) {
+                        item.put("url", item.get("newUrl"));
+                        item.put("checkStatus", "VALID");
+                    }
+                    resources.add(item);
+                }
+                if ("PUBLISHED".equals(provider.get("status"))) {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    item.put("source_id", provider.get("sourceId"));
+                    item.put("resourceId", provider.get("resourceId"));
+                    item.put("type_code", movie.get("typeCode"));
+                    item.put("mid", movie.get("mid"));
+                    item.put("gyingResourceId", movie.get("movieKey"));
+                    item.put("title", movie.get("title"));
+                    item.put("movie_title", movie.get("title"));
+                    item.put("provider", provider.get("provider"));
+                    item.put("url", provider.get("url"));
+                    item.put("checkStatus", "VALID");
+                    item.put("repairStatus", "REPAIRED");
+                    resources.add(item);
+                }
+            }
+        }
+        result.put("movieResults", movies);
+        result.put("items", resources);
+        result.put("valid", resources.stream().filter(item -> "VALID".equals(item.get("checkStatus"))).count());
+        result.put("invalid", resources.stream().filter(item -> "INVALID".equals(item.get("checkStatus"))).count());
+        result.put("requested", new LinkedHashSet<>(keys).size());
+        result.put("notFound", notFound);
         return result;
     }
 
@@ -1719,82 +1875,11 @@ public class GyingSourceWorkflowService {
     }
 
     private Map<String, Object> repairOneMovie(String typeCode, String mid) {
-        Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        List<Map<String, Object>> own = mapList(snapshot.get("ownResources"));
-        Map<String, LinkCheckResult> checks = new LinkedHashMap<>();
-        Map<String, String> links = new LinkedHashMap<>();
-        for (Map<String, Object> item : own) {
-            String url = stringValue(item.get("url"));
-            if (hasText(url)) links.putIfAbsent(url, firstText(stringValue(item.get("provider")), "QUARK"));
-        }
-        if (!links.isEmpty()) {
-            checks.putAll(panSouClient.checkLinksByProvider(links));
-        }
-        List<Map<String, Object>> invalid = own.stream().filter(item -> {
-            LinkCheckResult check = checks.get(stringValue(item.get("url")));
-            return check != null && check.checked() && !check.valid();
-        }).map(item -> {
-            Map<String, Object> enriched = new LinkedHashMap<>(item);
-            enriched.putIfAbsent("type_code", typeCode);
-            enriched.putIfAbsent("mid", mid);
-            enriched.putIfAbsent("provider", firstText(stringValue(item.get("provider")), "QUARK"));
-            enriched.put("checkStatus", "INVALID");
-            return enriched;
-        }).toList();
-        Map<String, Object> checked = new LinkedHashMap<>();
-        checked.put("items", invalid);
-        checked.put("checked", invalid.size());
-        checked.put("invalid", invalid.size());
-        Map<String, Object> repairedExisting = repairCheckedPublishedResources(checked);
-
-        Map<String, Object> refreshed = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
-        boolean hasXunlei = mapList(refreshed.get("ownResources")).stream()
-                .anyMatch(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))));
-        int retransferred = integerValue(repairedExisting.get("retransferred")) == null ? 0 : integerValue(repairedExisting.get("retransferred"));
-        Map<String, Object> result = new LinkedHashMap<>();
+        Map<String, Object> result = ensureMovieResource(typeCode, mid);
         result.put("movieKey", typeCode + "/" + mid);
-        result.put("repaired", integerValue(repairedExisting.get("repaired")) == null ? 0 : repairedExisting.get("repaired"));
-        result.put("reshared", integerValue(repairedExisting.get("reshared")) == null ? 0 : repairedExisting.get("reshared"));
-        result.put("retransferred", retransferred);
-        result.put("skipped", 0);
-        result.put("failed", repairedExisting.get("failed"));
-        if (!hasXunlei) {
-            GyingMovieMetadata ingested = ingestMovieMetadata(typeCode, mid, true);
-            List<Map<String, Object>> xunleiResources = mapList(ingested.snapshot().get("resources")).stream()
-                    .filter(item -> "XUNLEI".equalsIgnoreCase(stringValue(item.get("provider"))))
-                    .toList();
-            List<Map<String, Object>> candidates = selectTransferCandidates(xunleiResources);
-            boolean added = false;
-            List<String> xunleiErrors = new ArrayList<>();
-            int xunleiAttempts = 0;
-            for (Map<String, Object> candidate : candidates) {
-                xunleiAttempts++;
-                try {
-                    ResourceLink local = transferAndPublishLocally(ingested.movie(), candidate);
-                    Map<String, Object> published = publishLocalResource(typeCode, mid, ingested.movie(), local);
-                    verifyPublishedUpdate(typeCode, mid, required(stringValue(published.get("sourceId")), "published GYING source id"), local.getUrl());
-                    result.put("xunleiStatus", "PUBLISHED");
-                    result.put("retransferred", retransferred + 1);
-                    result.put("repaired", (integerValue(result.get("repaired")) == null
-                            ? 0 : integerValue(result.get("repaired"))) + 1);
-                    added = true;
-                    break;
-                } catch (Exception error) {
-                    if (xunleiErrors.size() < 10) {
-                        xunleiErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
-                                + ": " + safeText(error.getMessage()));
-                    }
-                }
-            }
-            if (!added) {
-                result.put("xunleiStatus", candidates.isEmpty() ? "NO_CANDIDATE" : "FAILED");
-                result.put("xunleiAttempts", xunleiAttempts);
-                result.put("xunleiErrors", xunleiErrors);
-                result.put("repairStatus", "PARTIAL");
-                result.put("failed", (integerValue(result.get("failed")) == null ? 0 : integerValue(result.get("failed"))) + 1);
-            }
-        } else {
-            result.put("xunleiStatus", "ALREADY_PUBLISHED");
+        result.put("repairStatus", result.get("status"));
+        if (!stringList(result.get("errors")).isEmpty()) {
+            result.put("repairError", String.join("; ", stringList(result.get("errors"))));
         }
         return result;
     }
@@ -1806,6 +1891,7 @@ public class GyingSourceWorkflowService {
         int retransferred = 0;
         int skipped = 0;
         int failed = 0;
+        int unclear = 0;
         List<String> errors = new ArrayList<>();
         for (Map<String, Object> item : items) {
             if (!"INVALID".equals(stringValue(item.get("checkStatus")))) {
@@ -1832,10 +1918,14 @@ public class GyingSourceWorkflowService {
                         transfer.setStatus("SUBMITTED");
                         transfer.setLastError(null);
                         transfer.setUpdatedAt(LocalDateTime.now());
-                        transferTaskService.updateById(transfer);
+                        if (!transferTaskService.updateById(transfer)) {
+                            throw new IllegalStateException("Quark repair task was not persisted");
+                        }
                         newUrl = quarkShareService.ensureShareUrl(transfer);
                         requireConfirmedValid(newUrl, "QUARK");
                         repairMode = "RESHARED";
+                    } catch (ShareCheckUnavailableException error) {
+                        throw error;
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -1844,10 +1934,14 @@ public class GyingSourceWorkflowService {
 
                 if (!hasText(newUrl) && xunleiTransfer != null && hasText(xunleiTransfer.getSavedPath())) {
                     try {
+                        xunleiTransfer.setShareUrl(null);
+                        xunleiTransfer.setShareUrlHash(null);
                         xunleiTransfer.setStatus("WAITING_SHARE");
                         xunleiTransfer.setLastError(null);
                         xunleiTransfer.setUpdatedAt(LocalDateTime.now());
-                        xunleiTransferTaskService.updateById(xunleiTransfer);
+                        if (!xunleiTransferTaskService.updateById(xunleiTransfer)) {
+                            throw new IllegalStateException("Xunlei repair task was not persisted");
+                        }
                         xunleiTransferRunnerService.submitOne(xunleiTransfer.getId());
                         xunleiTransfer = xunleiTransferTaskService.getById(xunleiTransfer.getId());
                         newUrl = xunleiTransfer == null ? null : xunleiTransfer.getShareUrl();
@@ -1855,6 +1949,8 @@ public class GyingSourceWorkflowService {
                             requireConfirmedValid(newUrl, "XUNLEI");
                             repairMode = "RESHARED";
                         }
+                    } catch (ShareCheckUnavailableException error) {
+                        throw error;
                     } catch (Exception error) {
                         reshareError = safeText(error.getMessage());
                         newUrl = null;
@@ -1872,18 +1968,19 @@ public class GyingSourceWorkflowService {
                         }
                     }
                     List<Map<String, Object>> providerResources = mapList(snapshot.get("resources")).stream()
-                            .filter(candidate -> provider.equalsIgnoreCase(firstText(
-                                    stringValue(candidate.get("provider")), "QUARK")))
-                            .toList();
+                            .filter(candidate -> provider.equals(resourceProvider(candidate)))
+                            .filter(this::isVideoResource).toList();
                     List<Map<String, Object>> candidates = selectTransferCandidates(providerResources);
                     List<String> candidateErrors = new ArrayList<>();
                     for (Map<String, Object> candidate : candidates) {
                         try {
                             transferOutcome = transferCandidate(movie, candidate);
-                            requireConfirmedValid(transferOutcome.shareUrl(), stringValue(candidate.get("provider")));
+                            requireConfirmedValid(transferOutcome.shareUrl(), resourceProvider(candidate));
                             newUrl = transferOutcome.shareUrl();
                             repairMode = "RETRANSFERRED";
                             break;
+                        } catch (ShareCheckUnavailableException error) {
+                            throw error;
                         } catch (Exception error) {
                             candidateErrors.add(firstText(stringValue(candidate.get("source_id")), "unknown")
                                     + ": " + safeText(error.getMessage()));
@@ -1905,7 +2002,7 @@ public class GyingSourceWorkflowService {
                 String mid = required(stringValue(item.get("mid")), "GYING movie id");
                 String title = transferOutcome == null
                         ? firstText(stringValue(item.get("title")), "GYING Resource")
-                        : buildResourceTitle(movie, transferOutcome.discovery().getTitle(), "QUARK");
+                        : buildResourceTitle(movie, transferOutcome.discovery().getTitle(), provider);
                 gyingSourceClient.post("/update", Map.of(
                         "sourceId", sourceId,
                         "typeCode", typeCode,
@@ -1913,17 +2010,15 @@ public class GyingSourceWorkflowService {
                         "title", title,
                         "panurl", newUrl,
                         "panpw", "XUNLEI".equalsIgnoreCase(provider)
-                                ? firstText(XunleiClient.extractShareCode(newUrl), "") : "",
+                                ? Objects.toString(XunleiClient.extractShareCode(newUrl), "") : "",
                         "is", integerValue(item.get("login_visible")) == null
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
                 ResourceLink updated = local == null ? new ResourceLink() : local;
                 applyRepairedLink(updated, item, movie, title, newUrl,
                         transferOutcome == null ? provider : transferOutcome.discovery().getProvider());
-                if (updated.getId() == null) {
-                    resourceLinkService.save(updated);
-                } else {
-                    resourceLinkService.updateById(updated);
+                if (!(updated.getId() == null ? resourceLinkService.save(updated) : resourceLinkService.updateById(updated))) {
+                    throw new IllegalStateException("Repaired resource was not persisted");
                 }
                 if (transferOutcome != null) {
                     bindDiscoveryToResource(transferOutcome.discovery(), updated);
@@ -1939,6 +2034,10 @@ public class GyingSourceWorkflowService {
                 } else {
                     retransferred++;
                 }
+            } catch (ShareCheckUnavailableException error) {
+                unclear++;
+                item.put("repairStatus", "CHECK_REQUIRED");
+                item.put("repairError", safeText(error.getMessage()));
             } catch (Exception error) {
                 failed++;
                 item.put("repairStatus", "FAILED");
@@ -1957,6 +2056,7 @@ public class GyingSourceWorkflowService {
         result.put("retransferred", retransferred);
         result.put("skipped", skipped);
         result.put("failed", failed);
+        result.put("unclear", unclear);
         result.put("items", items);
         result.put("errors", errors);
         if (checked.containsKey("requested")) {
@@ -1993,6 +2093,7 @@ public class GyingSourceWorkflowService {
 
     private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         TransferOutcome outcome = transferCandidate(movie, candidate, weekly);
+        if (!weekly) requireConfirmedValid(outcome.shareUrl(), resourceProvider(candidate));
         ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(outcome.discovery().getId());
         if (publishResult.getFailed() > 0 || publishResult.getResourceIds().isEmpty()) {
             throw new IllegalStateException(firstText(
@@ -2345,17 +2446,18 @@ public class GyingSourceWorkflowService {
     private void requireConfirmedValid(String url, String provider) {
         String safeUrl = required(url, "new cloud share URL");
         String safeProvider = firstText(provider, "QUARK").toUpperCase(Locale.ROOT);
-        if ("XUNLEI".equals(safeProvider)) {
-            return;
-        }
-        LinkCheckResult check = panSouClient.checkLinksByProvider(Map.of(safeUrl, safeProvider)).get(safeUrl);
+        LinkCheckResult check = checkShareLinks(List.of(Map.of("url", safeUrl, "provider", safeProvider))).get(safeUrl);
         if (check == null || !check.checked()) {
-            throw new IllegalStateException("Unable to confirm new Quark share: "
+            throw new ShareCheckUnavailableException("Unable to confirm new " + safeProvider + " share: "
                     + (check == null ? "missing link check result" : safeText(check.message())));
         }
         if (!check.valid()) {
-            throw new IllegalStateException("New Quark share is invalid: " + safeText(check.message()));
+            throw new IllegalStateException("New " + safeProvider + " share is invalid: " + safeText(check.message()));
         }
+    }
+
+    private static class ShareCheckUnavailableException extends IllegalStateException {
+        ShareCheckUnavailableException(String message) { super(message); }
     }
 
     private void verifyPublishedUpdate(String typeCode, String mid, String sourceId, String expectedUrl) {
