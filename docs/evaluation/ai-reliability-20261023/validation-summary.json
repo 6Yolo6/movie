@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Shanghai",
+  "sourceCommits": {
+    "gying": "3052f2c9dd9cd76c77f8994a10cc7d9dfd5e99f1",
+    "local-agent": "e11c631d9ac2191ca924c6f243f5b150578fb167"
+  },
+  "deployedBackendImage": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15",
+  "localAgentJarSha256": "2bd021c614de620fe594c0096dc892313f221093c1f18ee37bed8a414865e815",
+  "scope": [
+    "GYing backend",
+    "local-ai-agent backend"
+  ],
+  "security": {
+    "PASS": 59,
+    "FAIL": 11,
+    "UNKNOWN": 0
+  },
+  "securityException": "Same candidate explicitly approved with 可部署 in linked chats; original eleven failed gates remain open",
+  "initialCheckpoint": "G:\\gying-backups\\20261023T044352.387300Z",
+  "stateCheckpoint": "G:\\gying-backups\\20261023T045302.843250Z",
+  "authenticatedArtifactsPerCheckpoint": 14,
+  "originAndPublicEntryChecks": 16,
+  "modelRegression": {
+    "turns": 8,
+    "mechanicalPasses": 8,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 6,
+    "latencySampleCount": 8,
+    "p50Ms": 2547.0,
+    "p95Ms": 10391.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate"
+  },
+  "bridgeVerification": {
+    "startedAt": "2026-10-23T04:54:22.686558+00:00",
+    "dedicatedBridgeAuth": true,
+    "anonymousAiRefused": true,
+    "naturalSearch": {
+      "keyword": "星际穿越",
+      "elapsedSeconds": 2.8,
+      "replyChars": 694,
+      "existingLibraryResources": true,
+      "modelViaProductionQueue": true
+    },
+    "batchRefused": true,
+    "transferAndPublishingAuditUnchanged": true,
+    "realMessagesSent": 0,
+    "testTransfers": 0,
+    "status": "passed"
+  },
+  "restartVerification": {
+    "status": "passed",
+    "persistedJobsRecoveredWithoutAttemptIncrease": 2,
+    "scope": "Idle graceful restart after encrypted state exists, no production fault injection"
+  },
+  "runtime": {
+    "startedAt": "2026-10-23T04:43:19.768402+00:00",
+    "checkedAt": "2026-10-23T04:54:29.067293+00:00",
+    "logs": {
+      "gying-movie-backend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-frontend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-gying-source-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-social-publisher-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "local-ai-agent/backend": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      }
+    },
+    "unaffectedContainersPreserved": true,
+    "transferAndPublishingAuditUnchanged": true,
+    "status": "passed"
+  },
+  "keyPermissions": {
+    "backendKeyVolume": "gying-movie_ai-state-key",
+    "backendKeyOwner": "10001:10001",
+    "backendDirectoryMode": "0700",
+    "backendKeyMode": "0400",
+    "localKeyFile": "D:\\ai\\local-ai-agent\\.local\\gying-state-key.bin",
+    "localKeyOwnerOnlyAcl": true,
+    "existingCredentialsRotated": false
+  },
+  "rollbackDirectory": "E:\\gying-tools\\releases\\ai-reliability-20261023",
+  "limits": [
+    "No authenticated website-user end-to-end test",
+    "No production crash or dropped-receipt fault injection; these were synthetic tests",
+    "Model regression is agent-authored, not independent human quality evaluation",
+    "No tool-loop intermediate checkpoint, long-term audit database or distributed writer",
+    "Original G01-G11 and wider security risks remain open"
+  ],
+  "realTransfers": 0,
+  "realPosts": 0,
+  "recurringBackup": {
+    "config": "G:\\gying-secrets\\backup-config.json",
+    "newArchiveNames": [
+      "ai-reviewed-deploy",
+      "local-ai-state-key",
+      "local-ai-state",
+      "ai-state-key"
+    ],
+    "actualRecurringRunPerformed": false,
+    "dryRunPassed": true
+  },
+  "internalDependencyChecks": 3
+}

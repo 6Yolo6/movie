@@ -6,6 +6,7 @@
 
 | 日期 | 记录 |
 | --- | --- |
+| 2026-10-22 候选 / 23 部署 | [AI可靠性实现](../ai-execution-reliability-20261022.md) · [部署与重启恢复](../ai-reliability-deployment-20261023.md) |
 | 2026-10-21 实现 / 22 部署 | [推荐特征与自然语言搜索](../catalog-features-search-20261021.md) |
 | 2026-10-21 | [详情推荐、子标签与新标签页](../movie-detail-enhancements-20261021.md) |
 | 2026-10-20 / 21 续验 | [AI 标题分页与推荐](../ai-recommendations-20261020.md) |

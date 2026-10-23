@@ -65,4 +65,4 @@ python -X utf8 tools/ai/evaluate_agent.py --run --repeat 2 --output tmp/agent-ev
 
 ## 本轮续做
 
-已实现[执行可靠性候选](ai-execution-reliability-20261022.md)：加密持久任务、租约续期、有限恢复、取消与幂等回执、本机重启后仅回传。生产安全门禁失败，尚未部署启用；中间工具步骤恢复、长期审计和独立评测仍待补。
+已实现[执行可靠性候选](ai-execution-reliability-20261022.md)：加密持久任务、租约续期、有限恢复、取消与幂等回执、本机重启后仅回传。2026-10-23用户对同候选批准后[已部署启用](ai-reliability-deployment-20261023.md)，真实内部模型/空闲平滑重启恢复通过；11项安全失败继续保留。真实网站用户在途回执、中间工具步骤恢复、长期审计和独立评测仍待补。

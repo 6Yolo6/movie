@@ -4,11 +4,12 @@
 
 | 检查点 | 范围与验证 | 限制 |
 | --- | --- | --- |
+| 2026-10-23 AI可靠性 | 两检查点`20261023T044352.387300Z`/`20261023T045302.843250Z`各14份age，SQL/配置/两侧新key/状态/QQ微博卷/runtime hash和完整认证解密通过 | 两后端平滑排空，2条终态跨重启恢复；非异机灾难恢复 |
 | 2026-10-22 应用发布 | `G:/gying-backups/20261021T160733.115483Z`，7 份 age，SQL/配置/卷/runtime hash/完整认证解密 | 仅 backend 平滑停写，无灾难恢复演练 |
 | 2026-09-25 完整选定数据 | `G:/gying-backups/20260925T030328.719395Z`，19 份约 372 MiB，冻结约 31 秒，25 表行数/CHECKSUM/对象/中文恢复、MinIO 单图通过 | 不含完整系统账号/远端事务；应用/异机和私钥离线仍待 |
 | 9/25 早先 partial | `security-20260925-partial`，16 文件，有限导出/在线归档 | status 保持 partial，标准验证器拒绝，不作为完整恢复点 |
 
-工具为 `tools/security/backup.py`/`verify_backup.py`，模板 `deploy/backup-config.example.json`。外部配置 `G:/gying-secrets/backup-config.json`、私有 MySQL defaults 与 localhost 备份账号已建立，不重复开通。公钥/私钥分离，F 盘受限私钥仍在线，不等于离线或异机。
+工具为 `tools/security/backup.py`/`verify_backup.py`，模板 `deploy/backup-config.example.json`。外部配置 `G:/gying-secrets/backup-config.json`、私有 MySQL defaults 与 localhost 备份账号已建立，不重复开通。2026-10-23已追加现役AI部署覆盖、本机state/key与容器key卷；原配置已加密备份，dry-run通过，下一次日常自然执行尚未验收。[本轮证据](../ai-reliability-deployment-20261023.md)。公钥/私钥分离，F 盘受限私钥仍在线，不等于离线或异机。
 
 ## 2. 目标 RPO/RTO（需业务确认）
 
