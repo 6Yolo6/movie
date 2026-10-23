@@ -1,0 +1,271 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Shanghai",
+  "verifiedAt": "2026-10-23T12:28:22.644612+00:00",
+  "scope": "Evaluation tools and documents; no application replacement or prompt change",
+  "offlineTests": {
+    "agentAndWebsiteEvaluation": 52,
+    "artifactIntegrity": 5,
+    "passed": 57,
+    "failed": 0
+  },
+  "realAgentRegression": {
+    "turns": 20,
+    "mechanicalPasses": 20,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 16,
+    "latencySampleCount": 20,
+    "p50Ms": 5109.0,
+    "p95Ms": 21187.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate",
+    "plannedTurns": 20,
+    "executedTurns": 20,
+    "notExecutedTurns": 0,
+    "requestAttempts": 20,
+    "dimensionResults": {
+      "routing": {
+        "applicable": 20,
+        "passed": 20
+      },
+      "arguments": {
+        "applicable": 6,
+        "passed": 6
+      },
+      "retrieval": {
+        "applicable": 16,
+        "passed": 16
+      },
+      "answer": {
+        "applicable": 16,
+        "passed": 16
+      },
+      "rejection": {
+        "applicable": 4,
+        "passed": 4
+      },
+      "multiTurn": {
+        "applicable": 2,
+        "passed": 2
+      }
+    },
+    "perCase": [
+      {
+        "caseId": "details-followup",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "english-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "exact-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "invalid-history-role",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "title-wrong-year-empty",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "title-year-category",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "unknown-request-field",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "unknown-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "web-excerpts",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      }
+    ],
+    "retrieval": {
+      "labelledTurns": 8,
+      "meanRecallAtK": 1.0,
+      "mrrAtK": 1.0,
+      "scope": "Macro mean over explicitly labelled first search pages, k<=3; no unlabeled relevance inferred"
+    },
+    "failedTurns": [],
+    "work": {
+      "modelCalls": 32,
+      "toolCalls": 16,
+      "providerUsageAvailable": false,
+      "tokens": null,
+      "monetaryCost": null
+    }
+  },
+  "realWebsiteHoldout": {
+    "turns": 88,
+    "mechanicalPasses": 84,
+    "mechanicalFailures": 4,
+    "manualReviewRequired": 84,
+    "latencySampleCount": 88,
+    "p50Ms": 172.0,
+    "p95Ms": 10765.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "HTTP/job/tool evidence checks only; independent questions, human quality scores pending",
+    "plannedTurns": 88,
+    "executedTurns": 88,
+    "notExecutedTurns": 0,
+    "routeCounts": {
+      "direct-catalog": 78,
+      "model-queue": 10
+    },
+    "failedTurns": [
+      {
+        "caseId": "h02",
+        "repetition": 1,
+        "turn": 1,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h11",
+        "repetition": 1,
+        "turn": 1,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h19",
+        "repetition": 1,
+        "turn": 3,
+        "failure": "WEBSITE_JOB_FAILED"
+      },
+      {
+        "caseId": "h19",
+        "repetition": 2,
+        "turn": 3,
+        "failure": "WEBSITE_JOB_FAILED"
+      }
+    ],
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "websiteRunExitCode": 1,
+  "exitMeaning": "Four actual job failures retained; runner correctly reports failure, not a software test failure",
+  "review": {
+    "successfulAnswersPending": 84,
+    "humanScores": 0,
+    "htmlCards": 88,
+    "browser": "existing Edge headless",
+    "pageErrors": 0,
+    "scoreExportVerified": true,
+    "storedHumanScoresFromTest": false
+  },
+  "holdoutPolicy": {
+    "promptTuningPerformed": false,
+    "modelAnswersUsedAsReference": false,
+    "questionTextPreserved": true,
+    "rubricAuthor": "implementer annotations; human scoring pending"
+  },
+  "snapshot": {
+    "schemaVersion": 1,
+    "capturedAt": "2026-10-23T12:10:06.205935+00:00",
+    "canonicalSha256": "88ba35aa613178352a122fe59f84443fa06be81ab8fd4dd90e6d33df48f351c1",
+    "fileSha256": "9adb9d5aa763e0ef145a6c5b1f6743d99e0c22da1b9182d3790620a29aa495e5",
+    "activeTotal": 10432,
+    "snapshotRows": 10432,
+    "truncated": false,
+    "privateSnapshotPath": "E:\\gying-tools\\releases\\ai-evaluation-20261023\\private\\catalog.json",
+    "transaction": "read-only consistent catalog read; rolled back",
+    "userDataIncluded": false,
+    "resourceUrlsIncluded": false,
+    "scope": "Reusable offline metadata corpus; online website/agent runs still use live data, not this frozen corpus"
+  },
+  "accountCleanup": {
+    "account": "test",
+    "role": "USER",
+    "enabledBefore": 1,
+    "disabled": true,
+    "revokedDevices": 1,
+    "unrevokedDevicesRemaining": 0,
+    "otherAccountsModified": 0,
+    "oldSessionHttpStatus": 401,
+    "disabledLoginHttpStatus": 403
+  },
+  "runtime": {
+    "gying-movie-backend-1": {
+      "unchangedSinceEvaluationBaseline": true,
+      "image": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15"
+    },
+    "gying-movie-frontend-1": {
+      "unchangedSinceEvaluationBaseline": true,
+      "image": "sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1"
+    },
+    "gying-movie-gying-source-1": {
+      "unchangedSinceEvaluationBaseline": true,
+      "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a"
+    },
+    "gying-movie-social-publisher-1": {
+      "unchangedSinceEvaluationBaseline": true,
+      "image": "sha256:a5a2c09753ded42f4d7a2dd653e70573fcd28767920ecaa0c4bcc35112a4677b"
+    }
+  },
+  "entryChecks": [
+    {
+      "entry": "http://127.0.0.1/ai-assistant",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true
+    },
+    {
+      "entry": "http://127.0.0.1:8880/api/ai/status",
+      "expectedStatus": 401,
+      "status": 401,
+      "passed": true
+    },
+    {
+      "entry": "http://127.0.0.1:5000/api/health",
+      "expectedStatus": 200,
+      "status": 200,
+      "passed": true
+    }
+  ],
+  "secretScan": {
+    "workingTreeFindings": 0,
+    "scope": "tracked and nonignored new files"
+  },
+  "measurementLimitations": [
+    "first regression and website segment overlapped; no controlled unloaded latency baseline",
+    "live online corpus and user profile not frozen",
+    "no browser website UI or real-device coverage",
+    "human answer quality and field-level relevance scores pending",
+    "no provider token usage or monetary cost"
+  ],
+  "rollbackTools": "E:/gying-tools/releases/ai-evaluation-20261023/before/",
+  "privateReviewPage": "E:/gying-tools/releases/ai-evaluation-20261023/private/review.html"
+}

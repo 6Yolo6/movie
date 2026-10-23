@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "version": "gying-human-holdout-v1",
+  "evaluationTarget": "website-business",
+  "provenance": "independent-human-holdout",
+  "authorshipAttestation": "questions-written-by-user-before-model-results",
+  "labelAuthorship": "implementer annotations; human approval/scoring pending",
+  "asOfDate": "2026-10-23",
+  "timezone": "Asia/Shanghai",
+  "sourceThread": "01a16887-06ed-7742-8c85-4836ce272967",
+  "policy": {
+    "promptTuningAllowed": false,
+    "modelAnswersFrozenAsReference": false,
+    "questionsPreservedVerbatim": true,
+    "maxRepetitions": 3
+  },
+  "cases": [
+    {
+      "id": "h01",
+      "number": 1,
+      "category": "日常搜片",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "originalQuestion": "我想看小罗伯特人唐尼最近演的片，动作剧情都可",
+      "userRubric": "演员错字/别名纠错；“最近”时效；类型约束",
+      "annotation": "原文保留演员错字；纠正或澄清身份；最近按运行日期界定；动作或剧情是或关系。",
+      "turns": [
+        {
+          "message": "我想看小罗伯特人唐尼最近演的片，动作剧情都可",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h02",
+      "number": 2,
+      "category": "日常搜片",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "originalQuestion": "有没有那种一群人被困在一栋别墅里，然后互相猜忌的悬疑片？剧情我记不太清",
+      "userRubric": "模糊剧情语义检索；可澄清",
+      "annotation": "别墅、群像猜忌只是线索；可给带依据候选或追问年代/地区；不唯一锁定。",
+      "turns": [
+        {
+          "message": "有没有那种一群人被困在一栋别墅里，然后互相猜忌的悬疑片？剧情我记不太清",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h03",
+      "number": 3,
+      "category": "日常搜片",
+      "sourceGroup": "question-03",
+      "split": "holdout",
+      "originalQuestion": "我想找一部小时候看的动画电影，女孩掉进洞里遇到会说话的猫，最后发现是梦",
+      "userRubric": "模糊记忆检索；需澄清/给候选",
+      "annotation": "记忆可能混合版本；明确候选与不确定，追问观看年代/画风；不把推测当事实。",
+      "turns": [
+        {
+          "message": "我想找一部小时候看的动画电影，女孩掉进洞里遇到会说话的猫，最后发现是梦",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h04",
+      "number": 4,
+      "category": "日常搜片",
+      "sourceGroup": "question-04",
+      "split": "holdout",
+      "originalQuestion": "类似《漫长的季节》那种东北小城、旧案、时间交错，但不要太压抑的剧",
+      "userRubric": "相似推荐+地域氛围+情绪排除",
+      "annotation": "相似氛围与情绪是软偏好；不要保证所有观众感受一致；给依据并解释放宽。",
+      "turns": [
+        {
+          "message": "类似《漫长的季节》那种东北小城、旧案、时间交错，但不要太压抑的剧",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h05",
+      "number": 5,
+      "category": "日常搜片",
+      "sourceGroup": "question-05",
+      "split": "holdout",
+      "originalQuestion": "周星驰电影里不是纯搞笑、有点悲剧底色的有哪些？",
+      "userRubric": "演员+风格语义+排除条件",
+      "annotation": "演员条件与悲剧底色分别核查；风格解释需要剧情依据，避免无预警剧透。",
+      "turns": [
+        {
+          "message": "周星驰电影里不是纯搞笑、有点悲剧底色的有哪些？",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h06",
+      "number": 6,
+      "category": "日常搜片",
+      "sourceGroup": "question-06",
+      "split": "holdout",
+      "originalQuestion": "想找一集《黑镜》讲社交评分把人逼疯的，是哪集？",
+      "userRubric": "剧集单集定位；剧名+剧情",
+      "annotation": "须定位季/集与集名；不能只返回剧集总条目冒充单集答案。",
+      "turns": [
+        {
+          "message": "想找一集《黑镜》讲社交评分把人逼疯的，是哪集？",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h07",
+      "number": 7,
+      "category": "日常搜片",
+      "sourceGroup": "question-07",
+      "split": "holdout",
+      "originalQuestion": "有没有讲普通上班族突然获得超能力但很怂的喜剧片？",
+      "userRubric": "剧情梗概检索；类型约束",
+      "annotation": "剧情条件逐项核对；无精确命中时说明相近之处与差异。",
+      "turns": [
+        {
+          "message": "有没有讲普通上班族突然获得超能力但很怂的喜剧片？",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h08",
+      "number": 8,
+      "category": "日常搜片",
+      "sourceGroup": "question-08",
+      "split": "holdout",
+      "originalQuestion": "宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的",
+      "userRubric": "年龄适宜+安全排除",
+      "annotation": "年龄7岁与惊吓排除需分级/内容依据；不能保证零惊吓；由家长确认。",
+      "turns": [
+        {
+          "message": "宫崎骏里适合和7岁小孩一起看、没有太吓人镜头的",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h09",
+      "number": 9,
+      "category": "条件筛选",
+      "sourceGroup": "question-09",
+      "split": "holdout",
+      "originalQuestion": "2020年以后、豆瓣8分以上、120分钟以内、中文对白的悬疑片，不要网剧",
+      "userRubric": "年份/评分/时长/语言/类型/格式组合",
+      "annotation": "2020以后边界按2021起；豆瓣严格>8；120分钟以内<=120；中文对白须明确普通话/粤语等；格式为电影。",
+      "turns": [
+        {
+          "message": "2020年以后、豆瓣8分以上、120分钟以内、中文对白的悬疑片，不要网剧",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h10",
+      "number": 10,
+      "category": "条件筛选",
+      "sourceGroup": "question-10",
+      "split": "holdout",
+      "originalQuestion": "想看英语片，90-100分钟，喜剧或爱情，评分7.5以上，最好Netflix能看",
+      "userRubric": "时长区间+类型或+平台可看性",
+      "annotation": "英语；90<=分钟<=100；喜剧或爱情；评分来源先说明且>=7.5；Netflix需地区/日期实时核查，最好是软偏好。",
+      "turns": [
+        {
+          "message": "想看英语片，90-100分钟，喜剧或爱情，评分7.5以上，最好Netflix能看",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h11",
+      "number": 11,
+      "category": "条件筛选",
+      "sourceGroup": "question-11",
+      "split": "holdout",
+      "originalQuestion": "排除恐怖和血腥，想要太空科幻，近十年，系列第一部优先",
+      "userRubric": "排除条件+类型+系列排序",
+      "annotation": "近十年定义按运行日/年度口径明示；排除恐怖、血腥；系列第一部是优先项，不误作严格条件。",
+      "turns": [
+        {
+          "message": "排除恐怖和血腥，想要太空科幻，近十年，系列第一部优先",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h12",
+      "number": 12,
+      "category": "条件筛选",
+      "sourceGroup": "question-12",
+      "split": "holdout",
+      "originalQuestion": "日本导演拍的非日语片，2000年后，拿过三大电影节奖项的",
+      "userRubric": "导演国籍+语言+年份+奖项多跳",
+      "annotation": "日本导演的国籍不可用作品地区替代；非日语需语言证据；2000后从2001起；三大电影节需具体奖项/年份。",
+      "turns": [
+        {
+          "message": "日本导演拍的非日语片，2000年后，拿过三大电影节奖项的",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h13",
+      "number": 13,
+      "category": "条件筛选",
+      "sourceGroup": "question-13",
+      "split": "holdout",
+      "originalQuestion": "有没有双男主警匪港片，2015年前，结局不要太惨",
+      "userRubric": "地区+类型+年代+结局情绪",
+      "annotation": "2015年前为<=2014；双男主、港片、警匪与结局情绪分别核查；结局评价避免过度剧透。",
+      "turns": [
+        {
+          "message": "有没有双男主警匪港片，2015年前，结局不要太惨",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h14",
+      "number": 14,
+      "category": "条件筛选",
+      "sourceGroup": "question-14",
+      "split": "holdout",
+      "originalQuestion": "动画电影，不是迪士尼皮克斯，法国或爱尔兰的，80分钟左右",
+      "userRubric": "地区+制作方排除+时长",
+      "annotation": "法国或爱尔兰是或关系；迪士尼/皮克斯按制作方判断；80分钟左右容差需明示；动漫类别不等于动画长片。",
+      "turns": [
+        {
+          "message": "动画电影，不是迪士尼皮克斯，法国或爱尔兰的，80分钟左右",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h15",
+      "number": 15,
+      "category": "条件筛选",
+      "sourceGroup": "question-15",
+      "split": "holdout",
+      "originalQuestion": "我想看女主复仇但不要强奸暴力镜头的韩国电影，评分7分以上",
+      "userRubric": "敏感内容排除+地区+评分",
+      "annotation": "韩国、女主复仇、评分来源与>=7逐项核查；性暴力镜头排除须具体内容证据，不能仅凭类型保证。",
+      "turns": [
+        {
+          "message": "我想看女主复仇但不要强奸暴力镜头的韩国电影，评分7分以上",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h16",
+      "number": 16,
+      "category": "条件筛选",
+      "sourceGroup": "question-16",
+      "split": "holdout",
+      "originalQuestion": "纪录片，讲美食但不要探店，40-60分钟一集，适合吃饭看",
+      "userRubric": "时长+内容排除+观看场景",
+      "annotation": "系列单集时长40到60分钟；纪录片、美食、非探店需核查；就餐观看是软偏好。",
+      "turns": [
+        {
+          "message": "纪录片，讲美食但不要探店，40-60分钟一集，适合吃饭看",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h17",
+      "number": 17,
+      "category": "多轮追问",
+      "sourceGroup": "robert-downey",
+      "split": "holdout",
+      "originalQuestion": "想看小罗伯特·唐尼最近演的片，动作剧情都可 → 不要钢铁侠，要近五年配角 → 这里面评分最高的是哪部？",
+      "userRubric": "多轮收窄；指代“这里面”；排序",
+      "annotation": "保持候选集合；近五年按运行日明示；排除钢铁侠角色，配角身份需依据；最后仅在收窄集合内比较同源评分。",
+      "turns": [
+        {
+          "message": "想看小罗伯特·唐尼最近演的片，动作剧情都可",
+          "useHistory": false
+        },
+        {
+          "message": "不要钢铁侠，要近五年配角",
+          "useHistory": true
+        },
+        {
+          "message": "这里面评分最高的是哪部？",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h18",
+      "number": 18,
+      "category": "多轮追问",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "originalQuestion": "我最近在追复联系列，幻视这条线涉及哪些剧集和电影需要我补背景世界观？ → 按观看顺序排 → 其中哪些是剧集？",
+      "userRubric": "多跳系列/世界观；剧影混合；观看顺序；格式筛选",
+      "annotation": "幻视背景作品、剧/影类别分别核查；观看顺序明确叙事或发行口径；第三轮从前述集合筛剧集。",
+      "turns": [
+        {
+          "message": "我最近在追复联系列，幻视这条线涉及哪些剧集和电影需要我补背景世界观？",
+          "useHistory": false
+        },
+        {
+          "message": "按观看顺序排",
+          "useHistory": true
+        },
+        {
+          "message": "其中哪些是剧集？",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h19",
+      "number": 19,
+      "category": "多轮追问",
+      "sourceGroup": "question-19",
+      "split": "holdout",
+      "originalQuestion": "推荐几部像《盗梦空间》的烧脑片 → 不要诺兰的 → 第二部是哪年的、谁主演？",
+      "userRubric": "相似推荐+排除；指代“第二部”；实体属性",
+      "annotation": "相似推荐后排除导演；第二部必须来自第二轮展示顺序；演员/年份需该实体依据。",
+      "turns": [
+        {
+          "message": "推荐几部像《盗梦空间》的烧脑片",
+          "useHistory": false
+        },
+        {
+          "message": "不要诺兰的",
+          "useHistory": true
+        },
+        {
+          "message": "第二部是哪年的、谁主演？",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h20",
+      "number": 20,
+      "category": "多轮追问",
+      "sourceGroup": "trapped-house",
+      "split": "holdout",
+      "originalQuestion": "找一部一家人搬进凶宅的恐怖片 → 不是《招魂》 → 女主是金发那个，片名是什么？",
+      "userRubric": "模糊指代；排除；需澄清候选",
+      "annotation": "排除招魂；金发女主与凶宅线索不足时澄清，不凭一次匹配认定唯一。",
+      "turns": [
+        {
+          "message": "找一部一家人搬进凶宅的恐怖片",
+          "useHistory": false
+        },
+        {
+          "message": "不是《招魂》",
+          "useHistory": true
+        },
+        {
+          "message": "女主是金发那个，片名是什么？",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h21",
+      "number": 21,
+      "category": "多轮追问",
+      "sourceGroup": "question-21",
+      "split": "holdout",
+      "originalQuestion": "先给我三部90分钟以内的喜剧 → 要其中适合情侣看的 → 把第一部换成更冷门的",
+      "userRubric": "多轮编辑约束；指代；冷门程度",
+      "annotation": "90分钟内与三部约束保持；情侣观看偏好说明；替换第一部后保留其余候选且沿用时长约束。",
+      "turns": [
+        {
+          "message": "先给我三部90分钟以内的喜剧",
+          "useHistory": false
+        },
+        {
+          "message": "要其中适合情侣看的",
+          "useHistory": true
+        },
+        {
+          "message": "把第一部换成更冷门的",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h22",
+      "number": 22,
+      "category": "多轮追问",
+      "sourceGroup": "question-22",
+      "split": "holdout",
+      "originalQuestion": "我想看梁朝伟的片 → 不要王家卫的 → 再按豆瓣评分从高到低排前三",
+      "userRubric": "演员作品集；导演排除；排序",
+      "annotation": "梁朝伟演员条件保留；王家卫导演排除；仅按豆瓣排序，不能用综合最高评分替代。",
+      "turns": [
+        {
+          "message": "我想看梁朝伟的片",
+          "useHistory": false
+        },
+        {
+          "message": "不要王家卫的",
+          "useHistory": true
+        },
+        {
+          "message": "再按豆瓣评分从高到低排前三",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h23",
+      "number": 23,
+      "category": "多轮追问",
+      "sourceGroup": "question-23",
+      "split": "holdout",
+      "originalQuestion": "有没有《三体》相关的影视？ → 只要剧集不要动画 → 按上线时间从早到晚",
+      "userRubric": "多实体改编；格式排除；时间排序",
+      "annotation": "区分改编作品与季次；只剧集、排动画；上线日期需地区/平台/日期依据并按时间排序。",
+      "turns": [
+        {
+          "message": "有没有《三体》相关的影视？",
+          "useHistory": false
+        },
+        {
+          "message": "只要剧集不要动画",
+          "useHistory": true
+        },
+        {
+          "message": "按上线时间从早到晚",
+          "useHistory": true
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h24",
+      "number": 24,
+      "category": "失败/边界",
+      "sourceGroup": "marvel-vision",
+      "split": "holdout",
+      "originalQuestion": "我想看《复仇者联盟5》里幻视复活那部，帮我找资源",
+      "userRubric": "作品可能不存在/未上映；资源请求；应澄清并说明不提供盗版",
+      "annotation": "前提与上映状态按运行日核查；幻视复活情节不先验接受；资源只允许合法可看指引，不提供盗版下载。",
+      "turns": [
+        {
+          "message": "我想看《复仇者联盟5》里幻视复活那部，帮我找资源",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h25",
+      "number": 25,
+      "category": "失败/边界",
+      "sourceGroup": "question-25",
+      "split": "holdout",
+      "originalQuestion": "找一部2024年上映、黑白、歌舞片、片长40分钟、豆瓣9.5的",
+      "userRubric": "条件矛盾/极可能无结果；应说明冲突或建议放宽",
+      "annotation": "不预先宣称客观不存在；有依据说明本库未找到/约束冲突并提出具体放宽；不可虚构精确满足影片。",
+      "turns": [
+        {
+          "message": "找一部2024年上映、黑白、歌舞片、片长40分钟、豆瓣9.5的",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h26",
+      "number": 26,
+      "category": "失败/边界",
+      "sourceGroup": "question-26",
+      "split": "holdout",
+      "originalQuestion": "那个光头演的、最后跳楼的黑帮片叫什么？",
+      "userRubric": "信息严重不足；应主动澄清",
+      "annotation": "光头与结局不足以唯一识别；应追问年份、地区、演员或更多情节，给候选时明确猜测。",
+      "turns": [
+        {
+          "message": "那个光头演的、最后跳楼的黑帮片叫什么？",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h27",
+      "number": 27,
+      "category": "失败/边界",
+      "sourceGroup": "question-27",
+      "split": "holdout",
+      "originalQuestion": "推荐一部比《肖申克的救赎》评分还高、但没拿过奥斯卡最佳影片的",
+      "userRubric": "事实/逻辑冲突；应说明不可满足或需放宽",
+      "annotation": "原“逻辑冲突”标签需修正：先问评分来源/范围；未获奥斯卡最佳影片本身不构成逻辑矛盾；只说明已核实范围。",
+      "turns": [
+        {
+          "message": "推荐一部比《肖申克的救赎》评分还高、但没拿过奥斯卡最佳影片的",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h28",
+      "number": 28,
+      "category": "失败/边界",
+      "sourceGroup": "question-28",
+      "split": "holdout",
+      "originalQuestion": "我想看汤姆·克鲁斯演的《蜘蛛侠》",
+      "userRubric": "演员与作品错配；应纠正/确认",
+      "annotation": "演员与作品可能错配；核实参演身份，询问是否指其他蜘蛛侠演员或克鲁斯影片，不杜撰出演记录。",
+      "turns": [
+        {
+          "message": "我想看汤姆·克鲁斯演的《蜘蛛侠》",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h29",
+      "number": 29,
+      "category": "失败/边界",
+      "sourceGroup": "question-29",
+      "split": "holdout",
+      "originalQuestion": "帮我找“最近最火”的十部，必须准确告诉我每个平台独家版权",
+      "userRubric": "时效+平台版权不可靠；应降级回答并注明需实时校验",
+      "annotation": "最近最火需时间窗与热度口径；平台独家版权依地区/时间核查；无数据时说明范围与不确定，不能保证全平台准确。",
+      "turns": [
+        {
+          "message": "帮我找“最近最火”的十部，必须准确告诉我每个平台独家版权",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    },
+    {
+      "id": "h30",
+      "number": 30,
+      "category": "失败/边界",
+      "sourceGroup": "question-30",
+      "split": "holdout",
+      "originalQuestion": "我想看一部适合全家看的恐怖片，孩子5岁，越吓人越好",
+      "userRubric": "约束矛盾；应澄清年龄适宜与恐怖强度冲突",
+      "annotation": "5岁与越吓人越好存在偏好冲突；澄清年龄适宜并建议温和替代；不保证恐怖片适合所有5岁儿童。",
+      "turns": [
+        {
+          "message": "我想看一部适合全家看的恐怖片，孩子5岁，越吓人越好",
+          "useHistory": false
+        }
+      ],
+      "reviewRequired": true
+    }
+  ]
+}

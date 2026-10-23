@@ -245,7 +245,7 @@ def summarize(rows):
             "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate"}
 
 
-def evaluate(client, dataset, selected, repeat):
+def evaluate(client, dataset, selected, repeat, grader=None):
     rows = []
     stopped = False
     for repetition in range(1, repeat + 1):
@@ -276,6 +276,8 @@ def evaluate(client, dataset, selected, repeat):
                     break
                 row["durationMs"] = round((time.monotonic() - started) * 1000, 2)
                 row["checks"] = grade(result, turn["expect"], response.get("code"))
+                if grader is not None:
+                    row.update(grader(result, turn["expect"], body, prior, row["checks"]))
                 row["passed"] = all(row["checks"].values())
                 row["trace"] = safe_steps(result)
                 row["answerSha256"] = digest(result.get("answer", ""))

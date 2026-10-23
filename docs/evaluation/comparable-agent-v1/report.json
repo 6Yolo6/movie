@@ -1,0 +1,1843 @@
+{
+  "datasetVersion": "gying-comparable-regression-v1",
+  "datasetSha256": "1b43fe6a03e02d9d245c41785e33c1d4fb3df7740ac2ce9b74245246ff279084",
+  "provenance": "agent-authored-regression",
+  "evaluatedAt": "2026-10-23T12:11:17.670888+00:00",
+  "transport": "existing-loopback-assistant",
+  "repeat": 2,
+  "plannedTurns": 20,
+  "completedAllTurns": true,
+  "summary": {
+    "turns": 20,
+    "mechanicalPasses": 20,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 16,
+    "latencySampleCount": 20,
+    "p50Ms": 5109.0,
+    "p95Ms": 21187.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Mechanical regression checks; not independent human evaluation or task success rate",
+    "plannedTurns": 20,
+    "executedTurns": 20,
+    "notExecutedTurns": 0,
+    "requestAttempts": 20,
+    "dimensionResults": {
+      "routing": {
+        "applicable": 20,
+        "passed": 20
+      },
+      "arguments": {
+        "applicable": 6,
+        "passed": 6
+      },
+      "retrieval": {
+        "applicable": 16,
+        "passed": 16
+      },
+      "answer": {
+        "applicable": 16,
+        "passed": 16
+      },
+      "rejection": {
+        "applicable": 4,
+        "passed": 4
+      },
+      "multiTurn": {
+        "applicable": 2,
+        "passed": 2
+      }
+    },
+    "perCase": [
+      {
+        "caseId": "details-followup",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "english-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "exact-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "invalid-history-role",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "title-wrong-year-empty",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "title-year-category",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "unknown-request-field",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "unknown-title",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      },
+      {
+        "caseId": "web-excerpts",
+        "repetitions": 2,
+        "successfulRepetitions": 2,
+        "passRate": 1.0,
+        "flaky": false
+      }
+    ],
+    "retrieval": {
+      "labelledTurns": 8,
+      "meanRecallAtK": 1.0,
+      "mrrAtK": 1.0,
+      "scope": "Macro mean over explicitly labelled first search pages, k<=3; no unlabeled relevance inferred"
+    },
+    "failedTurns": [],
+    "work": {
+      "modelCalls": 32,
+      "toolCalls": 16,
+      "providerUsageAvailable": false,
+      "tokens": null,
+      "monetaryCost": null
+    }
+  },
+  "rows": [
+    {
+      "caseId": "exact-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 16875.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 13886
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 193
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2771
+        }
+      ],
+      "answerSha256": "b63ce36ee0bb67b83bbaf408f42531cba6c5ad264dc90c27f978cfcbf9cd4904",
+      "answerChars": 47,
+      "requestId": "10904dac-b1c0-4776-b005-30c881e786cc",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 8235.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1397
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 196
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 6627
+        }
+      ],
+      "answerSha256": "39ce9cad7a4e5941f0ec46259a81ebf338f259f539328c69d89066e116e9b57e",
+      "answerChars": 182,
+      "requestId": "dd01f5af-4699-41ae-b024-a0f8d259c178",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3265.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "emptySearchEvidence": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "fe8b5f1671a89da8b51eab140129b06f185d6c18a122e3ca648862f7a45692bc",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1838
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 83
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1333
+        }
+      ],
+      "answerSha256": "8043f5fdbaa019e232224764b7f4a8b3a3e296278e5d7c6401d2bc34d20a8547",
+      "answerChars": 11,
+      "requestId": "9b72ebb7-d170-4511-a01b-c02e4a6cbb9b",
+      "sourceGroup": "absent-title",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 4344.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1406
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 177
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2753
+        }
+      ],
+      "answerSha256": "49122536a56355f6be5b138661ad90895a55a29d714a109d04dc008f5fe527c8",
+      "answerChars": 53,
+      "requestId": "f641fc4c-2d2a-48b2-ad64-213d4e598674",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 1,
+      "turn": 2,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 17078.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "arguments:getMovieDetails": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "followupId": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:getMovieDetails": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        },
+        "multiTurn": {
+          "checks": {
+            "followupId": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "d3d87fe3dde47841cfb74acbe4239817bbc81d59900c4c6b1098ddd857970a72",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1500
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "durationMs": 33
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 15525
+        }
+      ],
+      "answerSha256": "4a30d935b3656d65f77f2612919c064f03b800ae2d8d3d8008c3663a863b2b84",
+      "answerChars": 367,
+      "requestId": "28056b67-fbb5-4002-8004-e109c8d99dd6",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 21219.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "webExcerptAndUrl": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true,
+            "webExcerptAndUrl": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "6925d05766d6ba21c5074e367eb7bce1eb7e47ad7b3281f238eccb14f3be39eb",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1599
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "durationMs": 1163
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 18438
+        }
+      ],
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "answerChars": 591,
+      "requestId": "2380f28b-98c1-4e05-b992-9fc7072595ad",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "invalid-history-role",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 16.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true
+          },
+          "passed": true
+        },
+        "rejection": {
+          "checks": {
+            "expectedError": true,
+            "noAnswerOnRejection": true,
+            "noToolOnRejection": true,
+            "noModelOnRejection": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 0,
+        "toolCalls": 0,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "607caffe-9503-4ea5-a750-e51084c2f259",
+      "sourceGroup": "invalid-request",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "unknown-request-field",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true
+          },
+          "passed": true
+        },
+        "rejection": {
+          "checks": {
+            "expectedError": true,
+            "noAnswerOnRejection": true,
+            "noToolOnRejection": true,
+            "noModelOnRejection": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 0,
+        "toolCalls": 0,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "514d3615-191a-4bb7-9b42-7e88ae7fdb8b",
+      "sourceGroup": "invalid-request",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "title-year-category",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 8921.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "arguments:searchMovies": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:searchMovies": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2304
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 87
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 6515
+        }
+      ],
+      "answerSha256": "f2f49a73e270a71a226e4abce2993a5fa13ce5a5cf942326f180e13cd88d15f0",
+      "answerChars": 180,
+      "requestId": "8f4d7ed2-24d9-4485-8554-af8bd1d4fd29",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "title-wrong-year-empty",
+      "repetition": 1,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3250.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true,
+        "arguments:searchMovies": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:searchMovies": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "emptySearchEvidence": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "fe8b5f1671a89da8b51eab140129b06f185d6c18a122e3ca648862f7a45692bc",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1937
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 31
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1268
+        }
+      ],
+      "answerSha256": "32b4e5868ccf0353fe09d64a42666033e6fcdd816e543b82129d91d7489f4478",
+      "answerChars": 15,
+      "requestId": "7287f346-5252-4a99-8189-2d3588d440d0",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "exact-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 5250.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1577
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 217
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 3445
+        }
+      ],
+      "answerSha256": "39c01cbc1aadee11a7578dafe367849d2a2c5d89d4a9993374886cdefae7e970",
+      "answerChars": 58,
+      "requestId": "60cfe839-966c-4002-9a94-97592b920a98",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "english-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 6235.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1492
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 186
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 4542
+        }
+      ],
+      "answerSha256": "217cb67faf07f3521cd66f0dc5573268f3395db2b9f18164fd262256749efd30",
+      "answerChars": 118,
+      "requestId": "e39e9122-b89f-4ae9-bc14-cb6bdc37afdc",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "unknown-title",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3344.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "emptySearchEvidence": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "fe8b5f1671a89da8b51eab140129b06f185d6c18a122e3ca648862f7a45692bc",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1862
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 91
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1387
+        }
+      ],
+      "answerSha256": "8043f5fdbaa019e232224764b7f4a8b3a3e296278e5d7c6401d2bc34d20a8547",
+      "answerChars": 11,
+      "requestId": "5fc79cb3-42cb-4c52-bbda-079f6c2f9545",
+      "sourceGroup": "absent-title",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 5109.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1483
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 194
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 3428
+        }
+      ],
+      "answerSha256": "cbd84e59d247bdcf2f4f04c51919b434ca97fef615363c1b29dc5a1830ab3fc6",
+      "answerChars": 64,
+      "requestId": "f12f287e-448a-434b-9e35-5915af6ff059",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "details-followup",
+      "repetition": 2,
+      "turn": 2,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 21187.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "arguments:getMovieDetails": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "followupId": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:getMovieDetails": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        },
+        "multiTurn": {
+          "checks": {
+            "followupId": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "d3d87fe3dde47841cfb74acbe4239817bbc81d59900c4c6b1098ddd857970a72",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1585
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "durationMs": 30
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 19569
+        }
+      ],
+      "answerSha256": "c1df4f8c358bbc155388e990d0d89453a076cbec057034150fefc895011119cd",
+      "answerChars": 521,
+      "requestId": "21f142b8-6c4d-46a0-b137-739462deadd8",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "web-excerpts",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 17859.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "webExcerptAndUrl": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true,
+            "webExcerptAndUrl": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "6925d05766d6ba21c5074e367eb7bce1eb7e47ad7b3281f238eccb14f3be39eb",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1604
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "durationMs": 1617
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 14624
+        }
+      ],
+      "answerSha256": "de93c1de9d53495061deb12534c0345b84bf6bcd05229d64f7917723a6c3e73f",
+      "answerChars": 591,
+      "requestId": "8141a093-d0d1-48f9-98e9-cfd80b87f4e8",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "invalid-history-role",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true
+          },
+          "passed": true
+        },
+        "rejection": {
+          "checks": {
+            "expectedError": true,
+            "noAnswerOnRejection": true,
+            "noToolOnRejection": true,
+            "noModelOnRejection": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 0,
+        "toolCalls": 0,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "80ecfa23-5c97-42a6-b8aa-04b01da40665",
+      "sourceGroup": "invalid-request",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "unknown-request-field",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": false,
+      "durationMs": 0.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "expectedError": true,
+        "noAnswerOnRejection": true,
+        "noToolOnRejection": true,
+        "noModelOnRejection": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true
+          },
+          "passed": true
+        },
+        "rejection": {
+          "checks": {
+            "expectedError": true,
+            "noAnswerOnRejection": true,
+            "noToolOnRejection": true,
+            "noModelOnRejection": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 0,
+        "toolCalls": 0,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "error",
+          "name": "assistant",
+          "status": "error",
+          "durationMs": 0
+        }
+      ],
+      "answerSha256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "answerChars": 0,
+      "requestId": "30f62979-d9a9-4f9d-9e57-5f9696cdc17c",
+      "sourceGroup": "invalid-request",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "title-year-category",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 10391.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "expectedMovieEvidence": true,
+        "expectedYearEvidence": true,
+        "arguments:searchMovies": true,
+        "hardFact:year": true,
+        "hardFact:category": true,
+        "relevantResult": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:searchMovies": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "expectedMovieEvidence": true,
+            "expectedYearEvidence": true,
+            "hardFact:year": true,
+            "hardFact:category": true,
+            "relevantResult": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {
+        "k": 3,
+        "recallAtK": 1.0,
+        "reciprocalRankAtK": 1.0,
+        "labelledRelevant": 1,
+        "returnedAtK": 1
+      },
+      "evidenceSha256": "01eb8c92d96d0b25fdfddc3ec5ef4c5b33d6c554c45b109e8081041edeb82f46",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2315
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 82
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 7975
+        }
+      ],
+      "answerSha256": "a4f4116de8968220de6c97aa133f24d56c13495998f3514044ef598eae5eb9fb",
+      "answerChars": 236,
+      "requestId": "60c1f7ac-f57f-4f8a-97c2-43fa84b22fc8",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    },
+    {
+      "caseId": "title-wrong-year-empty",
+      "repetition": 2,
+      "turn": 1,
+      "passed": true,
+      "manualReviewRequired": true,
+      "durationMs": 3453.0,
+      "checks": {
+        "toolAllowlist": true,
+        "toolBudget": true,
+        "scope": true,
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "requiredTools": true,
+        "allToolsSucceeded": true,
+        "queryTimestamps": true,
+        "emptySearchEvidence": true,
+        "arguments:searchMovies": true
+      },
+      "dimensions": {
+        "routing": {
+          "checks": {
+            "toolAllowlist": true,
+            "toolBudget": true,
+            "scope": true,
+            "businessSuccess": true,
+            "requiredTools": true,
+            "allToolsSucceeded": true
+          },
+          "passed": true
+        },
+        "arguments": {
+          "checks": {
+            "arguments:searchMovies": true
+          },
+          "passed": true
+        },
+        "retrieval": {
+          "checks": {
+            "queryTimestamps": true,
+            "emptySearchEvidence": true
+          },
+          "passed": true
+        },
+        "answer": {
+          "checks": {
+            "nonEmptyAnswer": true
+          },
+          "passed": true
+        }
+      },
+      "retrievalMetrics": {},
+      "evidenceSha256": "fe8b5f1671a89da8b51eab140129b06f185d6c18a122e3ca648862f7a45692bc",
+      "modelSha256": "1306f7490a0b0167b1a6cd7d9ae403ea972561899ddedf3432493bad057bc4b3",
+      "work": {
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "providerUsageAvailable": false,
+        "tokens": null,
+        "monetaryCost": null
+      },
+      "trace": [
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 2138
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovies",
+          "status": "success",
+          "durationMs": 54
+        },
+        {
+          "kind": "model",
+          "name": "qwen3:1.7b",
+          "status": "success",
+          "durationMs": 1255
+        }
+      ],
+      "answerSha256": "32b4e5868ccf0353fe09d64a42666033e6fcdd816e543b82129d91d7489f4478",
+      "answerChars": 15,
+      "requestId": "c278d14f-ef07-4092-911f-543f1e7968a4",
+      "sourceGroup": "interstellar",
+      "split": "regression",
+      "executed": true
+    }
+  ],
+  "reportSchemaVersion": 2,
+  "freezeSha256": "95f2c4e8259b50984dc91fe78f53151b36262ab023e7f6647e6917c9721419b5",
+  "selectionSha256": "ab517463f9ec873af9a5629b71e1d02984b9416235c2b43be93cd5297aab16e8",
+  "runtimeToolSchemaSha256": "894db26f996248566f1481bc7efb09938bb7705131b4d6d0244f5b21abadb27a",
+  "dataScope": "live-read-only-catalog; no frozen corpus or independent quality claim",
+  "evaluatorSha256": "04d106123db0cafeb159c40d970c55ef21478f4faf0d55f777c2a6f60d09d157",
+  "baseEvaluatorSha256": "ec51b933ce1651fae418a49fd751de85d8d62df2b5393e0a6cc141f8011dc120"
+}

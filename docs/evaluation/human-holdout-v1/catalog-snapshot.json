@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-23T12:10:06.205935+00:00",
+  "canonicalSha256": "88ba35aa613178352a122fe59f84443fa06be81ab8fd4dd90e6d33df48f351c1",
+  "fileSha256": "9adb9d5aa763e0ef145a6c5b1f6743d99e0c22da1b9182d3790620a29aa495e5",
+  "activeTotal": 10432,
+  "snapshotRows": 10432,
+  "truncated": false,
+  "privateSnapshotPath": "E:\\gying-tools\\releases\\ai-evaluation-20261023\\private\\catalog.json",
+  "transaction": "read-only consistent catalog read; rolled back",
+  "userDataIncluded": false,
+  "resourceUrlsIncluded": false,
+  "scope": "Reusable offline metadata corpus; online website/agent runs still use live data, not this frozen corpus"
+}

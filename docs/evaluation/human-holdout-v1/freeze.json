@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "datasetSha256": "d157d1c2f6f7864af369434ec5e0fc3981c177b1468af7ff8796373dbc70d187",
+  "datasetVersion": "gying-human-holdout-v1",
+  "caseCount": 30,
+  "turnCount": 44,
+  "frozenAt": "2026-10-23T12:07:45.004150+00:00",
+  "scope": "Question text, groups and rubrics only; no model answers or corpus frozen"
+}
