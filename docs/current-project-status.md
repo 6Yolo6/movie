@@ -2,7 +2,7 @@
 
 更新时间：2026-10-23
 
-时区：Asia/Shanghai。2026-10-23晚间仅交付AI评测/题集/链路文档与USER账号网站验收，应用镜像保持下述基线；测试账号按用户要求禁用。最近生产变更为2026-10-23 12:43–12:54：仅部署GYing/backend与本机AI Agent、启用加密状态，随后平滑重启复验；入口/模型/恢复/日志验收截至12:54。10月22日采集与资源链路及其他事实保留原证据日期。
+时区：Asia/Shanghai。最近生产变更为2026-10-23 21:22–21:23：仅部署GYING手动资源补齐backend/frontend，入口/页面验收截至21:25；本机nvm Node升级24.22.1并重启两个Node服务，frontend容器补至22.23.4。晚间AI评测/题集/链路文档及USER账号网站验收保留独立证据，测试账号已禁用；12:43–12:54启用AI加密状态，10月22日采集与其他事实保留原日期。
 
 [导航](README.md) · [API](api.md) · [部署](deployment.md) · [安全](security/README.md) · [历史](history/README.md)
 
@@ -33,7 +33,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | 页面 | 中英品牌/明暗主题/响应式、竞态保护；AI/相关推荐新标签页；磁力/种子分别计数 | [详情验收](movie-detail-enhancements-20261021.md) |
 | AI | 登录片库助手、标题完整分页；收藏/衰减浏览稀疏特征与混合推荐；条件解析 + ICU/BM25 简介检索、原文片段和理由；详情/状态追问走受控本机桥接；任务/回执加密持久化与可续期租约已启用 | [当前成果](catalog-features-search-20261021.md)、[前序桥接](ai-assistant-20261019.md) |
 | 采集与治理 | TMDB/GYING 每来源独立起止页 1–500、修改范围保留范围内页码/游标、独立失败元数据重试；电影合集/剧集季严格消歧；失效云盘分享原位修复 | [资源中心](resource-hub.md) |
-| 网盘视频 | 三个 GYING 周榜独立计划；手动发现/QQ 按需转存保留；新视频完整落位后自有分享，旧夸克追更独立 | [采集/周榜](metadata-weekly-transfer.md) |
+| 网盘视频 | 三个GYING周榜独立计划；手动确保/按ID修复共用双盘有效性检查、失效原位修复及P2P同步；有效才跳过，不确定待核验；QQ按需与旧夸克追更独立 | [采集/周榜](metadata-weekly-transfer.md)、[手动补齐](gying-manual-completion-20261023.md) |
 | P2P | 来源磁力/种子解析、1080P/4K 小文件归档；账号 `/dbt/` 下载 URL 从公开结果及新任务隔离，旧引用保留 | [采集](gying-p2p-collection.md)、[归档](p2p-cloud-archive.md) |
 | QQ/发布 | 搜片→候选→用户选择单资源才转存；backend 每日推荐/原频道 CLI/独立 QQ 微博发布器分开；不确定发布阻断重试 | [发布](social-publishing.md)、[多盘正文](qq-channel-multi-drive.md) |
 | 用户/监控 | 注册上限/邀请、昵称、用户名或邮箱登录、验证码重置与设备吊销；API 日志原 IP/UA、服务端日志分页、热搜缓存回退 | [API](api.md)、[身份验收](access-log-client-identity-20261014.md) |
@@ -43,7 +43,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 配置与安全
 
-- 2026-10-23 安全复检 **59 PASS / 11 FAIL / 0 UNKNOWN**，G01–G11原失败全保留。用户对本次AI可靠性候选明确“可部署”，本轮承接同候选批准；不能复用为其他发布越过门禁的授权。[机器台账](security/hardening-gates.md)、[风险](security/risk-register.md)。
+- 2026-10-23 安全复检 **59 PASS / 11 FAIL / 0 UNKNOWN**，G01–G11原失败全保留。用户在获知原失败后对本次GYING手动补齐候选明确“部署”；仅用于本候选，不代表风险关闭或其他发布授权。[机器台账](security/hardening-gates.md)、[风险](security/risk-register.md)。
 - nginx/backend 为 loopback，应用非 root；internal/QQ 公网路径 404，源站匿名管理 API 401，公网管理路径由Access拦截。Quark/MinIO 仍非 loopback，五依赖缺 NNP、三依赖有 root 进程，Redis 仍在共享网络。
 - 2026-09-28 MySQL 8.0.28、25 InnoDB 表；三应用共用 `gying_app@%`，库级 SELECT/INSERT/UPDATE/DELETE/EXECUTE；TLS 强制关闭、local_infile 关闭、secure_file_priv=NULL。专用 localhost 备份账号已验证，分服务身份/grants 尚未完成。
 - 2026-09-25/28 Public/Private Firewall 与物理网卡六敏感端口拒绝规则已验证；同网有线客户端报告不可连接。公网直连/IPv6 未验收，不重复 Apply。Quark config 父目录 root `0700` 已收紧，文件自身权限/非 root/旧 Cookie 撤销未完成。
@@ -56,12 +56,16 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 服务 | 当前镜像 |
 | --- | --- |
-| backend | `sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15` |
-| frontend | `sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1` |
+| backend | `sha256:89f127f9e023c966d02422202ce9cdf18755afe046b5203b2cef3ea33de386f3` |
+| frontend | `sha256:a40e7cd3f750a63994b5036daf7a97e09c6ebd5a9a8638612084f09e23c077e4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 
-2026-10-23仅替换backend与本机Agent，源码分别`3052f2c`/`e11c631`；持久化两侧已启用，独立状态key受限保存并加密备份；日常备份已补state/key/部署覆盖，dry-run通过。初次/重启检查点`G:/gying-backups/20261023T044352.387300Z`和`G:/gying-backups/20261023T045302.843250Z`各14份age哈希/完整认证通过；回退及旧包在`E:/gying-tools/releases/ai-reliability-20261023/`。真实入口16项、新包模型8/8、两条终态跨平滑重启状态/attempt不变；[部署验收](ai-reliability-deployment-20261023.md)。
+2026-10-23 21:22–21:23仅切换backend/frontend，功能提交 `2b1809b`；有效覆盖和旧镜像回退材料在 `E:/gying-tools/releases/gying-manual-completion-20261023/`，检查点 `G:/gying-backups/20261023T132303.117468Z` 的11份age哈希/完整认证通过。其余9个容器、有效配置、调度及发布转存审计不变；26真实入口、3内部依赖、线上JAR/95静态文件与三组模拟API页面通过。见[部署验收](gying-manual-completion-20261023.md)。
+
+本机nvm活跃Node由20.17.0（已EOL、存在官方披露漏洞）升级24.22.1，npm11.19.1；官方包哈希一致，旧版本保留。AI frontend/Ollama启动器已用新版本重启且健康/生命周期通过，Java实例未变。生产frontend容器Node22.23.2补到22.23.4，其他容器运行时未改；[官方安全公告](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases)。
+
+前序2026-10-23仅替换backend与本机Agent，源码分别`3052f2c`/`e11c631`；持久化两侧已启用，独立状态key受限保存并加密备份；日常备份已补state/key/部署覆盖，dry-run通过。初次/重启检查点`G:/gying-backups/20261023T044352.387300Z`和`G:/gying-backups/20261023T045302.843250Z`各14份age哈希/完整认证通过；回退及旧包在`E:/gying-tools/releases/ai-reliability-20261023/`。真实入口16项、新包模型8/8、两条终态跨平滑重启状态/attempt不变；[部署验收](ai-reliability-deployment-20261023.md)。
 
 前序2026-10-22 21:22仅切换backend/frontend，功能提交 `706ae3e`；实际覆盖和旧镜像回退材料 `E:/gying-tools/releases/crawl-resource-links-20261022/`，检查点 `G:/gying-backups/20261022T132212.039731Z` 9份age的哈希/完整认证解密通过（含两个发布状态卷）。其余9个容器运行身份/启动/重启不变，应用有效配置摘要不变；[本轮验收](crawl-resource-links-20261022.md)。前序13:37切换backend/frontend，本地AI最终包13:47切换；回退材料 `E:/gying-tools/releases/ai-research-20261022/`，检查点 `G:/gying-backups/20261022T053706.234649Z` 7份age认证通过。前序功能提交 `add5d78`，文档校正 `dc13094`；2026-10-22 00:07–00:08 只替换 backend/frontend，9 个其余容器不变。有效覆盖及旧镜像回退文件在 `E:/gying-tools/releases/catalog-features-search-20261021/`；检查点 `G:/gying-backups/20261021T160733.115483Z` 的 7 份 age 产物 hash/完整认证解密通过。[前序验收](catalog-features-search-20261021.md)。
 
@@ -95,9 +99,9 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
-2026-10-23 20:18–20:31 GYING手动补齐候选：ensure与按影片/资源ID修复共用双盘有效性检查、失效原位修复及P2P同步；后端706项（705通过/1依赖跳过/0失败）、58项工作流与14项真实MySQL、独立compile和JAR打包通过；前端tsc/页面lint通过，完整构建受Windows提交内存耗尽阻挡，已停止。安全59/11/0保持，按门禁未部署、未做真实转存/发布；现役镜像和前序回退材料保留。[候选验收](gying-manual-completion-20261023.md)、[机器摘要](evaluation/gying-manual-completion-20261023/validation-summary.json)。
+2026-10-23 21:22–21:25 GYING手动补齐部署：ensure与按影片/资源ID修复共用双盘有效性检查、失效原位修复及P2P同步；后端706项（705通过/1依赖跳过/0失败）、工作流58项、真实MySQL14项与独立compile/JAR通过；前端tsc/lint和Node24完整webpack构建通过，候选/线上三组浏览器模拟API验收通过。生产JAR/95静态文件、26真实入口/3内部依赖匹配，其他9容器/有效配置/调度/发布转存审计不变，四应用本次日志窗口ERROR/Exception=0。11份新加密备份认证通过；安全59/11/0保留，本候选用户明确“部署”，未做真实转存/发布。本机Node24.22.1及frontend容器22.23.4升级完成。[部署验收](gying-manual-completion-20261023.md)、[机器摘要](evaluation/gying-manual-completion-20261023/validation-summary.json)。
 
-2026-10-23晚间评测交付：57项离线行为/完整性测试通过；9场景10轮本机回归重复2次20/20程序检查、16回答待人工复核。30用户独立题保持原文拆44轮，普通USER网站实际88轮全部执行、84程序通过/4任务失败/0未执行，84回答待人工复核；详见[独立验收](evaluation/human-holdout-v1/README.md)与[机器摘要](evaluation/human-holdout-v1/validation-summary.json)。10,432条有效元数据只读事务快照不含用户/资源URL；线上仍用活库。首段本机/网站运行重叠存在负载干扰，不做SLA或无负载性能结论；未使用留出题调prompt，未冻结模型回答。应用源码/镜像未变，逐题人工评分、同数据retriever对比/真实UI仍待；[完整链路](ai-system-chain-20261023.md)。
+2026-10-23晚间评测交付：57项离线行为/完整性测试通过；9场景10轮本机回归重复2次20/20程序检查、16回答待人工复核。30用户独立题保持原文拆44轮，普通USER网站实际88轮全部执行、84程序通过/4任务失败/0未执行，84回答待人工复核；详见[独立验收](evaluation/human-holdout-v1/README.md)与[机器摘要](evaluation/human-holdout-v1/validation-summary.json)。10,432条有效元数据只读事务快照不含用户/资源URL；线上仍用活库。首段本机/网站运行重叠存在负载干扰，不做SLA或无负载性能结论；未使用留出题调prompt，未冻结模型回答。该评测交付未修改应用源码/镜像，随后GYING部署另述；逐题人工评分、同数据retriever对比/真实UI仍待；[完整链路](ai-system-chain-20261023.md)。
 
 2026-10-23 12:43–12:54：同候选获批后仅替换两个后端，启用私有加密状态；16真实源站/公网入口与新Agent模型8/8通过。两条终态在平滑重启后状态/attempt不变，两侧密文认证通过；真实内部自然查询/批量拒绝、10个未改容器和转存/发布审计通过。五服务短窗口ERROR/Exception为0；安全59/11/0保持。网站真实登录及生产崩溃/回执丢失未验收，见[部署](ai-reliability-deployment-20261023.md)。
 

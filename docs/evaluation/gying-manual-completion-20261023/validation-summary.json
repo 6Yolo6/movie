@@ -33,20 +33,55 @@
   "frontend": {
     "typescript": "PASS",
     "pageEslint": "PASS",
-    "productionBuild": "BLOCKED: Windows commit memory exhausted, SWC paging-file load failure; stopped isolated build"
+    "productionBuild": "PASS: isolated webpack build on Node24.22.1; staged experimental.cpus=1",
+    "buildNode": "24.22.1",
+    "runtimeNode": "22.23.4",
+    "browserScenarios": [
+      {
+        "lang": "zh",
+        "width": 1440,
+        "theme": "light",
+        "status": "passed",
+        "valid": 1,
+        "unclear": 1,
+        "mockedApis": true,
+        "liveHtmlAndStatic": true
+      },
+      {
+        "lang": "zh",
+        "width": 390,
+        "theme": "dark",
+        "status": "passed",
+        "valid": 1,
+        "unclear": 1,
+        "mockedApis": true,
+        "liveHtmlAndStatic": true
+      },
+      {
+        "lang": "en",
+        "width": 390,
+        "theme": "light",
+        "status": "passed",
+        "valid": 1,
+        "unclear": 1,
+        "mockedApis": true,
+        "liveHtmlAndStatic": true
+      }
+    ],
+    "staticFilesMatched": 95
   },
   "security": {
     "PASS": 59,
     "FAIL": 11,
     "UNKNOWN": 0
   },
-  "productionDeployed": false,
+  "productionDeployed": true,
   "realTransferOrPublishingTested": false,
   "releasePath": "E:\\gying-tools\\releases\\gying-manual-completion-20261023",
   "package": {
     "runId": "2f25cf17e7ef",
     "network": "none",
-    "productionReplaced": false,
+    "productionReplaced": true,
     "exit": 0,
     "sha256": "aa34016a48e8aedfbf9fffa7e1deec9e462d051928d19977c97edbb8bdf90490",
     "classResourcesMatched": 344,
@@ -56,7 +91,117 @@
     "tag": "gying-manual-completion-backend:20261023",
     "imageId": "sha256:89f127f9e023c966d02422202ce9cdf18755afe046b5203b2cef3ea33de386f3",
     "baseImageId": "sha256:81d6bd4c41161cab085c1732975e245a2613919cba172139a26d0334b499dd15",
-    "productionReplaced": false,
+    "productionReplaced": true,
     "jarSha256Verified": "aa34016a48e8aedfbf9fffa7e1deec9e462d051928d19977c97edbb8bdf90490"
+  },
+  "gitCommit": "2b1809bb7c4c9aec381786409dc8c6f7d1263fbc",
+  "pushedBranch": "codex/security",
+  "frontendImage": {
+    "tag": "gying-manual-completion-frontend:20261023",
+    "imageId": "sha256:a40e7cd3f750a63994b5036daf7a97e09c6ebd5a9a8638612084f09e23c077e4",
+    "baseImageId": "sha256:6066320686beb3ae02e07a9f44418527b0bf91bcad44857c2affff800be7e6c1",
+    "productionReplaced": true,
+    "buildNode": "24.22.1",
+    "runtimeNode": "22.23.4",
+    "nodePatchImageDigest": "sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914"
+  },
+  "deployment": {
+    "startedAt": "2026-10-23T13:22:54.324975+00:00",
+    "affected": [
+      "backend",
+      "frontend"
+    ],
+    "status": "deployed",
+    "unaffectedServicesPreserved": true,
+    "effectiveConfigurationPreserved": true,
+    "auditUnchanged": true,
+    "backupDirectory": "G:/gying-backups/20261023T132303.117468Z",
+    "encryptedArtifacts": 11,
+    "allArtifactsAuthenticated": true,
+    "realEntryChecks": 26,
+    "internalDependencyChecks": 3,
+    "verificationCompletedAt": "2026-10-23T13:24:29.567659+00:00",
+    "logs": {
+      "gying-movie-backend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-frontend-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-gying-source-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      },
+      "gying-movie-social-publisher-1": {
+        "errorLines": 0,
+        "exceptionLines": 0
+      }
+    },
+    "securityException": "User explicitly requested deployment of this candidate after disclosure of unchanged 11 failures"
+  },
+  "nodeUpgrade": {
+    "oldNode": "20.17.0",
+    "installedNode": "24.22.1",
+    "npm": "11.19.1",
+    "officialZipSha256": "d2046d28c2c3dcd211ac5145c0bf30e2047ef9dfb306693c8c6e2eccd8b95fa5",
+    "installedExecutableSha256": "d702daa815eabbff763c7d3808e235cf031cf2ca70211b56847bc72f51e240e5",
+    "officialArchiveMatches": true,
+    "oldVersionRetained": true,
+    "sources": [
+      "https://nodejs.org/en/about/previous-releases",
+      "https://nodejs.org/en/blog/vulnerability/january-2025-security-releases",
+      "https://nodejs.org/en/blog/vulnerability/july-2025-security-releases",
+      "https://nodejs.org/en/blog/vulnerability/october-2026-security-releases"
+    ]
+  },
+  "nodeServiceRestart": {
+    "at": "2026-10-23T13:19:44.564577+00:00",
+    "node": "v24.22.1",
+    "restarted": [
+      "frontend",
+      "ollama"
+    ],
+    "oldInstancesGracefulAcknowledgements": true,
+    "frontendRetry": "Transient EACCES; failed non-serving launcher ended by identity-verified normal console interrupt; new managed instance ready. No force stop.",
+    "checks": [
+      {
+        "url": "http://127.0.0.1:3000",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:11434/api/version",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "status": 200
+      }
+    ],
+    "managedInstances": [
+      {
+        "service": "frontend",
+        "instanceId": "b2947a3e-d1e7-4729-83e2-f11c8061c71c",
+        "processId": 14404,
+        "startedAt": "2026-10-23T13:19:20.4394685Z",
+        "executable": "D:\\nvm\\nodejs\\node.exe"
+      },
+      {
+        "service": "ollama",
+        "instanceId": "e6f1c7ad-bbe3-4a96-9009-9f728fe77ab5",
+        "processId": 2488,
+        "startedAt": "2026-10-23T13:16:51.9295837Z",
+        "executable": "D:\\nvm\\nodejs\\node.exe"
+      },
+      {
+        "service": "backend",
+        "instanceId": "b92e4568-f9d4-45af-94fe-515a07243e48",
+        "processId": 30888,
+        "startedAt": "2026-10-23T04:53:33.0868003Z",
+        "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+      }
+    ],
+    "javaBackendPreserved": true
   }
 }
