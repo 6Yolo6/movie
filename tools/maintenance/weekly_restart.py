@@ -39,6 +39,9 @@ CST = dt.timezone(dt.timedelta(hours=8))
 class Blocked(RuntimeError):
     pass
 
+class BusyJobs(Blocked):
+    pass
+
 def now():
     return dt.datetime.now(dt.timezone.utc).isoformat()
 
@@ -125,7 +128,7 @@ def jobs(c):
 def assert_idle(c):
     busy = active(jobs(c), c["ignoredStaleRows"])
     if busy:
-        raise Blocked("Active business jobs; restart cancelled: " + json.dumps(busy))
+        raise BusyJobs("Active business jobs: " + json.dumps(busy))
 
 def pending(c):
     return [p for p in sorted(Path(c["stateRoot"]).glob("*/state.json")) if read(p)["phase"] not in DONE]
@@ -481,6 +484,19 @@ def maintenance_window(c, config, once, final=False):
     value=dt.datetime.now(dt.timezone.utc)
     if not start<=value<(finish if final else latest):raise Blocked("Outside explicit one-off window; no catch-up reboot")
 
+def idle_preflight(c, config, once, attempt=None):
+    """Wait for a natural idle gap before changing any service, within the original start window."""
+    deadline=time.monotonic()+300
+    while True:
+        maintenance_window(c,config,once)
+        try:
+            return preflight(c,True)
+        except BusyJobs as error:
+            if time.monotonic()>=deadline:
+                raise Blocked("No idle gap within five-minute preflight wait: "+str(error))
+            if attempt:save(attempt,{**read(attempt),"stage":"waiting_idle","lastBusyReason":str(error)[:4000]})
+            time.sleep(5)
+
 def run(c, config, reboot, once=None):
     # Attempt logs are separate from state.json: no stopped services, no recovery obligation.
     attempt=Path(c["stateRoot"])/"attempt-log"/(uuid.uuid4().hex+".json")
@@ -504,7 +520,7 @@ def _run(c, config, reboot, once=None, attempt=None):
         if permit.get("usedAt"):raise Blocked("One-off maintenance permit already used")
         permit["usedAt"]=now();save(once,permit)
     if attempt:save(attempt,{**read(attempt),"stage":"preflight"})
-    baseline = preflight(c, True)
+    baseline = idle_preflight(c,config,once,attempt) if reboot else preflight(c,True)
     if reboot:
         maintenance_window(c, config, once)
     path = Path(c["stateRoot"]) / dt.datetime.now().strftime("%Y%m%d-%H%M%S") / "state.json"

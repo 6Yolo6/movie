@@ -156,6 +156,40 @@ class MaintenanceSafety(unittest.TestCase):
                 w.run(self.cfg, "fixture.json", True)
             preflight.assert_not_called()
 
+    def test_initial_busy_jobs_wait_for_natural_idle_before_preparation(self):
+        baseline = {"at": "fixture"}
+        with patch.object(w, "maintenance_window"), \
+             patch.object(w, "preflight", side_effect=[w.BusyJobs("busy"), w.BusyJobs("busy"), baseline]) as preflight, \
+             patch.object(w.time, "sleep") as sleep:
+            self.assertEqual(w.idle_preflight(self.cfg, "fixture.json", None), baseline)
+        self.assertEqual(preflight.call_count, 3)
+        self.assertEqual([c.args for c in sleep.call_args_list], [(5,), (5,)])
+        self.assertFalse(self.path.exists())
+
+    def test_busy_preflight_wait_has_five_minute_deadline(self):
+        with patch.object(w, "maintenance_window"), patch.object(w, "preflight", side_effect=w.BusyJobs("busy")), \
+             patch.object(w.time, "monotonic", side_effect=[0, 301]), patch.object(w.time, "sleep") as sleep:
+            with self.assertRaisesRegex(w.Blocked, "five-minute"):
+                w.idle_preflight(self.cfg, "fixture.json", None)
+        sleep.assert_not_called()
+        self.assertFalse(self.path.exists())
+
+    def test_busy_wait_cannot_cross_the_start_window(self):
+        with patch.object(w, "maintenance_window", side_effect=[None, w.Blocked("outside")]), \
+             patch.object(w, "preflight", side_effect=w.BusyJobs("busy")) as preflight, \
+             patch.object(w.time, "sleep"):
+            with self.assertRaisesRegex(w.Blocked, "outside"):
+                w.idle_preflight(self.cfg, "fixture.json", None)
+        preflight.assert_called_once()
+        self.assertFalse(self.path.exists())
+
+    def test_unrelated_preflight_failure_is_not_retried(self):
+        with patch.object(w, "maintenance_window"), patch.object(w, "preflight", side_effect=w.Blocked("AC disconnected")), \
+             patch.object(w.time, "sleep") as sleep:
+            with self.assertRaisesRegex(w.Blocked, "AC disconnected"):
+                w.idle_preflight(self.cfg, "fixture.json", None)
+        sleep.assert_not_called()
+
     def test_failed_recovery_retains_retryable_journal(self):
         self.store()
         with patch.object(w, "recover", side_effect=w.Blocked("dependency unavailable")):
