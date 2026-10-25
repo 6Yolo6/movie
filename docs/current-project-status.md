@@ -2,7 +2,7 @@
 
 更新时间：2026-10-25
 
-时区：Asia/Shanghai。2026-10-25 AI查询修复候选/模型对照与主机计划调查进行中，生产应用尚未替换；详见[候选报告](ai-query-plan-v2-20261025.md)。最近生产变更为2026-10-23 21:22–21:23：仅部署GYING手动资源补齐backend/frontend，入口/页面验收截至21:25；本机nvm Node升级24.22.1并重启两个Node服务，frontend容器补至22.23.4。晚间AI评测/题集/链路文档及USER账号网站验收保留独立证据，测试账号已禁用；12:43–12:54启用AI加密状态，10月22日采集与其他事实保留原日期。
+时区：Asia/Shanghai。2026-10-25 16:00–16:01获本轮“可部署”授权后切换AI查询backend/frontend/本机Agent，启用指令4B与语义索引；详见[部署报告](ai-query-plan-v2-20261025.md)。前序生产变更为2026-10-23 21:22–21:23：仅部署GYING手动资源补齐backend/frontend，入口/页面验收截至21:25；本机nvm Node升级24.22.1并重启两个Node服务，frontend容器补至22.23.4。晚间AI评测/题集/链路文档及USER账号网站验收保留独立证据，测试账号已禁用；12:43–12:54启用AI加密状态，10月22日采集与其他事实保留原日期。
 
 [导航](README.md) · [API](api.md) · [部署](deployment.md) · [安全](security/README.md) · [历史](history/README.md)
 
@@ -31,7 +31,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | --- | --- | --- |
 | 片库 | 电影/剧集/动漫分页筛选、热搜、收藏评论通知、资源审核、软删除、来源归一；资源搜索二维码和可点击链接，网盘/磁力/种子分组 | [API](api.md)、[数据库](database.md) |
 | 页面 | 中英品牌/明暗主题/响应式、竞态保护；AI/相关推荐新标签页；磁力/种子分别计数 | [详情验收](movie-detail-enhancements-20261021.md) |
-| AI | 登录片库助手、标题完整分页；收藏/衰减浏览稀疏特征与混合推荐；条件解析 + ICU/BM25 简介检索、原文片段和理由；详情/状态追问走受控本机桥接；任务/回执加密持久化与可续期租约已启用 | [当前成果](catalog-features-search-20261021.md)、[前序桥接](ai-assistant-20261019.md) |
+| AI | 登录片库助手、标题完整分页；收藏/衰减浏览稀疏特征与混合推荐；结构化条件/原文人物核验、BM25+BGE-M3融合、指令4B与固定Bing搜索轨迹；多轮候选/序号走受控本机桥接；任务/回执加密持久化与可续期租约已启用 | [当前成果](catalog-features-search-20261021.md)、[前序桥接](ai-assistant-20261019.md) |
 | 采集与治理 | TMDB/GYING 每来源独立起止页 1–500、修改范围保留范围内页码/游标、独立失败元数据重试；电影合集/剧集季严格消歧；失效云盘分享原位修复 | [资源中心](resource-hub.md) |
 | 网盘视频 | 三个GYING周榜独立计划；手动确保/按ID修复共用双盘有效性检查、失效原位修复及P2P同步；有效才跳过，不确定待核验；QQ按需与旧夸克追更独立 | [采集/周榜](metadata-weekly-transfer.md)、[手动补齐](gying-manual-completion-20261023.md) |
 | P2P | 来源磁力/种子解析、1080P/4K 小文件归档；账号 `/dbt/` 下载 URL 从公开结果及新任务隔离，旧引用保留 | [采集](gying-p2p-collection.md)、[归档](p2p-cloud-archive.md) |
@@ -43,12 +43,13 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 配置与安全
 
+- 2026-10-25本轮复检 **58 PASS / 11 FAIL / 1 UNKNOWN**，G01–G11保留；UNKNOWN为退出的独立旧迅雷探针root_processes。用户本轮明确“可部署”仅授权本次三应用业务例外；未启动探针或实施依赖加固。
 - 2026-10-23 安全复检 **59 PASS / 11 FAIL / 0 UNKNOWN**，G01–G11原失败全保留。用户在获知原失败后对本次GYING手动补齐候选明确“部署”；仅用于本候选，不代表风险关闭或其他发布授权。[机器台账](security/hardening-gates.md)、[风险](security/risk-register.md)。
 - nginx/backend 为 loopback，应用非 root；internal/QQ 公网路径 404，源站匿名管理 API 401，公网管理路径由Access拦截。Quark/MinIO 仍非 loopback，五依赖缺 NNP、三依赖有 root 进程，Redis 仍在共享网络。
 - 2026-09-28 MySQL 8.0.28、25 InnoDB 表；三应用共用 `gying_app@%`，库级 SELECT/INSERT/UPDATE/DELETE/EXECUTE；TLS 强制关闭、local_infile 关闭、secure_file_priv=NULL。专用 localhost 备份账号已验证，分服务身份/grants 尚未完成。
 - 2026-09-25/28 Public/Private Firewall 与物理网卡六敏感端口拒绝规则已验证；同网有线客户端报告不可连接。公网直连/IPv6 未验收，不重复 Apply。Quark config 父目录 root `0700` 已收紧，文件自身权限/非 root/旧 Cookie 撤销未完成。
 - 2026-10-13 账号侧 Access 已启用：四类管理路径、单邮箱 OTP、应用/策略 1 小时；回读/匿名拦截通过。本人登录、网站 ADMIN/USER、origin JWT/WAF 待验收，不重复创建或录入 Token。
-- 2026-10-23 工作区密钥扫描 0；历史扫描的 1,278 Blob/105 重复规则命中属于旧证据，轮换和历史重写未闭环。真实 `.env`、Cookie、JWT、API Key、备份私钥、完整 inspect 只在外部受限存储，不写入文档。
+- 2026-10-25 Movie与Agent工作区密钥扫描均为0；历史扫描的 1,278 Blob/105 重复规则命中属于旧证据，轮换和历史重写未闭环。真实 `.env`、Cookie、JWT、API Key、备份私钥、完整 inspect 只在外部受限存储，不写入文档。
 
 2026-10-22 本轮已部署短语/演员分流、对话无资源搜索入口、联网百科及安全调用轨迹；[验收](ai-search-web-20261022.md)。59/11/0再次确认，用户本轮明确批准先业务部署，原失败继续保留。
 
@@ -56,10 +57,12 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 | 服务 | 当前镜像 |
 | --- | --- |
-| backend | `sha256:89f127f9e023c966d02422202ce9cdf18755afe046b5203b2cef3ea33de386f3` |
-| frontend | `sha256:a40e7cd3f750a63994b5036daf7a97e09c6ebd5a9a8638612084f09e23c077e4` |
+| backend | `sha256:fa06d609e0d04ecaf790f0965ba7b0a4ecfe5030e2b7a25f60b1814e4227221a` |
+| frontend | `sha256:9b4eb2377a1ce3608b9f501c6ef8c4c8394e086684ae3c931486d5f7838ae177` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
+
+2026-10-25 16:00–16:01仅替换backend/frontend/本机Agent，业务代码Movie`f209e87`/Agent`8a65287`；Agent实际SHA`b7bd517cbe6f7c5b8cdf01ce0d8872460958fc8b108653d7c8882fa74ff7f399`。生产Compose加本轮外部`deploy.json`，15份age认证检查点`G:\gying-backups\20261025T080048.799654Z`与原镜像/包回退保留。首次Agent装配失败已回退，修复、87项verify和完整JAR启动通过后第二次成功；23入口、95静态、3依赖与四组真实游客页面通过，实际8880恢复，其余容器身份、启动时间、重启数以及转存/发布审计保持。当前索引11,272条，原11,220开发对照/10,432留出快照分别冻结；网站登录条件查询未复验。见[报告](ai-query-plan-v2-20261025.md)。
 
 2026-10-23 21:22–21:23仅切换backend/frontend，功能提交 `2b1809b`；有效覆盖和旧镜像回退材料在 `E:/gying-tools/releases/gying-manual-completion-20261023/`，检查点 `G:/gying-backups/20261023T132303.117468Z` 的11份age哈希/完整认证通过。其余9个容器、有效配置、调度及发布转存审计不变；26真实入口、3内部依赖、线上JAR/95静态文件与三组模拟API页面通过。见[部署验收](gying-manual-completion-20261023.md)。
 
@@ -76,9 +79,9 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | 事项 | 必须补的证据/工作 |
 | --- | --- |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
-| AI/求职 | 2026-10-25 [查询修复候选](ai-query-plan-v2-20261025.md)完成分流/原文与人物/多轮/实际搜索/语义索引代码；82项Agent、731项后端全套（730通过/1跳过）与26项最新边界/四组页面通过，向量初始化与质量复核仍进行中，59/11安全门禁保留，未部署。已交付[可比较评测](ai-comparable-evaluation-20261023.md)：用户30独立题/44轮原文与口径冻结、10,432条元数据快照、真实USER网站API运行与人工review流程；模型回答只作观测，未调prompt。独立人工评分/真实点击、同冻结语料检索比较、冷索引与误召回、持久usage审计、浏览器UI/真机仍待；embedding/文档RAG/API Key/配额未交付 |
+| AI/求职 | 2026-10-25[查询修复](ai-query-plan-v2-20261025.md)已上线分流/原文人物/多轮/真实Bing/语义检索；Agent87项、后端全套731（730通过/1跳过）及后续29项、构建器9项通过。两组8轮实际开发对照与海上误召回如实保留，未独立盲评；原30题/44轮与10,432快照冻结、旧测试账号禁用。独立评分/真实网站登录查询/点击、持续误召回、增量刷新和usage审计仍待；文档RAG/API Key/配额未交付 |
 | AI下一阶段 | [可靠性部署](ai-reliability-deployment-20261023.md)已启用加密任务/回执、可续期租约、有限重试、取消/幂等；真实内部模型链路及空闲平滑重启2条终态恢复通过。真实USER网站API验收见[评测](evaluation/human-holdout-v1/README.md)；在途回执故障、中间步骤与长期审计待验收；[路线](ai-strengthening-roadmap-20261022.md) |
-| 每周重启 | 2026-10-25 09:30:30 实际触发、结果1，旧脚本未留preflight失败原因；已补尝试日志与单次窗口候选。20:00 dry-run通过、尚未注册；真实重启/ASUS登录恢复未验收，不补跑 |
+| 每周重启 | 2026-10-25 09:30:30触发结果1，原preflight未留失败原因；P2P在途可能阻挡，非唯一确认。已补尝试日志并登记/回读今晚2026-10-25 20:00 +08单次优雅重启：Ready、20:00–20:10开始/21:00截止，失败/过期不补跑。真实重启/ASUS登录恢复未验收；下周2026-11-01 09:30:30 |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、三周榜首轮结果、QQ 每日推荐官方消息权限/群内出站、临时转存到期清理；未手动试发补验收 |
 | 失败与历史队列 | 自然元数据失败隔离分支仍缺线上证据；2026-10-08 的 58 条耗尽归档失败、2026-09-28 旧 RUNNING 保留，重试须精确任务范围 |
 | 上游写入与配图 | GYING publish 的两个 RuntimeError 尚不能区分重复/拒绝/回执失败；双盘源图已只读存在，真实复制/分享未验收 |
@@ -99,7 +102,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 
 ## 验收
 
-2026-10-25查询候选：原88轮/10,432条快照诊断揭示分流、否定、多轮、别名、检索与1.7B理解共同问题。新增独立开发题真实对照1.7B/普通4B/指令4B，不能按completed判回答正确；实际Bing页面探针已有IMDb/烂番茄结果。后端隔离MySQL731项、26项最新边界、Agent82项、索引构建器5项、启动配置9项、重启36项和四组真实React/mock API页面通过。生产仍旧镜像/包，59 PASS/11 FAIL不变，候选待索引和最终门禁。迅雷12:33:33成功后未见临时Edge，旧无窗口进程约5.5 MiB；周日重启触发失败、确切原因缺日志。见[候选](ai-query-plan-v2-20261025.md)。
+2026-10-25查询修复已部署：原88轮诊断定位分流/否定/多轮/检索与1.7B理解共同问题。后端全套731（730通过/1跳过）与后续29项、Agent87项、构建器9项、重启36项、启动配置9项通过；首次装配失败回退并补完整JAR验证。两组开发8轮完成但未记为全正确，真实Bing来源/同名排除可追溯，目标页未逐页访问。部署23入口/95静态/3依赖/四组真实游客UI通过；完整与增量索引、认证检查点及安全58/11/1见[报告](ai-query-plan-v2-20261025.md)。
 
 2026-10-23 21:22–21:25 GYING手动补齐部署：ensure与按影片/资源ID修复共用双盘有效性检查、失效原位修复及P2P同步；后端706项（705通过/1依赖跳过/0失败）、工作流58项、真实MySQL14项与独立compile/JAR通过；前端tsc/lint和Node24完整webpack构建通过，候选/线上三组浏览器模拟API验收通过。生产JAR/95静态文件、26真实入口/3内部依赖匹配，其他9容器/有效配置/调度/发布转存审计不变，四应用本次日志窗口ERROR/Exception=0。11份新加密备份认证通过；安全59/11/0保留，本候选用户明确“部署”，未做真实转存/发布。本机Node24.22.1及frontend容器22.23.4升级完成。[部署验收](gying-manual-completion-20261023.md)、[机器摘要](evaluation/gying-manual-completion-20261023/validation-summary.json)。
 
