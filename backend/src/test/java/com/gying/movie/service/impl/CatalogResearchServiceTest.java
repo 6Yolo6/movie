@@ -102,4 +102,20 @@ class CatalogResearchServiceTest {
         assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"它\"]}"))).containsExactly("c");
     }
 
+    @Test void localizedRegionAndLanguageQueriesMatchEnglishAndIsoSourceMetadata()throws Exception{
+        docs.get(0).putArray("regions").add("Italy");docs.get(0).putArray("languages").add("Italian");
+        docs.get(1).putArray("regions").add("Brazil");docs.get(1).putArray("languages").add("Portuguese");
+        docs.get(2).putArray("regions").add("FR");docs.get(2).putArray("languages").add("fr");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"意大利\"],\"languagesAny\":[\"意大利语\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"巴西\"],\"languagesAny\":[\"葡萄牙语\"]}"))).containsExactly("b");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"法国\"],\"languagesAny\":[\"法语\"]}"))).containsExactly("c");
+    }
+    @Test void languageExclusionsDoNotConfuseCountryAndLanguageIsoCodes()throws Exception{
+        docs.get(0).putArray("regions").add("Germany");docs.get(0).putArray("languages").add("French");
+        docs.get(1).putArray("regions").add("France");docs.get(1).putArray("languages").add("German");
+        docs.get(2).putArray("regions").add("FR");docs.get(2).putArray("languages").add("fr");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"FR\"],\"languagesAny\":[\"fr\"]}"))).containsExactly("c");
+        assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"法国\"],\"excludedLanguages\":[\"法语\"]}"))).containsExactly("b");
+    }
+
 }

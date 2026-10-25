@@ -19,13 +19,26 @@ public class CatalogResearchService {
     public CatalogResearchService(JdbcTemplate jdbc,ObjectMapper mapper){this.jdbc=jdbc;this.mapper=mapper;}
     private static final ThreadLocal<com.ibm.icu.text.Transliterator> SIMPLIFY=ThreadLocal.withInitial(()->com.ibm.icu.text.Transliterator.getInstance("Traditional-Simplified"));
     public static String key(String text){return SIMPLIFY.get().transliterate(Normalizer.normalize(Objects.toString(text,""),Normalizer.Form.NFKC).toLowerCase(Locale.ROOT).replaceAll("[\\p{P}\\s]",""));}
-    private static final Map<String,String> EQUIVALENTS=new HashMap<>();
+    private static final Map<String,String> REGION_EQUIVALENTS=new HashMap<>(),LANGUAGE_EQUIVALENTS=new HashMap<>();
+    private static void alias(Map<String,String> map,String code,String... names){map.put(key(code),code);for(String name:names)map.put(key(name),code);}
     static{
-        for(String line:List.of("en|英语|english","zh|国语|普通话|汉语普通话|中文|mandarin|chinese","ja|日语|japanese","ko|韩语|korean","fr|法语|french","de|德语|german","es|西班牙语|spanish","it|意大利语|italian","yue|粤语|cantonese","cn|国产|大陆|中国大陆|中国|china","us|美国|united states of america|united states|usa","jp|日本|japan","kr|韩国|south korea","gb|英国|united kingdom|uk","fr-region|法国|france","de-region|德国|germany","hk|香港|hong kong","tw|台湾|taiwan","ie|爱尔兰|ireland")){
-            String[] values=line.split("\\|");for(String v:values)EQUIVALENTS.put(key(v),values[0]);
+        // Sources use English names, localized names and ISO codes; normalize by field.
+        for(String code:Locale.getISOCountries()){
+            Locale region=new Locale("",code);String canonical=code.toLowerCase(Locale.ROOT);
+            alias(REGION_EQUIVALENTS,canonical,region.getISO3Country(),region.getDisplayCountry(Locale.ENGLISH),region.getDisplayCountry(Locale.SIMPLIFIED_CHINESE));
         }
+        for(String code:Locale.getISOLanguages()){
+            Locale language=new Locale(code);alias(LANGUAGE_EQUIVALENTS,code,language.getISO3Language(),language.getDisplayLanguage(Locale.ENGLISH),language.getDisplayLanguage(Locale.SIMPLIFIED_CHINESE));
+        }
+        alias(REGION_EQUIVALENTS,"cn","国产","大陆","中国大陆","中国","China");
+        alias(REGION_EQUIVALENTS,"us","美国","United States of America","United States","USA");
+        alias(REGION_EQUIVALENTS,"gb","英国","United Kingdom","UK");
+        alias(REGION_EQUIVALENTS,"kr","韩国","South Korea");
+        alias(REGION_EQUIVALENTS,"hk","香港","Hong Kong");alias(REGION_EQUIVALENTS,"tw","台湾","Taiwan");
+        alias(LANGUAGE_EQUIVALENTS,"zh","国语","普通话","汉语普通话","中文","Mandarin","Chinese");
+        alias(LANGUAGE_EQUIVALENTS,"yue","粤语","Cantonese");
     }
-    private static String canonical(String text){return EQUIVALENTS.getOrDefault(key(text),key(text));}
+    private static String canonical(String text,String field){return (field.equals("regions")?REGION_EQUIVALENTS:LANGUAGE_EQUIVALENTS).getOrDefault(key(text),key(text));}
     private synchronized Dataset dataset(){
         if(cached!=null&&System.currentTimeMillis()-refreshed<60000)return cached;
         List<ObjectNode> docs=jdbc.query("SELECT m.id,m.title_cn,m.title_en,m.year,m.category,m.season,m.series_name,m.genres,m.directors,m.actors,m.summary,m.aliases,m.regions,m.languages,m.runtime,m.douban_score,m.imdb_score,m.tmdb_vote_average,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",(rs,n)->{
@@ -50,7 +63,7 @@ public class CatalogResearchService {
     public ObjectNode documents(int page,int size){Dataset data=dataset();int n=Math.max(1,Math.min(200,size)),start=Math.max(0,page-1)*n;var result=mapper.createObjectNode().put("total",data.docs.size()).put("truncated",data.docs.size()==50000).put("queriedAt",Instant.now().toString());var items=result.putArray("documents");for(int i=start;i<Math.min(start+n,data.docs.size());i++)items.add(data.docs.get(i).deepCopy());return result;}
     private static List<String> strings(JsonNode n,String k){List<String> out=new ArrayList<>();for(JsonNode v:n.path(k))if(v.isTextual())out.add(v.asText());return out;}
     private static boolean names(JsonNode doc,String field,List<String> names){return names.stream().allMatch(w->strings(doc,field).stream().anyMatch(v->key(v).contains(key(w))));}
-    private static boolean any(JsonNode doc,String field,List<String> values){return values.isEmpty()||values.stream().anyMatch(w->strings(doc,field).stream().anyMatch(v->canonical(v).equals(canonical(w))));}
+    private static boolean any(JsonNode doc,String field,List<String> values){return values.isEmpty()||values.stream().anyMatch(w->strings(doc,field).stream().anyMatch(v->canonical(v,field).equals(canonical(w,field))));}
     private static double rating(JsonNode doc,String source){return switch(source){case "douban"->doc.path("doubanScore").asDouble(-1);case "imdb"->doc.path("imdbScore").asDouble(-1);case "tmdb"->doc.path("tmdbVoteAverage").asDouble(-1);default->Math.max(doc.path("doubanScore").asDouble(-1),Math.max(doc.path("imdbScore").asDouble(-1),doc.path("tmdbVoteAverage").asDouble(-1)));};}
     private boolean eligible(ObjectNode d,MovieQueryPlan p,Set<String> previous,Set<String> seeds){
         if(seeds.contains(d.path("id").asText())||p.list("excludedIds").contains(d.path("id").asText()))return false;
