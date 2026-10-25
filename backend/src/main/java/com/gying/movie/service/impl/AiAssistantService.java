@@ -73,7 +73,7 @@ public class AiAssistantService {
     }
     public synchronized Map<String, Object> submit(Long userId, JsonNode input) {
         expire();
-        JsonNode request = validate(input);
+        JsonNode request = prepareRequest(userId,input);
         String requestKey = input.path("requestKey").asText("");
         String requestHash = fingerprint(request);
         if (!requestKey.isEmpty()) for (Job job : jobs.values()) {
@@ -137,7 +137,7 @@ public class AiAssistantService {
         var safeTrace=output.putArray("trace");
         for(JsonNode step:result.path("trace")) {
             if(safeTrace.size()>=40)break;
-            if(!Set.of("model","tool","error").contains(step.path("kind").asText()))continue;
+            if(!Set.of("model","tool","error","planning","retrieval","routing").contains(step.path("kind").asText()))continue;
             var entry=safeTrace.addObject();
             for(String key:List.of("kind","name","status","timestamp"))entry.put(key,step.path(key).asText().substring(0,Math.min(100,step.path(key).asText().length())));
             if(step.path("durationMs").isNumber())entry.put("durationMs",Math.max(0,step.path("durationMs").asLong()));
@@ -147,16 +147,21 @@ public class AiAssistantService {
         for (JsonNode step : result.path("trace")) {
             if (!"tool".equals(step.path("kind").asText())) continue;
             String name = step.path("name").asText();
-            if (!Set.of("searchMovies", "getMovieDetails", "searchMovieWeb").contains(name)) fail(400, "回答包含未授权工具");
+            if (!Set.of("searchMovies", "getMovieDetails", "searchMovieWeb", "queryCatalog").contains(name)) fail(400, "回答包含未授权工具");
             JsonNode tool = step.path("result");
             if (!tool.path("ok").asBoolean()) { toolFailed = true; continue; }
             JsonNode data = tool.path("data");
+            if(data.path("superseded").asBoolean())continue;
             ObjectNode entry = evidence.addObject().put("tool", name).put("queriedAt", data.path("queriedAt").asText());
-            for (String key : List.of("movies", "movie", "resources", "resourceSummary", "total", "returned", "truncated", "webResults"))
+            for (String key : List.of("movies", "movie", "resources", "resourceSummary", "total", "returned", "truncated", "webResults", "unverifiedConditions", "retrieval", "relevanceChecked", "recalledTotal", "unresolvedPeople"))
                 if (data.has(key)) entry.set(key, data.get(key).deepCopy());
         }
-        if (result.has("error") || toolFailed || evidence.isEmpty() || output.path("answer").asText().isBlank()) {
+        if(result.path("queryPlan").isObject())output.set("queryPlan",MovieQueryPlan.parse(result.path("queryPlan"),mapper).json());
+        if(result.path("partial").asBoolean())output.put("partial",true);
+        if (result.has("error") || toolFailed && !result.path("partial").asBoolean() || evidence.isEmpty() || output.path("answer").asText().isBlank()) {
             job.status = "FAILED"; job.message = "AI 查询未完成，请稍后重试或缩短问题";
+            var error=output.putObject("error");String code=result.path("error").path("code").asText("TOOL_EXECUTION_FAILED");
+            error.put("code",code.matches("[A-Z_]{1,80}")?code:"AI_EXECUTION_FAILED");job.result=output;
         } else { job.status = "SUCCEEDED"; job.result = output; }
         job.finished = clock.instant();
         // Do not retain question/history after the request has completed.
@@ -183,7 +188,7 @@ public class AiAssistantService {
     private JsonNode validate(JsonNode input) {
         if (input == null || !input.isObject()) fail(400, "请输入有效问题");
         var fields = input.fieldNames();
-        while (fields.hasNext()) if (!Set.of("message", "history", "requestKey").contains(fields.next())) fail(400, "请求包含未知字段");
+        while (fields.hasNext()) if (!Set.of("message", "history", "requestKey", "previousJobId").contains(fields.next())) fail(400, "请求包含未知字段");
         if (input.has("requestKey") && (!input.path("requestKey").isTextual()
                 || !input.path("requestKey").asText().matches("[A-Za-z0-9_-]{8,64}"))) fail(400,"无效的幂等键");
         JsonNode message = input.path("message");
@@ -202,6 +207,40 @@ public class AiAssistantService {
         ObjectNode request = mapper.createObjectNode().put("message", message.asText().trim()).put("scope", "gying");
         request.set("history", history.isMissingNode() ? mapper.createArrayNode() : history.deepCopy());
         return request;
+    }
+    public synchronized JsonNode prepareRequest(Long userId,JsonNode input) {
+        ObjectNode request=(ObjectNode)validate(input);
+        if(input.has("previousJobId")) {
+            if(!input.path("previousJobId").isTextual()||!input.path("previousJobId").asText().matches("[a-f0-9-]{36}"))fail(400,"无效的上一轮问答引用");
+            expire();Job previous=jobs.get(input.path("previousJobId").asText());
+            if(previous==null||!previous.user.equals(userId)||!previous.status.equals("SUCCEEDED")||previous.result==null)fail(404,"上一轮问答已失效，请重新提问");
+            ObjectNode context=mapper.createObjectNode();
+            if(previous.result.path("queryPlan").isObject())context.set("queryPlan",previous.result.path("queryPlan").deepCopy());
+            else if(previous.result.path("catalog").path("keyword").isTextual())context.putObject("queryPlan").put("intent","search").putArray("titles").add(previous.result.path("catalog").path("keyword"));
+            var ids=context.putArray("candidateIds");var candidates=context.putArray("candidates");Set<String> seen=new HashSet<>();
+            for(JsonNode evidence:previous.result.path("evidence")) {
+                List<JsonNode> movies=new ArrayList<>();evidence.path("movies").forEach(movies::add);if(evidence.path("movie").isObject())movies.add(evidence.path("movie"));
+                for(JsonNode movie:movies)if(ids.size()<30&&seen.add(movie.path("id").asText())) {
+                    ids.add(movie.path("id").asText());var entry=candidates.addObject();for(String k:List.of("id","titleCn","titleEn","year"))if(movie.has(k))entry.set(k,movie.get(k).deepCopy());
+                }
+            }
+            request.set("context",context);
+        }
+        return request;
+    }
+    public synchronized Map<String,Object> rememberDirect(Long userId,JsonNode input,Map<String,Object> response) {
+        expire();JsonNode request=prepareRequest(userId,input);String requestKey=input.path("requestKey").asText("");String hash=fingerprint(request);
+        if(!requestKey.isEmpty())for(Job old:jobs.values())if(old.user.equals(userId)&&requestKey.equals(old.requestKey)){
+            if(!hash.equals(old.requestHash))fail(409,"幂等键已用于其他问题");return view(old);
+        }
+        if(jobs.size()>=200)fail(429,"问答记录已满，请稍后再试");
+        Job job=new Job(userId,null,clock.instant());job.id=Objects.toString(response.get("jobId"),UUID.randomUUID().toString());job.status="SUCCEEDED";job.finished=clock.instant();job.result=mapper.valueToTree(response.get("result"));job.requestKey=requestKey;job.requestHash=hash;
+        jobs.put(job.id,job);persist();return view(job);
+    }
+    public synchronized JsonNode runningContext(String id,String lease) {
+        if(id==null||id.isBlank())return mapper.createObjectNode();
+        expire();Job job=jobs.get(id);if(job==null||!Objects.equals(job.lease,lease)||!job.status.equals("RUNNING"))fail(409,"问答执行上下文已失效");
+        return job.request.path("context").isObject()?job.request.path("context").deepCopy():mapper.createObjectNode();
     }
     public JsonNode validatedRequest(JsonNode input) { return validate(input); }
     @Scheduled(fixedDelay = 10000)

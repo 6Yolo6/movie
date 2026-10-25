@@ -7,14 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
 
-interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; }
+interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; ratingSource?: string; runtimeMinutes?: number; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
 interface WebSource { title: string; url: string; snippet?: string; }
 interface Trace { kind: string; name: string; status: string; durationMs?: number; }
-interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; webResults?: WebSource[]; }
+interface Evidence { tool: string; queriedAt: string; movies?: Movie[]; movie?: Movie; resources?: Resource[]; truncated?: boolean; webResults?: WebSource[]; unverifiedConditions?: string[]; relevanceChecked?: boolean; }
 interface Catalog { kind: string; keyword?: string; query?: string; total: number; page?: number; pages?: number; size?: number; personalized?: boolean; }
-interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; requestId?: string; trace?: Trace[]; }
-interface Turn { question: string; result?: Answer; error?: string; }
+interface Answer { answer: string; evidence: Evidence[]; catalog?: Catalog; requestId?: string; trace?: Trace[]; jobId?: string; error?: { code?: string }; }
+interface Turn { question: string; result?: Answer; error?: string; jobId?: string; completedAt?: number; }
 interface Job { jobId: string; status: string; result?: Answer; message?: string; }
 const subscribe = () => () => {};
 const client = () => true;
@@ -50,10 +50,10 @@ function Conversation() {
         const abort = new AbortController(); controller.current = abort;
         try {
             const route = catalog.kind === 'natural_search' ? `natural-search?query=${encodeURIComponent(catalog.query || '')}` : `search?keyword=${encodeURIComponent(catalog.keyword || '')}`;
-            const response = await api(`/api/ai/${route}&page=${page}&size=${catalog.size || 20}`, { signal: abort.signal });
+            const response = await api(`/api/ai/${route}&page=${page}&size=${catalog.size || 20}&remember=true`, { signal: abort.signal });
             if (!response.ok) throw new Error(await readApiError(response, t('aiFailed')));
             const result: Answer = await response.json();
-            if (mounted.current) setTurns(old => old.map((turn, i) => i === index ? { ...turn, result } : turn));
+            if (mounted.current) setTurns(old => old.map((turn, i) => i === index ? { ...turn, result, jobId: result.jobId, completedAt: Date.now() } : turn));
         } catch (failure) {
             if (!abort.signal.aborted) setError(failure instanceof Error ? failure.message : t('aiFailed'));
         } finally { if (mounted.current) { setPaging(null); locked.current = false; } }
@@ -64,7 +64,7 @@ function Conversation() {
         const abort = new AbortController(); controller.current = abort;
         const history: { role: string; content: string }[] = [];
         let budget = 10000 - question.length;
-        for (const turn of turns.filter(turn => turn.result).slice(-4).reverse()) {
+        for (const turn of turns.filter(turn => turn.result && !turn.error).slice(-4).reverse()) {
             const movies = turn.result?.evidence.flatMap(item => item.movies || (item.movie ? [item.movie] : [])) || [];
             const references = movies.map((movie, i) => `${i + 1}. ${movie.titleCn || movie.titleEn} (${movie.year || ''}) 片库 ID: ${movie.id}`).join('\n');
             const answer = [turn.result?.answer, references].filter(Boolean).join('\n').slice(0, 6000);
@@ -75,7 +75,7 @@ function Conversation() {
         const index = turns.length;
         setTurns(old => [...old, { question }]);
         try {
-            const response = await api('/api/ai/query', { method: 'POST', body: JSON.stringify({ message: question, history }), signal: abort.signal });
+            const response = await api('/api/ai/query', { method: 'POST', body: JSON.stringify({ message: question, history, requestKey: crypto.randomUUID(), previousJobId: turns.filter(turn => turn.result && !turn.error && turn.jobId && Date.now() - (turn.completedAt || 0) < 14 * 60000).at(-1)?.jobId }), signal: abort.signal });
             if (!response.ok) throw new Error(await readApiError(response, t('aiFailed')));
             let job: Job = await response.json(); const deadline = Date.now() + 250000;
             while (!['SUCCEEDED', 'FAILED'].includes(job.status)) {
@@ -90,8 +90,11 @@ function Conversation() {
                 if (!poll.ok) throw new Error(await readApiError(poll, t('aiFailed')));
                 job = await poll.json();
             }
-            if (!job.result || job.status !== 'SUCCEEDED') throw new Error(job.message || t('aiFailed'));
-            setTurns(old => old.map((turn, i) => i === index ? { ...turn, result: job.result } : turn));
+            if (!job.result || job.status !== 'SUCCEEDED') {
+                setTurns(old => old.map((turn, i) => i === index ? { ...turn, result: job.result } : turn));
+                throw new Error([job.message || t('aiFailed'), job.result?.error?.code].filter(Boolean).join(' · '));
+            }
+            setTurns(old => old.map((turn, i) => i === index ? { ...turn, result: job.result, jobId: job.jobId, completedAt: Date.now() } : turn));
         } catch (failure) {
             if (!abort.signal.aborted) { const text = failure instanceof Error ? failure.message : t('aiFailed'); setError(text); setTurns(old => old.map((turn, i) => i === index ? { ...turn, error: text } : turn)); setInput(question); }
         } finally { if (!abort.signal.aborted) { setBusy(false); setProgress(''); locked.current = false; } }
@@ -110,9 +113,11 @@ function Conversation() {
                         <p className="whitespace-pre-wrap break-words leading-7">{turn.result.answer}</p>
                         {turn.result.evidence.map((evidence, n) => <div key={n} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
                             <p className="text-xs text-slate-500">{t(evidence.webResults ? 'aiWebEvidence' : 'aiCatalogEvidence')} · {new Date(evidence.queriedAt).toLocaleString()} {evidence.truncated && <Tag>{t('aiPartial')}</Tag>}</p>
+                            {evidence.unverifiedConditions && evidence.unverifiedConditions.length > 0 && <p className="text-sm text-amber-700 dark:text-amber-300">{t('aiUnverifiedConditions')}: {evidence.unverifiedConditions.join('、')}</p>}
+                            {evidence.relevanceChecked && <p className="text-xs text-slate-500">{t('aiRelevanceChecked')}</p>}
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
                                 <Link href={`/movie/${encodeURIComponent(movie.id)}`} target="_blank" rel="noopener noreferrer" className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
-                                {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
+                                {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.ratingSource && movie.ratingSource !== 'any' ? ` · ${movie.ratingSource.toUpperCase()}` : ''}{movie.runtimeMinutes ? ` · ${movie.runtimeMinutes} ${t('aiMinutes')}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
                                 {movie.resourceCount === 0 && <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-sm text-slate-500">{t('aiNoResources')}</span><Link href={`/resource-search?q=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-blue-300 px-3 text-sm text-blue-600 dark:text-blue-400">{t('aiSearchResources')}</Link></div>}
                                 {movie.summary && <p className="mb-1 mt-2 whitespace-pre-wrap break-words text-sm text-slate-600 dark:text-slate-300">{movie.summary}</p>}
                                 {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}

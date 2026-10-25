@@ -26,9 +26,9 @@ public class AiAssistantController {
     public ResponseEntity<Map<String, Object>> query(@RequestBody JsonNode body, @RequestHeader(value="Authorization", required=false) String token) {
         var user=auth.requireUser(token);
         limits.require("ai-user", user.getId().toString(), 6, Duration.ofMinutes(1));
-        JsonNode request=assistant.validatedRequest(body);
+        JsonNode request=assistant.prepareRequest(user.getId(),body);
         Map<String,Object> result=catalog.answer(user.getId(),request);
-        if(result!=null)return ResponseEntity.ok(result);
+        if(result!=null)return ResponseEntity.ok(assistant.rememberDirect(user.getId(),body,result));
         return ResponseEntity.accepted().body(assistant.submit(user.getId(), body));
     }
     @GetMapping("/api/ai/jobs/{id}")

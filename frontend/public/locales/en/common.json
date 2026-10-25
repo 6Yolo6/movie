@@ -1250,5 +1250,8 @@
   "aiNoResources": "No available resources in the catalog. Search for this title directly.",
   "aiSearchResources": "Search resources",
   "aiWebEvidence": "Web sources",
-  "aiExecutionTrace": "View query trace"
+  "aiExecutionTrace": "View query trace",
+  "aiUnverifiedConditions": "Requirements still unverified",
+  "aiRelevanceChecked": "Evidence relevance checked",
+  "aiMinutes": "min"
 }

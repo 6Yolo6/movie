@@ -1250,5 +1250,8 @@
   "aiNoResources": "片库暂无可用资源，可直接搜索资源。",
   "aiSearchResources": "搜索这部的资源",
   "aiWebEvidence": "联网资料来源",
-  "aiExecutionTrace": "查看查询记录"
+  "aiExecutionTrace": "查看查询记录",
+  "aiUnverifiedConditions": "尚未核实的要求",
+  "aiRelevanceChecked": "已核对资料相关性",
+  "aiMinutes": "分钟"
 }

@@ -94,6 +94,27 @@ public final class CatalogTextIndex {
         result.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(Comparator.comparingDouble((Hit h)->h.movie().rating()).reversed()).thenComparing(h->h.movie().id()));
         return List.copyOf(result);
     }
+    /** Candidate recall uses extracted topic text, never unknown conditions or dialogue instructions. */
+    public List<Hit> recall(String topic,java.util.function.Predicate<Film> eligible,int limit) {
+        Set<String> terms=new TreeSet<>(tokens(topic));
+        if(terms.isEmpty())return List.of();
+        Map<Integer,Double> scores=new HashMap<>();
+        for(String term:terms) {
+            List<Posting> rows=postings.getOrDefault(term,List.of());
+            double idf=Math.log(1+(films.size()-rows.size()+.5)/(rows.size()+.5));
+            for(Posting p:rows) {
+                double contribution=idf*p.frequency()*2.2/(p.frequency()+1.2*(.25+.75*lengths[p.document()]/averageLength));
+                scores.merge(p.document(),term.startsWith("concept:")?contribution*.65:contribution,Double::sum);
+            }
+        }
+        List<Hit> hits=new ArrayList<>();
+        scores.forEach((id,score)->{Film f=films.get(id);if(!eligible.test(f))return;
+            List<String> direct=terms.stream().filter(t->!t.startsWith("concept:")&&documentTerms.get(id).contains(t)).limit(4).toList();
+            hits.add(new Hit(f,score,direct.isEmpty()?List.of("主题词召回，需核对剧情"):List.of("资料关键词："+String.join("、",direct)),snippet(f.summary(),direct)));
+        });
+        hits.sort(Comparator.comparingDouble(Hit::score).reversed().thenComparing(h->h.movie().id()));
+        return List.copyOf(hits.subList(0,Math.min(Math.max(1,limit),hits.size())));
+    }
     private static String snippet(String text,List<String> terms) {
         text=Objects.toString(text,"");int position=0;
         for(String term:terms){int p=text.toLowerCase(Locale.ROOT).indexOf(term);if(p>=0){position=Math.max(0,p-35);break;}}

@@ -119,8 +119,10 @@ class CatalogAiMySqlTest {
     }
     @Test void recentMindBendingScenarioAndNoAnswerStayGrounded() {
         var result=catalog.answer(1L,mapper.createObjectNode().put("message","找近几年偏烧脑、时长不超过两小时的科幻电影"));
-        var answer=(com.fasterxml.jackson.databind.JsonNode)result.get("result");
-        assertEquals("spider_2",answer.path("evidence").get(0).path("movies").get(0).path("id").asText());
+        assertNull(result);
+        var research=new CatalogResearchService(jdbc,mapper);
+        var body=mapper.createObjectNode();body.putObject("plan").put("intent","search").put("semanticText","时间循环").put("yearFrom",2022).put("maxRuntime",120).put("category","mv").putArray("genresAll").add("科幻");
+        assertEquals("spider_2",research.query(body,mapper.createObjectNode()).path("movies").get(0).path("id").asText());
         assertEquals(0,catalog.naturalSearch("找关于量子海豚火山的电影",1,20).path("catalog").path("total").asInt());
         var auth=mock(AuthHelper.class);when(auth.requireUser(null)).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED));
         assertThrows(ResponseStatusException.class,()->new CatalogAiController(auth,catalog,jdbc,mock(RedisRateLimiter.class)).naturalSearch(null,"",1,20));
@@ -128,12 +130,18 @@ class CatalogAiMySqlTest {
     @Test void realSqlActorAndShortGenreQueriesReturnFilmsWithMissingResourceStatus() {
         jdbc.update("INSERT INTO movie_metadata(id,title_cn,category,genres,actors,douban_score,status) VALUES('actor_case','演员专用样本','mv','[\"悬疑\"]','[\"小罗伯特·唐尼\"]',8.8,'ACTIVE')");
         var service=new CatalogAiService(jdbc,mapper);
-        for(String query:List.of("想看几部高分悬疑片","小罗伯特唐尼演的片")) {
-            var response=service.answer(999L,mapper.createObjectNode().put("message",query));
-            var result=(com.fasterxml.jackson.databind.JsonNode)response.get("result");
-            assertEquals("actor_case",result.path("evidence").get(0).path("movies").get(0).path("id").asText());
-            assertEquals(0,result.path("evidence").get(0).path("movies").get(0).path("resourceCount").asInt());
-            assertNotEquals("search",result.path("catalog").path("kind").asText());
-        }
+        for(String query:List.of("想看几部高分悬疑片","小罗伯特唐尼演的片"))assertNull(service.answer(999L,mapper.createObjectNode().put("message",query)));
+        var body=mapper.createObjectNode();body.putObject("plan").put("intent","search").putArray("actors").add("小罗伯特唐尼");
+        var result=new CatalogResearchService(jdbc,mapper).query(body,mapper.createObjectNode());
+        assertEquals("actor_case",result.path("movies").get(0).path("id").asText());assertEquals(0,result.path("movies").get(0).path("resourceCount").asInt());
+    }
+    @Test void researchDocumentsExposeOnlyActivePublicMetadataWithStableFingerprint() {
+        var docs=new CatalogResearchService(jdbc,mapper).documents(1,100).path("documents");
+        docs.forEach(d->{assertNotEquals("gone",d.path("id").asText());assertNotEquals("inactive",d.path("id").asText());assertEquals(CatalogResearchService.fingerprint(d.path("embeddingText").asText()),d.path("fingerprint").asText());});
+        assertFalse(docs.toString().contains("user_id"));
+    }
+    @Test void researchYearRuntimeAndLanguageFiltersExecuteAgainstRealSqlRows() {
+        var body=mapper.createObjectNode();var p=body.putObject("plan").put("intent","search").put("maxRuntime",120);p.putArray("languagesAny").add("English");p.putArray("regionsAny").add("United States of America");
+        var result=new CatalogResearchService(jdbc,mapper).query(body,mapper.createObjectNode());assertEquals(1,result.path("movies").size());assertEquals("spider_1",result.path("movies").get(0).path("id").asText());assertEquals(118,result.path("movies").get(0).path("runtimeMinutes").asInt());assertEquals(1,result.path("movies").get(0).path("resourceCount").asInt());
     }
 }

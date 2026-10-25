@@ -58,31 +58,20 @@ public class CatalogAiService {
         return new Intent(text,false,Constraints.none());
     }
     public Map<String,Object> answer(Long userId,JsonNode request) {
-        Intent intent=intent(request.path("message").asText());
-        String raw=request.path("message").asText();
-        if(raw.matches("(?is).*(?:批量|转存|删除|执行|发布|https?://|magnet:).*"))return null;
-        if(raw.matches("(?is).*(?:联网|网上|百科|维基|web search|online|wikipedia).*"))return null;
-        if(NaturalMovieQuery.shouldSearch(raw)) {
-            // A complete known title can contain genre/theme words (e.g. 爱情公寓).
-            if(intent!=null&&!intent.recommend()&&intent.keyword().length()<=60) {
-                String keyword=intent.keyword();
-                Long exact=jdbc.queryForObject("SELECT COUNT(*) FROM movie_metadata WHERE status='ACTIVE' AND deleted_at IS NULL AND (title_cn=? OR title_en=?)",Long.class,keyword,keyword);
-                if(exact!=null&&exact>0)return completed(search(keyword,1,20),"title");
-            }
-            // Structured preferences and plot descriptions must never query the whole sentence as a title.
-            var plan=parseQuery(raw);
-            ObjectNode result=intent!=null&&intent.recommend()&&plan.text().isBlank()
-                    ?recommendations(userId,plan.constraints(),12):naturalSearch(raw,1,20);
-            return completed(result,"natural_query");
+        String raw=request.path("message").asText("").trim();
+        // Every refinement uses the queued plan and server-owned previous result set.
+        if(!request.path("history").isEmpty()||request.has("context"))return null;
+        if(raw.matches("(?is).*(?:批量|转存|删除|执行|发布|https?://|magnet:|联网|网上|百科|维基|online|wikipedia).*"))return null;
+        if(raw.matches("(?:推荐|猜你喜欢|看点什么|看什么|随便看)(?:几部|一些|[一二三123]部)?(?:电影|影片|片子|电视剧|剧集|动漫)?[。！!?？]*"))
+            return completed(recommendations(userId,new Constraints(Set.of(),raw.contains("动漫")?"ac":raw.contains("电视剧")||raw.contains("剧集")?"tv":raw.contains("电影")||raw.contains("影片")?"mv":null,null,0),12),"recommendation");
+        Intent candidate=intent(raw);
+        if(candidate!=null&&!candidate.recommend()) {
+            String keyword=candidate.keyword();
+            // A positive exact catalog match is required before treating free text as a title.
+            Long exact=jdbc.queryForObject("SELECT COUNT(*) FROM movie_metadata WHERE status='ACTIVE' AND deleted_at IS NULL AND (title_cn=? OR title_en=? OR series_name=?)",Long.class,keyword,keyword,keyword);
+            if(exact!=null&&exact>0)return completed(search(keyword,1,20),"title");
         }
-        if(intent==null)return null;
-        ObjectNode result;
-        String message=request.path("message").asText();
-        if(NaturalMovieQuery.shouldSearch(message)) {
-            var plan=parseQuery(message);
-            result=intent.recommend()&&plan.text().isBlank()?recommendations(userId,plan.constraints(),12):naturalSearch(message,1,20);
-        } else result=intent.recommend()?recommendations(userId,intent.constraints(),12):search(intent.keyword(),1,20);
-        return completed(result,intent.recommend()?"recommendation":"title");
+        return null;
     }
     private Map<String,Object> completed(ObjectNode result,String route) {
         String id=UUID.randomUUID().toString();result.put("requestId",id);

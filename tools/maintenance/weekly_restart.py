@@ -349,6 +349,7 @@ def stop(c, name, original, path):
     state = read(path)
     state["pendingStop"] = {"name": name, "requestId": request_id, "receipt": "stop-" + request_id + ".json"}
     save(path, state)
+    if attempt:save(attempt,{**read(attempt),"stage":"maintenance","journal":str(path)})
     subprocess.Popen([c["python"], "-X", "utf8", str(Path(__file__).resolve()),
                       "--config", state["config"], "--stop-worker", str(path)],
                      creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), close_fds=True)
@@ -458,18 +459,60 @@ def attempt_recovery(c, path):
         save(path, state)
         return False
 
-def run(c, config, reboot):
+def oneoff_permit(c, config, path):
+    import hashlib
+    root=(Path(c["stateRoot"])/"one-off").resolve()
+    target=Path(path).resolve(strict=True)
+    if target.parent!=root or target.suffix!=".json" or target.is_symlink():raise Blocked("One-off permit outside approved directory")
+    permit=read(target)
+    if set(permit)-{"version","id","host","configSha256","runtimeSha256","startAt","latestStartAt","finishBefore","createdAt","usedAt"}:raise Blocked("Unknown one-off permit field")
+    if permit.get("version")!=1 or permit.get("host","").upper()!=c["host"].upper():raise Blocked("One-off host mismatch")
+    if permit.get("configSha256")!=hashlib.sha256(Path(config).read_bytes()).hexdigest():raise Blocked("One-off configuration changed")
+    if permit.get("runtimeSha256")!=hashlib.sha256(Path(__file__).read_bytes()).hexdigest():raise Blocked("One-off runtime changed")
+    try:
+        start,latest,finish=[dt.datetime.fromisoformat(permit[k]) for k in ["startAt","latestStartAt","finishBefore"]]
+        if any(v.utcoffset()!=dt.timedelta(hours=8) for v in [start,latest,finish]):raise ValueError()
+        if not dt.timedelta(0)<latest-start<=dt.timedelta(minutes=10) or not latest<finish<=start+dt.timedelta(minutes=60):raise ValueError()
+    except (KeyError,TypeError,ValueError):raise Blocked("Invalid bounded one-off window")
+    return permit,start,latest,finish
+
+def maintenance_window(c, config, once, final=False):
+    if once is None:return assert_window(final)
+    permit,start,latest,finish=oneoff_permit(c,config,once)
+    value=dt.datetime.now(dt.timezone.utc)
+    if not start<=value<(finish if final else latest):raise Blocked("Outside explicit one-off window; no catch-up reboot")
+
+def run(c, config, reboot, once=None):
+    # Attempt logs are separate from state.json: no stopped services, no recovery obligation.
+    attempt=Path(c["stateRoot"])/"attempt-log"/(uuid.uuid4().hex+".json")
+    attempt.parent.mkdir(parents=True,exist_ok=True)
+    if once and not reboot:raise Blocked("One-off permit requires execute")
+    save(attempt,{"startedAt":now(),"mode":"one-off" if once else "weekly" if reboot else "rehearsal","stage":"window","status":"started"})
+    try:
+        _run(c,config,reboot,once,attempt)
+        save(attempt,{**read(attempt),"finishedAt":now(),"status":"completed"})
+    except Exception as error:
+        save(attempt,{**read(attempt),"finishedAt":now(),"status":"failed","reason":str(error)[:4000] if isinstance(error,Blocked) else type(error).__name__})
+        raise
+
+def _run(c, config, reboot, once=None, attempt=None):
     if reboot:
-        assert_window()
+        maintenance_window(c, config, once)
     if pending(c):
         raise Blocked("Previous maintenance needs recovery")
+    if once:
+        permit=read(once)
+        if permit.get("usedAt"):raise Blocked("One-off maintenance permit already used")
+        permit["usedAt"]=now();save(once,permit)
+    if attempt:save(attempt,{**read(attempt),"stage":"preflight"})
     baseline = preflight(c, True)
     if reboot:
-        assert_window()
+        maintenance_window(c, config, once)
     path = Path(c["stateRoot"]) / dt.datetime.now().strftime("%Y%m%d-%H%M%S") / "state.json"
     path.parent.mkdir(parents=True, exist_ok=False)
     state = {"phase": "prepared", "baseline": baseline, "stopped": [], "config": str(config)}
     save(path, state)
+    if attempt:save(attempt,{**read(attempt),"stage":"maintenance","journal":str(path)})
     subprocess.Popen([c["python"], "-X", "utf8", str(Path(__file__).resolve()),
                       "--config", str(config), "--watch", str(path)],
                      creationflags=subprocess.CREATE_NO_WINDOW, close_fds=True)
@@ -506,7 +549,7 @@ def run(c, config, reboot):
         state["backup"]["verified"] = "SHA-256 and authenticated age decryption to null"
         save(path, state)
         if reboot:
-            assert_window(final=True)
+            maintenance_window(c, config, once, final=True)
         ps("Stop-Service -Name " + q(c["mysqlService"]) + ";(Get-Service -Name " + q(c["mysqlService"]) +
            ").WaitForStatus('Stopped',[TimeSpan]::FromSeconds(120))", 135)
         if any(d["running"] for d in containers(c).values()):
@@ -516,7 +559,7 @@ def run(c, config, reboot):
         state["shutdownIssuedAt"] = now()
         save(path, state)
         if reboot:
-            assert_window(final=True)
+            maintenance_window(c, config, once, final=True)
             # Microsoft: nonzero /t implies /f. Zero timeout preserves application vetoes.
             cmd(["shutdown.exe", "/r", "/t", "0", "/d", "p:0:0",
                  "/c", "Weekly graceful maintenance; login to restore GYING services"])
@@ -562,7 +605,9 @@ def main():
     modes.add_argument("--recover", action="store_true")
     modes.add_argument("--watch")
     modes.add_argument("--stop-worker")
+    parser.add_argument("--once-window",help="Reviewed one-off permit under stateRoot/one-off; requires --execute")
     args = parser.parse_args()
+    if args.once_window and not args.execute:parser.error("--once-window requires --execute")
     config = Path(args.config).resolve(strict=True)
     c = read(config)
     validate_config(c)
@@ -580,7 +625,7 @@ def main():
         print("Recovery check complete")
     elif args.execute or args.rehearse:
         with lock(c):
-            run(c, config, args.execute)
+            run(c, config, args.execute, args.once_window)
     else:
         report = preflight(c, require_idle=not args.readiness)
         print(json.dumps({"mode": "read-only", "at": report["at"],
