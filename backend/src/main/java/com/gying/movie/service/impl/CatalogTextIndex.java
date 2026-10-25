@@ -10,6 +10,7 @@ import static com.gying.movie.service.impl.CatalogRecommendationEngine.*;
 public final class CatalogTextIndex {
     public static final String VERSION="icu-bm25-concepts-v1";
     private static final Set<String> STOP=Set.of("的","了","和","与","在","是","有","一个","一部","一些","这","那","想","看","找","相关","film","movie","the","a","an","and","of","in","with","to","for","故事","讲述","包含","讲","偏","about");
+    private static final Set<String> RECALL_STOP=Set.of("电影","影片","影视","片子","部","人","别人","先","给","我","我们","大家","推荐","查","一下","找找","给我");
     private static final List<List<String>> CONCEPTS=List.of(
             List.of("烧脑","时间循环","时间悖论","记忆","梦境","mind-bending"),
             List.of("太空","宇宙","星际","航天","宇航员","space","interstellar"),
@@ -96,7 +97,7 @@ public final class CatalogTextIndex {
     }
     /** Candidate recall uses extracted topic text, never unknown conditions or dialogue instructions. */
     public List<Hit> recall(String topic,java.util.function.Predicate<Film> eligible,int limit) {
-        Set<String> terms=new TreeSet<>(tokens(topic));
+        Set<String> terms=new TreeSet<>(tokens(topic));terms.removeAll(RECALL_STOP);
         if(terms.isEmpty())return List.of();
         Map<Integer,Double> scores=new HashMap<>();
         for(String term:terms) {

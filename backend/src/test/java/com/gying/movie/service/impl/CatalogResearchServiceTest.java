@@ -87,4 +87,11 @@ class CatalogResearchServiceTest {
         body.with("plan").putArray("actors").add("凯特布");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
     }
 
+    @Test void genericRequestWordsCannotRecallUnrelatedFilms()throws Exception{
+        docs.get(1).put("titleCn","电影 人").put("summary","人拍电影，电影记录人。");
+        docs.get(2).put("summary","电影展览中的人分享生活经历。");
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"人 电影 宇航员\"}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"人 电影\"}"))).isEmpty();
+    }
+
 }
