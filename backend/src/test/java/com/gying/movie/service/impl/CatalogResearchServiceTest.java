@@ -81,4 +81,10 @@ class CatalogResearchServiceTest {
         docs.get(0).put("aliases","阿瑪迪斯");body.remove("message");body.set("plan",mapper.readTree("{\"intent\":\"web\",\"titles\":[\"阿玛迪斯\"],\"semanticText\":\"不存在的关键词\"}"));assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
     }
 
+    @Test void aShortForeignSurnameInsideAnotherActorsFullNameIsNotAnAdditionalCondition()throws Exception{
+        docs.get(0).putArray("actors").add("凯特·布兰切特");docs.get(1).putArray("actors").add("瑞达·凯特布");docs.get(2).putArray("actors").add("另一个演员");
+        var body=mapper.createObjectNode().put("message","查凯特布兰切特主演的电影");body.putObject("plan").put("intent","search");var found=service.query(body,mapper.createObjectNode());assertThat(ids(found)).containsExactly("a");assertThat(found.path("queryPlan").path("actors").size()).isEqualTo(1);
+        body.with("plan").putArray("actors").add("凯特布");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+
 }

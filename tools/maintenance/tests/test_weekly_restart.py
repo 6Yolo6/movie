@@ -130,6 +130,26 @@ class MaintenanceSafety(unittest.TestCase):
             w.stop_worker(self.cfg, self.path)
         self.assertFalse(w.stop_settled(self.state, self.path))
 
+    def test_controller_dispatches_worker_then_waits_for_its_matching_receipt(self):
+        self.store()
+        stopped = dict(self.original, running=False)
+
+        def dispatch(*args, **kwargs):
+            self.assertEqual(w.read(self.path)["stopped"], [])
+            with patch.object(w, "docker") as docker:
+                w.stop_worker(self.cfg, self.path)
+            docker.assert_called_once_with(self.cfg, "stop", "--timeout", "-1", self.original["id"], timeout=None)
+
+        with patch.object(w, "containers", side_effect=[{"gying-movie-backend-1": self.original},
+                                                        {"gying-movie-backend-1": stopped}]), \
+             patch.object(w.subprocess, "Popen", side_effect=dispatch) as spawn:
+            w.stop(self.cfg, "gying-movie-backend-1", self.original, self.path)
+        spawn.assert_called_once()
+        self.assertIn("--stop-worker", spawn.call_args.args[0])
+        result = w.read(self.path)
+        self.assertEqual(result["stopped"], ["gying-movie-backend-1"])
+        self.assertNotIn("pendingStop", result)
+
     def test_off_window_execute_does_not_prepare_or_stop(self):
         with patch.object(w, "assert_window", side_effect=w.Blocked("outside")), patch.object(w, "preflight") as preflight:
             with self.assertRaises(w.Blocked):

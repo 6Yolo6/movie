@@ -96,8 +96,12 @@ public class CatalogResearchService {
             Map<String,String> dictionary=new TreeMap<>();Map<String,Set<String>> aliases=new TreeMap<>();
             for(ObjectNode d:data.docs)for(String name:strings(d,field))if(key(name).length()>=2){dictionary.putIfAbsent(key(name),name);String[] parts=name.split("[·•]");if(parts.length>1&&key(parts[parts.length-1]).length()>=2)aliases.computeIfAbsent(key(parts[parts.length-1]),k->new TreeSet<>()).add(name);}
             aliases.forEach((alias,names)->{if(names.size()==1)dictionary.putIfAbsent(alias,names.iterator().next());});
-            for(var entry:dictionary.entrySet()){
-                String word=entry.getKey();if(!literal.contains(word))continue;
+            List<Map.Entry<String,String>> ordered=new ArrayList<>(dictionary.entrySet());ordered.sort(Comparator.comparingInt((Map.Entry<String,String> e)->e.getKey().length()).reversed());
+            List<int[]> occupied=new ArrayList<>();
+            for(var entry:ordered){
+                String word=entry.getKey();int position=literal.indexOf(word);if(position<0)continue;
+                int end=position+word.length();boolean overlaps=false;for(int[] span:occupied)if(position<span[1]&&end>span[0]){overlaps=true;break;}if(overlaps)continue;
+                occupied.add(new int[]{position,end});
                 boolean other=data.docs.stream().anyMatch(d->strings(d,field.equals("actors")?"directors":"actors").stream().anyMatch(n->key(n).equals(key(entry.getValue()))));
                 if(other){boolean directing=key(unquoted).matches("(?s).*"+java.util.regex.Pattern.quote(word)+".{0,6}(?:导演|执导|作品).*" );if(directing==field.equals("actors"))continue;}
                 boolean exclude=negativePerson(unquoted,word);String target=exclude?(field.equals("actors")?"excludedActors":"excludedDirectors"):(strings(plan,field+"Any").isEmpty()?field:field+"Any");
@@ -105,7 +109,8 @@ public class CatalogResearchService {
                 for(String opposite:exclude?List.of(field,field+"Any"):List.of(field.equals("actors")?"excludedActors":"excludedDirectors")){
                     ArrayNode keep=mapper.createArrayNode();for(JsonNode n:plan.path(opposite))if(!key(n.asText()).contains(word)&&!word.contains(key(n.asText())))keep.add(n);if(plan.has(opposite))plan.set(opposite,keep);
                 }
-                if(strings(plan,target).stream().noneMatch(n->word.contains(key(n))||key(n).contains(word)))plan.withArray(target).add(entry.getValue());
+                ArrayNode canonicalNames=mapper.createArrayNode();for(JsonNode n:plan.path(target))if(!word.contains(key(n.asText()))&&!key(n.asText()).contains(word))canonicalNames.add(n);
+                canonicalNames.add(entry.getValue());plan.set(target,canonicalNames);
             }
         }
         return MovieQueryPlan.parse(plan,mapper);

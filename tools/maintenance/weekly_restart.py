@@ -349,7 +349,6 @@ def stop(c, name, original, path):
     state = read(path)
     state["pendingStop"] = {"name": name, "requestId": request_id, "receipt": "stop-" + request_id + ".json"}
     save(path, state)
-    if attempt:save(attempt,{**read(attempt),"stage":"maintenance","journal":str(path)})
     subprocess.Popen([c["python"], "-X", "utf8", str(Path(__file__).resolve()),
                       "--config", state["config"], "--stop-worker", str(path)],
                      creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), close_fds=True)
