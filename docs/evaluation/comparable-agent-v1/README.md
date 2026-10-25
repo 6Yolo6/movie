@@ -1,6 +1,6 @@
 # 本机可比较回归 v1
 
-2026-10-23，Asia/Shanghai。工具与统计口径见[评测说明](../../ai-comparable-evaluation-20261023.md)。
+2026-10-23，Asia/Shanghai。工具与统计口径见[评测说明](../../ai-evaluation.md)。
 
 题集为实施者编写9场景10轮，3个sourceGroup。真实既有loopback Agent、实际片库/百科，重复2次共20轮。
 

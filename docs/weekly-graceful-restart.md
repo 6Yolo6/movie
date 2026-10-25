@@ -1,15 +1,19 @@
 # Windows 每周优雅重启
 
-每周日09:30 Asia/Shanghai，首个XML计划2026-10-25 09:30（Windows显示09:30:30）；10月18已过不补。交流电/ASUS已登录、手动登录、不设置自动登录或保存空密码。[完整原证据/控制边界](history/snapshots/20261022/docs/weekly-graceful-restart.md)。
+每周日09:30 Asia/Shanghai，首个XML计划2026-10-25 09:30（Windows显示09:30:30）；10月18已过不补。交流电/ASUS已登录、手动登录、不设置自动登录或保存空密码。[完整原证据/控制边界](history/README.md#git-history)。
 
-## 当前验收状态（2026-10-19）
+## 已记录的安装与运行状态
 
-24隔离安全测试（含本轮Windows Job子树超时）+8偏移测试、公私钥内存认证、同镜像无网卷诊断SIGTERM143、readiness11容器/本机AI四服务通过；11原容器不变。UAC注册每周/登录恢复两任务Ready、Interactive/Highest，禁止补跑/强制结束、登录延迟90秒。安装证据 `G:/gying-tools/restart-20261018/installation-20261019-215841`。任务注册不等真实运行；未生产停服/整机重启，周日/登录自然验收待补。
+24隔离安全测试（含Windows Job子树超时）+8偏移测试、公私钥内存认证、同镜像无网卷诊断SIGTERM143、readiness11容器/本机AI四服务通过；11原容器不变。UAC注册每周/登录恢复两任务Ready、Interactive/Highest，禁止补跑/强制结束、登录延迟90秒。安装证据 `G:/gying-tools/restart-20261018/installation-20261019-215841`。任务注册不等真实运行；下面补10月25真实触发与单次窗口，ASUS登录恢复尚待自然验收。
+
+2026-10-25 09:30:30每周任务实际触发、结果1；原preflight前无尝试日志，确切原因不能还原。同期开P2P在途是可能阻挡证据，不能断言唯一原因。现役已补独立attempt-log、配置/runtime/主机绑定与有界等空闲。
+
+单次 `GYing One-off Graceful Restart 20261025-2000` 已登记，17:21:55只读回读Ready，2026-10-25 20:00 +08；20:00–20:10开始/21:00截止，未使用、不补跑、不强制终止，账户SID及全部绑定通过。17:24readiness无在途只是当时观察，不保证20点空闲；尚未真实重启，不在文档整理中触发或重复登记。下次每周为2026-11-01 09:30:30。
 
 ## 控制边界
 
 - 开始仅周日09:30–09:39，发重启须10:30前，过窗取消（StartWhenAvailable=false）。校验主机/时区/程序配置/MySQL/入口/白名单/宿主任务/AI/备份，失败取消，不强杀业务。
-- 2026-10-25候选：开始窗口内只对在途业务最多等待5分钟，每次重新检查窗口及完整preflight，未停任何服务前等自然空闲；其他失败不重试。独立attempt-log记录窗口、waiting_idle和失败理由，未创建维护journal不触发恢复。36项隔离测试通过；外部runtime尚未安装。
+- 2026-10-25已安装的补丁：开始窗口内只对在途业务最多等待5分钟，每次重新检查窗口及完整preflight，未停任何服务前等自然空闲；其他失败不重试。独立attempt-log记录窗口、waiting_idle和失败理由，未创建维护journal不触发恢复。36项隔离测试通过，外部runtime已安装，SHA `a4305d05ec1696a81560fe141ffc2253b51de3c62fba1b33946ae01cb778f53c`。
 - 记录ID/镜像/开关/原生MySQL-Redis启动类型；仅暂停Tunnel/原频道/Xunlei任务新调度。原已停止但Auto的mysqlzt/Redis暂Manual，恢复类型不主动启动。
 - 本机AI实例握手停frontend/router/backend；Ollama无安全控制台，应用停/连接清零/模型卸载后保进程待正常关机，不宣称提前退出。
 - 容器按nginx/frontend/OpenClaw/backend/publisher/source/Quark/诊断/PanSou/MinIO/Redis排空；业务docker stop --timeout -1防自动SIGKILL，worker写同请求/ID/启动会话完成收据。控制器超时取消，恢复等匹配收据，不凭暂时stopped启动造成迟到误停。

@@ -1,28 +1,34 @@
 # 文档导航
 
-[项目首页](../README.md) · [当前状态](current-project-status.md) · [历史证据](history/README.md)
+建议按“当前事实 → 系统知识 → AI架构 → 求职路线 → 证据”阅读。每份手册维护一个主题；旧修复与候选流水已提炼，全文从Git历史核查，不与当前机制并排混读。
 
-## 现行手册
+## 理解项目与AI
 
-| 主题 | 入口 | 内容 |
+| 阅读顺序 | 文档 | 可以回答的问题 |
 | --- | --- | --- |
-| 系统全貌与在线版本 | [当前状态](current-project-status.md) | 能力、架构、镜像、待办与验收 |
-| 开发与回归 | [开发](development.md) · [前端](../frontend/README.md) | 隔离配置、测试与浏览器 |
-| API 与数据 | [接口](api.md) · [数据库](database.md) | 权限、参数、响应、迁移库存 |
-| 发布与恢复 | [部署](deployment.md) · [迁移](../MIGRATION.md) | 固定镜像、检查点、最小切换与回退 |
-| 资源处理 | [Resource Hub](resource-hub.md) | 元数据、发现、修复与任务恢复 |
-| 自动采集与视频周榜 | [元数据/周榜](metadata-weekly-transfer.md) | 高频任务与视频转存分离 |
-| 磁力与种子 | [采集](gying-p2p-collection.md) · [归档](p2p-cloud-archive.md) | 原始 P2P、小文件、自有分享 |
-| QQ 与发布 | [多平台发布](social-publishing.md) · [频道多网盘](qq-channel-multi-drive.md) | 三条独立链路、状态与重试 |
-| 主机会话与维护 | [迅雷](xunlei-token-sync.md) · [每周重启](weekly-graceful-restart.md) | 同账户同步、优雅停止与登录恢复 |
-| 安全 | [安全导航](security/README.md) | 风险、G01–G11、身份、备份与事件响应 |
-| AI 与求职成果 | [整套AI链路](ai-system-chain-20261023.md) · [可比较评测](ai-comparable-evaluation-20261023.md) · [强化路线](ai-strengthening-roadmap-20261022.md) · [服务可用性恢复](ai-assistant-availability-20261025.md) · [可靠性部署](ai-reliability-deployment-20261023.md) · [查询/联网补强](ai-search-web-20261022.md) · [推荐/自然搜索](catalog-features-search-20261021.md) · [原路线摘要](ai-career-project-analysis-20261016.md) | 特征、评测、证据、未交付阶段 |
-| 运维工作流 | [运维 Skill](../.agents/skills/gying-project-ops/SKILL.md) | 按任务加载专项参考 |
+| 1 | [当前项目状态](current-project-status.md) | 现在部署了什么、证据是哪天、哪些还没完成？ |
+| 2 | [项目知识导读](project-guide.md) | 请求、权限、SQL、缓存、任务、网盘、发布、前端与运维如何配合，在哪看源码？ |
+| 3 | [AI整套架构](ai-architecture.md) | 从网页问题到queryPlan、BM25/BGE-M3、联网、依据与回执恢复怎样工作？ |
+| 4 | [Java与AI求职补强路线](ai-career-roadmap.md) | 已有成果能怎么表达、下一阶段怎样学习和验收？ |
+| 5 | [AI评测与人工复核](ai-evaluation.md) | 为什么请求完成不等于答对，怎样做同数据比较、冻结题集与人工评分？ |
+
+## 开发和运维手册
+
+| 主题 | 入口 |
+| --- | --- |
+| API/权限/数据 | [接口](api.md) · [数据库与迁移库存](database.md) · [安全API清单](security/api-inventory.md) |
+| 本地开发/测试 | [开发手册](development.md) · [前端](../frontend/README.md) |
+| 部署/回退/迁移 | [最小部署](deployment.md) · [迁移恢复](../MIGRATION.md) · [加密备份](security/backup-plan.md) |
+| 采集/资源治理 | [Resource Hub](resource-hub.md) · [元数据与周榜](metadata-weekly-transfer.md) |
+| P2P/双盘 | [来源采集](gying-p2p-collection.md) · [网盘归档](p2p-cloud-archive.md) |
+| QQ/外部发布 | [发布状态机](social-publishing.md) · [频道多盘正文](qq-channel-multi-drive.md) |
+| 主机维护 | [迅雷会话同步](xunlei-token-sync.md) · [优雅重启](weekly-graceful-restart.md) |
+| 安全/故障 | [安全导航](security/README.md) · [运维排障](../.agents/skills/gying-project-ops/references/troubleshooting.md) · [运维技能](../.agents/skills/gying-project-ops/SKILL.md) |
+
+## 核查原始证据
+
+[发布与恢复台账](history/releases.md)集中保留范围/版本/检查点；[问题台账](history/issues.md)集中保留排查结论和未决项；[Git全文来源](history/README.md)映射删去的旧文档。[evaluation](ai-evaluation.md#2-本轮文件与默认行为)下的题集、freeze、原始报告和评分口径保持原样。
 
 ## 阅读规则
 
-- 当前事实集中在状态手册；参数和操作流程集中在专项手册，历次验收从历史索引进入。
-- 日期指原证据时点。代码、候选、部署、真实业务结果分别记录；文档整理不重新验收。
-- 历史镜像、授权、盘符和任务状态不能直接复用。仓库外材料须执行前确认存在和适用性。
-- 只记录凭据键名、路径和状态，不写真实配置、完整 inspect 或原始日志。
-- [2026-10-22 整理前快照](history/documentation-refresh-20261022.md)保留完整原文；精简不关闭安全风险或删掉回滚证据。
+机制说明、代码、配置、在线观测、程序测试、真实登录、外部出站与人工质量各有适用范围。新小修复优先更新现行手册/状态/台账，不再复制一份整套文档或重复“本轮”流水。真实凭据与原始敏感日志不进入docs。

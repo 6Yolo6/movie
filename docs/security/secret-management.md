@@ -1,6 +1,6 @@
 # 密钥、Cookie 和 Token 管理
 
-[现状](../current-project-status.md) · [备份](backup-plan.md) · [完整旧证据](../history/snapshots/20261022/docs/security/secret-management.md)
+[现状](../current-project-status.md) · [备份](backup-plan.md) · [完整旧证据](../history/README.md#git-history)
 
 ## 1. 规则
 

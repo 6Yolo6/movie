@@ -34,4 +34,4 @@ MCP仅单语句/参数绑定、默认只读；execute_sql需独立开关与当�
 
 ## 变更后验证
 
-字段/索引/中文注释/null/默认、mapper启动、时区/核心读取、任务/资源计数、来源/canonical、发布唯一/状态/默认关闭、回退仍兼容；记录实际时间与备份。[旧完整参考](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/database-operations.md)。
+字段/索引/中文注释/null/默认、mapper启动、时区/核心读取、任务/资源计数、来源/canonical、发布唯一/状态/默认关闭、回退仍兼容；记录实际时间与备份。[旧完整参考](../../../../docs/history/README.md#git-history)。

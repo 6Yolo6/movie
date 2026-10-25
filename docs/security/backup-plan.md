@@ -9,7 +9,7 @@
 | 2026-09-25 完整选定数据 | `G:/gying-backups/20260925T030328.719395Z`，19 份约 372 MiB，冻结约 31 秒，25 表行数/CHECKSUM/对象/中文恢复、MinIO 单图通过 | 不含完整系统账号/远端事务；应用/异机和私钥离线仍待 |
 | 9/25 早先 partial | `security-20260925-partial`，16 文件，有限导出/在线归档 | status 保持 partial，标准验证器拒绝，不作为完整恢复点 |
 
-工具为 `tools/security/backup.py`/`verify_backup.py`，模板 `deploy/backup-config.example.json`。外部配置 `G:/gying-secrets/backup-config.json`、私有 MySQL defaults 与 localhost 备份账号已建立，不重复开通。2026-10-23已追加现役AI部署覆盖、本机state/key与容器key卷；原配置已加密备份，dry-run通过，下一次日常自然执行尚未验收。[本轮证据](../ai-reliability-deployment-20261023.md)。公钥/私钥分离，F 盘受限私钥仍在线，不等于离线或异机。
+工具为 `tools/security/backup.py`/`verify_backup.py`，模板 `deploy/backup-config.example.json`。外部配置 `G:/gying-secrets/backup-config.json`、私有 MySQL defaults 与 localhost 备份账号已建立，不重复开通。2026-10-23已追加现役AI部署覆盖、本机state/key与容器key卷；原配置已加密备份，dry-run通过，下一次日常自然执行尚未验收。[本轮证据](../history/releases.md#ai-reliability-20261023)。公钥/私钥分离，F 盘受限私钥仍在线，不等于离线或异机。
 
 ## 2. 目标 RPO/RTO（需业务确认）
 
@@ -38,4 +38,4 @@ register-backup-task.ps1 默认 dry-run，仅在确认范围后 Apply。Interact
 
 ## 7. 恢复演练验收
 
-记录时间/版本/manifest/hash/解密、表对象/行数、关键读取、图片/私有对象、登录/权限和回退。完整应用/异机/系统账号/离线私钥未闭环仍保留风险。早期路径/权限/冻结/restore 报告见[原文](../history/snapshots/20261022/docs/security/backup-plan.md)。
+记录时间/版本/manifest/hash/解密、表对象/行数、关键读取、图片/私有对象、登录/权限和回退。完整应用/异机/系统账号/离线私钥未闭环仍保留风险。早期路径/权限/冻结/restore 报告见[原文](../history/README.md#git-history)。

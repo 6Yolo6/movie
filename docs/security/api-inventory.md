@@ -13,7 +13,7 @@
 - fully qualified Mapping、无参数映射和类/方法组合均计入；当前源码均为字面路径，未来表达式/常量/继承/自定义组合注解须改用编译后 Spring 映射提取。
 - daily-recommendation/run 与 natural-search 已纳入；非 Spring 的 source/publisher/宿主 CLI 不在此范围，契约见 [API](../api.md)。
 - 只读 GET 也须按代码核对副作用；写路径及 runNow=false 不能用探活自动执行。
-- 更新接口时同步 JSON 和本页，验证全部方法级映射计数、唯一路由及行号；历史版本在 [旧清单](../history/snapshots/20261022/docs/security/api-inventory.md)。
+- 更新接口时同步 JSON 和本页，验证全部方法级映射计数、唯一路由及行号；历史版本在 [旧清单](../history/README.md#git-history)。
 
 ## 控制器索引
 

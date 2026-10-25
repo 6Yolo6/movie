@@ -1,6 +1,6 @@
 # 安全事件响应
 
-[当前风险](risk-register.md) · [凭据](secret-management.md) · [备份](backup-plan.md) · [完整旧模板](../history/snapshots/20261022/docs/security/incident-response.md)
+[当前风险](risk-register.md) · [凭据](secret-management.md) · [备份](backup-plan.md) · [完整旧模板](../history/README.md#git-history)
 
 这是操作预案，不能代替当前授权。先只读判断影响；隔离、停服、凭据撤销、外部通知及恢复按事件明确范围执行，保留证据/回退，不发未授权消息。
 

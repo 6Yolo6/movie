@@ -1,6 +1,6 @@
 # 多平台发布与重试运维
 
-[API](api.md#多平台发布) · [部署](deployment.md) · [现状](current-project-status.md) · [完整旧说明](history/snapshots/20261022/docs/social-publishing.md)
+[API](api.md#多平台发布) · [部署](deployment.md) · [现状](current-project-status.md) · [完整旧说明](history/README.md#git-history)
 
 ## 1. 服务边界
 
@@ -42,4 +42,4 @@ SOCIAL_PUBLISHER_BASE_URL/TOKEN内部8093不入Tunnel。QQ_CHANNEL_ACCOUNTS_ROOT
 
 ## 6. 手机界面与验收
 
-/admin/automation小屏可编辑目标/日志卡片、44px/长文本/分页/切屏草稿；UI禁用不代backend校验。开发Node/SQL/mock浏览器见[回归](development.md#3-常规回归入口)，[10月11部署](code-optimization-deployment-20261011.md)非真机/真实账号出站验收。
+/admin/automation小屏可编辑目标/日志卡片、44px/长文本/分页/切屏草稿；UI禁用不代backend校验。开发Node/SQL/mock浏览器见[回归](development.md#3-常规回归入口)，[10月11部署](history/releases.md#earlier-releases)非真机/真实账号出站验收。

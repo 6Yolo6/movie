@@ -1,6 +1,6 @@
 # 迅雷浏览器会话与 Token 同步
 
-[现状](current-project-status.md) · [完整旧步骤/证据](history/snapshots/20261022/docs/xunlei-token-sync.md)
+[现状](current-project-status.md) · [完整旧步骤/证据](history/README.md#git-history)
 
 ## 正常运行
 
@@ -38,3 +38,9 @@ AllowLoginRetry仅人工确认允许一次保护重试；容器写回测试需XU
 ## 2026-10-08 验收
 
 17Node/21Windows/5隔离写回测试；原已登录页面刷新、完整refresh、非root原子写回、官方同账户200/600/DPAPI验证、原任务入口exit0通过。未实际失效后自动填密码/验证码路径，backend独立续期未代验。材料 `E:/gying-tools/releases/xunlei-browser-refresh-20261008`，scripts-before回脚本；凭据须先核旧仍有效再既有非root原子流程，不docker cp生成root状态。无业务重建/DB/队列重置/外部发布。
+
+## 临时浏览器与内存观察
+
+脚本刷新已有普通Edge的迅雷标签；读取WebStorage副本时会临时启动headless Edge，finally正常关闭本轮实例。browser.close错误可能被吞掉，异常或外部超时仍有残留可能；清理不能误关用户普通浏览器。
+
+2026-10-25自然任务14:33结果0；16:20只读观察未见同步私有profile，普通Edge10个进程工作集约214.62MiB、private commit约381.64MiB。它们是不同指标和当时样本，普通后台Edge不能都归因于同步脚本，工作集不等独占物理内存。原后续同步/失效登录/异常残留仍按自然运行验证，不因本次整理修改凭据或浏览器设置。

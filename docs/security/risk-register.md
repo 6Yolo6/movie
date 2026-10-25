@@ -24,4 +24,4 @@
 | L-01 | Low | Cloudflare 提供公网 TLS，origin HTTP | HSTS/HTTPS/严格 origin policy 单独验收 |
 | L-02 | Low | 本机工具和匿名探针 | 外部攻击面/账号策略/定期审计 |
 
-执行与回退见[部署清单](deployment-checklist.md)、[备份](backup-plan.md)、[原始审计](../history/snapshots/20261022/docker-security-report.md)。业务例外发布不关闭任何行。
+执行与回退见[部署清单](deployment-checklist.md)、[备份](backup-plan.md)、[原始审计](../history/README.md#git-history)。业务例外发布不关闭任何行。

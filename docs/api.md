@@ -2,7 +2,7 @@
 
 [导航](README.md) · [静态路由清单](security/api-inventory.md) · [发布规则](social-publishing.md)
 
-管理接口要求 ADMIN，普通用户接口按各方法要求 JWT。响应依接口返回对象、数组或分页结构，不能统一假定 `{code,message,data}`。本文是源码契约；真实验收见[当前状态](current-project-status.md)。完整旧说明见[整理前原文](history/snapshots/20261022/docs/api.md)。
+管理接口要求 ADMIN，普通用户接口按各方法要求 JWT。响应依接口返回对象、数组或分页结构，不能统一假定 `{code,message,data}`。本文是源码契约；真实验收见[当前状态](current-project-status.md)。完整旧说明见[整理前原文](history/README.md#git-history)。
 
 ## 影片与用户内容
 
@@ -107,7 +107,7 @@ source 内部搜索 `/search`、目录 `/catalog`、BT `/bt/{btId}` 与认证 `/
 
 ADMIN、no-store；直接 JSON。overview 今日/14 天、date/timeZone；请求/4xx/5xx 只计 event_type=API，页面浏览另计、访客按 PAGE_VIEW 的 visitor_hash 去重。
 
-`GET /api/admin/monitoring/logs`：type=access/searches/resourceOperations/qqSearches/socialPosts 时返 `{records,total,page,size,pages}`；省略 type 兼容旧多数组。q ≤100 为字面子串（%/_/! 不扩通配）、size 1–100、超页钳制、空页 1；非法 type/status 400。status=all/success/failure，发布另有 pending/attention。访问日志实际 IP/UA（UA ≤1024 码点），旧值 null，禁止伪造头回填；字段/日期契约见[身份验收](access-log-client-identity-20261014.md)。hot-searches?date&limit 指定日 Redis 回退 SQL。
+`GET /api/admin/monitoring/logs`：type=access/searches/resourceOperations/qqSearches/socialPosts 时返 `{records,total,page,size,pages}`；省略 type 兼容旧多数组。q ≤100 为字面子串（%/_/! 不扩通配）、size 1–100、超页钳制、空页 1；非法 type/status 400。status=all/success/failure，发布另有 pending/attention。访问日志实际 IP/UA（UA ≤1024 码点），旧值 null，禁止伪造头回填；字段契约见[数据库](database.md#5-访问日志客户端身份)，原[身份验收](history/releases.md#earlier-releases)保留历史范围。hot-searches?date&limit 指定日 Redis 回退 SQL。
 
 发布摘要 POSTED/FAILED+PREPARE_FAILED/PENDING+PREPARING+PUBLISHING/UNKNOWN 分开；成功率只除已发布+失败。资源数量按可见内容：DISK、MAGNET/TORRENT（含网盘种子归档）、ONLINE、未知分别计，保留 0 和 >99。
 
@@ -125,13 +125,15 @@ ADMIN、no-store；直接 JSON。overview 今日/14 天、date/timeZone；请求
 | 接口 | 契约 |
 | --- | --- |
 | GET status | available/busy、catalogAvailable=true |
-| POST query；GET jobs/{id} | message 1–1000，history ≤8 条 user/assistant、总预算 10000 字符；确定性结果 200 SUCCEEDED，模型队列 202；6 次/分钟、任务仅本人 |
-| DELETE jobs/{id} | 取消本人模型任务，终态 FAILED；跨用户 404，旧回执拒绝；候选契约尚未部署 |
+| POST query；GET jobs/{id} | message 1–1000；history ≤8 条、偶数且 user/assistant 交替，总预算 10000 字符；可选 requestKey/previousJobId，未知字段 400；直接结果 200 SUCCEEDED，模型队列 202；6 次/分钟、任务仅本人 |
+| DELETE jobs/{id} | 取消本人模型任务，终态 FAILED；跨用户 404，旧回执拒绝；当前生产已部署，网页 Abort 不自动调用取消 |
 | GET search | keyword 1–60；page/size 默认 1/20、size 1–30、有效页钳制；kind=search；30 次/分钟 |
 | GET natural-search | query 1–1000、同分页与搜索 bucket；kind=natural_search、filters/indexVersion/catalogTruncated；非法范围/时长 400，空 total=0/pages=0/page=1 |
 | GET recommendations | 本人收藏/90 天衰减浏览，最多 12、featureVersion；10 次/分钟；排除收藏/已看、冷启动保留 |
 | POST views | 仅 `{movieId}`，1–64字母数字下划线连字符，额外字段400；30次/分钟，30分钟SQL去重（无唯一约束）；返ok/recorded |
 
-自然搜索执行已识别类型/分类/年份范围/评分/最长分钟/排除类型/有限主创地区语言；近几年=当前年起五个日历年，高分≥8，评分取存量最大值；缺失/单集时长不通过最大时长。ICU/BM25+有限主题扩展，片库快照 TTL 60 秒/最多 50000、达到上限标注截断，返回原文片段/理由，不保证任意口语理解。[实现与评测边界](catalog-features-search-20261021.md)。
+自然搜索执行已识别类型/分类/年份范围/评分/最长分钟/排除类型/有限主创地区语言；近几年=当前年起五个日历年，高分≥8，评分取存量最大值；缺失/单集时长不通过最大时长。ICU/BM25+有限主题扩展，片库快照 TTL 60 秒/最多 50000、达到上限标注截断，返回原文片段/理由，不保证任意口语理解。[实现与评测边界](ai-architecture.md#4-bm25embedding-与融合)。
 
-候选可靠性扩展：query 可选 `requestKey` 为本人模型队列提供保留窗口内幂等；新增专用桥接续期协议。启用、取消/恢复语义及部署状态见[执行可靠性](ai-execution-reliability-20261022.md)。现役内存队列能力仍按当前状态记录。
+query 可选 `requestKey` 为本人直接结果/模型队列提供保留窗口内幂等，8–64 位字母数字下划线连字符；同键换内容 409。`previousJobId` 只引用本人尚未过期的成功任务，由服务端建立候选和计划上下文，失效/跨用户 404。仅明确片名与简单泛推荐直接返回，复杂条件/联网/追问进入结构化研究。内部固定 `/api/internal/ai/catalog/query` 受桥接认证；网站任务另核 job/lease，受控本机直连可空任务上下文。接口及模型均不能执行任意 SQL/URL。
+
+生产已启用加密队列/回执、续期租约和有界 attempt；不配置状态文件的环境仍只有内存状态。取消、幂等/恢复及保留期限见[执行可靠性](ai-architecture.md#7-租约回执与恢复)，分流与研究见[AI架构](ai-architecture.md)。

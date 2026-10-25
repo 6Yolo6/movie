@@ -25,7 +25,7 @@ movie_metadata canonical、resource_link正式资源、movie_source_identity外�
 
 ## 最近代码变化的运维边界
 
-当前推荐/自然搜索见[成果](../../../../docs/catalog-features-search-20261021.md)；高频元数据/周榜/P2P分开，先完整自有分享后入库。QQ每日推荐属backend，手动run是真实发送；OpenClaw补丁必须源/唯一运行副本/Gateway同步，升级后重新验UTF8/白名单/拒绝未授权。
+当前推荐/自然搜索见[AI架构](../../../../docs/ai-architecture.md)；高频元数据/周榜/P2P分开，先完整自有分享后入库。QQ每日推荐属backend，手动run是真实发送；OpenClaw补丁必须源/唯一运行副本/Gateway同步，升级后重新验UTF8/白名单/拒绝未授权。
 
 ## 配置层级
 
@@ -45,4 +45,4 @@ docker ps -a --format "{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
 docker compose -p gying-movie -f docker-compose.prod.yml ps
 ```
 
-变更前加入已审查覆盖；只取Compose working_dir/config_files标签、必要运行字段，不输出完整inspect。[原地图](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/project-map.md)。
+变更前加入已审查覆盖；只取Compose working_dir/config_files标签、必要运行字段，不输出完整inspect。[原地图](../../../../docs/history/README.md#git-history)。

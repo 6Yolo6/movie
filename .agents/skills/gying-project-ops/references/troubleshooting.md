@@ -1,6 +1,6 @@
 # 故障排查
 
-[现状](../../../../docs/current-project-status.md) · [完整旧事故/回退记录](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/troubleshooting.md)
+[现状](../../../../docs/current-project-status.md) · [完整旧事故/回退记录](../../../../docs/history/README.md#git-history)
 
 ## 事故处理顺序
 
@@ -48,7 +48,7 @@ SELECT/dry-run+汇总及少量样本；重跑先核远端副作用，区分验�
 - repair-invalid分双盘，核任务/saved_path、新URL/NORMAL/url_hash；gyingUpdated=false先查映射/账号/res/pan/add，无映射可预期。
 - QQ每日推荐核sys_config目标/篇数/时间/模板、官方主动权限/错误码；40034105不是重启可解决。手动run真实消息，不能默认排障试发，NapCat不备用。
 - QQ进度乱码/越权：核源/唯一运行插件/Gateway配置、Unicode转义、allowFrom/ownerAllowFrom/commands.allowFrom.qqbot的QQ/member_openid，插件二次拒/bot-*/stop/approve。补丁/重启需当前范围。
-- 自然搜冷启动/误召回先核TTL/50k截断/filters与词覆盖，不把词法映射当embedding或模型生成；[成果](../../../../docs/catalog-features-search-20261021.md)。
+- 自然搜冷启动/误召回先核TTL/50k截断/filters与词覆盖，不把词法映射当embedding或模型生成；[架构](../../../../docs/ai-architecture.md)。
 
 ## 编码
 

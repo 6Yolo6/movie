@@ -1,6 +1,6 @@
 # Docker 安全加固
 
-[现状](../current-project-status.md) · [部署](../deployment.md) · [门禁](hardening-gates.md) · [完整旧证据](../history/snapshots/20261022/docs/security/docker-security.md)
+[现状](../current-project-status.md) · [部署](../deployment.md) · [门禁](hardening-gates.md) · [完整旧证据](../history/README.md#git-history)
 
 ## 1. 适用文件和运行原则
 

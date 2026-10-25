@@ -1,6 +1,6 @@
 # MySQL 安全方案
 
-[状态](../current-project-status.md) · [数据库契约](../database.md) · [备份](backup-plan.md) · [完整旧证据](../history/snapshots/20261022/docs/security/database-security.md)
+[状态](../current-project-status.md) · [数据库契约](../database.md) · [备份](backup-plan.md) · [完整旧证据](../history/README.md#git-history)
 
 ## 1. 在线观测（区分当前配置与历史查询）
 
@@ -32,4 +32,4 @@
 
 ## 6. 备份和恢复
 
-backup.py 以 mysqldump single-transaction/quick/no-tablespaces 流式age加密。9月25检查点 `G:/gying-backups/20260925T030328.719395Z` 25表行数/CHECKSUM及对象数量比较通过，不含全主机/系统账号/应用恢复闭环。最新发布7产物与完整恢复范围不同，详见[备份方案](backup-plan.md)。
+backup.py 以 mysqldump single-transaction/quick/no-tablespaces 流式age加密。9月25检查点 `G:/gying-backups/20260925T030328.719395Z` 25表行数/CHECKSUM及对象数量比较通过，不含全主机/系统账号/应用恢复闭环。2026-10-22历史发布的7产物与完整恢复范围不同，详见[备份方案](backup-plan.md)。

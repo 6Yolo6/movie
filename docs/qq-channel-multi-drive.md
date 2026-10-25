@@ -1,6 +1,6 @@
 # QQ 频道同片多网盘帖子
 
-2026-10-15 19:44:42 已部署，fc5ef04；[现状](current-project-status.md)、[完整旧证据](history/snapshots/20261022/docs/qq-channel-multi-drive.md)。
+2026-10-15 19:44:42 已部署，fc5ef04；[现状](current-project-status.md)、[完整旧证据](history/README.md#git-history)。
 
 ## 范围与行为
 

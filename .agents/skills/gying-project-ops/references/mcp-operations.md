@@ -32,4 +32,4 @@ ps/logs可只读；start/stop/run/Compose等会改状态，另需GYING_MCP_ALLOW
 | Docker daemon/权限 | docker version/context |
 | 错库/查询差异 | DATABASE/CURRENT_USER/环境/已知表，不按默认值猜 |
 
-[旧完整配置说明](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/mcp-operations.md)。
+[旧完整配置说明](../../../../docs/history/README.md#git-history)。

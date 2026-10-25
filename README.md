@@ -5,12 +5,13 @@
 | 需要做什么 | 从这里开始 |
 | --- | --- |
 | 了解系统、在线版本和待办 | [项目状态](docs/current-project-status.md) |
+| 理解全项目的设计与知识 | [知识导读](docs/project-guide.md) |
 | 查全部文档 | [文档导航](docs/README.md) |
 | 开发、测试 | [开发手册](docs/development.md) · [前端](frontend/README.md) |
 | 对接接口、修改数据库 | [API](docs/api.md) · [数据库](docs/database.md) |
 | 发布、回滚、迁移 | [部署](docs/deployment.md) · [迁移恢复](MIGRATION.md) |
 | 安全与故障 | [安全导航](docs/security/README.md) · [排障](.agents/skills/gying-project-ops/references/troubleshooting.md) |
-| AI 项目成果与原计划 | [本轮成果](docs/catalog-features-search-20261021.md) · [求职路线](docs/ai-career-project-analysis-20261016.md) |
+| AI 架构与求职补强 | [完整架构](docs/ai-architecture.md) · [求职路线](docs/ai-career-roadmap.md) · [评测](docs/ai-evaluation.md) |
 
 `backend/` 为 Java 17 / Spring Boot API；`frontend/` 为 Next.js；`crawler/` 为 Python 数据源；`social-publisher/` 为独立发布器；`tools/` 为测试及运维工具。
 

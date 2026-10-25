@@ -1,6 +1,6 @@
 # GYING 磁力与种子采集
 
-[归档](p2p-cloud-archive.md) · [10月19日部署](resource-search-p2p-deployment-20261019.md) · [完整旧原文](history/snapshots/20261022/docs/gying-p2p-collection.md)
+[归档](p2p-cloud-archive.md) · [10月19日部署来源](history/releases.md#earlier-releases) · [完整旧原文](history/README.md#git-history)
 
 ## 来源契约
 

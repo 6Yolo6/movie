@@ -1,6 +1,6 @@
 # 11 项安全门禁与续验工具
 
-最近线上扫描：2026-10-22，59 PASS / 11 FAIL / 0 UNKNOWN，下面 11 项全 FAIL。`gate_ledger` 不包含 Firewall、DB grants、Access、MinIO policy、凭据与恢复等全部门禁，后者见[部署清单](deployment-checklist.md)。
+最近已记录线上扫描：2026-10-25，58 PASS / 11 FAIL / 1 UNKNOWN；UNKNOWN 为已退出的旧迅雷探针，下面 11 项仍全 FAIL。10月22历史为59/11/0，本次整理未重新运行扫描。`gate_ledger` 不包含 Firewall、DB grants、Access、MinIO policy、凭据与恢复等全部门禁，后者见[部署清单](deployment-checklist.md)。
 
 ## 固定编号与当前结果
 
@@ -43,4 +43,4 @@ Access 在 2026-10-13 已启用限定管理路径；此前 403/缺 Token 是历�
 
 第一条只读，有 FAIL/UNKNOWN 返回非零；第二条显式创建/清理无生产挂载的自有候选，使用本机已存在固定镜像，禁止拉取。P2P 进度工具用非 root defaults + READ ONLY 事务验证真实下一游标/持久重试引用；没有自然失败时保持 UNKNOWN，不人为制造生产错误。
 
-命令参数和全部 10 月 8 日材料见[原文](../history/snapshots/20261022/docs/security/hardening-gates.md)。当前发布和扫描证据见[本轮报告](../catalog-features-search-20261021.md)。
+命令参数和全部 10 月 8 日材料见[原文](../history/README.md#git-history)。现役发布和扫描记录见[当前状态](../current-project-status.md#配置与安全)与[历史台账](../history/releases.md)，原完整报告按Git追溯。

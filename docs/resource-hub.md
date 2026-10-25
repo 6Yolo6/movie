@@ -26,7 +26,7 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 - `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后继续下一页，空页仍回 start。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
 - overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
 
-2026-10-22 21:22 独立范围与进度保留已部署；21:34只读复核5条原自动任务及范围配置保持不变；[验收](crawl-resource-links-20261022.md)。
+2026-10-22 21:22 独立范围与进度保留已部署；21:34只读复核5条原自动任务及范围配置保持不变；[原验收摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)、[发布与恢复](history/releases.md#earlier-releases)。
 
 ### 剧集自动追更
 
@@ -51,4 +51,8 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 - METADATA_ITEM_RETRY 仅元数据/P2P，每分钟最多一条到期项；30 分钟退避、最多 3 次，大小写身份 SHA-256 去重。耗尽保留，不重置次数；自然目录轮回仍会再检查影片。
 - 重试读取精确 ID 的最新主创/标题/年份/季，保留原失败阶段。Resource Hub/Worker/GYING 自动采集任一关闭不运行，启动恢复仅本类型。
 - SUCCEEDED 且 crawl.deferred>0 仅代表失败已隔离；通过 itemRetryTaskIds 追踪。严格匹配不降阈值；同名差一年须演员/导演独立证据；季冲突待审，四位片名数字不当季锚点。
-- 10 月 8 日已部署；自然失败隔离尚未实证，不制造生产失败。[历史](history/operations-through-20261008.md)、[完整原文](history/snapshots/20261022/docs/resource-hub.md)。
+- 10 月 8 日已部署；自然失败隔离尚未实证，不制造生产失败。[历史](history/releases.md#earlier-releases)、[完整原文](history/README.md#git-history)。
+
+## 手动确保与按ID修复
+
+2026-10-23已部署ensure和按影片/资源id修复共用的双盘有效性判断：有效资源才跳过，失效优先在保存目录原位修分享，不确定待核验，P2P元数据同步沿用来源身份。按provider验证自有分享可访问、link_status与任务结果；排队/HTTP200不代真实资源恢复。测试/回退见[补齐验收](history/releases.md#manual-completion-20261023)；10月23仅完成模拟API与入口验收，没有真实转存/发布。

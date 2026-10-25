@@ -27,7 +27,7 @@
 | 多平台发布 | `social_publish_target`、`social_post_log` |
 | 监控 | `site_access_log`、`site_search_log`、`resource_operation_log` |
 
-**新库覆盖缺口仍存在：** `qq_bot_search_log`、`qq_channel_post_log` 由 `migration_qq_automation.sql` 创建，尚未合入 schema。新库不能只导入 schema 就宣称完整；还需按功能核对其他迁移中的配置默认值。最新发布检查点的25表验证见[10月22成果](catalog-features-search-20261021.md)，不是本次文档整理重新查询。
+**新库覆盖缺口仍存在：** `qq_bot_search_log`、`qq_channel_post_log` 由 `migration_qq_automation.sql` 创建，尚未合入 schema。新库不能只导入 schema 就宣称完整；还需按功能核对其他迁移中的配置默认值。2026-10-22发布检查点曾核验25表，见[历史证据](history/releases.md#earlier-releases)；不是本次文档整理重新查询。
 
 ## 3. 增量文件清单
 
@@ -71,7 +71,7 @@
 
 ## 4. 外部来源 ID 大小写
 
-`migration_source_identity_case_sensitive.sql` **已于 2026-10-08 在生产执行**，不再是“待部署”项；证据见[历史验收](history/operations-through-20261008.md)。2026-10-11 应用上线未再次执行 SQL 迁移。
+`migration_source_identity_case_sensitive.sql` **已于 2026-10-08 在生产执行**，不再是“待部署”项；证据见[历史验收](history/releases.md#earlier-releases)。2026-10-11 应用上线未再次执行 SQL 迁移。
 
 GYING ID 是不透明、大小写敏感的标识，`dWXo` 与 `dwXo` 必须独立。`movie_source_identity.external_id` 使用 `utf8mb4_bin`；迁移不改写 ID、不修改 `movie_metadata.id` 或关联主键。
 
@@ -83,7 +83,7 @@ GYING ID 是不透明、大小写敏感的标识，`dWXo` 与 `dwXo` 必须独�
 
 `migration_access_log_client_identity.sql` 已于2026-10-14部署；在 `site_access_log` 末尾分别追加 `client_ip VARCHAR(45) NULL`、`user_agent VARCHAR(1024) NULL`，明确要求 `ALGORITHM=INSTANT`，不允许自动降级为重建表。已有同名列必须先核对类型、可空性、默认值和字符集，不能仅因列存在就当作兼容。
 
-先完成加密备份与完整认证解密，再使用已有授权维护身份执行增量；不要扩大应用账号权限。旧日志保持 NULL，不能由哈希反推原值。新后端依赖这两列，因此迁移必须先于应用切换；回退应用时保留新增列和新日志，不执行 DROP COLUMN 或旧库覆盖。可信代理配置和验收见[本次交付记录](access-log-client-identity-20261014.md)。
+先完成加密备份与完整认证解密，再使用已有授权维护身份执行增量；不要扩大应用账号权限。旧日志保持 NULL，不能由哈希反推原值。新后端依赖这两列，因此迁移必须先于应用切换；回退应用时保留新增列和新日志，不执行 DROP COLUMN 或旧库覆盖。可信代理配置见[nginx](../nginx/nginx.conf)，原验收见[10月14发布记录](history/releases.md#earlier-releases)与[Git全文](history/README.md#git-history)。
 
 ## 6. 其他长期约束
 

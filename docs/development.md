@@ -1,6 +1,6 @@
 # 开发与测试
 
-[导航](README.md) · [前端](../frontend/README.md) · [API](api.md) · [数据库](database.md) · [完整旧步骤](history/snapshots/20261022/docs/development.md)
+[导航](README.md) · [前端](../frontend/README.md) · [API](api.md) · [数据库](database.md) · [完整旧步骤](history/README.md#git-history)
 
 ## 1. 环境与隔离
 
@@ -51,13 +51,13 @@ activity-pages.browser.cjs：真实React/AntD生产构建、延迟/重试/未读
 
 ### Agent执行与真实调用回归
 
-根目录 `python -X utf8 tools/ai/evaluate_agent.py` 默认只打印计划；`python -X utf8 -m unittest discover -s tools/tests -p test_agent_evaluation.py -v`为离线评测器测试；`python -X utf8 tools/ai/evaluate_agent.py --run --repeat 2 --output tmp/agent-evaluation/report.json`才访问既有loopback助手和只读工具。需要助手已健康运行，实际工具清单必须是三个只读影视工具；不启Spring/调度、不使用真实账号或桥接密钥、不重试推理。业务code与实际证据判分，失败/未完成非零退出；7场景8轮为实施者回归，非独立人工留出。详见[路线与边界](ai-strengthening-roadmap-20261022.md)。
+根目录 `python -X utf8 tools/ai/evaluate_agent.py` 默认只打印计划；`python -X utf8 -m unittest discover -s tools/tests -p test_agent_evaluation.py -v`为离线评测器测试；`python -X utf8 tools/ai/evaluate_agent.py --run --repeat 2 --output tmp/agent-evaluation/report.json`才访问既有loopback助手和只读工具。需要助手已健康运行，实际工具清单必须是三个只读影视工具；不启Spring/调度、不使用真实账号或桥接密钥、不重试推理。业务code与实际证据判分，失败/未完成非零退出；7场景8轮为实施者回归，非独立人工留出。详见[路线与边界](ai-career-roadmap.md)。
 
 ### 可比较Agent回归与独立网站题
 
 `python -X utf8 tools/ai/comparable_evaluation.py`与`evaluate_website.py`默认只计划。前者9场景10轮真实本机模型回归；后者30独立问题/44轮，普通USER会话、网站分流/队列/桥接，显式--run才发送。题集/口径hash冻结，模型回答只作观测，严禁拿独立题调prompt。输出新文件；传输失败不重发推理；两入口串行执行，尊重每分钟6次网站限流。
 
-回归行为测试：`python -X utf8 -m unittest discover -s tools/tests -p 'test*evaluation.py'`；快照/复核页面安全测试：`python -X utf8 -m unittest discover -s tools/tests -p test_evaluation_artifacts.py`。人工review三项0–2或null，未完成保留pending；观测与HTML放受限仓库外，Token不入报告。详情及完整命令见[评测说明](ai-comparable-evaluation-20261023.md)、[链路说明](ai-system-chain-20261023.md)。
+回归行为测试：`python -X utf8 -m unittest discover -s tools/tests -p 'test*evaluation.py'`；快照/复核页面安全测试：`python -X utf8 -m unittest discover -s tools/tests -p test_evaluation_artifacts.py`。人工review三项0–2或null，未完成保留pending；观测与HTML放受限仓库外，Token不入报告。详情及完整命令见[评测说明](ai-evaluation.md)、[链路说明](ai-architecture.md)。
 
 ### 真实 SQL 的隔离回归
 

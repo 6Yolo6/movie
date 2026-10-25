@@ -1,6 +1,6 @@
 # 元数据采集与本周热门转存分离
 
-[资源中心](resource-hub.md) · [P2P](p2p-cloud-archive.md) · [现状](current-project-status.md) · [整理前完整证据](history/snapshots/20261022/docs/metadata-weekly-transfer.md)
+[资源中心](resource-hub.md) · [P2P](p2p-cloud-archive.md) · [现状](current-project-status.md) · [整理前完整证据](history/README.md#git-history)
 
 ## 交付状态（2026-10-05）
 

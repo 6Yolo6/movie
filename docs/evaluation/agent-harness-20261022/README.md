@@ -1,6 +1,6 @@
 # Agent强化首轮验收
 
-2026-10-22，Asia/Shanghai。对应[路线](../../ai-strengthening-roadmap-20261022.md)、[逐轮脱敏结果](report.json)、[机器摘要与源文件hash](validation-summary.json)、[版本题集](cases.json)。
+2026-10-22，Asia/Shanghai。对应[路线](../../ai-career-roadmap.md)、[逐轮脱敏结果](report.json)、[机器摘要与源文件hash](validation-summary.json)、[版本题集](cases.json)。
 
 本轮新增Python标准库评测工具和行为测试，访问既有本机5000助手，实际发现searchMovies/getMovieDetails/searchMovieWeb后顺序执行。模型为实际运行的qwen3:1.7b，片库由工具查询；未修改GYing/local-ai-agent业务实现、容器、运行配置或数据库schema。
 

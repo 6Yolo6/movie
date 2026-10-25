@@ -44,4 +44,4 @@ canonical与外部typeCode/mid分开，utf8mb4_bin、电影season0；同名/年�
 
 ## 外部集成
 
-发布/res/pan/add的binds dir/id契约、来源短熔断及账号归属见[API](../../../../docs/api.md#gying)。修复、转存、试发有真实副作用，须当前范围；[旧完整运维说明](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/resource-hub-operations.md)仅历史。
+发布/res/pan/add的binds dir/id契约、来源短熔断及账号归属见[API](../../../../docs/api.md#gying)。修复、转存、试发有真实副作用，须当前范围；[旧完整运维说明](../../../../docs/history/README.md#git-history)仅历史。

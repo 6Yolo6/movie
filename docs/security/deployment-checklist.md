@@ -1,6 +1,6 @@
 # 安全加固部署检查清单
 
-完整清单尚未闭环。最近机器扫描 2026-10-22：59 PASS/11 FAIL/0 UNKNOWN；[G01–G11](hardening-gates.md)只覆盖容器/网络，以下门禁仍逐次验收。
+完整清单尚未闭环。最近已记录机器扫描 2026-10-25：58 PASS/11 FAIL/1 UNKNOWN，旧迅雷探针退出造成 UNKNOWN，本次整理未重跑；[G01–G11](hardening-gates.md)只覆盖容器/网络，以下门禁仍逐次验收。
 
 ## A. 变更前
 
@@ -29,7 +29,7 @@
 
 9/25 规则已实施，不重复 Apply。原记录/回退目录 `G:/gying-tools/security-20260925/firewall-attempts/20260925-113327-6e2eac1b/`；本机有效策略/健康及同网客户端报告通过，公网/IPv6、真实回退仍未验证。
 
-只读 CheckOnly 使用已配套发布的 Apply-FirewallStep.ps1/firewall_health.ps1/Rollback-FirewallStep.ps1；健康检查接受 Quark 同源 /login 的 302，不接受任意重定向；TLS 不降级。回退只删除本次规则、恢复本次 Public enabled/default-inbound，不导入覆盖全策略。完整 watchdog/路径/命令见[原文](../history/snapshots/20261022/docs/security/deployment-checklist.md)。
+只读 CheckOnly 使用已配套发布的 Apply-FirewallStep.ps1/firewall_health.ps1/Rollback-FirewallStep.ps1；健康检查接受 Quark 同源 /login 的 302，不接受任意重定向；TLS 不降级。回退只删除本次规则、恢复本次 Public enabled/default-inbound，不导入覆盖全策略。完整 watchdog/路径/命令见[原文](../history/README.md#git-history)。
 
 ## D. Compose 预检和发布
 

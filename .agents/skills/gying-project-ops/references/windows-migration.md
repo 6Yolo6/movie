@@ -1,6 +1,6 @@
 # Windows 与 Linux 迁移
 
-先完整读[迁移手册](../../../../MIGRATION.md)，步骤/检查点以其维护；本参考仅补平台差异。[旧参考](../../../../docs/history/snapshots/20261022/.agents/skills/gying-project-ops/references/windows-migration.md)。
+先完整读[迁移手册](../../../../MIGRATION.md)，步骤/检查点以其维护；本参考仅补平台差异。[旧参考](../../../../docs/history/README.md#git-history)。
 
 ## 必须先确认
 

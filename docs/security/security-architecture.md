@@ -1,6 +1,6 @@
 # 安全架构设计
 
-[在线状态](../current-project-status.md) · [风险](risk-register.md) · [完整旧设计](../history/snapshots/20261022/docs/security/security-architecture.md)
+[在线状态](../current-project-status.md) · [风险](risk-register.md) · [完整旧设计](../history/README.md#git-history)
 
 ## 1. 目标边界
 

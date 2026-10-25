@@ -1,6 +1,6 @@
 # 磁力与种子网盘归档
 
-[采集契约](gying-p2p-collection.md) · [资源中心](resource-hub.md) · [现状](current-project-status.md) · [整理前完整证据](history/snapshots/20261022/docs/p2p-cloud-archive.md)
+[采集契约](gying-p2p-collection.md) · [资源中心](resource-hub.md) · [现状](current-project-status.md) · [整理前完整证据](history/README.md#git-history)
 
 ## 筛选政策
 
@@ -25,7 +25,7 @@
 | 10 月 6 日 | 后端448（1 Redis skip/0失败）、Python37；《第六感》双盘各4文件/84923字节、路径/分享/重复幂等通过；22片补采20入队/2跳过，入队不算完成 |
 | 10 月 8 日 | utf8mb4_bin 身份迁移2983行保持；双盘任务4305/4306成功；电影/剧集/动漫自然游标前进，来源大小写双记录共存 |
 | 10 月 8 日续验 | 228任务/170成功/58耗尽失败；上线新增8活动/审核/NORMAL归档；旧58未重置，自然失败隔离未实证 |
-| 10 月 19 日 | 账号下载URL公开过滤/v2任务已部署；见[部署报告](resource-search-p2p-deployment-20261019.md) |
+| 10 月 19 日 | 账号下载URL公开过滤/v2任务已部署；见[发布来源](history/releases.md#earlier-releases) |
 
 上述计数为历史，不代表现在。10 月 8 日失败阶段为12种子准备/45迅雷目录/1迅雷上传，阶段不是底层原因；令牌刷新只读通过不授权重试全部任务。
 
@@ -43,4 +43,4 @@ backend gying-p2p-backend:20261006d/source gying-p2p-source:20261006b；检查�
 
 ### 2026-10-08 续验与可重复检查
 
-只读查 resource_hub_task 的 P2P_ARCHIVE 与 resource_link 的 GYING_P2P_ARCHIVE，区分 provider/文件确认/分享/入库。旧58条需精确范围及当前远端核验；不删文件或批量改失败。v2 后回退不兼容旧 backend 必须暂停相关采集/Worker、保留任务/SQL，直到兼容消费者恢复。[旧原文](history/snapshots/20261022/docs/p2p-cloud-archive.md)保留完整计数与回退记录。
+只读查 resource_hub_task 的 P2P_ARCHIVE 与 resource_link 的 GYING_P2P_ARCHIVE，区分 provider/文件确认/分享/入库。旧58条需精确范围及当前远端核验；不删文件或批量改失败。v2 后回退不兼容旧 backend 必须暂停相关采集/Worker、保留任务/SQL，直到兼容消费者恢复。[旧原文](history/README.md#git-history)保留完整计数与回退记录。
