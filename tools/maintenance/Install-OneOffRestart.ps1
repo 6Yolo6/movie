@@ -23,8 +23,10 @@ $recovery=Get-ScheduledTask -TaskName 'GYing Maintenance Recovery'
 if ($weekly.State -eq 'Running' -or $recovery.State -eq 'Running') { throw 'Maintenance is running; refuse runtime replacement.' }
 if ($weekly.Principal.UserId -ne $recovery.Principal.UserId -or $weekly.Principal.RunLevel -ne 'Highest' -or $weekly.Principal.LogonType -ne 'Interactive') { throw 'Unexpected existing maintenance principals.' }
 if ($weekly.Actions.Count -ne 1 -or $weekly.Actions[0].Execute -ne $config.python -or -not $weekly.Actions[0].Arguments.Contains($target)) { throw 'Existing weekly runtime is not the reviewed target.' }
-& $config.python -X utf8 $source --config $configPath --readiness
+$readinessOutput=& $config.python -X utf8 $source --config $configPath --readiness
 if ($LASTEXITCODE -ne 0) { throw 'Readiness failed; nothing installed.' }
+try { $readiness=($readinessOutput -join "`n") | ConvertFrom-Json } catch { throw 'Readiness returned an invalid report; nothing installed.' }
+if ($readiness.mode -ne 'read-only') { throw 'Unexpected readiness report; nothing installed.' }
 $name='GYing One-off Graceful Restart '+$start.ToString('yyyyMMdd-HHmm')
 if (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue) { throw 'One-off task already exists; refuse duplicate registration.' }
 $report=[ordered]@{mode='dry-run';task=$name;startAt=$start.ToString('o');latestStartAt=$start.AddMinutes(10).ToString('o');finishBefore=$start.AddMinutes(60).ToString('o');admin=$admin;runtime=$target;startWhenAvailable=$false;forceShutdown=$false;recovery='existing ASUS logon task';sourceSha256=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()}
