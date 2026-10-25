@@ -65,7 +65,13 @@ public class CatalogResearchService {
         if(p.list("excludedActors").stream().anyMatch(w->names(d,"actors",List.of(w)))||p.list("excludedDirectors").stream().anyMatch(w->names(d,"directors",List.of(w))))return false;
         if(!any(d,"regions",p.list("regionsAny"))||!any(d,"languages",p.list("languagesAny")))return false;
         if(p.list("excludedLanguages").stream().anyMatch(w->any(d,"languages",List.of(w))))return false;
-        return p.list("titles").isEmpty()||p.list("titles").stream().anyMatch(t->List.of("titleCn","titleEn","aliases","seriesName").stream().anyMatch(k->key(d.path(k).asText()).contains(key(t))));
+        return p.list("titles").isEmpty()||p.list("titles").stream().anyMatch(t->titleMatches(d,t));
+    }
+    private static boolean titleMatches(JsonNode doc,String title){
+        String wanted=key(title);
+        if(wanted.codePointCount(0,wanted.length())>2)return List.of("titleCn","titleEn","aliases","seriesName").stream().anyMatch(k->key(doc.path(k).asText()).contains(wanted));
+        if(List.of("titleCn","titleEn","seriesName").stream().anyMatch(k->key(doc.path(k).asText()).equals(wanted)))return true;
+        return Arrays.stream(doc.path("aliases").asText().split("[/|,，;；、\\r\\n]+")).anyMatch(alias->key(alias).equals(wanted));
     }
     private static int distance(String a,String b){int[] row=new int[b.length()+1];for(int i=0;i<row.length;i++)row[i]=i;for(int i=1;i<=a.length();i++){int prev=row[0];row[0]=i;for(int j=1;j<=b.length();j++){int old=row[j];row[j]=Math.min(Math.min(row[j]+1,row[j-1]+1),prev+(a.charAt(i-1)==b.charAt(j-1)?0:1));prev=old;}}return row[b.length()];}
     private MovieQueryPlan resolvePeople(MovieQueryPlan original,Dataset data,List<String> unresolved){

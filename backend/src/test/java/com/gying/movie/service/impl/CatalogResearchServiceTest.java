@@ -94,4 +94,12 @@ class CatalogResearchServiceTest {
         assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"人 电影\"}"))).isEmpty();
     }
 
+    @Test void shortTitlesMatchWholeNamesOrAliasesInsteadOfArbitrarySubstrings()throws Exception{
+        docs.get(0).put("titleCn","她").put("titleEn","Her");docs.get(1).put("titleCn","她们").put("titleEn","Titanic");
+        docs.get(2).put("titleCn","小丑回魂").put("titleEn","It").put("aliases","小丑|它");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"她\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"IT\"]}"))).containsExactly("c");
+        assertThat(ids(query("{\"intent\":\"search\",\"titles\":[\"它\"]}"))).containsExactly("c");
+    }
+
 }
