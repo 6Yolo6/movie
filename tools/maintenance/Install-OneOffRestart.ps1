@@ -45,7 +45,7 @@ $staged=Join-Path $runtime ($id+'.tmp')
 $registered=$false
 try {
     Copy-Item -LiteralPath $source -Destination $staged
-    [IO.File]::Replace($staged,$target,$null)
+    [IO.File]::Replace($staged,$target,(Join-Path $evidence 'weekly_restart.atomic-before.py'))
     $permit=[ordered]@{version=1;id=$id;host=$config.host;configSha256=(Get-FileHash -LiteralPath $configPath -Algorithm SHA256).Hash.ToLowerInvariant();runtimeSha256=(Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant();startAt=$report.startAt;latestStartAt=$report.latestStartAt;finishBefore=$report.finishBefore;createdAt=[DateTimeOffset]::Now.ToString('o')}
     [IO.File]::WriteAllText($permitPath,($permit|ConvertTo-Json),[Text.UTF8Encoding]::new($false))
     $action=New-ScheduledTaskAction -Execute $config.python -Argument ('-X utf8 "'+$target+'" --config "'+$configPath+'" --execute --once-window "'+$permitPath+'"') -WorkingDirectory $runtime
@@ -66,6 +66,6 @@ try {
     if ($registered) { Unregister-ScheduledTask -TaskName $name -Confirm:$false }
     if (Test-Path -LiteralPath $permitPath) { Remove-Item -LiteralPath $permitPath }
     Copy-Item -LiteralPath $backup -Destination $staged -Force
-    [IO.File]::Replace($staged,$target,$null)
+    [IO.File]::Replace($staged,$target,(Join-Path $evidence 'weekly_restart.rollback-from.py'))
     throw
 } finally { if (Test-Path -LiteralPath $staged) { Remove-Item -LiteralPath $staged } }
