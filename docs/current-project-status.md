@@ -2,7 +2,7 @@
 
 更新时间：2026-10-25
 
-时区：Asia/Shanghai。2026-10-25 16:00–16:01获本轮“可部署”授权后切换AI查询backend/frontend/本机Agent，启用指令4B与语义索引；详见[部署报告](ai-query-plan-v2-20261025.md)。前序生产变更为2026-10-23 21:22–21:23：仅部署GYING手动资源补齐backend/frontend，入口/页面验收截至21:25；本机nvm Node升级24.22.1并重启两个Node服务，frontend容器补至22.23.4。晚间AI评测/题集/链路文档及USER账号网站验收保留独立证据，测试账号已禁用；12:43–12:54启用AI加密状态，10月22日采集与其他事实保留原日期。
+时区：Asia/Shanghai。2026-10-25 17:19–17:20仅替换本机Agent，修复独立后台启动与冷片库读取超时；[服务恢复](ai-assistant-availability-20261025.md)。同日16:00–16:01获本轮“可部署”授权后切换AI查询backend/frontend/本机Agent，启用指令4B与语义索引；详见[部署报告](ai-query-plan-v2-20261025.md)。前序生产变更为2026-10-23 21:22–21:23：仅部署GYING手动资源补齐backend/frontend，入口/页面验收截至21:25；本机nvm Node升级24.22.1并重启两个Node服务，frontend容器补至22.23.4。晚间AI评测/题集/链路文档及USER账号网站验收保留独立证据，测试账号已禁用；12:43–12:54启用AI加密状态，10月22日采集与其他事实保留原日期。
 
 [导航](README.md) · [API](api.md) · [部署](deployment.md) · [安全](security/README.md) · [历史](history/README.md)
 
@@ -62,7 +62,9 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 
-2026-10-25 16:00–16:01仅替换backend/frontend/本机Agent，业务代码Movie`f209e87`/Agent`8a65287`；Agent实际SHA`b7bd517cbe6f7c5b8cdf01ce0d8872460958fc8b108653d7c8882fa74ff7f399`。生产Compose加本轮外部`deploy.json`，15份age认证检查点`G:\gying-backups\20261025T080048.799654Z`与原镜像/包回退保留。首次Agent装配失败已回退，修复、87项verify和完整JAR启动通过后第二次成功；23入口、95静态、3依赖与四组真实游客页面通过，实际8880恢复，其余容器身份、启动时间、重启数以及转存/发布审计保持。当前索引11,272条，原11,220开发对照/10,432留出快照分别冻结；网站登录条件查询未复验。见[报告](ai-query-plan-v2-20261025.md)。
+2026-10-25 17:19–17:20本机Agent补丁代码`cd79797`，当前JAR SHA`33d9b6748cdac41f82e7d7ac9afbcda4f672d2bf71fce640c235f8e3efdf3c37`。四服务消失与冷片库超过旧10秒read上限分别修复；独立WMI启动和read/call30秒仍受总体deadline约束。91项verify、6项真实Job/9项配置、完整JAR隔离启动通过；首次公网403验收已平滑回退，第二次成功。三份age认证Agent检查点`G:/gying-backups/ai-agent-20261025T091941.886931Z`保留；Movie容器、其他本机实例、配置和索引hash保持，真实条件/语义/Bing/生产只读队列及9入口通过，但人物/年份解析偏差仍保留，网站登录条件查询未复验。见[恢复报告](ai-assistant-availability-20261025.md)。
+
+2026-10-25 16:00–16:01仅替换backend/frontend/本机Agent，业务代码Movie`f209e87`/Agent`8a65287`；当时Agent实际SHA`b7bd517cbe6f7c5b8cdf01ce0d8872460958fc8b108653d7c8882fa74ff7f399`。生产Compose加本轮外部`deploy.json`，15份age认证检查点`G:\gying-backups\20261025T080048.799654Z`与原镜像/包回退保留。首次Agent装配失败已回退，修复、87项verify和完整JAR启动通过后第二次成功；23入口、95静态、3依赖与四组真实游客页面通过，实际8880恢复，其余容器身份、启动时间、重启数以及转存/发布审计保持。当前索引11,272条，原11,220开发对照/10,432留出快照分别冻结；网站登录条件查询未复验。见[报告](ai-query-plan-v2-20261025.md)。
 
 2026-10-23 21:22–21:23仅切换backend/frontend，功能提交 `2b1809b`；有效覆盖和旧镜像回退材料在 `E:/gying-tools/releases/gying-manual-completion-20261023/`，检查点 `G:/gying-backups/20261023T132303.117468Z` 的11份age哈希/完整认证通过。其余9个容器、有效配置、调度及发布转存审计不变；26真实入口、3内部依赖、线上JAR/95静态文件与三组模拟API页面通过。见[部署验收](gying-manual-completion-20261023.md)。
 
@@ -79,7 +81,7 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 | 事项 | 必须补的证据/工作 |
 | --- | --- |
 | 安全整改 | G01–G11、公网/IPv6、分服务 DB、MinIO policy/root key、Quark 单文件/身份/Cookie、OpenClaw 内网、WAF/origin JWT、异机恢复与离线私钥 |
-| AI/求职 | 2026-10-25[查询修复](ai-query-plan-v2-20261025.md)已上线分流/原文人物/多轮/真实Bing/语义检索；Agent87项、后端全套731（730通过/1跳过）及后续29项、构建器9项通过。两组8轮实际开发对照与海上误召回如实保留，未独立盲评；原30题/44轮与10,432快照冻结、旧测试账号禁用。独立评分/真实网站登录查询/点击、持续误召回、增量刷新和usage审计仍待；文档RAG/API Key/配额未交付 |
+| AI/求职 | 2026-10-25[查询修复](ai-query-plan-v2-20261025.md)已上线分流/原文人物/多轮/真实Bing/语义检索；当前Agent91项及6项独立启动测试通过，原查询部署Agent87项、后端全套731（730通过/1跳过）及后续29项、构建器9项通过。两组8轮实际开发对照与海上误召回如实保留，未独立盲评；原30题/44轮与10,432快照冻结、旧测试账号禁用。独立评分/真实网站登录查询/点击、持续误召回、增量刷新和usage审计仍待；文档RAG/API Key/配额未交付 |
 | AI下一阶段 | [可靠性部署](ai-reliability-deployment-20261023.md)已启用加密任务/回执、可续期租约、有限重试、取消/幂等；真实内部模型链路及空闲平滑重启2条终态恢复通过。真实USER网站API验收见[评测](evaluation/human-holdout-v1/README.md)；在途回执故障、中间步骤与长期审计待验收；[路线](ai-strengthening-roadmap-20261022.md) |
 | 每周重启 | 2026-10-25 09:30:30触发结果1，原preflight未留失败原因；P2P在途可能阻挡，非唯一确认。已补尝试日志并登记/回读今晚2026-10-25 20:00 +08单次优雅重启：Ready、20:00–20:10开始/21:00截止，失败/过期不补跑。真实重启/ASUS登录恢复未验收；下周2026-11-01 09:30:30 |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、三周榜首轮结果、QQ 每日推荐官方消息权限/群内出站、临时转存到期清理；未手动试发补验收 |
@@ -101,6 +103,8 @@ Tunnel 使用 HTTP/2、原任务 `GYing Cloudflare Tunnel` 和 `E:/gying-tools/c
 - MySQL/JVM/容器时区一并核对；任务注册/运行、HTTP/业务成功、模拟/真实、备份/恢复分别记录。
 
 ## 验收
+
+2026-10-25 17:19–17:24服务恢复：Agent91/91、合成Job6/6、研究配置9/9与新完整JAR隔离健康/握手/优雅退出通过；真实条件27.98秒、语义62.50秒、Bing17.42秒、只读生产队列7.52秒及9入口符合预期。当前Agent包与索引hash、配置/未改实例核验通过，短窗口ERROR/Exception=0；小模型人物/年份偏差如实保留，未测试网站登录或真实外发。20点任务只读回读全部绑定通过、尚未重启；[恢复报告](ai-assistant-availability-20261025.md)。
 
 2026-10-25查询修复已部署：原88轮诊断定位分流/否定/多轮/检索与1.7B理解共同问题。后端全套731（730通过/1跳过）与后续29项、Agent87项、构建器9项、重启36项、启动配置9项通过；首次装配失败回退并补完整JAR验证。两组开发8轮完成但未记为全正确，真实Bing来源/同名排除可追溯，目标页未逐页访问。部署23入口/95静态/3依赖/四组真实游客UI通过；完整与增量索引、认证检查点及安全58/11/1见[报告](ai-query-plan-v2-20261025.md)。
 
