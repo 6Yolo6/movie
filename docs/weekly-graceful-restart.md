@@ -10,7 +10,17 @@
 
 单次 `GYing One-off Graceful Restart 20261025-2000` 于2026-10-25 20:00实际触发，20:00:02返回1。独立attempt-log `c4b57f7156b540fe97d0ad73e908c1a3.json` 的stage=window、reason=`Invalid bounded one-off window`，未进入preflight、未停服务、未创建恢复journal；permit未消费且已过期，不复用。2026-10-26核主机最后启动仍为2026-09-24 21:51:41。根因为安装器生成.NET七位小数时间，绑定Python3.10.6的`datetime.fromisoformat`拒绝此格式。下次每周为2026-11-01 09:30:30。
 
-2026-10-26修复安装器：窗口字段改为秒级+08:00，注册前用配置Python调用实际runtime验证permit、失败走原回退；维护HTTP探针显式浏览器UA，避免Cloudflare403/1010将健康公网误判失败。实际Python3.10.6维护42/42、PowerShell任务时间8/8通过，本机API/Tunnel ready/公网主页与API探针均正常。12:56回读已安装runtime SHA `aa7fb8b56658965fbbf5309c6f8ea852de47b448166f6951e62bec4a0c66e6b8`，新增 `GYing One-off Graceful Restart 20261026-1305` Ready，窗口13:05–13:15开始、14:05截止（Windows NextRunTime13:05:05）；15项绑定/安全/恢复/入口校验全部通过，10个原运行容器的ID/镜像/启动时间和主机启动时间不变。旧脚本、任务XML与原子回退保留于 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-125553/`，排查/验证和取消新窗口脚本在 `E:/gying-tools/releases/restart-window-20261026/`。新permit尚未消费，实际重启/ASUS登录恢复待验，不能据注册宣布完成。
+2026-10-26修复安装器：窗口字段改为秒级+08:00，注册前用配置Python调用实际runtime验证permit、失败走原回退；维护HTTP探针显式浏览器UA，避免Cloudflare403/1010将健康公网误判失败。实际Python3.10.6维护42/42、PowerShell任务时间8/8通过，本机API/Tunnel ready/公网主页与API探针均正常。12:56回读已安装runtime SHA `aa7fb8b56658965fbbf5309c6f8ea852de47b448166f6951e62bec4a0c66e6b8`，新增 `GYing One-off Graceful Restart 20261026-1305` Ready，窗口13:05–13:15开始、14:05截止（Windows NextRunTime13:05:05）；15项绑定/安全/恢复/入口校验全部通过，10个原运行容器的ID/镜像/启动时间和主机启动时间不变。旧脚本、任务XML与原子回退保留于 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-125553/`，排查/验证和取消新窗口脚本在 `E:/gying-tools/releases/restart-window-20261026/`。12:56时新permit尚未消费、真实执行待验；该轮实际运行及恢复见下文。
+
+2026-10-26 13:05:05 单次任务实际进入维护，13:08:42 因 `gying-movie-social-publisher-1` 优雅停止超时取消。此前已停 nginx/frontend/OpenClaw/backend；publisher 停止收据13:19:04完成，维护journal13:19:32标为 `recovered`，入口和原宿主任务开关恢复。该轮未发系统重启，旧permit已消费，不复用。13:35外部记录 `container-init-deployment.json` 确认publisher/quark按原镜像、环境与卷部署 `init=true`，Quark用 `SIGINT`；其余容器身份/镜像/启动时间不变，入口正常。原镜像和六份认证加密检查点保留。
+
+17:30只完成注册/验证脚本与 `baseline-1730.json` 准备，Windows无对应单次任务，且无 `registration-1730.json` 或成功回读结果，因此未执行；不能将文件准备视为已注册。该阶段为何未完成注册缺少执行结果，不能还原。
+
+19:47排查发现普通会话无法读取高权限AI进程路径，导致readiness误报未登记frontend；管理员只读复验通过，四AI身份匹配、`busyJobs=[]`、`pendingAttempts=0`。62项维护安全测试及8项任务时间测试通过，10个运行容器的实际停止信号接收检查通过。19:52安装器原子备份/更新runtime为SHA `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，注册 `GYing One-off Graceful Restart 20261026-1959`，窗口19:59–20:09开始、20:59截止，Windows回读NextRunTime **19:59:59**，Ready、Interactive/Highest、禁止补跑/强制结束。原每周11月1日09:30:30和ASUS登录90秒恢复任务保持启用。旧runtime/任务XML与安装回退在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-195220/`，基线、管理员就绪结果、注册结果与取消未来窗口脚本在 `E:/gying-tools/releases/restart-window-20261026/`。19:52时真实触发与重启仍待验；该轮实际执行、恢复及后续修复见下文。
+
+19:59单次任务实际进入维护，在本机AI停止阶段抛出PowerShell异常，20:00:19恢复完成。frontend/router完成匹配退出收据，尚未停止容器或进入备份；原任务开关及本机/Tunnel/公网入口恢复。20:34按相同子进程调用复现 `local-common.ps1:67` 的空值方法异常：进程退出与属性读取竞争，`StartTime` 为空。修复读取并校验启动时间/可执行路径，空值或读取失败返回无匹配身份；原退出回执、实例与端口检查保持。7项身份/退出竞态测试通过，20:43–20:44相同子进程全量AI正常停止、退出码0并恢复四原服务；Agent代码 `e3d97f6` 已提交推送，原脚本在 `G:/gying-tools/restart-20261018/local-common.before-exit-race.ps1`，诊断和回归结果在上述外部release目录。
+
+20:48重新通过管理员readiness并注册 `GYing One-off Graceful Restart 20261026-2055`，开始窗口20:55–21:05、21:55截止，Windows回读NextRunTime **20:55:55**、Ready。现役runtime SHA仍为 `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，四AI和10容器身份/信号就绪，20:48无在途/无未完恢复；20:54快照出现一条新元数据RUNNING，执行前仍须自然空闲校验。安装旧runtime/任务XML与回退在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-204818/`。此新单次实际重启、认证备份与ASUS登录恢复仍待验；不能复用前次已消费许可。
 
 ## 控制边界
 
