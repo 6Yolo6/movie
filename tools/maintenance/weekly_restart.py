@@ -80,7 +80,10 @@ def boot():
 def healthy(url):
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with opener.open(url, timeout=5) as response:
+        # Cloudflare rejects urllib's default User-Agent (1010) even when
+        # the same public entry point is healthy for browser clients.
+        request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with opener.open(request, timeout=5) as response:
             return response.status == 200
     except Exception:
         return False

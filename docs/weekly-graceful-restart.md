@@ -8,12 +8,14 @@
 
 2026-10-25 09:30:30每周任务实际触发、结果1；原preflight前无尝试日志，确切原因不能还原。同期开P2P在途是可能阻挡证据，不能断言唯一原因。现役已补独立attempt-log、配置/runtime/主机绑定与有界等空闲。
 
-单次 `GYing One-off Graceful Restart 20261025-2000` 已登记，17:21:55只读回读Ready，2026-10-25 20:00 +08；20:00–20:10开始/21:00截止，未使用、不补跑、不强制终止，账户SID及全部绑定通过。17:24readiness无在途只是当时观察，不保证20点空闲；尚未真实重启，不在文档整理中触发或重复登记。下次每周为2026-11-01 09:30:30。
+单次 `GYing One-off Graceful Restart 20261025-2000` 于2026-10-25 20:00实际触发，20:00:02返回1。独立attempt-log `c4b57f7156b540fe97d0ad73e908c1a3.json` 的stage=window、reason=`Invalid bounded one-off window`，未进入preflight、未停服务、未创建恢复journal；permit未消费且已过期，不复用。2026-10-26核主机最后启动仍为2026-09-24 21:51:41。根因为安装器生成.NET七位小数时间，绑定Python3.10.6的`datetime.fromisoformat`拒绝此格式。下次每周为2026-11-01 09:30:30。
+
+2026-10-26修复安装器：窗口字段改为秒级+08:00，注册前用配置Python调用实际runtime验证permit、失败走原回退；维护HTTP探针显式浏览器UA，避免Cloudflare403/1010将健康公网误判失败。实际Python3.10.6维护42/42、PowerShell任务时间8/8通过，本机API/Tunnel ready/公网主页与API探针均正常。12:56回读已安装runtime SHA `aa7fb8b56658965fbbf5309c6f8ea852de47b448166f6951e62bec4a0c66e6b8`，新增 `GYing One-off Graceful Restart 20261026-1305` Ready，窗口13:05–13:15开始、14:05截止（Windows NextRunTime13:05:05）；15项绑定/安全/恢复/入口校验全部通过，10个原运行容器的ID/镜像/启动时间和主机启动时间不变。旧脚本、任务XML与原子回退保留于 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-125553/`，排查/验证和取消新窗口脚本在 `E:/gying-tools/releases/restart-window-20261026/`。新permit尚未消费，实际重启/ASUS登录恢复待验，不能据注册宣布完成。
 
 ## 控制边界
 
 - 开始仅周日09:30–09:39，发重启须10:30前，过窗取消（StartWhenAvailable=false）。校验主机/时区/程序配置/MySQL/入口/白名单/宿主任务/AI/备份，失败取消，不强杀业务。
-- 2026-10-25已安装的补丁：开始窗口内只对在途业务最多等待5分钟，每次重新检查窗口及完整preflight，未停任何服务前等自然空闲；其他失败不重试。独立attempt-log记录窗口、waiting_idle和失败理由，未创建维护journal不触发恢复。36项隔离测试通过，外部runtime已安装，SHA `a4305d05ec1696a81560fe141ffc2253b51de3c62fba1b33946ae01cb778f53c`。
+- 2026-10-25已安装的补丁：开始窗口内只对在途业务最多等待5分钟，每次重新检查窗口及完整preflight，未停任何服务前等自然空闲；其他失败不重试。独立attempt-log记录窗口、waiting_idle和失败理由，未创建维护journal不触发恢复。36项隔离测试通过，当日外部runtime SHA `a4305d05ec1696a81560fe141ffc2253b51de3c62fba1b33946ae01cb778f53c`；10月26现役SHA及附加验收见上文。
 - 记录ID/镜像/开关/原生MySQL-Redis启动类型；仅暂停Tunnel/原频道/Xunlei任务新调度。原已停止但Auto的mysqlzt/Redis暂Manual，恢复类型不主动启动。
 - 本机AI实例握手停frontend/router/backend；Ollama无安全控制台，应用停/连接清零/模型卸载后保进程待正常关机，不宣称提前退出。
 - 容器按nginx/frontend/OpenClaw/backend/publisher/source/Quark/诊断/PanSou/MinIO/Redis排空；业务docker stop --timeout -1防自动SIGKILL，worker写同请求/ID/启动会话完成收据。控制器超时取消，恢复等匹配收据，不凭暂时stopped启动造成迟到误停。

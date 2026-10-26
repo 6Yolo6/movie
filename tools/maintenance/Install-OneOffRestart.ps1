@@ -7,6 +7,19 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot 'TaskVerification.ps1')
+function ConvertTo-OneOffTimestamp {
+    param([DateTimeOffset]$Value)
+    # Python 3.10 rejects the seven fractional digits emitted by .NET's 'o'.
+    $Value.ToString("yyyy-MM-dd'T'HH:mm:sszzz")
+}
+function Confirm-OneOffPermit {
+    param([string]$Python, [string]$Runtime, [string]$ConfigPath, [string]$PermitPath)
+    $validator="import pathlib,runpy,sys; module=runpy.run_path(sys.argv[1]); config=pathlib.Path(sys.argv[2]).resolve(strict=True); module['oneoff_permit'](module['read'](config),config,sys.argv[3]); print('one-off-permit-valid')"
+    $receipt=& $Python -X utf8 -c $validator $Runtime $ConfigPath $PermitPath
+    if ($LASTEXITCODE -ne 0 -or ($receipt -join "`n") -ne 'one-off-permit-valid') {
+        throw 'One-off permit validation failed with the configured Python; no task registered.'
+    }
+}
 $configPath=(Resolve-Path -LiteralPath $ConfigFile).Path
 $config=Get-Content -Raw -Encoding UTF8 -LiteralPath $configPath | ConvertFrom-Json
 $start=[DateTimeOffset]::Parse($StartAt)
@@ -29,7 +42,7 @@ try { $readiness=($readinessOutput -join "`n") | ConvertFrom-Json } catch { thro
 if ($readiness.mode -ne 'read-only') { throw 'Unexpected readiness report; nothing installed.' }
 $name='GYing One-off Graceful Restart '+$start.ToString('yyyyMMdd-HHmm')
 if (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue) { throw 'One-off task already exists; refuse duplicate registration.' }
-$report=[ordered]@{mode='dry-run';task=$name;startAt=$start.ToString('o');latestStartAt=$start.AddMinutes(10).ToString('o');finishBefore=$start.AddMinutes(60).ToString('o');admin=$admin;runtime=$target;startWhenAvailable=$false;forceShutdown=$false;recovery='existing ASUS logon task';sourceSha256=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()}
+$report=[ordered]@{mode='dry-run';task=$name;startAt=(ConvertTo-OneOffTimestamp $start);latestStartAt=(ConvertTo-OneOffTimestamp $start.AddMinutes(10));finishBefore=(ConvertTo-OneOffTimestamp $start.AddMinutes(60));admin=$admin;runtime=$target;startWhenAvailable=$false;forceShutdown=$false;recovery='existing ASUS logon task';sourceSha256=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()}
 if (-not $Apply) { $report|ConvertTo-Json;return }
 if (-not $admin) { throw 'Administrator token required to update the protected runtime and register an Interactive/Highest task.' }
 $evidence=Join-Path $root ('oneoff-installation-'+(Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -48,6 +61,7 @@ try {
     [IO.File]::Replace($staged,$target,(Join-Path $evidence 'weekly_restart.atomic-before.py'))
     $permit=[ordered]@{version=1;id=$id;host=$config.host;configSha256=(Get-FileHash -LiteralPath $configPath -Algorithm SHA256).Hash.ToLowerInvariant();runtimeSha256=(Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant();startAt=$report.startAt;latestStartAt=$report.latestStartAt;finishBefore=$report.finishBefore;createdAt=[DateTimeOffset]::Now.ToString('o')}
     [IO.File]::WriteAllText($permitPath,($permit|ConvertTo-Json),[Text.UTF8Encoding]::new($false))
+    Confirm-OneOffPermit -Python $config.python -Runtime $target -ConfigPath $configPath -PermitPath $permitPath
     $action=New-ScheduledTaskAction -Execute $config.python -Argument ('-X utf8 "'+$target+'" --config "'+$configPath+'" --execute --once-window "'+$permitPath+'"') -WorkingDirectory $runtime
     $trigger=New-ScheduledTaskTrigger -Once -At $start.LocalDateTime
     $trigger.StartBoundary=$start.ToString("yyyy-MM-dd'T'HH:mm:sszzz")

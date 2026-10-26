@@ -2,6 +2,13 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="restart-window-20261026"></a>
+## 2026-10-26 单次重启失败排查与维护修复
+
+10月25日20:00单次计划实际触发，20:00:02在window阶段失败（`Invalid bounded one-off window`），未停服务或创建维护journal；主机最后启动仍为9月24日21:51:41。绑定Python3.10.6无法解析安装器.NET roundtrip七位小数，真实permit和实际版本复现通过。原每周09:30:30结果1仍无完整原因，不能归因本次格式错误。
+
+安装器改秒级+08:00窗口，写permit后、注册前以配置Python调用已安装runtime验证；失败保原回退。维护HTTP Request显式发送已实证的浏览器UA，避免Cloudflare默认urllib403/1010误判恢复失败。实际Python3.10.6维护42/42、PowerShell时间8/8及ops-readiness无FAIL；本机API、Tunnel ready、公网主页/API通过。证据与旧脚本回退在`E:/gying-tools/releases/restart-window-20261026/`，昨天过期permit/attempt保留。12:56回读新单次 `GYing One-off Graceful Restart 20261026-1305` Ready，13:05–13:15开始、14:05截止（Windows NextRunTime13:05:05）；15项验证全通过，10个原运行容器及主机启动时间不变。现役runtime SHA `aa7fb8b56658965fbbf5309c6f8ea852de47b448166f6951e62bec4a0c66e6b8`，原子回退/旧runtime/任务XML在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-125553/`。新permit未消费，实际重启与ASUS登录恢复仍待验，不以测试或注册代实际运行。
+
 <a id="ai-availability-20261025"></a>
 ## 2026-10-25 17:19–17:26：AI可用性恢复
 
