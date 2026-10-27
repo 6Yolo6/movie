@@ -73,6 +73,38 @@ class OneOffInstallerBridge(unittest.TestCase):
             '-ConfigPath', str(self.config), '-PermitPath', str(self.permit), '-Scenario', scenario,
         ], capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=30)
 
+    def readiness_gate(self, report):
+        harness = self.root / 'readiness.ps1'
+        harness.write_text(r'''param([string]$Installer,[string]$Report)
+$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$tokens=$null;$errors=$null
+$ast=[System.Management.Automation.Language.Parser]::ParseFile($Installer,[ref]$tokens,[ref]$errors)
+if ($errors.Count) { throw 'Installer syntax error' }
+$function=$ast.FindAll({param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Confirm-OneOffReadiness'},$false)
+if (-not $function) { throw 'Missing readiness helper' }
+Invoke-Expression $function.Extent.Text
+Confirm-OneOffReadiness ($Report | ConvertFrom-Json)
+'readiness-accepted'
+''', encoding='utf-8')
+        return subprocess.run(['powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(harness),
+                               '-Installer',str(ROOT / 'Install-OneOffRestart.ps1'),
+                               '-Report',json.dumps(report)],capture_output=True,text=True,encoding='utf-8',errors='replace',timeout=30)
+
+    def test_installer_accepts_only_recovered_readiness(self):
+        result = self.readiness_gate({'mode':'read-only','pendingAttempts':0})
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(result.stdout.strip(),'readiness-accepted')
+
+    def test_pending_or_invalid_readiness_is_rejected_before_installation(self):
+        for report in ({'mode':'read-only','pendingAttempts':1}, {'mode':'read-only','pendingAttempts':-1},
+                       {'mode':'read-only'}, {'mode':'read-only','pendingAttempts':None},
+                       {'mode':'read-only','pendingAttempts':'0'}, {'mode':'write','pendingAttempts':0}):
+            with self.subTest(report=report):
+                result = self.readiness_gate(report)
+                self.assertNotEqual(result.returncode,0)
+                self.assertNotIn('readiness-accepted',result.stdout)
+
     def test_installer_window_is_accepted_by_configured_python(self):
         result = self.bridge('valid')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

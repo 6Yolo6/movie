@@ -20,7 +20,13 @@
 
 19:59单次任务实际进入维护，在本机AI停止阶段抛出PowerShell异常，20:00:19恢复完成。frontend/router完成匹配退出收据，尚未停止容器或进入备份；原任务开关及本机/Tunnel/公网入口恢复。20:34按相同子进程调用复现 `local-common.ps1:67` 的空值方法异常：进程退出与属性读取竞争，`StartTime` 为空。修复读取并校验启动时间/可执行路径，空值或读取失败返回无匹配身份；原退出回执、实例与端口检查保持。7项身份/退出竞态测试通过，20:43–20:44相同子进程全量AI正常停止、退出码0并恢复四原服务；Agent代码 `e3d97f6` 已提交推送，原脚本在 `G:/gying-tools/restart-20261018/local-common.before-exit-race.ps1`，诊断和回归结果在上述外部release目录。
 
-20:48重新通过管理员readiness并注册 `GYing One-off Graceful Restart 20261026-2055`，开始窗口20:55–21:05、21:55截止，Windows回读NextRunTime **20:55:55**、Ready。现役runtime SHA仍为 `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，四AI和10容器身份/信号就绪，20:48无在途/无未完恢复；20:54快照出现一条新元数据RUNNING，执行前仍须自然空闲校验。安装旧runtime/任务XML与回退在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-204818/`。此新单次实际重启、认证备份与ASUS登录恢复仍待验；不能复用前次已消费许可。
+20:48重新通过管理员readiness并注册 `GYing One-off Graceful Restart 20261026-2055`，开始窗口20:55–21:05、21:55截止，Windows回读NextRunTime **20:55:55**、Ready。现役runtime SHA仍为 `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，四AI和10容器身份/信号就绪，20:48无在途/无未完恢复；20:54快照出现一条新元数据RUNNING，执行前仍须自然空闲校验。安装旧runtime/任务XML与回退在 `G:/gying-tools/restart-20261018/oneoff-installation-20261026-204818/`。该轮20:55:55实际触发，等空闲后20:56:01进入维护；20:56:15采集器又启动新元数据任务15685，停backend前的在途复检取消维护，20:58:00恢复完成。主机未重启，permit已消费。
+
+2026-10-26 22:03准备了22:11单次窗口与独立Worker恢复守护，但暂停开关误用只读备份账号，MySQL拒绝UPDATE；目标重启任务随即禁用。暂停operation于22:04:02标为restored，2026-10-27只读回查开关仍为原true、无待恢复维护，主机最后启动仍2026-09-24 21:51:41。2026-10-27 12:31新MySQL检查点 `G:/gying-backups/resource-hub-pause-20261027T043140Z/` 的 `mysql.sql.age` SHA-256与完整age认证解密通过；13:00复验实际backend应用账号具备sys_config所需SELECT/UPDATE，只读备份账号保持原用途。13:03只读基线10个运行容器停止信号检查、本机及公网六入口通过；出现新的元数据RUNNING，由新窗口暂停消费后自然排空，不改任务状态。外部证据在 `G:/gying-tools/restart-20261018/preparation-20261027-130338-4bc884dd/`；新helper和注册流程的后续处理见下文。
+
+2026-10-27完成暂停工具和 `Install-QuiescedRestart.ps1`：从现役backend内存读取应用账号并先验证sys_config SELECT/UPDATE，错误只保留阶段/数值码；检查点非空、24小时内、hash/size及许可在暂停前复验；完整绑定ASUS登录恢复任务的Action/Principal/Trigger/Settings，兼容Windows省略默认Enabled/WakeToRun。prepared阶段取消不写数据库；部分暂停由CAS恢复，守护等待原维护恢复完成；注册输出损坏仍按独立已知任务绑定取消，取消/恢复错误分别保存。107项维护测试及8项任务时间测试通过，仅隔离测试和只读链路验证，不能代替真实重启。
+
+用户随后指定**2026-10-27 17:30（Asia/Shanghai）**。冻结方案在17:15运行预检和临时Worker暂停，仅全部通过才注册17:30–17:40开始、18:30截止的单次重启；不提前暂停两小时，不复用旧许可。候选5文件及SHA清单、计划注册入口 `G:/gying-tools/restart-20261018/scheduled-20261027-1730/Schedule-1730.ps1` 已放入仅ASUS/SYSTEM/Administrators可访问的外部目录。15:30:20 UAC启动返回“操作已被用户取消”，管理员预检和任务注册没有执行。15:45回读17:15准备任务/17:30重启任务均不存在，10原容器/主机启动不变、worker原true、0待恢复维护、六入口正常；证据 `launch-failure.json`。本方案**尚未注册**，需在管理员PowerShell运行该受限注册入口；未取得管理员令牌时不会改runtime、开关或任务。
 
 ## 控制边界
 

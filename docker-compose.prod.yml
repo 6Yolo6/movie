@@ -123,6 +123,7 @@ services:
 
   social-publisher:
     <<: *security
+    init: true
     build: {context: ./social-publisher, dockerfile: Dockerfile}
     environment:
       SOCIAL_PUBLISHER_PORT: 8093
@@ -192,6 +193,8 @@ services:
 
   quark-auto-save:
     <<: *security
+    init: true
+    stop_signal: SIGINT
     profiles: [embedded-deps]
     image: cp0204/quark-auto-save:latest
     environment:

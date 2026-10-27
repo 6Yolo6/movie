@@ -107,6 +107,89 @@ def containers(c):
             "health": state.get("Health", {}).get("Status"), "restart": restart}
     return result
 
+LINUX_SIGNALS = dict(zip(
+    ["HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "BUS", "FPE", "KILL", "USR1", "SEGV",
+     "USR2", "PIPE", "ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP", "TSTP", "TTIN",
+     "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "IO", "PWR", "SYS"],
+    range(1, 32)))
+PID1_SIGNAL_PROBE = "cat /proc/1/status; printf '\\nPID1Exe: '; readlink /proc/1/exe || true"
+
+
+def stop_signal(value):
+    # The controller runs on Windows; its signal module does not use Linux numbers.
+    text = "TERM" if value in (None, "") else str(value).upper().removeprefix("SIG")
+    number = int(text) if text.isdecimal() else LINUX_SIGNALS.get(text)
+    if number not in LINUX_SIGNALS.values() or number in (9, 19):
+        raise Blocked("Unsupported or non-graceful Docker StopSignal")
+    return number, "SIG" + next(name for name, value in LINUX_SIGNALS.items() if value == number)
+
+
+def container_signal_proof(c, name, original):
+    # Docker's API can omit both default-valued keys entirely.
+    template = '{{json .Id}}|{{json .Image}}|{{json (index .Config "StopSignal")}}|{{json (index .HostConfig "Init")}}'
+    try:
+        cid, image, configured_signal, configured_init = [json.loads(part) for part in
+            docker(c, "inspect", "--format", template, original["id"], timeout=15).split("|", 3)]
+        if cid != original["id"] or image != original["image"]:
+            raise Blocked("Container identity changed during stop-signal preflight")
+        if configured_init is not None and not isinstance(configured_init, bool):
+            raise ValueError("Invalid Init field")
+        number, signal_name = stop_signal(configured_signal)
+        raw = docker(c, "exec", original["id"], "sh", "-c", PID1_SIGNAL_PROBE, timeout=15)
+        fields = {key: value.strip() for line in raw.splitlines()
+                  for key, colon, value in [line.partition(":")] if colon}
+        if not fields.get("PID1Exe"):
+            # Without CAP_SYS_PTRACE, UID 0 cannot inspect a different owner's exe.
+            # Read as the actual PID1 owner, including root-owned init wrappers.
+            owner = fields["Uid"].split()[0]
+            if not owner.isdecimal():
+                raise ValueError("Invalid PID1 owner")
+            raw = docker(c, "exec", "--user", owner, original["id"], "sh", "-c", PID1_SIGNAL_PROBE, timeout=15)
+            fields = {key: value.strip() for line in raw.splitlines()
+                      for key, colon, value in [line.partition(":")] if colon}
+        process = fields["Name"]
+        executable = fields["PID1Exe"].rsplit("/", 1)[-1]
+        if not process or not executable or any(not fields[key] for key in ("SigCgt", "SigIgn", "SigBlk")):
+            raise ValueError("Missing PID1 field")
+        caught, ignored, blocked = [int(fields[key], 16) for key in ("SigCgt", "SigIgn", "SigBlk")]
+        if any(value < 0 or value >= 1 << 64 for value in (caught, ignored, blocked)):
+            raise ValueError("Invalid signal mask")
+    except Blocked:
+        raise
+    except (KeyError, TypeError, ValueError):
+        raise Blocked("Cannot read Docker StopSignal/Init or Linux PID1 signal fields") from None
+    bit = 1 << (number - 1)
+    # Tini receives blocked signals with sigwait and forwards them to a non-PID1 child.
+    # An Init flag alone does not prove that an init process is actually running.
+    observed_init = executable in {"tini", "tini-static", "docker-init"}
+    if configured_init and not observed_init:
+        raise Blocked("Configured Docker init is not the observed PID1 executable")
+    if ignored & bit:
+        raise Blocked("PID1 " + process + " ignores " + signal_name)
+    if not observed_init and blocked & bit:
+        raise Blocked("PID1 " + process + " blocks " + signal_name)
+    if not observed_init and not caught & bit:
+        raise Blocked("PID1 " + process + " has no handler for " + signal_name +
+                      "; Linux PID1 cannot rely on its default termination action")
+    # Necessary signal-delivery check; completed application draining still needs the stop receipt.
+    return {"signal": signal_name, "pid1": process,
+            "receiver": "init-forwarder" if observed_init else "handler"}
+
+
+def validate_stop_signals(c, current):
+    proofs, failures = {}, []
+    for name, original in current.items():
+        if not original["running"] or name in c.get("recoveryExcluded", {}):
+            continue  # The reviewed diagnostic stops its verified tail child instead.
+        try:
+            proofs[name] = container_signal_proof(c, name, original)
+        except Blocked as error:
+            failures.append(name + ": " + str(error))
+    if failures:
+        raise Blocked("Stop-signal preflight failed before any service stop: " + "; ".join(failures))
+    return proofs
+
+
 def tasks(c):
     raw = ps("@(Get-ScheduledTask -TaskName " + ",".join(q(n) for n in c["tasks"]) +
              " | ForEach-Object {[PSCustomObject]@{name=$_.TaskName;enabled=$_.Settings.Enabled;state=[string]$_.State}})|ConvertTo-Json -Compress")
@@ -222,6 +305,8 @@ def preflight(c, admin=False, require_idle=True):
         raise Blocked("Unreviewed running containers: " + ",".join(unknown))
     if any(d["paused"] or d["restarting"] for d in current.values()):
         raise Blocked("Container is paused or restarting")
+    validate_diagnostics(c, current)
+    stop_signals = validate_stop_signals(c, current)
     task_state = tasks(c)
     if len(task_state) != len(c["tasks"]):
         raise Blocked("Expected scheduled task missing")
@@ -239,10 +324,9 @@ def preflight(c, admin=False, require_idle=True):
         raise Blocked("Local AI preflight did not return its read-only proof")
     if set(local.get("runningServices", [])) != set(local_running()):
         raise Blocked("Local AI listener/managed-service mismatch")
-    validate_diagnostics(c, current)
     authenticate_backup_identity(c)
     return {"at": now(), "boot": boot(), "containers": current, "tasks": task_state,
-            "nativeServices": native_baseline(), "localServices": local.get("runningServices", []), "localInstances": local.get("instances", []), "staleRows": jobs(c)}
+            "nativeServices": native_baseline(), "localServices": local.get("runningServices", []), "localInstances": local.get("instances", []), "staleRows": jobs(c), "stopSignals": stop_signals}
 
 def same(left, right):
     return left["id"] == right["id"] and left["image"] == right["image"]

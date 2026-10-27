@@ -12,6 +12,14 @@ function ConvertTo-OneOffTimestamp {
     # Python 3.10 rejects the seven fractional digits emitted by .NET's 'o'.
     $Value.ToString("yyyy-MM-dd'T'HH:mm:sszzz")
 }
+function Confirm-OneOffReadiness {
+    param($Readiness)
+    $pending=$Readiness.PSObject.Properties['pendingAttempts']
+    if ($Readiness.mode -ne 'read-only' -or -not $pending -or
+        ($pending.Value -isnot [int] -and $pending.Value -isnot [long]) -or $pending.Value -ne 0) {
+        throw 'Readiness requires zero pending maintenance attempts; recover before replacing runtime or registering a task.'
+    }
+}
 function Confirm-OneOffPermit {
     param([string]$Python, [string]$Runtime, [string]$ConfigPath, [string]$PermitPath)
     $validator="import pathlib,runpy,sys; module=runpy.run_path(sys.argv[1]); config=pathlib.Path(sys.argv[2]).resolve(strict=True); module['oneoff_permit'](module['read'](config),config,sys.argv[3]); print('one-off-permit-valid')"
@@ -39,7 +47,7 @@ if ($weekly.Actions.Count -ne 1 -or $weekly.Actions[0].Execute -ne $config.pytho
 $readinessOutput=& $config.python -X utf8 $source --config $configPath --readiness
 if ($LASTEXITCODE -ne 0) { throw 'Readiness failed; nothing installed.' }
 try { $readiness=($readinessOutput -join "`n") | ConvertFrom-Json } catch { throw 'Readiness returned an invalid report; nothing installed.' }
-if ($readiness.mode -ne 'read-only') { throw 'Unexpected readiness report; nothing installed.' }
+Confirm-OneOffReadiness $readiness
 $name='GYing One-off Graceful Restart '+$start.ToString('yyyyMMdd-HHmm')
 if (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue) { throw 'One-off task already exists; refuse duplicate registration.' }
 $report=[ordered]@{mode='dry-run';task=$name;startAt=(ConvertTo-OneOffTimestamp $start);latestStartAt=(ConvertTo-OneOffTimestamp $start.AddMinutes(10));finishBefore=(ConvertTo-OneOffTimestamp $start.AddMinutes(60));admin=$admin;runtime=$target;startWhenAvailable=$false;forceShutdown=$false;recovery='existing ASUS logon task';sourceSha256=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()}
