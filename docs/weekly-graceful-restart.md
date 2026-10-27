@@ -28,6 +28,8 @@
 
 用户随后指定**2026-10-27 17:30（Asia/Shanghai）**。冻结方案在17:15运行预检和临时Worker暂停，仅全部通过才注册17:30–17:40开始、18:30截止的单次重启；不提前暂停两小时，不复用旧许可。候选5文件及SHA清单、计划注册入口 `G:/gying-tools/restart-20261018/scheduled-20261027-1730/Schedule-1730.ps1` 已放入仅ASUS/SYSTEM/Administrators可访问的外部目录。15:30:20 UAC启动返回“操作已被用户取消”，管理员预检和任务注册没有执行。15:45回读17:15准备任务/17:30重启任务均不存在，10原容器/主机启动不变、worker原true、0待恢复维护、六入口正常；证据 `launch-failure.json`。本方案**尚未注册**，需在管理员PowerShell运行该受限注册入口；未取得管理员令牌时不会改runtime、开关或任务。
 
+2026-10-27用户将已过期的17:30计划改为**20:00（Asia/Shanghai）**。独立冻结候选在 `G:/gying-tools/restart-20261018/scheduled-20261027-2000/`，7文件SHA清单/受限ACL、107维护测试及8时间测试通过。19:31:55管理员预检（应用sys_config SELECT/UPDATE、新MySQL检查点完整age认证、现役任务绑定、0待恢复维护）通过并注册准备任务Ready，Windows回读19:45:45。19:45:57实际准备完成，部署helper SHA `52898f5ecab8c6dca91c08a3045d2b4d9556b740c18dacf461bb6e4d60431fd9`，Worker按CAS从true暂停为false，注册单次 `GYing One-off Graceful Restart 20261027-2000`，Ready、ASUS/Interactive/Highest、NextRunTime **20:00:00**，开始20:00–20:10、21:00截止，禁止补跑/强制结束。独立恢复守护Running，原ASUS登录90秒恢复任务保留。19:59十原容器ID/镜像/启动时间不变、六本机/公网入口正常、0待恢复维护；主机最后启动仍9月24日21:51:41，真实重启/登录恢复待验。前后验收、schedule-result与execution-result在冻结目录；runtime/任务XML及helper回退分别保留于 `G:/gying-tools/restart-20261018/oneoff-installation-20261027-194539/` 和 `G:/gying-tools/restart-20261018/quiesced-installation-20261027-194520-76c271ee/`。
+
 ## 控制边界
 
 - 开始仅周日09:30–09:39，发重启须10:30前，过窗取消（StartWhenAvailable=false）。校验主机/时区/程序配置/MySQL/入口/白名单/宿主任务/AI/备份，失败取消，不强杀业务。
