@@ -246,12 +246,24 @@ def assert_window(final=False):
     if not within_window(dt.datetime.now(dt.timezone.utc), final):
         raise Blocked("Outside Sunday 09:30 maintenance window; no catch-up reboot")
 
-def local_running():
+def local_running(c):
+    # Read the same private configuration as local-common.ps1; keep one port source.
+    try:
+        config_path = Path(c["localStart"]).resolve().parents[1] / ".local" / "environment.json"
+        config = read(config_path)
+        if not isinstance(config, dict):
+            raise ValueError()
+        port = config.get("ollamaPort", LOCAL["ollama"])
+    except (OSError, ValueError, TypeError, KeyError, IndexError):
+        raise Blocked("Local AI environment configuration unavailable or invalid") from None
+    if type(port) is not int or not 1024 <= port <= 65535 or port in {3000, 5000, 5002}:
+        raise Blocked("Local AI ollamaPort must be an integer from 1024 through 65535, distinct from application ports")
+    service_ports = {**LOCAL, "ollama": port}
     raw = ps("@(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty LocalPort -Unique)|ConvertTo-Json -Compress")
     ports = json.loads(raw or "[]")
     if isinstance(ports, int):
         ports = [ports]
-    return [name for name, port in LOCAL.items() if port in ports]
+    return [name for name, port in service_ports.items() if port in ports]
 
 def local_command(c, kind, *args):
     return cmd(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
@@ -322,7 +334,7 @@ def preflight(c, admin=False, require_idle=True):
     local = json.loads(local_command(c, "Stop", "-CheckOnly", "-ForReboot").splitlines()[-1])
     if local.get("checkOnly") is not True:
         raise Blocked("Local AI preflight did not return its read-only proof")
-    if set(local.get("runningServices", [])) != set(local_running()):
+    if set(local.get("runningServices", [])) != set(local_running(c)):
         raise Blocked("Local AI listener/managed-service mismatch")
     authenticate_backup_identity(c)
     return {"at": now(), "boot": boot(), "containers": current, "tasks": task_state,

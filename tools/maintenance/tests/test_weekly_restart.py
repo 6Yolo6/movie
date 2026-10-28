@@ -71,6 +71,56 @@ class MaintenanceSafety(unittest.TestCase):
         with self.assertRaises(w.Blocked):
             w.validate_config(self.cfg)
 
+    def local_config(self, config):
+        root = pathlib.Path(self.temp.name) / "local-ai"
+        (root / "scripts").mkdir(parents=True, exist_ok=True)
+        (root / ".local").mkdir(exist_ok=True)
+        self.cfg["localStart"] = str(root / "scripts" / "start-local.ps1")
+        path = root / ".local" / "environment.json"
+        w.save(path, config)
+        return path
+
+    def test_local_listener_detection_defaults_to_original_ollama_port(self):
+        self.local_config({})
+        with patch.object(w, "ps", return_value="[11434,5000,5002,3000]"):
+            self.assertEqual(w.local_running(self.cfg), ["ollama", "backend", "router", "frontend"])
+
+    def test_local_listener_detection_uses_shared_ollama_port(self):
+        self.local_config({"ollamaPort": 21434})
+        with patch.object(w, "ps", return_value="[21434,5000,5002,3000]"):
+            self.assertEqual(w.local_running(self.cfg), ["ollama", "backend", "router", "frontend"])
+        with patch.object(w, "ps", return_value="21434"):
+            self.assertEqual(w.local_running(self.cfg), ["ollama"])
+
+    def test_local_listener_detection_does_not_mistake_old_port_for_ollama(self):
+        self.local_config({"ollamaPort": 21434})
+        with patch.object(w, "ps", return_value="[11434,5000,5002,3000]"):
+            self.assertEqual(w.local_running(self.cfg), ["backend", "router", "frontend"])
+
+    def test_local_listener_detection_rejects_invalid_private_configuration(self):
+        for value in [True, None, "21434", 21434.0, 1023, 65536, 3000, 5000, 5002]:
+            with self.subTest(port=value):
+                self.local_config({"ollamaPort": value})
+                with patch.object(w, "ps") as ps, self.assertRaises(w.Blocked):
+                    w.local_running(self.cfg)
+                ps.assert_not_called()
+        for value in [[], None, "private-invalid-value"]:
+            with self.subTest(config=value):
+                self.local_config(value)
+                with patch.object(w, "ps") as ps, self.assertRaises(w.Blocked):
+                    w.local_running(self.cfg)
+                ps.assert_not_called()
+        path = self.local_config({})
+        path.write_text("private-invalid-json", encoding="utf-8")
+        with patch.object(w, "ps") as ps, self.assertRaises(w.Blocked) as error:
+            w.local_running(self.cfg)
+        self.assertNotIn("private-invalid-json", str(error.exception))
+        ps.assert_not_called()
+        path.unlink()
+        with patch.object(w, "ps") as ps, self.assertRaises(w.Blocked):
+            w.local_running(self.cfg)
+        ps.assert_not_called()
+
     def test_stopped_inspect_without_stop_receipt_does_not_allow_recovery(self):
         self.pending()
         with patch.object(w, "boot", return_value="old-boot"), patch.object(w, "ps") as ps:

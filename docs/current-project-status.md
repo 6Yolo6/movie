@@ -1,6 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-10-27，Asia/Shanghai。20:00单次重启安排及复检截至19:59；主机尚未重启。用户将过期17:30计划改为20:00，19:45:57预检/暂停及单次任务注册成功，ASUS登录恢复与Worker守护就绪。AI业务部署/入口证据仍为10月25日17:26，其他事实保留观测日期。
+更新时间：2026-10-28
+
+Asia/Shanghai。18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
 
 [知识导读](project-guide.md) · [AI架构](ai-architecture.md) · [求职路线](ai-career-roadmap.md) · [发布证据](history/releases.md)
 
@@ -14,7 +16,7 @@
 | --- | --- |
 | 公网 | `gyinghub.dpdns.org` → Cloudflare Tunnel → `127.0.0.1:80` nginx → Next.js frontend / Spring backend |
 | 业务 | Java17 backend、Next.js/React网页、Python gying-source、Node social-publisher |
-| AI | 网页业务分流/加密队列 → 本机Agent5000 → Ollama11434；Router5002、本机Vue3000仅本机入口 |
+| AI | 网页业务分流/加密队列 → 本机Agent5000 → Ollama21434；Router5002、本机Vue3000仅本机入口 |
 | 数据 | Windows MySQL、Redis、MinIO；PanSou、quark-auto-save、独立OpenClaw与网盘任务 |
 | 主机 | 仓库 `D:/gying-movie/movie`；Agent `D:/ai/local-ai-agent`；Docker数据 `G:/dockerdesktop/wsl/DockerDesktopWSL`；私有配置在仓库外 |
 | 运维 | 显式 `-p gying-movie -f docker-compose.prod.yml` 加现役审查覆盖；MySQL/JVM/容器时区一起核验 |
@@ -66,9 +68,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 事项 | 保留的待验/工作 |
 | --- | --- |
 | AI质量 | 人物/年份误解析、海上场景偏题、独立人工评分、同冻结语料检索实验；原30题/44轮与10,432快照不改写 |
-| AI服务与求职 | 网站登录条件/多轮/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
+| AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
-| 每周重启 | 10月26的17:30未注册；13:05/19:59/20:55失败均已恢复，22:03暂停误用只读备份账号失败、22:04恢复，22:11任务已禁用。AI退出修复e3d97f6已推送并真实停止/恢复验证。10月27暂停权限、恢复任务完整绑定及失败回退代码完成，107维护+8时间测试通过；原17:30方案UAC取消且已过期；用户改为20:00，19:45:57预检成功并暂停Worker，单次任务Ready、NextRunTime20:00:00，恢复守护Running，19:59六入口正常。受限脚本入口见[重启手册](weekly-graceful-restart.md)。真实重启/ASUS登录恢复待验，下次每周11月1日09:30:30 |
+| 每周重启 | 10月27日20:03:15真实重启；原登录恢复失败，10月28日18:21已按原journal手动恢复，0 pending、Worker=true、原任务开关/原生启动类型还原。Ollama端口21434与维护监听校验共用私有配置，111维护测试通过；下一次自然ASUS登录恢复仍待验，每周任务下次11月1日09:30:30。证据/回退见[重启手册](weekly-graceful-restart.md) |
 | QQ/周榜/发布 | 原频道多盘正文自然出站、官方主动消息/群内结果、三周榜首轮、临时清理与跨版本去重 |
 | 历史任务 | 10月8旧58条耗尽归档失败、两条精确旧RUNNING和自然元数据失败隔离未实证；不批量重置 |
 | 上游/配图 | GYING两个发布RuntimeError原因不明；源图只读存在、实际复制/分享未验 |
@@ -90,8 +92,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
-| 10月27重启准备 | 15:45复检主机最后启动仍9月24日21:51:41，10容器身份/镜像/启动状态相对13:03不变，六本机/公网入口正常、0待恢复维护、worker原true。实际应用账号sys_config SELECT/UPDATE及12:31新mysql.sql.age SHA-256/完整age解密复验通过；107维护与8时间测试通过，现役weekly SHA41a527…不变。旧17:30候选/UAC取消证据保留。20:00候选与登记/执行/前后验收在 `G:/gying-tools/restart-20261018/scheduled-20261027-2000/`；19:31:55登记准备任务NextRunTime19:45:45，19:45:57helper部署/Worker true→false及20:00单次任务注册成功，guard Running。19:59十原容器身份/镜像/启动不变、六入口正常、0待恢复维护；真实重启与登录恢复待验 |
-| 10月26重启排查 | 17:30计划无任务/无注册成功结果；系统最后启动仍9月24日21:51:41。13:05/19:59失败均有恢复证据，20:48无在途/无未完恢复，20:54基线出现一条新元数据RUNNING；自然等空闲由控制器校验，10容器信号接收通过；62维护+8时间测试，以及Agent退出竞态7项/实际子进程停止0退出并恢复通过。20:48新单次注册并回读NextRunTime20:55:55，现役runtime SHA `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，Agent脚本e3d97f6。基线/回退/诊断外部保留；20:55/22:03后续取消及恢复见[重启手册](weekly-graceful-restart.md)，实际整机重启待验 |
+| 10月28重启后恢复 | 系统事件/OS启动时间证实10月27日20:02:39发正常重启、20:03:15启动；18:20–18:21受限管理员脚本正常退出无子进程的旧Ollama宿主，迁移21434并同步维护runtime SHA `3223c5c1cfe9eb53e5db2854a4dc1abc397d447ead8a7c27013ed48c7eff2de9`。现役recover/readiness均0，journal=recovered、0 pending，原guard CAS还原Worker=true；10原容器ID/镜像不变。九入口200、Tunnel HA4；真实1.7B读取/Router及4B片库查询通过，简短追问限制另记。备份、执行结果和回退说明在 `G:/gying-tools/restart-20261018/recovery-20261028/port-21434-recovery/` |
+| 10月27重启准备 | 15:45复检主机最后启动仍9月24日21:51:41，10容器身份/镜像/启动状态相对13:03不变，六本机/公网入口正常、0待恢复维护、worker原true。实际应用账号sys_config SELECT/UPDATE及12:31新mysql.sql.age SHA-256/完整age解密复验通过；107维护与8时间测试通过，现役weekly SHA41a527…不变。旧17:30候选/UAC取消证据保留。20:00候选与登记/执行/前后验收在 `G:/gying-tools/restart-20261018/scheduled-20261027-2000/`；19:31:55登记准备任务NextRunTime19:45:45，19:45:57helper部署/Worker true→false及20:00单次任务注册成功，guard Running。19:59十原容器身份/镜像/启动不变、六入口正常、0待恢复维护；当时真实重启/登录恢复待验，10月28结果见上行 |
+| 10月26重启排查 | 17:30计划无任务/无注册成功结果；系统最后启动仍9月24日21:51:41。13:05/19:59失败均有恢复证据，20:48无在途/无未完恢复，20:54基线出现一条新元数据RUNNING；自然等空闲由控制器校验，10容器信号接收通过；62维护+8时间测试，以及Agent退出竞态7项/实际子进程停止0退出并恢复通过。20:48新单次注册并回读NextRunTime20:55:55，现役runtime SHA `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，Agent脚本e3d97f6。基线/回退/诊断外部保留；20:55/22:03后续取消及恢复见[重启手册](weekly-graceful-restart.md)，该轮未重启，10月27实际重启结果见上行 |
 | 10月25服务补丁 | Agent91/91、合成Job6/6、配置9/9、完整JAR隔离启动退出；真实条件/语义/Bing/只读队列及9入口正常，17:19–17:26短日志无ERROR/Exception；人物/年份偏差保留 |
 | 10月25查询上线 | 后端全套731（730通过/1跳过）及后续29项、Agent87项、构建器9项、重启36项；23入口/95静态/3依赖/四组真实游客UI；两组开发对照各8轮完成但非全正确 |
 | 10月23独立网站题 | 原30题/44轮重复2次88轮、84程序通过/4失败；不等于84答对，用户复核发现大量需求未命中。[冻结报告](evaluation/human-holdout-v1/README.md) |

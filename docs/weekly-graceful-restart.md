@@ -4,7 +4,7 @@
 
 ## 已记录的安装与运行状态
 
-24隔离安全测试（含Windows Job子树超时）+8偏移测试、公私钥内存认证、同镜像无网卷诊断SIGTERM143、readiness11容器/本机AI四服务通过；11原容器不变。UAC注册每周/登录恢复两任务Ready、Interactive/Highest，禁止补跑/强制结束、登录延迟90秒。安装证据 `G:/gying-tools/restart-20261018/installation-20261019-215841`。任务注册不等真实运行；下面补10月25真实触发与单次窗口，ASUS登录恢复尚待自然验收。
+24隔离安全测试（含Windows Job子树超时）+8偏移测试、公私钥内存认证、同镜像无网卷诊断SIGTERM143、readiness11容器/本机AI四服务通过；11原容器不变。UAC注册每周/登录恢复两任务Ready、Interactive/Highest，禁止补跑/强制结束、登录延迟90秒。安装证据 `G:/gying-tools/restart-20261018/installation-20261019-215841`。任务注册不等真实运行；下面保留各单次窗口证据；10月27真实重启、10月28手动恢复结果见后文，修复后的ASUS自然登录恢复仍待验。
 
 2026-10-25 09:30:30每周任务实际触发、结果1；原preflight前无尝试日志，确切原因不能还原。同期开P2P在途是可能阻挡证据，不能断言唯一原因。现役已补独立attempt-log、配置/runtime/主机绑定与有界等空闲。
 
@@ -30,12 +30,24 @@
 
 2026-10-27用户将已过期的17:30计划改为**20:00（Asia/Shanghai）**。独立冻结候选在 `G:/gying-tools/restart-20261018/scheduled-20261027-2000/`，7文件SHA清单/受限ACL、107维护测试及8时间测试通过。19:31:55管理员预检（应用sys_config SELECT/UPDATE、新MySQL检查点完整age认证、现役任务绑定、0待恢复维护）通过并注册准备任务Ready，Windows回读19:45:45。19:45:57实际准备完成，部署helper SHA `52898f5ecab8c6dca91c08a3045d2b4d9556b740c18dacf461bb6e4d60431fd9`，Worker按CAS从true暂停为false，注册单次 `GYing One-off Graceful Restart 20261027-2000`，Ready、ASUS/Interactive/Highest、NextRunTime **20:00:00**，开始20:00–20:10、21:00截止，禁止补跑/强制结束。独立恢复守护Running，原ASUS登录90秒恢复任务保留。19:59十原容器ID/镜像/启动时间不变、六本机/公网入口正常、0待恢复维护；主机最后启动仍9月24日21:51:41，真实重启/登录恢复待验。前后验收、schedule-result与execution-result在冻结目录；runtime/任务XML及helper回退分别保留于 `G:/gying-tools/restart-20261018/oneoff-installation-20261027-194539/` 和 `G:/gying-tools/restart-20261018/quiesced-installation-20261027-194520-76c271ee/`。
 
+## 2026-10-28 重启后恢复
+
+系统事件1074/6006/6005与维护journal互证：10月27日20:02:39发出正常重启，Windows最后启动为20:03:15.5。新检查点 `G:/gying-backups/20261027T120113.606809Z` 的21份age在journal记录hash及完整认证成功；不是异机恢复。十个原运行容器自行恢复，ID/镜像与停机基线一致；登录恢复20:51:51返回1，journal仍为recovery_failed，Worker保持false。
+
+10月28日定位到Windows IPv4/IPv6 TCP排除范围11402–11501覆盖Ollama11434；无监听但实际bind返回10013，child.stderr.log同样记录access permissions。21434临时loopback绑定通过。Agent启动、后端URL、健康/排空/退出统一读取 `.local/environment.json` 可选整数 `ollamaPort`（默认11434），本机设置21434；维护 `local_running(c)`读取同一文件，避免第二份端口配置。Ollama独立隐藏控制台保留，子日志采用三个明确句柄；新生命周期目录仅当前用户/SYSTEM/Administrators，实际新child日志ACL验证通过。未删除Windows端口保留或重启HNS/WinNAT。
+
+18:20:11受限管理员脚本验证候选/备份hash和进程身份后，对精确匹配、子进程已退出的旧Node宿主发送正常控制台中断，确认退出；设置21434并同步现役weekly runtime，SHA `3223c5c1cfe9eb53e5db2854a4dc1abc397d447ead8a7c27013ed48c7eff2de9`。原 `--recover` 于18:21:12使journal进入recovered；readiness退出0、0 pending、10容器与4个本机服务匹配。随后原Worker guard于18:21:37按CAS还原true，任务返回0。QQ/Xunlei任务开关及mysqlzt/Redis的Auto启动类型恢复，后两服务仍Stopped。没有再发系统重启、没有重建容器或改业务JAR/镜像。
+
+18:22起九个本机/公网入口200，Tunnel ready200/HA4；1.7B真实readFile返回正确package名称/dev命令，Router真实调用通过；4B对“查询片库中的星际穿越”完成计划与queryCatalog，返回一部。简短历史追问返回“未读到，无法确认”，不算多轮质量通过；网站登录用户链路未复验。维护111项、Ollama配置14项、身份7项、Node4项、Job宿主6项、新目录ACL3项与原console fixture12项通过。原 `GYing Maintenance Recovery` 任务LastResult仍保留10月27日失败1，本轮执行的是同一现役命令并取得0，不将手动恢复视作下一次自然登录已验。
+
+回退/执行证据在 `G:/gying-tools/restart-20261018/recovery-20261028/port-21434-recovery/`：配置/原runtime/原代码备份及hash、固定候选、执行结果、入口/真实AI、回退说明。旧单次permit已消费或过期，新runtime不匹配旧hash，不重新签发复用。回退端口需先按实例排空AI并确认原11434可绑定；仍被Windows保留时不能直接改回。下次每周任务为2026-11-01 09:30:30，修复后自然ASUS登录恢复仍待验。
+
 ## 控制边界
 
 - 开始仅周日09:30–09:39，发重启须10:30前，过窗取消（StartWhenAvailable=false）。校验主机/时区/程序配置/MySQL/入口/白名单/宿主任务/AI/备份，失败取消，不强杀业务。
 - 2026-10-25已安装的补丁：开始窗口内只对在途业务最多等待5分钟，每次重新检查窗口及完整preflight，未停任何服务前等自然空闲；其他失败不重试。独立attempt-log记录窗口、waiting_idle和失败理由，未创建维护journal不触发恢复。36项隔离测试通过，当日外部runtime SHA `a4305d05ec1696a81560fe141ffc2253b51de3c62fba1b33946ae01cb778f53c`；10月26现役SHA及附加验收见上文。
 - 记录ID/镜像/开关/原生MySQL-Redis启动类型；仅暂停Tunnel/原频道/Xunlei任务新调度。原已停止但Auto的mysqlzt/Redis暂Manual，恢复类型不主动启动。
-- 本机AI实例握手停frontend/router/backend；Ollama无安全控制台，应用停/连接清零/模型卸载后保进程待正常关机，不宣称提前退出。
+- 本机AI实例握手停frontend/router/backend；旧Ollama实例无安全控制台时，应用停/连接清零/模型卸载后保进程待正常关机，不宣称提前退出。
 - 容器按nginx/frontend/OpenClaw/backend/publisher/source/Quark/诊断/PanSou/MinIO/Redis排空；业务docker stop --timeout -1防自动SIGKILL，worker写同请求/ID/启动会话完成收据。控制器超时取消，恢复等匹配收据，不凭暂时stopped启动造成迟到误停。
 - 诊断gying-xunlei-path-probe-20261006唯一例外不恢复：精确ID/镜像/命令hash/restart=no，核PID1唯一tail后SIGTERM子进程；留容器/文件且停止，不能自动重建/删。
 
