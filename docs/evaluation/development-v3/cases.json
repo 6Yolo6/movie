@@ -1,0 +1,562 @@
+{
+  "schemaVersion": 2,
+  "version": "gying-development-v3",
+  "provenance": "agent-authored-regression",
+  "createdDate": "2026-10-28",
+  "authorship": "Implementer-authored development cases; not human-authored labels.",
+  "qualityBoundary": "Development only. Related intentions are disclosed. No independent holdout, executed results, human quality scores or relevance labels.",
+  "intendedUse": "New structured-query runner or manual acceptance; legacy schema validation does not imply legacy runner compatibility.",
+  "expectationScope": "Each expect object is empty: all current acceptance criteria are reviewRubric. Legacy mechanical pass cannot establish that these criteria passed.",
+  "failureTaxonomy": {
+    "routing": "分流",
+    "conditions": "条件",
+    "candidates": "候选",
+    "facts": "事实",
+    "clarification": "澄清",
+    "multiTurn": "多轮"
+  },
+  "sourceComparisons": [
+    {
+      "dataset": "human-holdout-v1",
+      "path": "docs/evaluation/human-holdout-v1/cases.json",
+      "canonicalSha256": "d157d1c2f6f7864af369434ec5e0fc3981c177b1468af7ff8796373dbc70d187",
+      "referenceKey": "sourceGroup",
+      "scope": "Observed historical source; shared intentions must not be claimed independent."
+    },
+    {
+      "dataset": "development-v2",
+      "path": "tools/ai/development_cases_v2.json",
+      "canonicalSha256": "5a202eb46b41dcddb5734d59f278e576d110a1591e51db15552dffc29641988b",
+      "referenceKey": "id",
+      "scope": "Observed historical source; shared intentions must not be claimed independent."
+    }
+  ],
+  "comparisonBoundary": "Normalized exact-duplicate checks do not prove semantic independence. relatedSourceGroups records shared failure intentions, not independent lineage.",
+  "cases": [
+    {
+      "id": "dev-v3-01",
+      "number": 1,
+      "title": "主题词不能当成精确片名",
+      "sourceGroup": "dev-v3-film-restoration-process",
+      "split": "development",
+      "failureCategories": [
+        "routing",
+        "candidates",
+        "facts"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-16",
+        "development-v2:dev-v2-03"
+      ],
+      "lineageNote": "以职业过程为主题，显式区分主题描述与片名；沿用语义候选相关性的共性缺口，不是独立盲测。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "想看记录修复师怎样修复旧胶片的纪录片，给我两部就好。这里的“旧胶片修复”是主题，不是片名。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "纪录片",
+              "主题是修复师修复旧胶片的过程",
+              "最多两部"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "按主题检索并用简介或来源解释相关性，不把整句只当片名",
+              "没有足够相关候选时如实说明"
+            ],
+            "usefulApproximationBoundary": "讲电影史但没有修复过程的片目不满足核心主题，最多单列为不满足条件的补充线索；不计有用近似或满足需求。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-02",
+      "number": 2,
+      "title": "语言并集与片长区间",
+      "sourceGroup": "dev-v3-language-or-and-runtime",
+      "split": "development",
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "facts"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-09",
+        "human-holdout-v1:question-10",
+        "development-v2:dev-v2-01",
+        "development-v2:dev-v2-06"
+      ],
+      "lineageNote": "检验语言字段、并集和严格时长上下界的组合；继承筛选逻辑的开发意图，不以更换数值声称新独立来源。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "动画电影",
+              "原始对白中文或西班牙语，按并集处理",
+              "70分钟 <= 片长 < 95分钟",
+              "最多三部"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "逐项核对可用字段，区分原始对白与发行配音",
+              "只有配音信息时不得声称原始对白满足"
+            ],
+            "usefulApproximationBoundary": "未知语言或片长的候选可以单列待核验，不能混入已满足硬条件的清单。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-03",
+      "number": 3,
+      "title": "评分来源与缺失值",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "split": "development",
+      "failureCategories": [
+        "conditions",
+        "facts",
+        "clarification"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-09",
+        "human-holdout-v1:question-27",
+        "development-v2:dev-v2-01",
+        "development-v2:dev-v2-06"
+      ],
+      "lineageNote": "从单一最低分推进到明确缺分处理和中途换评分来源，暴露字段混用；仍属开发验收。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "找以火车旅行为主题的纪录电影，最多四部，按豆瓣评分从高到低排；没有豆瓣分的放最后并写“暂无”，不能拿IMDb分补。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "纪录电影",
+              "主题为火车旅行",
+              "最多四部",
+              "按豆瓣评分降序；缺豆瓣分放末尾且标暂无",
+              "不以IMDb分替代豆瓣分"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "核对候选主题及评分出处",
+              "不得把缺分显示为零分或改用综合分"
+            ],
+            "usefulApproximationBoundary": "候选不足可少给，评分缺失可保留并标明；主题不相关不能用于补足数量。"
+          }
+        },
+        {
+          "request": {
+            "scope": "gying",
+            "message": "现在改用IMDb评分排，还是刚才这些片，不要重新补片。"
+          },
+          "useHistory": true,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "保持上一轮候选身份集合",
+              "使用IMDb评分降序，缺失仍放末尾并标暂无",
+              "不增加候选"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "只切换评分来源及顺序，候选身份来自上一轮观测",
+              "若全部缺分，说明无法比较"
+            ],
+            "usefulApproximationBoundary": "无IMDb分时承认不能排序，不推测评分或沿用豆瓣次序称为IMDb结果。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-04",
+      "number": 4,
+      "title": "同名版本辨认后查询",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "split": "development",
+      "failureCategories": [
+        "facts",
+        "clarification",
+        "multiTurn"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-28",
+        "human-holdout-v1:question-19",
+        "development-v2:dev-v2-02"
+      ],
+      "lineageNote": "用同名作品的版本身份消歧代替演员错配或序号追问，关注导演、年份与当前候选身份绑定。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "只列本次有依据的《小妇人》电影版本",
+              "按年份和导演区分身份",
+              "不混用演员"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "从实际片库候选或公开来源核对版本",
+              "未查到某版本不等于断言它不存在"
+            ],
+            "usefulApproximationBoundary": "元数据缺失时明确缺失，不编导演或版本年份。"
+          }
+        },
+        {
+          "request": {
+            "scope": "gying",
+            "message": "只查2019年那个版本的主演，其他版本不要带进来。"
+          },
+          "useHistory": true,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "限定《小妇人》2019年电影版本",
+              "主演与该版本的真实身份绑定",
+              "排除其他版本"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "从前轮证据解析身份；前轮未找到该版本时可以再查或说明未找到",
+              "身份仍不能确认时先澄清"
+            ],
+            "usefulApproximationBoundary": "可以承认缺少演员资料，不能拿另一版同名电影补答。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-05",
+      "number": 5,
+      "title": "明确排除需要内容依据",
+      "sourceGroup": "dev-v3-content-absence-evidence",
+      "split": "development",
+      "failureCategories": [
+        "conditions",
+        "candidates",
+        "facts",
+        "clarification"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-11",
+        "human-holdout-v1:question-15",
+        "human-holdout-v1:question-30"
+      ],
+      "lineageNote": "把简介无提及与确认不存在区分，使用户外纪录题材而非原题人物或年份替换。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "想看野外徒步纪录片，但必须没有动物受伤的镜头。如果你没有逐场内容指南或可核查的相关说明，就不要保证这一点，可以直接说还不能确认。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "野外徒步纪录片",
+              "明确排除动物受伤镜头",
+              "没有相关内容依据不能保证满足排除"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "区分简介未提及与有依据证明排除",
+              "证据不足时标待核验或请求进一步核查"
+            ],
+            "usefulApproximationBoundary": "主题相符但排除未核实的候选只能单列为待核验线索，不计满足硬条件或有用近似。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-06",
+      "number": 6,
+      "title": "跨轮替换条件与旧列表指代",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "failureCategories": [
+        "conditions",
+        "multiTurn",
+        "clarification"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-21",
+        "human-holdout-v1:question-23",
+        "development-v2:dev-v2-01"
+      ],
+      "lineageNote": "关注替换旧年份而非错误求交集，以及明确指向更早一轮列表的身份，不逐字改写旧追问。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "音乐电影",
+              "上映年份2000至2010年，含端点",
+              "片长不超过110分钟",
+              "最多两部"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "按真实资料核对条件",
+              "不足两部不补不合条件的影片"
+            ],
+            "usefulApproximationBoundary": "可以少给或说明无结果，超时长或错年份不算满足。"
+          }
+        },
+        {
+          "request": {
+            "scope": "gying",
+            "message": "年份改成2015年及以后，其他条件不变，重新给两部。"
+          },
+          "useHistory": true,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "新年份 >= 2015，替换原年份区间",
+              "保留音乐电影及不超过110分钟",
+              "最多两部"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "替换而非叠加相互冲突的年份过滤",
+              "返回当前轮的新候选清单"
+            ],
+            "usefulApproximationBoundary": "结果不足可少给，不自动放宽片长。"
+          }
+        },
+        {
+          "request": {
+            "scope": "gying",
+            "message": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？"
+          },
+          "useHistory": true,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "指向第一轮实际列表首个候选",
+              "导演资料与该候选身份一致"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "依据第一轮观测解析身份，不能误用最新一轮首个候选",
+              "第一轮没有可用候选或历史缺失时说明无法定位并澄清"
+            ],
+            "usefulApproximationBoundary": "无法定位时有效澄清可以满足需求，猜测片名或导演不算。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-07",
+      "number": 7,
+      "title": "原作者与演员角色区分",
+      "sourceGroup": "dev-v3-original-author-role",
+      "split": "development",
+      "failureCategories": [
+        "routing",
+        "conditions",
+        "facts"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-12",
+        "human-holdout-v1:question-23",
+        "development-v2:dev-v2-02"
+      ],
+      "lineageNote": "由演员/导演检索扩展到原作者改编关系，检验元数据不能直接表达的身份关系和出处。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "找村上春树原著改编的电影，最多三部，写清对应哪篇原作并给依据。这里说的是原作者，不是让你查他当主演或导演的作品。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "电影改编自村上春树原作",
+              "最多三部",
+              "写明对应原作并提供依据",
+              "不把原作者当演员或导演过滤"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "固定片库元数据缺少改编字段时，说明限制或使用受限资料检索核实",
+              "区分改编关系与仅受启发的相似题材"
+            ],
+            "usefulApproximationBoundary": "只有相似主题而无改编依据的候选不能满足，无法证实时少给或保留待核验。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-08",
+      "number": 8,
+      "title": "发布日期与版本来源核对",
+      "sourceGroup": "dev-v3-dated-official-release",
+      "split": "development",
+      "failureCategories": [
+        "routing",
+        "facts",
+        "clarification"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-29",
+        "development-v2:dev-v2-05"
+      ],
+      "lineageNote": "从实时版权断言改为官方重映公告及版本辨认，仍共享联网来源与时效性风险。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "记录本次实际查询日期",
+              "中国大陆院线重映公告",
+              "识别4K修复版及新一轮公告时间",
+              "提供来源与发布日期",
+              "不得执行购票或外部写操作"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "优先核对官方原始公告，区分旧公告、转载日期和新上映安排",
+              "搜索无结果或只有非官方信息时保留未知，不把未找到说成确认没有"
+            ],
+            "usefulApproximationBoundary": "可提供已找到的历史公告但必须标明不是本次新公告；不能据旧消息保证当前安排。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-09",
+      "number": 9,
+      "title": "请求本身无可行条件",
+      "sourceGroup": "dev-v3-contradictory-runtime",
+      "split": "development",
+      "failureCategories": [
+        "conditions",
+        "clarification",
+        "routing"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-25",
+        "human-holdout-v1:question-30",
+        "development-v2:dev-v2-06"
+      ],
+      "lineageNote": "以可直接证明的数值矛盾替代稀有影片条件或偏好冲突，不预设片库无某部影片。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "找一部电影，片长至少150分钟，同时不能超过100分钟。这两个都是硬条件；先告诉我条件能不能同时满足。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "同一电影片长 >= 150分钟且 <= 100分钟",
+              "两个条件均为硬条件",
+              "先判断条件是否同时可满足"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "明确两个片长条件冲突，询问用户愿意修改哪一项",
+              "不能靠截短版、拆集或自行放宽来声称满足"
+            ],
+            "usefulApproximationBoundary": "有效解释冲突和澄清可满足需求，不需要虚构候选。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dev-v3-10",
+      "number": 10,
+      "title": "软偏好与硬条件分开",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "split": "development",
+      "failureCategories": [
+        "candidates",
+        "conditions",
+        "multiTurn"
+      ],
+      "relatedSourceGroups": [
+        "human-holdout-v1:question-04",
+        "human-holdout-v1:question-05",
+        "human-holdout-v1:question-21"
+      ],
+      "lineageNote": "以用户明确声明的偏好弹性及后续授权为准，检验近似候选不能顺带放宽片目类型或主题。",
+      "turns": [
+        {
+          "request": {
+            "scope": "gying",
+            "message": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。"
+          },
+          "useHistory": false,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "剧情电影，不要剧集",
+              "小镇电影院是故事重要场景",
+              "最多三部",
+              "提供支持主题的剧情依据"
+            ],
+            "softPreferences": [
+              "结尾温暖，非硬性排除"
+            ],
+            "expectedBehavior": [
+              "区分主题证据和主观感受，结尾未经核实则说明未知",
+              "与偏好不完全一致时解释差异"
+            ],
+            "usefulApproximationBoundary": "核心主题及电影类型满足时，不那么温暖的结尾可列为有用近似；仍需用户或人工复核确认实用性。"
+          }
+        },
+        {
+          "request": {
+            "scope": "gying",
+            "message": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。"
+          },
+          "useHistory": true,
+          "expect": {},
+          "reviewRubric": {
+            "hardConditions": [
+              "剧情电影，不要剧集",
+              "电影院是核心场景",
+              "最多三部"
+            ],
+            "softPreferences": [],
+            "expectedBehavior": [
+              "移除温暖结尾偏好，保留并加强明确主题与类型限制",
+              "不能把只短暂出现电影院的影片充作符合"
+            ],
+            "usefulApproximationBoundary": "允许的变化仅限结尾偏好；不得把剧集或仅一幕电影院的影片当成已获准近似。"
+          }
+        }
+      ]
+    }
+  ]
+}

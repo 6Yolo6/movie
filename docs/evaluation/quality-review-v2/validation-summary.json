@@ -1,0 +1,225 @@
+{
+  "verifiedOn": "2026-10-28",
+  "timezone": "Asia/Shanghai",
+  "scope": "Offline quality-review tooling and development-case preparation; no new model evaluation or service deployment",
+  "pythonTests": {
+    "passed": 102,
+    "groups": {
+      "existingEvaluation": 52,
+      "existingArtifacts": 5,
+      "qualityReview": 26,
+      "qualityReviewPage": 14,
+      "developmentV3": 5
+    }
+  },
+  "syntheticBrowser": {
+    "syntheticOnly": true,
+    "status": "passed",
+    "checks": [
+      "84 synthetic answers and four failures start pending; hostile answer is text",
+      "score, diagnosis and attributed export accepted by Python summarizer",
+      "JSON import resumes all fields after reload",
+      "filters preserve all review data and use distinct failure/review/pending counts",
+      "invalid report import rejected without changing current review",
+      "invalid answer import rejected without changing current review",
+      "invalid duplicate import rejected without changing current review",
+      "invalid missing import rejected without changing current review",
+      "invalid boolean import rejected without changing current review",
+      "invalid categoryArray import rejected without changing current review",
+      "invalid failedScore import rejected without changing current review",
+      "invalid noAttribution import rejected without changing current review",
+      "invalid hardViolation import rejected without changing current review",
+      "failed rows do not accept answer scores",
+      "model attribution remains separate from human completion in UI and summary",
+      "mobile layout, no external requests and no browser errors"
+    ],
+    "output": "C:\\Users\\ASUS\\AppData\\Local\\Temp\\gying-quality-browser-w9xmlJ"
+  },
+  "historicalPageReadOnly": {
+    "readOnly": true,
+    "realHistoricalObservation": true,
+    "rows": 88,
+    "answered": 84,
+    "failed": 4,
+    "allScoresNull": true,
+    "reviewer": "unassigned",
+    "externalRequests": 0,
+    "pageErrors": 0,
+    "desktopAndMobileOverflow": false
+  },
+  "historicalPreservation": [
+    {
+      "path": "docs/evaluation/comparable-agent-v1/README.md",
+      "gitBlob": "aaa813c89fba6587b6fda622e5b9c80d83acada5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/cases.json",
+      "gitBlob": "4226bd6e57774093ec8488741a9dd62d4660f414",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/freeze.json",
+      "gitBlob": "995f162d1e9a17cb564e92994a143f4f728ee089",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/report.json",
+      "gitBlob": "9f6f1e4c8adef5b7c0d35b5a1da6c1aa8a66ce66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/review-summary.json",
+      "gitBlob": "289babe5a80e1ddad00dad35a2f2ba821ecac2b3",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/review.json",
+      "gitBlob": "68bd0f742d28843f8d48a358dd3064da25920a96",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/README.md",
+      "gitBlob": "ddbddeda49ebabdfc0d8d1f75a65c22d35b8d62b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/account-cleanup.json",
+      "gitBlob": "1fa0576bfd441615f22819ec76d31d0efcc32760",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/cases.json",
+      "gitBlob": "41a2efaf40dacfc4c51f1ce37d114fb05d3df5fd",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/catalog-snapshot.json",
+      "gitBlob": "5a0e61c13a6d15dc4de9084cf23f8700960ecb6a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/freeze.json",
+      "gitBlob": "f1f5af58a3941f83a4c1bb12582585083833540c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/observation-summary.json",
+      "gitBlob": "5cb1a9bd46e5ff3dd231591c4e46115813fccd66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/review-summary.json",
+      "gitBlob": "9541925ddaa2dab580a5e31cf70b0b868dbed2f2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/review.json",
+      "gitBlob": "f66e87dd36d400961b53c847cd3bb4479834aaf5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/runtime-verification.json",
+      "gitBlob": "8e80e67de5a7d841361c208e577e488c367bcb48",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/source-contract.json",
+      "gitBlob": "3dc8d3814b0f1c6fd13952faf4ca294b20088614",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/validation-summary.json",
+      "gitBlob": "f9b2da5d37143c2014d908b3e23b46bd4dcf29f7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/website-report.json",
+      "gitBlob": "62da73dc77bfbd60395caded1c226a2fce1682d0",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/build_review_page.py",
+      "gitBlob": "f9e5d75182d3ee083a24c3bfd96ff037bca7e603",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/comparable_evaluation.py",
+      "gitBlob": "8e6d7ac018a117294da1814ee8396413957fd8f3",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/development_cases_v2.json",
+      "gitBlob": "5e4183e1b7339d0ada87e4c155ca1f042b609168",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/evaluate_agent.py",
+      "gitBlob": "65e694e1d6fbe1edff0cfbcf238cca91b033533e",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/evaluate_website.py",
+      "gitBlob": "274879720fc9f711c60c1f4689776202e675ecaa",
+      "unchanged": true
+    }
+  ],
+  "sources": [
+    {
+      "path": "tools/ai/quality_review.py",
+      "sha256": "84e6218fccff0f7994e65632f64855de31879ff63a452bb05408984f7473729b"
+    },
+    {
+      "path": "tools/ai/build_quality_review_page.py",
+      "sha256": "ce622ea032e525eedaf94cca7ee24dd071a3c08a09069de83a44725a6ae0c327"
+    },
+    {
+      "path": "tools/ai/quality_review.html",
+      "sha256": "2485af02e4bf83a14cc34f6fd0204144f651093746255ca697b038a020959dd4"
+    },
+    {
+      "path": "tools/ai/quality_review_ui.js",
+      "sha256": "2592cfc8c8465ed542984cc368535ed7a37dda1b1a96eb02c469e4df1a5267bf"
+    },
+    {
+      "path": "tools/tests/test_quality_review.py",
+      "sha256": "539c3477cee9da9b44232d791520de864f626d11b9bce66a1c6f055038ef3d7c"
+    },
+    {
+      "path": "tools/tests/test_quality_review_page.py",
+      "sha256": "43c98867e028d07830c63523fec54273b41ea3b5be7b31ea2d049a2742278f03"
+    },
+    {
+      "path": "tools/tests/test_development_v3.py",
+      "sha256": "692a9719812225e758f2f0a013061de5eb9e4e37dc4ad78174e7724ce1feaa5b"
+    },
+    {
+      "path": "tools/tests/quality-review.browser.cjs",
+      "sha256": "7a4fea2b9aa0183bc2119e1f84459c59d0d179301d9634df01ef1fbd3e2075c1"
+    }
+  ],
+  "deliveredPage": {
+    "path": "E:\\gying-tools\\releases\\ai-evaluation-20261023\\private\\quality-review-v2-20261028\\review.html",
+    "sha256": "aeb92e8aca661ef97f29b49259bbed3afe1733d4c4a61d51ee9ea78e0a36c8d4",
+    "acl": "SYSTEM and current ASUS account only; inherited ACL verified"
+  },
+  "development": {
+    "cases": 10,
+    "turns": 15,
+    "datasetSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+    "executed": false,
+    "scored": false,
+    "independentHoldout": false
+  },
+  "humanReview": {
+    "completed": 0,
+    "pendingAnswers": 84,
+    "pendingDiagnoses": 88
+  },
+  "limitations": [
+    "Self-declared reviewer source is not verified identity",
+    "Historical sanitized observation text cannot be rehashed against the original-answer digest",
+    "No current structured-query runner implemented for development-v3",
+    "No improvement in model quality measured"
+  ]
+}

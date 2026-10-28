@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>GYing · 质量复核</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#202c3d;font:15px/1.65 system-ui,sans-serif}header,main{max-width:1080px;margin:auto;padding:26px}h1{font-size:28px;margin:0}h2{font-size:19px;margin:0}p{margin:10px 0}.muted{color:#526177;font-size:14px}.card,.intro{background:white;padding:24px;border:1px solid #dce3eb;border-radius:12px;margin:18px 0}.toolbar,.scores,.diagnosis,.reviewer{display:flex;gap:14px;flex-wrap:wrap;align-items:center}.toolbar{margin:18px 0}label{display:block}input,select,textarea,button{font:inherit;border:1px solid #9baabc;border-radius:6px;padding:8px;background:white;color:inherit;max-width:100%}button{background:#1559b7;color:white;cursor:pointer}textarea{display:block;width:100%;min-height:90px;resize:vertical}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui;background:#f4f6f9;border-radius:7px;padding:15px}details{margin:16px 0}summary{cursor:pointer;color:#24579b}.failure-options{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0}.failure-options label{display:flex;align-items:center;gap:4px}.warning{color:#914320}.badge{font-size:13px;color:#526177}.rubric{font-size:14px;border-left:3px solid #a8bddb;padding-left:12px}#count{font-weight:600}#status{min-height:26px;overflow-wrap:anywhere}#status[data-state=error]{color:#ab231e}#status[data-state=success]{color:#1c703b}.empty{padding:35px;text-align:center}.scores{margin:18px 0}.scores label,.diagnosis label{flex:1;min-width:145px}.scores select,.diagnosis select{display:block;width:100%}a{color:#1559b7}@media(max-width:600px){header,main{padding:14px}.card,.intro{padding:16px}h1{font-size:24px}.toolbar>*{width:100%}input[type=file]{width:100%}}
+</style>
+</head>
+<body>
+<header>
+<div class="badge">GYing / 第一阶段 · 质量闭环</div><h1>逐条核对，保留真实结论</h1>
+<p id="run-info" class="muted"></p>
+<div class="intro">
+<p>事实正确、依据一致、满足需求分别打 0–2 分；证据不足时保留待评。程序通过只代表执行检查通过。</p>
+<details><summary>评分口径与分类说明</summary>
+<p><b>事实正确：</b>0 关键事实错误；1 部分无法核查或有次要错误；2 关键事实可核查。<br><b>依据一致：</b>0 核心论断冲突或无据保证；1 支持不充分；2 限定在证据范围并说明未知。<br><b>满足需求：</b>0 硬条件未满足或偏题；1 部分满足或合理澄清；2 满足条件，或无解时有效说明与澄清。</p>
+<p>分流：任务进入了不适合的执行路径；条件：提取、组合或排除错误；候选：主题不相关或遗漏；事实：身份、年份等错误；澄清：应追问却直接保证；多轮：丢失前文条件或指代对象。原因可多选，备注中写明证据。</p>
+<p>“有用近似”单列统计，不能放宽用户明确的硬条件。无来源证据不标“已满足”。原观测已省略链接时，请自行核查公开资料；无法核查就保留待评。</p>
+</details>
+<div class="reviewer"><label>评分来源 <select id="reviewer-kind"><option value="unassigned">尚未指定</option><option value="human">人工复核</option><option value="model">模型辅助复核</option></select></label><label>复核者称呼 <input id="reviewer-name" maxlength="120" placeholder="填写称呼，无需真实姓名"></label></div>
+<p class="muted">来源由填写者声明；模型复核不会计入人工完成数。网页不联网，也不自动保存。离开前请导出；下次导入 JSON 继续填写。</p>
+</div>
+<div id="count" aria-live="polite"></div>
+<div class="toolbar"><button id="download">导出评分 JSON</button><label>导入继续 <input id="import-review" type="file" accept=".json,application/json"></label><label>显示 <select id="filter"><option value="all">全部记录</option><option value="pending">评分或诊断待完成</option><option value="failed">程序失败 / 未执行</option><option value="reviewed">三维评分已完成</option></select></label></div>
+<div id="status" role="status" aria-live="polite"></div>
+</header>
+<main id="cards"></main>
+<script id="data" type="application/json">__DATA__</script>
+<script>__SCRIPT__</script>
+</body></html>

@@ -118,3 +118,26 @@ python -X utf8 -m unittest discover -s tools/tests -p test_evaluation_artifacts.
 原30题用户复核发现大量需求未命中，这说明程序84/88通过只覆盖执行边界。后续开发对照各8轮completed也有海上场景偏题；可用性补丁真实条件/语义/Bing/队列成功，仍有人物/年份解析偏差。按[台账](history/releases.md#ai-query-20261025)读原证据，不把不同语料/模型/负载结果混算。
 
 有用近似可在人类usefulness评分中说明；明确人物排除、身份、评分来源等硬条件仍单独核对。新的检索比较必须固定同一公共语料和人工相关性标签，串行记录加载、冷/温缓存和内存；现有严格配对工具不适用于直接证明改变retriever后的质量收益。
+
+## 11. 2026-10-28质量复核v2与新开发题
+
+第一阶段新增独立[quality_review.py](../tools/ai/quality_review.py)、[页面生成器](../tools/ai/build_quality_review_page.py)与[开发题v3](evaluation/development-v3/README.md)。旧comparable/website评测器、旧题集和历史报告不改写，原v1评分协议继续适用；v2用单独命令和输出目录，不能把两种评分文件混用。
+
+v2绑定同一report/case/repetition/turn/answer哈希，保留所有计划轮次。三维分数分别统计已评/待评/均值，三项齐全才算完整评分；程序失败但有可观察回答仍能人工评分。无回答的失败或未执行轮次只允许填写失败分类及备注，不生成质量分。六类诊断允许重叠，不能把分类计数相加当作失败总数。诊断完成表示有依据备注并填写原因，或同时填写结论和硬条件核对；它与三维评分完成度分别报告。
+
+复核文件须明确human/model来源和称呼；来源由填写者声明，工具不验证真实身份。模型复核不计入人工完成数。硬条件有违规时拒绝“有用近似”或usefulness=2；“满足需求”需要硬条件已核对或确无适用条件。诊断要写依据，未知保持待评或证据不足，不能通过猜分完成进度。
+
+新版本地页面支持导出、导入续填、待评/程序失败/已评筛选、多轮前文和候选证据。页面无网络请求、不自动保存，离开前导出；现有输出拒绝覆盖。原观测经过链接/凭据省略，answerSha256是与原回答的绑定声明，不能对脱敏文字重算该hash来证明内容完整；来源缺失时仍须另行核查或保留待评。
+
+本轮[汇总与验收](evaluation/quality-review-v2/README.md)仍为0人工已评/84待评、4次程序失败，88条诊断待填。新开发题10场景/15轮仅完成口径和分组冻结，未执行、未评分；它不能直接交给旧网站runner，也不能声称独立质量提升。
+
+```powershell
+# 生成全空v2模板；所有输出路径必须是新文件。
+python -X utf8 tools/ai/quality_review.py --report docs/evaluation/human-holdout-v1/website-report.json --output E:/private/quality-v2-template.json
+# 用户导出评分后汇总；模型与人工来源分别记录。
+python -X utf8 tools/ai/quality_review.py --report docs/evaluation/human-holdout-v1/website-report.json --review E:/private/quality-v2-scored.json --output E:/private/quality-v2-summary.json
+# 可加 --review E:/private/quality-v2-scored.json 生成恢复进度的新页面。
+python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/human-holdout-v1/cases.json --report docs/evaluation/human-holdout-v1/website-report.json --observations E:/gying-tools/releases/ai-evaluation-20261023/private/website-observations.json --output E:/private/quality-v2-review.html
+```
+
+`E:/private`仅为需替换的受限外部输出路径。复核和生成页面均不登录网站、不启动模型、不重发任何历史请求；完成评分后再以共性失败类别决定下一轮开发验证。

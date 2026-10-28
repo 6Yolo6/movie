@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "datasetSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+  "datasetVersion": "gying-development-v3",
+  "provenance": "agent-authored-regression",
+  "frozenAt": "2026-10-28T12:53:07.071374+00:00",
+  "caseCount": 10,
+  "groupSplits": {
+    "dev-v3-film-restoration-process": "development",
+    "dev-v3-language-or-and-runtime": "development",
+    "dev-v3-rating-source-and-missing": "development",
+    "dev-v3-same-title-edition": "development",
+    "dev-v3-content-absence-evidence": "development",
+    "dev-v3-constraint-replacement-history": "development",
+    "dev-v3-original-author-role": "development",
+    "dev-v3-dated-official-release": "development",
+    "dev-v3-contradictory-runtime": "development",
+    "dev-v3-soft-preference-relaxation": "development"
+  },
+  "dataScope": "live-read-only-catalog; no frozen corpus or independent quality claim"
+}
