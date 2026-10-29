@@ -1,0 +1,85 @@
+{
+  "startedAt": "2026-10-29T15:36:14.732498+00:00",
+  "realMessagesPostsTransfers": 0,
+  "libraryCandidates": [
+    {
+      "id": "tmdb_movie_1202033",
+      "year": 2026,
+      "count": 5,
+      "title": "福尔摩斯小姐3"
+    },
+    {
+      "id": "wo1P",
+      "year": 2025,
+      "count": 5,
+      "title": "家弑服务"
+    },
+    {
+      "id": "gying_tv_pBaG",
+      "year": 2026,
+      "count": 5,
+      "title": "花开锦绣"
+    },
+    {
+      "id": "Xy43",
+      "year": 2013,
+      "count": 5,
+      "title": "进击的巨人 第一季"
+    },
+    {
+      "id": "OzeY",
+      "year": 2025,
+      "count": 4,
+      "title": "猎杀游戏"
+    }
+  ],
+  "checks": [
+    {
+      "kind": "QQ-reply-generation",
+      "title": "福尔摩斯小姐3",
+      "status": 200,
+      "elapsedSeconds": 0.31,
+      "libraryMarker": true,
+      "linkCount": 5,
+      "logStatus": "LIBRARY_RESOURCE"
+    },
+    {
+      "origin": "http://127.0.0.1:80",
+      "kind": "catalog-search",
+      "status": 200,
+      "records": 1
+    },
+    {
+      "origin": "http://127.0.0.1:80",
+      "kind": "internal-route-block",
+      "status": 404
+    },
+    {
+      "origin": "http://127.0.0.1:80",
+      "kind": "internal-route-block",
+      "status": 404
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "kind": "catalog-search",
+      "status": 200,
+      "records": 1
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "kind": "internal-route-block",
+      "status": 404
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "kind": "internal-route-block",
+      "status": 404
+    }
+  ],
+  "qqLibrarySearchPassed": true,
+  "verifiedTitle": "福尔摩斯小姐3",
+  "activeSessionCounts": [
+    "ADMIN\t1"
+  ],
+  "completedAt": "2026-10-29T15:36:26.514078+00:00"
+}

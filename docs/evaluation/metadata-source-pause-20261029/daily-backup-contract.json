@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T16:18:43.466615+00:00",
+  "status": "updated",
+  "addedOnly": {
+    "name": "metadata-source-pause-runtime-20261029",
+    "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json"
+  },
+  "previousConfigurationEncryptedAndAuthenticated": true,
+  "dryRunPassed": true,
+  "fullDailyBackupExecuted": false,
+  "checkpointArtifacts": 6
+}

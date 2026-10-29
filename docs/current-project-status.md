@@ -1,8 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-10-29
+更新时间：2026-10-30
 
-Asia/Shanghai。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
+Asia/Shanghai。10月29日23:34上线GYING六目录独立暂停，现有范围/选择/游标保持；后续1280/390浏览器视口与公网片目数据经现有代理验收按原UTC证据记录；当前可见海报通过、全页图片覆盖未计完整通过；本机Edge直连fake-IP超时单独待处理，日常备份已纳入新覆盖。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
 
 [知识导读](project-guide.md) · [AI架构](ai-architecture.md) · [求职路线](ai-career-roadmap.md) · [发布证据](history/releases.md)
 
@@ -31,7 +31,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | AI检索 | 明确片名/泛推荐直返；复杂Schema计划、原文人物核对、BM25+BGE-M3/RRF、指令4B、真实Bing轨迹与服务端多轮候选 | [架构](ai-architecture.md)、[评测](ai-evaluation.md) |
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
-| 采集和治理 | TMDB/GYING独立1–500页范围/页内游标，范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
+| 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
 | 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离 | [周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷同账户Edge会话验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
@@ -42,13 +42,15 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:0b349813f78962f52d84b0289aa9f5d383b8c93ce445343c6a70b9ef9a6c7984`，10月29缓存修复c4b8955；Xmx768MiB/容器1280MiB/含swap2560MiB |
-| Movie frontend | `sha256:9b4eb2377a1ce3608b9f501c6ef8c4c8394e086684ae3c931486d5f7838ae177`，10月25日16:00–16:01上线 |
+| Movie backend | `sha256:95bbb204b4d01a246dfe5218d8318655c59edc471774526b1c73f1a5a836b893`，10月29 GYING独立暂停；沿用缓存修复和Xmx768MiB/容器1280MiB/含swap2560MiB |
+| Movie frontend | `sha256:db1cc643cb8dad1c10071ac1b9b9c8ed14aea7ffe0188b308aeacfdf535b31a6`，10月29日23:34上线独立暂停按钮 |
 | 本机Agent | 代码9cd1d2b，10月29日20:56–20:57条件否定补丁；JAR SHA `01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b`，对应hash不可变运行副本 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 | Node | 10月23本机24.22.1/npm11.19.1、frontend容器22.23.4；旧版本保留 |
+
+10月29日GYING暂停检查点 `G:/gying-backups/metadata-source-pause-20261029T153345.685852Z` 六份age hash/完整认证通过；仅backend/frontend正常TERM退出143及固定镜像替换/nginx重载，其他容器/Agent/配置保持。有效第五覆盖为 `E:/gying-tools/releases/metadata-source-pause-20261029/candidate.json`，已纳入日常备份并dry-run；完整日常备份自然执行仍待验。回退旧worker须保护新暂停意图，保留当前数据/state/key。详见[本轮验收](evaluation/metadata-source-pause-20261029/README.md)。
 
 10月29日20:56 Agent检查点 `G:/gying-backups/ai-agent-final-20261029T125645.591658Z` 的旧JAR、私有配置/当前state/key/token、启动脚本三份age，SHA/完整认证解密通过；旧进程匹配stopped回执，新不可变runtime ready、独立hostInJob=false，其他本机服务/全部Movie容器与配置/索引保持。失败回退只恢复旧JAR，保留当前state/key。
 
@@ -97,6 +99,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
+| GYING六目录暂停 | 10月29日23:34两应用固定镜像上线；后端765项中735通过/30环境跳过，79定向及compile，前端8新增/15原场景与lint/TS通过。实际ADMIN匿名401/13项400、暂停/继续保持范围/其他五标记/所比游标；1280/390真页面、刷新持久化和未保存草稿通过。实际现役三个CSCORE按钮，六目录合成另验；QQ5本库链接、公网API及经现有代理片目数据通过，当前可见海报通过、全页图片覆盖仍partial；本机Edge直连fake-IP超时另记。六age认证，其他容器/Agent保持；[报告](evaluation/metadata-source-pause-20261029/README.md)含UTC原时点及研究限制 |
 | 10月29 Agent上线 | 20:56–20:57经用户重试及管理员确认，现役01eab8…/代码9cd1d2b；104项Java、14套报告/JAR/源码hash绑定。旧实例正常stopped、新PID36916/ready/独立hostInJob=false，三age认证；其他服务/容器、config/key/token/index与当前state保持。21:00两条模型查询HTTP/API200/completed，23.50/2.25秒，类别/评分来源均正确；两条都缺rating_desc、第二条缺剧情类型，只计专项通过，不计完整需求满足；公网片库仍200，18:02–21:01日志无新OOM。[报告](evaluation/resource-recovery-20261029/README.md) |
 | 10月29资源恢复 | Movie c4b8955/固定0b3498…镜像，742项Maven中712通过/30跳过（25 SQL、1 Redis、4权限）；42定向及compile通过。18:07/18:09内库冷/暖/TTL评分/语义/人物通过，12,400有效片目；18:13 QQ生成5条本库链接0.20秒，日志LIBRARY_RESOURCE；本机/公网片名API200、internal/QQ404；公网1280/390视口各100片目链接/98海报已加载，无loading/脚本错误。PanSou200/夸克10迅雷3、GYING实际search200/1片。四age认证、其他容器保持，未转存/发送/发布；[报告](evaluation/resource-recovery-20261029/README.md) |
 | 10月29质量续推 | 139项Python与17组Edge合成检查通过；真实离线页面88记录/84条模型需求评分，0外网/错误；25个历史文件不变。Agent最终候选SHA01eab8…，104项Java/完整JAR隔离启动退出通过；早先尚未部署，20:57上线另见本表。首次UAC取消，第二次前用户明确暂缓；后续用户恢复授权，Movie后端已另行恢复/上线，Agent首次再次UAC取消后，用户20:56明确重试并完成20:57替换，21:00两条类别/评分来源通过；排序与剧情类型遗漏另记，早先两条片库OOM失败不能当修复前后质量对照。[验收](evaluation/quality-fix-20261029/validation-summary.json) |

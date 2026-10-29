@@ -2,6 +2,11 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="metadata-source-pause-20261029"></a>
+## 2026-10-29：GYING 自动目录独立暂停
+
+23:34（Asia/Shanghai）仅backend/frontend固定候选替换，正常TERM退出143，nginx重载。六目录分别暂停/继续，保留来源选择、范围和任务游标；现役选中的三个CSCORE目录已做真实管理页面1280/390浏览器视口点击、刷新持久化及草稿保留，六目录另有合成覆盖。后续跨午夜验收的原UTC时间见[报告](../evaluation/metadata-source-pause-20261029/README.md)。完整后端765项735通过/30条件跳过，79定向/compile；前端8新增/15原场景及lint/TS通过。QQ回复5本库链接、公网API与经现有代理片目数据通过，当前可见海报通过，全页图片覆盖仍partial；本机Edge直连fake-IP超时单独待处理，未更改主机网络，未发送/转存/发布。Agent与其他容器/有效配置保持，六age检查点和旧固定镜像可回退；旧worker回退须保护新pause键意图，不恢复旧SQL/state。日常备份仅追加现役覆盖并dry-run，完整自然执行待验。TMDB普通列表500/Trending官方论坛索引1000区分保留，本站范围未改；真实TMDB边界未测。
+
 <a id="resource-recovery-20261029"></a>
 ## 2026-10-29 17:55–18:13：后端内存与QQ/公网恢复
 
