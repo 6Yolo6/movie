@@ -7,7 +7,7 @@
 
 用户恢复上线授权。旧heap512MiB/容器768MiB出现Java heap OOM与公网片库504；先以原fa06…镜像增加内存并正常TERM恢复，再18:02替换为c4b8955/固定0b349813…镜像，768MiB heap/1280MiB容器。BM25与人物字典按快照懒加载/复用，不降目录上限、不恢复旧数据。742项测试712通过/30条件跳过，冷/暖/TTL内库、QQ生成回复、本机/公网数据和完整桌面/手机页面通过；PanSou及GYING纯搜索有结果。普通USER会话缺失，登录后资源job与真实群消息/转存未验。
 
-检查点 `G:/gying-backups/backend-recovery-20261029T095350.591530Z` 四age hash/认证通过，旧镜像/有效覆盖/脚本与结果在 `E:/gying-tools/releases/ai-recovery-20261029-1750/`。仅后端替换/nginx重载，其他容器和数据/state/key保持。Agent最终01eab8…候选仍未上线，本窗口管理员UAC取消，旧33d9…继续运行，待系统确认重试；安全58/11/1未关闭。详见[报告](../evaluation/resource-recovery-20261029/README.md)。
+检查点 `G:/gying-backups/backend-recovery-20261029T095350.591530Z` 四age hash/认证通过，旧镜像/有效覆盖/脚本与结果在 `E:/gying-tools/releases/ai-recovery-20261029-1750/`。仅后端替换/nginx重载，其他容器和数据/state/key保持。Agent早先UAC取消后，用户明确重试，20:56–20:57最终01eab8…/代码9cd1d2b已上线；三age检查点 `G:/gying-backups/ai-agent-final-20261029T125645.591658Z` 完整认证，旧实例stopped、新独立hostInJob=false，其他本机/容器/配置/state保持。21:00两条类别/评分来源专项通过，评分排序与剧情类型遗漏保留；安全58/11/1未关闭。详见[报告](../evaluation/resource-recovery-20261029/README.md)。
 
 <a id="restart-window-20261026"></a>
 ## 2026-10-26 单次重启失败排查与维护修复

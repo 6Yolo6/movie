@@ -2,7 +2,7 @@
 
 更新时间：2026-10-29
 
-Asia/Shanghai。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent最终候选仍因管理员UAC取消未替换，待系统确认重试。离线质量复核/开发runner已完成，质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
+Asia/Shanghai。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
 
 [知识导读](project-guide.md) · [AI架构](ai-architecture.md) · [求职路线](ai-career-roadmap.md) · [发布证据](history/releases.md)
 
@@ -44,11 +44,13 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | --- | --- |
 | Movie backend | `sha256:0b349813f78962f52d84b0289aa9f5d383b8c93ce445343c6a70b9ef9a6c7984`，10月29缓存修复c4b8955；Xmx768MiB/容器1280MiB/含swap2560MiB |
 | Movie frontend | `sha256:9b4eb2377a1ce3608b9f501c6ef8c4c8394e086684ae3c931486d5f7838ae177`，10月25日16:00–16:01上线 |
-| 本机Agent | 代码cd79797，17:19–17:20补丁；JAR SHA `33d9b6748cdac41f82e7d7ac9afbcda4f672d2bf71fce640c235f8e3efdf3c37`，对应hash不可变运行副本 |
+| 本机Agent | 代码9cd1d2b，10月29日20:56–20:57条件否定补丁；JAR SHA `01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b`，对应hash不可变运行副本 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 | Node | 10月23本机24.22.1/npm11.19.1、frontend容器22.23.4；旧版本保留 |
+
+10月29日20:56 Agent检查点 `G:/gying-backups/ai-agent-final-20261029T125645.591658Z` 的旧JAR、私有配置/当前state/key/token、启动脚本三份age，SHA/完整认证解密通过；旧进程匹配stopped回执，新不可变runtime ready、独立hostInJob=false，其他本机服务/全部Movie容器与配置/索引保持。失败回退只恢复旧JAR，保留当前state/key。
 
 10月29本次后端检查点 `G:/gying-backups/backend-recovery-20261029T095350.591530Z` 的旧镜像、有效配置、backend-data与ai-state-key四份age，SHA/完整认证解密通过；两次TERM均正常exit143，仅backend替换/nginx重载。原镜像与救援/最终覆盖在 `E:/gying-tools/releases/ai-recovery-20261029-1750/`；应用回退保留当前数据/state/key。
 
@@ -69,7 +71,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| AI质量 | 10月29日84条旧回答已直接模型辅助需求复核（82未满足/2部分有用），不计人工验收。新runner37项测试，v3真实网站15轮未执行；类别/评分来源否定补丁104项测试且JAR隔离启动通过；用户恢复上线授权后，管理员UAC再次取消，现役仍旧包，待系统确认重试。[本轮交付](evaluation/quality-fix-20261029/README.md)；年份/多轮等缺口保留，旧题/报告不改写 |
+| AI质量 | 10月29日84条旧回答已直接模型辅助需求复核（82未满足/2部分有用），不计人工验收。新runner37项测试，v3真实网站15轮未执行；类别/评分来源否定补丁104项测试/隔离启动通过，20:57最终候选已上线；21:00两条实查类别与评分来源均通过，但sort缺失、第二条剧情类型遗漏，未计整体需求满足。[本轮交付](evaluation/quality-fix-20261029/README.md)；年份/多轮等缺口保留，旧题/报告不改写 |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
@@ -95,8 +97,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
+| 10月29 Agent上线 | 20:56–20:57经用户重试及管理员确认，现役01eab8…/代码9cd1d2b；104项Java、14套报告/JAR/源码hash绑定。旧实例正常stopped、新PID36916/ready/独立hostInJob=false，三age认证；其他服务/容器、config/key/token/index与当前state保持。21:00两条模型查询HTTP/API200/completed，23.50/2.25秒，类别/评分来源均正确；两条都缺rating_desc、第二条缺剧情类型，只计专项通过，不计完整需求满足；公网片库仍200，18:02–21:01日志无新OOM。[报告](evaluation/resource-recovery-20261029/README.md) |
 | 10月29资源恢复 | Movie c4b8955/固定0b3498…镜像，742项Maven中712通过/30跳过（25 SQL、1 Redis、4权限）；42定向及compile通过。18:07/18:09内库冷/暖/TTL评分/语义/人物通过，12,400有效片目；18:13 QQ生成5条本库链接0.20秒，日志LIBRARY_RESOURCE；本机/公网片名API200、internal/QQ404；公网1280/390视口各100片目链接/98海报已加载，无loading/脚本错误。PanSou200/夸克10迅雷3、GYING实际search200/1片。四age认证、其他容器保持，未转存/发送/发布；[报告](evaluation/resource-recovery-20261029/README.md) |
-| 10月29质量续推 | 139项Python与17组Edge合成检查通过；真实离线页面88记录/84条模型需求评分，0外网/错误；25个历史文件不变。Agent最终候选SHA01eab8…，104项Java/完整JAR隔离启动退出通过但未部署。首次UAC取消，第二次前用户明确暂缓；后续用户恢复授权，Movie后端已另行恢复/上线，但Agent管理员UAC再次取消仍未替换；早先两条新查询暴露片库OOM，未测得条件补丁质量提升。[验收](evaluation/quality-fix-20261029/validation-summary.json) |
+| 10月29质量续推 | 139项Python与17组Edge合成检查通过；真实离线页面88记录/84条模型需求评分，0外网/错误；25个历史文件不变。Agent最终候选SHA01eab8…，104项Java/完整JAR隔离启动退出通过；早先尚未部署，20:57上线另见本表。首次UAC取消，第二次前用户明确暂缓；后续用户恢复授权，Movie后端已另行恢复/上线，Agent首次再次UAC取消后，用户20:56明确重试并完成20:57替换，21:00两条类别/评分来源通过；排序与剧情类型遗漏另记，早先两条片库OOM失败不能当修复前后质量对照。[验收](evaluation/quality-fix-20261029/validation-summary.json) |
 | 10月28重启后恢复 | 系统事件/OS启动时间证实10月27日20:02:39发正常重启、20:03:15启动；18:20–18:21受限管理员脚本正常退出无子进程的旧Ollama宿主，迁移21434并同步维护runtime SHA `3223c5c1cfe9eb53e5db2854a4dc1abc397d447ead8a7c27013ed48c7eff2de9`。现役recover/readiness均0，journal=recovered、0 pending，原guard CAS还原Worker=true；10原容器ID/镜像不变。九入口200、Tunnel HA4；真实1.7B读取/Router及4B片库查询通过，简短追问限制另记。备份、执行结果和回退说明在 `G:/gying-tools/restart-20261018/recovery-20261028/port-21434-recovery/` |
 | 10月27重启准备 | 15:45复检主机最后启动仍9月24日21:51:41，10容器身份/镜像/启动状态相对13:03不变，六本机/公网入口正常、0待恢复维护、worker原true。实际应用账号sys_config SELECT/UPDATE及12:31新mysql.sql.age SHA-256/完整age解密复验通过；107维护与8时间测试通过，现役weekly SHA41a527…不变。旧17:30候选/UAC取消证据保留。20:00候选与登记/执行/前后验收在 `G:/gying-tools/restart-20261018/scheduled-20261027-2000/`；19:31:55登记准备任务NextRunTime19:45:45，19:45:57helper部署/Worker true→false及20:00单次任务注册成功，guard Running。19:59十原容器身份/镜像/启动不变、六入口正常、0待恢复维护；当时真实重启/登录恢复待验，10月28结果见上行 |
 | 10月26重启排查 | 17:30计划无任务/无注册成功结果；系统最后启动仍9月24日21:51:41。13:05/19:59失败均有恢复证据，20:48无在途/无未完恢复，20:54基线出现一条新元数据RUNNING；自然等空闲由控制器校验，10容器信号接收通过；62维护+8时间测试，以及Agent退出竞态7项/实际子进程停止0退出并恢复通过。20:48新单次注册并回读NextRunTime20:55:55，现役runtime SHA `41a527965dbe98ae5cf1d1cbb18fd4aa3cc422a070332e53339f2d9007948683`，Agent脚本e3d97f6。基线/回退/诊断外部保留；20:55/22:03后续取消及恢复见[重启手册](weekly-graceful-restart.md)，该轮未重启，10月27实际重启结果见上行 |
