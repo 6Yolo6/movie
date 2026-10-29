@@ -2,6 +2,13 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="resource-recovery-20261029"></a>
+## 2026-10-29 17:55–18:13：后端内存与QQ/公网恢复
+
+用户恢复上线授权。旧heap512MiB/容器768MiB出现Java heap OOM与公网片库504；先以原fa06…镜像增加内存并正常TERM恢复，再18:02替换为c4b8955/固定0b349813…镜像，768MiB heap/1280MiB容器。BM25与人物字典按快照懒加载/复用，不降目录上限、不恢复旧数据。742项测试712通过/30条件跳过，冷/暖/TTL内库、QQ生成回复、本机/公网数据和完整桌面/手机页面通过；PanSou及GYING纯搜索有结果。普通USER会话缺失，登录后资源job与真实群消息/转存未验。
+
+检查点 `G:/gying-backups/backend-recovery-20261029T095350.591530Z` 四age hash/认证通过，旧镜像/有效覆盖/脚本与结果在 `E:/gying-tools/releases/ai-recovery-20261029-1750/`。仅后端替换/nginx重载，其他容器和数据/state/key保持。Agent最终01eab8…候选仍未上线，本窗口管理员UAC取消，旧33d9…继续运行，待系统确认重试；安全58/11/1未关闭。详见[报告](../evaluation/resource-recovery-20261029/README.md)。
+
 <a id="restart-window-20261026"></a>
 ## 2026-10-26 单次重启失败排查与维护修复
 
