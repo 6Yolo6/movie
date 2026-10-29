@@ -93,7 +93,7 @@
       if (observation) {
         add(card,'p','本次回答（观测记录，不能当作标准答案）','muted'); add(card,'pre',observation.answer);
         const evidence = add(card,'details'); add(evidence,'summary','候选、业务条件与执行轨迹');
-        add(evidence,'pre',JSON.stringify({movies:observation.movies,catalog:observation.catalog,trace:reportRow.trace,checks:reportRow.checks},null,2));
+        add(evidence,'pre',JSON.stringify({movies:observation.movies,catalog:observation.catalog,queryPlan:observation.queryPlan,evidence:observation.evidence,trace:observation.trace ?? reportRow.trace,checks:reportRow.checks},null,2));
       } else add(card,'p','没有可评分的回答；可记录失败原因。','warning');
       const scoring = add(card,'div','','scores');
       for (const [field,title] of [['factuality','事实正确'],['grounding','依据一致'],['usefulness','满足需求']]) selectField(scoring,row,field,title,{'':'待评',0:'0 · 失败',1:'1 · 部分满足',2:'2 · 满足'},!hasAnswer);

@@ -26,7 +26,7 @@ function fixtures() {
     if (row.passed) {
       const answer = `合成回答 ${c.number}/${rep} </script><img src=https://invalid.example/ onerror=alert(1)>`;
       row.answerSha256 = digest(answer);
-      observations.push({caseId: c.id, repetition: rep, turn: 1, answerSha256: row.answerSha256, answer, movies: [{id: `fixture-${c.number}`, titleCn: '合成候选', year: 2020}], catalog: {filters: {year: 2020}}});
+      observations.push({caseId: c.id, repetition: rep, turn: 1, answerSha256: row.answerSha256, answer, movies: [{id: `fixture-${c.number}`, titleCn: '合成候选', year: 2020}], catalog: {filters: {year: 2020}}, queryPlan: {category: 'movie', inheritContext: false}, evidence: {unverifiedConditions: ['合成未知条件'], webResults: [{snippet: '</script><img src=https://invalid.example/ onerror=alert(1)>'}], retrieval: {method: 'rrf'}}, trace: [{type: 'planning', status: 'completed'}]});
     } else row.failure = 'SYNTHETIC_JOB_FAILED';
     report.rows.push(row);
   }
@@ -60,6 +60,10 @@ function fixtures() {
     await page.locator('#reviewer-kind').selectOption('human');
     await page.locator('#reviewer-name').fill('Synthetic UI tester');
     const card = page.locator('[data-key="h01:1:1"]');
+    const evidenceText = await card.locator('details pre').textContent();
+    for (const expected of ['queryPlan', 'inheritContext', '合成未知条件', 'webResults', 'rrf', 'planning']) assert(evidenceText.includes(expected), `missing structured evidence: ${expected}`);
+    assert.equal(await card.locator('img').count(), 0);
+    checks.push('structured query plan, uncertainty, web evidence and trace render as inert text');
     await card.locator('[data-field="factuality"]').selectOption('2');
     await card.locator('[data-field="grounding"]').selectOption('1');
     await card.locator('[data-field="usefulness"]').selectOption('1');

@@ -31,7 +31,7 @@
 
 ## 使用方式与验收状态
 
-先以新结构化查询 runner 或人工逐轮执行方式采集实际观测，保持同一场景历史；真实执行需遵守既有凭据、只读入口、串行模型和不重试推理约束。当前没有为本套编写或运行新的网络 runner，也没有产生报告、回答或分数。
+先以新结构化查询 runner 或人工逐轮执行方式采集实际观测，保持同一场景历史；真实执行需遵守既有凭据、只读入口、串行模型和不重试推理约束。10月28日准备时尚无专用runner；10月29日已新增 `tools/ai/evaluate_development.py`，默认只输出计划。尚未使用现成专用USER会话运行本套，因此仍无真实报告、回答或分数。
 
 不要把本套直接交给旧网站 `evaluate_website.py` 后宣称可运行：它只接受特定 holdout 协议，字段及工具 trace 均不同。旧 `comparable_evaluation.py` 能校验本套的版本/来源组及 freeze，不代表它能判定 `reviewRubric`；运行旧回归器即使程序通过，也不能替代这些口径的质量验收。
 
@@ -42,3 +42,18 @@ python -X utf8 -m unittest discover -s tools/tests -p test_development_v3.py
 ```
 
 `freeze.json` 绑定整套题目及口径，不绑定未来回答。后续修改题目、标签或来源关系时应另建版本和清单，保留本版本；真实模型输出只作一次运行的观测。有了观测后，仍需分别报告失败轮数、待复核数、三项评分，以及硬条件和有用近似的复核记录。本套本轮状态为 **未执行 / 未评分**。
+
+## 2026-10-29 runner已适配，真实采集待执行
+
+新[runner](../../../tools/ai/evaluate_development.py)绑定本套freeze，全development且逐轮expect保持空；不改旧网站runner。对齐网页requestKey、14分钟前轮job引用、最近4对问答和UTF-16预算；提交串行且只发一次，轮询身份变化、未知完成状态、无效终态答案会停止后续请求并保留已观察记录。程序失败但有答案仍可复核。
+
+观测保存queryPlan、原样null评分、候选公开字段、检索/联网/未核验条件及实际发送历史（均脱敏）；报告只保留hash、执行元数据和程序检查。复核页现在展示结构化证据。37项新runner测试通过，但不是37条真实模型问答。
+
+```powershell
+# 仅计划：10场景 / 15轮 / 0网络请求
+python -X utf8 tools/ai/evaluate_development.py
+# 先创建并保护外部观测目录；使用既有专用USER会话。这里路径仅为需替换的示例。
+python -X utf8 tools/ai/evaluate_development.py --run --session-file E:/private/website-session.json --output E:/private/development-report-new.json --observations E:/private/development-observations-new.json
+```
+
+工具不登录、不启用账号，目录ACL由操作者先核验。人工质量分与相关性标签不自动产生；本套仍是 **未执行 / 未评分**，不能把同日两项Agent专项探针混入15轮网站评测。

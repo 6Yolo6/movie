@@ -141,3 +141,11 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 ```
 
 `E:/private`仅为需替换的受限外部输出路径。复核和生成页面均不登录网站、不启动模型、不重发任何历史请求；完成评分后再以共性失败类别决定下一轮开发验证。
+
+## 12. 2026-10-29 辅助诊断与当前网站采集器
+
+用户反馈大量未命中后，Codex直接完成[历史逐轮辅助复核](evaluation/assisted-review-20261029/README.md)：84条有回答需求维度已评，48条三维完整；未知事实/来源保持null。来源为model，用户整体反馈与模型逐条判断分开；原报告与全空人工模板不覆盖，不再把用户逐条点选作为继续开发前提。
+
+新增[evaluate_development.py](../tools/ai/evaluate_development.py)对齐当前网站requestKey、previousJobId和结构化trace，完整契约及命令见[开发题v3](evaluation/development-v3/README.md#2026-10-29-runner已适配真实采集待执行)。默认0网络；仅现成USER会话，继续禁用旧test账号；同场景继承成功答案，明确失败跳余轮，传输/身份/契约不确定时停止全run，绝不重发推理。输出要求新文件、观测位于已保护的仓库外目录。
+
+程序检查包含回答、证据/trace工具白名单、查询时间和结构，不判断reviewRubric。queryPlan/检索/联网/未知条件/实际提交历史在脱敏观测与复核页可见；来源评分的null值原样保留。新runner本身和三个复用模块的hash进入报告；旧评测器、题集、freeze和历史结果不修改。当前15轮尚未执行；Agent专项条件探针与网站USER评测分别记录，不能据单测或少量探针报告盲测质量收益。

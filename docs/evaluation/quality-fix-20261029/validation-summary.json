@@ -1,0 +1,247 @@
+{
+  "verifiedOn": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "pythonTests": {
+    "passed": 139,
+    "groups": {
+      "evaluationAndArtifacts": 94,
+      "qualityReviewAndPage": 40,
+      "developmentCases": 5
+    }
+  },
+  "syntheticBrowser": {
+    "syntheticOnly": true,
+    "status": "passed",
+    "checks": [
+      "84 synthetic answers and four failures start pending; hostile answer is text",
+      "structured query plan, uncertainty, web evidence and trace render as inert text",
+      "score, diagnosis and attributed export accepted by Python summarizer",
+      "JSON import resumes all fields after reload",
+      "filters preserve all review data and use distinct failure/review/pending counts",
+      "invalid report import rejected without changing current review",
+      "invalid answer import rejected without changing current review",
+      "invalid duplicate import rejected without changing current review",
+      "invalid missing import rejected without changing current review",
+      "invalid boolean import rejected without changing current review",
+      "invalid categoryArray import rejected without changing current review",
+      "invalid failedScore import rejected without changing current review",
+      "invalid noAttribution import rejected without changing current review",
+      "invalid hardViolation import rejected without changing current review",
+      "failed rows do not accept answer scores",
+      "model attribution remains separate from human completion in UI and summary",
+      "mobile layout, no external requests and no browser errors"
+    ],
+    "output": "E:\\gying-tools\\releases\\ai-quality-20261029\\gying-quality-browser-BTXywr"
+  },
+  "assistedPageReadOnly": {
+    "readOnly": true,
+    "rows": 88,
+    "answered": 84,
+    "reviewer": "model",
+    "usefulnessReviewed": 84,
+    "externalRequests": 0,
+    "pageErrors": 0,
+    "desktopAndMobileOverflow": false
+  },
+  "historicalPreservation": [
+    {
+      "path": "docs/evaluation/comparable-agent-v1/README.md",
+      "gitBlob": "aaa813c89fba6587b6fda622e5b9c80d83acada5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/cases.json",
+      "gitBlob": "4226bd6e57774093ec8488741a9dd62d4660f414",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/freeze.json",
+      "gitBlob": "995f162d1e9a17cb564e92994a143f4f728ee089",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/report.json",
+      "gitBlob": "9f6f1e4c8adef5b7c0d35b5a1da6c1aa8a66ce66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/review-summary.json",
+      "gitBlob": "289babe5a80e1ddad00dad35a2f2ba821ecac2b3",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/comparable-agent-v1/review.json",
+      "gitBlob": "68bd0f742d28843f8d48a358dd3064da25920a96",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/README.md",
+      "gitBlob": "ddbddeda49ebabdfc0d8d1f75a65c22d35b8d62b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/account-cleanup.json",
+      "gitBlob": "1fa0576bfd441615f22819ec76d31d0efcc32760",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/cases.json",
+      "gitBlob": "41a2efaf40dacfc4c51f1ce37d114fb05d3df5fd",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/catalog-snapshot.json",
+      "gitBlob": "5a0e61c13a6d15dc4de9084cf23f8700960ecb6a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/freeze.json",
+      "gitBlob": "f1f5af58a3941f83a4c1bb12582585083833540c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/observation-summary.json",
+      "gitBlob": "5cb1a9bd46e5ff3dd231591c4e46115813fccd66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/review-summary.json",
+      "gitBlob": "9541925ddaa2dab580a5e31cf70b0b868dbed2f2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/review.json",
+      "gitBlob": "f66e87dd36d400961b53c847cd3bb4479834aaf5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/runtime-verification.json",
+      "gitBlob": "8e80e67de5a7d841361c208e577e488c367bcb48",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/source-contract.json",
+      "gitBlob": "3dc8d3814b0f1c6fd13952faf4ca294b20088614",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/validation-summary.json",
+      "gitBlob": "f9b2da5d37143c2014d908b3e23b46bd4dcf29f7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/human-holdout-v1/website-report.json",
+      "gitBlob": "62da73dc77bfbd60395caded1c226a2fce1682d0",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/build_review_page.py",
+      "gitBlob": "f9e5d75182d3ee083a24c3bfd96ff037bca7e603",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/comparable_evaluation.py",
+      "gitBlob": "8e6d7ac018a117294da1814ee8396413957fd8f3",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/development_cases_v2.json",
+      "gitBlob": "5e4183e1b7339d0ada87e4c155ca1f042b609168",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/evaluate_agent.py",
+      "gitBlob": "65e694e1d6fbe1edff0cfbcf238cca91b033533e",
+      "unchanged": true
+    },
+    {
+      "path": "tools/ai/evaluate_website.py",
+      "gitBlob": "274879720fc9f711c60c1f4689776202e675ecaa",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/development-v3/cases.json",
+      "gitBlob": "e11d414bde336a9f0d45212164574125302cedcf",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evaluation/development-v3/freeze.json",
+      "gitBlob": "32cd0685b18ca43307715b893cc468fa47333207",
+      "unchanged": true
+    }
+  ],
+  "development": {
+    "cases": 10,
+    "turns": 15,
+    "websiteRunExecuted": false,
+    "reason": "Existing dedicated USER session not supplied; disabled test account retained"
+  },
+  "assistedReview": {
+    "reviewerKind": "model",
+    "usefulnessReviewed": 84,
+    "threeDimensionsReviewed": 48,
+    "humanReviewed": 0
+  },
+  "runtimeEvidence": {
+    "securityBefore": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "exceptionAuthorization": "User approved service replacement after results disclosed",
+    "firstElevationAttempt": "cancelled by Windows; no service changes",
+    "secondElevationAttempt": "Not started; user subsequently paused deployment",
+    "deployment": "Paused by explicit user instruction; no production stop/restart, memory changes or backup execution",
+    "deploymentHelper": "RunDeployment.ps1 disabled to prevent execution of superseded plan"
+  },
+  "sources": [
+    {
+      "path": "tools/ai/evaluate_development.py",
+      "sha256": "86f8db57c56088d44e0a51eb2d18d8c2d6fdd73615e840aaebca329b9b694d15"
+    },
+    {
+      "path": "tools/ai/quality_review_ui.js",
+      "sha256": "9a64c713fc732d4079476a7564d4023af769158217fc8eb292dcbf03cd3b4344"
+    },
+    {
+      "path": "tools/tests/test_development_evaluation.py",
+      "sha256": "8af81f33a181bd77b4248b42215ca51d7e295aaabf677308f806aaf38e67c0c2"
+    },
+    {
+      "path": "tools/tests/quality-review.browser.cjs",
+      "sha256": "f9d6f14b5b2a97c7bef8fb17e67689d1ec930db341222118b5b2af32b5c5cb51"
+    },
+    {
+      "path": "docs/evaluation/assisted-review-20261029/review.json",
+      "sha256": "5b0fd367beb0579d8e03069437ea031709bf51a252c9733fa47dfff77ba9ae91"
+    }
+  ],
+  "agentCandidate": {
+    "jarSha256": "01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b",
+    "tests": 104,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "deployed": false,
+    "isolatedStartup": {
+      "startedAt": "2026-10-29T05:46:32.813350+00:00",
+      "candidateSha": "01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b",
+      "port": 15000,
+      "productionBridgeEnabled": false,
+      "productionStateEnabled": false,
+      "processId": 31792,
+      "health200": true,
+      "readyHandshake": true,
+      "status": "passed",
+      "exitCode": 0,
+      "gracefullyStopped": true,
+      "completedAt": "2026-10-29T05:46:39.784572+00:00"
+    },
+    "codeCommit": "9cd1d2b8059072df9b284c7bd6d468245e68faa4"
+  },
+  "deliveredPage": {
+    "path": "E:\\gying-tools\\releases\\ai-quality-20261029\\review-final.html",
+    "sha256": "e51da11ffd951677a4ef9b145c7013d3fea245a4edaf1ac48cef202f17f3f7f1",
+    "acl": "current user and SYSTEM only; inherited from protected release directory"
+  }
+}

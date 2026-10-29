@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-29",
+  "timezone": "Asia/Shanghai",
+  "scope": "Read-only diagnosis following real catalog request failures; samples were collected sequentially, not atomically. No deployment, restart, heap change, heap dump, full GC, model request or additional catalog stress query was performed by this investigation.",
+  "deploymentPaused": true,
+  "backend": {
+    "container": "gying-movie-backend-1",
+    "containerIdPrefix": "23fe261a5021",
+    "imageIdPrefix": "fa06d609e0d0",
+    "jvmFlags": [
+      "-Xms256m",
+      "-Xmx512m",
+      "-XX:+UseG1GC",
+      "-XX:MaxGCPauseMillis=200"
+    ],
+    "memoryLimitBytes": 805306368,
+    "memorySwapLimitBytes": 1610612736,
+    "dockerOOMKilled": false,
+    "restartCount": 0,
+    "dockerStats": {
+      "memoryUsage": "763.7 MiB",
+      "memoryLimit": "768 MiB",
+      "memoryPercent": 99.43,
+      "pids": 58
+    },
+    "procStatusKiB": {
+      "VmPeak": 2467088,
+      "VmSize": 2291492,
+      "VmHWM": 780796,
+      "VmRSS": 765624,
+      "RssAnon": 755376,
+      "RssFile": 10232,
+      "RssShmem": 16
+    },
+    "procThreads": 58,
+    "cgroup": {
+      "memoryCurrentBytes": 805289984,
+      "memoryPeakBytes": 806035456,
+      "memorySwapCurrentBytes": 244121600,
+      "memoryEvents": {
+        "low": 0,
+        "high": 0,
+        "max": 19359,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    }
+  },
+  "jvmPerfdata": {
+    "method": "Read existing HotSpot /tmp/hsperfdata_*/1; no JVM attach, heap dump or forced GC",
+    "heapMaxBytes": 536870912,
+    "oldUsedBytes": 330400568,
+    "edenUsedBytes": 33554432,
+    "survivorUsedBytes": 1714936,
+    "metaspaceUsedBytes": 105610720,
+    "compressedClassSpaceUsedBytes": 11699608,
+    "collectorInvocations": [
+      2638,
+      294,
+      2017
+    ],
+    "boundary": "Counters and used space are a later point-in-time sample; they do not locate the failed allocation or measure per-cache retained size. Collector counts are cumulative."
+  },
+  "errors": {
+    "firstRelevantLogTimestamp": "2026-10-29T13:35:02.388+08:00",
+    "error": "java.lang.OutOfMemoryError: Java heap space",
+    "observedThreads": [
+      "nio-8880-exec-7",
+      "Catalina-utility-1",
+      "http-nio-8880-Poller",
+      "http-nio-8880-Acceptor",
+      "Catalina-utility-3",
+      "HttpClient-12-SelectorManager",
+      "HttpClient-9-SelectorManager"
+    ],
+    "stackBoundary": "The observed OOM entries did not provide a usable allocation stack. An exact retained-object cause is not established."
+  },
+  "catalog": {
+    "activeNotDeleted": 12351,
+    "indexRowLimit": 50000,
+    "countMethod": "Existing gying-source PyMySQL runtime; SELECT COUNT(*) with status=ACTIVE AND deleted_at IS NULL; read-only transaction rolled back; 5-second statement limit",
+    "referenceProjection": {
+      "observedOn": "2026-10-25",
+      "rows": 11272,
+      "path": "E:/gying-tools/releases/ai-query-plan-v2-20261025/live-public-projection-deployed-20261025.json",
+      "serializedUtf8Bytes": {
+        "summary": 6659705,
+        "aliases": 1333039,
+        "actors": 2720427,
+        "directors": 435906,
+        "genres": 326610,
+        "languages": 163372,
+        "regions": 202944
+      },
+      "boundary": "Historical JSON field sizes are not current Java heap object sizes; absent projection fields were not counted."
+    }
+  },
+  "host": {
+    "sampleAt": "2026-10-29T13:42:28.2770000+08:00",
+    "windowsTotalGiB": 15.42,
+    "windowsFreeGiB": 2.96,
+    "dockerEngineMemTotalBytes": 8020353024,
+    "linuxMeminfoKiB": {
+      "MemTotal": 7832376,
+      "MemAvailable": 5557728,
+      "SwapTotal": 2097152,
+      "SwapFree": 1858760
+    },
+    "boundary": "Windows and Docker/Linux values are separately sampled and must not be added; available memory is not a future guarantee."
+  },
+  "recoveryCandidate": {
+    "applied": false,
+    "imageChange": false,
+    "heapInitialMiB": 256,
+    "heapMaxMiB": 768,
+    "containerMemoryLimitMiB": 1280,
+    "boundary": "Temporary recovery proposal only. User paused deployment. Requires a fresh memory/readiness check, preserved current image/configuration and rollback materials, normal graceful termination without force-kill, affected-service-only replacement, then serial real-entry verification. No capacity or stability conclusion has been measured."
+  },
+  "notEstablished": [
+    "The allocation that triggered OOM",
+    "Per-index/cache retained heap size",
+    "Whether both lazy/eager text indexes were resident at failure",
+    "Whether cross-service cache rebuilds overlapped at failure",
+    "Whether the proposed memory increase alone is sufficient",
+    "Production quality improvement from the undeployed Agent candidate"
+  ]
+}
