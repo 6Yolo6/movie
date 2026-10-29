@@ -15,7 +15,54 @@ import static com.gying.movie.service.impl.CatalogRecommendationEngine.*;
 public class CatalogResearchService {
     private final JdbcTemplate jdbc;private final ObjectMapper mapper;
     private volatile Dataset cached;private volatile long refreshed;
-    private record Dataset(List<ObjectNode> docs,List<Film> films,Map<String,ObjectNode> byId,Map<String,Film> filmById,CatalogTextIndex lexical){}
+    /** A snapshot owns its lazy indexes; replacing it also invalidates every derived cache. */
+    private static final class Dataset {
+        final List<ObjectNode> docs;
+        final List<Film> films;
+        final Map<String,ObjectNode> byId;
+        final Map<String,Film> filmById;
+        private volatile CatalogTextIndex lexical;
+        private volatile PeopleDictionary actors,directors;
+        Dataset(List<ObjectNode> docs,List<Film> films,Map<String,ObjectNode> byId,Map<String,Film> filmById){
+            this.docs=docs;this.films=films;this.byId=byId;this.filmById=filmById;
+        }
+        synchronized CatalogTextIndex lexical(){
+            if(lexical==null)lexical=new CatalogTextIndex(films);
+            return lexical;
+        }
+        synchronized PeopleDictionary people(String field){
+            if(field.equals("actors")){
+                if(actors==null)actors=PeopleDictionary.build(films,field);
+                return actors;
+            }
+            if(directors==null)directors=PeopleDictionary.build(films,field);
+            return directors;
+        }
+    }
+    private record PeopleDictionary(SortedMap<String,String> exact,List<Map.Entry<String,String>> literal){
+        static PeopleDictionary build(List<Film> films,String field){
+            // Deduplicate repeated cast names before ICU normalization, preserving the first catalog spelling.
+            Set<String> names=new LinkedHashSet<>();
+            for(Film film:films)names.addAll(field.equals("actors")?film.actors():film.directors());
+            SortedMap<String,String> exact=new TreeMap<>(),literal=new TreeMap<>();
+            Map<String,Set<String>> aliases=new TreeMap<>();
+            for(String name:names){
+                String normalized=key(name);exact.putIfAbsent(normalized,name);
+                if(normalized.length()<2)continue;
+                literal.putIfAbsent(normalized,name);
+                String[] parts=name.split("[·•]");
+                if(parts.length>1){
+                    String alias=key(parts[parts.length-1]);
+                    if(alias.length()>=2)aliases.computeIfAbsent(alias,k->new TreeSet<>()).add(name);
+                }
+            }
+            aliases.forEach((alias,values)->{if(values.size()==1)literal.putIfAbsent(alias,values.iterator().next());});
+            List<Map.Entry<String,String>> ordered=new ArrayList<>();
+            literal.forEach((word,name)->ordered.add(Map.entry(word,name)));
+            ordered.sort(Comparator.comparingInt((Map.Entry<String,String> e)->e.getKey().length()).reversed());
+            return new PeopleDictionary(Collections.unmodifiableSortedMap(exact),List.copyOf(ordered));
+        }
+    }
     public CatalogResearchService(JdbcTemplate jdbc,ObjectMapper mapper){this.jdbc=jdbc;this.mapper=mapper;}
     private static final ThreadLocal<com.ibm.icu.text.Transliterator> SIMPLIFY=ThreadLocal.withInitial(()->com.ibm.icu.text.Transliterator.getInstance("Traditional-Simplified"));
     public static String key(String text){return SIMPLIFY.get().transliterate(Normalizer.normalize(Objects.toString(text,""),Normalizer.Form.NFKC).toLowerCase(Locale.ROOT).replaceAll("[\\p{P}\\s]",""));}
@@ -54,10 +101,11 @@ public class CatalogResearchService {
             if(embedding.length()>2200)embedding=embedding.substring(0,2200);
             d.put("embeddingText",embedding).put("fingerprint",fingerprint(embedding));return d;
         });
+        if(cached!=null&&cached.docs.equals(docs)){refreshed=System.currentTimeMillis();return cached;}
         List<Film> films=new ArrayList<>();Map<String,ObjectNode> byId=new HashMap<>();for(ObjectNode d:docs){
             films.add(new Film(d.path("id").asText(),d.path("titleCn").asText(),d.path("titleEn").asText(),d.has("year")?d.path("year").asInt():null,d.path("category").asText(),null,d.path("seriesName").asText(),strings(d,"genres"),strings(d,"directors"),strings(d,"actors"),rating(d,"any"),d.path("popularity").asDouble(),d.path("resourceCount").asInt(),d.path("summary").asText(),d.path("aliases").asText(),strings(d,"regions"),strings(d,"languages"),d.has("runtimeMinutes")?d.path("runtimeMinutes").asInt():null));byId.put(d.path("id").asText(),d);
         }
-        if(cached==null||!cached.docs.equals(docs))cached=new Dataset(List.copyOf(docs),List.copyOf(films),Map.copyOf(byId),films.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(Film::id,f->f)),new CatalogTextIndex(films));refreshed=System.currentTimeMillis();return cached;
+        cached=new Dataset(List.copyOf(docs),List.copyOf(films),Map.copyOf(byId),films.stream().collect(java.util.stream.Collectors.toUnmodifiableMap(Film::id,f->f)));refreshed=System.currentTimeMillis();return cached;
     }
     public static String fingerprint(String text){try{return HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException(e);}}
     public ObjectNode documents(int page,int size){Dataset data=dataset();int n=Math.max(1,Math.min(200,size)),start=Math.max(0,page-1)*n;var result=mapper.createObjectNode().put("total",data.docs.size()).put("truncated",data.docs.size()==50000).put("queriedAt",Instant.now().toString());var items=result.putArray("documents");for(int i=start;i<Math.min(start+n,data.docs.size());i++)items.add(data.docs.get(i).deepCopy());return result;}
@@ -90,10 +138,11 @@ public class CatalogResearchService {
     private MovieQueryPlan resolvePeople(MovieQueryPlan original,Dataset data,List<String> unresolved){
         ObjectNode json=original.json();
         for(String field:List.of("actors","actorsAny","directors","directorsAny","excludedActors","excludedDirectors")){
-            String source=field.toLowerCase(Locale.ROOT).contains("actor")?"actors":"directors";Map<String,String> dictionary=new TreeMap<>();
-            for(ObjectNode doc:data.docs)for(String name:strings(doc,source))dictionary.putIfAbsent(key(name),name);
-            ArrayNode resolved=json.putArray(field);
-            for(String requested:original.list(field)){
+            List<String> requestedNames=original.list(field);ArrayNode resolved=json.putArray(field);
+            if(requestedNames.isEmpty())continue;
+            String source=field.toLowerCase(Locale.ROOT).contains("actor")?"actors":"directors";
+            Map<String,String> dictionary=data.people(source).exact;
+            for(String requested:requestedNames){
                 String cleaned=requested.replaceFirst("(?:最近|近期|近[一二三四五六七八九十0-9]+年)$","");String wanted=key(cleaned);
                 List<String> exact=dictionary.keySet().stream().filter(n->n.equals(wanted)||wanted.length()>=2&&n.contains(wanted)).toList();
                 if(!exact.isEmpty()){resolved.add(cleaned);continue;}
@@ -112,17 +161,14 @@ public class CatalogResearchService {
         if(message.isBlank())return input;
         String unquoted=message.replaceAll("《[^》]*》","");String literal=key(unquoted);ObjectNode plan=input.json();
         for(String field:List.of("actors","directors")){
-            Map<String,String> dictionary=new TreeMap<>();Map<String,Set<String>> aliases=new TreeMap<>();
-            for(ObjectNode d:data.docs)for(String name:strings(d,field))if(key(name).length()>=2){dictionary.putIfAbsent(key(name),name);String[] parts=name.split("[·•]");if(parts.length>1&&key(parts[parts.length-1]).length()>=2)aliases.computeIfAbsent(key(parts[parts.length-1]),k->new TreeSet<>()).add(name);}
-            aliases.forEach((alias,names)->{if(names.size()==1)dictionary.putIfAbsent(alias,names.iterator().next());});
-            List<Map.Entry<String,String>> ordered=new ArrayList<>(dictionary.entrySet());ordered.sort(Comparator.comparingInt((Map.Entry<String,String> e)->e.getKey().length()).reversed());
+            List<Map.Entry<String,String>> ordered=data.people(field).literal;
             List<int[]> occupied=new ArrayList<>();
             for(var entry:ordered){
                 String word=entry.getKey();int position=literal.indexOf(word);if(position<0)continue;
                 int end=position+word.length();boolean overlaps=false;for(int[] span:occupied)if(position<span[1]&&end>span[0]){overlaps=true;break;}if(overlaps)continue;
                 occupied.add(new int[]{position,end});
-                boolean other=data.docs.stream().anyMatch(d->strings(d,field.equals("actors")?"directors":"actors").stream().anyMatch(n->key(n).equals(key(entry.getValue()))));
-                if(other){boolean directing=key(unquoted).matches("(?s).*"+java.util.regex.Pattern.quote(word)+".{0,6}(?:导演|执导|作品).*" );if(directing==field.equals("actors"))continue;}
+                boolean other=data.people(field.equals("actors")?"directors":"actors").exact.containsKey(key(entry.getValue()));
+                if(other){boolean directing=literal.matches("(?s).*"+java.util.regex.Pattern.quote(word)+".{0,6}(?:导演|执导|作品).*" );if(directing==field.equals("actors"))continue;}
                 boolean exclude=negativePerson(unquoted,word);String target=exclude?(field.equals("actors")?"excludedActors":"excludedDirectors"):(strings(plan,field+"Any").isEmpty()?field:field+"Any");
                 // Prefer explicit polarity even if the model reversed it.
                 for(String opposite:exclude?List.of(field,field+"Any"):List.of(field.equals("actors")?"excludedActors":"excludedDirectors")){
@@ -161,7 +207,7 @@ public class CatalogResearchService {
         Predicate<Film> filter=f->eligible(data.byId.get(f.id()),p,previous,p.text("intent").equals("similar")?seeds:Set.of());
         String topic=p.text("semanticText");boolean themed=p.list("titles").isEmpty()&&!topic.isBlank()||p.text("intent").equals("similar");
         Map<String,Double> ranks=new HashMap<>();Map<String,List<String>> reasons=new HashMap<>();
-        List<CatalogTextIndex.Hit> lexical=topic.isBlank()?List.of():data.lexical.recall(topic,filter,100);int rank=0;
+        List<CatalogTextIndex.Hit> lexical=topic.isBlank()?List.of():data.lexical().recall(topic,filter,100);int rank=0;
         for(var hit:lexical){ranks.merge(hit.movie().id(),1D/(60+ ++rank),Double::sum);reasons.put(hit.movie().id(),new ArrayList<>(hit.reasons()));}
         JsonNode dense=body.path("denseCandidates");if(!dense.isMissingNode()&&(!dense.isArray()||dense.size()>100))throw new IllegalArgumentException("语义候选数量无效");
         int stale=0;rank=0;Set<String> seen=new HashSet<>();for(JsonNode hit:dense){

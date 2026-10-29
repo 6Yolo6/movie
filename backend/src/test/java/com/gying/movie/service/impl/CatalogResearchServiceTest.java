@@ -7,10 +7,11 @@ import org.springframework.jdbc.core.*;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.*;
 
 class CatalogResearchServiceTest {
     final ObjectMapper mapper=new ObjectMapper();
-    CatalogResearchService service; List<ObjectNode> docs;
+    CatalogResearchService service; List<ObjectNode> docs; JdbcTemplate jdbc;
     ObjectNode film(String id,String title,int year,String genre,String director,double douban,double imdb){
         ObjectNode d=mapper.createObjectNode().put("id",id).put("titleCn",title).put("year",year).put("category","mv")
             .put("doubanScore",douban).put("imdbScore",imdb).put("runtimeMinutes",100).put("resourceCount",0)
@@ -21,7 +22,7 @@ class CatalogResearchServiceTest {
     }
     @BeforeEach @SuppressWarnings("unchecked") void setup(){
         docs=List.of(film("a","星际样本",2024,"科幻","克里斯托弗·诺兰",7,9),film("b","迷案样本",2019,"悬疑","王家卫",9,6),film("c","旅行样本",2020,"冒险","丹尼斯·维伦纽瓦",8,8));
-        JdbcTemplate jdbc=mock(JdbcTemplate.class);when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(docs);service=new CatalogResearchService(jdbc,mapper);
+        jdbc=mock(JdbcTemplate.class);when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(docs);service=new CatalogResearchService(jdbc,mapper);
     }
     ObjectNode query(String json)throws Exception{return service.query(mapper.createObjectNode().set("plan",mapper.readTree(json)),mapper.createObjectNode());}
     List<String> ids(JsonNode result){List<String> ids=new ArrayList<>();result.path("movies").forEach(m->ids.add(m.path("id").asText()));return ids;}
@@ -116,6 +117,75 @@ class CatalogResearchServiceTest {
         docs.get(2).putArray("regions").add("FR");docs.get(2).putArray("languages").add("fr");
         assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"FR\"],\"languagesAny\":[\"fr\"]}"))).containsExactly("c");
         assertThat(ids(query("{\"intent\":\"search\",\"regionsAny\":[\"法国\"],\"excludedLanguages\":[\"法语\"]}"))).containsExactly("b");
+    }
+
+    @Test void metadataExportAndNonSemanticQueriesDoNotAllocateSearchIndexes()throws Exception{
+        assertThat(service.documents(1,20).path("total").asInt()).isEqualTo(3);
+        assertThat(ids(query("{\"intent\":\"search\",\"yearFrom\":2022}"))).containsExactly("a");
+        assertThat(query("{\"intent\":\"details\",\"movieId\":\"a\"}").path("selectedId").asText()).isEqualTo("a");
+        assertThat(query("{\"intent\":\"clarify\"}").path("total").asInt()).isZero();
+        Object snapshot=getField(service,"cached");
+        assertThat(getField(snapshot,"lexical")).isNull();
+        assertThat(getField(snapshot,"actors")).isNull();
+        assertThat(getField(snapshot,"directors")).isNull();
+    }
+
+    @Test @SuppressWarnings("unchecked") void semanticIndexIsReusedWhenARefreshFindsUnchangedMetadata()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\"}"))).containsExactly("a");
+        Object snapshot=getField(service,"cached"),index=getField(snapshot,"lexical");
+        assertThat(index).isNotNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"旅馆\"}"))).containsExactlyInAnyOrder("b","c");
+        assertThat(getField(snapshot,"lexical")).isSameAs(index);
+        when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(docs.stream().map(ObjectNode::deepCopy).toList());
+        setField(service,"refreshed",0L);service.documents(1,20);
+        assertThat(getField(service,"cached")).isSameAs(snapshot);
+        assertThat(getField(snapshot,"lexical")).isSameAs(index);
+    }
+
+    @Test void peopleConditionsBuildOnlyTheRequiredRoleAndReuseItsDictionary()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"actors\":[\"凯特布兰切特\"]}"))).hasSize(3);
+        Object snapshot=getField(service,"cached"),actors=getField(snapshot,"actors");
+        assertThat(actors).isNotNull();
+        assertThat(getField(snapshot,"directors")).isNull();
+        assertThat(getField(snapshot,"lexical")).isNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"excludedActors\":[\"凯特布兰切特\"]}"))).isEmpty();
+        assertThat(getField(snapshot,"actors")).isSameAs(actors);
+        var body=mapper.createObjectNode().put("message","排除维伦纽瓦的作品");body.putObject("plan").put("intent","search");
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("a","b");
+        Object directors=getField(snapshot,"directors");
+        assertThat(directors).isNotNull();
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactlyInAnyOrder("a","b");
+        assertThat(getField(snapshot,"actors")).isSameAs(actors);
+        assertThat(getField(snapshot,"directors")).isSameAs(directors);
+    }
+
+    @Test @SuppressWarnings("unchecked") void changedSnapshotInvalidatesIndexesAndUsesCurrentMetadataForHardFilters()throws Exception{
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"excludedDirectors\":[\"王家卫\"]}"))).containsExactly("a");
+        Object previous=getField(service,"cached");
+        ObjectNode changed=film("b","迷案样本",2025,"科幻","王家卫",9,6);
+        changed.put("summary","宇航员航行太空，寻找回家的航线。");
+        changed.put("fingerprint",CatalogResearchService.fingerprint(changed.path("summary").asText()));
+        when(jdbc.query(anyString(),any(RowMapper.class))).thenReturn(List.of(changed,docs.get(2).deepCopy()));
+        setField(service,"refreshed",0L);assertThat(service.documents(1,20).path("total").asInt()).isEqualTo(2);
+        Object current=getField(service,"cached");
+        assertThat(current).isNotSameAs(previous);
+        assertThat(getField(current,"lexical")).isNull();assertThat(getField(current,"directors")).isNull();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"yearFrom\":2022,\"excludedDirectors\":[\"王家卫\"]}"))).isEmpty();
+        assertThat(ids(query("{\"intent\":\"search\",\"semanticText\":\"宇航员\",\"yearFrom\":2022}"))).containsExactly("b");
+        assertThat(getField(current,"lexical")).isNotSameAs(getField(previous,"lexical"));
+        var unknown=query("{\"intent\":\"search\",\"directors\":[\"诺兰\"]}");
+        assertThat(ids(unknown)).isEmpty();assertThat(unknown.path("unresolvedPeople").size()).isEqualTo(1);
+    }
+
+    @Test void cachedCrossRoleNamesAndAmbiguousSurnamesPreserveLiteralResolution()throws Exception{
+        docs.get(0).putArray("actors").add("王家卫");
+        docs.get(1).putArray("actors").add("瑞达·布兰切特");
+        var body=mapper.createObjectNode().put("message","查王家卫导演的电影");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());assertThat(ids(result)).containsExactly("b");
+        assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();
+        body.put("message","查王家卫主演的电影");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+        body.put("message","布兰切特主演的电影");
+        assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("actors").isEmpty()).isTrue();
     }
 
 }
