@@ -7,6 +7,8 @@ import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.dto.ResourceHubWorkerResult;
+import com.gying.movie.dto.MetadataCrawlRange;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceHubTask;
 import com.gying.movie.entity.ResourceLink;
@@ -40,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private static final int MAX_TASK_LIMIT = 20;
+    private static final ObjectMapper CHECKPOINT_MAPPER = new ObjectMapper();
     private static final int MAX_QUARK_LIMIT = 20;
     private static final int MAX_PUBLISH_LIMIT = 100;
 
@@ -333,7 +336,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (!gying.isAutoSyncEnabled()) {
             return;
         }
-        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources());
+        List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources()).stream()
+                .filter(source -> !gying.isAutoSyncSourcePaused(source)).toList();
         if (sources.isEmpty() || hasActiveGyingMetadataSyncTask(sources)) {
             return;
         }
@@ -422,11 +426,18 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private void runDueTasks(ResourceHubWorkerResult result) {
-        List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>()
+        var query = new QueryWrapper<ResourceHubTask>()
                 .eq("task_type", "METADATA_SYNC")
                 .eq("status", "PENDING")
-                .le("scheduled_at", LocalDateTime.now())
-                .orderByDesc("priority")
+                .le("scheduled_at", LocalDateTime.now());
+        List<String> paused = MetadataCrawlRange.sources("GYING").stream()
+                .filter(resourceHubProperties.getGying()::isAutoSyncSourcePaused).toList();
+        if (!paused.isEmpty()) {
+            // Filter before LIMIT so a paused queue head cannot starve runnable metadata work.
+            query.and(allowed -> allowed.ne("source", "GYING").or().notIn("keyword", paused).or()
+                    .apply("COALESCE(JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')), '') <> 'RANGE'"));
+        }
+        List<ResourceHubTask> tasks = taskService.list(query.orderByDesc("priority")
                 .orderByAsc("scheduled_at")
                 .orderByAsc("created_at")
                 .last("LIMIT " + result.getTaskLimit()));
@@ -436,6 +447,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private void runTask(ResourceHubTask task, ResourceHubWorkerResult result) {
+        // A pause may arrive after the bounded runnable query; keep its queued checkpoint untouched.
+        if (pausedAutomaticTask(task)) return;
         ResourceHubWorkerResult.TaskResult taskResult = new ResourceHubWorkerResult.TaskResult();
         taskResult.setTaskId(task.getId());
         taskResult.setTaskType(task.getTaskType());
@@ -475,6 +488,18 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             taskResult.setError(trim(e.getMessage(), 500));
             result.setTasksFailed(result.getTasksFailed() + 1);
             addError(result, "task " + task.getId() + ": " + e.getMessage());
+        }
+    }
+
+    private boolean pausedAutomaticTask(ResourceHubTask task) {
+        if (!"GYING".equalsIgnoreCase(task.getSource())
+                || !resourceHubProperties.getGying().isAutoSyncSourcePaused(task.getKeyword())) return false;
+        try {
+            return task.getPayload() != null && "RANGE".equals(CHECKPOINT_MAPPER.readTree(task.getPayload())
+                    .path("crawl").path("mode").asText());
+        } catch (Exception invalid) {
+            // Invalid payloads still follow the existing task failure handling.
+            return false;
         }
     }
 

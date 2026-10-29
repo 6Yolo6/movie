@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Alert,
@@ -96,6 +96,7 @@ interface ResourceHubConfig {
     gyingDiscoveryEnabled: boolean;
     gyingAutoSyncEnabled: boolean;
     gyingAutoSyncSources: string;
+    gyingAutoSyncPausedSources?: Record<string, boolean>;
     gyingAutoSyncRanges?: Record<string, { startPage: number; endPage: number }>;
     gyingAutoSyncPage: number;
     gyingAutoSyncEndPage: number;
@@ -307,6 +308,8 @@ export default function ResourceHubAdminPage() {
     const [overview, setOverview] = useState<Overview | null>(null);
     const [loading, setLoading] = useState(true);
     const [savingConfig, setSavingConfig] = useState(false);
+    const [pausingGyingSource, setPausingGyingSource] = useState<string | null>(null);
+    const gyingPausePending = useRef(false);
     const [runningAction, setRunningAction] = useState<string | null>(null);
     const [tasks, setTasks] = useState<ResourceHubTask[]>([]);
     const [tasksLoading, setTasksLoading] = useState(false);
@@ -493,6 +496,7 @@ export default function ResourceHubAdminPage() {
     };
 
     const saveConfig = async (values: ResourceHubConfigFormValues) => {
+        if (gyingPausePending.current) return;
         setSavingConfig(true);
         try {
             const settings: Partial<ResourceHubConfigFormValues> = { ...values };
@@ -500,6 +504,7 @@ export default function ResourceHubAdminPage() {
             delete settings.tmdbAutoSyncEndPage;
             delete settings.gyingAutoSyncPage;
             delete settings.gyingAutoSyncEndPage;
+            delete settings.gyingAutoSyncPausedSources;
             const data = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
                 method: 'PUT',
                 body: JSON.stringify({
@@ -515,6 +520,37 @@ export default function ResourceHubAdminPage() {
             message.error(error instanceof Error ? error.message : t('resourceHubConfigSaveFailed'));
         } finally {
             setSavingConfig(false);
+        }
+    };
+
+    const changeGyingSourcePause = async (source: string, paused: boolean) => {
+        if (gyingPausePending.current || savingConfig) return;
+        gyingPausePending.current = true;
+        setPausingGyingSource(source);
+        try {
+            const result = await requestJson<{ source: string; paused: boolean }>(
+                `/api/admin/resource-hub/gying/sources/${encodeURIComponent(source)}/pause`, {
+                    method: 'PUT', body: JSON.stringify({ paused }),
+                });
+            if (result?.source !== source || result.paused !== paused) {
+                throw new Error('Invalid source pause response');
+            }
+            setOverview(current => current ? { ...current, config: { ...current.config,
+                gyingAutoSyncPausedSources: { ...current.config.gyingAutoSyncPausedSources, [source]: paused },
+            } } : current);
+            message.success(t(paused ? 'resourceHubGyingPauseSaved' : 'resourceHubGyingResumeSaved'));
+            try {
+                const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config');
+                // Refresh progress without replacing unsaved form values.
+                setOverview(current => current ? { ...current, config } : current);
+            } catch {
+                message.warning(t('resourceHubGyingPauseRefreshFailed'));
+            }
+        } catch {
+            message.error(t('resourceHubGyingPauseFailed'));
+        } finally {
+            gyingPausePending.current = false;
+            setPausingGyingSource(null);
         }
     };
 
@@ -1423,7 +1459,10 @@ export default function ResourceHubAdminPage() {
                                                         <Text type="secondary">{t('resourceHubGyingSyncHelp')}</Text>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <MetadataCrawlRanges provider="gying" options={gyingSourceOptions} />
+                                                        <MetadataCrawlRanges provider="gying" options={gyingSourceOptions}
+                                                            pausedSources={overview?.config.gyingAutoSyncPausedSources}
+                                                            pausingSource={pausingGyingSource} pauseDisabled={savingConfig}
+                                                            onPauseChange={changeGyingSourcePause} />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Alert type="info" showIcon title={t('resourceHubCrawlHelp')} />
@@ -1440,7 +1479,12 @@ export default function ResourceHubAdminPage() {
                                                                 { title: t('resourceHubCrawlSource'), key: 'source', render: (_, row) => `${row.provider} / ${t(`${row.provider === 'GYING' ? 'resourceHubGyingSource' : 'resourceHubSource'}.${row.source}`, { defaultValue: row.source })}` },
                                                                 { title: t('resourceHubCrawlRange'), key: 'range', render: (_, row) => `${row.startPage}–${row.endPage}` },
                                                                 { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem }) },
-                                                                { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string) => t(`resourceHubCrawlStatus.${value}`, { defaultValue: value }) },
+                                                                { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string, row) => {
+                                                                    const paused = overview?.config.gyingAutoSyncPausedSources?.[row.source];
+                                                                    const status = row.provider === 'GYING' && paused ? 'PAUSED'
+                                                                        : row.provider === 'GYING' && value === 'PAUSED' ? 'RESUMED' : value;
+                                                                    return t(`resourceHubCrawlStatus.${status}`, { defaultValue: status });
+                                                                } },
                                                             ]}
                                                         />
                                                     </Col>
@@ -1476,7 +1520,8 @@ export default function ResourceHubAdminPage() {
                                                         })}
                                                     </Form.List>
                                                 </Card>
-                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}>
+                                                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={savingConfig}
+                                                    disabled={Boolean(pausingGyingSource)}>
                                                     {t('resourceHubSaveSettings')}
                                                 </Button>
                                             </Form>

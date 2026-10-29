@@ -45,7 +45,7 @@ function bootstrap(modules, suite) {
     suite(runtime).then(finish, error => finish({ fatal: error.stack || String(error) }));
 }
 
-export async function runOfflineReact(suite) {
+export async function runOfflineReact(suite, extraEntries = {}) {
     const browser = [
         process.env.FRONTEND_TEST_BROWSER,
         'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -70,6 +70,7 @@ export async function runOfflineReact(suite) {
     }
     for (const [name, file] of Object.entries({
         hot: 'src/app/hot/page.tsx', notifications: 'src/app/notifications/page.tsx', api: 'src/lib/api.ts',
+        ...extraEntries,
     })) {
         const source = await readFile(path.join(frontend, file), 'utf8');
         modules[name] = ts.transpileModule(source, { compilerOptions: {

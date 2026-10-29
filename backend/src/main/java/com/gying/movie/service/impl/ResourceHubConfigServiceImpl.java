@@ -49,6 +49,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_GYING_DISCOVERY_ENABLED = "resource.hub.gying.discovery_enabled";
     private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
     private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
+    private static final String KEY_GYING_SOURCE_PAUSED_PREFIX = "resource.hub.gying.auto_sync_paused.";
     private static final String KEY_GYING_AUTO_SYNC_RANGES = "resource.hub.gying.auto_sync_ranges";
     private static final String KEY_GYING_AUTO_SYNC_PAGE = "resource.hub.gying.auto_sync_page";
     private static final String KEY_GYING_AUTO_SYNC_END_PAGE = "resource.hub.gying.auto_sync_end_page";
@@ -119,6 +120,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         gying.setDiscoveryEnabled(readBoolean(KEY_GYING_DISCOVERY_ENABLED, gying.isDiscoveryEnabled()));
         gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
         gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
+        gying.setAutoSyncPausedSources(readGyingPausedSources());
         gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
         gying.setAutoSyncEndPage(Math.max(gying.getAutoSyncPage(),
                 readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, 500)));
@@ -137,6 +139,33 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
         ensureDefaults();
         return fromProperties();
+    }
+
+    private Map<String, Boolean> readGyingPausedSources() {
+        var paused = new LinkedHashMap<String, Boolean>();
+        // Missing pause keys default to false without creating rows during a read.
+        MetadataCrawlRange.sources("GYING").forEach(source ->
+                paused.put(source, readBoolean(KEY_GYING_SOURCE_PAUSED_PREFIX + source, false)));
+        return Map.copyOf(paused);
+    }
+
+    @Override
+    public synchronized void setGyingSourcePaused(String source, boolean paused) {
+        if (source == null || !MetadataCrawlRange.sources("GYING").contains(source)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid GYING catalog source");
+        }
+        String key = KEY_GYING_SOURCE_PAUSED_PREFIX + source;
+        SysConfig config = sysConfigService.getOne(new QueryWrapper<SysConfig>().eq("config_key", key));
+        boolean create = config == null;
+        if (create) {
+            config = new SysConfig();
+            config.setConfigKey(key);
+        }
+        config.setConfigValue(Boolean.toString(paused));
+        config.setDescription("GYING " + source + " 目录自动采集独立暂停");
+        boolean saved = create ? sysConfigService.save(config) : sysConfigService.updateById(config);
+        if (!saved) throw new IllegalStateException("GYING catalog pause was not persisted");
+        properties.getGying().setAutoSyncPausedSources(readGyingPausedSources());
     }
 
     @Override
@@ -348,6 +377,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setGyingDiscoveryEnabled(gying.isDiscoveryEnabled());
         response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
         response.setGyingAutoSyncSources(gying.getAutoSyncSources());
+        var paused = new LinkedHashMap<String, Boolean>();
+        MetadataCrawlRange.sources("GYING").forEach(source -> paused.put(source, gying.isAutoSyncSourcePaused(source)));
+        response.setGyingAutoSyncPausedSources(Map.copyOf(paused));
         var gyingRanges = new LinkedHashMap<String, MetadataCrawlRange>();
         MetadataCrawlRange.sources("GYING").forEach(source -> gyingRanges.put(source, gying.rangeFor(source)));
         response.setGyingAutoSyncRanges(gyingRanges);
@@ -444,7 +476,13 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             Arrays.stream(sources.split(",")).map(String::trim).filter(value -> !value.isEmpty()).distinct()
                     .forEach(source -> {
                         var range = rangeFor.apply(source);
-                        progress.add(planner.progress(provider, source, range.startPage(), range.endPage()));
+                        var position = planner.progress(provider, source, range.startPage(), range.endPage());
+                        if ("GYING".equals(provider) && properties.getGying().isAutoSyncSourcePaused(source)) {
+                            position = new MetadataCrawlProgress(position.provider(), position.source(),
+                                    position.startPage(), position.endPage(), position.nextPage(), position.nextItem(),
+                                    "PAUSED", position.taskId());
+                        }
+                        progress.add(position);
                     });
         }
     }

@@ -195,4 +195,93 @@ class ResourceHubConfigServiceImplTest {
         assertEquals(121, progress.get(1).startPage());
         assertEquals(121, progress.get(1).nextPage());
     }
+    @Test void missingPauseKeysDefaultToFalseWithoutCreatingPauseRows() {
+        var values = new java.util.HashMap<String, String>();
+        var storage = pauseStorage(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
+        var pauses = service.getConfig().getGyingAutoSyncPausedSources();
+        assertEquals(6, pauses.size());
+        assertTrue(pauses.values().stream().noneMatch(Boolean::booleanValue));
+        assertTrue(values.keySet().stream().noneMatch(key -> key.startsWith("resource.hub.gying.auto_sync_paused.")));
+    }
+
+    @Test void sourcePauseUpdatesOnlyItsOwnKeyAndSurvivesIndependentEditsAndRestart() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.gying.auto_sync_sources", "HITS_MOVIE,CSCORE_TV");
+        values.put("resource.hub.gying.auto_sync_ranges", "{\"HITS_MOVIE\":{\"startPage\":80,\"endPage\":500}}");
+        var original = new java.util.HashMap<>(values);
+        var storage = pauseStorage(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
+        service.setGyingSourcePaused("HITS_MOVIE", true);
+        service.setGyingSourcePaused("CSCORE_TV", true);
+        service.setGyingSourcePaused("HITS_MOVIE", false);
+        assertEquals(4, values.size());
+        original.forEach((key, value) -> assertEquals(value, values.get(key)));
+        var restarted = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
+        assertEquals(false, restarted.getGyingAutoSyncPausedSources().get("HITS_MOVIE"));
+        assertEquals(true, restarted.getGyingAutoSyncPausedSources().get("CSCORE_TV"));
+        assertEquals(80, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").startPage());
+        assertEquals(500, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").endPage());
+        org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class,
+                () -> restarted.getGyingAutoSyncPausedSources().put("HITS_TV", true));
+    }
+
+    @Test void failedPausePersistenceAndUnknownSourcesDoNotChangeRuntimeState() {
+        var properties = new ResourceHubProperties();
+        properties.getGying().setAutoSyncPausedSources(java.util.Map.of("CSCORE_TV", true));
+        var storage = mock(ISysConfigService.class);
+        var service = new ResourceHubConfigServiceImpl(properties, storage);
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.setGyingSourcePaused("POPULAR_MOVIE", true));
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.setGyingSourcePaused(null, true));
+        verifyNoInteractions(storage);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> service.setGyingSourcePaused("HITS_MOVIE", true));
+        assertEquals(java.util.Map.of("CSCORE_TV", true), properties.getGying().getAutoSyncPausedSources());
+    }
+
+    @Test void pausedProgressPreservesSavedPageOffsetTaskAndConfiguredRange() {
+        var properties = new ResourceHubProperties();
+        properties.getTmdb().setAutoSyncSources("");
+        properties.getGying().setAutoSyncSources("CSCORE_TV");
+        properties.getGying().setAutoSyncEndPage(500);
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.gying.auto_sync_paused.CSCORE_TV", "true");
+        var tasks = mock(com.gying.movie.service.IResourceHubTaskService.class);
+        var checkpoint = new com.gying.movie.entity.ResourceHubTask();
+        checkpoint.setId(91L); checkpoint.setStatus("SUCCEEDED");
+        checkpoint.setPayload("{\"page\":44,\"crawl\":{\"mode\":\"RANGE\",\"startPage\":1,\"endPage\":500,\"nextPage\":45,\"nextOffset\":12}}");
+        org.mockito.Mockito.when(tasks.getOne(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(false))).thenReturn(checkpoint);
+        var service = new ResourceHubConfigServiceImpl(properties, pauseStorage(values));
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "taskService", tasks);
+        String original = checkpoint.getPayload();
+        var position = service.getConfig().getMetadataCrawlProgress().get(0);
+        assertEquals("PAUSED", position.status()); assertEquals(45, position.nextPage());
+        assertEquals(13, position.nextItem()); assertEquals(500, position.endPage()); assertEquals(91L, position.taskId());
+        assertEquals(original, checkpoint.getPayload());
+        org.mockito.Mockito.verify(tasks, org.mockito.Mockito.never()).updateById(org.mockito.ArgumentMatchers.any());
+    }
+
+    private ISysConfigService pauseStorage(java.util.Map<String, String> values) {
+        var storage = mock(ISysConfigService.class);
+        org.mockito.Mockito.when(storage.getConfigValue(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString()))
+                .thenAnswer(call -> values.getOrDefault(call.getArgument(0), call.getArgument(1)));
+        org.mockito.Mockito.when(storage.getOne(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?> query = call.getArgument(0);
+            query.getSqlSegment();
+            String key = (String) query.getParamNameValuePairs().values().iterator().next();
+            if (!values.containsKey(key)) return null;
+            var config = new com.gying.movie.entity.SysConfig(); config.setId(1L);
+            config.setConfigKey(key); config.setConfigValue(values.get(key)); return config;
+        });
+        org.mockito.stubbing.Answer<Boolean> save = call -> {
+            com.gying.movie.entity.SysConfig config = call.getArgument(0);
+            values.put(config.getConfigKey(), config.getConfigValue()); return true;
+        };
+        org.mockito.Mockito.when(storage.save(org.mockito.ArgumentMatchers.any())).thenAnswer(save);
+        org.mockito.Mockito.when(storage.updateById(org.mockito.ArgumentMatchers.any())).thenAnswer(save);
+        return storage;
+    }
+
 }

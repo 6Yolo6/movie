@@ -8,6 +8,11 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ApiResponse;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubConfigRequest;
+import com.gying.movie.dto.MetadataCrawlRange;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.core.JsonParser;
 import com.gying.movie.dto.ResourceHubConfigResponse;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceDiscoveryRunResult;
@@ -78,6 +83,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResourceHubAdminController {
     private static final Logger log = LoggerFactory.getLogger(ResourceHubAdminController.class);
     private static final int MISSING_RESOURCE_BATCH_LIMIT = 20;
+    private static final ObjectMapper PAUSE_REQUEST_MAPPER = new ObjectMapper()
+            .enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 
     private final AuthHelper authHelper;
     private final ResourceHubProperties resourceHubProperties;
@@ -202,6 +210,29 @@ public class ResourceHubAdminController {
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
         return ApiResponse.ok(resourceHubConfigService.updateConfig(request));
+    }
+
+    @PutMapping("/gying/sources/{source}/pause")
+    public ApiResponse<Map<String, Object>> pauseGyingSource(
+            @PathVariable String source,
+            @RequestBody(required = false) String body,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        if (source == null || !MetadataCrawlRange.sources("GYING").contains(source)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid GYING catalog source");
+        }
+        JsonNode request;
+        try {
+            if (body == null) throw new IllegalArgumentException();
+            request = PAUSE_REQUEST_MAPPER.readTree(body);
+            if (request == null || !request.isObject() || request.size() != 1
+                    || !request.path("paused").isBoolean()) throw new IllegalArgumentException();
+        } catch (Exception invalid) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expected only a boolean paused field");
+        }
+        boolean paused = request.path("paused").asBoolean();
+        resourceHubConfigService.setGyingSourcePaused(source, paused);
+        return ApiResponse.ok(Map.of("source", source, "paused", paused));
     }
 
     @GetMapping("/worker/status")

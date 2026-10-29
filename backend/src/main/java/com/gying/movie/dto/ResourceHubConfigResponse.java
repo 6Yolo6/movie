@@ -26,6 +26,7 @@ public class ResourceHubConfigResponse {
     private boolean gyingDiscoveryEnabled;
     private boolean gyingAutoSyncEnabled;
     private String gyingAutoSyncSources;
+    private java.util.Map<String, Boolean> gyingAutoSyncPausedSources;
     private java.util.Map<String, MetadataCrawlRange> gyingAutoSyncRanges;
     private int gyingAutoSyncPage;
     private int gyingAutoSyncEndPage;

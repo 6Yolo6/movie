@@ -26,7 +26,16 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 - `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后继续下一页，空页仍回 start。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
 - overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
 
+本站 TMDB 七来源继续保持现有 `1–500` 配置范围和游标。TMDB [Errors](https://developer.themoviedb.org/docs/errors) 通用错误码 22 写明整数页码 1–500；[官方论坛](https://www.themoviedb.org/talk/668b027390c809787099e77d) 的可见索引摘要区分普通列表/Discover 500 页与 Trending 1000 页。本轮不扩展 Trending；论坛仅核索引摘要，直接访问返回 403，未真实请求第 501/1000 页。`total_pages` 是响应分页信息，官方旧示例不代表当前目录规模，也不能单独作为可请求上限。
+
 2026-10-22 21:22 独立范围与进度保留已部署；21:34只读复核5条原自动任务及范围配置保持不变；[原验收摘要](evaluation/crawl-resource-links-20261022/validation-summary.json)、[发布与恢复](history/releases.md#earlier-releases)。
+
+### GYING 六目录独立暂停
+
+- `HITS_MOVIE/HITS_TV/HITS_ANIME/CSCORE_MOVIE/CSCORE_TV/CSCORE_ANIME` 各有独立暂停标记，缺配置默认为 false；保留现有范围、来源选择及页内偏移，不新增 50 页限制。
+- `PUT /api/admin/resource-hub/gying/sources/{source}/pause` 只接受布尔字段 `{ "paused": true|false }`，只持久化对应 `resource.hub.gying.auto_sync_paused.{source}`。暂停按钮单独提交，不重发整份配置；恢复仍须满足 Resource Hub/Worker/GYING 自动采集总开关。
+- Worker 跳过该目录的新自动排队，在队列 LIMIT 前排除其 `crawl.mode=RANGE` 的待执行元数据任务，并在执行前复检；不重写排队任务状态、attempts、scheduled_at 或 payload/crawl。已经开始的批次允许正常结束，恢复后沿保留位置续采。
+- `config.gyingAutoSyncPausedSources` 返回六个布尔标记；采集进度显示 `PAUSED` 并保留范围、nextPage/nextItem 与 taskId，该显示不修改数据库任务状态。手动单页元数据、TMDB、单条隔离重试及独立周榜沿用各自开关。
 
 ### 剧集自动追更
 

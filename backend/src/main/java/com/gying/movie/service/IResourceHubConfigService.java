@@ -9,4 +9,6 @@ public interface IResourceHubConfigService {
     ResourceHubConfigResponse getConfig();
 
     ResourceHubConfigResponse updateConfig(ResourceHubConfigRequest request);
+
+    void setGyingSourcePaused(String source, boolean paused);
 }

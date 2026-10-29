@@ -50,6 +50,16 @@ public class ResourceHubProperties {
         private boolean discoveryEnabled = true;
         private boolean autoSyncEnabled = false;
         private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
+        private volatile Map<String, Boolean> autoSyncPausedSources = Map.of();
+
+        public void setAutoSyncPausedSources(Map<String, Boolean> paused) {
+            autoSyncPausedSources = Map.copyOf(paused);
+        }
+
+        public boolean isAutoSyncSourcePaused(String source) {
+            return Boolean.TRUE.equals(autoSyncPausedSources.get(source));
+        }
+
         private int autoSyncPage = 1;
         private int autoSyncEndPage;
         private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();

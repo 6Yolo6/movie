@@ -60,6 +60,14 @@
 
 发现筛选 `keyword/movieId/status/source/sortOrder/page/size`。内部 `/api/internal/resource-hub` 的定向 p2p sync、发现发布、双盘任务 run、ingest/health 需内部认证，公网拒绝。高频 Worker 的元数据政策与独立队列见[资源中心](resource-hub.md)，不能由旧接口字段推断自动视频消费已启用。
 
+### GYING 自动目录独立暂停
+
+`PUT /api/admin/resource-hub/gying/sources/{source}/pause` 要求 ADMIN；source 精确为 `HITS_MOVIE/HITS_TV/HITS_ANIME/CSCORE_MOVIE/CSCORE_TV/CSCORE_ANIME`。body 必须仅有一个布尔字段 `{ "paused": true|false }`；缺失、null、非对象、重复键、尾随 JSON、额外字段、非布尔值或未知/小写来源均 400，认证在参数校验前执行。成功返回 `{code:"OK",message:"OK",data:{source,paused}}`。
+
+只写对应 `resource.hub.gying.auto_sync_paused.{source}`。GET config 和 overview.config 的 `gyingAutoSyncPausedSources` 返回六个标记，缺键 false，读取不创建暂停行。接口不重写其他五标记、总开关、范围或任务游标。Worker 保留暂停目录的待执行自动 RANGE 任务；进行中的批次正常结束，进度显示 PAUSED 不改数据库任务状态。手动单页、TMDB、单条重试及独立周榜沿用各自契约。
+
+本站 TMDB 七来源保留现有 `1–500` 页码验证、范围和游标。TMDB [通用错误码22](https://developer.themoviedb.org/docs/errors) 写明 1–500；[官方论坛](https://www.themoviedb.org/talk/668b027390c809787099e77d) 的可见索引摘要区分普通列表/Discover 500 与 Trending 1000。本轮不扩展 Trending，只核论坛索引摘要，未真实请求第 501/1000 页。官方响应的 `total_pages` 历史示例不是当前目录规模，也不能单独作为接口可请求上限；不新增 GYING 50 页限制。
+
 ## GYING
 
 基础 `/api/admin/gying-source`；所有写操作有实际副作用，ensure 不都等于纯元数据。
