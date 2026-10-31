@@ -65,7 +65,7 @@
 | --- | --- |
 | Movie | 782项：752通过、30跳过、0失败/错误；compile通过 |
 | Agent | 135/135通过、0跳过、失败或错误；compile通过 |
-| Movie镜像 | 固定镜像已构建，运行用户gying，镜像内JAR hash和labels校验通过；未替换生产 |
+| Movie镜像 | 固定镜像构建/运行用户gying/镜像内JAR及labels通过；10月31日22:58已上线，见[部署阶段](deployment-summary.md) |
 
 Movie跳过为25项SQL、1项Redis、4项Windows权限依赖。源码/JAR/hash清单复核一致。首候选778/121及3条现役片库专项探针仍独立保留于 [candidate-probes.json](candidate-probes.json)，不能计为最终候选验收。
 
@@ -101,14 +101,18 @@ Movie跳过为25项SQL、1项Redis、4项Windows权限依赖。源码/JAR/hash�
 
 快照SHA-256为`0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a`，10月31日19:35:12–19:37:28（Asia/Shanghai）129页分页采集、总数和唯一ID及fingerprint校验；不是数据库原子事务快照。现役11,272条索引与快照覆盖不同，索引未重建。
 
-这是隔离候选类联动实查；新Movie/Agent的生产部署和网站真实USER/身份/加密队列/页面展示未验。网站v3 USER15轮仍未执行，旧test账号保持disabled，不自动创建或恢复。
+上述三轮是隔离候选类联动实查，本身不覆盖生产部署、网站USER/身份/加密队列/页面展示。随后Movie生产上线另见下段；Agent尚未替换，网站v3 USER15轮仍未执行，旧test账号保持disabled，不自动创建或恢复。
 
-## 部署状态与可审查计划
+## 当前部署阶段与回退
 
-**本候选未部署。** 本次只读门禁58 PASS /11 FAIL /1 UNKNOWN，G01–G11未关闭；普通权限`stop-local.ps1 -CheckOnly -Services backend`无法证明现役Agent受管身份，未发送停止请求。这不证明进程实际不受管，需要管理员只读复核。10月29日例外不能复用。
+**本轮目前完成Movie backend上线，Agent等待Windows提权。** 用户已明确批准本候选的有限两后端部署例外和管理员预检；初次普通权限无法证明身份的记录保留，随后管理员只读身份核对通过。G01–G11仍未关闭，已知门禁58 PASS /11 FAIL /1 UNKNOWN，例外不等于安全加固。
 
-固定新Movie镜像和Agent JAR、完整现役Compose覆盖、仅两服务的部署顺序及逆序回退，已写入仓库外`E:/gying-tools/releases/ai-quality-improvement-20261031/rollout-plan.json`，hash见[验证摘要](validation-summary.json)。先Movie后Agent；回退先Agent再Movie，保留当前data/state/key/config/index。生产仍为10月29 Movie镜像95bbb…/Agent JAR01eab…；本轮未建立新的生产替换检查点，执行前须重新加密备份并验证hash/完整认证解密。
+Movie于10月31日22:58替换为本页绑定的image8d65…/JARd0149…，旧容器正常TERM退出143；768MiB heap、1280MiB容器/含swap2560MiB、有效环境/挂载及其他容器保持。新的四份age检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 完成大小/hash与完整认证解密。完整现役五覆盖后追加本轮backend-only第六覆盖。11月1日原日常备份配置另经单份age认证保存，再纳入新覆盖并dry-run通过，下一次自然完整备份未验。
 
-依据[gying-project-ops](../../../.agents/skills/gying-project-ops/SKILL.md)及[部署与恢复第8条](../../../.agents/skills/gying-project-ops/references/deployment-recovery.md)：**“门禁 FAIL、测试失败或目标不清时停止相应动作并汇报；历史部署不代表风险关闭或授权可复用。”** 现有规则没有自动批准例外；若选择有限业务部署，须由用户明确确认本候选范围并先通过管理员身份预检。
+23:23直接访问新Movie的三个只读契约通过：最多2项且91..99分钟/豆瓣降序、null上限及IMDb同源排序、非法limit返回400。没有模型推理或队列/context写入；缺失评分显示分支没有命中，不证明实际多轮继承。本机片库/首页/详情、经现有代理的公网片库/首页HTML/同ID详情SSR，以及internal/QQ404通过；公网匿名admin因代理读取超时未验，不宣称Cloudflare Access通过。afterMovie快照/就绪均exit0，11通过/1原QQschema覆盖警告/0失败。
 
-完整机器绑定、各轮计数和限制见[validation-summary.json](validation-summary.json)。后续质量工作应针对仍未满足的主题、作者关系、旧列表和偏好，不改写冻结题或原评分，也不把重复开发观测宣称独立提升率。
+Agent于11月1日00:04已启动管理员助手并通过新的受管身份预检，随后因在途任务门禁阻断而停止该动作，未发送停止请求。11月1日01:06 Windows提权再次返回操作取消，改进的有界等待助手未启动；仍为10月29日01eab8…/PID36916。新4条独立Agent回答尚未执行，网站USER15轮和真实跨轮继承仍未验。未生成新Agent检查点或恢复旧SQL/state，当前data/state/key/config/index保持。
+
+[部署阶段详情](deployment-summary.md)与[机器绑定摘要](deployment-summary.json)记录实际回执、入口、契约及当前进度。原[validation-summary.json](validation-summary.json)和仓库外rollout-plan保留批准前准备状态与原hash，不据它们改写当前执行结果。原部署顺序为Movie后Agent，剩余仅Agent，应用回退逆序且保留当前数据；未验证的任务/外部副作用不重放。
+
+后续质量工作继续针对主题、作者关系、早期列表引用和柔性偏好，不改写冻结题/原回答/评分，不把重复开发观测或直接协议通过宣称独立提升率。

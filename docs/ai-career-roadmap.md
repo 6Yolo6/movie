@@ -54,7 +54,7 @@
 
 有限补丁收口后，最终候选再次执行完整15轮，13次正常返回、2次API500（dev-v3-01 WEB_UNAVAILABLE、dev-v3-07 WEB_TIMEOUT），Agent和harness均正常exit0；[最终原始报告](evaluation/quality-improvement-20261031/development-final-report.json)和[最终回答记录](evaluation/quality-improvement-20261031/development-final-answers.md)保留实际结果；[最终辅助复核](evaluation/quality-improvement-20261031/development-final-review.json)对13条正常答案判定满足3（版本资料2条、音乐推荐首轮1条）、有效澄清2、未满足4、证据不足4，另2次无回答执行失败质量三维保持null。候选测试、实际返回、需求满足和真人验收分别记录，不能用三轮重复开发题报告独立质量提升率。
 
-隔离链路运行真实模型、现役索引和Movie候选类，使用12822条分页采集的公开快照；它不是数据库原子快照，也没有覆盖真实网站USER/加密队列/页面展示，网站新15轮仍未执行。Movie782项中752通过、30项环境跳过，Agent135/135及compile通过。生产仍为10月29日版本，本次因G01–G11及Agent身份预检未通过而停止部署，历史部署例外不可复用。[交付状态](evaluation/quality-improvement-20261031/README.md)按最终包和实际结果记录，不把候选实现写成已上线能力。
+隔离链路运行真实模型、现役索引和Movie候选类，使用12822条分页采集的公开快照；它不是数据库原子快照，也没有覆盖真实网站USER/加密队列/页面展示，网站新15轮仍未执行。Movie782项中752通过、30项环境跳过，Agent135/135及compile通过。本候选有限两后端部署例外及管理员预检已获明确批准，Movie于10月31日22:58上线。Agent于11月1日00:04通过新的受管身份预检，但在途任务门禁阻断且未停；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍为10月29日版本，新4条回答未执行。G01–G11未关闭。[交付状态](evaluation/quality-improvement-20261031/README.md)按最终包和实际结果记录，不把候选实现写成已上线能力。
 
 ## 3. 学习知识如何落到项目
 

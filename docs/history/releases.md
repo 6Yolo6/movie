@@ -2,6 +2,11 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="quality-improvement-20261031"></a>
+## 2026-10-31：82条原因审计与Movie改进上线阶段
+
+82条历史原因/42个case-turns审计及三轮冻结开发观测完成，未称全部修复。用户批准本候选有限两后端部署例外；22:58仅Movie backend替换为image8d65…/JARd0149…，旧TERM143，四age检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 大小/hash/完整认证解密通过，其他容器与资源/挂载保持。三个直接只读契约和本机/公网业务读取通过，公网admin超时未验；缺分显示/网站USER/真正多轮未验。11月1日已将新覆盖纳入日常备份并dry-run，原配置单age认证保存，自然完整运行待验。Agent于11月1日00:04受管身份通过，但在途门禁阻断且未停；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍01eab8…/PID36916，新4条回答未执行。有界等待助手已准备、5项离线检查通过，11项安全FAIL未关闭。详见[部署阶段](../evaluation/quality-improvement-20261031/deployment-summary.md)，原开发报告/回答/评分保持。
+
 <a id="metadata-source-pause-20261029"></a>
 ## 2026-10-29：GYING 自动目录独立暂停
 
