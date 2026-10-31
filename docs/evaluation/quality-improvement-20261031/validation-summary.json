@@ -1,0 +1,547 @@
+{
+  "schemaVersion": 2,
+  "verifiedAt": "2026-10-31T13:15:39.321624+00:00",
+  "status": "implemented-final-candidate-observed-not-deployed",
+  "historicalAudit": {
+    "answers": 82,
+    "distinctCaseTurns": 42,
+    "answerHashBindingsMatched": 82,
+    "primaryCauseCounts": {
+      "condition_contract_not_satisfied": 22,
+      "empty_semantic_search_without_effective_clarification": 2,
+      "literal_title_routing": 36,
+      "multi_turn_subject_or_operation_lost": 10,
+      "reference_request_bypassed": 4,
+      "candidate_quantity_and_runtime_unit_failed": 2,
+      "same_entity_answer_contradiction_and_replacement_failed": 2,
+      "opaque_tool_result_without_effective_clarification": 4
+    },
+    "humanReviewsAdded": 0,
+    "frozenArtifactsUnchanged": true
+  },
+  "builds": {
+    "movie": {
+      "startedAt": "2026-10-31T12:11:13.895864+00:00",
+      "sourceSha256": "b1d244f1c41cf6590bb6b7d8cb17589020d70c3b4d64f4b947b53713a64ab9a1",
+      "sourceFileCount": 347,
+      "productionEnvLoaded": false,
+      "deploymentPerformed": false,
+      "verifyExitCode": 0,
+      "tests": {
+        "tests": 782,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 30
+      },
+      "skippedClasses": [
+        {
+          "class": "com.gying.movie.client.XunleiTokenPersistenceTest",
+          "skipped": 1
+        },
+        {
+          "class": "com.gying.movie.security.RedisRateLimiterIntegrationTest",
+          "skipped": 1
+        },
+        {
+          "class": "com.gying.movie.service.impl.CatalogAiMySqlTest",
+          "skipped": 11
+        },
+        {
+          "class": "com.gying.movie.service.impl.MonitoringServiceMySqlTest",
+          "skipped": 7
+        },
+        {
+          "class": "com.gying.movie.service.impl.QueryBoundaryMySqlTest",
+          "skipped": 7
+        },
+        {
+          "class": "com.gying.movie.util.PrivateFileWriterTest",
+          "skipped": 3
+        }
+      ],
+      "compileExitCode": 0,
+      "jarSha256": "d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4",
+      "jarSize": 80417509,
+      "candidatePath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\movie-candidate-d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4.jar",
+      "sourceStillMatches": true,
+      "completedAt": "2026-10-31T12:12:27.425654+00:00",
+      "imageBuildExitCode": 0,
+      "imageTag": "gying-movie-backend:20261031-quality2-b1d244f1c41c",
+      "imageId": "sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44",
+      "imageUser": "gying",
+      "imageJarShaVerified": true
+    },
+    "agent": {
+      "startedAt": "2026-10-31T12:46:58.419503+00:00",
+      "sourceSha256": "9013b26969632d0d95c7875c174203507b9b1d8228bf6343308763bd46f813af",
+      "sourceFileCount": 46,
+      "productionEnvLoaded": false,
+      "deploymentPerformed": false,
+      "verifyExitCode": 0,
+      "tests": {
+        "tests": 135,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skippedClasses": [],
+      "compileExitCode": 0,
+      "jarSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+      "jarSize": 35488990,
+      "candidatePath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\agent-candidate-1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d.jar",
+      "sourceStillMatches": true,
+      "completedAt": "2026-10-31T12:47:49.966852+00:00"
+    }
+  },
+  "firstCandidateBuilds": {
+    "movie": {
+      "startedAt": "2026-10-31T10:59:20.546710+00:00",
+      "sourceSha256": "344ea0afe71f423a86fea58797ba1548f616a70b684f72ea8e95189fee110d7a",
+      "sourceFileCount": 347,
+      "productionEnvLoaded": false,
+      "deploymentPerformed": false,
+      "verifyExitCode": 0,
+      "tests": {
+        "tests": 778,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 30
+      },
+      "skippedClasses": [
+        {
+          "class": "com.gying.movie.client.XunleiTokenPersistenceTest",
+          "skipped": 1
+        },
+        {
+          "class": "com.gying.movie.security.RedisRateLimiterIntegrationTest",
+          "skipped": 1
+        },
+        {
+          "class": "com.gying.movie.service.impl.CatalogAiMySqlTest",
+          "skipped": 11
+        },
+        {
+          "class": "com.gying.movie.service.impl.MonitoringServiceMySqlTest",
+          "skipped": 7
+        },
+        {
+          "class": "com.gying.movie.service.impl.QueryBoundaryMySqlTest",
+          "skipped": 7
+        },
+        {
+          "class": "com.gying.movie.util.PrivateFileWriterTest",
+          "skipped": 3
+        }
+      ],
+      "compileExitCode": 0,
+      "jarSha256": "001c59e19f35795fb2ff0a79e22ba3a9ad5cb95264b8ad07e9d61310d29152ad",
+      "jarSize": 80417163,
+      "candidatePath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\movie-candidate-001c59e19f35795fb2ff0a79e22ba3a9ad5cb95264b8ad07e9d61310d29152ad.jar",
+      "sourceStillMatches": true,
+      "completedAt": "2026-10-31T11:00:42.585002+00:00",
+      "imageBuildExitCode": 0,
+      "imageTag": "gying-movie-backend:20261031-quality-344ea0afe71f",
+      "imageId": "sha256:b095d946a3c112d3abf949d5e5fb10c08d312fb774e2204ef9b73a60d4f54219",
+      "imageUser": "gying",
+      "imageJarShaVerified": true
+    },
+    "agent": {
+      "startedAt": "2026-10-31T11:08:15.188257+00:00",
+      "sourceSha256": "e9410defc7e5a6fc5c037fe64c1ebc26c9916da7509ef6861c9a096634b956c8",
+      "sourceFileCount": 45,
+      "productionEnvLoaded": false,
+      "deploymentPerformed": false,
+      "verifyExitCode": 0,
+      "tests": {
+        "tests": 121,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "skippedClasses": [],
+      "compileExitCode": 0,
+      "jarSha256": "2156f19e7497a2a0657bc1fb4cfe617694f66e448d4131ea0c98847486d177ee",
+      "jarSize": 35483504,
+      "candidatePath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\agent-candidate-2156f19e7497a2a0657bc1fb4cfe617694f66e448d4131ea0c98847486d177ee.jar",
+      "sourceStillMatches": true,
+      "completedAt": "2026-10-31T11:09:06.127720+00:00"
+    }
+  },
+  "targetedLiveCatalogCandidateProbes": {
+    "file": "candidate-probes.json",
+    "sha256": "7bd2556975371bad42c97f675bafdb215a8bdb696484999c82f97bd49a088d1d",
+    "cases": 3,
+    "agentJarSha256": "2156f19e7497a2a0657bc1fb4cfe617694f66e448d4131ea0c98847486d177ee",
+    "allChecksPassed": true,
+    "gracefullyStopped": true,
+    "scopeLimits": "First Agent candidate only, against existing live Movie catalog; not final-candidate probes."
+  },
+  "developmentRounds": [
+    {
+      "stage": "first-candidate",
+      "reportFile": "development-candidate-report.json",
+      "reportFileSha256": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+      "reviewFile": "development-candidate-review.json",
+      "reviewFileSha256": "5521a1c595d446c2c7862aaed143bec28debf0cfc6bc96e5f1fdffd45bc8d196",
+      "answersFile": "development-candidate-answers.md",
+      "agentJarSha256": "2156f19e7497a2a0657bc1fb4cfe617694f66e448d4131ea0c98847486d177ee",
+      "movieJarSha256": "001c59e19f35795fb2ff0a79e22ba3a9ad5cb95264b8ad07e9d61310d29152ad",
+      "executedTurns": 15,
+      "programCompletedTurns": 15,
+      "executionFailureTurns": 0,
+      "reviewSummary": {
+        "reviewedRows": 15,
+        "modelAssessedRows": 15,
+        "newHumanReviewedRows": 0,
+        "verdictCounts": {
+          "满足": 0,
+          "有用但不完全": 1,
+          "未满足": 8,
+          "证据不足": 4,
+          "有效澄清": 2
+        },
+        "requirementSatisfiedTurns": 0,
+        "effectiveClarificationTurns": 2,
+        "partiallyUsefulTurns": 1,
+        "unmetTurns": 8,
+        "insufficientEvidenceTurns": 4,
+        "scoreDimensions": {
+          "factuality": {
+            "scored": 7,
+            "unknown": 8
+          },
+          "grounding": {
+            "scored": 15,
+            "unknown": 0
+          },
+          "usefulness": {
+            "scored": 15,
+            "unknown": 0
+          }
+        },
+        "primaryCauseCounts": {
+          "documentary_genre_contract_mismatch": 1,
+          "language_union_and_region_misparse": 1,
+          "train_theme_evidence_unavailable": 1,
+          "empty_previous_list_handled": 1,
+          "version_lookup_false_clarification": 1,
+          "current_version_and_operation_lost": 1,
+          "animal_injury_exclusion_unverified": 1,
+          "candidate_fields_match_but_answer_detail_missing": 1,
+          "movie_type_metadata_conflict": 1,
+          "historical_subject_guard_ignores_available_history": 1,
+          "adaptation_relation_misrouted_to_details": 1,
+          "unnecessary_web_permission_clarification": 1,
+          "runtime_conflict_correctly_explained": 1,
+          "core_theme_relevance_gate_not_supported": 1,
+          "theme_strengthening_and_soft_preference_update_lost": 1
+        },
+        "note": "15/15程序completed不是15/15需求满足；新增真人=0；一次development结果不报告为生产准确率。"
+      },
+      "harnessFinalStats": {
+        "status": "stopping",
+        "ready": false,
+        "port": 18883,
+        "pid": 36888,
+        "rows": 12822,
+        "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+        "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+        "datasetSelectCalls": 6,
+        "queryCalls": 18,
+        "contextUpdates": 15,
+        "detailGets": 0,
+        "dataSourcePresent": false,
+        "databaseConnections": 0,
+        "databaseWrites": 0,
+        "queueClaims": 0,
+        "resourceLinksIncluded": false,
+        "springApplicationStarted": false,
+        "schedulersStarted": false,
+        "catalogClassLocation": "file:/E:/gying-tools/releases/ai-quality-improvement-20261031/catalog-harness-runtime/BOOT-INF/classes/",
+        "observedAt": "2026-10-31T11:47:10.432559500Z",
+        "stopping": true
+      },
+      "agentGracefullyStopped": true,
+      "harnessExitCode": 0,
+      "websiteUserSessionUsed": false,
+      "productionQueueClaimed": false,
+      "productionStateEnabled": false
+    },
+    {
+      "stage": "followup-candidate",
+      "reportFile": "development-followup-report.json",
+      "reportFileSha256": "c1c5502d253bb178a2cde850332939acff7496fe3ee968b46a4f57fc9cdb1b1e",
+      "reviewFile": "development-followup-review.json",
+      "reviewFileSha256": "3763d62087ec6058261322855316256366b6ed44b2193c6b0fbe9935b12b5df1",
+      "answersFile": "development-followup-answers.md",
+      "agentJarSha256": "dc8aaa03097f8910c42538a4878e7c8aa26169dfdb2e335b6b091bdcc0c2a234",
+      "movieJarSha256": "d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4",
+      "executedTurns": 15,
+      "programCompletedTurns": 14,
+      "executionFailureTurns": 1,
+      "reviewSummary": {
+        "reviewedRows": 15,
+        "modelAssessedRows": 15,
+        "modelAnswerAssessedRows": 14,
+        "executionOnlyRows": 1,
+        "newHumanReviewedRows": 0,
+        "verdictCounts": {
+          "满足": 4,
+          "有用但不完全": 0,
+          "未满足": 4,
+          "证据不足": 5,
+          "有效澄清": 2
+        },
+        "answeredVerdictCounts": {
+          "满足": 4,
+          "有用但不完全": 0,
+          "未满足": 4,
+          "证据不足": 4,
+          "有效澄清": 2
+        },
+        "requirementSatisfiedTurns": 4,
+        "fulfilledByEmptyResultHandlingTurns": 1,
+        "satisfiedMetadataAnswerTurns": 2,
+        "satisfiedRecommendationTurns": 1,
+        "effectiveClarificationTurns": 2,
+        "partiallyUsefulTurns": 0,
+        "unmetAnsweredTurns": 4,
+        "insufficientEvidenceAnsweredTurns": 4,
+        "executionFailureTurns": 1,
+        "scoreDimensions": {
+          "factuality": {
+            "scored": 9,
+            "unknownAmongAnswered": 5,
+            "notScoredExecutionFailure": 1
+          },
+          "grounding": {
+            "scored": 14,
+            "unknownAmongAnswered": 0,
+            "notScoredExecutionFailure": 1
+          },
+          "usefulness": {
+            "scored": 14,
+            "unknownAmongAnswered": 0,
+            "notScoredExecutionFailure": 1
+          }
+        },
+        "primaryCauseCounts": {
+          "allowed_empty_result_handling": 1,
+          "original_dialogue_provenance_unverified": 1,
+          "train_theme_evidence_unavailable": 1,
+          "empty_previous_list_handled": 1,
+          "version_metadata_bound_to_entities": 1,
+          "exact_2019_cast_identity_verified": 1,
+          "hiking_theme_omitted_from_catalog_search": 1,
+          "matching_music_candidates_with_explicit_years": 1,
+          "movie_type_metadata_conflict": 1,
+          "historical_subject_guard_ignores_available_history": 1,
+          "external_web_timeout_execution_failure": 1,
+          "official_announcement_evidence_unavailable": 1,
+          "runtime_conflict_correctly_explained": 1,
+          "core_theme_relevance_gate_not_supported": 1,
+          "theme_strengthening_and_soft_preference_update_lost": 1
+        },
+        "executionFailures": [
+          {
+            "caseId": "dev-v3-07",
+            "turn": 1,
+            "apiCode": 500,
+            "errorCode": "WEB_TIMEOUT",
+            "hasAnswer": false,
+            "qualityAssessed": false
+          }
+        ],
+        "note": "15执行、14completed；01允许空结果处理不算成功推荐；07外部搜索超时只诊断不评电影答案。新增真人=0，不报告生产准确率。"
+      },
+      "harnessFinalStats": {
+        "status": "stopping",
+        "ready": false,
+        "port": 18883,
+        "pid": 17884,
+        "rows": 12822,
+        "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+        "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+        "datasetSelectCalls": 6,
+        "queryCalls": 20,
+        "contextUpdates": 15,
+        "detailGets": 1,
+        "dataSourcePresent": false,
+        "databaseConnections": 0,
+        "databaseWrites": 0,
+        "queueClaims": 0,
+        "resourceLinksIncluded": false,
+        "springApplicationStarted": false,
+        "schedulersStarted": false,
+        "catalogClassLocation": "file:/E:/gying-tools/releases/ai-quality-improvement-20261031/followup-harness/catalog-harness-runtime/BOOT-INF/classes/",
+        "observedAt": "2026-10-31T12:40:10.468854900Z",
+        "stopping": true
+      },
+      "agentGracefullyStopped": true,
+      "harnessExitCode": 0,
+      "websiteUserSessionUsed": false,
+      "productionQueueClaimed": false,
+      "productionStateEnabled": false
+    },
+    {
+      "stage": "final-candidate",
+      "reportFile": "development-final-report.json",
+      "reportFileSha256": "cb7de96add7cd61a13b436d2bedd9b4e0764b6811e65da7d2768888473f54f4d",
+      "reviewFile": "development-final-review.json",
+      "reviewFileSha256": "0d5877a1eabf87b1125a806af1f629a5e4df32a56a66edbd4731ba1fb48b7df7",
+      "answersFile": "development-final-answers.md",
+      "agentJarSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+      "movieJarSha256": "d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4",
+      "executedTurns": 15,
+      "programCompletedTurns": 13,
+      "executionFailureTurns": 2,
+      "reviewSummary": {
+        "reviewedRows": 15,
+        "modelAssessedRows": 15,
+        "modelAnswerAssessedRows": 13,
+        "executionOnlyRows": 2,
+        "newHumanReviewedRows": 0,
+        "verdictCounts": {
+          "满足": 3,
+          "有用但不完全": 0,
+          "未满足": 4,
+          "证据不足": 6,
+          "有效澄清": 2
+        },
+        "answeredVerdictCounts": {
+          "满足": 3,
+          "有用但不完全": 0,
+          "未满足": 4,
+          "证据不足": 4,
+          "有效澄清": 2
+        },
+        "requirementSatisfiedTurns": 3,
+        "fulfilledByEmptyResultHandlingTurns": 0,
+        "satisfiedMetadataAnswerTurns": 2,
+        "satisfiedRecommendationTurns": 1,
+        "effectiveClarificationTurns": 2,
+        "partiallyUsefulTurns": 0,
+        "unmetAnsweredTurns": 4,
+        "insufficientEvidenceAnsweredTurns": 4,
+        "executionFailureTurns": 2,
+        "scoreDimensions": {
+          "factuality": {
+            "scored": 8,
+            "unknownAmongAnswered": 5,
+            "notScoredExecutionFailure": 2
+          },
+          "grounding": {
+            "scored": 13,
+            "unknownAmongAnswered": 0,
+            "notScoredExecutionFailure": 2
+          },
+          "usefulness": {
+            "scored": 13,
+            "unknownAmongAnswered": 0,
+            "notScoredExecutionFailure": 2
+          }
+        },
+        "primaryCauseCounts": {
+          "web_unavailable_execution_failure": 1,
+          "original_dialogue_provenance_unverified": 1,
+          "train_theme_evidence_unavailable": 1,
+          "empty_previous_list_handled": 1,
+          "version_metadata_bound_to_entities": 1,
+          "exact_2019_cast_identity_verified": 1,
+          "hiking_theme_omitted_from_catalog_search": 1,
+          "matching_music_candidates_with_explicit_years": 1,
+          "movie_type_metadata_conflict": 1,
+          "historical_subject_guard_ignores_available_history": 1,
+          "external_web_timeout_execution_failure": 1,
+          "official_announcement_evidence_unavailable": 1,
+          "runtime_conflict_correctly_explained": 1,
+          "core_theme_relevance_gate_not_supported": 1,
+          "theme_strengthening_and_soft_preference_update_lost": 1
+        },
+        "executionFailures": [
+          {
+            "caseId": "dev-v3-01",
+            "turn": 1,
+            "apiCode": 500,
+            "errorCode": "WEB_UNAVAILABLE",
+            "hasAnswer": false,
+            "qualityAssessed": false
+          },
+          {
+            "caseId": "dev-v3-07",
+            "turn": 1,
+            "apiCode": 500,
+            "errorCode": "WEB_TIMEOUT",
+            "hasAnswer": false,
+            "qualityAssessed": false
+          }
+        ],
+        "note": "15执行、13completed；满足3=版本资料2+音乐首轮1；有效澄清2、未满足4、已完成但证据不足4；另2执行失败仅诊断不评电影答案。新增真人=0，不报告生产准确率。"
+      },
+      "harnessFinalStats": {
+        "status": "stopping",
+        "ready": false,
+        "port": 18883,
+        "pid": 23504,
+        "rows": 12822,
+        "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+        "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+        "datasetSelectCalls": 6,
+        "queryCalls": 20,
+        "contextUpdates": 15,
+        "detailGets": 1,
+        "dataSourcePresent": false,
+        "databaseConnections": 0,
+        "databaseWrites": 0,
+        "queueClaims": 0,
+        "resourceLinksIncluded": false,
+        "springApplicationStarted": false,
+        "schedulersStarted": false,
+        "catalogClassLocation": "file:/E:/gying-tools/releases/ai-quality-improvement-20261031/followup-harness/catalog-harness-runtime/BOOT-INF/classes/",
+        "observedAt": "2026-10-31T12:56:54.690850800Z",
+        "stopping": true
+      },
+      "agentGracefullyStopped": true,
+      "harnessExitCode": 0,
+      "websiteUserSessionUsed": false,
+      "productionQueueClaimed": false,
+      "productionStateEnabled": false
+    }
+  ],
+  "deployment": {
+    "checkedAt": "2026-10-31T10:56:06.535004+00:00",
+    "services": [
+      "local-agent-backend",
+      "movie-backend"
+    ],
+    "productionChanged": false,
+    "agentLifecyclePreflight": {
+      "passed": false,
+      "tool": "scripts/stop-local.ps1 -CheckOnly -Services backend",
+      "observedMessage": "backend port is held by an untracked process. Reboot must be cancelled.",
+      "interpretation": "Current process token could not prove the managed Agent identity; requires an administrator read-only recheck. This does not prove the running service was actually started outside the managed launcher.",
+      "stopRequestSent": false
+    },
+    "securitySummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "deploymentBlocked": true,
+    "safetyGateExceptionGrantedForThisCandidate": false
+  },
+  "rolloutPlan": {
+    "externalPath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\rollout-plan.json",
+    "sha256": "5c07ad4c3506d7d3acb3ae1267f706042c35cc0fd9f4b82cc558e94aff013ecf"
+  },
+  "qualityLimits": [
+    "No all-82-fixed or independent quality uplift claim.",
+    "Model reviews only; new human reviews zero.",
+    "First/followup/final candidate observations preserved separately, no inference retries.",
+    "Website USER 10 scenarios/15 turns not executed.",
+    "Movie full Spring/DB/schedulers not started in isolated harness; no production rollout.",
+    "Fixed 12,822 public-document snapshot was paginated and is not an atomic database transaction.",
+    "Movie has 30 environment skips: 25 SQL, 1 Redis, 4 platform permissions.",
+    "Execution failure rows keep three quality scores null, separately counted from answered rows."
+  ]
+}

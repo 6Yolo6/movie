@@ -86,6 +86,9 @@ public class CatalogResearchService {
         alias(LANGUAGE_EQUIVALENTS,"yue","粤语","Cantonese");
     }
     private static String canonical(String text,String field){return (field.equals("regions")?REGION_EQUIVALENTS:LANGUAGE_EQUIVALENTS).getOrDefault(key(text),key(text));}
+    // Only explicit documentary spellings share a filter value; source metadata stays untouched.
+    private static String canonicalGenre(String text){return switch(key(text)){case "纪录","纪录片","纪录电影","纪录影片","documentary"->"纪录";default->text;};}
+    private static Set<String> canonicalGenres(Collection<String> values){Set<String> out=new HashSet<>();for(String value:values)out.add(canonicalGenre(value));return out;}
     private synchronized Dataset dataset(){
         if(cached!=null&&System.currentTimeMillis()-refreshed<60000)return cached;
         List<ObjectNode> docs=jdbc.query("SELECT m.id,m.title_cn,m.title_en,m.year,m.category,m.season,m.series_name,m.genres,m.directors,m.actors,m.summary,m.aliases,m.regions,m.languages,m.runtime,m.douban_score,m.imdb_score,m.tmdb_vote_average,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",(rs,n)->{
@@ -120,7 +123,7 @@ public class CatalogResearchService {
         if(p.has("yearFrom")&&(!d.has("year")||d.path("year").asInt()<p.integer("yearFrom",1900))||p.has("yearTo")&&(!d.has("year")||d.path("year").asInt()>p.integer("yearTo",2100)))return false;
         if(p.has("minRuntime")&&(!d.has("runtimeMinutes")||d.path("runtimeMinutes").asInt()<p.integer("minRuntime",1))||p.has("maxRuntime")&&(!d.has("runtimeMinutes")||d.path("runtimeMinutes").asInt()>p.integer("maxRuntime",600)))return false;
         double r=rating(d,p.text("ratingSource"));if(p.has("minRating")&&r<p.number("minRating",0)||p.has("maxRating")&&(r<0||r>p.number("maxRating",10)))return false;
-        Set<String> genres=new HashSet<>(strings(d,"genres"));if(!genres.containsAll(p.list("genresAll"))||!p.list("genresAny").isEmpty()&&Collections.disjoint(genres,p.list("genresAny"))||!Collections.disjoint(genres,p.list("excludedGenres")))return false;
+        Set<String> genres=canonicalGenres(strings(d,"genres"));if(!genres.containsAll(canonicalGenres(p.list("genresAll")))||!p.list("genresAny").isEmpty()&&Collections.disjoint(genres,canonicalGenres(p.list("genresAny")))||!Collections.disjoint(genres,canonicalGenres(p.list("excludedGenres"))))return false;
         if(!names(d,"actors",p.list("actors"))||!names(d,"directors",p.list("directors")))return false;
         for(String field:List.of("actors","directors"))if(!p.list(field+"Any").isEmpty()&&p.list(field+"Any").stream().noneMatch(w->names(d,field,List.of(w))))return false;
         if(p.list("excludedActors").stream().anyMatch(w->names(d,"actors",List.of(w)))||p.list("excludedDirectors").stream().anyMatch(w->names(d,"directors",List.of(w))))return false;
@@ -190,6 +193,9 @@ public class CatalogResearchService {
         MovieQueryPlan initial=MovieQueryPlan.parse(body.path("plan"),mapper).inherit(context,mapper);Dataset data=dataset();List<String> unresolved=new ArrayList<>();String message=body.path("message").asText("");if(message.length()>1200||message.chars().anyMatch(c->c<32&&c!=10&&c!=13))throw new IllegalArgumentException("查询原文格式无效");MovieQueryPlan p=resolvePeople(explicitPeople(initial,data,message),data,unresolved);
         ObjectNode result=mapper.createObjectNode().put("source","GYing catalog").put("queriedAt",Instant.now().toString());result.set("queryPlan",p.json());
         Set<String> previous=new LinkedHashSet<>(strings(context,"candidateIds"));
+        if(p.text("scope").equals("previousResults")&&previous.stream().noneMatch(data.byId::containsKey)){
+            return clarify(result,p,"上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。");
+        }
         if(!unresolved.isEmpty()){
             result.put("answer","片库暂不能确定人物身份："+String.join("、",unresolved)+"。请核对姓名，或查看联网补充。");result.putArray("movies");result.set("unresolvedPeople",mapper.valueToTree(unresolved));return result.put("total",0);
         }
@@ -200,7 +206,7 @@ public class CatalogResearchService {
                 List<ObjectNode> exact=data.docs.stream().filter(d->p.list("titles").stream().anyMatch(t->key(t).equals(key(d.path("titleCn").asText()))||key(t).equals(key(d.path("titleEn").asText())))).filter(d->eligible(d,p,previous,Set.of())).toList();
                 if(exact.size()==1)id=exact.get(0).path("id").asText();
             }
-            if(!data.byId.containsKey(id)){result.put("answer","无法确定你指的是哪一部，请选择前一轮影片或补充片名。");result.putArray("movies");return result.put("total",0);}
+            if(!data.byId.containsKey(id))return clarify(result,p,"无法确定你指的是哪一部，请选择前一轮影片，或补充片名、年份及导演等版本信息。");
             return result.put("selectedId",id).put("total",1).put("answer","已定位片库影片，继续查询本次详情。");
         }
         Set<String> seeds=new HashSet<>();if(!p.text("seedTitle").isBlank())for(ObjectNode d:data.docs)if(key(d.path("titleCn").asText()).equals(key(p.text("seedTitle")))||key(d.path("titleEn").asText()).equals(key(p.text("seedTitle"))))seeds.add(d.path("id").asText());
@@ -225,12 +231,19 @@ public class CatalogResearchService {
         String sort=p.text("sort");Comparator<ObjectNode> order=switch(sort){case "rating_desc"->Comparator.comparingDouble((ObjectNode d)->rating(d,p.text("ratingSource"))).reversed();case "year_asc"->Comparator.comparingInt(d->d.path("year").asInt(9999));case "year_desc"->Comparator.comparingInt((ObjectNode d)->d.path("year").asInt()).reversed();case "popularity_desc"->Comparator.comparingDouble((ObjectNode d)->d.path("popularity").asDouble()).reversed();default->Comparator.comparingDouble((ObjectNode d)->ranks.getOrDefault(d.path("id").asText(),0D)).reversed().thenComparing(Comparator.comparingDouble((ObjectNode d)->rating(d,"any")).reversed());};
         matches.sort(order.thenComparing(d->d.path("id").asText()));
         int limit=p.integer("limit",10);if(body.has("candidateLimit")){if(!body.path("candidateLimit").isIntegralNumber()||body.path("candidateLimit").asInt()<1||body.path("candidateLimit").asInt()>20)throw new IllegalArgumentException("候选数量无效");limit=body.path("candidateLimit").asInt();}var movies=result.putArray("movies");for(ObjectNode doc:matches.subList(0,Math.min(limit,matches.size()))){
-            ObjectNode item=doc.deepCopy();item.remove(List.of("embeddingText","fingerprint","popularity"));if(item.path("summary").asText().length()>700)item.put("summary",item.path("summary").asText().substring(0,700));item.put("rating",Math.max(0,rating(doc,p.text("ratingSource")))).put("ratingSource",p.text("ratingSource").isBlank()?"any":p.text("ratingSource"));var why=item.putArray("reasons");for(String reason:reasons.getOrDefault(doc.path("id").asText(),List.of("符合本次可核验的片库筛选条件")))why.add(reason);movies.add(item);
+            ObjectNode item=doc.deepCopy();item.remove(List.of("embeddingText","fingerprint","popularity"));if(item.path("summary").asText().length()>700)item.put("summary",item.path("summary").asText().substring(0,700));
+            double score=rating(doc,p.text("ratingSource"));if(score<0)item.putNull("rating");else item.put("rating",score);
+            item.put("ratingSource",p.text("ratingSource").isBlank()?"any":p.text("ratingSource"));var why=item.putArray("reasons");for(String reason:reasons.getOrDefault(doc.path("id").asText(),List.of("符合本次可核验的片库筛选条件")))why.add(reason);movies.add(item);
         }
         result.put("total",matches.size()).put("returned",movies.size()).put("truncated",matches.size()>movies.size()).put("semanticStaleCandidates",stale).put("retrieval",dense.isEmpty()?"lexical":"hybrid-rrf");
         result.set("unverifiedConditions",mapper.valueToTree(p.list("unsupportedConditions")));
         String answer=movies.isEmpty()?"本次片库检索没有找到可确认的候选。":themed?"找到以下可能符合描述的候选，简介和匹配依据列在下方。":"按本次已识别条件找到 "+matches.size()+" 部，先展示 "+movies.size()+" 部。";
         if(!p.list("unsupportedConditions").isEmpty())answer+=" 片库不能完整核验这些要求："+String.join("、",p.list("unsupportedConditions"))+"；不能保证下列候选满足它们。";
         return result.put("answer",answer);
+    }
+    private ObjectNode clarify(ObjectNode result,MovieQueryPlan plan,String message){
+        ObjectNode value=plan.json();value.put("intent","clarify").put("clarification",message).put("inheritContext",false);
+        value.remove(List.of("ordinal","movieId","replaceRanges"));
+        result.set("queryPlan",value);result.put("answer",message).put("total",0).putArray("movies");return result;
     }
 }

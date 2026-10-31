@@ -129,7 +129,7 @@ v2绑定同一report/case/repetition/turn/answer哈希，保留所有计划轮�
 
 新版本地页面支持导出、导入续填、待评/程序失败/已评筛选、多轮前文和候选证据。页面无网络请求、不自动保存，离开前导出；现有输出拒绝覆盖。原观测经过链接/凭据省略，answerSha256是与原回答的绑定声明，不能对脱敏文字重算该hash来证明内容完整；来源缺失时仍须另行核查或保留待评。
 
-本轮[汇总与验收](evaluation/quality-review-v2/README.md)仍为0人工已评/84待评、4次程序失败，88条诊断待填。新开发题10场景/15轮仅完成口径和分组冻结，未执行、未评分；它不能直接交给旧网站runner，也不能声称独立质量提升。
+本轮[汇总与验收](evaluation/quality-review-v2/README.md)仍为0人工已评/84待评、4次程序失败，88条诊断待填。截至10月28日，新开发题10场景/15轮仅完成口径和分组冻结，未执行、未评分；它不能直接交给旧网站runner，也不能声称独立质量提升。
 
 ```powershell
 # 生成全空v2模板；所有输出路径必须是新文件。
@@ -148,4 +148,20 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 
 新增[evaluate_development.py](../tools/ai/evaluate_development.py)对齐当前网站requestKey、previousJobId和结构化trace，完整契约及命令见[开发题v3](evaluation/development-v3/README.md#2026-10-29-runner已适配真实采集待执行)。默认0网络；仅现成USER会话，继续禁用旧test账号；同场景继承成功答案，明确失败跳余轮，传输/身份/契约不确定时停止全run，绝不重发推理。输出要求新文件、观测位于已保护的仓库外目录。
 
-程序检查包含回答、证据/trace工具白名单、查询时间和结构，不判断reviewRubric。queryPlan/检索/联网/未知条件/实际提交历史在脱敏观测与复核页可见；来源评分的null值原样保留。新runner本身和三个复用模块的hash进入报告；旧评测器、题集、freeze和历史结果不修改。当前15轮尚未执行；Agent专项条件探针与网站USER评测分别记录，不能据单测或少量探针报告盲测质量收益。
+程序检查包含回答、证据/trace工具白名单、查询时间和结构，不判断reviewRubric。queryPlan/检索/联网/未知条件/实际提交历史在脱敏观测与复核页可见；来源评分的null值原样保留。新runner本身和三个复用模块的hash进入报告；旧评测器、题集、freeze和历史结果不修改。截至10月29日，网站USER的15轮尚未执行；Agent专项条件探针与网站USER评测分别记录，不能据单测或少量探针报告盲测质量收益。
+
+## 13. 2026-10-31 原因审计与改进后隔离观测
+
+已完成[82条历史未满足回答原因审计](evaluation/quality-improvement-20261031/cause-audit.json)，覆盖82条唯一记录、42个case-turns；原报告/回答hash绑定、重复运行和未知因果单独保留。主因互斥统计为字面片名分流36、条件契约22、多轮主体或操作10、明确参照退回泛推荐4、工具依据不透明且无有效澄清4、空语义检索无有效澄清2、数量/时长单位2、同实体剧情矛盾及替换失败2。四条工具不透明记录不能归因于某个检索器。历史失败不代表现役失败率，新增真人评分为0。
+
+最终候选已冻结，改进覆盖数量和严格数字边界、同源评分排序、范围替换与继承、缺分保持未知、空列表及无实体澄清、书名内部指令隔离，以及版本资料、公告只读联网、语言并集、纪录题材别名和无法核验的限制说明。Movie782项中752通过、30项环境依赖跳过；Agent135/135及compile通过。代码能力、程序执行和需求满足分别记录，不能按字段存在或单测通过计需求满足。
+
+首轮完整观测见[原始报告](evaluation/quality-improvement-20261031/development-candidate-report.json)、[模型辅助复核](evaluation/quality-improvement-20261031/development-candidate-review.json)及[实际回答](evaluation/quality-improvement-20261031/development-candidate-answers.md)。Movie001c…真实候选类与Agent2156…完成10场景/15轮，15次均completed；满足0、有用但不完全1、未满足8、证据不足4、有效澄清2。有效澄清、部分有用与证据不足都不计完全满足；本轮不是独立留出集或生产质量分。
+
+第二候选Movie d0149…真实类/Agent dc8…再次执行同一开发题15轮，14次completed、1次API500；[第二轮模型辅助复核](evaluation/quality-improvement-20261031/development-followup-review.json)对14条答案判定满足4、未满足4、证据不足4、有效澄清2，另1次无回答执行失败三维评分保持null。其中满足包含允许诚实空结果1条、版本资料2条、音乐推荐1条；不能把诚实空结果理解为找到了对应影片，也不把失败混作未知事实分数。
+
+有限补丁收口后，最终冻结候选第三次执行完整15轮，13次completed、2次API500，分别为dev-v3-01的WEB_UNAVAILABLE与dev-v3-07的WEB_TIMEOUT；Agent和harness均正常exit0。实际回答与错误保存在[最终原始报告](evaluation/quality-improvement-20261031/development-final-report.json)及[最终回答记录](evaluation/quality-improvement-20261031/development-final-answers.md)；[最终模型辅助复核](evaluation/quality-improvement-20261031/development-final-review.json)对13条正常答案判定满足3、有效澄清2、未满足4、证据不足4，另2次无回答执行失败质量三维保持null。满足包含版本资料2条与音乐推荐首轮1条；证据不足4条均为已完成答案的证据限制，不能与2次执行失败混算。三轮原始观测分别绑定候选包和回答hash，完整过程以[本轮交付](evaluation/quality-improvement-20261031/README.md)为准，不覆盖此前答案或复核。
+
+三轮均为实施者的隔离Agent观测：使用真实模型、现役索引和固定12822条公开元数据快照，真实Movie候选类执行查询及继承；公开快照经分页采集，不能宣称数据库原子一致性。未领取生产队列、启用生产state、登录网站USER或发布/转存/外发；片名和条件等API证据不等于网页已经正确展示。网站USER10场景/15轮始终未执行，当前网站身份、加密队列和页面多轮桥接待验。
+
+生产仍为10月29日版本；G01–G11未关闭且普通权限Agent身份预检未通过，本候选未部署，历史例外不可复用。三轮重复开发观测不提供独立质量提升率，也不能推算82条全部已修复；关系/主题、较早列表指代和柔性偏好仍按实际证据保留不足。

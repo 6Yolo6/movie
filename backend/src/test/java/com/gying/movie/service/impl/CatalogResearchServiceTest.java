@@ -31,6 +31,38 @@ class CatalogResearchServiceTest {
         assertThat(ids(query("{\"intent\":\"search\",\"excludedDirectors\":[\"王家卫\"]}"))).containsExactlyInAnyOrder("a","c");
     }
     @Test void allGenresDoesNotBecomeOr()throws Exception{assertThat(ids(query("{\"intent\":\"search\",\"genresAll\":[\"科幻\",\"悬疑\"]}"))).isEmpty();}
+    @Test void documentaryAliasesMatchBothDirectionsAndPreserveOriginalMetadata()throws Exception{
+        var aliases=List.of("纪录","纪录片","纪录电影","纪录影片","Documentary","紀錄片");
+        for(String metadata:aliases){
+            docs.get(0).putArray("genres").add(metadata);
+            for(String requested:aliases){
+                var plan=mapper.createObjectNode().put("intent","search");plan.putArray("genresAny").add(requested);
+                var result=service.query(mapper.createObjectNode().set("plan",plan),mapper.createObjectNode());
+                assertThat(ids(result)).containsExactly("a");
+                assertThat(result.path("movies").get(0).path("genres").get(0).asText()).isEqualTo(metadata);
+                assertThat(result.path("queryPlan").path("genresAny").get(0).asText()).isEqualTo(requested);
+            }
+        }
+    }
+    @Test void documentaryAliasesPreserveAllAndAnyGenreSemantics()throws Exception{
+        docs.get(0).putArray("genres").add("纪录").add("科幻");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("科幻");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAll\":[\"纪录电影\",\"科幻\"]}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"Documentary\",\"科幻\"]}"))).containsExactlyInAnyOrder("a","b","c");
+    }
+    @Test void documentaryExclusionsApplyToEveryAliasWithoutExcludingBroaderThemes()throws Exception{
+        docs.get(0).putArray("genres").add("纪录");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("传记");
+        for(String excluded:List.of("纪录","纪录片","纪录电影","纪录影片","Documentary","紀錄片")){
+            var plan=mapper.createObjectNode().put("intent","search");plan.putArray("excludedGenres").add(excluded);
+            assertThat(ids(service.query(mapper.createObjectNode().set("plan",plan),mapper.createObjectNode()))).containsExactly("c");
+        }
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"传记\"]}"))).containsExactly("c");
+    }
+    @Test void documentaryGenreNormalizationCannotRelaxOtherHardFilters()throws Exception{
+        docs.get(0).putArray("genres").add("纪录");docs.get(1).putArray("genres").add("纪录片");docs.get(2).putArray("genres").add("Documentary");
+        docs.get(2).put("runtimeMinutes",150);
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"纪录影片\"],\"yearFrom\":2020,\"maxRuntime\":110,\"ratingSource\":\"douban\",\"minRating\":6}"))).containsExactly("a");
+        assertThat(ids(query("{\"intent\":\"search\",\"genresAny\":[\"纪录片\"],\"excludedDirectors\":[\"诺兰\"],\"yearFrom\":2020,\"maxRuntime\":110}"))).isEmpty();
+    }
     @Test void sourceSpecificRatingDoesNotUseOtherSource()throws Exception{
         assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"minRating\":8.5}"))).containsExactly("b");
         assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"imdb\",\"minRating\":8.5}"))).containsExactly("a");
@@ -43,11 +75,71 @@ class CatalogResearchServiceTest {
     @Test void missingRatingCannotSatisfyMaximum()throws Exception{
         docs.get(0).remove("doubanScore");assertThat(ids(query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"maxRating\":7}"))).isEmpty();
     }
+    @Test void missingSelectedSourceRatingRemainsNullWithoutBorrowingAnotherScore()throws Exception{
+        docs.get(0).putNull("doubanScore");
+        var result=query("{\"intent\":\"search\",\"titles\":[\"星际样本\"],\"ratingSource\":\"douban\"}");
+        var movie=result.path("movies").get(0);
+        assertThat(movie.path("rating").isNull()).isTrue();assertThat(movie.path("ratingSource").asText()).isEqualTo("douban");
+        assertThat(movie.path("doubanScore").isNull()).isTrue();assertThat(movie.path("imdbScore").asDouble()).isEqualTo(9);
+        var known=query("{\"intent\":\"search\",\"titles\":[\"星际样本\"],\"ratingSource\":\"imdb\"}");
+        assertThat(known.path("movies").get(0).path("rating").asDouble()).isEqualTo(9);
+    }
+    @Test void sourceRatingSortPutsMissingLastAndKeepsARealZeroScore()throws Exception{
+        docs.get(0).remove("doubanScore");docs.get(1).put("doubanScore",0);
+        var result=query("{\"intent\":\"search\",\"ratingSource\":\"douban\",\"sort\":\"rating_desc\"}");
+        assertThat(ids(result)).containsExactly("c","b","a");
+        assertThat(result.path("movies").get(0).path("rating").asDouble()).isEqualTo(8);
+        assertThat(result.path("movies").get(1).path("rating").isNumber()).isTrue();assertThat(result.path("movies").get(1).path("rating").asDouble()).isZero();
+        assertThat(result.path("movies").get(2).path("rating").isNull()).isTrue();assertThat(result.path("movies").get(2).path("imdbScore").asDouble()).isEqualTo(9);
+    }
+    @Test void anyRatingUsesExistingValuesButDoesNotInventZeroForMissingAllSources()throws Exception{
+        docs.get(0).put("doubanScore",0);docs.get(0).remove("imdbScore");
+        docs.get(1).remove(List.of("doubanScore","imdbScore"));docs.get(2).put("tmdbVoteAverage",9.5);
+        var result=query("{\"intent\":\"search\",\"ratingSource\":\"any\",\"sort\":\"rating_desc\"}");
+        assertThat(ids(result)).containsExactly("c","a","b");
+        assertThat(result.path("movies").get(0).path("rating").asDouble()).isEqualTo(9.5);assertThat(result.path("movies").get(0).path("doubanScore").asDouble()).isEqualTo(8);
+        assertThat(result.path("movies").get(1).path("rating").isNumber()).isTrue();assertThat(result.path("movies").get(1).path("rating").asDouble()).isZero();
+        assertThat(result.path("movies").get(2).path("rating").isNull()).isTrue();
+    }
     @Test void previousResultScopeAndOrdinalUseServerIds()throws Exception{
         var context=mapper.createObjectNode();context.putArray("candidateIds").add("c").add("a");
         ObjectNode body=mapper.createObjectNode().set("plan",mapper.readTree("{\"intent\":\"search\",\"scope\":\"previousResults\",\"yearFrom\":2022}"));
         assertThat(ids(service.query(body,context))).containsExactly("a");
         body.set("plan",mapper.readTree("{\"intent\":\"details\",\"ordinal\":2}"));assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+    }
+    @Test void rangeReplacementSearchesNewYearsAndPreservesUnchangedFilters()throws Exception{
+        var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"yearFrom\":2000,\"yearTo\":2010,\"category\":\"mv\",\"maxRuntime\":110,\"limit\":2,\"excludedDirectors\":[\"诺兰\"]}"));
+        context.putArray("candidateIds");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"inheritContext\":true,\"replaceRanges\":[\"year\"],\"yearFrom\":2015}"));
+        var result=service.query(body,context);
+        assertThat(ids(result)).containsExactly("b","c");assertThat(result.path("queryPlan").has("yearTo")).isFalse();
+        assertThat(result.path("queryPlan").path("maxRuntime").asInt()).isEqualTo(110);assertThat(result.path("queryPlan").has("replaceRanges")).isFalse();
+    }
+    @Test void emptyPreviousListReturnsClarificationInsteadOfSearchingTheWholeCatalog()throws Exception{
+        var result=query("{\"intent\":\"search\",\"scope\":\"previousResults\",\"sort\":\"rating_desc\",\"ratingSource\":\"douban\"}");
+        assertThat(ids(result)).isEmpty();assertThat(result.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(result.path("answer").asText()).contains("上一轮没有可用的影片候选","筛选或排序","重新查片库");
+    }
+    @Test void narrowingInheritedRuntimeToAnEmptyIntersectionAsksWhichBoundToChange()throws Exception{
+        var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"minRuntime\":150,\"maxRuntime\":180,\"category\":\"mv\"}"));
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"inheritContext\":true,\"maxRuntime\":100}"));
+        var result=service.query(body,context);
+        assertThat(ids(result)).isEmpty();assertThat(result.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(result.path("answer").asText()).contains("上一轮片长条件","至少150分钟","不超过180分钟","本轮明确条件","不超过100分钟","无法同时满足","修改哪项");
+    }
+    @Test void deletedCandidatesAreNotAnAvailablePreviousList()throws Exception{
+        var context=mapper.createObjectNode();context.putArray("candidateIds").add("deleted");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"scope\":\"previousResults\"}"));
+        assertThat(service.query(body,context).path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+    }
+    @Test void unavailableOrdinalAndAmbiguousVersionsReturnExplicitClarification()throws Exception{
+        var context=mapper.createObjectNode();context.putArray("candidateIds").add("a");
+        var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"details\",\"ordinal\":2}"));
+        var missing=service.query(body,context);assertThat(missing.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(missing.path("queryPlan").has("ordinal")).isFalse();assertThat(missing.path("answer").asText()).contains("年份","导演");
+        docs.get(0).put("titleCn","同名电影");docs.get(1).put("titleCn","同名电影");
+        body.set("plan",mapper.readTree("{\"intent\":\"details\",\"titles\":[\"同名电影\"]}"));
+        var ambiguous=service.query(body,mapper.createObjectNode());assertThat(ambiguous.path("queryPlan").path("intent").asText()).isEqualTo("clarify");assertThat(ambiguous.has("selectedId")).isFalse();
     }
     @Test void denseHitsMustMatchCurrentFingerprintAndHardFilters()throws Exception{
         var body=mapper.createObjectNode();body.set("plan",mapper.readTree("{\"intent\":\"search\",\"semanticText\":\"未知主题\",\"yearFrom\":2022}"));
