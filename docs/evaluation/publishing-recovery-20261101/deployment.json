@@ -1,0 +1,186 @@
+{
+  "sourceCommit": "7152edb53eeb80e52641b9f2edb2505b8ab2d1cf",
+  "deployedAt": "2026-11-01T13:45:48.356112+00:00",
+  "affected": [
+    "backend",
+    "social-publisher"
+  ],
+  "images": {
+    "backend": "sha256:8668b337ee8138e0b9ee2ea6e21b9f3c6f990ecb7ae72870c8ec7d87344d67ea",
+    "social-publisher": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb"
+  },
+  "status": "deployed",
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\publishing-recovery-20261101-20261101T134410.528278Z",
+    "artifacts": 8,
+    "authenticated": true,
+    "manifestSha256": "aaaadcfb0f3af3513d4320072745b23404fb0ec8d53ea3f2d378d80551f15018",
+    "status": "complete"
+  },
+  "configurationArchive": {
+    "uniqueMembers": 14,
+    "contentsHashMatched": true,
+    "preservedRelativePaths": true
+  },
+  "otherContainersPreserved": true,
+  "liveArtifactsVerified": true,
+  "termExitCodes": [
+    143,
+    143
+  ],
+  "qqMeasurement": [
+    {
+      "kind": "qq_search_reply_generation",
+      "run": 1,
+      "httpStatus": 200,
+      "elapsedSeconds": 0.36,
+      "matchesFullTitle": true,
+      "libraryResources": true,
+      "responseHash": "1c5a89d6fc2c393203fc3acad21f5ede29ac5a37de1c03a8380fdcdf215ad420",
+      "groupMessageSent": false
+    },
+    {
+      "kind": "qq_search_reply_generation",
+      "run": 2,
+      "httpStatus": 200,
+      "elapsedSeconds": 0.25,
+      "matchesFullTitle": true,
+      "libraryResources": true,
+      "responseHash": "1c5a89d6fc2c393203fc3acad21f5ede29ac5a37de1c03a8380fdcdf215ad420",
+      "groupMessageSent": false
+    }
+  ],
+  "weiboReadonly": {
+    "configured": true,
+    "sessionUpdatedAt": "2026-11-01T12:11:06.267Z",
+    "access": "identity_verification_required",
+    "readonly": true
+  },
+  "historicalRecovery": {
+    "ids": [
+      247,
+      248,
+      249,
+      263,
+      264,
+      265,
+      266,
+      267,
+      268,
+      269,
+      270,
+      271
+    ],
+    "affectedRows": 12,
+    "status": "PENDING",
+    "originalIdsResourcesAndCreatedAtPreserved": true,
+    "confirmedUnpublishedByUser": true,
+    "completedAt": "2026-11-01T13:55:00.970596+00:00",
+    "checkpoint": {
+      "directory": "G:\\gying-backups\\historical-weibo-recovery-20261101-20261101T135457.017321Z",
+      "artifacts": 1,
+      "authenticated": true,
+      "manifestSha256": "11772c45d48f57b2be64c412c086a4a0f4db47309c3b83e188f1cbcb978079ae"
+    },
+    "freshConnectionReadback": true
+  },
+  "manualMessagesPostsTransfers": 0,
+  "dailyBackup": {
+    "status": "updated",
+    "previousConfigCheckpoint": {
+      "directory": "G:\\gying-backups\\daily-backup-publishing-recovery-20261101-20261101T135049.900685Z",
+      "artifacts": 1,
+      "authenticated": true,
+      "manifestSha256": "cc2e040a726b8b1246a8b694a3d643ce35a1c6054e75bfca5e8827ef74f2c853"
+    },
+    "oldSha256": "cf3fa84dcb10d1a2d85ab1daa891352acc4cb4daba1ead16756014c5474994c9",
+    "newSha256": "5a580ca99d71f6ab0b4dc66dab905e1d77a29e9000b3c58e9834210e62871728",
+    "addedPath": {
+      "name": "publishing-recovery-override-20261101",
+      "path": "E:/gying-tools/releases/publishing-recovery-20261101/candidate.json"
+    },
+    "dryRunVerified": true,
+    "naturalFullBackupVerified": false
+  },
+  "securityGate": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1,
+    "status": "unchanged_existing_failures",
+    "boundedDeploymentAuthorizedByUser": true
+  },
+  "publicEntryPoints": {
+    "successfulAfterDeployment": [
+      "catalog HTTP200 with records",
+      "movie detail SSR HTTP200",
+      "internal/QQ paths HTTP404",
+      "anonymous admin redirect302"
+    ],
+    "transientFailuresRetained": true,
+    "homepageFinalRetryPending": false,
+    "homepageAndCatalogRetryPassed": true,
+    "retryEvidence": {
+      "checkedAt": "2026-11-01T13:55:44.741843+00:00",
+      "checks": [
+        {
+          "path": "/",
+          "kind": "page",
+          "transport": "existing-configured-loopback-proxy",
+          "browserUserAgent": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "passed": false,
+              "errorType": "URLError"
+            },
+            {
+              "attempt": 2,
+              "httpStatus": 200,
+              "bodyBytes": 68345,
+              "bodySha256": "f9b01f1d3834b68f1567b6f028d54963352e1d3e72f50e27166a88e8e0e970a1",
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "path": "/api/movies/list?page=1&size=2",
+          "kind": "catalog",
+          "transport": "existing-configured-loopback-proxy",
+          "browserUserAgent": true,
+          "attempts": [
+            {
+              "attempt": 1,
+              "passed": false,
+              "errorType": "URLError"
+            },
+            {
+              "attempt": 2,
+              "httpStatus": 200,
+              "bodyBytes": 3269,
+              "bodySha256": "00ae4ad827677c86d936cfe4c09e9b4ae6c2fb3a9af71e57e4177f696c213605",
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "allPassed": true,
+      "priorTransientFailuresRetained": true
+    }
+  },
+  "logObservation": {
+    "sinceDeploymentExceptionMarkers": 0,
+    "qqStages": [
+      "library_lookup",
+      "library_resources"
+    ]
+  },
+  "finalHealth": {
+    "checkedAt": "2026-11-01T13:57:38.983640+00:00",
+    "candidateImagesAndHealthConfirmed": true,
+    "unaffectedContainersPreserved": true,
+    "backendExceptionMarkerCount": 0,
+    "since": "2026-11-01T13:45:48.356112+00:00"
+  }
+}

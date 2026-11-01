@@ -42,12 +42,12 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44`，代码48990c35；10月31日22:58条件/资料改进上线，沿用GYING独立暂停及Xmx768MiB/容器1280MiB/含swap2560MiB |
+| Movie backend | `sha256:8668b337ee8138e0b9ee2ea6e21b9f3c6f990ecb7ae72870c8ec7d87344d67ea`，代码7152edb；11月1日21:45微博/QQ修复上线，沿用GYING独立暂停及Xmx768MiB/容器1280MiB/含swap2560MiB |
 | Movie frontend | `sha256:db1cc643cb8dad1c10071ac1b9b9c8ed14aea7ffe0188b308aeacfdf535b31a6`，10月29日23:34上线独立暂停按钮 |
 | 本机Agent | 11月1日17:12上线最终JAR `1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d`，代码e19b6b16；PID7700/instancea9366577…，对应hash不可变runtime、管理员argv/受管身份、ready及hostInJob=false通过 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
-| social-publisher | `gying-code-optimization-social-publisher:20261010a` |
+| social-publisher | `sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb`，代码7152edb；11月1日21:45微博发送前登录/身份验证检查上线 |
 | Node | 10月23本机24.22.1/npm11.19.1、frontend容器22.23.4；旧版本保留 |
 
 10月31日Movie检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 的旧镜像、完整有效配置、backend-data与ai-state-key四份age，大小/SHA-256及完整认证解密通过；旧容器正常TERM退出143，新固定镜像和实际JAR/挂载/配置一致，其他容器保持。现役追加第六覆盖 `E:/gying-tools/releases/ai-quality-improvement-20261031/backend-quality-final.json`。11月1日已加密认证备份原日常配置并纳入该覆盖，dry-run通过，下一次自然完整备份仍待验。11月1日17:12 Agent再次部署通过，新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T091153.915087Z` 三份age hash/完整认证解密通过，manifest533d9247…；旧9516正常受管停止、新1f9d…/7700独立ready，Movie、其他12容器、Ollama/Router/frontend/config/key/token/index保持。回退只恢复应用并保留当前data/state/key，不宣称跨服务原子快照。最新见[最终部署验收](evaluation/quality-improvement-20261031/deployment-final-20261101.md)；[16:59尝试](evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)和[上午回退](evaluation/quality-improvement-20261031/deployment-20261101-summary.md)保留历史时点。
@@ -82,7 +82,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
 | 每周重启 | 10月27日20:03:15真实重启；原登录恢复失败，10月28日18:21已按原journal手动恢复，0 pending、Worker=true、原任务开关/原生启动类型还原。Ollama端口21434与维护监听校验共用私有配置，111维护测试通过；11月1日上午journal已recovered；本轮仅核投影，完整自然维护/备份/恢复验收仍待独立核对。证据/回退见[重启手册](weekly-graceful-restart.md) |
 | QQ/周榜/发布 | 10月29日QQ生成回复5条本库链接/PanSou及GYING纯搜索通过；真实群消息/资源选择转存未测试。公网普通USER有效设备会话为0（仅1 ADMIN），登录后资源job未验，旧测试账号仍disabled。原频道多盘正文自然出站、官方主动权限、三周榜首轮及清理/去重保留 |
-| 微博/QQ修复候选 | 11月1日微博明确认证拒绝安全队列/重新登录恢复、身份验证预检、QQ夸克嵌套真实错误和普通搜索候选去详情扇出已完成；后端806项776通过/30环境跳过、Node40/40、隔离发布SQL7/7及固定双镜像产物hash通过。尚未部署：用户本次“可上线”已授权两个应用上线，先做新加密检查点，当前微博需完成身份验证，12条通用UNKNOWN保留；原“复仇者联盟2”实测157.887秒，新线上耗时待验。[证据](evaluation/publishing-recovery-20261101/README.md) |
+| 微博账号与QQ链路 | 11月1日微博/QQ修复已上线；历史12条经用户确认未发布后已恢复PENDING，原3篇/500秒计划保持。微博只读复验仍要求身份验证，需账号持有人处理。QQ同词内部回复0.360/0.250秒，群内端到端未另测；公网经现有代理仍有间歇失败。[验收](evaluation/publishing-recovery-20261101/README.md) |
 | 历史任务 | 10月8旧58条耗尽归档失败、两条精确旧RUNNING和自然元数据失败隔离未实证；不批量重置 |
 | 上游/配图 | GYING两个发布RuntimeError原因不明；源图只读存在、实际复制/分享未验 |
 | 迅雷 | 自然失效后密码/验证码与backend独立续期、异常browser.close残留；旧目录/重复/乱码须逐批dry-run |
@@ -103,6 +103,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
+| 11月1日微博/QQ修复 | 21:45仅backend/publisher固定镜像上线，代码7152edb；806项后端776通过/30环境跳过、Node40/40、隔离发布SQL7/7。自然空闲、两个旧应用TERM143、八age完整认证、实际程序hash/参数和其余11容器通过；第七backend覆盖/第四publisher覆盖为publishing-recovery-20261101/candidate.json，已纳入日常备份dry-run。内部QQ同词0.360/0.250秒、仅本库阶段；微博会话保持但需身份验证。随后经用户确认，新的MySQL认证检查点和行锁/CAS恢复12条PENDING，新连接回读；未手工群发/转存/发博。58 PASS/11 FAIL/1 UNKNOWN保持，本次应用限定例外；[报告](evaluation/publishing-recovery-20261101/README.md) |
 | 11月1日17:12 Agent最终上线 | 管理员身份/argv、自然空闲、新三age hash/完整认证解密、旧9516匹配正常stopped、新1f9d…/代码e19b6b16/7700独立ready及root绑定复核passed。Movie实际image/JAR/config、其他12容器和Ollama/Router/frontend/config/key/token/index保持。四条HTTP/API200 completed、程序0失败、总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，网站USER15轮仍未执行。[本次证据](evaluation/quality-improvement-20261031/deployment-final-20261101.md) |
 | 11月1日16:59继续部署 | 11月1日16:59触发Windows提权返回取消，助手未启动；上午维护已改变Agent实例，当时stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，新管理员argv与运行版本当时待证明。新16项离线检查和候选绑定通过，当时4条实际回答为0。Movie实际image/JAR/config保持；当时Windows令牌待系统确认，既有有限授权有效。[历史证据](evaluation/quality-improvement-20261031/continuation-20261101-attempt.md) |
 | 11月1日Agent尝试与回退 | 08:34新身份/空闲通过，旧36916正常停止，三age完整认证；1f9候选35532 ready/hostInJob=false后最终核对PermissionError，候选正常停止，08:35–08:36已确认应用回退旧01eab8…/40148/instance0ad13b71…，当时状态保留。08:55新79dc…/9161…修正助手提权取消，7项离线/静态审查通过但未执行；新4问0。08:59普通权限stored record/进程/监听/health200与Movie及其他12容器保持，不冒充新提权argv证明；11安全FAIL未关闭。[本阶段](evaluation/quality-improvement-20261031/deployment-20261101-summary.md) |
