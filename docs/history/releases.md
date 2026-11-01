@@ -2,6 +2,10 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+## 2026-11-01 16:59：维护后重新绑定与Windows启动取消
+
+11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当前stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。Movie实际image8d65…/JARd0149…与配置hash保持；新助手绑定当前9516及维护恢复journal，旧两阶段证据保持。未停止服务或新建检查点；管理员系统确认待完成。见[本次记录](../evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)。
+
 <a id="agent-quality-rollback-20261101"></a>
 ## 2026-11-01：Agent候选部署失败、确认回退与重试准备
 

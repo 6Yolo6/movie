@@ -113,6 +113,8 @@ Movie于10月31日22:58替换为本页绑定的image8d65…/JARd0149…，旧容
 
 Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。候选PID35532曾ready、hostInJob=false，回退后instance0ad13b71…/PID40148为旧版且独立启动和四本机健康通过。新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T003442.363732Z` 三age完整认证，manifest1db013…；修正助手79dc…/9161…及7离线/独立静态审查a4d3…通过，未据此计部署成功。旧生产回执未记录异常文件名，锁路径诊断依据调用顺序和独立复现。网站USER15轮和真实跨轮继承仍未验，当前data/state/key/config/token/index保持，未恢复旧SQL/state。
 
-[11月1日尝试与回退](deployment-20261101-summary.md)及[新机器绑定摘要](deployment-20261101-summary.json)记录当前进度；此前[仅Movie上线阶段](deployment-summary.md)与[旧机器绑定摘要](deployment-summary.json)保留至01:12的历史回执和边界。原[validation-summary.json](validation-summary.json)和仓库外rollout-plan保留批准前准备状态与原hash，不据它们改写当前执行结果。原部署顺序为Movie后Agent，剩余仅Agent，应用回退逆序且保留当前数据；未验证的任务/外部副作用不重放。
+[继续尝试](continuation-20261101-attempt.md)记录最新进度；[上午尝试与回退](deployment-20261101-summary.md)及其[机器摘要](deployment-20261101-summary.json)保留08:59时点；此前[仅Movie上线阶段](deployment-summary.md)与[旧机器绑定摘要](deployment-summary.json)保留至01:12的历史回执和边界。原[validation-summary.json](validation-summary.json)和仓库外rollout-plan保留批准前准备状态与原hash，不据它们改写当前执行结果。原部署顺序为Movie后Agent，剩余仅Agent，应用回退逆序且保留当前数据；未验证的任务/外部副作用不重放。
 
 后续质量工作继续针对主题、作者关系、早期列表引用和柔性偏好，不改写冻结题/原回答/评分，不把重复开发观测或直接协议通过宣称独立提升率。
+
+11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当前stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。见[继续部署记录](continuation-20261101-attempt.md)；上午PID40148记录仅为当时回退事实。

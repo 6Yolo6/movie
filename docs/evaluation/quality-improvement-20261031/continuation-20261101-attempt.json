@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "status": "movie-deployed-agent-awaiting-windows-token",
+  "checkedAt": "2026-11-01T09:01:17.055596+00:00",
+  "deploymentAssistantLaunched": false,
+  "agentStopRequested": false,
+  "agentCandidateCurrentlyDeployed": false,
+  "newAgentCheckpointCreated": false,
+  "agentAnswerSubmissions": 0,
+  "newQualityScores": 0,
+  "newHumanScores": 0,
+  "securityGatesClosed": false,
+  "knownSecurityGates": {
+    "pass": 58,
+    "fail": 11,
+    "unknown": 1
+  },
+  "candidateSourceCommits": {
+    "movie": "48990c35a344230a680fdf81280967038ed9eeed",
+    "agent": "e19b6b16f4f9df07593da88b221017e8925c2bca"
+  },
+  "agentExpectedRuntimeSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+  "currentReadOnlyObservation": {
+    "schemaVersion": 1,
+    "status": "passed-read-only-scope",
+    "checkedAt": "2026-11-01T09:01:17.055596+00:00",
+    "agent": {
+      "storedRecord": {
+        "processId": 9516,
+        "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\5e9e0e80-1da9-4874-8764-9e542d9b088c",
+        "startedAt": "2026-11-01T01:36:42.7765593Z",
+        "instanceId": "5e9e0e80-1da9-4874-8764-9e542d9b088c",
+        "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+      },
+      "listenerOwners": [
+        9516
+      ],
+      "processExists": true,
+      "rollbackRuntimeFileSha256": "01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b",
+      "freshPrivilegedArgvProven": false,
+      "runtimeCurrentlyInUseProven": false
+    },
+    "movie": {
+      "container": {
+        "id": "77135385fa36b22c30ac4071bb78dfc2f688c43b52beb7d8a5bad891eef0acab",
+        "image": "sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44",
+        "startedAt": "2026-11-01T01:35:55.363428804Z",
+        "restarts": 0
+      },
+      "actualJarSha256": "d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4",
+      "configurationHashesMatched": true
+    },
+    "healthChecks": [
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:21434/api/version",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:5002/health",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:3000/",
+        "status": 200
+      }
+    ],
+    "maintenanceJournalSha256": "f9c4ff85ff32eaff242a6406c382997169de54eee05c9421fa56a360964371ac",
+    "noServiceMutation": true,
+    "agentProbesExecuted": 0
+  },
+  "windowsAttempt": {
+    "launched": false,
+    "errorType": "InvalidOperationException",
+    "errorMessage": "This command cannot be run due to the error: An error occurred trying to start process 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe' with working directory 'D:\\gying-movie\\movie'. 操作已被用户取消。",
+    "attemptedAt": "2026-11-01T08:59:16.896619Z"
+  },
+  "helperOfflineChecksPassed": 16,
+  "baselineMeaning": "Morning maintenance changed Agent identity; fresh privileged argv identity remains required. Stored record, process/listener presence and health are not actual runtime proof.",
+  "evidence": {
+    "DeployAgent.py": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\DeployAgent.py",
+      "sha256": "276196ce446295bc47b9e7df25123c3148012b4e489a2732f26f5cf22fd28c30"
+    },
+    "RunAgent.ps1": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\RunAgent.ps1",
+      "sha256": "099866977f94840d65b8f010c6f32c412aa6aadaca669e90ba2bfd88e5919078"
+    },
+    "Common.py": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\Common.py",
+      "sha256": "4ff17aa09406ee462ad5acf6d7f10135da2251a98b864f1c63b0c6939175dcdc"
+    },
+    "ReadAiStateCounts.js": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\ReadAiStateCounts.js",
+      "sha256": "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94"
+    },
+    "helper-bindings.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\helper-bindings.json",
+      "sha256": "9d8f6b9080696fe7fa3be2ef7afe0a5da5fc089f3066646a5a06649599779f4f"
+    },
+    "expected-current-record.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\expected-current-record.json",
+      "sha256": "4ae569aefbfefeb6486cc0ccf5d407c7effc4fb6411cbc492e4247beb9c90611"
+    },
+    "maintenance-recovery-binding.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\maintenance-recovery-binding.json",
+      "sha256": "f3567c6ba859e9e4ec9ecdd4a8d0f7a1f7f9e7720233dd6d7907ebfba269a45a"
+    },
+    "continued-helper-offline-checks.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\continued-helper-offline-checks.json",
+      "sha256": "7377c8c4bef447842c93ce75eb068db8a80d86945cac910c72c9366c2dae301c"
+    },
+    "uac-launch.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\uac-launch.json",
+      "sha256": "4a82406d0d4384e249e1abc2161cb754873e17928be4960cfc3a2496c3dfa3cd"
+    },
+    "post-cancellation-live.json": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\post-cancellation-live.json",
+      "sha256": "54d71a1a6d5380e91516e30df75dfec7870beb2cbaaf59b60620bd03ebe74d80"
+    },
+    "ops-before.md": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\ops-before.md",
+      "sha256": "a6f32bd14ccc69ff236dd3a765e155a1e4d39119f2c92c692d2b4151d6115449"
+    },
+    "readiness-before.log": {
+      "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\deployment-20261101-continued\\readiness-before.log",
+      "sha256": "6ddb0872ffb21316b68e87bd8e00537b4c6c92810fac97050eb93054f4938b77"
+    }
+  },
+  "runner": {
+    "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\RunPostDeployProbesContinued.py",
+    "sha256": "229deb4f0f65e27e9ab3ca724d1ff30f03d72a9ddf877fbc58c0fdfc920fff58",
+    "onlyChange": "Pinned allowed receipt directory; original probe plan and inference behavior preserved"
+  },
+  "protectedEarlierArtifactsSha256": {
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\candidate-probes.json": "7bd2556975371bad42c97f675bafdb215a8bdb696484999c82f97bd49a088d1d",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\cause-audit.json": "0083decb851443c6050e3a05f6f11abe396aa7577d65d4719014b1c155b9a11f",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-candidate-report.json": "62318ae03a3301dcc32b8c2ebae840293c731d5ce26f934f8221a2c8e5be4930",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-candidate-review.json": "5521a1c595d446c2c7862aaed143bec28debf0cfc6bc96e5f1fdffd45bc8d196",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-final-report.json": "cb7de96add7cd61a13b436d2bedd9b4e0764b6811e65da7d2768888473f54f4d",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-final-review.json": "0d5877a1eabf87b1125a806af1f629a5e4df32a56a66edbd4731ba1fb48b7df7",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-followup-report.json": "c1c5502d253bb178a2cde850332939acff7496fe3ee968b46a4f57fc9cdb1b1e",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-followup-review.json": "3763d62087ec6058261322855316256366b6ed44b2193c6b0fbe9935b12b5df1",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\validation-summary.json": "fd967b9550bdc878b9551da6300b8ab548b5adef829c2ada8d8fc13f86c1078e",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\deployment-summary.json": "9091a2c266f0908733b4bdca124c09856065b9b0aac76556284e6ab4b9cedf88",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\deployment-summary.md": "5aab742b3dd80d57a006511468d0c1a5db3ce63ca28209484033dc3ab1ea5e85",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\deployment-20261101-summary.json": "b6658ba762d42c7b57118052fd9c2e807ffc0152bf9e22ac544effc758e9e3ef",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\deployment-20261101-summary.md": "40b522c4f08ef0e7b7b5b04bef6d76c7de40bc11fd11798ae747890a17147ada",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-candidate-answers.md": "f1ffa065cf4fcbc7b0c234b0bf6b4b0b7d47bc5946ba66c0a2ae04cb6406de1f",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-followup-answers.md": "b412e62546e3a3f5d9e10319378bf14f079e1ba42b6054d7dc55dd8927e526f4",
+    "D:\\gying-movie\\movie\\docs\\evaluation\\quality-improvement-20261031\\development-final-answers.md": "007d065925b1477b35349b725f71b08eb321edee16a10a5b26cfdb39016aec42"
+  },
+  "boundaries": {
+    "original82AllResolvedClaimed": false,
+    "independentQualityImprovementClaimed": false,
+    "websiteUserAcceptanceExecuted": false,
+    "productionCrossTurnAcceptanceExecuted": false,
+    "schemaOrDataRestored": false,
+    "inferenceReplay": false,
+    "realMessagesPostsTransfers": 0
+  }
+}
