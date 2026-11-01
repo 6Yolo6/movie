@@ -146,7 +146,7 @@ class QqBotServiceImplTest {
         when(tmdbMetadataSyncService.searchCandidatesByKeyword("福尔摩斯", 10))
                 .thenReturn(List.of(first, second));
         MovieMetadata selectedMovie = movie("tv_2", "福尔摩斯：基本演绎法", 2012);
-        when(tmdbMetadataSyncService.syncExactByKeyword("福尔摩斯：基本演绎法"))
+        when(tmdbMetadataSyncService.syncSelectedCandidate(second))
                 .thenReturn(selectedMovie);
 
         String candidates = service.buildSearchReply("福尔摩斯", "user-1");
@@ -155,7 +155,7 @@ class QqBotServiceImplTest {
         assertTrue(candidates.contains("2. 剧集 福尔摩斯：基本演绎法 (2012)"));
         assertTrue(candidates.contains("直接回复序号即可，例如：1"));
         assertTrue(selected.contains("片名：福尔摩斯：基本演绎法"));
-        verify(tmdbMetadataSyncService).syncExactByKeyword("福尔摩斯：基本演绎法");
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(second);
     }
 
     @Test
@@ -172,7 +172,7 @@ class QqBotServiceImplTest {
                 "test-mid",
                 null);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
-        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+        when(gyingSourceWorkflowService.suggestCandidates("伦敦生活", 10))
                 .thenReturn(List.of(gyingCandidate));
         MovieMetadata selectedMovie = movie("gying_london_life", "伦敦生活", 2016);
         when(gyingSourceWorkflowService.ensureMovieMetadata("tv", "test-mid"))
@@ -234,7 +234,7 @@ class QqBotServiceImplTest {
                 "tv",
                 "wxLe",
                 null);
-        when(gyingSourceWorkflowService.searchCandidates("伦敦生活", 10))
+        when(gyingSourceWorkflowService.suggestCandidates("伦敦生活", 10))
                 .thenReturn(List.of(gyingMovie, gyingSeries));
         when(tmdbMetadataSyncService.searchCandidatesByKeyword("伦敦生活", 10))
                 .thenReturn(List.of());
@@ -317,15 +317,43 @@ class QqBotServiceImplTest {
     }
 
     @Test
-    void syncsMetadataWhenCompactKeywordOmitsChinesePunctuation() {
+    void compactKeywordOffersIdentityBeforeFetchingOnlyTheSelectedMovie() {
         MovieMetadata movie = movie("tmdb_movie_1275779", "蜘蛛侠：英雄无归", 2021);
+        MovieSearchCandidate selected = candidate(1275779L, "蜘蛛侠：英雄无归", 2021, 180);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
-        when(tmdbMetadataSyncService.syncExactByKeyword("蜘蛛侠英雄无归")).thenReturn(movie);
-
+        when(tmdbMetadataSyncService.searchCandidatesByKeyword("蜘蛛侠英雄无归", 10)).thenReturn(List.of(selected));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(selected)).thenReturn(movie);
         String reply = service.buildSearchReply("蜘蛛侠英雄无归", "compact-title-user");
-
         assertTrue(reply.contains("蜘蛛侠：英雄无归"));
-        verify(tmdbMetadataSyncService).syncExactByKeyword("蜘蛛侠英雄无归");
+        verify(tmdbMetadataSyncService, never()).syncExactByKeyword(anyString());
+        verify(tmdbMetadataSyncService, never()).syncSelectedCandidate(any());
+        assertTrue(service.buildSearchReply("1", "compact-title-user").contains("蜘蛛侠：英雄无归"));
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(selected);
+    }
+
+    @Test
+    void selectedTmdbDetailsFailureReturnsSafeReplyAndPreservesCandidateSelection() {
+        resourceHubProperties.setEnabled(true);
+        MovieSearchCandidate first = candidate(1L, "福尔摩斯先生", 2015, 140);
+        MovieSearchCandidate second = candidate(2L, "福尔摩斯：基本演绎法", 2012, 130);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of());
+        when(tmdbMetadataSyncService.searchCandidatesByKeyword("福尔摩斯", 10))
+                .thenReturn(List.of(first, second));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(first))
+                .thenThrow(new IllegalStateException("TMDB request failed: https://example.test/?api_key=fixture-key"));
+        when(tmdbMetadataSyncService.syncSelectedCandidate(second))
+                .thenReturn(movie("tv_2", "福尔摩斯：基本演绎法", 2012));
+
+        service.buildSearchReply("福尔摩斯", "tmdb-failure-user");
+        String failedReply = service.buildSearchReply("1", "tmdb-failure-user");
+
+        assertTrue(failedReply.contains("所选候选无法建立可信影片元数据：福尔摩斯先生"));
+        assertTrue(failedReply.contains("请重新回复其他候选序号"));
+        assertFalse(failedReply.contains("fixture-key"));
+        verify(resourceDiscoveryService, never()).enqueue(any());
+        assertTrue(service.buildSearchReply("2", "tmdb-failure-user").contains("福尔摩斯：基本演绎法"));
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(first);
+        verify(tmdbMetadataSyncService).syncSelectedCandidate(second);
     }
 
     @Test
@@ -1493,6 +1521,32 @@ class QqBotServiceImplTest {
         assertFalse(unknown.contains("private")); assertFalse(unknown.contains("secret"));
     }
     @Test
+    void shareDirectoryErrorsPreferConcreteCausesOverTheFailedOperation() {
+        for (String prefix : List.of("task 2130: read Quark share directory failed: ", "任务说明".repeat(60))) {
+            String cancelled = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "好友已取消了分享");
+            assertEquals("该分享已失效，不可访问", cancelled);
+            String login = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "登录已失效");
+            assertTrue(login.contains("重新登录"));
+            assertFalse(login.contains("暂时无法读取分享目录"));
+            String violation = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "文件违规");
+            assertTrue(violation.contains("违规"));
+            String passcode = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "userFacingTransferError", prefix + "需要提取码");
+            assertTrue(passcode.contains("提取码"));
+        }
+        String unknown = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "userFacingTransferError", "task 2130: read Quark share directory failed");
+        assertTrue(unknown.contains("具体原因尚未确认"));
+        assertFalse(unknown.contains("请稍后重试"));
+        Boolean invalid = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isInvalidShareError", "read Quark share directory failed: 好友已取消了分享");
+        assertTrue(invalid);
+    }
+
+    @Test
     void qqGenuineSamePrimaryTitlesStillRequireYearConfirmation() {
         MovieMetadata first = movie("same-2024", "同名影片测试", 2024);
         MovieMetadata second = movie("same-2025", "同名影片测试", 2025);
@@ -1520,6 +1574,76 @@ class QqBotServiceImplTest {
         String reply = service.buildSearchReply("动物乌托邦", "qq:alias-priority");
         assertTrue(reply.contains("资源库已有资源")); assertTrue(reply.contains(manual.getUrl()));
         org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService);
+    }
+
+    @Test
+    void qqShortFilmTitleBeforeSubtitleUsesExistingResourcesWithoutSearchingUpstreams() {
+        MovieMetadata avengers = movie("m3vj", "复仇者联盟2：奥创纪元", 2015);
+        avengers.setAliases("复仇者联盟2：奥创纪元/The Avengers 2"); avengers.setSeriesName("复仇者联盟");
+        MovieMetadata sequel = movie("avengers-3", "复仇者联盟3：无限战争", 2018); sequel.setSeriesName("复仇者联盟");
+        MovieMetadata unrelated = movie("tokyo", "东京复仇者", 2021);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(unrelated, sequel, avengers));
+        ResourceLink resource = link("QUARK", "奥创纪元", "https://pan.quark.cn/s/avengers-two");
+        resource.setMovieId(avengers.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(resource));
+
+        String reply = service.buildSearchReply("复仇者联盟2", "qq:avengers-short");
+
+        assertTrue(reply.contains("资源库已有资源")); assertTrue(reply.contains(resource.getUrl()));
+        assertTrue(reply.contains("复仇者联盟2：奥创纪元")); assertFalse(reply.contains("东京复仇者"));
+        assertFalse(reply.contains("请选择要搜索的影片"));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test
+    void qqSubtitleStemKeepsSequelDigitsAndDoesNotUseSharedSeriesOrSubstrings() {
+        MovieMetadata twenty = movie("avengers-twenty", "复仇者联盟20：未来篇", 2030);
+        twenty.setSeriesName("复仇者联盟");
+        MovieMetadata three = movie("avengers-three", "复仇者联盟3：无限战争", 2018);
+        three.setSeriesName("复仇者联盟");
+        for (MovieMetadata candidate : List.of(twenty, three)) {
+            Boolean match = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                    "isSubtitleStemMatch", candidate, "复仇者联盟2");
+            assertFalse(match);
+        }
+        MovieMetadata two = movie("avengers-two", "复仇者联盟2:奥创纪元", 2015);
+        Boolean exactStem = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isSubtitleStemMatch", two, "复仇者联盟2");
+        assertTrue(exactStem);
+        Boolean sharedPrefix = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "isSubtitleStemMatch", two, "复仇者联盟");
+        assertFalse(sharedPrefix);
+    }
+
+    @Test
+    void qqShortSubtitleTitleWithMultipleYearsRequiresOnlyLocalConfirmation() {
+        MovieMetadata original = movie("subtitle-2024", "重生2：归来", 2024);
+        MovieMetadata remake = movie("subtitle-2025", "重生2：归来", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(original, remake));
+        ResourceLink resource = link("QUARK", "旧版", "https://pan.quark.cn/s/subtitle-original");
+        resource.setMovieId(original.getId());
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(resource));
+
+        String reply = service.buildSearchReply("重生2", "qq:subtitle-ambiguity");
+
+        assertTrue(reply.contains("请先确认年份或类型")); assertTrue(reply.contains("2024")); assertTrue(reply.contains("2025"));
+        assertFalse(reply.contains(resource.getUrl()));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient);
+    }
+
+    @Test
+    void qqCredibleShortSubtitleTitleWithoutResourcesConfirmsLocallyBeforeUpstreamWork() {
+        MovieMetadata avengers = movie("m3vj", "复仇者联盟2：奥创纪元", 2015);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(avengers));
+
+        String reply = service.buildSearchReply("复仇者联盟2", "qq:subtitle-no-resource");
+
+        assertTrue(reply.contains("请先确认影片")); assertTrue(reply.contains("复仇者联盟2：奥创纪元"));
+        assertTrue(reply.contains("2015"));
+        org.mockito.Mockito.verifyNoInteractions(gyingSourceWorkflowService, tmdbMetadataSyncService,
+                resourceDiscoveryService, panSouClient, quarkTransferRunnerService, xunleiTransferRunnerService);
     }
 
     @Test void libraryReplySeparatesVideoDisksMagnetsAndTorrentArchives() {

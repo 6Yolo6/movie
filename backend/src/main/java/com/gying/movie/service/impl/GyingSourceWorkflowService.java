@@ -137,6 +137,15 @@ public class GyingSourceWorkflowService {
     }
 
     public List<MovieSearchCandidate> searchCandidates(String keyword, int limit) {
+        return searchCandidates(keyword, limit, true);
+    }
+
+    /** Suggestions identify a film; cloud resources are checked after selection. */
+    public List<MovieSearchCandidate> suggestCandidates(String keyword, int limit) {
+        return searchCandidates(keyword, limit, false);
+    }
+
+    private List<MovieSearchCandidate> searchCandidates(String keyword, int limit, boolean requireCloudResource) {
         String safeKeyword = required(keyword, "search keyword");
         int safeLimit = Math.min(Math.max(limit, 1), 30);
         List<Map<String, Object>> items = mapList(gyingSourceClient.get("/search", Map.of(
@@ -144,7 +153,7 @@ public class GyingSourceWorkflowService {
                 "mode", 2,
                 "limit", safeLimit)).get("items"));
         return items.stream()
-                .filter(this::hasSearchableCloudResource)
+                .filter(item -> !requireCloudResource || hasSearchableCloudResource(item))
                 .map(item -> {
                     String typeCode = stringValue(item.get("typeCode"));
                     String mid = stringValue(item.get("mid"));
@@ -166,7 +175,7 @@ public class GyingSourceWorkflowService {
                             mid,
                             localMovie == null ? null : localMovie.getId());
                 })
-                .filter(candidate -> hasText(candidate.getTitle())
+                .filter(candidate -> (requireCloudResource || candidate.getScore() > 0) && hasText(candidate.getTitle())
                         && hasText(candidate.getSourceType())
                         && hasText(candidate.getSourceId()))
                 .sorted(Comparator.comparingInt(MovieSearchCandidate::getScore).reversed())

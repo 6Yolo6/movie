@@ -1,0 +1,115 @@
+{
+  "startedAt": "2026-11-01T13:28:21.724312+00:00",
+  "sourceSha256": "4f99cfdc28bea959e666b8dac7d37b883837d9f935bdd80bcb7d963558e5e689",
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "compileExitCode": 0,
+  "backendTests": {
+    "tests": 806,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 30
+  },
+  "sourceStillMatches": true,
+  "jarSha256": "41af44e548f6cc6c8adad03c07e4c479aaf88487786a10e4eb243f991e5a0f03",
+  "jarSize": 80425226,
+  "candidatePath": "E:\\gying-tools\\releases\\publishing-recovery-20261101\\movie-candidate-41af44e548f6cc6c8adad03c07e4c479aaf88487786a10e4eb243f991e5a0f03.jar",
+  "backendImage": {
+    "id": "sha256:8668b337ee8138e0b9ee2ea6e21b9f3c6f990ecb7ae72870c8ec7d87344d67ea",
+    "tag": "gying-publishing-recovery-backend:20261101-4f99cfdc28be",
+    "base": "sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44",
+    "user": "gying",
+    "artifactHashesVerified": true
+  },
+  "social-publisherImage": {
+    "id": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+    "tag": "gying-publishing-recovery-social-publisher:20261101-4f99cfdc28be",
+    "base": "sha256:a5a2c09753ded42f4d7a2dd653e70573fcd28767920ecaa0c4bcc35112a4677b",
+    "user": "node",
+    "artifactHashesVerified": true
+  },
+  "completedAt": "2026-11-01T13:30:19.825421+00:00",
+  "nodeTests": {
+    "passed": 40,
+    "failed": 0
+  },
+  "publicationSqlTests": {
+    "passed": 7,
+    "failed": 0,
+    "isolation": "network-none,tmpfs"
+  },
+  "uiPolicyTests": {
+    "passed": 5,
+    "failed": 0
+  },
+  "secretScan": {
+    "findings": 0
+  },
+  "deploymentStatus": "authorized_preparing_checkpoint",
+  "securityGate": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  },
+  "historicalWeibo": {
+    "unknownCount": 12,
+    "logIds": [
+      247,
+      248,
+      249,
+      263,
+      264,
+      265,
+      266,
+      267,
+      268,
+      269,
+      270,
+      271
+    ],
+    "mutated": false
+  },
+  "weiboReadonlyProbe": {
+    "sessionUpdatedAt": "2026-11-01T12:11:06.267Z",
+    "loggedIn": true,
+    "publicationAccess": "identity_verification_required",
+    "candidatePreflight": "WeiboSecurityError before publication"
+  },
+  "quarkReadonlyProbe": {
+    "taskIds": [
+      2128,
+      2130
+    ],
+    "http": 200,
+    "responseShape": {
+      "success": false,
+      "data": {
+        "error": "好友已取消了分享"
+      }
+    },
+    "historicalResponseRetained": false
+  },
+  "qqLatency": {
+    "logIds": [
+      2077,
+      2078
+    ],
+    "adminReceivedAt": "2026-11-01T20:34:55.752+08:00",
+    "adminReplyAt": "2026-11-01T20:37:33.639+08:00",
+    "adminElapsedSeconds": 157.887,
+    "otherReceivedAt": "2026-11-01T20:33:05.168+08:00",
+    "otherReplyAt": "2026-11-01T20:37:45.946+08:00",
+    "otherElapsedSeconds": 280.778,
+    "postDeploymentLatencyMeasured": false
+  },
+  "deploymentAuthorization": {
+    "date": "2026-11-01",
+    "userMessage": "可上线",
+    "scope": [
+      "backend",
+      "social-publisher"
+    ],
+    "historicalUnknownReplay": false
+  }
+}

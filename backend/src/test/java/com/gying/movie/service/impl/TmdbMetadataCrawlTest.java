@@ -96,4 +96,23 @@ class TmdbMetadataCrawlTest {
         assertEquals(121, tv.path("page").asInt());
         assertEquals(400, tv.path("crawl").path("endPage").asInt());
     }
+    @Test void selectedIdentityLoadsOneMovieWithoutRepeatingKeywordSearch() throws Exception {
+        var candidate = new com.gying.movie.dto.MovieSearchCandidate(998L, "movie", "选定电影", "Selected Film", 2026, 180);
+        when(client.fetchDetails("movie", 998L)).thenReturn(mapper.readTree(
+                "{\"id\":998,\"title\":\"选定电影\",\"original_title\":\"Selected Film\",\"release_date\":\"2026-01-01\"}"));
+        var movie = service().syncSelectedCandidate(candidate);
+        assertEquals(998L, movie.getTmdbId());
+        assertEquals("选定电影", movie.getTitleCn());
+        verify(client).fetchDetails("movie", 998L);
+        verify(client, never()).searchMulti(anyString(), anyInt());
+        verifyNoMoreInteractions(client);
+        verify(movies).save(any());
+    }
+
+    @Test void invalidSelectedIdentityStopsBeforeAnyRemoteRequest() {
+        var candidate = new com.gying.movie.dto.MovieSearchCandidate(-1L, "movie", "无效电影", null, 2026, 180);
+        assertThrows(IllegalArgumentException.class, () -> service().syncSelectedCandidate(candidate));
+        verifyNoInteractions(client, movies);
+    }
+
 }

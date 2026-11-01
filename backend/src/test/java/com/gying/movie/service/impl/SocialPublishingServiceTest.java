@@ -18,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -188,6 +190,156 @@ class SocialPublishingServiceTest {
 
         assertEquals(1, result.get("posted")); assertEquals(1, result.get("processing"));
         assertEquals(1, result.get("failed")); assertEquals(1, result.get("unknown"));
+    }
+
+    @Test
+    void existingPendingQueueIsResumedBeforeNewCandidatesEvenAfterResourceVersionChanges() {
+        SocialPostLog queued = log("PREPARE_FAILED");
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(queued));
+        when(publisher.publish(12L)).thenReturn(Map.of("status", "POSTED"));
+        assertEquals("POSTED", service.publishNext(7L, true).get("status"));
+        verifyNoInteractions(jdbc);
+        verify(logs, never()).save(any(SocialPostLog.class));
+        verify(publisher).publish(12L);
+    }
+
+    @Test
+    void loggingInAfterAuthenticationFailureResumesTheSameLogEvenAfterTodaysAutomaticRun() {
+        automaticTargetAlreadyRun();
+        SocialPostLog failed = authenticationFailure(LocalDateTime.now().minusHours(1));
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(failed));
+        when(logs.getById(12L)).thenReturn(failed);
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", true,
+                "sessionUpdatedAt", OffsetDateTime.now().toString()));
+        when(publisher.publish(12L)).thenReturn(Map.of("status", "POSTED"));
+
+        service.runDueTargets();
+
+        verify(publisher, timeout(2000)).publish(12L);
+        verify(logs, never()).updateById(any(SocialPostLog.class));
+        verify(targets, never()).updateById(any(SocialPublishTarget.class));
+        assertEquals("PREPARE_FAILED", failed.getStatus());
+    }
+
+    @Test
+    void theSameExpiredSessionOrAnUnreadyPublisherDoesNotTriggerAuthenticationRecovery() {
+        automaticTargetAlreadyRun();
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(authenticationFailure(LocalDateTime.now())));
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", true,
+                "sessionUpdatedAt", OffsetDateTime.now().minusHours(1).toString()));
+        service.runDueTargets();
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", false,
+                "sessionUpdatedAt", OffsetDateTime.now().plusHours(1).toString()));
+        service.runDueTargets();
+        verify(publisher, never()).publish(anyLong());
+    }
+
+    @Test
+    void authenticationRecoveryOnlySelectsMarkedUnsubmittedWeiboLogs() {
+        automaticTargetAlreadyRun();
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of());
+        service.runDueTargets();
+        ArgumentCaptor<Wrapper> query = ArgumentCaptor.forClass(Wrapper.class);
+        verify(logs).list(query.capture());
+        String sql = query.getValue().getSqlSegment();
+        assertTrue(sql.contains("status =")); assertTrue(sql.contains("platform ="));
+        assertTrue(sql.contains("error_message LIKE")); assertTrue(sql.contains("external_url IS NULL"));
+        verify(publisher, never()).weiboSessionStatus();
+        verify(publisher, never()).publish(anyLong());
+    }
+
+    @Test
+    void disabledAutomaticTargetsNeverResumeOnLogin() {
+        automaticTargetAlreadyRun();
+        target.setAutoPostEnabled(false);
+        service.runDueTargets();
+        verifyNoInteractions(publisher);
+        verify(logs, never()).list(any(Wrapper.class));
+    }
+
+    @Test
+    void recoveryHonorsTheConfiguredBatchSize() {
+        automaticTargetAlreadyRun(); target.setPostsPerRun(3);
+        SocialPostLog first = authenticationFailure(LocalDateTime.now().minusHours(1));
+        SocialPostLog second = authenticationFailure(LocalDateTime.now().minusHours(1)); second.setId(13L);
+        SocialPostLog third = authenticationFailure(LocalDateTime.now().minusHours(1)); third.setId(14L);
+        SocialPostLog fourth = authenticationFailure(LocalDateTime.now().minusHours(1)); fourth.setId(15L);
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(first, second, third, fourth));
+        when(logs.getById(12L)).thenReturn(first); when(logs.getById(13L)).thenReturn(second);
+        when(logs.getById(14L)).thenReturn(third);
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", true,
+                "sessionUpdatedAt", OffsetDateTime.now().toString()));
+        when(publisher.publish(anyLong())).thenReturn(Map.of("status", "POSTED"));
+        service.runDueTargets();
+        verify(publisher, timeout(2000)).publish(14L);
+        verify(publisher, never()).publish(15L);
+    }
+
+    @Test
+    void aRenewedLoginFailureStopsTheRecoveredBatchBeforeTheNextPost() {
+        automaticTargetAlreadyRun(); target.setPostsPerRun(3);
+        SocialPostLog first = authenticationFailure(LocalDateTime.now().minusHours(1));
+        SocialPostLog second = authenticationFailure(LocalDateTime.now().minusHours(1)); second.setId(13L);
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(first, second));
+        when(logs.getById(12L)).thenReturn(first);
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", true,
+                "sessionUpdatedAt", OffsetDateTime.now().toString()));
+        when(publisher.publish(12L)).thenReturn(Map.of("status", "PREPARE_FAILED", "authenticationRequired", true));
+        service.runDueTargets();
+        verify(publisher, timeout(2000)).publish(12L);
+        verify(publisher, after(100).never()).publish(13L);
+    }
+
+    @Test
+    void recoveryKeepsTheConfiguredPostIntervalAndDoesNotOverlapSchedulerTicks() {
+        automaticTargetAlreadyRun(); target.setPostsPerRun(3); target.setPostIntervalSeconds(500);
+        SocialPostLog first = authenticationFailure(LocalDateTime.now().minusHours(1));
+        SocialPostLog second = authenticationFailure(LocalDateTime.now().minusHours(1)); second.setId(13L);
+        when(logs.list(any(Wrapper.class))).thenReturn(List.of(first, second));
+        when(logs.getById(12L)).thenReturn(first);
+        when(publisher.weiboSessionStatus()).thenReturn(Map.of("ready", true,
+                "sessionUpdatedAt", OffsetDateTime.now().toString()));
+        when(publisher.publish(12L)).thenReturn(Map.of("status", "POSTED"));
+        service.runDueTargets();
+        verify(publisher, timeout(2000)).publish(12L);
+        service.runDueTargets();
+        verify(publisher, after(100).times(1)).publish(12L);
+        verify(publisher, never()).publish(13L);
+    }
+
+    @Test
+    void unsuccessfulPublicationStopsAnAutomaticBatchBeforeSelectingAnotherMovie() {
+        automaticTargetAlreadyRun(); target.setLastAutoRunAt(null);
+        target.setScheduleTime("00:00"); target.setPostsPerRun(3);
+        var spied = spy(service);
+        doReturn(Map.of("status", "UNKNOWN", "publisher", Map.of("ok", false, "status", "UNKNOWN")))
+                .when(spied).publishNext(7L, true);
+        spied.runDueTargets();
+        verify(spied, timeout(2000)).publishNext(7L, true);
+        verify(spied, after(100).times(1)).publishNext(7L, true);
+    }
+
+    @Test
+    void aLostPublisherResponseStopsTheAutomaticBatch() {
+        automaticTargetAlreadyRun(); target.setLastAutoRunAt(null);
+        target.setScheduleTime("00:00"); target.setPostsPerRun(3);
+        var spied = spy(service);
+        doThrow(new IllegalStateException("publisher response lost")).when(spied).publishNext(7L, true);
+        spied.runDueTargets();
+        verify(spied, timeout(2000)).publishNext(7L, true);
+        verify(spied, after(100).times(1)).publishNext(7L, true);
+    }
+
+    private void automaticTargetAlreadyRun() {
+        target.setAutoPostEnabled(true); target.setLastAutoRunAt(LocalDateTime.now());
+        target.setPostIntervalSeconds(0);
+        when(targets.list(any(Wrapper.class))).thenReturn(List.of(target));
+    }
+
+    private SocialPostLog authenticationFailure(LocalDateTime failedAt) {
+        SocialPostLog failed = log("PREPARE_FAILED"); failed.setPlatform("WEIBO");
+        failed.setErrorMessage("[WEIBO_AUTH_REQUIRED] Log in again"); failed.setUpdatedAt(failedAt);
+        return failed;
     }
 
     private SocialPostLog log(String status) {

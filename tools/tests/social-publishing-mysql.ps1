@@ -6,7 +6,7 @@ $PSNativeCommandUseErrorActionPreference = $false
 $docker = (Get-Command docker -ErrorAction Stop).Source
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../..')).Path
 $publisher = Join-Path $repo 'social-publisher'
-foreach ($file in @('publish-task.mjs', 'publish-task.mysql.integration.mjs', 'node_modules/mysql2/package.json')) {
+foreach ($file in @('publish-task.mjs', 'weibo-web.mjs', 'publish-task.mysql.integration.mjs', 'node_modules/mysql2/package.json')) {
     if (-not (Test-Path -LiteralPath (Join-Path $publisher $file))) { throw "Missing fixture dependency: $file" }
 }
 # Never pull images or use Compose; these must already be available locally.
@@ -47,6 +47,7 @@ try {
         '--tmpfs', '/tmp:rw,noexec,nosuid,size=16m,mode=1777',
         '--env', 'PUBLICATION_MYSQL_FIXTURE=network-none-tmpfs', '--workdir', '/workspace',
         '--mount', "type=bind,source=$publisher/publish-task.mjs,target=/workspace/publish-task.mjs,readonly",
+        '--mount', "type=bind,source=$publisher/weibo-web.mjs,target=/workspace/weibo-web.mjs,readonly",
         '--mount', "type=bind,source=$publisher/publish-task.mysql.integration.mjs,target=/workspace/publish-task.mysql.integration.mjs,readonly",
         '--mount', "type=bind,source=$publisher/node_modules,target=/workspace/node_modules,readonly",
         '--entrypoint', 'node', 'node:22-bookworm-slim', 'publish-task.mysql.integration.mjs')

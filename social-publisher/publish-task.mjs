@@ -1,4 +1,5 @@
 // Durable, per-log-ID publication ownership. Never hold a DB transaction across a provider call.
+import { WeiboAuthenticationError, WEIBO_AUTH_REQUIRED } from './weibo-web.mjs';
 export const publicationSql = Object.freeze({
   claim: `UPDATE social_post_log SET status = 'PREPARING', error_message = NULL, updated_at = NOW()
           WHERE id = ? AND status IN ('PENDING', 'PREPARE_FAILED')`,
@@ -8,6 +9,8 @@ export const publicationSql = Object.freeze({
            posted_at = NOW(), updated_at = NOW() WHERE id = ? AND status = 'PUBLISHING'`,
   prepareFailed: `UPDATE social_post_log SET status = 'PREPARE_FAILED', error_message = ?, updated_at = NOW()
                   WHERE id = ? AND status = 'PREPARING'`,
+  authenticationRejected: `UPDATE social_post_log SET status = 'PREPARE_FAILED', error_message = ?, updated_at = NOW()
+                  WHERE id = ? AND platform = 'WEIBO' AND status = 'PUBLISHING' AND external_url IS NULL`,
   unknown: `UPDATE social_post_log SET status = 'UNKNOWN', error_message = ?,
             external_url = COALESCE(?, external_url), updated_at = NOW()
             WHERE id = ? AND status IN ('PREPARING', 'PUBLISHING')`,
@@ -21,7 +24,8 @@ function view(row, reused) {
   const retryable = retryableStates.has(row.status);
   return { ok: row.status === 'POSTED', logId: Number(row.id), platform: row.platform,
     status: row.status, externalUrl: row.external_url || null, reused, retryable,
-    blocked: !retryable && row.status !== 'POSTED' };
+    blocked: !retryable && row.status !== 'POSTED',
+    authenticationRequired: row.status === 'PREPARE_FAILED' && String(row.error_message || '').startsWith(WEIBO_AUTH_REQUIRED) };
 }
 
 export function createPublishTaskRunner({ db, work, onPersistenceError = () => {} }) {
@@ -57,12 +61,16 @@ export function createPublishTaskRunner({ db, work, onPersistenceError = () => {
         status: 'POSTED', reused: false, retryable: false, blocked: false };
     } catch (error) {
       try {
-        if (boundaryEntered) {
+        if (boundaryEntered && error instanceof WeiboAuthenticationError && error.rejectedBeforeAcceptance && !published) {
+          await db.query(publicationSql.authenticationRejected,
+            [`${WEIBO_AUTH_REQUIRED} Weibo explicitly rejected the request before acceptance; log in again`, logId]);
+        } else if (boundaryEntered) {
           await db.query(publicationSql.unknown, [unknownMessage, published?.externalUrl || null, logId]);
         } else {
           // Only failures proven to precede the provider boundary are eligible for a retry.
           const detail = String(error?.message || 'Preparation failed').replace(/\s+/g, ' ').slice(0, 850);
-          await db.query(publicationSql.prepareFailed, [`Failed before publication: ${detail}`, logId]);
+          await db.query(publicationSql.prepareFailed,
+            [`${error instanceof WeiboAuthenticationError ? `${WEIBO_AUTH_REQUIRED} ` : ''}Failed before publication: ${detail}`, logId]);
         }
       } catch (persistenceError) {
         // PREPARING/PUBLISHING remain non-retryable if the database is unavailable.

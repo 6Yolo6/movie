@@ -18,5 +18,7 @@ public interface ITmdbMetadataSyncService {
 
     MovieMetadata syncExactByKeyword(String keyword);
 
+    MovieMetadata syncSelectedCandidate(MovieSearchCandidate candidate);
+
     List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit);
 }

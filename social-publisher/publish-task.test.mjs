@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createPublishTaskRunner, publicationSql as sql } from './publish-task.mjs';
+import { WeiboAuthenticationError, WeiboSecurityError } from './weibo-web.mjs';
 
 const result = { platform: 'WEIBO', externalUrl: 'https://example.test/posted/1' };
 const deferred = () => { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; };
@@ -21,6 +22,9 @@ function database(status = 'PENDING') {
     } else if (query === sql.posted && row?.status === 'PUBLISHING') {
       row.status = 'POSTED'; row.external_url = params[0]; row.error_message = null; changed = 1;
     } else if (query === sql.prepareFailed && row?.status === 'PREPARING') {
+      row.status = 'PREPARE_FAILED'; row.error_message = params[0]; changed = 1;
+    } else if (query === sql.authenticationRejected && row?.platform === 'WEIBO'
+        && row.status === 'PUBLISHING' && row.external_url === null) {
       row.status = 'PREPARE_FAILED'; row.error_message = params[0]; changed = 1;
     } else if (query === sql.unknown && ['PREPARING', 'PUBLISHING'].includes(row?.status)) {
       row.status = 'UNKNOWN'; row.error_message = params[0]; row.external_url = params[1] || row.external_url; changed = 1;
@@ -167,4 +171,49 @@ test('invalid or missing log IDs never invoke providers', async () => {
   assert.equal(db.history.length, 0);
   db.row = null;
   await assert.rejects(publish(1), /not found/);
+});
+
+test('read-only login failure stays safely queued with an authentication marker', async () => {
+  const db = database();
+  const response = await createPublishTaskRunner({ db, work: async () => {
+    throw new WeiboAuthenticationError('Log in again');
+  } })(1);
+  assert.equal(response.status, 'PREPARE_FAILED');
+  assert.equal(response.authenticationRequired, true);
+  assert.ok(!db.history.some(entry => entry.query === sql.start));
+});
+
+test('definite authentication rejection can be retried without replaying unknown outcomes', async () => {
+  const db = database();
+  const response = await createPublishTaskRunner({ db, work: async (_, beforeSend) => {
+    await beforeSend(); throw new WeiboAuthenticationError('Explicitly not logged in', true);
+  } })(1);
+  assert.equal(response.status, 'PREPARE_FAILED');
+  assert.equal(response.authenticationRequired, true);
+  assert.equal((await createPublishTaskRunner({ db, work: successfulWork })(1)).status, 'POSTED');
+  const unknown = database('UNKNOWN');
+  unknown.row.error_message = 'Publication outcome is unconfirmed. Verify the platform before any retry.';
+  assert.equal((await createPublishTaskRunner({ db: unknown, work: () => assert.fail('must not send') })(1)).status, 'UNKNOWN');
+});
+
+test('authentication recovery cannot release another platform or a known external result', async () => {
+  for (const variant of ['other-platform', 'known-url']) {
+    const db = database();
+    if (variant === 'other-platform') db.row.platform = 'QQ_CHANNEL';
+    else db.row.external_url = 'https://example.invalid/existing';
+    const response = await createPublishTaskRunner({ db, work: async (_, beforeSend) => {
+      await beforeSend(); throw new WeiboAuthenticationError('fixture rejection', true);
+    } })(1);
+    assert.equal(response.status, 'PUBLISHING'); assert.equal(response.retryable, false);
+  }
+});
+
+test('identity verification failure stays PREPARE_FAILED without requesting another login', async () => {
+  const db = database();
+  const failed = await createPublishTaskRunner({ db, work: async () => {
+    throw new WeiboSecurityError('账号暂时无法发博，请完成身份验证');
+  } })(1);
+  assert.equal(failed.status, 'PREPARE_FAILED'); assert.equal(failed.authenticationRequired, false);
+  assert.match(db.row.error_message, /身份验证/);
+  assert.ok(!db.history.some(entry => entry.query === sql.start));
 });

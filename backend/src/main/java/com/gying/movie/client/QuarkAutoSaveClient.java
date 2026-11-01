@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -496,17 +497,66 @@ public class QuarkAutoSaveClient {
                     new HttpEntity<>(Map.of("shareurl", shareUrl), headers),
                     String.class);
             JsonNode body = objectMapper.readTree(response.getBody());
-            if (!body.path("success").asBoolean(false)) {
-                throw new IllegalStateException(body.path("message").asText("read Quark share directory failed"));
+            if (body == null || !body.path("success").asBoolean(false)) {
+                throw new IllegalStateException(shareDetailFailure(body));
+            }
+            if (!body.path("data").path("list").isArray()) {
+                throw new IllegalStateException("quark-auto-save share detail response has no directory list");
             }
             return body.path("data");
+        } catch (RestClientResponseException e) {
+            JsonNode body = null;
+            try {
+                body = objectMapper.readTree(e.getResponseBodyAsString());
+            } catch (Exception ignored) {
+                // A proxy may return HTML; only structured error fields are retained.
+            }
+            throw new IllegalStateException("quark-auto-save share detail request failed: HTTP "
+                    + e.getStatusCode().value() + "; " + shareDetailFailure(body));
         } catch (RestClientException e) {
-            throw new IllegalStateException("quark-auto-save share detail request failed", e);
+            throw new IllegalStateException("quark-auto-save share detail request failed ("
+                    + e.getClass().getSimpleName() + ")");
         } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException("quark-auto-save share detail response parse failed", e);
+            throw new IllegalStateException("quark-auto-save share detail response parse failed");
         }
+    }
+
+    private String shareDetailFailure(JsonNode body) {
+        String detail = null;
+        if (body != null && body.isObject()) {
+            // This endpoint uses data.error; older versions also use top-level
+            // error/message/msg. Retain only diagnostic fields, never the full body.
+            for (JsonNode node : List.of(body.path("data").path("error"), body.path("error"),
+                    body.path("data"), body)) {
+                if (node.isTextual() && !node.asText().isBlank()) {
+                    detail = node.asText();
+                    break;
+                }
+                for (String field : List.of("message", "msg", "error")) {
+                    JsonNode value = node.path(field);
+                    if (value.isTextual() && !value.asText().isBlank()) {
+                        detail = value.asText();
+                        break;
+                    }
+                }
+                if (detail != null) break;
+            }
+        }
+        JsonNode code = body == null ? null : body.path("data").path("code");
+        if (code == null || !code.isIntegralNumber()) code = body == null ? null : body.path("code");
+        String codeText = code != null && code.isIntegralNumber() ? "; upstream code " + code.asText() : "";
+        return "read Quark share directory failed: "
+                + (detail == null ? "upstream did not provide an error detail" : safeShareDetail(detail)) + codeText;
+    }
+
+    private String safeShareDetail(String detail) {
+        String safe = detail.replaceAll("(?i)https?://\\S+", "[url]")
+                .replaceAll("(?i)(cookie|authorization)\\s*[:=]\\s*[^\\r\\n]+", "$1=[redacted]")
+                .replaceAll("(?i)((?:access[_-]?)?token|stoken|password|passwd|pwd|passcode|api[_-]?key)\\s*[:=]\\s*[^\\s,;]+", "$1=[redacted]")
+                .replaceAll("[\\r\\n\\t]+", " ").trim();
+        return safe.length() > 800 ? safe.substring(0, 800) : safe;
     }
 
     private String stripDirectoryFragment(String shareUrl) {

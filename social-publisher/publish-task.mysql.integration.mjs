@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import mysql from 'mysql2/promise';
 import { createPublishTaskRunner, publicationSql } from './publish-task.mjs';
+import { WeiboAuthenticationError } from './weibo-web.mjs';
 
 if (process.env.PUBLICATION_MYSQL_FIXTURE !== 'network-none-tmpfs') {
   throw new Error('An explicitly isolated MySQL fixture is required');
@@ -82,6 +83,16 @@ try {
     assert.equal(failed.status, 'UNKNOWN'); assert.equal(failed.retryable, false);
     const reused = await createPublishTaskRunner({ db, work: async () => { sends++; } })(3);
     assert.equal(reused.status, 'UNKNOWN'); assert.equal(reused.blocked, true); assert.equal(sends, 1);
+  });
+
+  await run('definite login rejection preserves a safely retryable existing log in actual SQL', async () => {
+    await seed(4);
+    const failed = await createPublishTaskRunner({ db, work: async (_, beforeSend) => {
+      await beforeSend(); throw new WeiboAuthenticationError('Fixture login rejection', true);
+    } })(4);
+    assert.equal(failed.status, 'PREPARE_FAILED'); assert.equal(failed.authenticationRequired, true);
+    assert.match((await read(4)).error_message, /^\[WEIBO_AUTH_REQUIRED\]/);
+    assert.equal((await createPublishTaskRunner({ db, work: success })(4)).status, 'POSTED');
   });
 
   await run('in-flight, legacy failure and unfamiliar states stay protected in actual SQL', async () => {

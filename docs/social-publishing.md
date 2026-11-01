@@ -13,7 +13,7 @@ backend→独立social-publisher为多QQ/微博（social目标/日志、QQ与微
 | 状态 | 含义 / 管理普通retry |
 | --- | --- |
 | PENDING | 未认领；允许且目标存在/启用 |
-| PREPARE_FAILED | 确认发送边界前失败；同上 |
+| PREPARE_FAILED | 确认发送前失败，或微博明确认证拒绝且无外部结果；同上 |
 | PREPARING | 认领准备；拒绝，崩溃不自动释放 |
 | PUBLISHING | 外发前持久状态；拒绝，超时不证明未发 |
 | UNKNOWN | 发送/回执/记账不明；拒绝，先核远端 |
@@ -23,6 +23,12 @@ backend→独立social-publisher为多QQ/微博（social目标/日志、QQ与微
 ### 不同入口，不同响应
 
 管理logs/{id}/retry除前两态均409（含POSTED），不重置；内部posts/{logId}条件UPDATE唯一认领，POSTED返已有。PENDING/PREPARE_FAILED→PREPARING→持久PUBLISHING→外发→POSTED；边界后错误UNKNOWN，DB失败可留在途，回执丢失可能已POSTED，不能覆盖。HTTP200可能ok=false/status=UNKNOWN，须业务/审计/获批远端核验。无租约过期/批量重置，不能新建另一任务规避阻断。
+
+### 登录恢复与身份验证
+
+微博在发送前用实际会话读取side/cards，并用feed/allGroups检查明确的身份验证限制。登录失效保留PREPARE_FAILED及`[WEIBO_AUTH_REQUIRED]`标记；只有确定未接受的认证拒绝可从发送边界回到安全失败态。网络超时、不明403/回执/风控和历史通用UNKNOWN不能据此重放。重新登录后启用自动目标可在同日按原批次/间隔恢复同一安全记录；优先已排队的日志，失败即停止批次。身份验证提示需要用户在微博处理，不能靠重新登录盲发。
+
+内部认证`GET /accounts/weibo/session-status`提供脱敏会话更新时间；实际发帖前还要执行只读预检，健康配置不能当远端账号权限证明。当前候选/实机与尚未部署范围见[11月1日修复](evaluation/publishing-recovery-20261101/README.md)。
 
 ### publish-next 也有副作用
 

@@ -333,6 +333,19 @@ class GyingSourceWorkflowServiceTest {
     }
 
     @Test
+    void suggestionsReadOnlyOneSearchWithoutFetchingEveryMovieResourceDirectory() {
+        when(gyingSourceClient.get(eq("/search"), any())).thenReturn(Map.of("items", List.of(
+                Map.of("typeCode", "mv", "mid", "avengers", "title", "复仇者联盟2：奥创纪元", "year", 2015),
+                Map.of("typeCode", "tv", "mid", "unrelated", "title", "东京复仇者", "year", 2023))));
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
+        List<MovieSearchCandidate> suggestions = service.suggestCandidates("复仇者联盟2", 10);
+        assertEquals(List.of("avengers"), suggestions.stream().map(MovieSearchCandidate::getSourceId).toList());
+        verify(gyingSourceClient).get(eq("/search"), any());
+        verifyNoMoreInteractions(gyingSourceClient);
+        verifyNoInteractions(resourceLinkService, discoveryService, transferTaskService, transferRunnerService, publishService);
+    }
+
+    @Test
     void ensureMovieUsesCanonicalLocalMovieButPublishesToSiteMovieId() {
         MovieMetadata canonical = movie("tmdb_movie_1368314", "鬼上车", "mv", "TRAILER");
         canonical.setYear(2026);

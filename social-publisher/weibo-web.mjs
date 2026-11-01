@@ -2,6 +2,17 @@ const DEFAULT_ENDPOINT = 'https://www.weibo.com/ajax/statuses/update';
 const DEFAULT_CLIENT_VERSION = 'v1.1.237';
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36';
 let runtimeSession = null;
+let authenticationRequired = false;
+
+export const WEIBO_AUTH_REQUIRED = '[WEIBO_AUTH_REQUIRED]';
+export class WeiboAuthenticationError extends Error {
+  constructor(message, rejectedBeforeAcceptance = false) {
+    super(message);
+    this.rejectedBeforeAcceptance = rejectedBeforeAcceptance;
+    authenticationRequired = true;
+  }
+}
+export class WeiboSecurityError extends Error {}
 
 export function setWeiboRuntimeSession(session) {
   if (!session?.cookie || !session?.fingerprint) return false;
@@ -12,6 +23,7 @@ export function setWeiboRuntimeSession(session) {
     userAgent: String(session.userAgent || '').trim(),
     updatedAt: session.updatedAt || new Date().toISOString(),
   };
+  authenticationRequired = false;
   return true;
 }
 
@@ -48,6 +60,7 @@ export function weiboWebConfig(env = process.env) {
     clientVersion: String(env.WEIBO_WEB_CLIENT_VERSION || DEFAULT_CLIENT_VERSION).trim(),
     userAgent: String(runtimeSession?.userAgent || env.WEIBO_WEB_USER_AGENT || DEFAULT_USER_AGENT).trim(),
     endpoint: DEFAULT_ENDPOINT,
+    sessionUpdatedAt: runtimeSession?.updatedAt || null,
   };
 }
 
@@ -59,9 +72,11 @@ export function weiboWebHealth(env = process.env) {
   return {
     mode: 'web-session',
     configured: missing.length === 0,
-    authenticated: Boolean(config.cookie),
-    ready: missing.length === 0,
+    authenticated: Boolean(config.cookie) && !authenticationRequired,
+    ready: missing.length === 0 && !authenticationRequired,
     error: missing.length ? `Missing ${missing.join(' and ')}` : undefined,
+    ...(config.sessionUpdatedAt ? { sessionUpdatedAt: config.sessionUpdatedAt } : {}),
+    ...(authenticationRequired ? { authenticationRequired: true } : {}),
   };
 }
 
@@ -84,13 +99,64 @@ function responseMessage(payload, status) {
   return `HTTP ${status}; code=${codes.join('/') || 'none'}; response fields=${keys || 'none'}`;
 }
 
+function loginRejected(response, payload) {
+  const location = response.headers.get('location') || '';
+  if (response.status === 401) return true;
+  if (payload?.ok === -100) return true;
+  if ([301, 302, 303, 307, 308].includes(response.status)
+      && /^https?:\/\/(?:login\.sina\.com\.cn|(?:www\.)?weibo\.com\/login)(?:\/|\?|$)/i.test(location)) return true;
+  // Only a definite negative acknowledgement can release a crossed boundary.
+  return payload?.ok === 0 && /请(?:先)?登录|未登录|登录(?:已)?(?:过期|失效)|please.*log.?in|not.*log.?in|session expired/i
+    .test(String(payload?.msg || payload?.message || payload?.error_msg || payload?.errmsg || ''));
+}
+
+export async function verifyWeiboWebSession(config, fetchImpl = fetch) {
+  const response = await fetchImpl('https://weibo.com/ajax/side/cards', {
+    method: 'GET', headers: { accept: 'application/json', cookie: config.cookie,
+      referer: 'https://weibo.com/', 'user-agent': config.userAgent,
+      'x-requested-with': 'XMLHttpRequest' },
+    redirect: 'manual', signal: AbortSignal.timeout(15000),
+  });
+  let payload;
+  try { payload = JSON.parse(await response.text()); } catch {
+    if (loginRejected(response)) throw new WeiboAuthenticationError('Weibo web session expired; log in again');
+    throw new Error('Unable to verify Weibo login before publication');
+  }
+  if (loginRejected(response, payload)) {
+    throw new WeiboAuthenticationError('Weibo web session expired; log in again');
+  }
+  if (!response.ok || payload?.ok !== 1 || !Array.isArray(payload?.data)) {
+    throw new Error('Unable to verify Weibo login before publication');
+  }
+  authenticationRequired = false;
+  // The account may still require verification even after a successful QR login.
+  const access = await fetchImpl('https://weibo.com/ajax/feed/allGroups', {
+    method: 'GET', headers: { accept: 'application/json', cookie: config.cookie,
+      referer: 'https://weibo.com/', 'user-agent': config.userAgent,
+      'x-requested-with': 'XMLHttpRequest' },
+    redirect: 'manual', signal: AbortSignal.timeout(15000),
+  });
+  let permissions;
+  try { permissions = JSON.parse(await access.text()); } catch {
+    throw new Error('Unable to verify Weibo publication access before publication');
+  }
+  if (permissions?.ok === 0 && permissions?.error_type === 'confirm'
+      && /发博/.test(String(permissions.msg || '')) && /验证身份/.test(String(permissions.msg || ''))) {
+    throw new WeiboSecurityError('Weibo security verification required: 账号暂时无法发博，请先在微博完成身份验证');
+  }
+  if (loginRejected(access, permissions)) throw new WeiboAuthenticationError('Weibo web session expired; log in again');
+  if (!access.ok || permissions?.ok !== 1) throw new Error('Unable to verify Weibo publication access before publication');
+}
+
 export async function publishWeiboWeb(content, options = {}) {
   const config = options.config || weiboWebConfig(options.env);
   const fetchImpl = options.fetchImpl || fetch;
-  if (!config.cookie) throw new Error('Weibo web session is not configured');
+  if (!config.cookie) throw new WeiboAuthenticationError('Weibo web session is not configured');
   if (!config.fingerprint) throw new Error('Weibo browser fingerprint is not configured');
   if (/[\r\n]/.test(config.cookie)) throw new Error('Weibo web session cookie is invalid');
   if (!String(content || '').trim()) throw new Error('Weibo post content is empty');
+
+  await verifyWeiboWebSession(config, fetchImpl);
 
   const body = new URLSearchParams({
     content: String(content || '').trim(),
@@ -124,10 +190,15 @@ export async function publishWeiboWeb(content, options = {}) {
   try {
     payload = JSON.parse(raw);
   } catch {
+    if (loginRejected(response)) throw new WeiboAuthenticationError('Weibo web session expired or was rejected', true);
     if ([301, 302, 303, 307, 308, 401, 403].includes(response.status)) {
       throw new Error('Weibo web session expired or was rejected');
     }
     throw new Error(`Weibo returned a non-JSON response (HTTP ${response.status}): ${compact(raw, 180)}`);
+  }
+
+  if (loginRejected(response, payload)) {
+    throw new WeiboAuthenticationError('Weibo web session expired or was rejected; log in again', true);
   }
 
   if (response.status === 418 || response.status === 429) {

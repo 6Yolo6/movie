@@ -19,6 +19,7 @@ import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -439,6 +440,54 @@ class QuarkAutoSaveClientTest {
             "unpack","[]");
         assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,label,"黑暗召唤师在地下恋爱中"));
         assertThrows(IllegalStateException.class,()->movieTree(executable).resolveSeasonShareUrl("https://pan.quark.cn/s/fixture",1,"【更新至 02 集】【黑暗召唤师在地下恋爱中】","黑暗召唤师在地下恋爱中"));
+    }
+
+    @Test
+    void retainsCancelledShareCauseAcrossSupportedResponseShapesWithoutSubmittingATransfer() {
+        for (String body : List.of(
+                "{\"success\":false,\"data\":{\"error\":\"好友已取消了分享\"}}",
+                "{\"success\":false,\"error\":\"好友已取消了分享\"}",
+                "{\"success\":false,\"message\":\"好友已取消了分享\"}",
+                "{\"success\":false,\"data\":{\"error\":{\"message\":\"好友已取消了分享\"}},\"message\":\"failed\"}")) {
+            RestTemplate rest = mock(RestTemplate.class);
+            QuarkAutoSaveClient client = shareDetailClient(rest, body);
+            IllegalStateException failure = assertThrows(IllegalStateException.class, () -> client.resolveMovieShareUrl(
+                    "https://pan.quark.cn/s/fixture", "哈哈哈哈哈", null, null, 2021));
+            assertTrue(failure.getMessage().contains("好友已取消了分享"));
+            verify(rest, never()).postForEntity(contains("/run_script_now"), any(HttpEntity.class), eq(String.class));
+        }
+    }
+
+    @Test
+    void keepsSpecificShareErrorAndCodeButRemovesSensitiveValues() {
+        RestTemplate rest = mock(RestTemplate.class);
+        String body = "{\"success\":false,\"data\":{\"code\":41017,\"error\":\"分享已失效 token=private-token https://pan.quark.cn/s/private\"}}";
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> shareDetailClient(rest, body)
+                .resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "电影", null, null, 2021));
+        assertTrue(failure.getMessage().contains("分享已失效"));
+        assertTrue(failure.getMessage().contains("41017"));
+        assertFalse(failure.getMessage().contains("private-token"));
+        assertFalse(failure.getMessage().contains("pan.quark.cn"));
+    }
+
+    @Test
+    void doesNotTreatMissingDirectoryListOrMissingErrorDetailAsAnEmptyShare() {
+        for (String body : List.of("{\"success\":false,\"data\":{}}", "{\"success\":true,\"data\":{}}")) {
+            IllegalStateException failure = assertThrows(IllegalStateException.class, () -> shareDetailClient(mock(RestTemplate.class), body)
+                    .resolveMovieShareUrl("https://pan.quark.cn/s/fixture", "电影", null, null, 2021));
+            assertFalse(failure.getMessage().contains("no video"));
+            assertTrue(failure.getMessage().contains("error detail") || failure.getMessage().contains("no directory list"));
+        }
+    }
+
+    private QuarkAutoSaveClient shareDetailClient(RestTemplate rest, String body) {
+        ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getQuark().setToken("test-token");
+        RestTemplateBuilder builder = mock(RestTemplateBuilder.class);
+        when(builder.build()).thenReturn(rest);
+        when(rest.postForEntity(contains("/get_share_detail"), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(body));
+        return new QuarkAutoSaveClient(builder, new ObjectMapper(), properties);
     }
 
     private QuarkAutoSaveClient movieTree(Map<String, String> directories) {

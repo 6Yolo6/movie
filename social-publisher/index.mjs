@@ -459,6 +459,10 @@ const server = http.createServer(async (req, res) => {
       writeJson(res, 200, weiboLoginStatus());
       return;
     }
+    if (req.method === 'GET' && url.pathname === '/accounts/weibo/session-status') {
+      writeJson(res, 200, weiboWebHealth());
+      return;
+    }
     const postMatch = url.pathname.match(/^\/posts\/(\d+)$/);
     if (req.method === 'POST' && postMatch) {
       writeJson(res, 200, await publish(Number(postMatch[1])));

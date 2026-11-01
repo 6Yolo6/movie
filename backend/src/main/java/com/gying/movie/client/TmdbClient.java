@@ -43,7 +43,8 @@ public class TmdbClient {
     @Autowired
     public TmdbClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
             ResourceHubProperties properties) {
-        this(restTemplateBuilder.build(), objectMapper, properties);
+        this(restTemplateBuilder.connectTimeout(Duration.ofSeconds(3))
+                .readTimeout(Duration.ofSeconds(10)).build(), objectMapper, properties);
     }
 
     TmdbClient(RestTemplate restTemplate, ObjectMapper objectMapper, ResourceHubProperties properties) {
@@ -99,6 +100,14 @@ public class TmdbClient {
     }
 
     public List<TmdbListItem> searchMulti(String query, int maxResults) {
+        return searchMulti(query, maxResults, false);
+    }
+
+    public List<TmdbListItem> searchMultiForSuggestion(String query, int maxResults) {
+        return searchMulti(query, maxResults, true);
+    }
+
+    private List<TmdbListItem> searchMulti(String query, int maxResults, boolean interactive) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
@@ -106,7 +115,7 @@ public class TmdbClient {
                 .queryParam("language", LANGUAGE)
                 .queryParam("query", query.trim())
                 .queryParam("page", 1)
-                .queryParam("include_adult", false));
+                .queryParam("include_adult", false), interactive ? 0 : Math.min(Math.max(properties.getTmdb().getMaxRetries(), 0), 5));
         List<TmdbListItem> items = new ArrayList<>();
         int safeMax = Math.min(Math.max(maxResults <= 0 ? 5 : maxResults, 1), 20);
         for (JsonNode node : root.path("results")) {
@@ -138,6 +147,10 @@ public class TmdbClient {
     }
 
     private JsonNode getJson(String endpoint, QueryCustomizer customizer) {
+        return getJson(endpoint, customizer, Math.min(Math.max(properties.getTmdb().getMaxRetries(), 0), 5));
+    }
+
+    private JsonNode getJson(String endpoint, QueryCustomizer customizer, int maxRetries) {
         requireApiKey();
         String baseUrl = properties.getTmdb().getBaseUrl();
         if (baseUrl == null || baseUrl.isBlank()) {
@@ -147,7 +160,6 @@ public class TmdbClient {
                 .fromUriString(baseUrl.replaceAll("/+$", "") + endpoint)
                 .queryParam("api_key", properties.getTmdb().getApiKey());
         customizer.customize(builder);
-        int maxRetries = Math.min(Math.max(properties.getTmdb().getMaxRetries(), 0), 5);
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
             awaitRequestSlot();
             try {

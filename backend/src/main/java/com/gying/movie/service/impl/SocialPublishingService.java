@@ -10,6 +10,8 @@ import jakarta.annotation.PreDestroy;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
@@ -27,6 +30,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class SocialPublishingService {
     private static final Set<String> RETRYABLE_STATES = Set.of("PENDING", "PREPARE_FAILED");
+    private static final String WEIBO_AUTH_REQUIRED = "[WEIBO_AUTH_REQUIRED]";
+    private static final String PROTECTED_MOVIE_LOG = """
+            SELECT 1 FROM social_post_log protected_log
+            WHERE protected_log.target_id = social_post_log.target_id
+              AND protected_log.movie_id = social_post_log.movie_id
+              AND protected_log.id <> social_post_log.id
+              AND protected_log.status NOT IN ('PENDING', 'PREPARE_FAILED')
+            """;
+    private final Set<Long> activeTargets = ConcurrentHashMap.newKeySet();
     private final ISocialPublishTargetService targetService;
     private final ISocialPostLogService logService;
     private final SocialPublisherClient publisherClient;
@@ -55,11 +67,21 @@ public class SocialPublishingService {
 
     public Map<String, Object> publishNext(Long targetId, boolean runNow) {
         SocialPublishTarget target = requireTarget(targetId);
-        Map<String, Object> candidate = nextCandidate(targetId);
-        if (candidate == null) {
-            return Map.of("targetId", targetId, "status", "SKIPPED", "message", "No unposted resource candidate");
+        // Resume the existing queue first, including logs whose resource version changed.
+        List<SocialPostLog> pending = logService.list(new QueryWrapper<SocialPostLog>()
+                .eq("target_id", targetId).in("status", RETRYABLE_STATES)
+                .notExists(PROTECTED_MOVIE_LOG)
+                .orderByAsc("created_at").orderByAsc("id").last("LIMIT 1"));
+        SocialPostLog log;
+        if (pending.isEmpty()) {
+            Map<String, Object> candidate = nextCandidate(targetId);
+            if (candidate == null) {
+                return Map.of("targetId", targetId, "status", "SKIPPED", "message", "No unposted resource candidate");
+            }
+            log = queue(target, candidate);
+        } else {
+            log = pending.get(0);
         }
-        SocialPostLog log = queue(target, candidate);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("targetId", targetId);
         result.put("logId", log.getId());
@@ -149,9 +171,10 @@ public class SocialPublishingService {
                 .eq("auto_post_enabled", true)
                 .orderByAsc("schedule_time")
                 .orderByAsc("id"));
+        recoverWeiboAuthenticationFailures(targets);
         for (SocialPublishTarget target : targets) {
             LocalTime due = parseTime(target.getScheduleTime());
-            if (now.toLocalTime().isBefore(due)
+            if (activeTargets.contains(target.getId()) || now.toLocalTime().isBefore(due)
                     || (target.getLastAutoRunAt() != null
                     && target.getLastAutoRunAt().toLocalDate().equals(today))) {
                 continue;
@@ -159,7 +182,59 @@ public class SocialPublishingService {
             target.setLastAutoRunAt(now);
             target.setUpdatedAt(now);
             targetService.updateById(target);
-            executor.submit(() -> runTarget(target));
+            submitTarget(target, () -> runTarget(target));
+        }
+    }
+
+    private void recoverWeiboAuthenticationFailures(List<SocialPublishTarget> targets) {
+        LocalDateTime newSessionAt = null;
+        boolean sessionChecked = false;
+        for (SocialPublishTarget target : targets) {
+            if (!"WEIBO".equals(target.getPlatform()) || !Boolean.TRUE.equals(target.getEnabled())
+                    || !Boolean.TRUE.equals(target.getAutoPostEnabled()) || activeTargets.contains(target.getId())) continue;
+            List<SocialPostLog> failures = logService.list(new QueryWrapper<SocialPostLog>()
+                    .eq("target_id", target.getId()).eq("platform", "WEIBO")
+                    .eq("status", "PREPARE_FAILED").likeRight("error_message", WEIBO_AUTH_REQUIRED)
+                    .notExists(PROTECTED_MOVIE_LOG)
+                    .isNull("external_url").orderByAsc("created_at").orderByAsc("id"));
+            if (failures.isEmpty()) continue;
+            if (!sessionChecked) {
+                sessionChecked = true;
+                try {
+                    Map<String, Object> weibo = publisherClient.weiboSessionStatus();
+                    if (Boolean.TRUE.equals(weibo.get("ready"))
+                            && weibo.get("sessionUpdatedAt") instanceof String updatedAt) {
+                        newSessionAt = OffsetDateTime.parse(updatedAt).atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+                    }
+                } catch (Exception ignored) {
+                    // No verified new session means no automatic recovery.
+                }
+            }
+            if (newSessionAt == null) continue;
+            LocalDateTime sessionAt = newSessionAt;
+            List<SocialPostLog> recoverable = failures.stream()
+                    .filter(log -> log.getUpdatedAt() != null && sessionAt.isAfter(log.getUpdatedAt()))
+                    .limit(Math.min(Math.max(value(target.getPostsPerRun(), 1), 1), 20)).toList();
+            if (!recoverable.isEmpty()) submitTarget(target, () -> runRecoveredLogs(target, recoverable));
+        }
+    }
+
+    private void submitTarget(SocialPublishTarget target, Runnable work) {
+        if (!activeTargets.add(target.getId())) return;
+        executor.submit(() -> {
+            try { work.run(); } finally { activeTargets.remove(target.getId()); }
+        });
+    }
+
+    private void runRecoveredLogs(SocialPublishTarget target, List<SocialPostLog> logs) {
+        for (int i = 0; i < logs.size(); i++) {
+            try {
+                Map<String, Object> published = retry(logs.get(i).getId());
+                if (Boolean.FALSE.equals(published.get("ok")) || authenticationRequired(published)) return;
+            } catch (Exception ignored) {
+                return; // Recheck ownership and session at the next scheduler tick.
+            }
+            if (i + 1 < logs.size() && !waitInterval(target)) return;
         }
     }
 
@@ -168,9 +243,13 @@ public class SocialPublishingService {
         int delay = Math.min(Math.max(value(target.getPostIntervalSeconds(), 60), 0), 86400);
         for (int i = 0; i < count; i++) {
             try {
-                publishNext(target.getId(), true);
+                Map<String, Object> result = publishNext(target.getId(), true);
+                if (result.get("publisher") instanceof Map<?, ?> published
+                        && (Boolean.FALSE.equals(published.get("ok")) || authenticationRequired(published))) return;
             } catch (Exception ignored) {
-                // Failure is persisted by the publisher and visible in the admin log.
+                // A lost publisher response may already have crossed the send boundary.
+                // Stop this batch instead of creating more uncertain publications.
+                return;
             }
             if (delay > 0 && i + 1 < count) {
                 try {
@@ -180,6 +259,21 @@ public class SocialPublishingService {
                     return;
                 }
             }
+        }
+    }
+
+    private boolean authenticationRequired(Map<?, ?> published) {
+        return Boolean.TRUE.equals(published.get("authenticationRequired"));
+    }
+
+    private boolean waitInterval(SocialPublishTarget target) {
+        int delay = Math.min(Math.max(value(target.getPostIntervalSeconds(), 60), 0), 86400);
+        try {
+            if (delay > 0) Thread.sleep(delay * 1000L);
+            return true;
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            return false;
         }
     }
 

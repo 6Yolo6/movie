@@ -217,6 +217,23 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     }
 
     @Override
+    public MovieMetadata syncSelectedCandidate(MovieSearchCandidate candidate) {
+        ensureEnabled();
+        if (candidate == null || candidate.getTmdbId() == null || candidate.getTmdbId() <= 0
+                || !("movie".equals(candidate.getMediaType()) || "tv".equals(candidate.getMediaType()))) {
+            throw new IllegalArgumentException("Selected TMDB identity is invalid");
+        }
+        TmdbListItem item = new TmdbListItem();
+        item.setTmdbId(candidate.getTmdbId());
+        item.setMediaType(candidate.getMediaType());
+        item.setTitle(candidate.getTitle());
+        item.setOriginalTitle(candidate.getOriginalTitle());
+        if (candidate.getYear() != null) item.setReleaseDate(candidate.getYear() + "-01-01");
+        JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
+        return upsertMovie(item, details).movie();
+    }
+
+    @Override
     public List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit) {
         ensureEnabled();
         if (!hasText(keyword)) {
@@ -224,7 +241,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         }
         int safeLimit = Math.min(Math.max(limit, 1), 10);
         String normalizedKeyword = normalizeTitle(keyword);
-        return tmdbClient.searchMulti(keyword, 20).stream()
+        return tmdbClient.searchMultiForSuggestion(keyword, 20).stream()
                 .map(item -> new MovieSearchCandidate(
                         item.getTmdbId(),
                         item.getMediaType(),

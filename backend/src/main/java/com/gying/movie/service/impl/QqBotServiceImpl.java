@@ -105,6 +105,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private final RedisRateLimiter rateLimiter;
     private com.gying.movie.service.ISysConfigService searchLimitConfig;
     private final ThreadLocal<String> searchKeywordSnapshot = new ThreadLocal<>();
+    private final ThreadLocal<SearchTiming> searchTiming = new ThreadLocal<>();
 
     @Autowired
     public void configureSearchLimits(com.gying.movie.service.ISysConfigService config) {
@@ -290,11 +291,31 @@ public class QqBotServiceImpl implements IQqBotService {
         String configured = searchLimitConfig == null ? fallback
                 : searchLimitConfig.getConfigValue("qq.bot.blocked_keywords", fallback);
         searchKeywordSnapshot.set(configured == null ? fallback : configured);
+        SearchTiming timing = new SearchTiming();
+        searchTiming.set(timing);
         try {
             return buildSearchReplyWithPolicy(keyword, userKey);
         } finally {
+            log.info("event=qq_search_completed status={} elapsed_ms={} stages_ms={}",
+                    timing.status, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - timing.started), timing.stages);
+            searchTiming.remove();
             searchKeywordSnapshot.remove();
         }
+    }
+
+    private <T> T timedSearchStage(String stage, java.util.function.Supplier<T> work) {
+        long started = System.nanoTime();
+        try { return work.get(); } finally {
+            SearchTiming timing = searchTiming.get();
+            if (timing != null) timing.stages.merge(stage,
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started), Long::sum);
+        }
+    }
+
+    private static class SearchTiming {
+        final long started = System.nanoTime();
+        final Map<String, Long> stages = new LinkedHashMap<>();
+        String status = "ERROR";
     }
 
     private String buildSearchReplyWithPolicy(String keyword, String userKey) {
@@ -366,11 +387,12 @@ public class QqBotServiceImpl implements IQqBotService {
             return finishSearch(userKey, safeKeyword, "RATE_LIMITED", null, 0,
                     "搜索太频繁，请稍后再试。", "rate limited");
         }
-        List<MovieMetadata> localCandidates = findMovieCandidates(safeKeyword);
+        List<MovieMetadata> localCandidates = timedSearchStage("library_lookup", () -> findMovieCandidates(safeKeyword));
         // Both QQ and website requests use approved library resources first.
         // Explicit "资源" continuations have already branched above, so this
         // read-only fast path never blocks a request for another version.
-        String libraryReply = tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates);
+        String libraryReply = timedSearchStage("library_resources",
+                () -> tryBuildLibraryReply(userKey, safeKeyword, selectedCandidate, localCandidates));
         if (libraryReply != null) return libraryReply;
         MovieMetadata movie = resolveSelectedCandidateMovie(selectedCandidate);
         if (selectedCandidate != null && movie == null) {
@@ -394,6 +416,18 @@ public class QqBotServiceImpl implements IQqBotService {
                 }
             }
             movie = exactLocalMovie;
+        }
+        if (movie == null && selectedCandidate == null && SeasonSearchUtils.parse(safeKeyword) == null) {
+            // A candidate prompt needs names and identities, not ten full metadata imports.
+            List<MovieSearchCandidate> candidates = findSearchCandidates(safeKeyword, localCandidates);
+            if (!candidates.isEmpty()) {
+                rememberSuggestedCandidates(userKey, candidates);
+                return finishSearch(userKey, safeKeyword, "AMBIGUOUS", null, 0,
+                        MovieSearchCandidateUtils.formatReply(safeKeyword, candidates), "candidate selection required");
+            }
+            return finishSearch(userKey, safeKeyword, "NO_METADATA", null, 0,
+                    "没有找到可信影片元数据：" + safeKeyword + "\n已跳过外部资源搜索，避免误转存无关资源。",
+                    "no credible metadata");
         }
         if (movie == null) {
             SeasonSearchUtils.SeasonQuery seasonQuery = SeasonSearchUtils.parse(safeKeyword);
@@ -458,7 +492,8 @@ public class QqBotServiceImpl implements IQqBotService {
             matches = local == null ? List.of() : List.of(local);
         } else {
             matches = localCandidates.stream().filter(movie -> selected == null
-                    ? MovieTitleMatcher.isExactMatch(movie, keyword) : matchesCandidate(movie, selected)).toList();
+                    ? MovieTitleMatcher.isExactMatch(movie, keyword) || isSubtitleStemMatch(movie, keyword)
+                    : matchesCandidate(movie, selected)).toList();
         }
         matches = matches.stream().filter(movie -> "ACTIVE".equalsIgnoreCase(movie.getStatus())
                 && movie.getDeletedAt() == null && !blockedMovie(movie)).toList();
@@ -470,26 +505,30 @@ public class QqBotServiceImpl implements IQqBotService {
             List<MovieMetadata> primaryMatches = matches.stream().filter(movie ->
                     MovieTitleMatcher.normalizedEquals(movie.getTitleCn(), keyword)
                             || MovieTitleMatcher.normalizedEquals(movie.getTitleEn(), keyword)).toList();
-            if (!primaryMatches.isEmpty()) matches = primaryMatches;
+            if (!primaryMatches.isEmpty()) {
+                matches = primaryMatches;
+            } else {
+                List<MovieMetadata> subtitleMatches = matches.stream()
+                        .filter(movie -> isSubtitleStemMatch(movie, keyword)).toList();
+                if (!subtitleMatches.isEmpty()) matches = subtitleMatches;
+            }
         }
         Map<String, List<ResourceLink>> resources = new LinkedHashMap<>();
         for (MovieMetadata movie : matches) {
             List<ResourceLink> links = loadLibraryResources(movie.getId(), userKey == null || !userKey.startsWith("web:"));
             if (!links.isEmpty()) resources.put(movie.getId(), links);
         }
-        if (resources.isEmpty()) return null;
+        if (resources.isEmpty()) {
+            if (selected == null && matches.stream().anyMatch(movie -> isSubtitleStemMatch(movie, keyword))) {
+                return localCandidateConfirmation(userKey, keyword, matches, resources,
+                        "片库中找到匹配片名，请先确认影片后搜索其他资源：\n", "local subtitle title confirmation");
+            }
+            return null;
+        }
         if (matches.size() > 1) {
             // Same title can refer to different years, films or seasons. Never guess.
-            List<MovieSearchCandidate> candidates = matches.stream()
-                    .sorted(Comparator.comparingInt(movie -> resources.containsKey(movie.getId()) ? 0 : 1))
-                    .limit(MAX_CANDIDATE_SUGGESTIONS)
-                    .map(movie -> new MovieSearchCandidate(movie.getTmdbId(), resolveCandidateMediaType(movie),
-                            title(movie), movie.getTitleEn(), movie.getYear(), scoreMovie(movie, keyword),
-                            "LOCAL", resolveCandidateMediaType(movie), movie.getId(), movie.getId())).toList();
-            rememberSuggestedCandidates(userKey, candidates);
-            return finishSearch(userKey, keyword, "AMBIGUOUS", null, 0,
-                    "片库中有同名影片，请先确认年份或类型：\n"
-                            + MovieSearchCandidateUtils.formatReply(keyword, candidates), "local title ambiguous");
+            return localCandidateConfirmation(userKey, keyword, matches, resources,
+                    "片库中有同名影片，请先确认年份或类型：\n", "local title ambiguous");
         }
         MovieMetadata movie = matches.get(0);
         List<ResourceLink> links = resources.get(movie.getId());
@@ -508,6 +547,35 @@ public class QqBotServiceImpl implements IQqBotService {
                 ? "\n\n需要其他版本或网盘，可点击“搜索其他资源”继续。"
                 : "\n\n需要其他版本或网盘，可发送“资源”继续。");
         return finishSearch(userKey, keyword, "LIBRARY_RESOURCE", movie.getId(), links.size(), reply.toString(), null);
+    }
+
+    private boolean isSubtitleStemMatch(MovieMetadata movie, String keyword) {
+        // A complete film title before ':' can be a short name. Keep sequel
+        // digits and require equality; a shared series name or substring is insufficient.
+        if (movie == null || !"movie".equals(resolveCandidateMediaType(movie))) return false;
+        for (String value : new String[] { movie.getTitleCn(), movie.getTitleEn() }) {
+            if (!hasText(value)) continue;
+            int chineseColon = value.indexOf('：');
+            int asciiColon = value.indexOf(':');
+            int separator = chineseColon < 0 ? asciiColon : asciiColon < 0 ? chineseColon : Math.min(chineseColon, asciiColon);
+            if (separator <= 0) continue;
+            String stem = value.substring(0, separator).trim();
+            if (compactTitle(stem).length() >= 2 && MovieTitleMatcher.normalizedEquals(stem, keyword)) return true;
+        }
+        return false;
+    }
+
+    private String localCandidateConfirmation(String userKey, String keyword, List<MovieMetadata> matches,
+            Map<String, List<ResourceLink>> resources, String introduction, String reason) {
+        List<MovieSearchCandidate> candidates = matches.stream()
+                .sorted(Comparator.comparingInt(movie -> resources.containsKey(movie.getId()) ? 0 : 1))
+                .limit(MAX_CANDIDATE_SUGGESTIONS)
+                .map(movie -> new MovieSearchCandidate(movie.getTmdbId(), resolveCandidateMediaType(movie),
+                        title(movie), movie.getTitleEn(), movie.getYear(), scoreMovie(movie, keyword),
+                        "LOCAL", resolveCandidateMediaType(movie), movie.getId(), movie.getId())).toList();
+        rememberSuggestedCandidates(userKey, candidates);
+        return finishSearch(userKey, keyword, "AMBIGUOUS", null, 0,
+                introduction + MovieSearchCandidateUtils.formatReply(keyword, candidates), reason);
     }
 
     private List<ResourceLink> loadLibraryResources(String movieId, boolean cloudDiskOnly) {
@@ -559,6 +627,8 @@ public class QqBotServiceImpl implements IQqBotService {
             int resourceCount,
             String reply,
             String failureReason) {
+        SearchTiming timing = searchTiming.get();
+        if (timing != null) timing.status = status;
         try {
             QqBotSearchLog item = new QqBotSearchLog();
             item.setUserKey(trim(firstText(userKey, "anonymous"), 100));
@@ -1018,6 +1088,10 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private MovieMetadata syncExactMovieMetadata(String keyword) {
+        return timedSearchStage("tmdb_metadata", () -> syncExactMovieMetadataUntimed(keyword));
+    }
+
+    private MovieMetadata syncExactMovieMetadataUntimed(String keyword) {
         for (String searchKeyword : buildMetadataSearchKeywords(keyword)) {
             try {
                 MovieMetadata movie = tmdbMetadataSyncService.syncExactByKeyword(searchKeyword);
@@ -1088,14 +1162,14 @@ public class QqBotServiceImpl implements IQqBotService {
                 .toList();
         List<MovieSearchCandidate> gying;
         try {
-            gying = gyingSourceWorkflowService.searchCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            gying = timedSearchStage("gying_candidates", () -> gyingSourceWorkflowService.suggestCandidates(keyword, MAX_CANDIDATE_SUGGESTIONS));
         } catch (Exception e) {
             log.warn("GYING candidate search failed for QQ keyword {}", keyword, e);
             gying = List.of();
         }
         List<MovieSearchCandidate> tmdb;
         try {
-            tmdb = tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS);
+            tmdb = timedSearchStage("tmdb_candidates", () -> tmdbMetadataSyncService.searchCandidatesByKeyword(keyword, MAX_CANDIDATE_SUGGESTIONS));
             tmdb.forEach(candidate -> {
                 if (!hasText(candidate.getSource())) {
                     candidate.setSource("TMDB");
@@ -1196,6 +1270,15 @@ public class QqBotServiceImpl implements IQqBotService {
             MovieMetadata local = movieService.getById(candidate.getLocalMovieId());
             if (local != null && !"DELETED".equalsIgnoreCase(local.getStatus())) {
                 return local;
+            }
+        }
+        if (candidate.getTmdbId() != null && candidate.getTmdbId() > 0) {
+            try {
+                return timedSearchStage("tmdb_selected_metadata", () -> tmdbMetadataSyncService.syncSelectedCandidate(candidate));
+            } catch (Exception error) {
+                log.warn("event=qq_selected_metadata_failed source=TMDB exception_type={}",
+                        error.getClass().getSimpleName());
+                return null;
             }
         }
         return syncExactMovieMetadata(candidateTitle(candidate));
@@ -2418,17 +2501,16 @@ public class QqBotServiceImpl implements IQqBotService {
                 || lower.contains("target movie metadata") || lower.contains("未能确认目标影片子目录")) {
             return "转存失败：未能确认目标影片子目录，已停止转存以避免混入其他影片";
         }
-        if (lower.contains("share detail request failed") || lower.contains("read quark share directory")
-                || lower.contains("source directory listing") || lower.contains("暂时无法读取分享目录")) {
-            return "转存失败：暂时无法读取分享目录，未执行转存，请稍后重试";
-        }
-        if (lower.contains("saved quark folder") || lower.contains("saved folder")
-                || lower.contains("quark save path")) {
-            return "转存失败：保存目录暂不可用，不能据此判断原分享是否有视频";
-        }
+        // A directory lookup is the failed operation, not the root cause.
+        // Interpret concrete provider errors before generic lookup failures.
         if (isInvalidShareError(message)) return "该分享已失效，不可访问";
-        if (lower.contains("no video") || lower.contains("没有视频") || lower.contains("无视频")) {
-            return "转存失败：分享内没有视频文件";
+        if (lower.contains("登录") || lower.contains("未登录") || lower.contains("not logged in")
+                || lower.contains("login expired") || lower.contains("login required")
+                || lower.contains("cookie is not configured") || lower.contains("cookie expired")) {
+            return "转存失败：网盘登录已失效或未配置，请联系管理员重新登录后重试";
+        }
+        if (lower.contains("http 401") || lower.contains("unauthorized") || lower.contains("认证失败")) {
+            return "转存失败：转存服务认证失败，请联系管理员检查账号和服务配置";
         }
         if (lower.contains("违规") || lower.contains("forbidden") || lower.contains("violation")
                 || lower.contains("policy") || lower.contains("blocked")) {
@@ -2436,6 +2518,20 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (lower.contains("提取码") || lower.contains("passcode")) {
             return "转存失败：分享需要正确的提取码";
+        }
+        if (lower.contains("share detail request failed")) {
+            return "转存失败：分享目录请求失败，请稍后重试；无法据此判断分享是否失效";
+        }
+        if (lower.contains("read quark share directory") || lower.contains("source directory listing")
+                || lower.contains("share detail response") || lower.contains("暂时无法读取分享目录")) {
+            return "转存失败：未能读取分享目录，具体原因尚未确认，请选择其他资源或联系管理员检查";
+        }
+        if (lower.contains("saved quark folder") || lower.contains("saved folder")
+                || lower.contains("quark save path")) {
+            return "转存失败：保存目录暂不可用，不能据此判断原分享是否有视频";
+        }
+        if (lower.contains("no video") || lower.contains("没有视频") || lower.contains("无视频")) {
+            return "转存失败：分享内没有视频文件";
         }
         // Internal paths, exception chains and provider responses stay in task
         // diagnostics, not the public QQ reply.

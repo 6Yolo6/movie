@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cookieValue, publishWeiboWeb, weiboWebHealth } from './weibo-web.mjs';
+import { cookieValue, publishWeiboWeb as publishWithProbe, weiboWebHealth, WeiboAuthenticationError, WeiboSecurityError } from './weibo-web.mjs';
+
+function publishWeiboWeb(content, options) {
+  return publishWithProbe(content, { ...options, fetchImpl: (url, request) =>
+    ['https://weibo.com/ajax/side/cards', 'https://weibo.com/ajax/feed/allGroups'].includes(url)
+      ? Promise.resolve(new Response(JSON.stringify({ ok: 1, data: [] })))
+      : options.fetchImpl(url, request) });
+}
 
 test('extracts and decodes cookie values', () => {
   assert.equal(cookieValue('A=1; XSRF-TOKEN=hello%20world; B=2', 'XSRF-TOKEN'), 'hello world');
@@ -133,4 +140,68 @@ test('Weibo validation fails before the publication boundary', async () => {
     beforeSend: () => assert.fail('must not cross boundary'),
     fetchImpl: () => assert.fail('must not publish'),
   }), /not configured/);
+});
+
+test('an expired login is detected by a read-only probe without submitting a post', async () => {
+  const calls = [];
+  await assert.rejects(publishWithProbe('fixture', {
+    config: { cookie: 'fixture', fingerprint: 'fixture', userAgent: 'test' },
+    beforeSend: () => assert.fail('must not cross boundary'),
+    fetchImpl: async (url, request) => {
+      calls.push({ url, method: request.method });
+      return new Response(JSON.stringify({ ok: -100 }));
+    },
+  }), WeiboAuthenticationError);
+  assert.deepEqual(calls, [{ url: 'https://weibo.com/ajax/side/cards', method: 'GET' }]);
+});
+
+test('only definite login rejection can mark a crossed request as unaccepted', async () => {
+  for (const message of ['请先登录', '未登录', '登录已失效']) {
+    await assert.rejects(publishWeiboWeb('fixture', {
+      config: { cookie: 'fixture', fingerprint: 'fixture', endpoint: 'https://example.test/weibo' },
+      fetchImpl: async () => new Response(JSON.stringify({ ok: 0, msg: message })),
+    }), error => error instanceof WeiboAuthenticationError && error.rejectedBeforeAcceptance);
+  }
+  await assert.rejects(publishWeiboWeb('fixture', {
+    config: { cookie: 'fixture', fingerprint: 'fixture', endpoint: 'https://example.test/weibo' },
+    fetchImpl: async () => new Response(JSON.stringify({ ok: 0, msg: '访问频繁，请稍后重试' })),
+  }), error => !(error instanceof WeiboAuthenticationError));
+});
+
+test('a successful probe precedes the durable boundary and post request', async () => {
+  const calls = [];
+  await publishWithProbe('fixture', {
+    config: { cookie: 'fixture', fingerprint: 'fixture', endpoint: 'https://example.test/weibo' },
+    beforeSend: async () => calls.push('boundary'),
+    fetchImpl: async (_url, request) => {
+      calls.push(request.method);
+      return new Response(JSON.stringify(request.method === 'GET'
+        ? { ok: 1, data: [] } : { ok: 1, data: { mblogid: 'post', user: { idstr: '1' } } }));
+    },
+  });
+  assert.deepEqual(calls, ['GET', 'GET', 'boundary', 'POST']);
+});
+
+test('an unrecognized probe response never reaches the publication boundary', async () => {
+  await assert.rejects(publishWithProbe('fixture', {
+    config: { cookie: 'fixture', fingerprint: 'fixture' },
+    beforeSend: () => assert.fail('must not publish'),
+    fetchImpl: async () => new Response(JSON.stringify({ unexpected: true })),
+  }), /Unable to verify/);
+});
+
+test('a logged-in account requiring identity verification fails before posting without becoming an auth failure', async () => {
+  const calls = [];
+  await assert.rejects(publishWithProbe('fixture', {
+    config: { cookie: 'fixture', fingerprint: 'fixture', userAgent: 'fixture-agent' },
+    beforeSend: () => assert.fail('must not cross boundary'),
+    fetchImpl: async (url, request) => {
+      assert.equal(request.method, 'GET'); assert.equal(request.headers['user-agent'], 'fixture-agent');
+      assert.equal(request.headers['x-requested-with'], 'XMLHttpRequest'); calls.push(url);
+      return new Response(JSON.stringify(url.endsWith('/side/cards') ? { ok: 1, data: [] } : {
+        ok: 0, error_type: 'confirm', msg: '你的账号暂时无法进行发博、发评、关注、点赞等操作，可在验证身份后恢复。',
+      }));
+    },
+  }), error => error instanceof WeiboSecurityError && !(error instanceof WeiboAuthenticationError));
+  assert.deepEqual(calls, ['https://weibo.com/ajax/side/cards', 'https://weibo.com/ajax/feed/allGroups']);
 });
