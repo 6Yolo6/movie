@@ -164,6 +164,6 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 
 三轮均为实施者的隔离Agent观测：使用真实模型、现役索引和固定12822条公开元数据快照，真实Movie候选类执行查询及继承；公开快照经分页采集，不能宣称数据库原子一致性。未领取生产队列、启用生产state、登录网站USER或发布/转存/外发；片名和条件等API证据不等于网页已经正确展示。网站USER10场景/15轮始终未执行，当前网站身份、加密队列和页面多轮桥接待验。
 
-本候选有限部署例外和管理员预检已明确获批，Movie于10月31日22:58上线；Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。Movie直接只读契约、真实入口及Agent失败/回退分别记录在[上午部署阶段](evaluation/quality-improvement-20261031/deployment-20261101-summary.md)，不冒充网站USER或生产多轮验收。G01–G11未关闭；三轮重复开发观测不提供独立质量提升率，也不能推算82条全部已修复，关系/主题、较早列表指代和柔性偏好仍保留不足。
+本候选有限部署例外和管理员预检已明确获批，Movie于10月31日22:58上线；Agent于11月1日17:12最终上线1f9d…/代码e19b6b16，管理员受管身份/argv、自然空闲、新三份age认证、旧9516正常停止、新7700独立runtime/ready/hostInJob=false及root绑定复核通过。上午尝试失败/确认回退和16:59提权取消仍按原日期保留。部署证据见[最终部署验收](evaluation/quality-improvement-20261031/deployment-final-20261101.md)，不冒充网站USER或生产多轮验收。G01–G11未关闭；三轮重复开发观测不提供独立质量提升率，也不能推算82条全部已修复，关系/主题、较早列表指代和柔性偏好仍保留不足。
 
-11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当前stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。见[继续部署记录](evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)；上午PID40148记录仅为当时回退事实。
+11月1日17:12上线后，四问串行真实Agent观测均HTTP/API200 completed、程序0失败，总耗时39.0秒。第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，质量不等于四条全部满足。新[原始报告](evaluation/quality-improvement-20261031/post-deployment-report.json)、[实际正文](evaluation/quality-improvement-20261031/post-deployment-answers.md)和[模型复核](evaluation/quality-improvement-20261031/post-deployment-review.json)单独保存；网站USER10场景/15轮仍未执行，不覆盖旧三轮回答或评分。

@@ -1,0 +1,969 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-01T09:13:39.764739+00:00",
+  "transport": "deployed-agent-api-through-real-movie-bridge",
+  "expectedRuntime": {
+    "agentJarSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+    "movieImageId": "sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44"
+  },
+  "deploymentEvidenceSha256": "eac694683eb937c3a155c148fb36298fbed5cc0185cd65a2c487dae6cf56337e",
+  "deploymentReceiptBinding": {
+    "agentRuntimeSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+    "movieImage": "sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44",
+    "movieJarSha256": "d0149ee1df43a1a56d24f9276755112f796b38c92f409f9fb94fbbd688a2e7e4",
+    "movieReceiptSha256": "86d7a9f5a9fac4eaf6ccd1b1f9d41084aee954ce5acfd588275ab3c76ee9b2ee",
+    "receiptBindingPassed": true,
+    "liveIdentityCheckedByRunner": false,
+    "agentReceiptSha256": "eac694683eb937c3a155c148fb36298fbed5cc0185cd65a2c487dae6cf56337e"
+  },
+  "planSha256": "a5d263ba5b3b8277da6f8d6aacb42c3b2914e5ed7fa7c44047f64a86430c5443",
+  "inferenceReplay": false,
+  "submitAttemptsPerProbe": 1,
+  "websiteUserSessionUsed": false,
+  "realMessagesPostsTransfers": 0,
+  "rows": [
+    {
+      "id": "post-count-source-runtime",
+      "message": "找喜剧电影，片长严格超过90分钟且严格少于100分钟，最多两部，按豆瓣评分从高到低排；没有豆瓣分的写暂无并放最后，不用IMDb分补。",
+      "submittedAt": "2026-11-01T09:13:39.764739+00:00",
+      "httpStatus": 200,
+      "durationSeconds": 22.937,
+      "checks": [
+        {
+          "id": "actual-completion",
+          "status": "pass"
+        },
+        {
+          "id": "catalog-trace",
+          "status": "pass"
+        },
+        {
+          "id": "read-only-tools",
+          "status": "pass"
+        },
+        {
+          "id": "numeric-plan",
+          "status": "pass"
+        },
+        {
+          "id": "numeric-candidates",
+          "status": "pass"
+        },
+        {
+          "id": "source-sort",
+          "status": "pass"
+        },
+        {
+          "id": "missing-score-display",
+          "status": "not-exercised",
+          "note": "No returned movie lacks doubanScore; no claim for this branch"
+        },
+        {
+          "id": "quantity",
+          "status": "pass"
+        }
+      ],
+      "result": {
+        "requestId": "d17b386d-72de-4ac3-a660-462bd24c7b5e",
+        "model": "qwen3:4b-instruct-2507-q4_K_M",
+        "scope": "gying",
+        "answer": "按本次已识别条件找到 357 部，先展示 2 部。",
+        "trace": [
+          {
+            "requestId": "d17b386d-72de-4ac3-a660-462bd24c7b5e",
+            "kind": "planning",
+            "name": "qwen3:4b-instruct-2507-q4_K_M",
+            "status": "success",
+            "timestamp": "2026-11-01T09:13:58.618846600Z",
+            "durationMs": 18822
+          },
+          {
+            "requestId": "d17b386d-72de-4ac3-a660-462bd24c7b5e",
+            "kind": "tool",
+            "name": "queryCatalog",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:02.688068200Z",
+            "durationMs": 4068,
+            "arguments": {
+              "intent": "search",
+              "inheritContext": false,
+              "genresAll": [
+                "喜剧"
+              ],
+              "minRuntime": 91,
+              "maxRuntime": 99,
+              "limit": 2,
+              "sort": "rating_desc",
+              "category": "mv",
+              "ratingSource": "douban"
+            },
+            "result": {
+              "ok": true,
+              "data": {
+                "source": "GYing catalog",
+                "queriedAt": "2026-11-01T09:14:02.619115502Z",
+                "queryPlan": {
+                  "intent": "search",
+                  "inheritContext": false,
+                  "genresAll": [
+                    "喜剧"
+                  ],
+                  "minRuntime": 91,
+                  "maxRuntime": 99,
+                  "limit": 2,
+                  "sort": "rating_desc",
+                  "category": "mv",
+                  "ratingSource": "douban",
+                  "actors": [],
+                  "actorsAny": [],
+                  "directors": [],
+                  "directorsAny": [],
+                  "excludedActors": [],
+                  "excludedDirectors": []
+                },
+                "movies": [
+                  {
+                    "id": "gying_mv_Bj8e",
+                    "titleCn": "飞屋环游记",
+                    "titleEn": " Up",
+                    "category": "mv",
+                    "seriesName": "飞屋环游记",
+                    "summary": "小男孩卡尔（Carl Fredricksen）怀揣着对于冒险的热爱偶遇假小子艾丽（Ellie），而艾丽把整个屋子当成一艘大飞船游戏居然使他对这个女孩子有些着迷，相同的爱好最终使两个人成为了一生的爱侣。\n他们有一个梦想，那就是有朝一日要去南美洲的“仙境瀑布”探险，但直到艾丽去世，这个梦想也未能实现。终于有一天，曾经专卖气球的老人卡尔居然用五颜六色的气球拽着他的房子飞上了天空，他决定要去实现他们未曾实现的梦想。令卡尔始料不及的是，门廊居然搭上了一个自称是“荒野开拓者”的小男孩小罗（Russell），小罗的喋喋不休让卡尔对这个小胖墩格外讨厌。\n一老一少在飞行中经过了千难万险终于看到了传说中的“仙境瀑布”，在相处过程中卡尔发现小罗其实是个惹人怜爱的孩子。在步行穿越一座森林时，他们遇到了不会飞的大鸟凯文（Kevin）和一只会说话的狗狗逗逗（Dug），让老人惊讶的是他们还遇到了他少年的崇拜偶像——探险家查尔斯·蒙兹（Charles Muntz），而且他发现蒙兹居然是一个为达目的不择手段的坏人。这时，老人离自己的梦想之地只有一步之遥……\n本片荣获第82届奥斯卡最佳动画长片、最佳配乐2项大奖。",
+                    "aliases": "Vzhuru do oblak / Baala / Aukstyn / Up - Una aventura de altura / Up, una aventura de altura / Do neba / Yukarı Bak / Oben / Up, Una aventura de altura Pixar / Là-haut / فوق / Vút Bay / Yuxarı Bax / 飞屋环游记 / Уверх / Up: Altas Aventuras / Up - mot höjderna",
+                    "year": 2009,
+                    "season": 1,
+                    "genres": [
+                      "剧情",
+                      "喜剧",
+                      "冒险",
+                      "动画"
+                    ],
+                    "directors": [
+                      "彼特·道格特",
+                      "鲍勃·彼德森"
+                    ],
+                    "actors": [
+                      "爱德华·阿斯纳",
+                      "克里斯托弗·普卢默",
+                      "乔丹·长井",
+                      "鲍勃·彼德森",
+                      "德尔罗伊·林多",
+                      "杰罗姆·兰福特",
+                      "约翰·拉森贝格",
+                      "大卫·卡耶",
+                      "艾丽·道克特",
+                      "杰里米·利里",
+                      "米凯·麦高万",
+                      "丹尼·曼恩",
+                      "唐纳德·富利洛夫",
+                      "杰斯·哈梅尔",
+                      "乔什·库雷",
+                      "彼特·道格特"
+                    ],
+                    "regions": [
+                      "美国"
+                    ],
+                    "languages": [
+                      "英语"
+                    ],
+                    "doubanScore": 9.1,
+                    "imdbScore": 8.3,
+                    "tmdbVoteAverage": 8.0,
+                    "runtimeMinutes": 96,
+                    "resourceCount": 2,
+                    "rating": 9.1,
+                    "ratingSource": "douban",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  },
+                  {
+                    "id": "gying_mv_PBPM",
+                    "titleCn": "头脑特工队",
+                    "titleEn": " Inside Out",
+                    "category": "mv",
+                    "seriesName": "头脑特工队",
+                    "summary": "可爱的小女孩莱莉（凯特林·迪亚斯 Kaitlyn Dias 配音）出生在明尼苏达州一个平凡的家庭中，从小她在父母的呵护下长大，脑海中保存着无数美好甜蜜的回忆。当然这些记忆还与几个莱莉未曾谋面的伙伴息息相关，他们就是人类的五种主要情绪：乐乐（艾米·波勒 Amy Poehl er 配音）、忧忧（菲利丝·史密斯 Phyllis Smith 配音）、怕怕（比尔·哈德尔 Bill Hader 配音）、厌厌（敏迪·卡灵 Mindy Kaling 配音）和怒怒（刘易斯·布莱克 Lewis Black 配音）。乐乐作为团队的领导，她协同其他伙伴致力于为小主人营造更多美好的珍贵回忆。某天，莱莉随同父母搬到了旧金山，肮脏逼仄的公寓、陌生的校园环境、逐渐失落的友情都让莱莉无所适从，她的负面情绪逐渐累积，内心美好的世界渐次崩塌。\n为了保护这一切，乐乐只有行动起来……",
+                    "aliases": "Intensamente / Del Revés (Inside Out) / Tərs Üz / Brenda mendjes / Á röngunni / Daroon va Biroon / Ha'kol ba'rosh / Ойжұмбақ / Divertida-Mente / The Untitled Pixar Movie That Takes You Inside the Mind / Boshqotirma / ظاهر و باطن / Inside Out 3D / Вэрхал у галаве / インサイドヘッド / Del revés / Duyğuların Oyunu",
+                    "year": 2015,
+                    "season": 1,
+                    "genres": [
+                      "喜剧",
+                      "冒险",
+                      "动画"
+                    ],
+                    "directors": [
+                      "彼特·道格特",
+                      "罗纳尔多·德尔·卡门"
+                    ],
+                    "actors": [
+                      "艾米·波勒",
+                      "菲利丝·史密斯",
+                      "理查德·坎德",
+                      "比尔·哈德尔",
+                      "刘易斯·布莱克",
+                      "敏迪·卡灵",
+                      "凯特林·迪亚斯",
+                      "戴安·琳恩",
+                      "凯尔·麦克拉克伦",
+                      "波拉·庞德斯通",
+                      "鲍比·莫尼汉",
+                      "保拉·佩尔",
+                      "大卫·戈尔兹",
+                      "弗兰克·奥兹",
+                      "乔什·库雷",
+                      "弗利",
+                      "约翰·拉森贝格",
+                      "卡洛斯·阿拉斯拉奇",
+                      "皮特·萨加尔",
+                      "拉什达·琼斯",
+                      "罗里·艾伦",
+                      "约翰·齐甘",
+                      "雪莉·琳恩",
+                      "拉瑞恩·纽曼",
+                      "帕丽斯·冯·戴克"
+                    ],
+                    "regions": [
+                      "美国"
+                    ],
+                    "languages": [
+                      "英语"
+                    ],
+                    "doubanScore": 8.9,
+                    "imdbScore": 8.1,
+                    "tmdbVoteAverage": 7.9,
+                    "runtimeMinutes": 95,
+                    "resourceCount": 0,
+                    "rating": 8.9,
+                    "ratingSource": "douban",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  }
+                ],
+                "total": 357,
+                "returned": 2,
+                "truncated": true,
+                "semanticStaleCandidates": 0,
+                "retrieval": "lexical",
+                "unverifiedConditions": [],
+                "answer": "按本次已识别条件找到 357 部，先展示 2 部。"
+              }
+            }
+          }
+        ],
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "喜剧"
+          ],
+          "minRuntime": 91,
+          "maxRuntime": 99,
+          "limit": 2,
+          "sort": "rating_desc",
+          "category": "mv",
+          "ratingSource": "douban",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "status": "completed"
+      },
+      "answerSha256": "0b7c062e806b860faa7d1c7c6aec3a171cf721add08c5bf71797c3ebe6a04cb3",
+      "apiCode": 200,
+      "apiMessage": "ok",
+      "status": "completed",
+      "error": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "qualityReviewStatus": "pending"
+    },
+    {
+      "id": "post-version-list",
+      "message": "片库中《小妇人》有哪些电影版本？请列出年份和导演。",
+      "submittedAt": "2026-11-01T09:14:02.698443+00:00",
+      "httpStatus": 200,
+      "durationSeconds": 4.25,
+      "checks": [
+        {
+          "id": "actual-completion",
+          "status": "pass"
+        },
+        {
+          "id": "catalog-trace",
+          "status": "pass"
+        },
+        {
+          "id": "read-only-tools",
+          "status": "pass"
+        },
+        {
+          "id": "version-plan",
+          "status": "pass"
+        },
+        {
+          "id": "version-rows",
+          "status": "pass"
+        },
+        {
+          "id": "known-inventory",
+          "status": "pass",
+          "note": "Compared actual live catalog only; old report contents were not used as results"
+        }
+      ],
+      "result": {
+        "requestId": "827d6f84-1d27-4e52-a9d3-84d08989c4d0",
+        "model": "qwen3:4b-instruct-2507-q4_K_M",
+        "scope": "gying",
+        "answer": "按本次已识别条件找到 2 部，先展示 2 部。\n1. 《小妇人》；年份：2019；导演：格蕾塔·葛韦格\n2. 《小妇人》；年份：1994；导演：Gillian Armstrong",
+        "trace": [
+          {
+            "requestId": "827d6f84-1d27-4e52-a9d3-84d08989c4d0",
+            "kind": "planning",
+            "name": "qwen3:4b-instruct-2507-q4_K_M",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:05.528419300Z",
+            "durationMs": 2824
+          },
+          {
+            "requestId": "827d6f84-1d27-4e52-a9d3-84d08989c4d0",
+            "kind": "tool",
+            "name": "queryCatalog",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:06.943222500Z",
+            "durationMs": 1414,
+            "arguments": {
+              "intent": "search",
+              "titles": [
+                "小妇人"
+              ],
+              "inheritContext": false,
+              "limit": 10,
+              "category": "mv"
+            },
+            "result": {
+              "ok": true,
+              "data": {
+                "source": "GYing catalog",
+                "queriedAt": "2026-11-01T09:14:05.549555981Z",
+                "queryPlan": {
+                  "intent": "search",
+                  "titles": [
+                    "小妇人"
+                  ],
+                  "inheritContext": false,
+                  "limit": 10,
+                  "category": "mv",
+                  "actors": [],
+                  "actorsAny": [],
+                  "directors": [],
+                  "directorsAny": [],
+                  "excludedActors": [],
+                  "excludedDirectors": []
+                },
+                "movies": [
+                  {
+                    "id": "gying_mv_M4Lk",
+                    "titleCn": "小妇人",
+                    "titleEn": " Little Women",
+                    "category": "mv",
+                    "seriesName": "小妇人",
+                    "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+                    "aliases": "Unge Kvinner / Mujercitas / 작은 아씨들 / Adoráveis Mulheres / Малки жени / 小妇人 / 小婦人 / 她們 / Küçük Kadınlar / Những người phụ nữ nhỏ bé / Čas deklištva / Fiicele doctorului March / Mažosios moterys / Piccole donne / Μικρές κυρίες / Kisasszonyok / Pikku naisia / نساء صغيرات / Փոքրիկ Կանայք",
+                    "year": 2019,
+                    "season": 1,
+                    "genres": [
+                      "剧情",
+                      "爱情",
+                      "女性"
+                    ],
+                    "directors": [
+                      "格蕾塔·葛韦格"
+                    ],
+                    "actors": [
+                      "西尔莎·罗南",
+                      "艾玛·沃森",
+                      "弗洛伦丝·皮尤",
+                      "伊莱扎·斯坎伦",
+                      "劳拉·邓恩",
+                      "提莫西·查拉梅",
+                      "梅丽尔·斯特里普",
+                      "鲍勃·奥登科克",
+                      "詹姆斯·诺顿",
+                      "路易·加瑞尔",
+                      "克里斯·库珀",
+                      "崔西·莱茨",
+                      "艾比·奎因",
+                      "萨莎·弗罗洛娃",
+                      "莉莉·恩格勒特",
+                      "爱德华德·弗莱彻",
+                      "杰妮·霍蒂谢尔",
+                      "多梅尼克·阿尔迪诺",
+                      "汤姆·斯特拉特福",
+                      "托马斯·马里亚诺",
+                      "哈德莉·罗宾逊",
+                      "杰米·加扎里安"
+                    ],
+                    "regions": [
+                      "美国"
+                    ],
+                    "languages": [
+                      "英语"
+                    ],
+                    "doubanScore": 8.0,
+                    "imdbScore": 7.7,
+                    "tmdbVoteAverage": 7.8,
+                    "runtimeMinutes": 135,
+                    "resourceCount": 6,
+                    "rating": 8.0,
+                    "ratingSource": "any",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  },
+                  {
+                    "id": "tmdb_movie_9587",
+                    "titleCn": "小妇人",
+                    "titleEn": "Little Women",
+                    "category": "mv",
+                    "summary": "丈夫远赴战场后，马奇太太独自抚养四个女儿——她珍贵的“小妇人”。她们分别是桀骜不驯的乔、娴静保守的梅格、柔婉脆弱的贝丝，以及浪漫多情的艾米。时光荏苒，在母亲与马奇姑婆的引领下，四姐妹历经关于独立、爱情与品格的种种考验，共同编织了成长路上那些最珍贵与痛楚的自我觉醒记忆。[索尼影业]",
+                    "aliases": "新小妇人 / Adoráveis Mulheres / Mujercitas",
+                    "year": 1994,
+                    "genres": [
+                      "剧情",
+                      "爱情"
+                    ],
+                    "directors": [
+                      "Gillian Armstrong"
+                    ],
+                    "actors": [
+                      "薇诺娜·瑞德",
+                      "翠尼·阿瓦拉多",
+                      "萨曼莎·马蒂斯",
+                      "克斯汀·邓斯特",
+                      "克莱尔·丹尼斯",
+                      "克里斯蒂安·贝尔",
+                      "苏珊·萨兰登",
+                      "加布里埃尔·伯恩",
+                      "艾瑞克·斯托罗兹",
+                      "约翰·内维尔",
+                      "玛丽·威克斯",
+                      "Florence Paterson"
+                    ],
+                    "regions": [
+                      "United States of America"
+                    ],
+                    "languages": [
+                      "English",
+                      "German",
+                      "French"
+                    ],
+                    "tmdbVoteAverage": 7.3,
+                    "runtimeMinutes": 115,
+                    "resourceCount": 4,
+                    "rating": 7.3,
+                    "ratingSource": "any",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  }
+                ],
+                "total": 2,
+                "returned": 2,
+                "truncated": false,
+                "semanticStaleCandidates": 0,
+                "retrieval": "lexical",
+                "unverifiedConditions": [],
+                "answer": "按本次已识别条件找到 2 部，先展示 2 部。"
+              }
+            }
+          }
+        ],
+        "queryPlan": {
+          "intent": "search",
+          "titles": [
+            "小妇人"
+          ],
+          "inheritContext": false,
+          "limit": 10,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "status": "completed"
+      },
+      "answerSha256": "99a307d918616c18a66892f0567e8d5f5978be37a11800bd9fb9a0fd533f9090",
+      "apiCode": 200,
+      "apiMessage": "ok",
+      "status": "completed",
+      "error": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "qualityReviewStatus": "pending"
+    },
+    {
+      "id": "post-explicit-version-actors",
+      "message": "只查《小妇人》2019年版的主演，按本次片库资料回答。",
+      "submittedAt": "2026-11-01T09:14:06.949272+00:00",
+      "httpStatus": 200,
+      "durationSeconds": 4.907,
+      "checks": [
+        {
+          "id": "actual-completion",
+          "status": "pass"
+        },
+        {
+          "id": "catalog-trace",
+          "status": "pass"
+        },
+        {
+          "id": "read-only-tools",
+          "status": "pass"
+        },
+        {
+          "id": "details-plan",
+          "status": "pass"
+        },
+        {
+          "id": "same-film-id",
+          "status": "pass"
+        },
+        {
+          "id": "actors-from-details",
+          "status": "pass"
+        }
+      ],
+      "result": {
+        "requestId": "e1baa89b-281e-428c-aff0-d8244eb0ff68",
+        "model": "qwen3:4b-instruct-2507-q4_K_M",
+        "scope": "gying",
+        "answer": "《小妇人》（2019）。本次片库返回主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤。\n马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+        "trace": [
+          {
+            "requestId": "e1baa89b-281e-428c-aff0-d8244eb0ff68",
+            "kind": "planning",
+            "name": "qwen3:4b-instruct-2507-q4_K_M",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:11.295006500Z",
+            "durationMs": 4325
+          },
+          {
+            "requestId": "e1baa89b-281e-428c-aff0-d8244eb0ff68",
+            "kind": "tool",
+            "name": "queryCatalog",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:11.805819600Z",
+            "durationMs": 509,
+            "arguments": {
+              "intent": "details",
+              "titles": [
+                "小妇人"
+              ],
+              "limit": 10,
+              "inheritContext": false,
+              "yearFrom": 2019,
+              "yearTo": 2019
+            },
+            "result": {
+              "ok": true,
+              "data": {
+                "source": "GYing catalog",
+                "queriedAt": "2026-11-01T09:14:11.307988665Z",
+                "queryPlan": {
+                  "intent": "details",
+                  "titles": [
+                    "小妇人"
+                  ],
+                  "limit": 10,
+                  "inheritContext": false,
+                  "yearFrom": 2019,
+                  "yearTo": 2019,
+                  "actors": [],
+                  "actorsAny": [],
+                  "directors": [],
+                  "directorsAny": [],
+                  "excludedActors": [],
+                  "excludedDirectors": []
+                },
+                "selectedId": "gying_mv_M4Lk",
+                "total": 1,
+                "answer": "已定位片库影片，继续查询本次详情。"
+              }
+            }
+          },
+          {
+            "requestId": "e1baa89b-281e-428c-aff0-d8244eb0ff68",
+            "kind": "tool",
+            "name": "getMovieDetails",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:11.850576Z",
+            "durationMs": 44,
+            "result": {
+              "ok": true,
+              "data": {
+                "source": "http://127.0.0.1:8880/api/movies/gying_mv_M4Lk",
+                "queriedAt": "2026-11-01T09:14:11.848928100Z",
+                "externalLinksVerifiedNow": false,
+                "movie": {
+                  "id": "gying_mv_M4Lk",
+                  "titleCn": "小妇人",
+                  "titleEn": " Little Women",
+                  "category": "mv",
+                  "year": 2019,
+                  "doubanScore": 8.0,
+                  "tmdbVoteAverage": 7.8,
+                  "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+                  "directors": [
+                    "格蕾塔·葛韦格"
+                  ],
+                  "actors": [
+                    "西尔莎·罗南",
+                    "艾玛·沃森",
+                    "弗洛伦丝·皮尤"
+                  ],
+                  "fieldsTruncated": true,
+                  "genres": [
+                    "剧情",
+                    "爱情",
+                    "女性"
+                  ],
+                  "resourceCount": 4
+                },
+                "resourceSummary": {
+                  "approvedNormal": 4,
+                  "returned": 2,
+                  "excluded": 0
+                },
+                "truncated": true
+              }
+            }
+          }
+        ],
+        "queryPlan": {
+          "intent": "details",
+          "titles": [
+            "小妇人"
+          ],
+          "limit": 10,
+          "inheritContext": false,
+          "yearFrom": 2019,
+          "yearTo": 2019,
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "status": "completed"
+      },
+      "answerSha256": "0a938eb7d2d098d11a86dda3d7b6ae0df4ebdf12ae14b85b8eaefa5409c9e680",
+      "apiCode": 200,
+      "apiMessage": "ok",
+      "status": "completed",
+      "error": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "qualityReviewStatus": "pending"
+    },
+    {
+      "id": "post-language-unknown",
+      "message": "找动画电影，原始对白是中文或西班牙语，至少70分钟且严格少于95分钟，最多两部；只有配音资料就标未核验。",
+      "submittedAt": "2026-11-01T09:14:11.854986+00:00",
+      "httpStatus": 200,
+      "durationSeconds": 6.953,
+      "checks": [
+        {
+          "id": "actual-completion",
+          "status": "pass"
+        },
+        {
+          "id": "catalog-trace",
+          "status": "pass"
+        },
+        {
+          "id": "read-only-tools",
+          "status": "pass"
+        },
+        {
+          "id": "language-plan",
+          "status": "pass"
+        },
+        {
+          "id": "language-unknown",
+          "status": "pass"
+        },
+        {
+          "id": "language-candidates",
+          "status": "pass"
+        }
+      ],
+      "result": {
+        "requestId": "f1d5d307-0263-4d7f-8669-9002f7193f8c",
+        "model": "qwen3:4b-instruct-2507-q4_K_M",
+        "scope": "gying",
+        "answer": "按本次已识别条件找到 31 部，先展示 2 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。\n尚未核实的条件：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验。片库候选尚不能视为满足全部硬条件。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+        "trace": [
+          {
+            "requestId": "f1d5d307-0263-4d7f-8669-9002f7193f8c",
+            "kind": "planning",
+            "name": "qwen3:4b-instruct-2507-q4_K_M",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:15.240048800Z",
+            "durationMs": 3381
+          },
+          {
+            "requestId": "f1d5d307-0263-4d7f-8669-9002f7193f8c",
+            "kind": "tool",
+            "name": "queryCatalog",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:15.324158200Z",
+            "durationMs": 83,
+            "arguments": {
+              "intent": "search",
+              "inheritContext": false,
+              "genresAny": [
+                "动画"
+              ],
+              "unsupportedConditions": [
+                "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+              ],
+              "minRuntime": 70,
+              "maxRuntime": 94,
+              "limit": 2,
+              "languagesAny": [
+                "中文",
+                "西班牙语"
+              ],
+              "category": "mv"
+            },
+            "result": {
+              "ok": true,
+              "data": {
+                "source": "GYing catalog",
+                "queriedAt": "2026-11-01T09:14:15.259510927Z",
+                "queryPlan": {
+                  "intent": "search",
+                  "inheritContext": false,
+                  "genresAny": [
+                    "动画"
+                  ],
+                  "unsupportedConditions": [
+                    "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+                  ],
+                  "minRuntime": 70,
+                  "maxRuntime": 94,
+                  "limit": 2,
+                  "languagesAny": [
+                    "中文",
+                    "西班牙语"
+                  ],
+                  "category": "mv",
+                  "actors": [],
+                  "actorsAny": [],
+                  "directors": [],
+                  "directorsAny": [],
+                  "excludedActors": [],
+                  "excludedDirectors": []
+                },
+                "movies": [
+                  {
+                    "id": "YMnB",
+                    "titleCn": "魁拔Ⅲ战神崛起",
+                    "category": "mv",
+                    "seriesName": "魁拔Ⅲ战神崛起",
+                    "summary": "历经惨烈的元泱界大战，成功突破魁拔十二妖第一道防线的蛮吉（刘婧荦 配音）、镜心（刘校妤 配音）一行，为追赶曲境一号再踏征途，却意外闯入萨库人大仓（王宇腾 配音）与粼妖姑娘海问香（姚姝 配音）所设下的诡异防线。面对大仓与海问香的步步紧逼，蛮吉等人无奈应战。激战中，神秘少年 敖江（刘校妤 配音）凭空出现、曲境一号舰长远浪（杨晨 配音）更做出种种令人匪夷所思的决定，让本已复杂的局面，越发显得扑朔迷离；而机缘巧合下，脉门封闭已久的蛮吉竟意外开启六大脉门，化身无敌战神，携魁拔脉兽驰骋于漫天烽火中，上演了一场气势磅礴的惊世之战……",
+                    "year": 2014,
+                    "genres": [
+                      "动作",
+                      "冒险",
+                      "奇幻",
+                      "动画"
+                    ],
+                    "directors": [
+                      "王川",
+                      "张钢",
+                      "周洁"
+                    ],
+                    "actors": [
+                      "刘婧荦",
+                      "姚姝",
+                      "王宇腾",
+                      "杨晨",
+                      "刘校妤",
+                      "王凯",
+                      "敖磊",
+                      "石困困",
+                      "宝木中阳",
+                      "马斑马",
+                      "杨凝",
+                      "张杰",
+                      "范哲琛",
+                      "图特哈蒙",
+                      "姜广涛"
+                    ],
+                    "regions": [
+                      "大陆"
+                    ],
+                    "languages": [
+                      "国语"
+                    ],
+                    "doubanScore": 8.6,
+                    "imdbScore": 6.8,
+                    "runtimeMinutes": 90,
+                    "resourceCount": 2,
+                    "rating": 8.6,
+                    "ratingSource": "any",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  },
+                  {
+                    "id": "gying_mv_WLn7",
+                    "titleCn": "宝莲灯",
+                    "titleEn": "Lotus Lantern",
+                    "category": "mv",
+                    "seriesName": "宝莲灯",
+                    "summary": "天神爱上凡人，这原本就是不被允许的事情。但是，天宫中的三圣母（徐帆 配音）却执意爱上了人间的书生刘彦昌。不顾二郎神（姜文 配音）的反对，三圣母带着神器宝莲灯私下凡间与刘彦昌私定终身并生下一子取名叫沉香。平静、幸福的七年很快就过去了，有一天二郎神突然下凡，并用小沉香威胁三圣母交出宝莲灯并被其压在华山下。一个美好的家庭也由此破碎。沉香从土地神口中知道了自己的身世，为了夺回宝莲灯，救出母亲，由此踏上了艰辛的寻母之路。多年的磨练，让沉香成长为一个英勇的少年，并在孙悟空（陈佩斯 配音）的点拨下，获得一把神斧，最终宝莲灯与沉香合二为一，战胜了二郎神，劈开华山，救出了母亲。",
+                    "year": 1999,
+                    "season": 1,
+                    "genres": [
+                      "动画"
+                    ],
+                    "directors": [
+                      "常光希"
+                    ],
+                    "actors": [
+                      "姜文",
+                      "徐帆",
+                      "宁静",
+                      "陈佩斯",
+                      "崔杰",
+                      "丁嘉丽",
+                      "江平",
+                      "雷恪生",
+                      "梁天",
+                      "马精武",
+                      "马羚",
+                      "马晓晴"
+                    ],
+                    "regions": [
+                      "大陆"
+                    ],
+                    "languages": [
+                      "国语"
+                    ],
+                    "doubanScore": 8.6,
+                    "imdbScore": 6.9,
+                    "runtimeMinutes": 85,
+                    "resourceCount": 5,
+                    "rating": 8.6,
+                    "ratingSource": "any",
+                    "reasons": [
+                      "符合本次可核验的片库筛选条件"
+                    ]
+                  }
+                ],
+                "total": 31,
+                "returned": 2,
+                "truncated": true,
+                "semanticStaleCandidates": 0,
+                "retrieval": "lexical",
+                "unverifiedConditions": [
+                  "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+                ],
+                "answer": "按本次已识别条件找到 31 部，先展示 2 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。"
+              }
+            }
+          },
+          {
+            "requestId": "f1d5d307-0263-4d7f-8669-9002f7193f8c",
+            "kind": "tool",
+            "name": "searchMovieWeb",
+            "status": "success",
+            "timestamp": "2026-11-01T09:14:18.800464300Z",
+            "durationMs": 3475,
+            "result": {
+              "ok": true,
+              "data": {
+                "provider": "bing-html",
+                "source": "https://www.bing.com/search",
+                "query": "找动画电影，原始对白是中文或西班牙语，至少70分钟且严格少于95分钟，最多两部；只有配音资料就标未核验。",
+                "queriedAt": "2026-11-01T09:14:18.672472900Z",
+                "externalLinksVerifiedNow": false,
+                "webResults": [],
+                "returned": 0,
+                "truncated": true,
+                "rawReturned": 0,
+                "identityReturned": 0,
+                "relevanceChecked": true
+              }
+            }
+          }
+        ],
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAny": [
+            "动画"
+          ],
+          "unsupportedConditions": [
+            "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+          ],
+          "minRuntime": 70,
+          "maxRuntime": 94,
+          "limit": 2,
+          "languagesAny": [
+            "中文",
+            "西班牙语"
+          ],
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "status": "completed"
+      },
+      "answerSha256": "7cdefbe6c56a7f8e7e51c3abfcedd13e0c9a979a9d0c875eee697db89a29cff7",
+      "apiCode": 200,
+      "apiMessage": "ok",
+      "status": "completed",
+      "error": null,
+      "scores": {
+        "factuality": null,
+        "grounding": null,
+        "usefulness": null
+      },
+      "qualityReviewStatus": "pending"
+    }
+  ],
+  "adminRangeSequence": {
+    "status": "not-executed",
+    "reason": "Runner does not construct or mint website credentials; a separately verified existing ADMIN session is required"
+  },
+  "websiteUserAcceptance": {
+    "status": "not-executed",
+    "reason": "No USER session constructed; ADMIN smoke would not substitute for USER acceptance"
+  },
+  "completedAt": "2026-11-01T09:14:18.806691+00:00"
+}

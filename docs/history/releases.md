@@ -2,9 +2,14 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="agent-quality-final-20261101"></a>
+## 2026-11-01 17:12：Agent最终候选上线与四问真实观测
+
+在本候选明确批准的有限范围内，仅Agent backend替换为代码e19b6b16对应JAR1f9d…，管理员受管身份/argv与自然空闲通过，旧9516正常停止，新7700/instancea9366577…使用对应hash不可变runtime、ready及hostInJob=false通过，最终部署和root绑定复核passed。新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T091153.915087Z` 三份age hash/完整认证解密通过，manifest533d9247…；Movie实际image8d65…/JARd0149…/配置、其他12容器、Ollama/Router/frontend/config/key/token/index保持。回退只恢复应用并保留当前data/state/key，不恢复旧SQL或重放任务。四问均HTTP/API200 completed、程序0失败，总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，不计四条全部满足。网站USER15轮仍未执行、G01–G11未关闭。见[最终部署验收](../evaluation/quality-improvement-20261031/deployment-final-20261101.md)；全部旧阶段、9JSON与三轮观测保留。
+
 ## 2026-11-01 16:59：维护后重新绑定与Windows启动取消
 
-11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当前stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。Movie实际image8d65…/JARd0149…与配置hash保持；新助手绑定当前9516及维护恢复journal，旧两阶段证据保持。未停止服务或新建检查点；管理员系统确认待完成。见[本次记录](../evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)。
+11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当时stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本当时仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。Movie实际image8d65…/JARd0149…与配置hash保持；该次助手绑定当时9516及维护恢复journal，旧两阶段证据保持。未停止服务或新建检查点；当时管理员系统确认待完成。见[本次记录](../evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)。
 
 <a id="agent-quality-rollback-20261101"></a>
 ## 2026-11-01：Agent候选部署失败、确认回退与重试准备

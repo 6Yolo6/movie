@@ -1,6 +1,6 @@
 # Java 后端与 AI 应用求职补强路线
 
-2026-10-31续推第一阶段；原架构与运行证据保留各自观测日期。以真实业务闭环、可核查资料、恢复机制和受控评测作为作品证据。模型运行与规则推荐不等于模型训练；已部署机制见[AI架构](ai-architecture.md)，原始数据与判分见[评测](ai-evaluation.md)。
+2026-11-01继续第一阶段；原架构与运行证据保留各自观测日期。以真实业务闭环、可核查资料、恢复机制和受控评测作为作品证据。模型运行与规则推荐不等于模型训练；已部署机制见[AI架构](ai-architecture.md)，原始数据与判分见[评测](ai-evaluation.md)。
 
 ## 1. 当前已具备什么
 
@@ -54,7 +54,7 @@
 
 有限补丁收口后，最终候选再次执行完整15轮，13次正常返回、2次API500（dev-v3-01 WEB_UNAVAILABLE、dev-v3-07 WEB_TIMEOUT），Agent和harness均正常exit0；[最终原始报告](evaluation/quality-improvement-20261031/development-final-report.json)和[最终回答记录](evaluation/quality-improvement-20261031/development-final-answers.md)保留实际结果；[最终辅助复核](evaluation/quality-improvement-20261031/development-final-review.json)对13条正常答案判定满足3（版本资料2条、音乐推荐首轮1条）、有效澄清2、未满足4、证据不足4，另2次无回答执行失败质量三维保持null。候选测试、实际返回、需求满足和真人验收分别记录，不能用三轮重复开发题报告独立质量提升率。
 
-隔离链路运行真实模型、现役索引和Movie候选类，使用12822条分页采集的公开快照；它不是数据库原子快照，也没有覆盖真实网站USER/加密队列/页面展示，网站新15轮仍未执行。Movie782项中752通过、30项环境跳过，Agent135/135及compile通过。本候选有限两后端部署例外及管理员预检已获明确批准，Movie于10月31日22:58上线。Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。11月1日16:59继续触发Windows提权仍返回取消，助手未启动；上午维护已改变Agent实例，当前stored PID9516/instance5e9e0e80…，进程/监听及四本机health200，但新管理员argv与运行版本仍待证明。新16项离线检查和候选绑定通过；4条实际回答仍为0。见[继续部署记录](evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)；上午PID40148记录仅为当时回退事实。 G01–G11未关闭。[交付状态](evaluation/quality-improvement-20261031/README.md)按最终包和实际结果记录，不把候选实现写成已上线能力。
+隔离链路运行真实模型、现役索引和Movie候选类，使用12822条分页采集的公开快照；它不是数据库原子快照，也没有覆盖真实网站USER/加密队列/页面展示，网站新15轮仍未执行。Movie782项中752通过、30项环境跳过，Agent135/135及compile通过。本候选有限两后端部署例外及管理员预检已获明确批准，Movie于10月31日22:58上线，Agent于11月1日17:12上线最终1f9d…/代码e19b6b16，管理员身份/argv、自然空闲、新三age认证、旧9516正常停止、新7700独立ready与root绑定复核通过；上午失败/回退及16:59取消均保留历史时点。四问真实观测均HTTP/API200 completed、程序0失败、总耗时39.0秒，第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0；不计四条全部满足。G01–G11未关闭。[最终部署验收](evaluation/quality-improvement-20261031/deployment-final-20261101.md)与[交付状态](evaluation/quality-improvement-20261031/README.md)分别记录运行态和质量边界。
 
 ## 3. 学习知识如何落到项目
 
