@@ -101,18 +101,18 @@ Movie跳过为25项SQL、1项Redis、4项Windows权限依赖。源码/JAR/hash�
 
 快照SHA-256为`0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a`，10月31日19:35:12–19:37:28（Asia/Shanghai）129页分页采集、总数和唯一ID及fingerprint校验；不是数据库原子事务快照。现役11,272条索引与快照覆盖不同，索引未重建。
 
-上述三轮是隔离候选类联动实查，本身不覆盖生产部署、网站USER/身份/加密队列/页面展示。随后Movie生产上线另见下段；Agent尚未替换，网站v3 USER15轮仍未执行，旧test账号保持disabled，不自动创建或恢复。
+上述三轮是隔离候选类联动实查，本身不覆盖生产部署、网站USER/身份/加密队列/页面展示。随后Movie生产上线与Agent尝试另见下段；Agent最终候选ready后核对失败并已回退旧版，网站v3 USER15轮仍未执行，旧test账号保持disabled，不自动创建或恢复。
 
 ## 当前部署阶段与回退
 
-**本轮目前完成Movie backend上线，Agent等待Windows提权。** 用户已明确批准本候选的有限两后端部署例外和管理员预检；初次普通权限无法证明身份的记录保留，随后管理员只读身份核对通过。G01–G11仍未关闭，已知门禁58 PASS /11 FAIL /1 UNKNOWN，例外不等于安全加固。
+**Movie backend已上线；Agent最终候选部署失败后已确认应用回退，等待管理员重试。** 用户已明确批准本候选的有限两后端部署例外和管理员预检；初次普通权限无法证明身份的记录保留，随后管理员只读身份核对通过。G01–G11仍未关闭，已知门禁58 PASS /11 FAIL /1 UNKNOWN，例外不等于安全加固。
 
 Movie于10月31日22:58替换为本页绑定的image8d65…/JARd0149…，旧容器正常TERM退出143；768MiB heap、1280MiB容器/含swap2560MiB、有效环境/挂载及其他容器保持。新的四份age检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 完成大小/hash与完整认证解密。完整现役五覆盖后追加本轮backend-only第六覆盖。11月1日原日常备份配置另经单份age认证保存，再纳入新覆盖并dry-run通过，下一次自然完整备份未验。
 
 23:23直接访问新Movie的三个只读契约通过：最多2项且91..99分钟/豆瓣降序、null上限及IMDb同源排序、非法limit返回400。没有模型推理或队列/context写入；缺失评分显示分支没有命中，不证明实际多轮继承。本机片库/首页/详情、经现有代理的公网片库/首页HTML/同ID详情SSR，以及internal/QQ404通过；公网匿名admin因代理读取超时未验，不宣称Cloudflare Access通过。afterMovie快照/就绪均exit0，11通过/1原QQschema覆盖警告/0失败。
 
-Agent于11月1日00:04已启动管理员助手并通过新的受管身份预检，随后因在途任务门禁阻断而停止该动作，未发送停止请求。11月1日01:06 Windows提权再次返回操作取消，改进的有界等待助手未启动；仍为10月29日01eab8…/PID36916。新4条独立Agent回答尚未执行，网站USER15轮和真实跨轮继承仍未验。未生成新Agent检查点或恢复旧SQL/state，当前data/state/key/config/index保持。
+Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。候选PID35532曾ready、hostInJob=false，回退后instance0ad13b71…/PID40148为旧版且独立启动和四本机健康通过。新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T003442.363732Z` 三age完整认证，manifest1db013…；修正助手79dc…/9161…及7离线/独立静态审查a4d3…通过，未据此计部署成功。旧生产回执未记录异常文件名，锁路径诊断依据调用顺序和独立复现。网站USER15轮和真实跨轮继承仍未验，当前data/state/key/config/token/index保持，未恢复旧SQL/state。
 
-[部署阶段详情](deployment-summary.md)与[机器绑定摘要](deployment-summary.json)记录实际回执、入口、契约及当前进度。原[validation-summary.json](validation-summary.json)和仓库外rollout-plan保留批准前准备状态与原hash，不据它们改写当前执行结果。原部署顺序为Movie后Agent，剩余仅Agent，应用回退逆序且保留当前数据；未验证的任务/外部副作用不重放。
+[11月1日尝试与回退](deployment-20261101-summary.md)及[新机器绑定摘要](deployment-20261101-summary.json)记录当前进度；此前[仅Movie上线阶段](deployment-summary.md)与[旧机器绑定摘要](deployment-summary.json)保留至01:12的历史回执和边界。原[validation-summary.json](validation-summary.json)和仓库外rollout-plan保留批准前准备状态与原hash，不据它们改写当前执行结果。原部署顺序为Movie后Agent，剩余仅Agent，应用回退逆序且保留当前数据；未验证的任务/外部副作用不重放。
 
 后续质量工作继续针对主题、作者关系、早期列表引用和柔性偏好，不改写冻结题/原回答/评分，不把重复开发观测或直接协议通过宣称独立提升率。

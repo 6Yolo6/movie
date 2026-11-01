@@ -2,7 +2,7 @@
 
 更新时间：2026-11-01
 
-Asia/Shanghai。10月31日已核对82条历史未满足回答的原因并落实共性候选修复；已保留三轮隔离15轮观测：首轮无完全满足；第二轮14条答案复核为满足4/未满足4/证据不足4/有效澄清2，另1次500；最终轮13条正常答案模型复核为满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。10月31日22:58已仅替换Movie backend；Agent于11月1日00:04通过新的受管身份预检，但在途任务门禁阻断，未发送停止请求；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍为10月29日01eab8…/PID36916。新4条Agent实际回答及网站USER15轮未执行。10月29日23:34上线GYING六目录独立暂停，现有范围/选择/游标保持；后续1280/390浏览器视口与公网片目数据经现有代理验收按原UTC证据记录；当前可见海报通过、全页图片覆盖未计完整通过；本机Edge直连fake-IP超时单独待处理，日常备份已纳入新覆盖。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
+Asia/Shanghai。10月31日已核对82条历史未满足回答的原因并落实共性候选修复；已保留三轮隔离15轮观测：首轮无完全满足；第二轮14条答案复核为满足4/未满足4/证据不足4/有效澄清2，另1次500；最终轮13条正常答案模型复核为满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。10月31日22:58已仅替换Movie backend；Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行。新4条Agent实际回答及网站USER15轮未执行。10月29日23:34上线GYING六目录独立暂停，现有范围/选择/游标保持；后续1280/390浏览器视口与公网片目数据经现有代理验收按原UTC证据记录；当前可见海报通过、全页图片覆盖未计完整通过；本机Edge直连fake-IP超时单独待处理，日常备份已纳入新覆盖。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
 
 [知识导读](project-guide.md) · [AI架构](ai-architecture.md) · [求职路线](ai-career-roadmap.md) · [发布证据](history/releases.md)
 
@@ -44,13 +44,13 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | --- | --- |
 | Movie backend | `sha256:8d65d1ca5f7bc4998c70174d2e3af8ae06168397dca77808a0f3817671a16c44`，代码48990c35；10月31日22:58条件/资料改进上线，沿用GYING独立暂停及Xmx768MiB/容器1280MiB/含swap2560MiB |
 | Movie frontend | `sha256:db1cc643cb8dad1c10071ac1b9b9c8ed14aea7ffe0188b308aeacfdf535b31a6`，10月29日23:34上线独立暂停按钮 |
-| 本机Agent | 代码9cd1d2b，10月29日20:56–20:57条件否定补丁；JAR SHA `01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b`，对应hash不可变运行副本 |
+| 本机Agent | 代码9cd1d2b，11月1日08:35–08:36确认应用回退为10月29日版本，PID40148；JAR SHA `01eab8e20a5ecbbbc8677d1000fecb7e87479402f3e839c3b9444ff39336782b`，对应hash不可变运行副本 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `gying-code-optimization-social-publisher:20261010a` |
 | Node | 10月23本机24.22.1/npm11.19.1、frontend容器22.23.4；旧版本保留 |
 
-10月31日Movie检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 的旧镜像、完整有效配置、backend-data与ai-state-key四份age，大小/SHA-256及完整认证解密通过；旧容器正常TERM退出143，新固定镜像和实际JAR/挂载/配置一致，其他容器保持。现役追加第六覆盖 `E:/gying-tools/releases/ai-quality-improvement-20261031/backend-quality-final.json`。11月1日已加密认证备份原日常配置并纳入该覆盖，dry-run通过，下一次自然完整备份仍待验。Agent阶段等待Windows提权，未创建新Agent检查点。回退只恢复应用并保留当前data/state/key，不宣称跨服务原子快照。见[部署阶段](evaluation/quality-improvement-20261031/deployment-summary.md)。
+10月31日Movie检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 的旧镜像、完整有效配置、backend-data与ai-state-key四份age，大小/SHA-256及完整认证解密通过；旧容器正常TERM退出143，新固定镜像和实际JAR/挂载/配置一致，其他容器保持。现役追加第六覆盖 `E:/gying-tools/releases/ai-quality-improvement-20261031/backend-quality-final.json`。11月1日已加密认证备份原日常配置并纳入该覆盖，dry-run通过，下一次自然完整备份仍待验。11月1日08:34 Agent三age检查点完整认证，候选ready后最终核对失败并已确认回退旧版40148；08:55修正助手Windows提权取消，仍待重试。回退只恢复应用并保留当前data/state/key，不宣称跨服务原子快照。见[11月1日尝试与回退](evaluation/quality-improvement-20261031/deployment-20261101-summary.md)。
 
 10月29日GYING暂停检查点 `G:/gying-backups/metadata-source-pause-20261029T153345.685852Z` 六份age hash/完整认证通过；仅backend/frontend正常TERM退出143及固定镜像替换/nginx重载，其他容器/Agent/配置保持。有效第五覆盖为 `E:/gying-tools/releases/metadata-source-pause-20261029/candidate.json`，已纳入日常备份并dry-run；完整日常备份自然执行仍待验。回退旧worker须保护新暂停意图，保留当前数据/state/key。详见[本轮验收](evaluation/metadata-source-pause-20261029/README.md)。
 
@@ -70,13 +70,13 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 - 9月28 MySQL8.0.28/25 InnoDB表；三应用共用gying_app@%、库级DML/EXECUTE，TLS未强制、local_infile关闭。分服务账号/grants未完成；schema23表缺两QQ日志表，[数据库](database.md)保留24迁移库存。
 - 9月25/28防火墙及同网拒绝报告、Quark父目录0700有证据，公网IPv6/单文件权限/身份/旧Cookie撤销未闭环。10月25两仓工作树秘密扫描为0，历史凭据轮换/清理不因当前零命中完成。
 - 真实.env、Cookie、JWT、API key、备份私钥和完整inspect只在受限外部存储；恢复环境先关闭自动化，凭据变更与真实副作用按当前明确范围执行。
-- 10月31日本候选有限两后端部署例外和管理员预检已获明确批准；普通权限初次预检失败后，管理员只读身份预检与Movie新队列门禁通过，Movie已上线。Agent于11月1日00:04通过新的受管身份预检，随后在途任务门禁阻断，未发送停止请求；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍需取得Windows令牌并完成自然空闲与新加密检查点。G01–G11未关闭，例外不表示加固完成。[当前阶段](evaluation/quality-improvement-20261031/deployment-summary.md)。
+- 10月31日本候选有限两后端部署例外和管理员预检已获明确批准；普通权限初次预检失败后，管理员只读身份预检与Movie新队列门禁通过，Movie已上线。Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。重试仍须取得Windows令牌并复核当前回退身份、自然空闲和新的加密检查点。G01–G11未关闭，例外不表示加固完成。[当前阶段](evaluation/quality-improvement-20261031/deployment-20261101-summary.md)。
 
 ## 仍需处理
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| AI质量 | 10月31日82条唯一历史未满足记录/42个case-turns原因审计完成，真人新增0；数量/严格数字/同源排序/范围替换/缺分未知/版本资料/公告检索/语言并集/纪录别名及未知限制提示已形成冻结候选。首轮15答案模型复核满足0/部分1/未满足8/证据不足4/有效澄清2；第二轮14答案满足4/未满足4/证据不足4/有效澄清2，另1次执行失败不赋质量分；最终轮13 completed，模型满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。Movie782项中752通过/30环境跳过，Agent135/135及compile通过。Movie已上线；Agent仍为10月29日版本，等待Windows提权，新4条回答和网站USER15轮未执行。主题/作者关系/早期列表引用/柔性偏好仍未扩展，不称82条全部解决或独立质量提升。[本轮证据](evaluation/quality-improvement-20261031/README.md) |
+| AI质量 | 10月31日82条唯一历史未满足记录/42个case-turns原因审计完成，真人新增0；数量/严格数字/同源排序/范围替换/缺分未知/版本资料/公告检索/语言并集/纪录别名及未知限制提示已形成冻结候选。首轮15答案模型复核满足0/部分1/未满足8/证据不足4/有效澄清2；第二轮14答案满足4/未满足4/证据不足4/有效澄清2，另1次执行失败不赋质量分；最终轮13 completed，模型满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。Movie782项中752通过/30环境跳过，Agent135/135及compile通过。Movie已上线；Agent最终候选08:35 ready后核对失败，已确认回退旧版01eab8…/40148，三age认证。08:55修正助手提权取消，新4条回答和网站USER15轮未执行。主题/作者关系/早期列表引用/柔性偏好仍未扩展，不称82条全部解决或独立质量提升。[本轮证据](evaluation/quality-improvement-20261031/README.md) |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
@@ -102,6 +102,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
+| 11月1日Agent尝试与回退 | 08:34新身份/空闲通过，旧36916正常停止，三age完整认证；1f9候选35532 ready/hostInJob=false后最终核对PermissionError，候选正常停止，08:35–08:36已确认应用回退旧01eab8…/40148/instance0ad13b71…，当前状态保留。08:55新79dc…/9161…修正助手提权取消，7项离线/静态审查通过但未执行；新4问0。08:59普通权限stored record/进程/监听/health200与Movie及其他12容器保持，不冒充新提权argv证明；11安全FAIL未关闭。[本阶段](evaluation/quality-improvement-20261031/deployment-20261101-summary.md) |
 | 10月31 Movie改进上线阶段 | 22:58仅Movie backend上线，782项中752通过/30跳过；四age hash/完整认证解密，旧TERM143，新实际image8d65…/JARd0149…，资源参数/挂载及其他容器保持。23:23三个直接bridge只读契约通过：数量/时长/同源排序、null上限、非法limit400；无模型推理/队列写入，缺分显示分支未覆盖，不证明多轮继承。本机及经现有代理的公网片库、首页HTML/同ID详情SSR、internal/QQ404通过；公网匿名admin超时未验，源站匿名401。11月1日afterMovie快照/就绪exit0，11通过/1原QQschema警告/0失败；日常备份已纳入新覆盖并dry-run，自然完整备份待验。Agent于11月1日00:04受管身份通过，随后在途门禁阻断且未停；11月1日01:06 Windows提权再次返回操作取消、助手未启动，仍01eab8…/36916，新4条回答未执行。5项离线有界等待检查通过，改进助手仅准备；安全11 FAIL未关闭。[阶段报告](evaluation/quality-improvement-20261031/deployment-summary.md) |
 | 10月31 AI原因审计与候选观测 | 82条历史原因及原报告/回答hash绑定核对完成，冻结材料不改；首轮15/15 completed，模型满足0/部分1/未满足8/证据不足4/有效澄清2。第二轮14 completed/1 API500，14答案满足4/未满足4/证据不足4/有效澄清2，执行失败三维null。最终冻结候选Movie782项中752通过/30跳过、Agent135/135及compile；最终15轮13 completed/2 API500（01 WEB_UNAVAILABLE、07 WEB_TIMEOUT），两进程正常exit0；13条答案模型满足3/有效澄清2/未满足4/证据不足4，另2次失败三维null。固定12822条公开快照非原子，真实模型/现役索引/Movie候选类联动，未领取生产队列或启用生产state，未登录网站USER、未外发；[最终原始报告](evaluation/quality-improvement-20261031/development-final-report.json)、[本轮交付](evaluation/quality-improvement-20261031/README.md) |
 | GYING六目录暂停 | 10月29日23:34两应用固定镜像上线；后端765项中735通过/30环境跳过，79定向及compile，前端8新增/15原场景与lint/TS通过。实际ADMIN匿名401/13项400、暂停/继续保持范围/其他五标记/所比游标；1280/390真页面、刷新持久化和未保存草稿通过。实际现役三个CSCORE按钮，六目录合成另验；QQ5本库链接、公网API及经现有代理片目数据通过，当前可见海报通过、全页图片覆盖仍partial；本机Edge直连fake-IP超时另记。六age认证，其他容器/Agent保持；[报告](evaluation/metadata-source-pause-20261029/README.md)含UTC原时点及研究限制 |

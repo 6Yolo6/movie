@@ -2,6 +2,11 @@
 
 本文汇总保留必要的部署范围、检查点、原始证据与验收限制。日期均为原观测时点；文档整理未重新部署、查询生产库或执行恢复。旧全文从[Git来源](README.md#git-history)读取，实际操作按[部署](../deployment.md)/[迁移](../../MIGRATION.md)执行。
 
+<a id="agent-quality-rollback-20261101"></a>
+## 2026-11-01：Agent候选部署失败、确认回退与重试准备
+
+Agent于11月1日08:34通过管理员身份/空闲门禁并启动最终候选，随后最终运行态核对PermissionError，正常停止候选并确认回退01eab8…/PID40148；三份age认证通过。08:55修正助手提权返回取消、未执行，新4条回答仍未执行。旧36916与新35532均正常受管停止；回退instance0ad13b71…独立启动、hostInJob=false及四本机健康200。检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T003442.363732Z` 三age完整认证，manifest1db013…；状态/配置/key/token/index保持，未恢复SQL/state或重放。生产回执未记录异常文件名，运行态锁读取诊断结合调用顺序与独立Java复现；修正助手79dc…/9161…及7项离线/独立审查a4d3…通过但未执行。Movie8d65…/d0149…与其他12容器保持，08:59普通权限回退记录/40148监听/health200不等于新提权argv证明。11项安全FAIL和网站USER15轮/生产跨轮待验保留。见[新阶段](../evaluation/quality-improvement-20261031/deployment-20261101-summary.md)，旧阶段绑定与9JSON/三轮观测不覆盖。
+
 <a id="quality-improvement-20261031"></a>
 ## 2026-10-31：82条原因审计与Movie改进上线阶段
 
