@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.TmdbListItem;
+import com.gying.movie.dto.TmdbListPage;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,15 +56,50 @@ public class TmdbClient {
 
     public List<TmdbListItem> fetchList(String source, int page) {
         String normalizedSource = normalizeSource(source);
-        String endpoint = LIST_ENDPOINTS.get(normalizedSource);
-        if (endpoint == null) {
-            throw new IllegalArgumentException("Unsupported TMDB source: " + source);
-        }
+        return parseList(normalizedSource, fetchListJson(normalizedSource, page));
+    }
 
-        JsonNode root = getJson(endpoint, builder -> builder
+    /** Automatic crawls require pagination evidence before treating an empty page as the end. */
+    public TmdbListPage fetchListPage(String source, int page) {
+        if (page < 1 || page > 500) throw new IllegalArgumentException("Invalid TMDB list page");
+        String normalizedSource = normalizeSource(source);
+        JsonNode root = fetchListJson(normalizedSource, page);
+        if (root == null || !root.isObject() || !root.path("results").isArray()
+                || !root.path("page").isIntegralNumber() || !root.path("page").canConvertToInt()
+                || root.path("page").asInt() != page
+                || !root.path("total_pages").isIntegralNumber() || !root.path("total_pages").canConvertToInt()
+                || root.path("total_pages").asInt() < 0
+                || !root.path("total_results").isIntegralNumber() || !root.path("total_results").canConvertToLong()
+                || root.path("total_results").asLong() < 0) {
+            throw new IllegalStateException("TMDB catalog pagination is invalid: " + normalizedSource);
+        }
+        int totalPages = root.path("total_pages").asInt();
+        long totalResults = root.path("total_results").asLong();
+        for (JsonNode item : root.path("results")) {
+            if (!item.isObject() || !item.path("id").isIntegralNumber()
+                    || !item.path("id").canConvertToLong() || item.path("id").asLong() <= 0) {
+                throw new IllegalStateException("TMDB catalog item identity is invalid: " + normalizedSource);
+            }
+        }
+        List<TmdbListItem> items = parseList(normalizedSource, root);
+        if (items.size() != root.path("results").size()
+                || (totalPages == 0) != (totalResults == 0)
+                || (page <= totalPages && items.isEmpty())
+                || (page > totalPages && !items.isEmpty())) {
+            throw new IllegalStateException("TMDB catalog results contradict pagination: " + normalizedSource);
+        }
+        return new TmdbListPage(page, totalPages, totalResults, items);
+    }
+
+    private JsonNode fetchListJson(String normalizedSource, int page) {
+        String endpoint = LIST_ENDPOINTS.get(normalizedSource);
+        return getJson(endpoint, builder -> builder
                 .queryParam("language", LANGUAGE)
                 .queryParam("page", page)
                 .queryParam("include_adult", false));
+    }
+
+    private List<TmdbListItem> parseList(String normalizedSource, JsonNode root) {
         List<TmdbListItem> items = new ArrayList<>();
         for (JsonNode node : root.path("results")) {
             long tmdbId = node.path("id").asLong(0L);

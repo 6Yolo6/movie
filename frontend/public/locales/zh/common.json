@@ -977,6 +977,19 @@
   "resourceHubCrawlNext": "采集位置",
   "resourceHubCrawlState": "最近任务状态",
   "resourceHubCrawlPosition": "第 {{page}} 页 · 第 {{item}} 条起",
+  "resourceHubCrawlObservedLastPage": "上游已知末页",
+  "resourceHubCrawlAvailabilityLabel": "范围数据",
+  "resourceHubCrawlNextCheckAt": "下次复查（北京时间）",
+  "resourceHubCrawlRangeBeyondLastPage": "上游当前仅有 {{total}} 页，尚未覆盖所设 {{start}}–{{end}} 页；已保留范围，等待复查。",
+  "resourceHubCrawlAvailability": {
+    "EMPTY_RANGE": "范围无数据",
+    "RANGE_EXHAUSTED": "已到当前末页",
+    "AVAILABLE": "有数据"
+  },
+  "resourceHubCrawlAvailabilityHelp": {
+    "EMPTY_RANGE": "本轮请求已完成，但所设页码范围暂无数据；已保留范围，等待复查。",
+    "RANGE_EXHAUSTED": "当前采集位置已超过上游末页，下一轮从所设起始页继续；范围不变。"
+  },
   "resourceHubCrawlStatus": {
     "NOT_STARTED": "尚未开始",
     "PENDING": "排队中",

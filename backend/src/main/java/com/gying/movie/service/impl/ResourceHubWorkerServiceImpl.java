@@ -157,12 +157,19 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (latestTask != null && latestTask.getCreatedAt() != null && !latestTask.getCreatedAt().isBefore(since)) {
             return;
         }
-        String source = nextAutoSyncSource(sources, latestTask == null ? null : latestTask.getKeyword());
-        try {
-            tmdbMetadataSyncService.enqueueAutomatic(source);
-            result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
-        } catch (Exception e) {
-            addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
+        String previousSource = latestTask == null ? null : latestTask.getKeyword();
+        for (int checked = 0; checked < sources.size(); checked++) {
+            String source = nextAutoSyncSource(sources, previousSource);
+            try {
+                if (tmdbMetadataSyncService.enqueueAutomatic(source) != null) {
+                    result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+                    return;
+                }
+            } catch (Exception e) {
+                addError(result, "tmdb auto sync " + source + ": " + e.getMessage());
+                return;
+            }
+            previousSource = source;
         }
     }
 

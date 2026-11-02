@@ -60,6 +60,9 @@ interface MetadataCrawlProgress {
     nextItem: number;
     status: string;
     taskId?: number | null;
+    observedTotalPages?: number | null;
+    availability?: 'EMPTY_RANGE' | 'RANGE_EXHAUSTED' | 'AVAILABLE';
+    nextCheckAt?: string | null;
 }
 
 interface WeeklyTransferSchedule {
@@ -181,6 +184,7 @@ interface ResourceHubTask {
     lastError?: string;
     scheduledAt?: string;
     createdAt?: string;
+    payload?: string | null;
 }
 
 interface DiscoveryResult {
@@ -292,6 +296,26 @@ function unwrap<T>(payload: ApiEnvelope<T> | T): T {
 
 function formatDate(value?: string) {
     return value ? new Date(value).toLocaleString() : '-';
+}
+
+function formatCrawlCheckDate(value?: string | null) {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString(undefined, { timeZone: 'Asia/Shanghai' });
+}
+
+function completedCrawlAvailability(task: ResourceHubTask) {
+    if (task.taskType !== 'METADATA_SYNC' || task.source !== 'TMDB' || task.status !== 'SUCCEEDED' || task.lastError || !task.payload) return undefined;
+    try {
+        const payload: unknown = JSON.parse(task.payload);
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !('crawl' in payload)) return undefined;
+        const crawl = payload.crawl;
+        if (!crawl || typeof crawl !== 'object' || Array.isArray(crawl)
+            || !('mode' in crawl) || crawl.mode !== 'RANGE' || !('availability' in crawl)) return undefined;
+        return crawl.availability === 'EMPTY_RANGE' || crawl.availability === 'RANGE_EXHAUSTED' ? crawl.availability : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 export default function ResourceHubAdminPage() {
@@ -959,7 +983,15 @@ export default function ResourceHubAdminPage() {
         { title: t('movieId'), dataIndex: 'movieId', width: 190, render: (value?: string) => value || '-' },
         { title: t('resourceHubKeyword'), dataIndex: 'keyword', width: 240, ellipsis: true, render: (value?: string) => value || '-' },
         { title: t('resourceHubSourceLabel'), dataIndex: 'source', width: 110, render: (value?: string) => value || '-' },
-        { title: t('status'), dataIndex: 'status', width: 120, render: statusTag },
+        { title: t('status'), dataIndex: 'status', width: 150, render: (value: string, record) => {
+            const availability = completedCrawlAvailability(record);
+            if (!availability) return statusTag(value);
+            return <Tooltip title={t(`resourceHubCrawlAvailabilityHelp.${availability}`)}>
+                <Tag color="default">
+                    {t(`resourceHubCrawlAvailability.${availability}`)}
+                </Tag>
+            </Tooltip>;
+        } },
         { title: t('resourceHubAttempts'), dataIndex: 'attempts', width: 90, render: (value?: number) => value ?? 0 },
         { title: t('resourceHubScheduledAt'), dataIndex: 'scheduledAt', width: 180, render: formatDate },
         { title: t('createdAt'), dataIndex: 'createdAt', width: 180, render: formatDate },
@@ -1472,18 +1504,38 @@ export default function ResourceHubAdminPage() {
                                                         <Text type="secondary">{t('resourceHubCrawlProgressHelp')}</Text>
                                                         <Table<MetadataCrawlProgress>
                                                             data-testid="metadata-crawl-progress"
-                                                            size="small" pagination={false} scroll={{ x: 620 }}
+                                                            size="small" pagination={false} scroll={{ x: 960 }}
                                                             rowKey={(row) => `${row.provider}:${row.source}`}
                                                             dataSource={overview?.config.metadataCrawlProgress || []}
                                                             columns={[
                                                                 { title: t('resourceHubCrawlSource'), key: 'source', render: (_, row) => `${row.provider} / ${t(`${row.provider === 'GYING' ? 'resourceHubGyingSource' : 'resourceHubSource'}.${row.source}`, { defaultValue: row.source })}` },
-                                                                { title: t('resourceHubCrawlRange'), key: 'range', render: (_, row) => `${row.startPage}–${row.endPage}` },
+                                                                { title: t('resourceHubCrawlRange'), key: 'range', width: 180, render: (_, row) => <div>
+                                                                    <div>{`${row.startPage}–${row.endPage}`}</div>
+                                                                    {Number.isInteger(row.observedTotalPages) && (row.observedTotalPages as number) >= 0
+                                                                        && <Text type="secondary">{t('resourceHubCrawlObservedLastPage')}: {row.observedTotalPages}</Text>}
+                                                                </div> },
                                                                 { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem }) },
                                                                 { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string, row) => {
                                                                     const paused = overview?.config.gyingAutoSyncPausedSources?.[row.source];
                                                                     const status = row.provider === 'GYING' && paused ? 'PAUSED'
                                                                         : row.provider === 'GYING' && value === 'PAUSED' ? 'RESUMED' : value;
                                                                     return t(`resourceHubCrawlStatus.${status}`, { defaultValue: status });
+                                                                } },
+                                                                { title: t('resourceHubCrawlAvailabilityLabel'), key: 'availability', width: 280, render: (_, row) => {
+                                                                    if (row.status !== 'SUCCEEDED' || !row.availability) return '-';
+                                                                    const reason = row.availability === 'EMPTY_RANGE' && Number.isInteger(row.observedTotalPages)
+                                                                        && (row.observedTotalPages as number) < row.startPage
+                                                                        ? t('resourceHubCrawlRangeBeyondLastPage', { total: row.observedTotalPages, start: row.startPage, end: row.endPage })
+                                                                        : row.availability !== 'AVAILABLE' ? t(`resourceHubCrawlAvailabilityHelp.${row.availability}`) : null;
+                                                                    return <div>
+                                                                        <Tag color={row.availability === 'AVAILABLE' ? 'green' : 'default'}>
+                                                                            {t(`resourceHubCrawlAvailability.${row.availability}`)}
+                                                                        </Tag>
+                                                                        {reason && <div><Text type="secondary">{reason}</Text></div>}
+                                                                        {row.availability === 'EMPTY_RANGE' && row.nextCheckAt && <div>
+                                                                            <Text type="secondary">{t('resourceHubCrawlNextCheckAt')}: {formatCrawlCheckDate(row.nextCheckAt)}</Text>
+                                                                        </div>}
+                                                                    </div>;
                                                                 } },
                                                             ]}
                                                         />

@@ -1,6 +1,8 @@
 package com.gying.movie.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,6 +27,8 @@ import com.gying.movie.service.ITmdbMetadataSyncService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -39,6 +43,7 @@ class ResourceHubWorkerServiceImplTest {
         when(fixture.taskService.count(any(Wrapper.class))).thenReturn(0L);
         when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
         when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(fixture.tmdbService.enqueueAutomatic("TOP_RATED_TV")).thenReturn(new ResourceHubTask());
 
         ResourceHubWorkerResult result = fixture.service.runOnce();
 
@@ -198,6 +203,109 @@ class ResourceHubWorkerServiceImplTest {
         });
         var result = fixture.service.runOnce(); assertEquals(1, result.getTasksSucceeded()); assertEquals(0, result.getTasksFailed());
         verify(fixture.taskService, never()).updateById(any());
+    }
+
+
+    @Test
+    void automaticRotationSkipsCooledSourcesAndStopsAtTheFirstCreatedTask() {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncSources("TOP_RATED_MOVIE,POPULAR_MOVIE,TOP_RATED_TV,POPULAR_TV");
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("POPULAR_MOVIE");
+        latest.setCreatedAt(LocalDateTime.now().minusHours(13));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(fixture.tmdbService.enqueueAutomatic("TOP_RATED_TV")).thenReturn(null);
+        when(fixture.tmdbService.enqueueAutomatic("POPULAR_TV")).thenReturn(null);
+        when(fixture.tmdbService.enqueueAutomatic("TOP_RATED_MOVIE")).thenReturn(new ResourceHubTask());
+
+        ResourceHubWorkerResult result = fixture.service.runOnce();
+
+        InOrder order = Mockito.inOrder(fixture.tmdbService);
+        order.verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_TV");
+        order.verify(fixture.tmdbService).enqueueAutomatic("POPULAR_TV");
+        order.verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_MOVIE");
+        order.verifyNoMoreInteractions();
+        assertEquals(1, result.getMetadataSyncTasksCreated());
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @Test
+    void allCooledSourcesAreCheckedOnceWithoutClaimingThatATaskWasCreated() {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncSources("TOP_RATED_MOVIE,TOP_RATED_TV,POPULAR_MOVIE");
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("TOP_RATED_TV");
+        latest.setCreatedAt(LocalDateTime.now().minusHours(13));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(fixture.tmdbService.enqueueAutomatic(any())).thenReturn(null);
+
+        ResourceHubWorkerResult result = fixture.service.runOnce();
+
+        InOrder order = Mockito.inOrder(fixture.tmdbService);
+        order.verify(fixture.tmdbService).enqueueAutomatic("POPULAR_MOVIE");
+        order.verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_MOVIE");
+        order.verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_TV");
+        order.verifyNoMoreInteractions();
+        assertEquals(0, result.getMetadataSyncTasksCreated());
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void theGlobalTmdbIntervalBlocksAllSourcesEvenForAForcedRun(boolean force) {
+        Fixture fixture = new Fixture();
+        // Force can run a disabled worker, but it must retain the source-wide enqueue interval.
+        fixture.properties.getWorker().setEnabled(!force);
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("TOP_RATED_MOVIE");
+        latest.setCreatedAt(LocalDateTime.now().minusHours(1));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+
+        ResourceHubWorkerResult result = fixture.service.runOnce(force);
+
+        Mockito.verifyNoInteractions(fixture.tmdbService);
+        verify(fixture.taskService).list(any(Wrapper.class));
+        assertFalse(result.isSkipped());
+        assertEquals(0, result.getMetadataSyncTasksCreated());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void anInvalidConfiguredIntervalStillRetainsTheMinimumOneHourThrottle(int configuredHours) {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncIntervalHours(configuredHours);
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("TOP_RATED_MOVIE");
+        latest.setCreatedAt(LocalDateTime.now().minusMinutes(30));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+
+        ResourceHubWorkerResult result = fixture.service.runOnce(true);
+
+        Mockito.verifyNoInteractions(fixture.tmdbService);
+        assertEquals(0, result.getMetadataSyncTasksCreated());
+    }
+
+    @Test
+    void aPlannerFailureIsReportedAndCannotBeMistakenForSourceCooldown() {
+        Fixture fixture = new Fixture();
+        ResourceHubTask latest = new ResourceHubTask();
+        latest.setKeyword("TOP_RATED_MOVIE");
+        latest.setCreatedAt(LocalDateTime.now().minusHours(13));
+        when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(fixture.tmdbService.enqueueAutomatic("TOP_RATED_TV"))
+                .thenThrow(new IllegalStateException("Invalid metadata crawl checkpoint"));
+
+        ResourceHubWorkerResult result = fixture.service.runOnce();
+
+        verify(fixture.tmdbService).enqueueAutomatic("TOP_RATED_TV");
+        Mockito.verifyNoMoreInteractions(fixture.tmdbService);
+        assertEquals(0, result.getMetadataSyncTasksCreated());
+        assertEquals(List.of("tmdb auto sync TOP_RATED_TV: Invalid metadata crawl checkpoint"), result.getErrors());
     }
 
     private ResourceHubTask metadataTask(Long id, String provider, String source, String payload) {

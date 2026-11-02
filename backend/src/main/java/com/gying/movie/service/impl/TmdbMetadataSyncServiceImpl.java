@@ -11,6 +11,7 @@ import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.TmdbListItem;
+import com.gying.movie.dto.TmdbListPage;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.MovieSourceIdentity;
@@ -91,6 +92,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         var config = resourceHubProperties.getTmdb();
         var range = config.rangeFor(source);
         var position = crawlPlanner.next("TMDB", source, range.startPage(), range.endPage());
+        if (!crawlPlanner.canEnqueue(position)) return null;
         ResourceHubMetadataSyncRequest request = new ResourceHubMetadataSyncRequest();
         request.setSource(source);
         request.setPage(position.page());
@@ -132,7 +134,11 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
 
         markRunning(task);
         try {
-            List<TmdbListItem> items = tmdbClient.fetchList(payload.source(), payload.page());
+            TmdbListPage listPage = crawlPlanner.automatic(task)
+                    ? java.util.Objects.requireNonNull(tmdbClient.fetchListPage(payload.source(), payload.page()),
+                            "TMDB catalog page is missing") : null;
+            List<TmdbListItem> items = listPage == null
+                    ? tmdbClient.fetchList(payload.source(), payload.page()) : listPage.items();
             int offset = Math.min(crawlPlanner.offset(task), items.size());
             int limit = Math.min(payload.maxItems(), items.size() - offset);
             for (int i = offset; i < offset + limit; i++) {
@@ -153,7 +159,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                 }
             }
             result.setSkipped(Math.max(items.size() - offset - limit, 0));
-            crawlPlanner.completed(task, items.size(), limit, result.getFailed());
+            if (listPage == null) crawlPlanner.completed(task, items.size(), limit, result.getFailed());
+            else crawlPlanner.completedTmdb(task, listPage, limit, result.getFailed());
             String status = result.getProcessed() == 0 && result.getFailed() > 0 ? "FAILED" : "SUCCEEDED";
             String errorSummary = result.getFailed() > 0
                     ? result.getFailed() + " TMDB item(s) failed during sync"

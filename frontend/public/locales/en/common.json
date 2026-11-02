@@ -977,6 +977,19 @@
   "resourceHubCrawlNext": "Position",
   "resourceHubCrawlState": "Latest task status",
   "resourceHubCrawlPosition": "Page {{page}} · from item {{item}}",
+  "resourceHubCrawlObservedLastPage": "Last observed page",
+  "resourceHubCrawlAvailabilityLabel": "Range data",
+  "resourceHubCrawlNextCheckAt": "Next check (China time)",
+  "resourceHubCrawlRangeBeyondLastPage": "The source currently has {{total}} pages and does not cover the configured range {{start}}–{{end}}. The range is retained for the next check.",
+  "resourceHubCrawlAvailability": {
+    "EMPTY_RANGE": "No data in range",
+    "RANGE_EXHAUSTED": "Current last page reached",
+    "AVAILABLE": "Data available"
+  },
+  "resourceHubCrawlAvailabilityHelp": {
+    "EMPTY_RANGE": "The request completed, but the configured page range has no data. The range is retained for the next check.",
+    "RANGE_EXHAUSTED": "The current position is beyond the source's last page. The next run resumes from the configured start page without changing the range."
+  },
   "resourceHubCrawlStatus": {
     "NOT_STARTED": "Not started",
     "PENDING": "Queued",

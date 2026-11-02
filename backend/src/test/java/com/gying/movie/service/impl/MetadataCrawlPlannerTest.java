@@ -163,6 +163,119 @@ class MetadataCrawlPlannerTest {
         assertEquals("NOT_STARTED", next.status());
     }
 
+    private final java.time.Instant observedAt = java.time.Instant.parse("2026-11-02T10:00:00Z");
+
+    private MetadataCrawlPlanner at(java.time.Instant instant) {
+        return new MetadataCrawlPlanner(tasks, mapper, java.time.Clock.fixed(instant, java.time.ZoneOffset.UTC));
+    }
+
+    private ResourceHubTask tmdbTask(int start, int end, int page, int offset) {
+        ResourceHubTask task = checkpoint(page, offset, "SUCCEEDED");
+        task.setSource("TMDB");
+        task.setPayload(planner.attach("{\"page\":" + page + "}",
+                new MetadataCrawlPlanner.Position(start, end, page, offset, "PENDING", null)));
+        when(tasks.getOne(any(), eq(false))).thenReturn(task);
+        return task;
+    }
+
+    private com.gying.movie.dto.TmdbListPage tmdbPage(int page, int totalPages, int count) {
+        var items = java.util.stream.LongStream.rangeClosed(1, count).mapToObj(id -> {
+            var item = new com.gying.movie.dto.TmdbListItem();
+            item.setTmdbId(id); item.setMediaType("tv"); return item;
+        }).toList();
+        return new com.gying.movie.dto.TmdbListPage(page, totalPages, totalPages * 20L, items);
+    }
+
+    @Test void emptyRangeSurvivesRestartAndOnlyRechecksAfterTwentyFourHours() throws Exception {
+        ResourceHubTask task = tmdbTask(360, 500, 360, 0);
+        at(observedAt).completedTmdb(task, tmdbPage(360, 131, 0), 0, 0);
+        var restarted = at(observedAt.plusSeconds(3600));
+        var next = restarted.next("TMDB", "TOP_RATED_TV", 360, 500);
+        assertEquals(360, next.page()); assertEquals(0, next.offset());
+        assertEquals(131, next.observedTotalPages());
+        assertEquals("EMPTY_RANGE", next.availability());
+        assertFalse(restarted.canEnqueue(next));
+        assertFalse(at(observedAt.plusSeconds(86399)).canEnqueue(next));
+        assertTrue(at(observedAt.plusSeconds(86400)).canEnqueue(next));
+        assertEquals("2026-11-03T10:00:00Z", restarted.progress("TMDB", "TOP_RATED_TV", 360, 500).nextCheckAt());
+        assertEquals(0, mapper.readTree(task.getPayload()).path("crawl").path("attempted").asInt());
+    }
+
+    @Test void changingOnlyThisRangesBoundsCancelsItsOldCooldown() {
+        ResourceHubTask task = tmdbTask(360, 500, 360, 0);
+        at(observedAt).completedTmdb(task, tmdbPage(360, 131, 0), 0, 0);
+        var next = at(observedAt).next("TMDB", "TOP_RATED_TV", 360, 400);
+        assertTrue(at(observedAt).canEnqueue(next));
+        assertNull(next.availability()); assertEquals(360, next.page());
+        next = at(observedAt).next("TMDB", "TOP_RATED_TV", 100, 131);
+        assertTrue(at(observedAt).canEnqueue(next)); assertEquals(100, next.page());
+    }
+
+    @Test void anEmptyStaleCursorRestartsAnOtherwiseAvailableRangeWithoutCooldown() {
+        ResourceHubTask task = tmdbTask(100, 500, 360, 0);
+        at(observedAt).completedTmdb(task, tmdbPage(360, 131, 0), 0, 0);
+        var next = at(observedAt).next("TMDB", "TOP_RATED_TV", 100, 500);
+        assertEquals(100, next.page()); assertEquals("RANGE_EXHAUSTED", next.availability());
+        assertTrue(at(observedAt).canEnqueue(next));
+    }
+
+    @Test void completeLastUpstreamPageWrapsWithoutRequestingAFalseNextPage() {
+        ResourceHubTask task = tmdbTask(100, 500, 131, 8);
+        at(observedAt).completedTmdb(task, tmdbPage(131, 131, 10), 2, 0);
+        var next = at(observedAt).next("TMDB", "TOP_RATED_TV", 100, 500);
+        assertEquals(100, next.page()); assertEquals(0, next.offset());
+        assertEquals("AVAILABLE", next.availability()); assertNull(next.nextCheckAt());
+    }
+
+    @Test void partialLastPageAndFailedItemsKeepTheirCheckpoint() {
+        ResourceHubTask task = tmdbTask(100, 500, 131, 5);
+        at(observedAt).completedTmdb(task, tmdbPage(131, 131, 10), 3, 0);
+        var next = at(observedAt).next("TMDB", "TOP_RATED_TV", 100, 500);
+        assertEquals(131, next.page()); assertEquals(8, next.offset());
+        assertNull(next.nextCheckAt());
+        task = tmdbTask(100, 500, 131, 8);
+        at(observedAt).completedTmdb(task, tmdbPage(131, 131, 10), 2, 1);
+        next = at(observedAt).next("TMDB", "TOP_RATED_TV", 100, 500);
+        assertEquals(131, next.page()); assertEquals(8, next.offset());
+        assertEquals("RETRY", next.status()); assertNull(next.nextCheckAt());
+    }
+
+    @Test void recheckCanResumeWhenUpstreamGrowsIntoConfiguredRange() {
+        ResourceHubTask task = tmdbTask(360, 500, 360, 0);
+        at(observedAt).completedTmdb(task, tmdbPage(360, 131, 0), 0, 0);
+        var later = at(observedAt.plusSeconds(86400));
+        var position = later.next("TMDB", "TOP_RATED_TV", 360, 500);
+        assertTrue(later.canEnqueue(position));
+        task.setPayload(later.attach("{\"page\":360}", position));
+        later.completedTmdb(task, tmdbPage(360, 361, 20), 20, 0);
+        var next = later.next("TMDB", "TOP_RATED_TV", 360, 500);
+        assertEquals(361, next.page()); assertEquals("AVAILABLE", next.availability());
+        assertNull(next.nextCheckAt()); assertTrue(later.canEnqueue(next));
+    }
+
+    @Test void upstreamMoreThanFiveHundredPagesDoesNotExpandConfiguredBoundary() {
+        ResourceHubTask task = tmdbTask(450, 500, 500, 0);
+        planner.completedTmdb(task, tmdbPage(500, 700, 20), 20, 0);
+        assertEquals(450, planner.next("TMDB", "TOP_RATED_TV", 450, 500).page());
+    }
+
+    @Test void failedOrInFlightTasksDoNotApplyAPreviousEmptyRangeMarker() {
+        ResourceHubTask task = tmdbTask(360, 500, 360, 0);
+        at(observedAt).completedTmdb(task, tmdbPage(360, 131, 0), 0, 0);
+        for (String status : new String[] {"FAILED", "RUNNING", "PENDING", "CANCELED"}) {
+            task.setStatus(status);
+            var next = at(observedAt).next("TMDB", "TOP_RATED_TV", 360, 500);
+            assertNull(next.availability()); assertTrue(at(observedAt).canEnqueue(next));
+        }
+    }
+
+    @Test void legacyEmptyTasksMustBeRecheckedRatherThanGuessingUpstreamBounds() {
+        ResourceHubTask task = tmdbTask(360, 500, 360, 0);
+        planner.completed(task, 0, 0, 0);
+        var next = planner.next("TMDB", "TOP_RATED_TV", 360, 500);
+        assertNull(next.observedTotalPages()); assertTrue(planner.canEnqueue(next));
+    }
+
     private ResourceHubTask checkpoint(int page, int offset, String status) {
         ResourceHubTask task = new ResourceHubTask();
         task.setId((long) page);

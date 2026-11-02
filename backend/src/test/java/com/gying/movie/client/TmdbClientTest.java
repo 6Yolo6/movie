@@ -1,13 +1,18 @@
 package com.gying.movie.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withTooManyRequests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.TmdbListPage;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
@@ -72,5 +77,165 @@ class TmdbClientTest {
                         () -> client.searchMultiForSuggestion("test", 10)));
         server.verify();
     }
+
+
+    @Test
+    void automaticListRetainsValidatedPaginationAndItemIdentity() {
+        ListFixture fixture = listResponse(2, """
+                {"page":2,"total_pages":501,"total_results":2147483648,
+                 "results":[{"id":112732,"title":"Fixture movie","original_title":"Fixture original",
+                              "release_date":"2026-01-01","popularity":12.5}]}
+                """);
+
+        TmdbListPage page = fixture.client().fetchListPage(" popular_movie ", 2);
+
+        assertEquals(2, page.page());
+        assertEquals(501, page.totalPages());
+        assertEquals(2147483648L, page.totalResults());
+        assertEquals(1, page.items().size());
+        assertEquals(112732L, page.items().get(0).getTmdbId());
+        assertEquals("movie", page.items().get(0).getMediaType());
+        assertEquals("Fixture movie", page.items().get(0).getTitle());
+        assertEquals("Fixture original", page.items().get(0).getOriginalTitle());
+        assertEquals("2026-01-01", page.items().get(0).getReleaseDate());
+        assertEquals(12.5, page.items().get(0).getPopularity());
+        fixture.server().verify();
+    }
+
+    @Test
+    void anEmptyPageBeyondTheReportedEndIsAValidatedExhaustion() {
+        ListFixture fixture = listResponse(3,
+                "{\"page\":3,\"total_pages\":2,\"total_results\":25,\"results\":[]}");
+
+        TmdbListPage page = fixture.client().fetchListPage("POPULAR_MOVIE", 3);
+
+        assertEquals(3, page.page());
+        assertEquals(2, page.totalPages());
+        assertEquals(25L, page.totalResults());
+        assertTrue(page.items().isEmpty());
+        fixture.server().verify();
+    }
+
+    @Test
+    void aCatalogWithNoPagesAndNoResultsIsAValidatedEmptyCatalog() {
+        ListFixture fixture = listResponse(1,
+                "{\"page\":1,\"total_pages\":0,\"total_results\":0,\"results\":[]}");
+
+        TmdbListPage page = fixture.client().fetchListPage("POPULAR_MOVIE", 1);
+
+        assertEquals(0, page.totalPages());
+        assertEquals(0L, page.totalResults());
+        assertTrue(page.items().isEmpty());
+        fixture.server().verify();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "null", "[]", "{}", "{\"results\":[]}",
+            "{\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0,\"results\":null}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0,\"results\":{}}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0,\"results\":\"empty\"}",
+            "{\"page\":null,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":\"1\",\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1.0,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":true,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":2147483648,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":0,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":2,\"total_pages\":0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":null,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":\"0\",\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0.0,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":false,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":-1,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":2147483648,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":null,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":\"0\",\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0.0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":false,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":-1,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":9223372036854775808,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":1,\"total_results\":1,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":1,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":1,\"total_results\":0,\"results\":[]}",
+            "{\"page\":1,\"total_pages\":0,\"total_results\":0,\"results\":[{\"id\":1}]}"
+    })
+    void malformedOrContradictoryPaginationCannotBeTreatedAsAnEmptyCatalog(String body) {
+        ListFixture fixture = listResponse(1, body);
+
+        assertThrows(IllegalStateException.class,
+                () -> fixture.client().fetchListPage("POPULAR_MOVIE", 1));
+        fixture.server().verify();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "null", "true", "7", "\"item\"", "[]", "{}",
+            "{\"id\":null}", "{\"id\":true}", "{\"id\":0}", "{\"id\":-1}",
+            "{\"id\":\"112732\"}", "{\"id\":112732.5}", "{\"id\":112732.0}",
+            "{\"id\":9223372036854775808}"
+    })
+    void invalidItemsFailTheWholeAutomaticPageRatherThanBeingSilentlyDropped(String item) {
+        ListFixture fixture = listResponse(1,
+                "{\"page\":1,\"total_pages\":1,\"total_results\":2,\"results\":[{\"id\":1}," + item + "]}");
+
+        assertThrows(IllegalStateException.class,
+                () -> fixture.client().fetchListPage("POPULAR_MOVIE", 1));
+        fixture.server().verify();
+    }
+
+    @Test
+    void itemsBeyondTheReportedPageBoundsFailInsteadOfCreatingAFalseCheckpoint() {
+        ListFixture fixture = listResponse(3,
+                "{\"page\":3,\"total_pages\":2,\"total_results\":25,\"results\":[{\"id\":1}]}");
+
+        assertThrows(IllegalStateException.class,
+                () -> fixture.client().fetchListPage("POPULAR_MOVIE", 3));
+        fixture.server().verify();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 501})
+    void invalidRequestedPagesFailBeforeMakingAnHttpRequest(int page) {
+        var properties = new ResourceHubProperties();
+        properties.getTmdb().setApiKey("test-key");
+        var rest = new RestTemplate();
+        var server = MockRestServiceServer.bindTo(rest).build();
+        var client = new TmdbClient(rest, new ObjectMapper(), properties);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> client.fetchListPage("POPULAR_MOVIE", page));
+        server.verify();
+    }
+
+    @Test
+    void legacyFetchListStillAcceptsResultsWithoutPaginationMetadata() {
+        ListFixture fixture = listResponse(1,
+                "{\"results\":[{\"id\":112732,\"title\":\"Fixture movie\"},{\"id\":0}]}");
+
+        var items = fixture.client().fetchList("POPULAR_MOVIE", 1);
+
+        assertEquals(1, items.size());
+        assertEquals(112732L, items.get(0).getTmdbId());
+        fixture.server().verify();
+    }
+
+    private ListFixture listResponse(int page, String body) {
+        var properties = new ResourceHubProperties();
+        properties.getTmdb().setApiKey("test-key");
+        properties.getTmdb().setRequestIntervalMs(0);
+        properties.getTmdb().setMaxRetries(0);
+        var rest = new RestTemplate();
+        var server = MockRestServiceServer.bindTo(rest).build();
+        server.expect(requestTo("https://api.themoviedb.org/3/movie/popular?api_key=test-key"
+                + "&language=zh-CN&page=" + page + "&include_adult=false"))
+                .andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
+        return new ListFixture(new TmdbClient(rest, new ObjectMapper(), properties), server);
+    }
+
+    private record ListFixture(TmdbClient client, MockRestServiceServer server) { }
 
 }
