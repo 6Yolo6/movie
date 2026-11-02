@@ -1,0 +1,71 @@
+{
+  "scope": "host_xunlei_sync_and_readonly_platform_diagnosis",
+  "host": {
+    "activatedAt": "2026-11-02T10:18:35.990Z",
+    "scope": "host_xunlei_token_sync_only",
+    "registeredEntry": "D:/gying-movie/movie/tools/run-xunlei-token-sync.cmd",
+    "helperHash": "097b20f463a76ae6214194efb98435ebb631733ff6f14e37ecc40b4758bc6b1c",
+    "scriptHash": "a361ed24960408867d2ad5d0d110a8b8bdff9da4c2201846de1afb6a7fd4faee",
+    "rollback": "E:/gying-tools/releases/weibo-diagnosis-20261102/scripts-before",
+    "backendRestarted": false,
+    "scheduledTaskRegisteredAgain": false
+  },
+  "independentBrowser": {
+    "checkedAt": "2026-11-02T10:18:03.427Z",
+    "validated": true,
+    "reason": null,
+    "status": "renewed",
+    "validationHttpStatus": 200,
+    "live": {
+      "status": "renewed",
+      "refreshed": true,
+      "loginSubmitted": false,
+      "needsInteraction": false
+    },
+    "passwordSigninRequests": 0,
+    "sameAccount": true,
+    "changed": false,
+    "expiresAt": "2026-11-02T21:51:24.000Z"
+  },
+  "finalVerification": {
+    "checkedAt": "2026-11-02T10:19:36.696Z",
+    "registeredTaskExecuted": true,
+    "trigger": "manual_start_existing_task",
+    "taskResult": {
+      "checkedAt": "2026-11-02T18:18:41.9012568+08:00",
+      "status": "unchanged",
+      "validated": true,
+      "live": {
+        "status": "unchanged",
+        "refreshed": false,
+        "loginSubmitted": false,
+        "needsInteraction": false
+      },
+      "expiresAt": 1793656284000,
+      "hasRefreshToken": true
+    },
+    "taskLog": [
+      "XUNLEI_ENV_SYNC=unchanged;REASON=none;VALIDATED=true;HTTP=200;LOGIN_SUBMITTED=false",
+      "XUNLEI_TOKEN_SYNC=unchanged;VALIDATED=true"
+    ],
+    "officialFiles": {
+      "ok": true,
+      "status": 200
+    },
+    "permissions": "10001:10001 600",
+    "expiresAt": "2026-11-02T21:51:24.000Z",
+    "tests": {
+      "nodePassed": 51,
+      "windowsPassed": 21,
+      "isolatedActivationPassed": 5
+    },
+    "naturalExpiryRenewalObserved": false,
+    "scheduledTask": {
+      "lastTaskResult": 0,
+      "state": "Ready",
+      "trigger": "manual_start_existing_task",
+      "nextRunTime": "2026-11-02T18:33:33+08:00",
+      "repeat": "PT2H"
+    }
+  }
+}

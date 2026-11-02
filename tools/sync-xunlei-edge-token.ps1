@@ -8,14 +8,17 @@ param(
     [string]$LiveProfileName = 'Default',
     [switch]$NoActivate,
     [switch]$SkipLiveRefresh,
-    [switch]$AllowLoginRetry
+    [switch]$AllowLoginRetry,
+    [switch]$UseLiveBrowser
 )
 $ErrorActionPreference = 'Stop'
+# The diagnostic switch retains the historical live-profile capture path.
+if ($SkipLiveRefresh) { $UseLiveBrowser = $true }
 . (Join-Path $PSScriptRoot 'xunlei-token-sync-common.ps1')
 $mutex = $null; $ownsMutex = $false; $runPath = $null; $privateRoot = $null
 $stage = 'configuration'; $exitCode = 0; $live = $null; $syncMeta = $null
 $environmentBefore = @{}
-$environmentNames = @('PUPPETEER_PATH','EDGE_PATH','EDGE_PROFILE','EDGE_PROFILE_NAME','XUNLEI_EXISTING_STATE','XUNLEI_OUTPUT_STATE','XUNLEI_OUTPUT_META')
+$environmentNames = @('PUPPETEER_PATH','EDGE_PATH','EDGE_PROFILE','EDGE_PROFILE_NAME','XUNLEI_EXISTING_STATE','XUNLEI_OUTPUT_STATE','XUNLEI_OUTPUT_META','XUNLEI_BACKEND_CONTAINER','XUNLEI_ENV_PROFILE','XUNLEI_LOGIN_STATUS','XUNLEI_ALLOW_LOGIN_RETRY','XUNLEI_DOCKER_PATH')
 $logPath = Join-Path $HelperRoot 'sync-status.log'
 try {
     $mutex = New-Object Threading.Mutex($false, 'Local\GYing.Xunlei.TokenSync.v2')
@@ -26,9 +29,10 @@ try {
     $sourceProfile = Join-Path $LiveProfileRoot $LiveProfileName
     $puppeteerPath = Join-Path $HelperRoot 'node_modules\puppeteer-core'
     $edgePath = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
-    foreach ($required in @($sourceProfile,$puppeteerPath,$edgePath,$NodePath,$DockerPath)) {
+    foreach ($required in @($puppeteerPath,$edgePath,$NodePath,$DockerPath)) {
         if (-not (Test-Path -LiteralPath $required)) { throw 'dependency_missing' }
     }
+    if ($UseLiveBrowser -and -not (Test-Path -LiteralPath $sourceProfile)) { throw 'dependency_missing' }
     # Match a single running production backend, never fall back to another Compose project.
     $containerIds = @(& $DockerPath ps -q --filter "label=com.docker.compose.project=$ComposeProject" --filter 'label=com.docker.compose.service=backend')
     if ($LASTEXITCODE -ne 0 -or $containerIds.Count -ne 1 -or $containerIds[0] -notmatch '^[a-f0-9]{12,64}$') { throw 'backend_ambiguous' }
@@ -54,41 +58,56 @@ try {
     $current = [Text.Encoding]::UTF8.GetString($originalBytes) | ConvertFrom-Json
     if (-not $current.access_token -or -not $current.user_id) { throw 'current_account_missing' }
     $expectedHash = (Get-FileHash -LiteralPath $existing -Algorithm SHA256).Hash.ToLowerInvariant()
-    $stage = 'live_refresh'
-    if (-not $SkipLiveRefresh) {
-        . (Join-Path $PSScriptRoot 'refresh-xunlei-live-session.ps1') -AllowSavedPasswordLogin:$allowLogin
-        $live = Invoke-XunleiLiveRefresh -BeforeLoginSubmit {
-            Write-XunleiSafeJson $statusPath @{checkedAt=(Get-Date).ToString('o');status='login_attempt';loginBlocked=$true}
-        }
-        Write-Output "XUNLEI_LIVE_SESSION=$($live.status);REFRESHED=$($live.refreshed);LOGIN_SUBMITTED=$($live.loginSubmitted)"
-        # Persist before capture: a failed verification or process interruption must not cause repeated logins.
-        if ($live.loginSubmitted -or $live.needsInteraction) {
-            $attemptStatus = if (Test-Path -LiteralPath $statusPath) { Get-Content -Raw -Encoding UTF8 -LiteralPath $statusPath | ConvertFrom-Json } else { $null }
-            Write-XunleiSafeJson $statusPath @{checkedAt=(Get-Date).ToString('o');status=$live.status;loginBlocked=([bool]$live.loginSubmitted -or [bool]($attemptStatus -and $attemptStatus.loginBlocked))}
-        }
-    } else { $live = @{status='skipped';refreshed=$false;loginSubmitted=$false;needsInteraction=$false} }
-    $stage = 'browser_snapshot'
-    $profileRoot = Join-Path $runPath 'profile'
-    $targetProfile = Join-Path $profileRoot 'Default'
-    [void][IO.Directory]::CreateDirectory($targetProfile)
-    # Capture only application web storage after the REAL window's refresh.
-    # Never copy Login Data, Web Data, Local State, cookies, preferences or saved passwords.
-    foreach ($dir in @('Local Storage','Session Storage','IndexedDB')) {
-        $src = Join-Path $sourceProfile $dir
-        if (-not (Test-Path -LiteralPath $src)) { continue }
-        Assert-XunleiPlainPath $src
-        $dst = Join-Path $targetProfile $dir
-        & robocopy $src $dst /E /XJ /R:1 /W:1 /COPY:DAT /DCOPY:DAT /XF LOCK lockfile /NFL /NDL /NJH /NJS /NP | Out-Null
-        if ($LASTEXITCODE -ge 8) { throw 'snapshot_failed' }
-    }
-    $stage = 'capture_validate'
     foreach ($name in $environmentNames) { $environmentBefore[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
-    $env:PUPPETEER_PATH=$puppeteerPath; $env:EDGE_PATH=$edgePath; $env:EDGE_PROFILE=$profileRoot
-    $env:EDGE_PROFILE_NAME='Default'; $env:XUNLEI_EXISTING_STATE=$existing
-    $env:XUNLEI_OUTPUT_STATE=$output; $env:XUNLEI_OUTPUT_META=$meta
-    & $NodePath (Join-Path $PSScriptRoot 'xunlei-edge-token-sync.cjs')
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $output)) { throw 'verified_token_unavailable' }
-    $syncMeta = Get-Content -Raw -Encoding UTF8 -LiteralPath $meta | ConvertFrom-Json
+    if ($UseLiveBrowser) {
+        $stage = 'live_refresh'
+        if (-not $SkipLiveRefresh) {
+            . (Join-Path $PSScriptRoot 'refresh-xunlei-live-session.ps1') -AllowSavedPasswordLogin:$allowLogin
+            $live = Invoke-XunleiLiveRefresh -BeforeLoginSubmit {
+                Write-XunleiSafeJson $statusPath @{checkedAt=(Get-Date).ToString('o');status='login_attempt';loginBlocked=$true}
+            }
+            Write-Output "XUNLEI_LIVE_SESSION=$($live.status);REFRESHED=$($live.refreshed);LOGIN_SUBMITTED=$($live.loginSubmitted)"
+            # Persist before capture: a failed verification or process interruption must not cause repeated logins.
+            if ($live.loginSubmitted -or $live.needsInteraction) {
+                $attemptStatus = if (Test-Path -LiteralPath $statusPath) { Get-Content -Raw -Encoding UTF8 -LiteralPath $statusPath | ConvertFrom-Json } else { $null }
+                Write-XunleiSafeJson $statusPath @{checkedAt=(Get-Date).ToString('o');status=$live.status;loginBlocked=([bool]$live.loginSubmitted -or [bool]($attemptStatus -and $attemptStatus.loginBlocked))}
+            }
+        } else { $live = @{status='skipped';refreshed=$false;loginSubmitted=$false;needsInteraction=$false} }
+        $stage = 'browser_snapshot'
+        $profileRoot = Join-Path $runPath 'profile'
+        $targetProfile = Join-Path $profileRoot 'Default'
+        [void][IO.Directory]::CreateDirectory($targetProfile)
+        # Capture only application web storage after the REAL window's refresh.
+        # Never copy Login Data, Web Data, Local State, cookies, preferences or saved passwords.
+        foreach ($dir in @('Local Storage','Session Storage','IndexedDB')) {
+            $src = Join-Path $sourceProfile $dir
+            if (-not (Test-Path -LiteralPath $src)) { continue }
+            Assert-XunleiPlainPath $src
+            $dst = Join-Path $targetProfile $dir
+            & robocopy $src $dst /E /XJ /R:1 /W:1 /COPY:DAT /DCOPY:DAT /XF LOCK lockfile /NFL /NDL /NJH /NJS /NP | Out-Null
+            if ($LASTEXITCODE -ge 8) { throw 'snapshot_failed' }
+        }
+        $stage = 'capture_validate'
+        $env:PUPPETEER_PATH=$puppeteerPath; $env:EDGE_PATH=$edgePath; $env:EDGE_PROFILE=$profileRoot
+        $env:EDGE_PROFILE_NAME='Default'; $env:XUNLEI_EXISTING_STATE=$existing
+        $env:XUNLEI_OUTPUT_STATE=$output; $env:XUNLEI_OUTPUT_META=$meta
+        & $NodePath (Join-Path $PSScriptRoot 'xunlei-edge-token-sync.cjs')
+    } else {
+        $stage = 'env_browser_renewal'
+        $controlledProfile = New-XunleiPrivateDirectory (Join-Path $privateRoot 'env-login-profile')
+        $env:PUPPETEER_PATH=$puppeteerPath; $env:EDGE_PATH=$edgePath
+        $env:XUNLEI_EXISTING_STATE=$existing; $env:XUNLEI_OUTPUT_STATE=$output; $env:XUNLEI_OUTPUT_META=$meta
+        $env:XUNLEI_BACKEND_CONTAINER=$container; $env:XUNLEI_DOCKER_PATH=$DockerPath
+        $env:XUNLEI_ENV_PROFILE=$controlledProfile; $env:XUNLEI_LOGIN_STATUS=$statusPath
+        $env:XUNLEI_ALLOW_LOGIN_RETRY=$(if($AllowLoginRetry){'1'}else{'0'})
+        & $NodePath (Join-Path $PSScriptRoot 'xunlei-env-browser-login.cjs')
+    }
+    $captureExitCode = $LASTEXITCODE
+    if (Test-Path -LiteralPath $meta) {
+        $syncMeta = Get-Content -Raw -Encoding UTF8 -LiteralPath $meta | ConvertFrom-Json
+        if (-not $UseLiveBrowser) { $live = $syncMeta.live }
+    }
+    if ($captureExitCode -ne 0 -or -not (Test-Path -LiteralPath $output)) { throw 'verified_token_unavailable' }
     if ($syncMeta.validated -ne $true -or $syncMeta.validationHttpStatus -ne 200) { throw 'validation_missing' }
     $stateJson = Get-Content -Raw -Encoding UTF8 -LiteralPath $output
     $parsedState = $stateJson | ConvertFrom-Json
@@ -131,7 +150,7 @@ try {
     # Do not put raw exceptions/HTTP bodies/credential-bearing process arguments in logs.
     Write-Output "XUNLEI_TOKEN_SYNC=failed;STAGE=$stage;TYPE=$($_.Exception.GetType().Name);LINE=$($_.InvocationInfo.ScriptLineNumber)"
     if ($privateRoot) {
-        Write-XunleiSafeJson (Join-Path $privateRoot 'last-result.json') @{checkedAt=(Get-Date).ToString('o');status='failed';stage=$stage;validated=$false;live=$live}
+        Write-XunleiSafeJson (Join-Path $privateRoot 'last-result.json') @{checkedAt=(Get-Date).ToString('o');status='failed';stage=$stage;validated=$false;live=$live;reason=$(if($syncMeta -and $syncMeta.reason -match '^[a-z0-9_]+$'){$syncMeta.reason}else{'verification_failed'})}
     }
     if (Test-Path -LiteralPath $HelperRoot) { Add-Content -LiteralPath $logPath -Value "$(Get-Date -Format s) failed stage=$stage" -Encoding UTF8 }
 } finally {
