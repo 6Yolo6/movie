@@ -32,12 +32,20 @@ test('provider filters, count compatibility and candidate numbers are retained',
   assert.equal(api.extractGyingTextCommand('找测试影片'), '测试影片');
 });
 
-test('arbitrary chat and admin commands are not captured as resource commands', () => {
+test('short ordinary text keeps natural-language fallback without becoming an explicit gateway command', () => {
   const api = load();
-  for (const text of ['资源不足', '资源 100', '11', '你好', '/approve', '/stop', '/config']) {
-    assert.equal(api.extractGyingTextCommand(text), null);
+  for (const text of ['资源不足', '资源 100', '11', '你好']) {
+    assert.equal(api.extractGyingTextCommand(text), '自然语言：' + text);
     assert.equal(api.isGyingMovieSearchCommand(text), false);
   }
+  // matchSlashCommand dispatches slash commands before calling the text helper.
+  // The helper alone does not enforce slash-command authorization.
+  for (const text of ['/approve', '/stop', '/config']) {
+    assert.equal(api.isGyingMovieSearchCommand(text), false);
+  }
+  const longChat = '你好'.repeat(38);
+  assert.equal(api.extractGyingTextCommand(longChat), null);
+  assert.equal(api.isGyingMovieSearchCommand(longChat), false);
 });
 
 test('all installer helper copies accept a bare resource command', () => {

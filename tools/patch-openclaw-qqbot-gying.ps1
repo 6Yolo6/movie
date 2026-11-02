@@ -441,6 +441,38 @@ if ($gatewayContent -notmatch 'Gying QR image sent') {
             '$1' + "`n" + $mediaHandler + '$2',
             1)
 }
+# A matched plugin command must stay handled even if its QQ reply cannot be sent.
+# Only the explicit unmatched/delegate branches may enqueue a message for the agent.
+$slashCommandErrorFallback = @'
+        catch (err) {
+            log?.error(`[qqbot:${account.accountId}] Slash command error: ${err}`);
+            // 出错时回退到正常入队
+            msgQueue.enqueue(msg);
+        }
+'@
+$slashCommandErrorTerminal = @'
+        catch (err) {
+            log?.error(`[qqbot:${account.accountId}] Slash command error: ${err}`);
+            // Plugin command errors must never enter the agent queue.
+            return;
+        }
+'@
+# Normalize only line endings so this narrow replacement is identical on Windows/Linux.
+$gatewayContent = $gatewayContent.Replace("`r`n", "`n")
+$slashCommandErrorFallback = $slashCommandErrorFallback.Replace("`r`n", "`n")
+$slashCommandErrorTerminal = $slashCommandErrorTerminal.Replace("`r`n", "`n")
+$fallbackCount = [regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorFallback)).Count
+$terminalCount = [regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorTerminal)).Count
+if (($fallbackCount -eq 1) -and ($terminalCount -eq 0)) {
+    $gatewayContent = $gatewayContent.Replace($slashCommandErrorFallback, $slashCommandErrorTerminal)
+} elseif (($fallbackCount -ne 0) -or ($terminalCount -ne 1)) {
+    throw "Unexpected QQBot command error handler; stop before installing the gateway"
+}
+if ($gatewayContent.Contains($slashCommandErrorFallback) -or
+        ([regex]::Matches($gatewayContent, [regex]::Escape($slashCommandErrorTerminal)).Count -ne 1)) {
+    throw "QQBot command error handler verification failed"
+}
+
 [System.IO.File]::WriteAllText($gatewayPath, $gatewayContent, [System.Text.UTF8Encoding]::new($false))
 
 $runtimePluginPath = $null
