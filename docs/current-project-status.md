@@ -2,7 +2,7 @@
 
 更新时间：2026-11-02
 
-Asia/Shanghai。11月2日微博真实登录有效但账号发博权限需平台身份验证，历史12条当前4准备失败/8待发布；TMDB高分剧集范围360–500超过实测131页，近期重复空跑，高分电影正常推进。迅雷旧token自然过期已用环境变量在独立Edge一次登录恢复；18:18已启用两小时独立浏览器续期，原任务exit0、官方200/同账户/600通过，后续自然失效与验证码仍按实际运行观察。[本轮核查](evaluation/platform-diagnosis-20261102/README.md)。10月31日已核对82条历史未满足回答的原因并落实共性改进；已保留三轮隔离15轮观测：首轮无完全满足；第二轮14条答案复核为满足4/未满足4/证据不足4/有效澄清2，另1次500；最终轮13条正常答案模型复核为满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。10月31日22:58已上线Movie backend；11月1日17:12最终Agent候选1f9d…/代码e19b6b16上线，管理员身份、自然空闲、三份age认证、旧9516正常停止、新7700/instancea9366577…独立运行和root绑定复核通过。四条实际回答均HTTP/API200 completed、程序0失败，总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，不能计四条全部满足。网站USER15轮未执行。10月29日23:34上线GYING六目录独立暂停，现有范围/选择/游标保持；后续1280/390浏览器视口与公网片目数据经现有代理验收按原UTC证据记录；当前可见海报通过、全页图片覆盖未计完整通过；本机Edge直连fake-IP超时单独待处理，日常备份已纳入新覆盖。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
+Asia/Shanghai。11月2日微博真实登录有效但账号发博权限需平台身份验证，历史12条当前4准备失败/8待发布；TMDB高分剧集范围360–500超过实测131页，19:08空跑修复已上线，保留范围并按24小时复查；19:15:57自然首轮已记录EMPTY_RANGE，11月3日19:15:59复查，高分电影原next252保持。[空跑修复](evaluation/tmdb-empty-range-20261102/README.md)。迅雷旧token自然过期已用环境变量在独立Edge一次登录恢复；18:18已启用两小时独立浏览器续期，原任务exit0、官方200/同账户/600通过，后续自然失效与验证码仍按实际运行观察。[本轮核查](evaluation/platform-diagnosis-20261102/README.md)。10月31日已核对82条历史未满足回答的原因并落实共性改进；已保留三轮隔离15轮观测：首轮无完全满足；第二轮14条答案复核为满足4/未满足4/证据不足4/有效澄清2，另1次500；最终轮13条正常答案模型复核为满足3/有效澄清2/未满足4/证据不足4，另2次联网500且质量三维null。10月31日22:58已上线Movie backend；11月1日17:12最终Agent候选1f9d…/代码e19b6b16上线，管理员身份、自然空闲、三份age认证、旧9516正常停止、新7700/instancea9366577…独立运行和root绑定复核通过。四条实际回答均HTTP/API200 completed、程序0失败，总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，不能计四条全部满足。网站USER15轮未执行。10月29日23:34上线GYING六目录独立暂停，现有范围/选择/游标保持；后续1280/390浏览器视口与公网片目数据经现有代理验收按原UTC证据记录；当前可见海报通过、全页图片覆盖未计完整通过；本机Edge直连fake-IP超时单独待处理，日常备份已纳入新覆盖。10月29日用户恢复上线授权，17:55恢复后端、18:02部署片库缓存修复及768MiB heap/1280MiB容器；18:13复验QQ回复、公网数据与完整页面通过。本机Agent20:56–20:57通过管理员确认上线最终候选，21:00两条真实查询的类别/评分来源否定条件通过，评分排序和剧情类型仍有遗漏。离线质量复核/开发runner已完成，整体质量提升尚未实证。10月28日18:21手动恢复完成，18:22–18:29本机/公网及真实AI复验：主机已于10月27日20:03:15重启，原登录恢复因Ollama端口被Windows保留而失败。现已迁至loopback21434，维护recovered、Worker还原true；其余历史事实保留观测日期。
 
 [知识导读](project-guide.md) · [AI架构](ai-architecture.md) · [求职路线](ai-career-roadmap.md) · [发布证据](history/releases.md)
 
@@ -31,7 +31,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | AI检索 | 明确片名/泛推荐直返；复杂Schema计划、原文人物核对、BM25+BGE-M3/RRF、指令4B、真实Bing轨迹与服务端多轮候选 | [架构](ai-architecture.md)、[评测](ai-evaluation.md) |
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
-| 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
+| 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
 | 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离 | [周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
@@ -42,13 +42,15 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:8668b337ee8138e0b9ee2ea6e21b9f3c6f990ecb7ae72870c8ec7d87344d67ea`，代码7152edb；11月1日21:45微博/QQ修复上线，沿用GYING独立暂停及Xmx768MiB/容器1280MiB/含swap2560MiB |
-| Movie frontend | `sha256:db1cc643cb8dad1c10071ac1b9b9c8ed14aea7ffe0188b308aeacfdf535b31a6`，10月29日23:34上线独立暂停按钮 |
+| Movie backend | `sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf`，代码fe042692；11月2日19:08 TMDB空跑修复上线，含原微博/QQ及GYING独立暂停，Xmx768MiB/容器1280MiB/含swap2560MiB保持 |
+| Movie frontend | `sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841`，代码fe042692；11月2日19:08上线TMDB实测末页、范围无数据及北京时间复查提示 |
 | 本机Agent | 11月1日17:12上线最终JAR `1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d`，代码e19b6b16；PID7700/instancea9366577…，对应hash不可变runtime、管理员argv/受管身份、ready及hostInJob=false通过 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
 | social-publisher | `sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb`，代码7152edb；11月1日21:45微博发送前登录/身份验证检查上线 |
 | Node | 10月23本机24.22.1/npm11.19.1、frontend容器22.23.4；旧版本保留 |
+
+11月2日19:08 TMDB空跑修复仅backend/frontend正常TERM退出143并替换固定镜像，实际JAR/配置/挂载及其他容器保持。最终停止窗口检查点 `G:/gying-backups/tmdb-empty-range-20261102-20261102T110716.404280Z` 含两旧镜像、有效配置、单事务MySQL、backend-data、ai-state-key六份age，SHA/完整认证/离线内容核验通过；SQL未导入，不称跨服务原子快照。现役新覆盖 `E:/gying-tools/releases/tmdb-empty-range-20261102/candidate.json` 分别追加原backend七层/frontend五层；已纳入日常备份且dry-run通过，自然完整备份待验。应用回退保留当前SQL/state/key，旧backend会恢复原空跑；实际回退未执行。[本轮验收](evaluation/tmdb-empty-range-20261102/README.md)。
 
 10月31日Movie检查点 `G:/gying-backups/movie-quality-20261031-20261031T145725.979995Z` 的旧镜像、完整有效配置、backend-data与ai-state-key四份age，大小/SHA-256及完整认证解密通过；旧容器正常TERM退出143，新固定镜像和实际JAR/挂载/配置一致，其他容器保持。现役追加第六覆盖 `E:/gying-tools/releases/ai-quality-improvement-20261031/backend-quality-final.json`。11月1日已加密认证备份原日常配置并纳入该覆盖，dry-run通过，下一次自然完整备份仍待验。11月1日17:12 Agent再次部署通过，新检查点 `G:/gying-backups/ai-agent-quality-20261031-20261101T091153.915087Z` 三份age hash/完整认证解密通过，manifest533d9247…；旧9516正常受管停止、新1f9d…/7700独立ready，Movie、其他12容器、Ollama/Router/frontend/config/key/token/index保持。回退只恢复应用并保留当前data/state/key，不宣称跨服务原子快照。最新见[最终部署验收](evaluation/quality-improvement-20261031/deployment-final-20261101.md)；[16:59尝试](evaluation/quality-improvement-20261031/continuation-20261101-attempt.md)和[上午回退](evaluation/quality-improvement-20261031/deployment-20261101-summary.md)保留历史时点。
 
@@ -83,7 +85,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 每周重启 | 10月27日20:03:15真实重启；原登录恢复失败，10月28日18:21已按原journal手动恢复，0 pending、Worker=true、原任务开关/原生启动类型还原。Ollama端口21434与维护监听校验共用私有配置，111维护测试通过；11月1日上午journal已recovered；本轮仅核投影，完整自然维护/备份/恢复验收仍待独立核对。证据/回退见[重启手册](weekly-graceful-restart.md) |
 | QQ/周榜/发布 | 10月29日QQ生成回复5条本库链接/PanSou及GYING纯搜索通过；真实群消息/资源选择转存未测试。公网普通USER有效设备会话为0（仅1 ADMIN），登录后资源job未验，旧测试账号仍disabled。原频道多盘正文自然出站、官方主动权限、三周榜首轮及清理/去重保留 |
 | 微博账号与QQ链路 | 11月1日微博/QQ修复已上线；12条经用户确认恢复后，11月2日17:39为4 PREPARE_FAILED/8 PENDING，原3篇/500秒计划保持。登录有效，微博明确限制发博并要求本人身份验证，发送前阻断；不再次重放。QQ同词内部回复0.360/0.250秒保留原验收，群内端到端未另测。[本轮核查](evaluation/platform-diagnosis-20261102/README.md) |
-| TMDB高分剧集 | 11月2日17:43上游131页/2610条，现范围360–500；10月23日21:05后104轮空页仍SUCCEEDED，最近有内容为10月23日17:03任务13686。电影11月2日16:16任务17298为17新/3更、next251。需真实末页校验/停止空跑/配置时间修正；本轮只查历史，未改范围、游标或部署。[核查](evaluation/platform-diagnosis-20261102/README.md) |
+| TMDB高分剧集 | 11月2日17:43上游131页/2610条、所设360–500；10月23日21:05后104轮空跑历史保留。19:08 fe042692两应用已上线实测末页/24小时复查/跳过冷却榜，范围保持，电影任务17300原next252保持。19:15:57创建/19:15:59完成的自然任务17301保存EMPTY_RANGE、131页/2610条，11月3日19:15:59复查；本机/公网入口与新bundle通过，短日志无新异常。下一电影自然执行、跨重启冷却、次日复查与上游增长待发生时验。配置更新时间upsert问题另保留，未在本次修改。[修复](evaluation/tmdb-empty-range-20261102/README.md)、[历史](evaluation/platform-diagnosis-20261102/README.md) |
 | 历史任务 | 10月8旧58条耗尽归档失败、两条精确旧RUNNING和自然元数据失败隔离未实证；不批量重置 |
 | 上游/配图 | GYING两个发布RuntimeError原因不明；源图只读存在、实际复制/分享未验 |
 | 迅雷 | 11月2日环境变量独立密码登录一次及同账户新token同步通过，到期11月3日05:51:24。18:18两小时独立profile续期启用，51 Node/21 Windows/5隔离写回、正式任务exit0/官方200/600通过。当前token复用与独立profile只读真实验证通过，下一次自然失效/真实验证码及异常残留仍待发生时验；backend请求触发续期未代验，旧目录/重复/乱码须逐批dry-run。[证据](evaluation/platform-diagnosis-20261102/README.md) |
@@ -104,6 +106,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 记录 | 经过验证的范围 |
 | --- | --- |
+| 11月2日TMDB空跑修复 | 19:08仅backend/frontend固定镜像上线，代码fe042692；881项880通过/1 Redis跳过，111定向、必需SQL/独立compile与临时容器清理通过。前端Offline React报告15通过（14子场景与父套件）/i18n5、TS/lint/build及6组真实Next/AntD资产模拟API浏览器场景通过；全量lint7既有warning/0error。六age认证、实际JAR/配置及其他容器/日常备份新覆盖通过；19:12:39本机五health200。本机七入口与经现有代理的公网七入口复核通过，新bundle公网/本机SHA一致；原脚本Access302误判及传输中断单列保留。19:15:57创建/19:15:59完成的自然任务17301保存EMPTY_RANGE、nextCheckAt为11月3日19:15:59；19:18:02只读回读配置保持/无活跃/提前TV重排0，电影next252保持而新电影尚未执行。短日志至19:15:59 ERROR/Exception/OOM=0、restarts0；次日复查/上游增长/跨重启生产行为未代验。[报告](evaluation/tmdb-empty-range-20261102/README.md) |
 | 11月2日平台核查与迅雷恢复 | 微博17:39登录200/ok1、权限200/confirm要求身份验证，4准备失败/8待发布；TMDB17:43高分剧集131页，现360空跑。迅雷官方旧401→独立env登录一次→DPAPI认证/UID10001 CAS全字段回读/600/新官方200。18:18主机脚本启用，原任务手动启动exit0、有效token复用、独立profile禁止密码仍官方200；51 Node/21 Windows/5隔离检查通过，保留原任务及应用。自然失效/真实挑战未代验。[本轮证据](evaluation/platform-diagnosis-20261102/README.md) |
 | 11月1日微博/QQ修复 | 21:45仅backend/publisher固定镜像上线，代码7152edb；806项后端776通过/30环境跳过、Node40/40、隔离发布SQL7/7。自然空闲、两个旧应用TERM143、八age完整认证、实际程序hash/参数和其余11容器通过；第七backend覆盖/第四publisher覆盖为publishing-recovery-20261101/candidate.json，已纳入日常备份dry-run。内部QQ同词0.360/0.250秒、仅本库阶段；微博会话保持但需身份验证。随后经用户确认，新的MySQL认证检查点和行锁/CAS恢复12条PENDING，新连接回读；未手工群发/转存/发博。58 PASS/11 FAIL/1 UNKNOWN保持，本次应用限定例外；[报告](evaluation/publishing-recovery-20261101/README.md) |
 | 11月1日17:12 Agent最终上线 | 管理员身份/argv、自然空闲、新三age hash/完整认证解密、旧9516匹配正常stopped、新1f9d…/代码e19b6b16/7700独立ready及root绑定复核passed。Movie实际image/JAR/config、其他12容器和Ollama/Router/frontend/config/key/token/index保持。四条HTTP/API200 completed、程序0失败、总耗时39.0秒；第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，网站USER15轮仍未执行。[本次证据](evaluation/quality-improvement-20261031/deployment-final-20261101.md) |

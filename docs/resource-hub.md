@@ -21,10 +21,12 @@ canonical 主模型为 movie_metadata/resource_link；外部身份独立保存�
 ### 元数据页码范围与断点续采
 
 - `1 ≤ start ≤ end ≤ 500`；旧 auto_sync_page/*AutoSyncPage 为起始页，新 end_page/*AutoSyncEndPage 为结束页。缺 end 保持单页；旧客户端单页更新不扩大范围；非法配置 400。
-- provider+榜单独立页码/偏移；每间隔轮换一榜，单批 TMDB/GYING 各最多 20。完成页翻页，到 end/空页回 start；榜单变化不是一致性快照，写入仍幂等。
+- provider+榜单独立页码/偏移；每间隔轮换一榜，单批 TMDB/GYING 各最多 20。完成页翻页，到有效末页回 start；GYING 空页回 start，TMDB 按下述实测分页处理。榜单变化不是一致性快照，写入仍幂等。
 - payload.crawl 保存批次/范围/下一位置并与最终状态一起落库。TMDB 失败留原位；GYING 仅在失败条目都持久化 METADATA_ITEM_RETRY 后推进，记录 itemRetryTaskIds、failed/deferred。全失败/缺身份/隔离保存失败不推进；手动单页不带 crawl，不改自动位置。
-- `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后继续下一页，空页仍回 start。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
-- overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
+- `tmdbAutoSyncRanges` / `gyingAutoSyncRanges` 按来源配置 `{startPage,endPage}`，对应 `resource.hub.*.auto_sync_ranges` JSON；局部更新只合并指定来源，缺配置沿用旧共用范围。改范围保留范围内的页码/偏移，越界才回新 start；延长已完成的旧 end 后在已知上游页数内继续下一页；缺上游证据时重新请求校验。旧在途按旧范围完成；停用/重启保留进度。单实例启动只恢复本进程前遗留的自动范围元数据 RUNNING 为 FAILED，不动旧手动/发现/转存。多实例先做分布式租约。
+- overview `config.metadataCrawlProgress` 展示范围/下页/偏移/任务状态，以及 TMDB `observedTotalPages`、`availability` 和 UTC ISO `nextCheckAt`（界面转换北京时间）；RETRY 为位置保留。无新增表；旧版本忽略 end，回滚须核对 Worker 行为，来源 utf8mb4_bin 不撤销。
+
+TMDB 自动范围请求严格验证分页和完整条目；所设 start 超过实测 `total_pages` 时持久记录 `EMPTY_RANGE` 并等待24小时后复查，等待期间不创建该榜空任务，其他榜继续按全局至少1小时间隔轮转。范围调整解除对应旧冷却，重启保留检查点；有效末页取配置 end 与实测末页的较小值，正常循环及失败位置保持。范围内异常空页/协议或请求错误是失败，不是榜单结束。旧游标超末但范围仍有效为 `RANGE_EXHAUSTED`，下一轮从所设 start 继续，无24小时冷却。任务仍保存 `SUCCEEDED` 表示校验请求完成，界面凭 TMDB + RANGE + availability 显示“范围无数据”，不把旧零处理记录猜为无数据。[本次证据](evaluation/tmdb-empty-range-20261102/README.md)。
 
 本站 TMDB 七来源继续保持现有 `1–500` 配置范围和游标。TMDB [Errors](https://developer.themoviedb.org/docs/errors) 通用错误码 22 写明整数页码 1–500；[官方论坛](https://www.themoviedb.org/talk/668b027390c809787099e77d) 的可见索引摘要区分普通列表/Discover 500 页与 Trending 1000 页。本轮不扩展 Trending；论坛仅核索引摘要，直接访问返回 403，未真实请求第 501/1000 页。`total_pages` 是响应分页信息，官方旧示例不代表当前目录规模，也不能单独作为可请求上限。
 

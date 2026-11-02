@@ -1,0 +1,452 @@
+{
+  "at": "2026-11-02T11:20:03.032239+00:00",
+  "scope": "TMDB automatic empty-range scheduling and admin visibility",
+  "phase": "deployed; local/public entries and natural TV empty-range first run verified",
+  "codeCommit": "fe04269242817fac95f8e202e7ba649026bca30e",
+  "deployed": true,
+  "rangeChanged": false,
+  "historicalTasksRewritten": false,
+  "realMessagesPostsVideoTransfers": 0,
+  "backend": {
+    "totals": {
+      "tests": 881,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 880
+    },
+    "affectedTests": {
+      "TmdbClientTest": {
+        "tests": 59,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MetadataCrawlPlannerTest": {
+        "tests": 26,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "TmdbMetadataCrawlTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubWorkerServiceImplTest": {
+        "tests": 17,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "skippedClasses": [
+      "RedisRateLimiterIntegrationTest"
+    ],
+    "requiredSqlVerified": true,
+    "compileVerified": true,
+    "temporaryContainersRemoved": true,
+    "sourceFiles": 348
+  },
+  "frontend": {
+    "sourceFiles": 80,
+    "offlineReact": {
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "i18nHydration": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "nextTypegen": true,
+    "tscNoEmit": true,
+    "wholeFrontendLint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 7
+    },
+    "changedFilesLint": {
+      "exitCode": 0,
+      "warnings": 0
+    },
+    "browserQa": {
+      "scenariosPassed": 6,
+      "actualNextAntDAssets": true,
+      "mockApi": true,
+      "pageErrors": 0,
+      "resourceHubWrites": 0,
+      "allViewportDocumentOverflowChecksPassed": true,
+      "mobileAvailabilityColumnFitsViewport": true,
+      "screenshotsInspected": [
+        "zh-390-dark-progress.png",
+        "en-390-light-progress.png",
+        "zh-1440-light-progress.png"
+      ],
+      "report": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\browser-qa-final\\browser-qa.json"
+    },
+    "applicationCompiledSourcesMatch": true,
+    "nativeManifestDifferences": [
+      "frontend/tests/tmdb-empty-range.browser.mjs"
+    ],
+    "nativeManifestDifferenceExplanation": "Only browser fixture assertion/screenshot refinement during final build; test file is not compiled into the application. Final fixture hash matches workspace and both isolated copies.",
+    "finalNativeBuildTypeScript": true,
+    "runtimeSmoke": true
+  },
+  "frontendFinalMobileCandidate": "verified: 280px availability column, 390px viewport, screenshots inspected",
+  "deployment": {
+    "startedAt": "2026-11-02T11:06:45.989186+00:00",
+    "completedAt": "2026-11-02T11:08:11.762702+00:00",
+    "affected": [
+      "backend",
+      "frontend"
+    ],
+    "images": {
+      "backend": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+      "frontend": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841"
+    },
+    "backendJarSha256": "40aa225eda7bdc92a0ff056f4ced87564dbcfc63511546cae4458bbaec62d183",
+    "actualJarVerified": true,
+    "localEntriesVerified": true,
+    "effectiveComposeAndRuntimePreserved": true,
+    "unaffectedContainersPreserved": true,
+    "readinessExitCode": 0,
+    "finalCheckpoint": "G:/gying-backups/tmdb-empty-range-20261102-20261102T110716.404280Z",
+    "checkpointEncryptedArtifacts": 6,
+    "fullAgeAuthenticationPassed": true,
+    "actualSqlRestoreExecuted": false,
+    "crossServiceAtomicSnapshot": false,
+    "dailyBackupOverlayIncluded": true,
+    "dailyBackupDryRunPassed": true,
+    "naturalFullDailyBackupVerified": false,
+    "actualRollbackExecuted": false
+  },
+  "entryPoints": {
+    "publicVerificationPerformed": true,
+    "pending": false,
+    "localHealthSnapshot": "ops-snapshot-after-deploy.md",
+    "localHealthSnapshotAt": "2026-11-02T19:12:39+08:00",
+    "localHealthChecksPassed": 5,
+    "publicLastCompleteRecheckAsiaShanghai": "2026-11-02T19:17:24+08:00",
+    "publicChecks": [
+      {
+        "route": "/api/movies/list?page=1&size=2",
+        "httpStatus": 200,
+        "total": 13186,
+        "returned": 2,
+        "passed": true
+      },
+      {
+        "route": "/",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "route": "/movie/tmdb_movie_5729",
+        "httpStatus": 200,
+        "bodyBytes": 189613,
+        "completeTransfer": true,
+        "containsExpectedMovieId": true,
+        "passed": true
+      },
+      {
+        "route": "/api/internal/ai/catalog/documents",
+        "httpStatus": 404,
+        "anonymousDenied": true,
+        "passed": true
+      },
+      {
+        "route": "/api/qqbot/search?keyword=test",
+        "httpStatus": 404,
+        "anonymousDenied": true,
+        "passed": true
+      },
+      {
+        "route": "/api/admin/resource-hub/config",
+        "httpStatus": 302,
+        "accessProtected": true,
+        "passed": true
+      },
+      {
+        "route": "/admin/resource-hub",
+        "httpStatus": 302,
+        "accessProtected": true,
+        "publicStaticBundleVerified": true,
+        "passed": true
+      }
+    ],
+    "localChecks": [
+      {
+        "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+        "kind": "catalog",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/",
+        "kind": "page",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/movie/tmdb_movie_5729",
+        "kind": "page",
+        "httpStatus": 200,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+        "kind": "internal-denied",
+        "httpStatus": 404,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/api/qqbot/search?keyword=test",
+        "kind": "internal-denied",
+        "httpStatus": 404,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/api/admin/resource-hub/config",
+        "kind": "admin-denied",
+        "httpStatus": 401,
+        "passed": true
+      },
+      {
+        "url": "http://127.0.0.1/admin/resource-hub",
+        "kind": "new-admin-static-assets",
+        "passed": true
+      }
+    ],
+    "publicTransport": "existing verge-mihomo loopback7897 proxy",
+    "networkConfigurationChanged": false,
+    "authenticatedAdminSessionCreated": false,
+    "loggedInPublicAdminUiVerified": false,
+    "newAdminStaticAssets": [
+      {
+        "base": "http://127.0.0.1",
+        "path": "/_next/static/chunks/app/admin/resource-hub/page-fb038a19640f8e87.js",
+        "httpStatus": 200,
+        "bytes": 48784,
+        "sha256": "16df8906623add0629436c71584921c708394b4f10f73b33349974a43df23b6d",
+        "matchesDeployedLocalBundle": true,
+        "newFieldsPresent": true,
+        "passed": true
+      },
+      {
+        "base": "https://gyinghub.dpdns.org",
+        "path": "/_next/static/chunks/app/admin/resource-hub/page-fb038a19640f8e87.js",
+        "httpStatus": 200,
+        "bytes": 48784,
+        "sha256": "16df8906623add0629436c71584921c708394b4f10f73b33349974a43df23b6d",
+        "matchesDeployedLocalBundle": true,
+        "newFieldsPresent": true,
+        "passed": true
+      }
+    ],
+    "rawEntryPointScriptAllPassed": false,
+    "rawEntryPointScriptLimit": "Two original invocations exited 1: direct catalog URLError, public detail IncompleteRead, and expected Access 302 misclassified for admin HTML. Independent bounded route, redirect and static bundle checks completed. Direct detail curl exited 35 (TLS); direct public connectivity is not asserted."
+  },
+  "naturalSchedule": {
+    "assessment": {
+      "baselineTaskId": 17300,
+      "newTasks": [
+        {
+          "id": 17301,
+          "page": 360,
+          "status": "SUCCEEDED",
+          "catalog": "TOP_RATED_TV",
+          "attempts": 1,
+          "crawl.mode": "RANGE",
+          "created_at": "2026-11-02T19:15:57",
+          "started_at": "2026-11-02T19:15:57",
+          "updated_at": "2026-11-02T19:15:59",
+          "finished_at": "2026-11-02T19:15:59",
+          "crawl.failed": 0,
+          "crawl.offset": 0,
+          "payloadValid": true,
+          "scheduled_at": "2026-11-02T19:15:57",
+          "crawl.endPage": 500,
+          "crawl.nextPage": 360,
+          "crawl.pageSize": 0,
+          "crawl.attempted": 0,
+          "crawl.startPage": 360,
+          "crawl.nextOffset": 0,
+          "crawl.nextCheckAt": "2026-11-03T11:15:59.397276044Z",
+          "crawl.availability": "EMPTY_RANGE",
+          "crawl.observedTotalPages": 131,
+          "crawl.observedTotalResults": 2610
+        }
+      ],
+      "newTaskProjectionLimit": 200,
+      "projectionReachedLimit": false,
+      "configUnchangedFromBefore": true,
+      "firstTvEmptyRangeTask": {
+        "id": 17301,
+        "page": 360,
+        "status": "SUCCEEDED",
+        "catalog": "TOP_RATED_TV",
+        "attempts": 1,
+        "crawl.mode": "RANGE",
+        "created_at": "2026-11-02T19:15:57",
+        "started_at": "2026-11-02T19:15:57",
+        "updated_at": "2026-11-02T19:15:59",
+        "finished_at": "2026-11-02T19:15:59",
+        "crawl.failed": 0,
+        "crawl.offset": 0,
+        "payloadValid": true,
+        "scheduled_at": "2026-11-02T19:15:57",
+        "crawl.endPage": 500,
+        "crawl.nextPage": 360,
+        "crawl.pageSize": 0,
+        "crawl.attempted": 0,
+        "crawl.startPage": 360,
+        "crawl.nextOffset": 0,
+        "crawl.nextCheckAt": "2026-11-03T11:15:59.397276044Z",
+        "crawl.availability": "EMPTY_RANGE",
+        "crawl.observedTotalPages": 131,
+        "crawl.observedTotalResults": 2610
+      },
+      "tvNextCheckAtUtc": "2026-11-03T11:15:59.397276+00:00",
+      "tvCooldownSecondsFromFinishedApprox": 86400.397276,
+      "earlyTvReenqueueTaskIds": [],
+      "movieSucceededAfterBaseline": [],
+      "naturalTvEmptyRangeObserved": true,
+      "waitingForNaturalSchedule": false,
+      "limit": "SQL evidence only; no upstream request, forced worker, enqueue, login, or content publication was performed."
+    },
+    "observedAtUtc": "2026-11-02T11:18:02.423397+00:00",
+    "pending": false,
+    "readOnlySql": true,
+    "atomicSnapshot": false,
+    "workerForced": false,
+    "configChanged": false,
+    "actualFirstTask": {
+      "id": 17301,
+      "page": 360,
+      "status": "SUCCEEDED",
+      "catalog": "TOP_RATED_TV",
+      "attempts": 1,
+      "crawl.mode": "RANGE",
+      "created_at": "2026-11-02T19:15:57",
+      "started_at": "2026-11-02T19:15:57",
+      "updated_at": "2026-11-02T19:15:59",
+      "finished_at": "2026-11-02T19:15:59",
+      "crawl.failed": 0,
+      "crawl.offset": 0,
+      "payloadValid": true,
+      "scheduled_at": "2026-11-02T19:15:57",
+      "crawl.endPage": 500,
+      "crawl.nextPage": 360,
+      "crawl.pageSize": 0,
+      "crawl.attempted": 0,
+      "crawl.startPage": 360,
+      "crawl.nextOffset": 0,
+      "crawl.nextCheckAt": "2026-11-03T11:15:59.397276044Z",
+      "crawl.availability": "EMPTY_RANGE",
+      "crawl.observedTotalPages": 131,
+      "crawl.observedTotalResults": 2610
+    },
+    "nextTvCheckAsiaShanghai": "2026-11-03T19:15:59.397276044+08:00",
+    "nextGlobalEarliestEnqueueAsiaShanghai": "2026-11-02T20:15:57+08:00",
+    "nextSourceBeforeCooldownSkipping": "TOP_RATED_MOVIE",
+    "movieNextPageRetained": 252,
+    "newMovieSucceededAfterDeployment": false,
+    "observationLimit": "Read-only post snapshot completed at 19:18:02 after external Python 3.10 audit parser was adjusted for Java nanosecond ISO timestamps; original nextCheckAt value retained. No production timestamp or task was modified. Zero early TV requeues only describes this short window, not 24 hours of observation."
+  },
+  "productionUnobserved": [
+    "natural next movie run",
+    "24-hour TV recheck",
+    "upstream growth recovery",
+    "cooldown surviving a production restart",
+    "logged-in public admin UI"
+  ],
+  "existingSecurityAudit": {
+    "at": "2026-10-29",
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1,
+    "gatesClosedByThisChange": false
+  },
+  "materials": "E:/gying-tools/releases/tmdb-empty-range-20261102",
+  "evidence": {
+    "backendFullSuite": "D:/gying-movie/movie/tmp/query-boundaries-mysql-cac8a8ada09c/result.json",
+    "backendBuild": "backend-build.json",
+    "frontendCandidateValidation": "frontend-validation.json",
+    "actualDeployment": "deployment/deployment-result.json",
+    "sqlBefore": "tmdb-live-before.json",
+    "sqlImmediateAfter": "tmdb-live-after-deploy.json",
+    "opsAfter": "ops-snapshot-after-deploy.md",
+    "sqlNatural": "tmdb-live-after-natural.json",
+    "entryPointOriginalSecond": "deployment/entrypoints-111508.json",
+    "publicDetailCompleteRecheck": "deployment/public-detail-recheck-111724.json",
+    "publicAdminBundleAndShortLogs": "deployment/postdeploy-evidence-111559.json",
+    "naturalReadOnlyConclusion": "tmdb-live-verification.json"
+  },
+  "logs": [
+    {
+      "service": "backend",
+      "containerId": "dfa8e1ce023006184d3b97765ef9c4a1251c924d62c7cd018fcc6f27c36291d4",
+      "imageId": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+      "fromStartedAt": "2026-11-02T11:07:39.901091349Z",
+      "untilObservedAt": "2026-11-02T11:15:59.596720+00:00",
+      "bytesRead": 3251,
+      "logLines": 25,
+      "errorSeverityLines": 0,
+      "exceptionMatchingLines": 0,
+      "oomMatchingLines": 0,
+      "tmdbRelatedLines": 1,
+      "tmdbAbnormalMatchingLines": 0,
+      "anonymousDenialMatchingLines": 0,
+      "knownWeiboIdentityMatchingLines": 0,
+      "oomKilled": false,
+      "restartCount": 0,
+      "rawLinesSaved": false
+    },
+    {
+      "service": "frontend",
+      "containerId": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+      "imageId": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+      "fromStartedAt": "2026-11-02T11:08:03.837359624Z",
+      "untilObservedAt": "2026-11-02T11:15:59.961967+00:00",
+      "bytesRead": 301,
+      "logLines": 6,
+      "errorSeverityLines": 0,
+      "exceptionMatchingLines": 0,
+      "oomMatchingLines": 0,
+      "tmdbRelatedLines": 0,
+      "tmdbAbnormalMatchingLines": 0,
+      "anonymousDenialMatchingLines": 0,
+      "knownWeiboIdentityMatchingLines": 0,
+      "oomKilled": false,
+      "restartCount": 0,
+      "rawLinesSaved": false
+    }
+  ],
+  "evidenceSha256": {
+    "backend-build.json": "946e57f36a3995f484d9e4a1f4b25835bf7c476111c93dd16000d220c138eea9",
+    "frontend-validation.json": "cc18d4a950783d5fc54575d0400e3a07a95f73505861c8a234a9eeee41074f02",
+    "deployment/deployment-result.json": "5e96feeab754c0670729516238e0deb73327fa37184b651eba57f7c28580f966",
+    "tmdb-live-before.json": "54752ad5252cc3f568d3c2c34717ec0d895a1b7d75c98db930e2a06442b6095c",
+    "tmdb-live-after-deploy.json": "14047032b972ea98f69d9c008b234d3e3ee226aedbd57e78b59be1a6657e0922",
+    "ops-snapshot-after-deploy.md": "8a53f20d6e80f1b8c354250bb85f5cf537ca219afb51beee880dd54a0a2dabdf",
+    "tmdb-live-after-natural.json": "44838c57bbd53e77bbefcb6dbda78d789b0dfff4bc5d7bd8de79cea2411ed582",
+    "deployment/entrypoints-111508.json": "bf8f5dcef07a0ada513043d5257c143ec37e2c417dd18afb381995ffcb8a334c",
+    "deployment/public-detail-recheck-111724.json": "f1e66f9f528164895906a3656311dfc51740052d71120188d3395bcd907aea17",
+    "deployment/postdeploy-evidence-111559.json": "2ec3bb01c5b63b94f74c7ab8b8c454d591519b7be83fd3a0f2cff4125a3423a0",
+    "tmdb-live-verification.json": "d7970c8d427a4a88d65917b022a85d0fd44aabafddfc3a40f8898e1edb6a1789"
+  },
+  "documentationVerification": {
+    "at": "2026-11-02T11:21:26.483735+00:00",
+    "utf8FilesRead": 5,
+    "replacementCharacterFiles": 0,
+    "localLinksChecked": 92,
+    "missingLocalLinks": 0,
+    "evidenceHashMismatches": 0,
+    "workingTreeSecretFindings": 0,
+    "diffCheckPassed": true,
+    "unrelatedFilesIncluded": false
+  }
+}
