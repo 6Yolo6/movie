@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "reviewProtocol": "catalog-answer-diagnostic-model-review-v1",
+  "reviewer": {
+    "kind": "model",
+    "name": "Codex-subagent",
+    "newHumanReviews": 0,
+    "separateAgentReview": true,
+    "independentModelTypeClaimed": false,
+    "previousDevelopmentReviewObserved": true,
+    "independentBlindReviewClaimed": false
+  },
+  "scope": {
+    "finalAnswerAssessed": true,
+    "toolEvidenceAssessedSeparately": true,
+    "candidateOnly": true,
+    "deployed": false,
+    "websiteUserSessionUsed": false,
+    "productionBrowserVerified": false,
+    "observedDevelopmentQuestions": true,
+    "independentHoldout": false,
+    "independentQualityImprovementClaimed": false,
+    "snapshotIsAtomicDatabaseSnapshot": false,
+    "oldAnswersOrScoresChanged": false
+  },
+  "definitions": {
+    "scores": "0=关键已证实错误/无可用答案；1=部分满足或部分依据；2=在声明证据范围内满足该维度；null=无回答或证据不足，保持未知。",
+    "factuality": "仅评最终正文实际断言的事实，不把明确未知条件当作已证实事实。",
+    "grounding": "正文与本次queryPlan、影片身份及实际工具字段是否一致，工具有候选不替代正文展示。",
+    "usefulness": "按原请求判断可用程度，关键硬条件unknown时不计完全满足。"
+  },
+  "reviewedAt": "2026-11-03T10:10:31.906974+00:00",
+  "reportFile": "docs/evaluation/answer-quality-20261103/final-report.json",
+  "reportSha256": "2549c37e5b5421eddd586b82d0d6a69f37aae75abbab2a8824c5ed8e790493d5",
+  "agentJarSha256": "439618aefefa4f71e7104b59d8d2c87a80c868e2f68a39be1e63079086d4791a",
+  "reviews": [
+    {
+      "id": "post-count-source-runtime",
+      "reportRowPointer": "rows[0]",
+      "answerSha256": "89d8002178e8b468cde3355fe83d0df7ef92a463820a9647ef0a4aef775560be",
+      "requestText": "找喜剧电影，片长严格超过90分钟且严格少于100分钟，最多两部，按豆瓣评分从高到低排；没有豆瓣分的写暂无并放最后，不用IMDb分补。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "scope": "仅核对本次公开快照与实际工具依据支持的最终正文；不声称外部元数据全量核验。",
+      "reason": "正文实际列飞屋环游记96分钟/豆瓣9.1与头脑特工队95分钟/豆瓣8.9，两项喜剧电影按豆瓣降序且符合严格片长边界；找到342部/展示2部与本次工具总数、返回数一致。没有把工具候选补写成未出现的正文。",
+      "hardConstraintStatus": "satisfied-at-observed-catalog-metadata",
+      "evidence": {
+        "candidateIds": [
+          "gying_mv_Bj8e",
+          "gying_mv_PBPM"
+        ],
+        "runtimeMinutes": [
+          96,
+          95
+        ],
+        "doubanScores": [
+          9.1,
+          8.9
+        ],
+        "catalogTotal": 342,
+        "catalogReturned": 2
+      },
+      "limits": [
+        "本次返回两项均有豆瓣分，缺分显示及缺分排末分支没有被这条真实探针命中；该分支仅另有fixture/测试证据。",
+        "本次是已观察问题的候选开发诊断，不能与11月1日不同运行语料的总数/时延计算生产提升率。"
+      ]
+    },
+    {
+      "id": "post-version-list",
+      "reportRowPointer": "rows[1]",
+      "answerSha256": "d38ba24222c852b784b91c5d903c107a99edadfc6e1c10d940277327e82d4e97",
+      "requestText": "片库中《小妇人》有哪些电影版本？请列出年份和导演。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "scope": "仅核对本次公开快照与实际工具依据支持的最终正文；不声称外部元数据全量核验。",
+      "reason": "正文列2019年格蕾塔·葛韦格与1994年Gillian Armstrong，对应本次片库两个不同影片ID；库存总数/返回数均为2且未截断。额外时长及分数分别来自真实字段，1994版只标TMDB7.3，没有冒称豆瓣评分。",
+      "hardConstraintStatus": "satisfied-at-observed-catalog-metadata",
+      "evidence": {
+        "candidateIds": [
+          "gying_mv_M4Lk",
+          "tmdb_movie_9587"
+        ],
+        "years": [
+          2019,
+          1994
+        ],
+        "directors": [
+          [
+            "格蕾塔·葛韦格"
+          ],
+          [
+            "Gillian Armstrong"
+          ]
+        ],
+        "catalogTotal": 2,
+        "catalogReturned": 2,
+        "truncated": false
+      },
+      "limits": [
+        "只证明本次片库快照中两个版本，不证明全球电影改编版本完整或生产当前库存。"
+      ]
+    },
+    {
+      "id": "post-explicit-version-actors",
+      "reportRowPointer": "rows[2]",
+      "answerSha256": "0a938eb7d2d098d11a86dda3d7b6ae0df4ebdf12ae14b85b8eaefa5409c9e680",
+      "requestText": "只查《小妇人》2019年版的主演，按本次片库资料回答。",
+      "verdict": "满足",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 2
+      },
+      "scope": "仅核对本次公开快照与实际工具依据支持的最终正文；不声称外部元数据全量核验。",
+      "reason": "查询计划锁定2019版，queryCatalog.selectedId与详情movie.id相同；正文三位演员完整对应本次详情返回的三项，附带剧情全文来自同ID的summary。没有用1994版或其他影片的演员补充。",
+      "hardConstraintStatus": "satisfied-at-observed-catalog-metadata",
+      "evidence": {
+        "selectedId": "gying_mv_M4Lk",
+        "detailMovieId": "gying_mv_M4Lk",
+        "year": 2019,
+        "returnedActors": [
+          "西尔莎·罗南",
+          "艾玛·沃森",
+          "弗洛伦丝·皮尤"
+        ],
+        "fieldsTruncated": true
+      },
+      "limits": [
+        "详情fieldsTruncated=true，三位演员仅是本次有界返回，不证明完整主演/演员表。",
+        "剧情取本次片库简介，未逐条核对电影原作或独立外部资料；这一题明确要求按本次片库资料回答。"
+      ]
+    },
+    {
+      "id": "post-language-unknown",
+      "reportRowPointer": "rows[3]",
+      "answerSha256": "59775aefd46105662a5cbea63c23446a7c8f04b03433c77ea886102c2e89e458",
+      "requestText": "找动画电影，原始对白是中文或西班牙语，至少70分钟且严格少于95分钟，最多两部；只有配音资料就标未核验。",
+      "verdict": "有用但不完全",
+      "scores": {
+        "factuality": 2,
+        "grounding": 2,
+        "usefulness": 1
+      },
+      "scope": "仅核对本次公开快照与实际工具依据支持的最终正文；不声称外部元数据全量核验。",
+      "reason": "正文实际列魁拔Ⅲ战神崛起90分钟和宝莲灯85分钟，并把国语严格标为片库语言、逐项注明原始对白未核验；两项动画电影及数量/时长符合本次可核验字段。片库语言未区分原声与发行配音，联网相关性筛选后0条依据，原始对白硬条件仍unknown。补充人物/场景等泛化请求没有针对已明确原声需求，不能算有效澄清或完全满足。",
+      "hardConstraintStatus": "unknown-original-dialogue-language",
+      "evidence": {
+        "candidateIds": [
+          "YMnB",
+          "gying_mv_WLn7"
+        ],
+        "runtimeMinutes": [
+          90,
+          85
+        ],
+        "catalogLanguages": [
+          [
+            "国语"
+          ],
+          [
+            "国语"
+          ]
+        ],
+        "originalDialogueLanguage": null,
+        "catalogUnverifiedConditions": [
+          "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+        ],
+        "webRawReturned": 1,
+        "webRelevantReturned": 0
+      },
+      "limits": [
+        "不能因国语字段、国别或中文片名推断原始对白已经核验。",
+        "factuality/grounding=2仅针对正文已断言的片库字段及诚实未知提示，不是给尚未核实的原声事实打2分。",
+        "有用但不完全不计完全满足；该条仍需原声出处或更有针对性的核验流程。"
+      ]
+    }
+  ],
+  "executionSummary": {
+    "planned": 4,
+    "executed": 4,
+    "completed": 4,
+    "failed": 0,
+    "durationSeconds": 26.66,
+    "agentExitCode": 0,
+    "harnessExitCode": 0,
+    "qualityReviewSeparateFromExecution": true,
+    "latencyImprovementClaimed": false
+  },
+  "reviewSummary": {
+    "modelReviewedAnswers": 4,
+    "newHumanReviewedAnswers": 0,
+    "completeThreeDimensionReviews": 4,
+    "verdictCounts": {
+      "满足": 3,
+      "有用但不完全": 1,
+      "未满足": 0,
+      "证据不足": 0,
+      "有效澄清": 0
+    },
+    "allFourSatisfiedClaimed": false
+  },
+  "codeReviewNotes": [
+    {
+      "code": "runtime_unit_scope",
+      "status": "explicit-tv-unit-unknown-notice-present-in-final-source",
+      "file": "D:/ai/local-ai-agent/backend/src/main/java/com/localai/agent/assistant/GyingResearchService.java",
+      "observation": "最终源码对category=tv输出片库时长（单集/整部口径未核验），电影仍输出片长。四条真实探针均为电影，没有命中tv提示；相关专项fixture/行为测试需按其自身证据记录。",
+      "sourceSha256": "6de807b409cfb0d52372ed366a82b14050da696dd2fb1d057115429a4d9ec84e",
+      "liveTvProbeClaimed": false
+    }
+  ]
+}

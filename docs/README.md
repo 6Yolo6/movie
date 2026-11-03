@@ -11,6 +11,7 @@
 | 3 | [AI整套架构](ai-architecture.md) | 从网页问题到queryPlan、BM25/BGE-M3、联网、依据与回执恢复怎样工作？ |
 | 4 | [Java与AI求职补强路线](ai-career-roadmap.md) | 已有成果能怎么表达、下一阶段怎样学习和验收？ |
 | 5 | [AI评测与人工复核](ai-evaluation.md) | 为什么请求完成不等于答对，怎样做同数据比较、冻结题集与人工评分？ |
+| 6 | [AI回答质量讲解](ai-answer-quality-guide.md) | 真实候选怎样变成正文与卡片，0/null/来源及未知该怎样处理？ |
 
 ## 开发和运维手册
 

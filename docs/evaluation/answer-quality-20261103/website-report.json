@@ -1,0 +1,941 @@
+{
+  "reportSchemaVersion": 1,
+  "datasetSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+  "datasetVersion": "gying-development-v3",
+  "provenance": "agent-authored-regression",
+  "evaluatedAt": "2026-11-03T10:36:35.927574+00:00",
+  "repeat": 1,
+  "transport": "authenticated-website-api",
+  "browserUiCovered": false,
+  "completedAllTurns": true,
+  "selectionSha256": "8fc3587d70f1f0b0f99345b99df8185f2c1f5ca2d8d137370213e42004c63549",
+  "summary": {
+    "turns": 15,
+    "mechanicalPasses": 15,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 15,
+    "latencySampleCount": 15,
+    "p50Ms": 15296.0,
+    "p95Ms": 68594.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Development observations and mechanical checks only; reviewRubric is ungraded, human quality scores pending. Not an independent holdout.",
+    "plannedTurns": 15,
+    "executedTurns": 15,
+    "notExecutedTurns": 0,
+    "submissionAttempts": 15,
+    "uncertainCompletionTurns": 0,
+    "routeCounts": {
+      "structured-query": 15
+    },
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "rows": [
+    {
+      "caseId": "dev-v3-01",
+      "sourceGroup": "dev-v3-film-restoration-process",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "9451b504-5970-4a85-8664-d48e3f48eb66",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:30:53.425047+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:30:08.339011600Z",
+          "durationMs": 18142
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:30:14.483130Z",
+          "durationMs": 6147
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:30:25.187255500Z",
+          "durationMs": 10699
+        },
+        {
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T10:30:49.730616Z",
+          "durationMs": 24543
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:30:51.561439800Z",
+          "durationMs": 1825
+        }
+      ],
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "answerChars": 60,
+      "evidenceSha256": "cebbfdc07f97aa3fc906c311857bb4f89d01918a4a5bf5e7d4582afa97f4910b",
+      "queryPlanSha256": "7f786c24577854b773baa7bd2c8a000aba4d052176b6a3984305238a2b1ed7ef",
+      "durationMs": 63468.0
+    },
+    {
+      "caseId": "dev-v3-02",
+      "sourceGroup": "dev-v3-language-or-and-runtime",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "eaf82353-cc7b-4a8d-b4c2-ac1978e8a946",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:31:06.200872+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:00.145871100Z",
+          "durationMs": 6531
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:00.233894Z",
+          "durationMs": 87
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:01.812995500Z",
+          "durationMs": 1577
+        }
+      ],
+      "answerSha256": "979d03d0a762bcdbbfea28f377a65f647ba9eec6e194004e18e2aa839d911894",
+      "answerChars": 173,
+      "evidenceSha256": "473741f9657f06aad7a7803eba283e108a4591b9d5e3e197fb08e2b66cfea31f",
+      "queryPlanSha256": "d16bf05db116172adfac1e713d32e335e1c8f80bb9a728ef627c96736efb6b4f",
+      "durationMs": 12766.0
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "087ef797-2eec-47c0-901c-f29ed1941e04",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:31:49.442825+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:16.404424800Z",
+          "durationMs": 9170
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:22.365533400Z",
+          "durationMs": 5961
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:24.242072800Z",
+          "durationMs": 1876
+        },
+        {
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:48.220201200Z",
+          "durationMs": 23977
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:48.985278800Z",
+          "durationMs": 764
+        }
+      ],
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "answerChars": 60,
+      "evidenceSha256": "93dc0c6fa576075da8756ac97c7019e8bde384b59c6124f4fc8019d5153858b2",
+      "queryPlanSha256": "f94db2ab043b399b5075dd9a11605cced600f00a146696dd1e69ea7e7622dfb8",
+      "durationMs": 43250.0
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "split": "development",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "historyTruncated": false,
+      "historySha256": "6daf7f9b5e2fa9117dbe238c84f9f90d881dea19c19c74651f5a5c8e462b9e35",
+      "previousJobReferenced": true,
+      "jobId": "35af3326-ef28-4e95-965f-fe64d4eef2c0",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:32:04.697798+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:31:57.996009100Z",
+          "durationMs": 6963
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:04.050594300Z",
+          "durationMs": 6040
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:04.075698100Z",
+          "durationMs": 26
+        }
+      ],
+      "answerSha256": "b1e60a74ca9c72946b54a29167640f886599d740353cc52240b0fc2ff284e663",
+      "answerChars": 47,
+      "evidenceSha256": "e6399df7891c4cda967b435b6e9a70e82a0108896c0c2741c147b208188ad9fd",
+      "queryPlanSha256": "dfee3fa4e3d9f98f5874661bca0fb6eccb1107724fca1f0059184ce396310ef1",
+      "durationMs": 15250.0
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "f5f0ece3-264e-465e-bcac-9e29de976c4e",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:32:32.653804+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:27.037250700Z",
+          "durationMs": 20912
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:30.237141700Z",
+          "durationMs": 3199
+        }
+      ],
+      "answerSha256": "4f621335de59715ab166904a614c18463127ec14fc85883e5ef0aae9e1db8d38",
+      "answerChars": 370,
+      "evidenceSha256": "7c66086c94fc5e5422350aaaf216b6f4b8e41a19e188243d1d1c8700f555074c",
+      "queryPlanSha256": "6c12502764606988cde1f1a9730f9fee2cbb1527a3741118248241dd3b0ba2d4",
+      "durationMs": 27953.0
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "split": "development",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "historyTruncated": false,
+      "historySha256": "03eca8958b5fdc2bd2384d168e66ed00e5d4085c3dcf4697f969a7bceea1fa6a",
+      "previousJobReferenced": true,
+      "jobId": "9df53bf6-0daa-48c7-9751-7139416becbc",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:32:40.282421+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:38.663716200Z",
+          "durationMs": 4367
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:39.788390700Z",
+          "durationMs": 547
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:39.813593400Z",
+          "durationMs": 24
+        }
+      ],
+      "answerSha256": "104a25570c494c4f7bed7469e76a9a34545d51ef8c191dd1253c5610d4ba0e18",
+      "answerChars": 361,
+      "evidenceSha256": "26720e4d56489352506a06d257d5e89af485830dcaa1fb2555e45bea731f7624",
+      "queryPlanSha256": "631734ed5dd7d9002d0622f0b77ab40cf46adf41ca55e98148f1275eeaff6974",
+      "durationMs": 7641.0
+    },
+    {
+      "caseId": "dev-v3-05",
+      "sourceGroup": "dev-v3-content-absence-evidence",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "e432a6fd-e0ee-4d91-b081-2869410206b1",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:32:51.265761+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:47.516080200Z",
+          "durationMs": 3649
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:47.628710500Z",
+          "durationMs": 112
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:50.837382500Z",
+          "durationMs": 3200
+        }
+      ],
+      "answerSha256": "fd1afa86117caa83819d4a9ecc39d2ac200aca923f32944dbb2db8166518508a",
+      "answerChars": 185,
+      "evidenceSha256": "7de281ad39f3b064de9a1a3f152ae764e5448b209c673fd2836a74a536652cdb",
+      "queryPlanSha256": "df777c77dd70595ab7be294ca83d9cc5da8907fc8f2ccc5b46d68205a6a118e0",
+      "durationMs": 7625.0
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "8e46dd94-a00b-439f-98d6-81baeca22cf6",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:32:59.807843+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:59.123863900Z",
+          "durationMs": 4234
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:32:59.156564200Z",
+          "durationMs": 32
+        }
+      ],
+      "answerSha256": "003b6e2512c20373bc2f84cd34d34d8bed4d6f819460720ff7fb7263551bb88f",
+      "answerChars": 67,
+      "evidenceSha256": "bede28924c4d205b0cb8835fa0a120caf73f4f8f48241cca5267edd53c796269",
+      "queryPlanSha256": "ddef10b876282cf9304cde1b7a3e72ccacef1b9f5ee9ada322ac43e8d8ea3996",
+      "durationMs": 5156.0
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "historyTruncated": false,
+      "historySha256": "c200338b8a47c2da846d384d7d72ee731db315f5385a3ca32be03e5aa17ea2d2",
+      "previousJobReferenced": true,
+      "jobId": "d6ebeb5f-890c-4e01-ac41-511f270419c6",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:33:13.289652+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:12.803714700Z",
+          "durationMs": 5581
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:12.883168900Z",
+          "durationMs": 36
+        }
+      ],
+      "answerSha256": "593da98f71fc939fe279c9cf3a4dc67836f248212d82379ea5e20fad87456bb1",
+      "answerChars": 24,
+      "evidenceSha256": "f0aacc2b216f2344de2f6aa19a3138089c0602b4f3f15817b198abfbacf16854",
+      "queryPlanSha256": "8aef483d0a2ae07b09d6ac716df458dacc1d6e57097f6c269e362e22f62fcf1d",
+      "durationMs": 7641.0
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "historyTruncated": false,
+      "historySha256": "e89d27e61eab1b703709c6ccf527bdf913abb1412d2da33d6905eaa1117605c3",
+      "previousJobReferenced": true,
+      "jobId": "f0b09c55-b9df-439c-b35d-377ebbf824f1",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:33:21.923618+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:21.820929700Z",
+          "durationMs": 4875
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:21.864327400Z",
+          "durationMs": 14
+        }
+      ],
+      "answerSha256": "ca2c4a8008b8318b21ca28814564fdb8e014006bd4d8f8371799c101932528b9",
+      "answerChars": 56,
+      "evidenceSha256": "621557e757afb5d8296f9604cb079e3a2d87ca6c2eed51385977f283129220ce",
+      "queryPlanSha256": "1fa9bb41b5bd97c8cf06b333a8a9c973bf96552e4c4f48ceba9462d4e1b692d3",
+      "durationMs": 5250.0
+    },
+    {
+      "caseId": "dev-v3-07",
+      "sourceGroup": "dev-v3-original-author-role",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "57b1e994-94e5-4436-8456-d36d32de12f4",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:34:00.700680+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:32.634858400Z",
+          "durationMs": 4701
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:38.645911100Z",
+          "durationMs": 6011
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:42.318107500Z",
+          "durationMs": 3671
+        },
+        {
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:56.885250100Z",
+          "durationMs": 14567
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:33:59.276440700Z",
+          "durationMs": 2390
+        }
+      ],
+      "answerSha256": "34463dd0e4943538ba176b9a3b628cb5f6f76efb21688d86a4298af85e9b33df",
+      "answerChars": 60,
+      "evidenceSha256": "b7b79ba5fa66290db8841501a6dc91c9f235196cf092ee159732b2c5f7f93f04",
+      "queryPlanSha256": "211b004a848aeedbbfe9c3c1fb3fc35cc10f7ea69e49a1d0c75648dac2e4e37d",
+      "durationMs": 33016.0
+    },
+    {
+      "caseId": "dev-v3-08",
+      "sourceGroup": "dev-v3-dated-official-release",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "f4d81108-9c9a-4b20-a5d4-a8d1b70ba260",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:34:21.083795+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:16.793939100Z",
+          "durationMs": 15464
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:19.255524600Z",
+          "durationMs": 2461
+        },
+        {
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:19.821228400Z",
+          "durationMs": 564
+        }
+      ],
+      "answerSha256": "d0045082e7d8574b36ece0f1955037f975dde7951eda32d201a4de93c58a3dd6",
+      "answerChars": 143,
+      "evidenceSha256": "d5a7523cfb32d2856a5cde8d5ccb89cdefcf37e6e3c7692f7edc73110b53a075",
+      "queryPlanSha256": "0736c7ea418b6dc3155213d11d9b2639ebf0ade46311b8d08326f383e651cdea",
+      "durationMs": 20391.0
+    },
+    {
+      "caseId": "dev-v3-09",
+      "sourceGroup": "dev-v3-contradictory-runtime",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "3a7e9790-04ed-44b6-875b-c6efc84f64e4",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:34:36.387899+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:28.100720500Z",
+          "durationMs": 6236
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:34.657651500Z",
+          "durationMs": 6556
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:34.690575800Z",
+          "durationMs": 32
+        }
+      ],
+      "answerSha256": "f3b3f9dedebc00ba16357d162995bc728357f6cf514997f58d046fcbd51dfadd",
+      "answerChars": 70,
+      "evidenceSha256": "c2033b78c3d8d54917a9aa31564f9198916dcc22c91f6534bb5da457055ee5e0",
+      "queryPlanSha256": "10096984592bafee10d4ae04df6779477725eaacd1d7451ee70a8552130b61b5",
+      "durationMs": 15296.0
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "7a0ded6d-0ba8-4fec-9f93-9579ff74cbdb",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:35:44.982860+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:34:59.415292300Z",
+          "durationMs": 22675
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:35:05.871878400Z",
+          "durationMs": 6455
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:35:08.052143100Z",
+          "durationMs": 2180
+        },
+        {
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T10:35:43.574682900Z",
+          "durationMs": 35522
+        }
+      ],
+      "answerSha256": "49b94f3ddb6aaa9b1db4af56be1cde6dbc7946610de570f8e12a24deaa80ecbe",
+      "answerChars": 34,
+      "evidenceSha256": "ffb82e53641d760a7a9cb371c5790cdd9f6414ee7b8785a906c187c9a3f18988",
+      "queryPlanSha256": "e8d8e678f52ea64d5981385f56ac815f3974123c0298b3208093adfb4b412944",
+      "durationMs": 68594.0
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "split": "development",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "historyTruncated": false,
+      "historySha256": "48ac284170fb3bec6fa2f79d6b976feac54180e2e2b2b87cd10051b4a29c65cc",
+      "previousJobReferenced": true,
+      "jobId": "234ad710-7dc8-4ed3-85ce-e4a999187ed3",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T10:36:35.925295+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T10:35:54.721208100Z",
+          "durationMs": 9099
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T10:36:00.885899500Z",
+          "durationMs": 6164
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T10:36:01.198676300Z",
+          "durationMs": 312
+        },
+        {
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T10:36:35.577469900Z",
+          "durationMs": 34378
+        }
+      ],
+      "answerSha256": "49b94f3ddb6aaa9b1db4af56be1cde6dbc7946610de570f8e12a24deaa80ecbe",
+      "answerChars": 34,
+      "evidenceSha256": "89bc705ebef8c6a1d46a72b3a13fe76b4109f2d04c396d8c100e71c4a9199501",
+      "queryPlanSha256": "5f493c9af31095f9af58e94060a39fe31bdf5e8009b5be50ec4fea066c2ffac5",
+      "durationMs": 50953.0
+    }
+  ],
+  "freezeSha256": "a3b4437d16dae3371ee140026faf8f1e3996d66c215f30f262d4af50c3ca84e8",
+  "websiteIdentityRole": "USER",
+  "evaluatorSha256": "86f8db57c56088d44e0a51eb2d18d8c2d6fdd73615e840aaebca329b9b694d15",
+  "dependencySha256": {
+    "evaluate_agent.py": "ec51b933ce1651fae418a49fd751de85d8d62df2b5393e0a6cc141f8011dc120",
+    "comparable_evaluation.py": "04d106123db0cafeb159c40d970c55ef21478f4faf0d55f777c2a6f60d09d157",
+    "evaluate_website.py": "155861acbfc400abd3351d02988dce837f8b421d1563371c29d42db8a807943d"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-11-03T10:39:26.424671+00:00",
+  "transport": "authenticated-website-api",
+  "origin": "http://127.0.0.1:80",
+  "candidateDeployed": false,
+  "browserUiCovered": false,
+  "passwordLoginVerified": false,
+  "independentHoldout": false,
+  "authenticationMethod": "operator-provisioned-short-lived-USER-device-session; password-login-not-tested",
+  "testAccountCleanupVerified": true,
+  "temporaryCredentialFileRemoved": true,
+  "runtimeBefore": {
+    "at": "2026-11-03T10:29:49.587523+00:00",
+    "movieBackendImage": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+    "frontendImage": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+    "agentJarSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+    "agentIdentityRecord": {
+      "processId": 7700,
+      "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\a9366577-1b6c-491b-88a0-3a8f996158d4",
+      "startedAt": "2026-11-01T09:12:18.7178929Z",
+      "instanceId": "a9366577-1b6c-491b-88a0-3a8f996158d4",
+      "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+    },
+    "liveProcessArgvIndependentlyVerified": false,
+    "candidateDeployed": false,
+    "browserUiVerified": false,
+    "origin": "http://127.0.0.1:80",
+    "passwordLoginVerified": false
+  },
+  "runtimeAfter": {
+    "movieBackendImage": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+    "frontendImage": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+    "agentJarSha256": "1f9d9628fbe2cdbb50190c12fcda60ae9870daeb1563caaf84ecef5ddf09f07d",
+    "liveProcessArgvIndependentlyVerified": false,
+    "candidateDeployed": false,
+    "browserUiVerified": false,
+    "origin": "http://127.0.0.1:80",
+    "passwordLoginVerified": false,
+    "at": "2026-11-03T10:39:25.837534+00:00",
+    "agentIdentityRecord": {
+      "processId": 7700,
+      "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\a9366577-1b6c-491b-88a0-3a8f996158d4",
+      "startedAt": "2026-11-01T09:12:18.7178929Z",
+      "instanceId": "a9366577-1b6c-491b-88a0-3a8f996158d4",
+      "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+    },
+    "identitiesMatchBefore": true,
+    "readOnlyHealth": [
+      {
+        "url": "http://127.0.0.1:80/",
+        "httpStatus": 200,
+        "readBytes": 67978
+      },
+      {
+        "url": "http://127.0.0.1:80/api/movies/list?page=1&size=1",
+        "httpStatus": 200,
+        "readBytes": 1618
+      },
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "httpStatus": 200,
+        "readBytes": 65
+      }
+    ]
+  },
+  "reportByteSha256": "7f6272e9edb3092a9a190bdb2ec703a8b02662f9f431b9873917f393c02a6789",
+  "reportCanonicalSha256": "b55a091817e9a6ddec4a734ec27fbfc53611526d6ead51613cff7904388b5706",
+  "privateObservationsByteSha256": "dabed83df459dc6b7defa1569821598280aa898d8a506f300405cb32d4e12eb1",
+  "privateObservationsPath": "E:\\gying-tools\\releases\\ai-answer-quality-20261103\\website-live-20261103-final\\observations.json",
+  "preferencesFrozen": false,
+  "liveCatalogFrozen": false,
+  "modelOrLatencyImprovementClaimed": false,
+  "newHumanReviews": 0,
+  "preparationFailure": {
+    "reason": "explicit loopback port absent; failed before inference",
+    "runnerExitCode": 2,
+    "inferenceSubmissions": 0,
+    "cleanupVerified": true,
+    "originalRecordPreserved": true
+  },
+  "sourceFiles": {
+    "report.json": "7f6272e9edb3092a9a190bdb2ec703a8b02662f9f431b9873917f393c02a6789",
+    "observations.json": "dabed83df459dc6b7defa1569821598280aa898d8a506f300405cb32d4e12eb1",
+    "runtime-before.json": "af826c5d28ab496f253bdc8546fe012a411f4c8b4bba9fbf069975a5bf59cf3c",
+    "runtime-after.json": "8eef1d07028b6cdd6875aa10f037a57ba6063041966515250cf21f6df5451049"
+  }
+}

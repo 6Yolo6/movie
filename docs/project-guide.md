@@ -85,6 +85,8 @@ BM25强调查询词在文档中的重要性；embedding把文本转换为向量�
 
 核查：[AI架构](ai-architecture.md)、[CatalogTextIndex](../backend/src/main/java/com/gying/movie/service/impl/CatalogTextIndex.java)、[推荐引擎](../backend/src/main/java/com/gying/movie/service/impl/CatalogRecommendationEngine.java)。现有向量索引不是专用向量数据库，影片检索也不代表已交付通用文档RAG。
 
+2026-11-03候选补充见[回答质量讲解](ai-answer-quality-guide.md)：沿原问题、queryPlan、真实候选、确定性正文、evidence卡片和复核定位最早偏差。已知0、未知null和未提供字段不同；来源缺分不允许用其他来源填补。该候选尚未上线，[本轮证据](evaluation/answer-quality-20261103/README.md)单列行为测试、隔离模型与页面fixture，另有现役旧版本网站USER15/15机械通过/0失败，模型诊断满足3/部分1/澄清2/未满足5/缺证4，三维完整13、真人0；test会话已撤销并恢复禁用，非密码登录或浏览器验收。
+
 ## 9. Resource Hub如何避免重复采集和错绑
 
 TMDB/GYING各来源有独立范围、下一页与页内偏移；payload.crawl和任务终态共同保存。范围变化保留仍在范围内的位置，越界才重置。来源榜单会变化，因此断点续采并不是固定数据快照，写入仍需幂等。

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
 
-interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number; resourceCount?: number; genres?: string[]; reasons?: string[]; ratingSource?: string; runtimeMinutes?: number; }
+interface Movie { id: string; titleCn?: string; titleEn?: string; year?: number; summary?: string; rating?: number | null; resourceCount?: number | null; genres?: string[]; reasons?: string[]; ratingSource?: string; runtimeMinutes?: number | null; }
 interface Resource { url?: string; name?: string; provider?: string; code?: string; }
 interface WebSource { title: string; url: string; snippet?: string; }
 interface Trace { kind: string; name: string; status: string; durationMs?: number; }
@@ -19,6 +19,19 @@ interface Job { jobId: string; status: string; result?: Answer; message?: string
 const subscribe = () => () => {};
 const client = () => true;
 const server = () => false;
+function movieMetadata(movie: Movie, t: (key: string) => string) {
+    const rating = typeof movie.rating === 'number' && Number.isFinite(movie.rating)
+        ? movie.rating.toFixed(1) : t('aiRatingUnavailable');
+    const source = ['douban', 'imdb', 'tmdb'].includes(movie.ratingSource || '') ? movie.ratingSource?.toUpperCase() : '';
+    return [
+        movie.genres?.join(' · '),
+        `${t('aiRating')}${source ? ` (${source})` : ''}: ${rating}`,
+        typeof movie.runtimeMinutes === 'number' && Number.isFinite(movie.runtimeMinutes) && movie.runtimeMinutes > 0
+            ? `${movie.runtimeMinutes} ${t('aiMinutes')}` : '',
+        typeof movie.resourceCount === 'number' && Number.isFinite(movie.resourceCount)
+            ? `${t('aiResourceCount')}: ${movie.resourceCount}` : '',
+    ].filter(Boolean).join(' · ');
+}
 function safeUrl(value: string | undefined) {
     if (!value || value.length > 600) return null;
     try { const url = new URL(value); return ['https:', 'http:', 'magnet:'].includes(url.protocol) && !url.username && !url.password ? value : null; } catch { return null; }
@@ -117,7 +130,7 @@ function Conversation() {
                             {evidence.relevanceChecked && <p className="text-xs text-slate-500">{t('aiRelevanceChecked')}</p>}
                             {(evidence.movies || (evidence.movie ? [evidence.movie] : [])).map(movie => <div key={movie.id} className="mb-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
                                 <Link href={`/movie/${encodeURIComponent(movie.id)}`} target="_blank" rel="noopener noreferrer" className="block break-words text-blue-600 dark:text-blue-400">{movie.titleCn || movie.titleEn} {movie.year && `(${movie.year})`} · {t('aiViewDetails')}</Link>
-                                {movie.genres && <p className="mb-1 mt-2 text-xs text-slate-500">{movie.genres.join(' · ')}{movie.rating ? ` · ${t('aiRating')}: ${movie.rating.toFixed(1)}` : ''}{movie.ratingSource && movie.ratingSource !== 'any' ? ` · ${movie.ratingSource.toUpperCase()}` : ''}{movie.runtimeMinutes ? ` · ${movie.runtimeMinutes} ${t('aiMinutes')}` : ''}{movie.resourceCount !== undefined ? ` · ${t('aiResourceCount')}: ${movie.resourceCount}` : ''}</p>}
+                                <p className="mb-1 mt-2 text-xs text-slate-500">{movieMetadata(movie, t)}</p>
                                 {movie.resourceCount === 0 && <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-sm text-slate-500">{t('aiNoResources')}</span><Link href={`/resource-search?q=${encodeURIComponent(movie.titleCn || movie.titleEn || movie.id)}&auto=1`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-blue-300 px-3 text-sm text-blue-600 dark:text-blue-400">{t('aiSearchResources')}</Link></div>}
                                 {movie.summary && <p className="mb-1 mt-2 whitespace-pre-wrap break-words text-sm text-slate-600 dark:text-slate-300">{movie.summary}</p>}
                                 {movie.reasons && <ul className="mb-0 mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300" aria-label={t('aiRecommendationReasons')}>{movie.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}

@@ -1264,6 +1264,7 @@
   "aiGuessYouLike": "For you",
   "aiRecommendationReasons": "Recommendation reasons",
   "aiRating": "Rating",
+  "aiRatingUnavailable": "Unavailable",
   "aiResourceCount": "Catalog resources",
   "relatedMovies": "Related titles",
   "relatedMoviesFailed": "Related titles could not be loaded",

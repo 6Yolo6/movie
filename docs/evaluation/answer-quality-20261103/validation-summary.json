@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "scope": "first-stage candidate presentation validation plus separately scoped current-production USER website development observation; candidate not deployed, not independent holdout",
+  "agent": {
+    "startedAt": "2026-11-03T10:06:54.073559+00:00",
+    "sourceSha256": "7df9eb8ebd3bf3deb78ac92bc458b9b323248ec4bbc172bea0dbc60c068980d5",
+    "sourceFileCount": 46,
+    "productionEnvLoaded": false,
+    "deploymentPerformed": false,
+    "verifyExitCode": 0,
+    "tests": {
+      "tests": 143,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "skippedClasses": [],
+    "compileExitCode": 0,
+    "jarSha256": "439618aefefa4f71e7104b59d8d2c87a80c868e2f68a39be1e63079086d4791a",
+    "jarSize": 35490071,
+    "candidatePath": "E:\\gying-tools\\releases\\ai-answer-quality-20261103\\agent-candidate-439618aefefa4f71e7104b59d8d2c87a80c868e2f68a39be1e63079086d4791a.jar",
+    "sourceStillMatches": true,
+    "completedAt": "2026-11-03T10:07:48.221049+00:00"
+  },
+  "frontend": {
+    "targetedEslint": "passed",
+    "typecheck": "passed",
+    "buildPassed": true,
+    "sourceManifestSha256": "7dd22c8b40f1c82fdd2ee916abbf8702533988c4f32abb25d8b325e436b088e9",
+    "sourceFilesVerified": 80,
+    "imageId": "sha256:7ad6aebcee6176f324cfe8fd092cea05169af799975a7e38e3bd973beb07f26c",
+    "runtimeNode": "v22.23.4",
+    "networkNoneRuntimeSmoke": true,
+    "nativeDependenciesOverlaid": false,
+    "fixtureBrowserGroups": 8,
+    "fixtureCardsRendered": 40,
+    "screenshots": 8,
+    "browserTestSha256": "e399fa4d613cebe37d046c62d324bdedeb64eb162a5d9eefb00f55171cf3a68f",
+    "realLoginOrInferenceRequests": 0
+  },
+  "finalExecution": {
+    "planned": 4,
+    "executed": 4,
+    "completed": 4,
+    "failed": 0,
+    "durationSeconds": 26.66,
+    "agentExitCode": 0,
+    "harnessExitCode": 0,
+    "qualityReviewSeparateFromExecution": true,
+    "latencyImprovementClaimed": false
+  },
+  "finalModelReview": {
+    "modelReviewedAnswers": 4,
+    "newHumanReviewedAnswers": 0,
+    "completeThreeDimensionReviews": 4,
+    "verdictCounts": {
+      "满足": 3,
+      "有用但不完全": 1,
+      "未满足": 0,
+      "证据不足": 0,
+      "有效澄清": 0
+    },
+    "allFourSatisfiedClaimed": false
+  },
+  "modelReviewer": {
+    "kind": "model",
+    "name": "Codex-subagent",
+    "newHumanReviews": 0,
+    "separateAgentReview": true,
+    "independentModelTypeClaimed": false,
+    "previousDevelopmentReviewObserved": true,
+    "independentBlindReviewClaimed": false
+  },
+  "productionDeployment": {
+    "performed": false,
+    "blockedBySecurityGates": true,
+    "securitySummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "failedGateIds": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08",
+      "G09",
+      "G10",
+      "G11"
+    ],
+    "oldAgentJarHashVerified": true,
+    "oldFrontendImagePresent": true,
+    "freshProductionCheckpointCreated": false
+  },
+  "websiteUserEvaluation": {
+    "plannedTurns": 15,
+    "executedTurns": 15,
+    "mechanicalPasses": 15,
+    "mechanicalFailures": 0,
+    "submissionAttempts": 15,
+    "uncertainCompletionTurns": 0,
+    "notExecutedTurns": 0,
+    "reportByteSha256": "7f6272e9edb3092a9a190bdb2ec703a8b02662f9f431b9873917f393c02a6789",
+    "reportCanonicalSha256": "b55a091817e9a6ddec4a734ec27fbfc53611526d6ead51613cff7904388b5706",
+    "productionVersionEvaluated": "existing Agent 1f9d9628 / frontend f16cb8f1 / backend d7014158",
+    "candidateDeployed": false,
+    "browserUiCovered": false,
+    "passwordLoginVerified": false,
+    "temporarilyEnabledTestWithExplicitUserAuthorization": true,
+    "testDisabledStateRestored": true,
+    "activeTestDevicesAfterCleanup": 0,
+    "evaluationTokenHttpAfterCleanup": 401,
+    "passwordAndUserRoleUnchanged": true,
+    "temporaryCredentialFileRemoved": true,
+    "accountRowBackupAuthenticated": true,
+    "accountBackupIsDeploymentCheckpoint": false,
+    "latencyMs": {
+      "p50": 15296.0,
+      "p95": 68594.0,
+      "sampleCount": 15
+    },
+    "newHumanReviews": 0,
+    "independentHoldout": false,
+    "latencyImprovementClaimed": false,
+    "qualityImprovementClaimed": false
+  },
+  "isolation": {
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "queryCalls": 4,
+    "detailGets": 1,
+    "schedulersStarted": false,
+    "gracefullyStopped": true,
+    "scope": "final four-question isolated candidate probe only; does not include the separately scoped production website run or authorized account maintenance"
+  },
+  "artifacts": [
+    {
+      "path": "candidate-report.json",
+      "sha256": "c1d987ff26a6cbf43500b0a2b952754ffadc8327482e3c5ae529fe8f11d50d34"
+    },
+    {
+      "path": "candidate-answers.md",
+      "sha256": "826623762dac778b2236f593c61eb24895233b7e8e027c26e97f35385e13ae4b"
+    },
+    {
+      "path": "candidate-review.json",
+      "sha256": "70e84ae6f678335e74d1b355256826505de1172bfbd73e7e9e4d253c63e24da1"
+    },
+    {
+      "path": "final-report.json",
+      "sha256": "2549c37e5b5421eddd586b82d0d6a69f37aae75abbab2a8824c5ed8e790493d5"
+    },
+    {
+      "path": "final-answers.md",
+      "sha256": "b23d210a7abbd46639a215db44944d80849b062db5cff80887ab4c04e5f24382"
+    },
+    {
+      "path": "final-review.json",
+      "sha256": "9ceb0cf6c7c42d77562f34135bc9b0034779f82bf3c990b54997173cb2f838cf"
+    },
+    {
+      "path": "website-report.json",
+      "sha256": "7f6272e9edb3092a9a190bdb2ec703a8b02662f9f431b9873917f393c02a6789"
+    },
+    {
+      "path": "website-answers.md",
+      "sha256": "e6dee45eeb0a9881efdcc01b935fafe09b5eafce116a3139f1dac694360ef218"
+    },
+    {
+      "path": "website-runtime.json",
+      "sha256": "97bd118e8197dd7a27296a4c06f1bb1b4c588893eb174ffc51e0cf30f7f281a2"
+    },
+    {
+      "path": "website-account-operation.json",
+      "sha256": "ec66f619a9d08e52e5d0db2308dffb5be155779411f9703be62edb203c5c2d1f"
+    },
+    {
+      "path": "website-review.json",
+      "sha256": "d9143af7e31807f4b395bca339a6be31b2e50558392531b12e5b13506a5acceb"
+    },
+    {
+      "path": "website-review.md",
+      "sha256": "50c258d44bac85cea3d7e2d5278563484cd0ee59c819541a27ef73d36029bf91"
+    },
+    {
+      "path": "website-quality-summary.json",
+      "sha256": "40e62388f3a9dda37d1477b1105fbd1cca741ece466c6b285f161a9af820fd3b"
+    }
+  ],
+  "privateEvidenceDirectory": "E:\\gying-tools\\releases\\ai-answer-quality-20261103",
+  "websiteModelReview": {
+    "reviewer": {
+      "kind": "model",
+      "name": "Codex website_quality_review subagent"
+    },
+    "diagnosedTurns": 15,
+    "completeThreeDimensionReviews": 13,
+    "newHumanReviews": 0,
+    "dimensionReviewedCounts": {
+      "factuality": 13,
+      "grounding": 15,
+      "usefulness": 15
+    },
+    "verdictCounts": {
+      "满足": 3,
+      "有用但不完全": 1,
+      "有效澄清": 2,
+      "未满足": 5,
+      "证据不足": 4
+    },
+    "protocolOutcomeCounts": {
+      "pending": 0,
+      "exact": 3,
+      "usefulApproximation": 1,
+      "clarification": 2,
+      "unhelpful": 9
+    },
+    "unknownFactualityTurns": [
+      "dev-v3-10/1",
+      "dev-v3-10/2"
+    ],
+    "allWebsiteAnswersSatisfiedClaimed": false,
+    "independentBlindReviewClaimed": false,
+    "productionAccuracyClaimed": false
+  },
+  "documentationVerification": {
+    "markdownFiles": 13,
+    "localLinks": 276,
+    "brokenLinks": 0,
+    "utf8Verified": true,
+    "originalCandidateAndFinalArtifactsUnchanged": 6,
+    "artifactHashesVerified": 13,
+    "websiteReportAndAll15AnswerHashesVerified": true,
+    "qualityV2SummaryRecomputedMatches": true,
+    "unknownFactualityScoresPreserved": 2
+  },
+  "finalWorkingTreeSecretsScan": {
+    "movieFindings": 0,
+    "agentFindings": 0,
+    "scope": "tracked and non-ignored new files; not historical credential rotation proof"
+  }
+}

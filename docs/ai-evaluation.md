@@ -167,3 +167,11 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 本候选有限部署例外和管理员预检已明确获批，Movie于10月31日22:58上线；Agent于11月1日17:12最终上线1f9d…/代码e19b6b16，管理员受管身份/argv、自然空闲、新三份age认证、旧9516正常停止、新7700独立runtime/ready/hostInJob=false及root绑定复核通过。上午尝试失败/确认回退和16:59提权取消仍按原日期保留。部署证据见[最终部署验收](evaluation/quality-improvement-20261031/deployment-final-20261101.md)，不冒充网站USER或生产多轮验收。G01–G11未关闭；三轮重复开发观测不提供独立质量提升率，也不能推算82条全部已修复，关系/主题、较早列表指代和柔性偏好仍保留不足。
 
 11月1日17:12上线后，四问串行真实Agent观测均HTTP/API200 completed、程序0失败，总耗时39.0秒。第1与第4正文未列片名，第4原始对白仍未核验，模型复核为满足2/未满足1/有用但不完全1，有效澄清0、真人新增0，质量不等于四条全部满足。新[原始报告](evaluation/quality-improvement-20261031/post-deployment-report.json)、[实际正文](evaluation/quality-improvement-20261031/post-deployment-answers.md)和[模型复核](evaluation/quality-improvement-20261031/post-deployment-review.json)单独保存；网站USER10场景/15轮仍未执行，不覆盖旧三轮回答或评分。
+
+## 14. 2026-11-03 正文与展示候选验证
+
+本轮只补第一阶段的证据呈现缺口，[最终四问](evaluation/answer-quality-20261103/final-report.json)绑定Agent439618ae…/真实Movie类/10月31日公开快照，4次completed；[模型复核](evaluation/answer-quality-20261103/final-review.json)为满足3/部分有用1，真人0。原始对白未知，执行与质量分开；没有命中缺分/0/剧集口径的真实探针，这些由Java回归与页面fixture另验。
+
+新[浏览器回归](../tools/tests/ai-card-metadata.browser.cjs)读取隔离生产构建，API全部fixture，不使用真实token或登录/推理；中英×390/1280×明暗8组/40卡片覆盖0/null/undefined/缺类型/来源不替换。前端固定镜像network=none页面和静态资源另验，不能写成线上UI或真机完成。
+
+初候选f42d…/142测试/四问49.01秒与最终4396…/143测试/四问26.66秒各自保存报告、原文和模型复核。它们是观察过的四问重复开发诊断，冷热与语料适用范围单列，不提供质量或时延提升率。生产服务未替换，安全58/11/1停止上线。用户明确授权后临时启用旧test并受控签发短期USER设备会话，真实nginx入口15/15执行、机械全通过/0失败，各轮只提交一次。结束恢复disabled/有效设备0/本轮token401，密码与USER角色不变；第一次缺显式端口的准备失败提交推理0，原记录保留。本轮网站使用旧Agent1f9d…/frontendf16c…/backendd701…，非新候选、非密码登录、非浏览器UI；活片库/原偏好未冻结。模型诊断15轮满足3/部分1/澄清2/未满足5/缺证4，三维完整13，电影院两条factuality=null；依据与需求15条已评、真人0。p50 15.296秒/p95 68.594秒只是15条串行观测，不做提升对照或生产SLA。v2 reportSha256使用规范JSON hash，原回答与脱敏回答hash分开；完整观测留在受限外部目录。详情、hash和回退边界见[本轮证据](evaluation/answer-quality-20261103/README.md)与[网站逐条复核](evaluation/answer-quality-20261103/website-review.md)。

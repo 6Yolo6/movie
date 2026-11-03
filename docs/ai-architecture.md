@@ -160,3 +160,9 @@ sequenceDiagram
 先读[网页](../frontend/src/app/ai-assistant/page.tsx) → [AiAssistantController](../backend/src/main/java/com/gying/movie/controller/AiAssistantController.java) → [CatalogAiService](../backend/src/main/java/com/gying/movie/service/impl/CatalogAiService.java) → [AiAssistantService](../backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java) → [CatalogResearchService](../backend/src/main/java/com/gying/movie/service/impl/CatalogResearchService.java)。
 
 另一仓库对应顺序为 `GyingBridge → AssistantService.runForJob → MovieQueryPlanner → GyingResearchService → SemanticMovieIndex/GyingCatalogClient/MovieSearchTools → 加密回执`。本机检出为 `D:/ai/local-ai-agent`，路径是这台主机的事实，不是仓库通用安装要求。
+
+## 11. 2026-11-03 未部署的正文与卡片候选
+
+现役版本见当前状态，本段只描述候选。Agent新增catalogRows，将筛选后的真实候选按原顺序列入正文，指定评分来源从对应字段读；缺分写暂无，原始对白与剧集时长口径仍注明未核验。网页已有evidence卡片，本轮只补0/null/undefined和缺genres时独立展示评分/时长/资源，未改Movie后端或桥接契约。
+
+143项Java、隔离前端构建/固定镜像和8组页面fixture通过；最终四问模型满足3/部分有用1。另完成现役旧版本网站USER15/15 API开发题，机械15通过/0失败；模型诊断满足3/部分1/澄清2/未满足5/缺证4，三维完整13、真人0。短期test设备会话已撤销并恢复禁用，这轮不覆盖密码登录/浏览器，也不能验证候选已生效。门禁仍失败，Agent4396…/frontend7ad6…尚未部署。机制取舍与原文证据见[质量讲解](ai-answer-quality-guide.md)及[本轮验证](evaluation/answer-quality-20261103/README.md)。
