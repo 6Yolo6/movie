@@ -1,0 +1,357 @@
+{
+  "checkedAt": "2026-11-03T15:04:03.424749+00:00",
+  "checks": [
+    {
+      "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+      "kind": "catalog",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 4413,
+      "bodySha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+      "total": 13518,
+      "returned": 2,
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+          "kind": "catalog",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 200,
+          "bodyBytes": 4413,
+          "bodySha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+          "total": 13518,
+          "returned": 2,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/",
+      "kind": "page",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 67978,
+      "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/",
+          "kind": "page",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 200,
+          "bodyBytes": 67978,
+          "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/movie/tmdb_movie_10399",
+      "kind": "page",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 189380,
+      "bodySha256": "6dd4b63b05590d4a966642ca63e58a1db8a54864a869a933016f39c3662789b7",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/movie/tmdb_movie_10399",
+          "kind": "page",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 200,
+          "bodyBytes": 189380,
+          "bodySha256": "6dd4b63b05590d4a966642ca63e58a1db8a54864a869a933016f39c3662789b7",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 404,
+          "bodyBytes": 548,
+          "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/api/qq-bot/search-reply?keyword=test",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/api/qq-bot/search-reply?keyword=test",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 404,
+          "bodyBytes": 548,
+          "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/api/admin/resource-hub/config",
+      "kind": "admin-denied",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 401,
+      "bodyBytes": 60,
+      "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/api/admin/resource-hub/config",
+          "kind": "admin-denied",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 401,
+          "bodyBytes": 60,
+          "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+      "kind": "catalog",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 4413,
+      "bodySha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+      "total": 13518,
+      "returned": 2,
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+          "kind": "catalog",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 200,
+          "bodyBytes": 4413,
+          "bodySha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+          "total": 13518,
+          "returned": 2,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "kind": "page",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 68345,
+      "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/",
+          "kind": "page",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 200,
+          "bodyBytes": 68345,
+          "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_10399",
+      "kind": "page",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 189747,
+      "bodySha256": "c8d16b8725819ee60b1590f5851b36e4e936a427a9872013cc639010e58d2fcb",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_10399",
+          "kind": "page",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 200,
+          "bodyBytes": 189747,
+          "bodySha256": "c8d16b8725819ee60b1590f5851b36e4e936a427a9872013cc639010e58d2fcb",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "passed": false,
+          "errorType": "URLError"
+        },
+        {
+          "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 404,
+          "bodyBytes": 915,
+          "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qq-bot/search-reply?keyword=test",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/api/qq-bot/search-reply?keyword=test",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 404,
+          "bodyBytes": 915,
+          "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/config",
+      "kind": "admin-denied",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 302,
+      "bodyBytes": 510,
+      "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/config",
+          "kind": "admin-denied",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 302,
+          "bodyBytes": 510,
+          "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:8880/api/qq-bot/health",
+      "kind": "qq-health",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 15,
+      "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1:8880/api/qq-bot/health",
+          "kind": "qq-health",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 200,
+          "bodyBytes": 15,
+          "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1/api/qq-bot/health",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "http://127.0.0.1/api/qq-bot/health",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "direct",
+          "httpStatus": 404,
+          "bodyBytes": 548,
+          "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+      "kind": "internal-denied",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true,
+      "attempts": [
+        {
+          "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+          "kind": "internal-denied",
+          "browserUserAgent": true,
+          "transport": "existing-configured-loopback-proxy",
+          "httpStatus": 404,
+          "bodyBytes": 915,
+          "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "realMessagesPostsTransfers": 0,
+  "windowsSystemProxyEnabled": false,
+  "publicProxy": "http://127.0.0.1:7897",
+  "systemNetworkConfigurationChanged": false,
+  "sampleMovieId": "tmdb_movie_10399",
+  "status": "passed"
+}

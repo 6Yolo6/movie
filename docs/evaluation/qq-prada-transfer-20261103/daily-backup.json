@@ -1,0 +1,35 @@
+{
+  "preparedAt": "2026-11-03T15:09:48.060597+00:00",
+  "status": "applied",
+  "additions": [
+    {
+      "name": "qq-prada-transfer-runtime-20261103",
+      "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate.json"
+    },
+    {
+      "name": "qq-prada-transfer-runtime-20261103-rollback",
+      "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\backup-audit\\rollback.json"
+    }
+  ],
+  "originalSha256": "992021c8945e86f53053ee4635a80dedcd2416a042d7efc710ba98289526ab6e",
+  "proposedSha256": "4321a0e86fc3850e6ac5c5601313b7ce95a62f0cce6d886eddf63ea2f30f42d7",
+  "oldConfigurationCheckpoint": {
+    "directory": "G:\\gying-backups\\qq-prada-daily-backup-config-20261103-20261103T150947.767855Z",
+    "archive": "G:\\gying-backups\\qq-prada-daily-backup-config-20261103-20261103T150947.767855Z\\backup-config-before.tar.age",
+    "archiveSha256": "116b8dabcf6b8df402c8b1d106eac10a0d7d890c6d1d4322ff6b557b6a3b0dd2",
+    "authenticated": true,
+    "exactOriginalContentVerified": true
+  },
+  "differenceKeys": [
+    "paths"
+  ],
+  "productionConfigurationWritten": true,
+  "dryRun": {
+    "exitCode": 0,
+    "newOverlayIncluded": true,
+    "rollbackOverlayIncluded": true,
+    "artifactCount": 28,
+    "backupExecuted": false
+  },
+  "appliedAt": "2026-11-03T15:11:34.496783+00:00"
+}

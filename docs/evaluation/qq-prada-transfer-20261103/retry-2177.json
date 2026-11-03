@@ -1,0 +1,254 @@
+{
+  "startedAt": "2026-11-03T15:06:11.810605+00:00",
+  "taskId": 2177,
+  "discoveryId": 9339,
+  "before": {
+    "tasks": [
+      {
+        "id": 2176,
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:42.000000",
+        "urlHash": "f091bd42e1cdde5c6c97088bcae76bf3325b5ed97e69e028ac426a168001f526",
+        "attempts": 1,
+        "shareHash": null,
+        "discoveryId": 9340,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      },
+      {
+        "id": 2177,
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:46.000000",
+        "urlHash": "a64c7a6e69be6fd1c66a07e887308958f456500ceec26090b832e70aeddaeb5a",
+        "attempts": 1,
+        "shareHash": null,
+        "discoveryId": 9339,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      }
+    ],
+    "discoveries": [
+      {
+        "id": 9339,
+        "title": "🅰️🅰️【穿普拉达的女王2 (2026)】【4K.UHD蓝光原盘REMUX 杜比视界P8】【总43G】【内封精修简中简英双语特效sup字幕.年糕首发】✅",
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:46.000000",
+        "urlHash": "a64c7a6e69be6fd1c66a07e887308958f456500ceec26090b832e70aeddaeb5a",
+        "provider": "QUARK",
+        "shareHash": null,
+        "resourceId": null,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      },
+      {
+        "id": 9340,
+        "title": "🅰️🅰️【穿普拉达的女王 全2部】【4K.UHD蓝光原盘REMUX 杜比视界P8】【总71G】【内封精修简英双语&简中特效字幕.年糕】✅",
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:42.000000",
+        "urlHash": "f091bd42e1cdde5c6c97088bcae76bf3325b5ed97e69e028ac426a168001f526",
+        "provider": "QUARK",
+        "shareHash": null,
+        "resourceId": null,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      }
+    ],
+    "movies": [
+      {
+        "id": "806M",
+        "year": 2026,
+        "titleCn": "穿普拉达的女王2",
+        "titleEn": " The Devil Wears Prada 2",
+        "category": "mv"
+      }
+    ],
+    "counts": [
+      {
+        "taskRows": 2
+      }
+    ],
+    "cleanup": [],
+    "cleanupSettings": [
+      {
+        "key": "qq.bot.transfer_cleanup.delay_minutes",
+        "value": "10"
+      },
+      {
+        "key": "qq.bot.transfer_cleanup.enabled",
+        "value": "true"
+      },
+      {
+        "key": "qq.bot.transfer_cleanup.quark_root",
+        "value": "/GYing QQ Temp"
+      }
+    ],
+    "resources": []
+  },
+  "transferRequestMade": true,
+  "qqMessageSent": false,
+  "localCatalogPublishRequestMade": true,
+  "externalPublishingPerformed": false,
+  "task2176Retried": false,
+  "transferApi": {
+    "httpStatus": 200,
+    "code": "OK",
+    "taskId": 2177,
+    "submitted": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ownShare": {
+    "accessible": true,
+    "videoCount": 1,
+    "fileCount": 3,
+    "directories": 2,
+    "videoNameSha256": "ba7ca298f5efbacd095c06c84da46bc0b9dd07672d231eb7f0a460c7c25611ef",
+    "videoBytes": 46357645187,
+    "firstMovieAbsent": true,
+    "sourceVideoIdentityMatched": true
+  },
+  "scopeVerified": true,
+  "task2176Unchanged": true,
+  "localCatalogPublishApi": {
+    "httpStatus": 200,
+    "code": "OK",
+    "discoveryId": 9339,
+    "published": 0,
+    "updated": 1,
+    "failed": 0,
+    "resourceIds": [
+      1579
+    ]
+  },
+  "localCatalogResourceVerified": true,
+  "resourceId": 1579,
+  "after": {
+    "tasks": [
+      {
+        "id": 2176,
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:42.000000",
+        "urlHash": "f091bd42e1cdde5c6c97088bcae76bf3325b5ed97e69e028ac426a168001f526",
+        "attempts": 1,
+        "shareHash": null,
+        "discoveryId": 9340,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      },
+      {
+        "id": 2177,
+        "status": "SUBMITTED",
+        "movieId": "806M",
+        "updated": "2026-11-03 23:06:42.000000",
+        "urlHash": "a64c7a6e69be6fd1c66a07e887308958f456500ceec26090b832e70aeddaeb5a",
+        "attempts": 2,
+        "shareHash": "3ec1b45835393fc983b9790e01569e990cecc0a4812950fbcf0acb67fccdc3f2",
+        "discoveryId": 9339,
+        "errorPresent": false,
+        "errorSha256": null
+      }
+    ],
+    "discoveries": [
+      {
+        "id": 9339,
+        "title": "🅰️🅰️【穿普拉达的女王2 (2026)】【4K.UHD蓝光原盘REMUX 杜比视界P8】【总43G】【内封精修简中简英双语特效sup字幕.年糕首发】✅",
+        "status": "SAVED",
+        "movieId": "806M",
+        "updated": "2026-11-03 23:06:44.000000",
+        "urlHash": "a64c7a6e69be6fd1c66a07e887308958f456500ceec26090b832e70aeddaeb5a",
+        "provider": "QUARK",
+        "shareHash": "3ec1b45835393fc983b9790e01569e990cecc0a4812950fbcf0acb67fccdc3f2",
+        "resourceId": 1579,
+        "errorPresent": false,
+        "errorSha256": null
+      },
+      {
+        "id": 9340,
+        "title": "🅰️🅰️【穿普拉达的女王 全2部】【4K.UHD蓝光原盘REMUX 杜比视界P8】【总71G】【内封精修简英双语&简中特效字幕.年糕】✅",
+        "status": "FAILED",
+        "movieId": "806M",
+        "updated": "2026-11-03 20:28:42.000000",
+        "urlHash": "f091bd42e1cdde5c6c97088bcae76bf3325b5ed97e69e028ac426a168001f526",
+        "provider": "QUARK",
+        "shareHash": null,
+        "resourceId": null,
+        "errorPresent": true,
+        "errorSha256": "80b2b716614b9b1242ad01ba453b7df6ca8c1e1057caeea424f8c7f07cd957b9"
+      }
+    ],
+    "movies": [
+      {
+        "id": "806M",
+        "year": 2026,
+        "titleCn": "穿普拉达的女王2",
+        "titleEn": " The Devil Wears Prada 2",
+        "category": "mv"
+      }
+    ],
+    "counts": [
+      {
+        "taskRows": 2
+      }
+    ],
+    "cleanup": [],
+    "cleanupSettings": [
+      {
+        "key": "qq.bot.transfer_cleanup.delay_minutes",
+        "value": "10"
+      },
+      {
+        "key": "qq.bot.transfer_cleanup.enabled",
+        "value": "true"
+      },
+      {
+        "key": "qq.bot.transfer_cleanup.quark_root",
+        "value": "/GYing QQ Temp"
+      }
+    ],
+    "resources": [
+      {
+        "id": 1579,
+        "type": "DISK",
+        "status": "ACTIVE",
+        "movieId": "806M",
+        "urlHash": "3ec1b45835393fc983b9790e01569e990cecc0a4812950fbcf0acb67fccdc3f2",
+        "provider": "QUARK",
+        "deletedAt": null,
+        "linkStatus": "NORMAL",
+        "auditStatus": 1
+      }
+    ]
+  },
+  "cleanup": {
+    "originalMarkerRetained": true,
+    "jobRowsUnchanged": true,
+    "settingsUnchanged": true,
+    "scheduleForDiscoveryCalled": false,
+    "naturalCleanupVerified": false
+  },
+  "qqReply": {
+    "httpStatus": 200,
+    "replyLength": 455,
+    "replySha256": "ddfaef935636a1272de1d2b912eb1a8beb378823cb7ccf65c4cacf1ea9833290",
+    "targetTitlePresent": true,
+    "errorAbsent": true,
+    "repairedSharePresent": true,
+    "audit": [
+      {
+        "id": 2259,
+        "status": "LIBRARY_RESOURCE",
+        "movieId": "806M",
+        "errorPresent": false,
+        "resourceCount": 2
+      }
+    ],
+    "messageSent": false,
+    "resourceSequenceSubmitted": false
+  },
+  "completedAt": "2026-11-03T15:06:44.230952+00:00"
+}

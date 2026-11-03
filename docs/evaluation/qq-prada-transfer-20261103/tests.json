@@ -1,0 +1,16 @@
+{
+  "scope": "Isolated final current-production-base sources; real temporary MySQL and offline Maven; production env not loaded",
+  "totals": {
+    "tests": 940,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 939
+  },
+  "requiredSqlVerified": true,
+  "separateCompileVerified": true,
+  "fixturesRemoved": true,
+  "fullSuiteReport": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate-base-13660c92\\tmp\\query-boundaries-mysql-aecfbf85999c\\result.json",
+  "fullSuiteReportSha256": "e7737f57defcb3e078c307ede96ea90761dc4036505b2ab4e7338471fdd03e2f",
+  "deploymentScriptRegressionsPassed": 35
+}

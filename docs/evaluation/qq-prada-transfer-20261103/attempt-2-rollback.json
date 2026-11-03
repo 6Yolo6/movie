@@ -1,0 +1,115 @@
+{
+  "status": "stopped",
+  "startedAt": "2026-11-03T14:30:16.473283+00:00",
+  "affected": [
+    "backend"
+  ],
+  "deploymentPerformed": false,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": false,
+  "securityException": {
+    "acceptedByCurrentUserAuthorization": true,
+    "scanSummary": {
+      "PASS": 58,
+      "FAIL": 11,
+      "UNKNOWN": 1
+    },
+    "gateLedgerStillOpen": true,
+    "authorizationSha256": "f129eae90c3666b744bac4eeb1ee1a85eecc7638948c9b78263e8ccdf58490ea"
+  },
+  "candidateImages": {
+    "backend": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e"
+  },
+  "backendJarSha256": "f805f0655d8acf134b58c85908cbaef84302e16ac0b38675c197c4b9489d68b4",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\qq-prada-transfer-20261103-20261103T142059.049763Z",
+  "finalStoppedCheckpointRequired": false,
+  "readinessExitCode": 0,
+  "idleChecks": [
+    {
+      "at": "2026-11-03T14:35:47.153270+00:00",
+      "phase": "Deployment preflight natural idle",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false
+    },
+    {
+      "at": "2026-11-03T14:35:56.840016+00:00",
+      "phase": "Immediately before backend TERM",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false
+    },
+    {
+      "at": "2026-11-03T14:36:02.964405+00:00",
+      "phase": "Backend drained",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false
+    },
+    {
+      "at": "2026-11-03T14:36:23.161880+00:00",
+      "phase": "Before backend candidate start",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": false
+    },
+    {
+      "at": "2026-11-03T14:37:37.509764+00:00",
+      "phase": "Before application-only rollback",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false,
+      "currentPersistedQueueReadFromCapturedBindings": true
+    }
+  ],
+  "phase": "Stopped before further action",
+  "attemptedServices": [
+    "backend"
+  ],
+  "TERMReceipts": {
+    "backend": {
+      "id": "706cd7c607971f2a047012e4fc3d8cdfc0e5abc59ed0327f4ec9f72b48c5ee19",
+      "image": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+      "exitCode": 143,
+      "finishedAt": "2026-11-03T14:35:57.642092109Z"
+    }
+  },
+  "finalCheckpoint": "G:\\gying-backups\\qq-prada-transfer-20261103-20261103T143603.356795Z",
+  "actualJarVerified": true,
+  "localEntriesVerified": true,
+  "unaffectedContainersPreserved": true,
+  "failureGate": "python.exe exit 1",
+  "rollback": {
+    "status": "old applications restored",
+    "currentSQLStateKeyRetained": true
+  }
+}

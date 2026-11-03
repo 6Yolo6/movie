@@ -39,6 +39,12 @@ TMDB 自动范围请求严格验证分页和完整条目；所设 start 超过�
 - Worker 跳过该目录的新自动排队，在队列 LIMIT 前排除其 `crawl.mode=RANGE` 的待执行元数据任务，并在执行前复检；不重写排队任务状态、attempts、scheduled_at 或 payload/crawl。已经开始的批次允许正常结束，恢复后沿保留位置续采。
 - `config.gyingAutoSyncPausedSources` 返回六个布尔标记；采集进度显示 `PAUSED` 并保留范围、nextPage/nextItem 与 taskId，该显示不修改数据库任务状态。手动单页元数据、TMDB、单条隔离重试及独立周榜沿用各自开关。
 
+### 电影目录 AI 辅助识别
+
+夸克电影转存先沿用确定性目录识别。完整目录树仍无法确认时，才把程序筛出的已有单片叶目录和视频名交给本机 Ollama 指令4B；来源全名/合集系列上下文、连续中文与完整拼音缩写、年份和续集号先校验。模型只选择已有候选 ID；全名、年份、续集和允许范围复核后，重读整个祖先路径与叶目录 inventory，变化或证据不足即拒绝。
+
+`QUARK_DIRECTORY_AI_ENABLED` 默认 true，端点默认 `host.docker.internal:21434`，模型默认 `qwen3:4b-instruct-2507-q4_K_M`；仅允许本机端点，不传分享 URL、fid 或 Cookie。单并发、一次请求、最多20秒，响应16KiB/上下文4096；超时或无法确认仍停止转存。上传者的缩写不写入全站元数据别名。[本次修复与验收](evaluation/qq-prada-transfer-20261103/README.md)。
+
 ### 剧集自动追更
 
 历史 quark-auto-save 任务按 savepath，runweek=[1] 周一；[] 明确禁用，shareurl_ban 封禁，不批量改这些任务。保留 pattern/$TV_MAGIC/update_subdir；`.*` 递归只进入同名层级，目录不匹配则停止。明确全季合集可保存完整来源到剧名根，普通单季仅保存目标季；迅雷遍历整来源视频。首次转存/手动重试即时执行，来源后续新增才由历史周期处理。
