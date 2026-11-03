@@ -175,3 +175,11 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 新[浏览器回归](../tools/tests/ai-card-metadata.browser.cjs)读取隔离生产构建，API全部fixture，不使用真实token或登录/推理；中英×390/1280×明暗8组/40卡片覆盖0/null/undefined/缺类型/来源不替换。前端固定镜像network=none页面和静态资源另验，不能写成线上UI或真机完成。
 
 初候选f42d…/142测试/四问49.01秒与最终4396…/143测试/四问26.66秒各自保存报告、原文和模型复核。它们是观察过的四问重复开发诊断，冷热与语料适用范围单列，不提供质量或时延提升率。生产服务未替换，安全58/11/1停止上线。用户明确授权后临时启用旧test并受控签发短期USER设备会话，真实nginx入口15/15执行、机械全通过/0失败，各轮只提交一次。结束恢复disabled/有效设备0/本轮token401，密码与USER角色不变；第一次缺显式端口的准备失败提交推理0，原记录保留。本轮网站使用旧Agent1f9d…/frontendf16c…/backendd701…，非新候选、非密码登录、非浏览器UI；活片库/原偏好未冻结。模型诊断15轮满足3/部分1/澄清2/未满足5/缺证4，三维完整13，电影院两条factuality=null；依据与需求15条已评、真人0。p50 15.296秒/p95 68.594秒只是15条串行观测，不做提升对照或生产SLA。v2 reportSha256使用规范JSON hash，原回答与脱敏回答hash分开；完整观测留在受限外部目录。详情、hash和回退边界见[本轮证据](evaluation/answer-quality-20261103/README.md)与[网站逐条复核](evaluation/answer-quality-20261103/website-review.md)。
+
+## 15. 2026-11-03 条件、主题与可信历史候选
+
+本轮[原始15轮候选报告](evaluation/query-quality-20261103/candidate-report.json)是独立自定义v1，使用Agent055f1bdc…与Movie4f73846f…，20:24–20:35上海执行15/15 completed、执行失败0，无mechanical passed字段；不能套用旧网站15机械通过。Movie899总/869通过/30跳过、Agent173全过和compile分别保留。后续同句作者兼主演/执导审查补丁的[新Movie构建](evaluation/query-quality-20261103/movie-reviewed-build.json)独立绑定，未重新运行15轮，不把后来的源码标成原观测版本。
+
+[自定义v1模型复核](evaluation/query-quality-20261103/candidate-review.json)绑定原report字节hash与每轮answer的UTF8字节hash，避免冒称v2的规范JSON digest。15条均有答案，需求与依据已评，三维完整12、事实null3；[汇总](evaluation/query-quality-20261103/review.md)为满足5/部分有用2/有效澄清2/未满足4/证据不足2，真人0。01胶片里程不证明修复主题、10-t2小镇人物引文不证明电影院核心场景；06-t2片库电影分类与电视特辑简介冲突，事实未知。真实引文身份可验证，语义支持仍须单独审查，不能靠模型supported状态计事实成立。
+
+开发题已经观察过，固定10月31日12822公开快照不是原子数据库或现役实时语料；模型与索引沿用现役。历史fixture来自实际前轮候选，但非生产owner/TTL加密队列验收。15轮各提交一次，无失败推理重试；没有网站USER、生产队列/state、DB连接/写入、页面或外发。临时进程exit0与监听清理已确认，原线上身份保持；完整边界、脚本/语料hash、安全门禁与未知见[本轮证据](evaluation/query-quality-20261103/README.md)。第一阶段未完成，不报告独立质量提升率或生产SLA。

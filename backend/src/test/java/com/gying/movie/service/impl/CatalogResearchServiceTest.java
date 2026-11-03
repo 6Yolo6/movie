@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.*;
 import org.junit.jupiter.api.*;
 import org.springframework.jdbc.core.*;
 import java.util.*;
+import java.time.Instant;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.*;
@@ -106,6 +107,36 @@ class CatalogResearchServiceTest {
         ObjectNode body=mapper.createObjectNode().set("plan",mapper.readTree("{\"intent\":\"search\",\"scope\":\"previousResults\",\"yearFrom\":2022}"));
         assertThat(ids(service.query(body,context))).containsExactly("a");
         body.set("plan",mapper.readTree("{\"intent\":\"details\",\"ordinal\":2}"));assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+    }
+    ObjectNode leasedDetails(String id,String message) {
+        ObjectNode body=mapper.createObjectNode().put("jobId",UUID.randomUUID().toString()).put("lease",UUID.randomUUID().toString()).put("message",message);
+        body.putObject("plan").put("intent","details").put("inheritContext",false).put("scope","catalog").put("movieId",id);return body;
+    }
+    ObjectNode historicalContext() {
+        ObjectNode context=mapper.createObjectNode().put("historyComplete",true).put("expiresAt",Instant.now().plusSeconds(600).toString());
+        context.putArray("candidateIds").add("c");ObjectNode first=context.putArray("candidateHistory").addObject().put("expiresAt",Instant.now().plusSeconds(300).toString());
+        first.putArray("candidateIds").add("a");return context;
+    }
+    @Test void leasedHistoricalDetailsRecheckExpiryBeforeReturningSelectedId(){
+        ObjectNode body=leasedDetails("a","最开始那份列表的第一部导演是谁？"),context=historicalContext();
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
+        ((ObjectNode)context.path("candidateHistory").get(0)).put("expiresAt",Instant.now().minusSeconds(1).toString());
+        JsonNode expired=service.query(body,context);assertThat(expired.has("selectedId")).isFalse();assertThat(expired.path("queryPlan").path("intent").asText()).isEqualTo("clarify");
+        assertThat(expired.path("answer").asText()).contains("上下文已过期");
+        context=historicalContext();context.put("expiresAt",Instant.now().minusSeconds(1).toString());assertThat(service.query(body,context).has("selectedId")).isFalse();
+    }
+    @Test void anExpiredRootPrunedAfterPlanningCannotSelectItsOldIdOrTheLatestList(){
+        ObjectNode context=historicalContext();context.put("historyComplete",false);context.withArray("candidateHistory").removeAll();
+        assertThat(service.query(leasedDetails("a","第一轮第一部导演是谁？"),context).has("selectedId")).isFalse();
+        assertThat(service.query(leasedDetails("c","第一轮第一部导演是谁？"),context).has("selectedId")).isFalse();
+        assertThat(service.query(leasedDetails("c","第一份列表的首片导演是谁？"),historicalContext()).has("selectedId")).isFalse();
+    }
+    @Test void explicitFreshCatalogIdsTitlesAndNoJobCallsRemainIndependentOfHistoricalExpiry(){
+        ObjectNode context=historicalContext().put("historyComplete",false),body=leasedDetails("b","查影片ID: b的详情");
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("b");
+        ObjectNode plan=(ObjectNode)body.path("plan");plan.remove("movieId");plan.putArray("titles").add("迷案样本");body.put("message","查《迷案样本》的详情");
+        assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("b");
+        body=leasedDetails("a","第一轮第一部导演是谁？");body.remove(List.of("jobId","lease"));assertThat(service.query(body,context).path("selectedId").asText()).isEqualTo("a");
     }
     @Test void rangeReplacementSearchesNewYearsAndPreservesUnchangedFilters()throws Exception{
         var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"yearFrom\":2000,\"yearTo\":2010,\"category\":\"mv\",\"maxRuntime\":110,\"limit\":2,\"excludedDirectors\":[\"诺兰\"]}"));
@@ -278,6 +309,74 @@ class CatalogResearchServiceTest {
         body.put("message","查王家卫主演的电影");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
         body.put("message","布兰切特主演的电影");
         assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("actors").isEmpty()).isTrue();
+    }
+
+    @Test void authorSurnameInsideCatalogCastDoesNotBecomeActorOrDirectorFilter()throws Exception{
+        docs.get(0).putArray("actors").add("山田·野岛");
+        docs.get(1).putArray("directors").add("野岛一郎");
+        var body=mapper.createObjectNode().put("message","找野岛一郎原著改编的电影；原作者不是演员或导演条件");
+        body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"山田·野岛\"],\"directors\":[\"野岛一郎\"]}"));
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();assertThat(result.path("queryPlan").path("directors").isEmpty()).isTrue();
+    }
+    @Test void writerRoleDoesNotRemoveOtherExplicitActorOrDirector()throws Exception{
+        docs.get(0).putArray("actors").add("山田·野岛").add("凯特·布兰切特");
+        var body=mapper.createObjectNode().put("message","查作家野岛一郎的原著改编，凯特布兰切特主演，排除王家卫导演的");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).containsExactlyInAnyOrder("a","c");assertThat(result.path("queryPlan").path("actors").toString()).contains("凯特·布兰切特").doesNotContain("野岛");
+        assertThat(result.path("queryPlan").path("excludedDirectors").toString()).contains("王家卫");
+    }
+    @Test void samePersonCanBeExplicitlyRequestedAsActorEvenWhenAlsoAnAuthor()throws Exception{
+        docs.get(0).putArray("actors").add("野岛一郎");
+        var body=mapper.createObjectNode().put("message","找野岛一郎原著改编，同时由野岛一郎主演的电影");body.putObject("plan").put("intent","search");
+        assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+    @Test void anAuthorCanAlsoBeExplicitlyRequestedAsActorWithinTheSameClause(){
+        docs.get(0).putArray("actors").add("柳青");
+        for(String message:List.of("找柳青原著改编同时由柳青主演的电影","找作家柳青原著改编而且柳青出演的电影")){
+            var body=mapper.createObjectNode().put("message",message);body.putObject("plan").put("intent","search");
+            var result=service.query(body,mapper.createObjectNode());
+            assertThat(ids(result)).as(message).containsExactly("a");
+            assertThat(result.path("queryPlan").path("actors").toString()).contains("柳青");
+        }
+    }
+    @Test void anAuthorCanAlsoBeExplicitlyRequestedAsDirectorWithinTheSameClause(){
+        docs.get(1).putArray("directors").add("程甲");
+        for(String message:List.of("找程甲原作改编而且程甲执导的电影","找作家程甲原著改编并由程甲导演的电影")){
+            var body=mapper.createObjectNode().put("message",message);body.putObject("plan").put("intent","search");
+            var result=service.query(body,mapper.createObjectNode());
+            assertThat(ids(result)).as(message).containsExactly("b");
+            assertThat(result.path("queryPlan").path("directors").toString()).contains("程甲");
+        }
+    }
+    @Test void aDeniedPerformingRoleInTheSameClauseStillLeavesOnlyTheAuthorReference(){
+        docs.get(0).putArray("actors").add("柳青");
+        var body=mapper.createObjectNode().put("message","找作者柳青原著改编不是演员柳青的作品");
+        body.putObject("plan").put("intent","search").putArray("actors").add("柳青");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);
+        assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();
+        assertThat(result.path("queryPlan").path("excludedActors").isEmpty()).isTrue();
+    }
+    @Test void runtimeDigitsAreNotRecoveredAsAShortCatalogPersonName()throws Exception{
+        docs.get(0).putArray("actors").add("50分");
+        var body=mapper.createObjectNode().put("message","片长至少150分钟");body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"50分\"]}"));
+        assertThat(service.query(body,mapper.createObjectNode()).path("queryPlan").path("actors").isEmpty()).isTrue();
+        body.put("message","找50分主演的电影");assertThat(ids(service.query(body,mapper.createObjectNode()))).containsExactly("a");
+    }
+
+    @Test void deniedPerformingRoleDoesNotTurnAnAuthorIntoACastFilter()throws Exception{
+        docs.get(0).putArray("actors").add("柳青");
+        var body=mapper.createObjectNode().put("message","找作者柳青原著改编，不是演员柳青的作品");
+        body.set("plan",mapper.readTree("{\"intent\":\"search\",\"actors\":[\"柳青\"],\"excludedActors\":[\"柳青\"]}"));
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).hasSize(3);assertThat(result.path("queryPlan").path("actors").isEmpty()).isTrue();assertThat(result.path("queryPlan").path("excludedActors").isEmpty()).isTrue();
+    }
+    @Test void aRuntimeFragmentDoesNotHideALaterRealNumericActorName()throws Exception{
+        docs.get(0).putArray("actors").add("50分");
+        var body=mapper.createObjectNode().put("message","片长至少150分钟，找50分主演的电影");body.putObject("plan").put("intent","search");
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(ids(result)).containsExactly("a");assertThat(result.path("queryPlan").path("actors").toString()).contains("50分");
     }
 
 }

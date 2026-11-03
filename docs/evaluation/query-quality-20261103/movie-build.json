@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-11-03T12:21:15.344629+00:00",
+  "sourceSha256": "6564abaac823efcc9574973d32997ea19d465eb1706d55408b77cd3c2b12e91a",
+  "sourceFileCount": 349,
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "tests": {
+    "tests": 899,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 30
+  },
+  "skippedClasses": [
+    {
+      "class": "com.gying.movie.client.XunleiTokenPersistenceTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.security.RedisRateLimiterIntegrationTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.service.impl.CatalogAiMySqlTest",
+      "skipped": 11
+    },
+    {
+      "class": "com.gying.movie.service.impl.MonitoringServiceMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.service.impl.QueryBoundaryMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.util.PrivateFileWriterTest",
+      "skipped": 3
+    }
+  ],
+  "compileExitCode": 0,
+  "jarSha256": "4f73846fd722f1c6d33baa2ee9df31d0a1745cf87c53ba48dd38904b1dc51112",
+  "jarSize": 80433246,
+  "candidatePath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\movie-candidate-4f73846fd722f1c6d33baa2ee9df31d0a1745cf87c53ba48dd38904b1dc51112.jar",
+  "sourceStillMatches": true,
+  "completedAt": "2026-11-03T12:22:46.497185+00:00",
+  "passedTests": 869,
+  "environmentScope": "Offline Maven source copy and allowlist environment. Production env and database not loaded."
+}

@@ -26,6 +26,8 @@ public class AiAssistantService {
     private JsonNode committed;
     private boolean closed;
     private static final int LEASE_SECONDS = 45;
+    private static final int CONTEXT_ROUNDS = 4;
+    private static final int CONTEXT_CHAR_BUDGET = 10000;
     public Map<String, Object> interpret(String message) {
         String id;
         synchronized (this) {
@@ -75,10 +77,10 @@ public class AiAssistantService {
         expire();
         JsonNode request = prepareRequest(userId,input);
         String requestKey = input.path("requestKey").asText("");
-        String requestHash = fingerprint(request);
+        String requestHash = requestFingerprint(input);
         if (!requestKey.isEmpty()) for (Job job : jobs.values()) {
             if (job.user.equals(userId) && requestKey.equals(job.requestKey)) {
-                if (!requestHash.equals(job.requestHash)) fail(409, "幂等键已用于其他问题");
+                if (!sameRequest(job,input,requestHash)) fail(409, "幂等键已用于其他问题");
                 return view(job);
             }
         }
@@ -88,6 +90,7 @@ public class AiAssistantService {
             fail(429, "AI 助手繁忙，请稍后再试");
         Job job = new Job(userId, request, clock.instant());
         job.requestKey = requestKey; job.requestHash = requestHash;
+        job.previousJobId = input.has("previousJobId") ? input.path("previousJobId").asText() : null;
         jobs.put(job.id, job);
         persist();
         return view(job);
@@ -107,9 +110,11 @@ public class AiAssistantService {
             job.status = "RUNNING"; job.started = clock.instant(); job.lease = UUID.randomUUID().toString();
             job.attempt++; job.renewable=renewable; job.leaseUntil = clock.instant().plusSeconds(renewable?LEASE_SECONDS:210);
             persist();
+            ObjectNode claimedRequest=(ObjectNode)job.request.deepCopy();
+            if(job.previousJobId!=null)claimedRequest.set("context",contextFor(job));
             return Map.of("jobId", job.id, "lease", job.lease, "attempt", job.attempt,
                     "leaseExpiresAt", job.leaseUntil.toString(), "deadline", job.created.plusSeconds(240).toString(),
-                    "request", job.request.deepCopy());
+                    "request", claimedRequest);
         }
         return Map.of();
     }
@@ -214,33 +219,72 @@ public class AiAssistantService {
             if(!input.path("previousJobId").isTextual()||!input.path("previousJobId").asText().matches("[a-f0-9-]{36}"))fail(400,"无效的上一轮问答引用");
             expire();Job previous=jobs.get(input.path("previousJobId").asText());
             if(previous==null||!previous.user.equals(userId)||!previous.status.equals("SUCCEEDED")||previous.result==null)fail(404,"上一轮问答已失效，请重新提问");
-            ObjectNode context=mapper.createObjectNode();
-            if(previous.result.path("queryPlan").isObject())context.set("queryPlan",previous.result.path("queryPlan").deepCopy());
-            else if(previous.result.path("catalog").path("keyword").isTextual())context.putObject("queryPlan").put("intent","search").putArray("titles").add(previous.result.path("catalog").path("keyword"));
-            var ids=context.putArray("candidateIds");var candidates=context.putArray("candidates");Set<String> seen=new HashSet<>();
-            for(JsonNode evidence:previous.result.path("evidence")) {
-                List<JsonNode> movies=new ArrayList<>();evidence.path("movies").forEach(movies::add);if(evidence.path("movie").isObject())movies.add(evidence.path("movie"));
-                for(JsonNode movie:movies)if(ids.size()<30&&seen.add(movie.path("id").asText())) {
-                    ids.add(movie.path("id").asText());var entry=candidates.addObject();for(String k:List.of("id","titleCn","titleEn","year"))if(movie.has(k))entry.set(k,movie.get(k).deepCopy());
-                }
-            }
-            request.set("context",context);
+            request.set("context",conversationContext(previous));
         }
         return request;
     }
+    /** Only retained server jobs can supply historical candidate identities. Never parse client history. */
+    private ObjectNode conversationContext(Job previous) {
+        ObjectNode context=candidateRound(previous);
+        if(previous.result.path("queryPlan").isObject())context.set("queryPlan",previous.result.path("queryPlan").deepCopy());
+        else if(previous.result.path("catalog").path("keyword").isTextual())context.putObject("queryPlan").put("intent","search").putArray("titles").add(previous.result.path("catalog").path("keyword"));
+        var history=context.putArray("candidateHistory");context.put("historyComplete",false);
+        // Keep candidateIds/candidates in the existing latest-round order and within the bridge budget.
+        while(context.toString().length()>CONTEXT_CHAR_BUDGET&&!context.withArray("candidates").isEmpty()) {
+            var candidates=context.withArray("candidates");var ids=context.withArray("candidateIds");
+            candidates.remove(candidates.size()-1);ids.remove(ids.size()-1);
+        }
+        if(context.toString().length()>CONTEXT_CHAR_BUDGET)context.remove("queryPlan");
+        Job cursor=previous;Set<String> seen=new HashSet<>();seen.add(previous.id);
+        for(int count=1;count<CONTEXT_ROUNDS&&cursor.previousJobId!=null;count++) {
+            Job older=jobs.get(cursor.previousJobId);
+            if(older==null||!older.user.equals(previous.user)||!older.status.equals("SUCCEEDED")||older.result==null||!seen.add(older.id))return context;
+            ObjectNode round=candidateRound(older);
+            history.insert(0,round);
+            if(context.toString().length()>CONTEXT_CHAR_BUDGET) { history.remove(0);return context; }
+            cursor=older;
+        }
+        context.put("historyComplete",cursor.previousJobId==null&&cursor.lineageKnown);
+        return context;
+    }
+    private ObjectNode candidateRound(Job job) {
+        ObjectNode round=mapper.createObjectNode().put("expiresAt",job.finished.plusSeconds(900).toString());
+        var ids=round.putArray("candidateIds");var candidates=round.putArray("candidates");Set<String> seen=new HashSet<>();
+        for(JsonNode evidence:job.result.path("evidence")) {
+            List<JsonNode> movies=new ArrayList<>();evidence.path("movies").forEach(movies::add);if(evidence.path("movie").isObject())movies.add(evidence.path("movie"));
+            for(JsonNode movie:movies) {
+                String id=movie.path("id").asText();
+                if(ids.size()>=30||!id.matches("[A-Za-z0-9_-]{1,64}")||!seen.add(id))continue;
+                ids.add(id);var entry=candidates.addObject().put("id",id);
+                for(String field:List.of("titleCn","titleEn"))if(movie.path(field).isTextual()) {
+                    String title=movie.path(field).asText();entry.put(field,title.substring(0,Math.min(120,title.length())));
+                }
+                if(movie.path("year").isIntegralNumber())entry.set("year",movie.path("year").deepCopy());
+            }
+        }
+        return round;
+    }
+    private JsonNode contextFor(Job job) {
+        if(job.previousJobId==null)return job.request.path("context").isObject()?job.request.path("context").deepCopy():mapper.createObjectNode();
+        Job previous=jobs.get(job.previousJobId);
+        if(previous==null||!previous.user.equals(job.user)||!previous.status.equals("SUCCEEDED")||previous.result==null)
+            return mapper.createObjectNode().put("historyComplete",false);
+        return conversationContext(previous);
+    }
     public synchronized Map<String,Object> rememberDirect(Long userId,JsonNode input,Map<String,Object> response) {
-        expire();JsonNode request=prepareRequest(userId,input);String requestKey=input.path("requestKey").asText("");String hash=fingerprint(request);
+        expire();JsonNode request=prepareRequest(userId,input);String requestKey=input.path("requestKey").asText("");String hash=requestFingerprint(input);
         if(!requestKey.isEmpty())for(Job old:jobs.values())if(old.user.equals(userId)&&requestKey.equals(old.requestKey)){
-            if(!hash.equals(old.requestHash))fail(409,"幂等键已用于其他问题");return view(old);
+            if(!sameRequest(old,input,hash))fail(409,"幂等键已用于其他问题");return view(old);
         }
         if(jobs.size()>=200)fail(429,"问答记录已满，请稍后再试");
         Job job=new Job(userId,null,clock.instant());job.id=Objects.toString(response.get("jobId"),UUID.randomUUID().toString());job.status="SUCCEEDED";job.finished=clock.instant();job.result=mapper.valueToTree(response.get("result"));job.requestKey=requestKey;job.requestHash=hash;
+        job.previousJobId=input.has("previousJobId")?input.path("previousJobId").asText():null;
         jobs.put(job.id,job);persist();return view(job);
     }
     public synchronized JsonNode runningContext(String id,String lease) {
         if(id==null||id.isBlank())return mapper.createObjectNode();
         expire();Job job=jobs.get(id);if(job==null||!Objects.equals(job.lease,lease)||!job.status.equals("RUNNING"))fail(409,"问答执行上下文已失效");
-        return job.request.path("context").isObject()?job.request.path("context").deepCopy():mapper.createObjectNode();
+        return contextFor(job);
     }
     public JsonNode validatedRequest(JsonNode input) { return validate(input); }
     @Scheduled(fixedDelay = 10000)
@@ -264,6 +308,30 @@ public class AiAssistantService {
     private void finishFailure(Job job,String message) {
         job.status="FAILED"; job.message=message; job.finished=clock.instant(); job.request=null;
     }
+    private String requestFingerprint(JsonNode input) {
+        ObjectNode stable=(ObjectNode)validate(input);
+        if(input.has("previousJobId"))stable.set("previousJobId",input.path("previousJobId").deepCopy());
+        return fingerprint(stable);
+    }
+    private boolean sameRequest(Job job,JsonNode input,String hash) {
+        if(job.requestHashVersion==2)return hash.equals(job.requestHash);
+        // Version 1 hashed the latest candidate context; reconstruct its field order and untrimmed metadata.
+        ObjectNode legacy=(ObjectNode)validate(input);
+        if(input.has("previousJobId")) {
+            Job previous=jobs.get(input.path("previousJobId").asText());ObjectNode context=mapper.createObjectNode();
+            if(previous.result.path("queryPlan").isObject())context.set("queryPlan",previous.result.path("queryPlan").deepCopy());
+            else if(previous.result.path("catalog").path("keyword").isTextual())context.putObject("queryPlan").put("intent","search").putArray("titles").add(previous.result.path("catalog").path("keyword"));
+            var ids=context.putArray("candidateIds");var candidates=context.putArray("candidates");Set<String> seen=new HashSet<>();
+            for(JsonNode evidence:previous.result.path("evidence")) {
+                List<JsonNode> movies=new ArrayList<>();evidence.path("movies").forEach(movies::add);if(evidence.path("movie").isObject())movies.add(evidence.path("movie"));
+                for(JsonNode movie:movies)if(ids.size()<30&&seen.add(movie.path("id").asText())) {
+                    ids.add(movie.path("id").asText());var entry=candidates.addObject();for(String field:List.of("id","titleCn","titleEn","year"))if(movie.has(field))entry.set(field,movie.path(field).deepCopy());
+                }
+            }
+            legacy.set("context",context);
+        }
+        return fingerprint(legacy).equals(job.requestHash);
+    }
     private String fingerprint(JsonNode value) {
         try { return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                 .digest(mapper.writeValueAsBytes(value))); }
@@ -278,6 +346,8 @@ public class AiAssistantService {
             for(var pair:Map.of("requestKey",Objects.toString(j.requestKey,""),"requestHash",Objects.toString(j.requestHash,""),
                     "receiptHash",Objects.toString(j.receiptHash,""),"lease",Objects.toString(j.lease,""),"message",Objects.toString(j.message,"")).entrySet())
                 if(!pair.getValue().isEmpty())item.put(pair.getKey(),pair.getValue());
+            item.put("lineageKnown",j.lineageKnown).put("requestHashVersion",j.requestHashVersion);
+            if(j.previousJobId!=null)item.put("previousJobId",j.previousJobId);
             if(j.started!=null)item.put("started",j.started.toString());
             if(j.finished!=null)item.put("finished",j.finished.toString());
             if(j.leaseUntil!=null)item.put("leaseUntil",j.leaseUntil.toString());
@@ -304,6 +374,10 @@ public class AiAssistantService {
                 throw new IllegalStateException("Invalid AI job snapshot");
             j.lease=text(item,"lease"); j.message=text(item,"message"); j.requestKey=text(item,"requestKey");
             j.requestHash=text(item,"requestHash"); j.receiptHash=text(item,"receiptHash"); j.result=item.get("result");
+            j.previousJobId=text(item,"previousJobId");j.lineageKnown=item.path("lineageKnown").asBoolean(false);
+            j.requestHashVersion=item.path("requestHashVersion").asInt(1);
+            if(j.requestHashVersion!=1&&j.requestHashVersion!=2)throw new IllegalStateException("Invalid AI request hash version");
+            if(j.previousJobId!=null&&!j.previousJobId.matches("[a-f0-9-]{36}"))throw new IllegalStateException("Invalid AI conversation link");
             j.started=instant(item,"started"); j.finished=instant(item,"finished"); j.leaseUntil=instant(item,"leaseUntil");
             if(j.status.equals("RUNNING") && (j.leaseUntil==null || j.lease==null))throw new IllegalStateException("Missing AI lease");
             if(!j.done() && j.request==null)throw new IllegalStateException("Missing AI request");
@@ -325,7 +399,7 @@ public class AiAssistantService {
     private static final class Job {
         String id = UUID.randomUUID().toString();
         final Long user; final Instant created;
-        String status = "PENDING", lease, message, requestKey, requestHash, receiptHash; int attempt; boolean renewable; Instant started, finished, leaseUntil; JsonNode request, result;
+        String status = "PENDING", lease, message, requestKey, requestHash, receiptHash, previousJobId; int attempt, requestHashVersion=2; boolean renewable, lineageKnown=true; Instant started, finished, leaseUntil; JsonNode request, result;
         Job(Long user, JsonNode request, Instant created) { this.user=user; this.request=request; this.created=created; }
         boolean done() { return status.equals("SUCCEEDED") || status.equals("FAILED"); }
     }

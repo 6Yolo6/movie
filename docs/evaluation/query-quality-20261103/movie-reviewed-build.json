@@ -1,0 +1,49 @@
+{
+  "startedAt": "2026-11-03T12:55:59.270370+00:00",
+  "sourceSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+  "sourceFileCount": 349,
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "tests": {
+    "tests": 902,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 30
+  },
+  "skippedClasses": [
+    {
+      "class": "com.gying.movie.client.XunleiTokenPersistenceTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.security.RedisRateLimiterIntegrationTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.service.impl.CatalogAiMySqlTest",
+      "skipped": 11
+    },
+    {
+      "class": "com.gying.movie.service.impl.MonitoringServiceMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.service.impl.QueryBoundaryMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.util.PrivateFileWriterTest",
+      "skipped": 3
+    }
+  ],
+  "compileExitCode": 0,
+  "jarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+  "jarSize": 80433262,
+  "candidatePath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\reviewed-role-boundary\\movie-candidate-1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd.jar",
+  "sourceStillMatches": true,
+  "completedAt": "2026-11-03T12:57:26.588223+00:00",
+  "passedTests": 872,
+  "environmentScope": "Offline source copy and allowlist environment; production env and DB not loaded.",
+  "modelProbeRunWithThisJar": false
+}

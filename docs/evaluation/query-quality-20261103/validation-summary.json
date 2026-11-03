@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "candidateModelRun": {
+    "reportByteSha256": "1cc71feaf6c557bd5639c4a8aa47026b888817f5b3ef3e75877324997946d50c",
+    "agentJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+    "movieJarSha256": "4f73846fd722f1c6d33baa2ee9df31d0a1745cf87c53ba48dd38904b1dc51112",
+    "executed": 15,
+    "completed": 15,
+    "executionFailed": 0,
+    "mechanicalPassed": null,
+    "humanReviewed": 0
+  },
+  "finalCandidate": {
+    "movieBuildFile": "movie-reviewed-build.json",
+    "agentBuildFile": "agent-build.json",
+    "movieTests": {
+      "total": 902,
+      "passed": 872,
+      "skipped": 30
+    },
+    "agentTests": {
+      "total": 173,
+      "passed": 173,
+      "skipped": 0
+    },
+    "verifyAndCompilePassed": true,
+    "extraMovieRoleBoundaryModelReprobed": false
+  },
+  "readiness": {
+    "pass": 11,
+    "warnings": 1,
+    "fail": 0,
+    "warning": "Existing qq_bot_search_log/qq_channel_post_log schema coverage"
+  },
+  "secretsScan": {
+    "movieFindings": 0,
+    "agentFindings": 0
+  },
+  "safety": {
+    "pass": 58,
+    "fail": 11,
+    "unknown": 1,
+    "gatesFailed": 11
+  },
+  "deploymentAuthorization": {
+    "userMessage": "可部署",
+    "scope": "This query-quality Movie backend and local Agent candidate only; unrelated infrastructure gates remain open",
+    "candidateSpecific": true
+  },
+  "deploymentStatus": "authorized-preparation",
+  "deploymentResultFile": "deployment-result.json",
+  "backupCreated": false,
+  "applicationRollbackPerformed": false
+}

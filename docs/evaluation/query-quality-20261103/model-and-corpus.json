@@ -1,0 +1,11 @@
+{
+  "configuredResearchModel": "qwen3:4b-instruct-2507-q4_K_M",
+  "configuredWorkspaceModel": "qwen3:1.7b",
+  "embeddingIndexSha256": "f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4",
+  "embeddingIndexBytes": 59602567,
+  "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+  "snapshotDocuments": 12822,
+  "snapshotDate": "2026-10-31",
+  "snapshotIsAtomic": false,
+  "runtimeEvidence": "Research model identity is visible in planning trace; configuration is not proof of all inference options or model digest."
+}

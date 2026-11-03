@@ -1,0 +1,4432 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-03T12:24:09.138520+00:00",
+  "datasetVersion": "gying-development-v3",
+  "datasetFileSha256": "1a75e3f9a1bfd38132c51d52099d7381af2f98af9017379e4a887c8204d8dee7",
+  "freezeFileSha256": "77d2a07d7d289f0400bc3287f260c01633e422e70f1112e947d078be921c1c7f",
+  "datasetCanonicalSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+  "provenance": "observed-development-v3-15-turn-condition-theme-history-candidate",
+  "transport": "isolated-agent-and-real-movie-catalogresearch-candidate-over-20261031-public-snapshot",
+  "plannedCases": 10,
+  "plannedTurns": 15,
+  "repeat": 1,
+  "inferenceReplay": false,
+  "websiteUserSessionUsed": false,
+  "productionQueueClaimed": false,
+  "productionStateEnabled": false,
+  "historicalContextTransport": "fixture rounds from actual earlier candidate responses; not production owner/TTL queue verification",
+  "newHumanReviews": 0,
+  "independentHoldout": false,
+  "realMessagesPostsTransfers": 0,
+  "agentJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+  "movieHarness": {
+    "schemaVersion": 1,
+    "candidateJarSha256": "4f73846fd722f1c6d33baa2ee9df31d0a1745cf87c53ba48dd38904b1dc51112",
+    "candidateSourceSha256": "6564abaac823efcc9574973d32997ea19d465eb1706d55408b77cd3c2b12e91a",
+    "catalogClassSha256": "c703453b75f99d24a20d3289826e76b9139a194e51dfa42e347c477eecb85dc2",
+    "harnessSourceSha256": "a7d0b6aee4f9f440b3813f378ac7838ac69f55e502ca0e8600d1b9313f0870fd",
+    "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+    "compileExitCode": 0,
+    "command": [
+      "D:\\Java17\\jdk-17.0.1\\bin\\java.exe",
+      "-Xms128m",
+      "-Xmx512m",
+      "-Dfile.encoding=UTF-8",
+      "-cp",
+      "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-classes;E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-runtime\\BOOT-INF\\classes;E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-runtime\\BOOT-INF\\lib\\*",
+      "CatalogSnapshotHarness",
+      "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\catalog-public-documents.json",
+      "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-token.txt",
+      "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-ready.json",
+      "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-stopped.json",
+      "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-select.sql"
+    ],
+    "port": 18883,
+    "tokenFile": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-token.txt",
+    "springApplicationStarted": false,
+    "databaseConfigured": false,
+    "resourceLinksIncluded": false,
+    "contextFieldLimits": {
+      "contextUtf16Chars": 10000,
+      "candidateRows": 30,
+      "candidateUtf16Chars": 500,
+      "candidateFields": [
+        "id",
+        "titleCn",
+        "titleEn",
+        "year"
+      ]
+    },
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "receiptPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\catalog-harness-stopped.json"
+  },
+  "rows": [
+    {
+      "caseId": "dev-v3-01",
+      "sourceGroup": "dev-v3-film-restoration-process",
+      "turn": 1,
+      "message": "想看记录修复师怎样修复旧胶片的纪录片，给我两部就好。这里的“旧胶片修复”是主题，不是片名。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。\n1. 《迁徙的鸟》；年份：2001；片长：暂无；豆瓣评分：9.1；IMDb评分：7.9；剧情资料依据：“记录胶片长达460多公里。”",
+      "answerSha256": "c39b71e4abe8e4a6ea0d49bb5a142ee5f0e218093a3bd2dd23e919a5c446ee26",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "记录修复师怎样修复旧胶片",
+        "category": "mv",
+        "inheritContext": false,
+        "genresAll": [
+          "纪录片"
+        ],
+        "limit": 2,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:24:48.931189900Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "记录修复师怎样修复旧胶片",
+            "category": "mv",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 2,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "gying_mv_obYr",
+              "titleCn": "迁徙的鸟",
+              "titleEn": " Le peuple migrateur",
+              "category": "mv",
+              "seriesName": "迁徙的鸟",
+              "summary": "当鸟儿用羽翼去实现梦想，翱翔在我们永远无法凭借自身企及的天空，人类又该赋予他们怎样的赞叹呢？\n“鸟的迁徙是一个关于承诺的故事，一种对于回归的承诺。”雅克·贝汉以这样一句话带我们踏上了鸟与梦飞行之旅。毫无疑问，[迁徙的鸟]直接界定了世界顶级纪录片“获取真实”的标准——前后共600多人参与拍摄，历时3年多、耗资4000多万美元，景地遍及全球50多个国家和地区，记录胶片长达460多公里。这部动用了17个世界上最优秀的飞行员和两个科学考察队的电影甫一出世，就引起轰动。短短三个星期内就有250多万法国人为它走进影院，飞越1200公里的大天鹅对生命的坚持，在漫天风沙中追寻出路的沙丘鹤、在冰天雪地下与海鸦对抗到底的企鹅……尽管当中也有失败气馁，也有悬崖边的木头木脑，也有来自人类贪欲的窥视。\n除了简单的说明，整部影片不再有言语。本片的主角是憨态可掬，形态各异的鸟。他们带我们飞过大海，飞过雪原，飞过高山；他们用振动的羽翼向我们诠释飞翔，诠释执着，诠释温情，诠释生命。",
+              "year": 2001,
+              "season": 1,
+              "genres": [
+                "纪录"
+              ],
+              "directors": [
+                "雅克·贝汉",
+                "雅克·克鲁奥德",
+                "米歇尔·德巴"
+              ],
+              "actors": [
+                "雅克·贝汉"
+              ],
+              "regions": [
+                "法国",
+                "德国",
+                "意大利",
+                "西班牙",
+                "瑞士"
+              ],
+              "languages": [
+                "法语"
+              ],
+              "doubanScore": 9.1,
+              "imdbScore": 7.9,
+              "resourceCount": 4,
+              "rating": 9.1,
+              "ratingSource": "any",
+              "reasons": [
+                "资料关键词：怎样、胶片、记录",
+                "剧情资料依据：“记录胶片长达460多公里。”"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": true,
+          "semanticStaleCandidates": 1,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+          "recalledTotal": 43,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "0e06b154-67b1-4e23-861d-fb478331a0f9",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:24:39.651620200Z",
+          "durationMs": 20544
+        },
+        {
+          "requestId": "0e06b154-67b1-4e23-861d-fb478331a0f9",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:24:46.757148500Z",
+          "durationMs": 7106,
+          "returned": 100
+        },
+        {
+          "requestId": "0e06b154-67b1-4e23-861d-fb478331a0f9",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:24:55.694126900Z",
+          "durationMs": 8936,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "记录修复师怎样修复旧胶片",
+            "category": "mv",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 2
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:24:48.931189900Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "记录修复师怎样修复旧胶片",
+                "category": "mv",
+                "inheritContext": false,
+                "genresAll": [
+                  "纪录片"
+                ],
+                "limit": 2,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "gying_mv_obYr",
+                  "titleCn": "迁徙的鸟",
+                  "titleEn": " Le peuple migrateur",
+                  "category": "mv",
+                  "seriesName": "迁徙的鸟",
+                  "summary": "当鸟儿用羽翼去实现梦想，翱翔在我们永远无法凭借自身企及的天空，人类又该赋予他们怎样的赞叹呢？\n“鸟的迁徙是一个关于承诺的故事，一种对于回归的承诺。”雅克·贝汉以这样一句话带我们踏上了鸟与梦飞行之旅。毫无疑问，[迁徙的鸟]直接界定了世界顶级纪录片“获取真实”的标准——前后共600多人参与拍摄，历时3年多、耗资4000多万美元，景地遍及全球50多个国家和地区，记录胶片长达460多公里。这部动用了17个世界上最优秀的飞行员和两个科学考察队的电影甫一出世，就引起轰动。短短三个星期内就有250多万法国人为它走进影院，飞越1200公里的大天鹅对生命的坚持，在漫天风沙中追寻出路的沙丘鹤、在冰天雪地下与海鸦对抗到底的企鹅……尽管当中也有失败气馁，也有悬崖边的木头木脑，也有来自人类贪欲的窥视。\n除了简单的说明，整部影片不再有言语。本片的主角是憨态可掬，形态各异的鸟。他们带我们飞过大海，飞过雪原，飞过高山；他们用振动的羽翼向我们诠释飞翔，诠释执着，诠释温情，诠释生命。",
+                  "year": 2001,
+                  "season": 1,
+                  "genres": [
+                    "纪录"
+                  ],
+                  "directors": [
+                    "雅克·贝汉",
+                    "雅克·克鲁奥德",
+                    "米歇尔·德巴"
+                  ],
+                  "actors": [
+                    "雅克·贝汉"
+                  ],
+                  "regions": [
+                    "法国",
+                    "德国",
+                    "意大利",
+                    "西班牙",
+                    "瑞士"
+                  ],
+                  "languages": [
+                    "法语"
+                  ],
+                  "doubanScore": 9.1,
+                  "imdbScore": 7.9,
+                  "resourceCount": 4,
+                  "rating": 9.1,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "资料关键词：怎样、胶片、记录",
+                    "剧情资料依据：“记录胶片长达460多公里。”"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": true,
+              "semanticStaleCandidates": 1,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+              "recalledTotal": 43,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "0e06b154-67b1-4e23-861d-fb478331a0f9",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T12:25:48.230585300Z",
+          "durationMs": 52535
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "纪录片",
+          "主题是修复师修复旧胶片的过程",
+          "最多两部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "按主题检索并用简介或来源解释相关性，不把整句只当片名",
+          "没有足够相关候选时如实说明"
+        ],
+        "usefulApproximationBoundary": "讲电影史但没有修复过程的片目不满足核心主题，最多单列为不满足条件的补充线索；不计有用近似或满足需求。"
+      },
+      "durationSeconds": 89.17,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_obYr"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_obYr",
+            "titleCn": "迁徙的鸟",
+            "titleEn": " Le peuple migrateur",
+            "year": 2001
+          }
+        ],
+        "expiresAt": "2026-11-03T12:40:48.235594+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-02",
+      "sourceGroup": "dev-v3-language-or-and-runtime",
+      "turn": 1,
+      "message": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "按本次已识别条件找到 31 部，先展示 3 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。\n1. 《魁拔Ⅲ战神崛起》；年份：2014；片长：90分钟；豆瓣评分：8.6；IMDb评分：6.8；片库语言：国语；原始对白：未核验\n2. 《宝莲灯》；年份：1999；片长：85分钟；豆瓣评分：8.6；IMDb评分：6.9；片库语言：国语；原始对白：未核验\n3. 《麦兜·当当伴我心》；年份：2012；片长：80分钟；豆瓣评分：8.5；IMDb评分：6.8；片库语言：国语、粤语；原始对白：未核验\n尚未核实的条件：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验。片库候选尚不能视为满足全部硬条件。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "answerSha256": "e43389fb6283a81587b0f86c9580221e91510830287b4f1efbd73ff51ccde3cd",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "genresAny": [
+          "动画"
+        ],
+        "unsupportedConditions": [
+          "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+        ],
+        "minRuntime": 70,
+        "maxRuntime": 94,
+        "limit": 3,
+        "languagesAny": [
+          "中文",
+          "西班牙语"
+        ],
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:25:55.676065100Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAny": [
+              "动画"
+            ],
+            "unsupportedConditions": [
+              "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+            ],
+            "minRuntime": 70,
+            "maxRuntime": 94,
+            "limit": 3,
+            "languagesAny": [
+              "中文",
+              "西班牙语"
+            ],
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "YMnB",
+              "titleCn": "魁拔Ⅲ战神崛起",
+              "category": "mv",
+              "seriesName": "魁拔Ⅲ战神崛起",
+              "summary": "历经惨烈的元泱界大战，成功突破魁拔十二妖第一道防线的蛮吉（刘婧荦 配音）、镜心（刘校妤 配音）一行，为追赶曲境一号再踏征途，却意外闯入萨库人大仓（王宇腾 配音）与粼妖姑娘海问香（姚姝 配音）所设下的诡异防线。面对大仓与海问香的步步紧逼，蛮吉等人无奈应战。激战中，神秘少年 敖江（刘校妤 配音）凭空出现、曲境一号舰长远浪（杨晨 配音）更做出种种令人匪夷所思的决定，让本已复杂的局面，越发显得扑朔迷离；而机缘巧合下，脉门封闭已久的蛮吉竟意外开启六大脉门，化身无敌战神，携魁拔脉兽驰骋于漫天烽火中，上演了一场气势磅礴的惊世之战……",
+              "year": 2014,
+              "genres": [
+                "动作",
+                "冒险",
+                "奇幻",
+                "动画"
+              ],
+              "directors": [
+                "王川",
+                "张钢",
+                "周洁"
+              ],
+              "actors": [
+                "刘婧荦",
+                "姚姝",
+                "王宇腾",
+                "杨晨",
+                "刘校妤",
+                "王凯",
+                "敖磊",
+                "石困困",
+                "宝木中阳",
+                "马斑马",
+                "杨凝",
+                "张杰",
+                "范哲琛",
+                "图特哈蒙",
+                "姜广涛"
+              ],
+              "regions": [
+                "大陆"
+              ],
+              "languages": [
+                "国语"
+              ],
+              "doubanScore": 8.6,
+              "imdbScore": 6.8,
+              "runtimeMinutes": 90,
+              "resourceCount": 2,
+              "rating": 8.6,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "gying_mv_WLn7",
+              "titleCn": "宝莲灯",
+              "titleEn": "Lotus Lantern",
+              "category": "mv",
+              "seriesName": "宝莲灯",
+              "summary": "天神爱上凡人，这原本就是不被允许的事情。但是，天宫中的三圣母（徐帆 配音）却执意爱上了人间的书生刘彦昌。不顾二郎神（姜文 配音）的反对，三圣母带着神器宝莲灯私下凡间与刘彦昌私定终身并生下一子取名叫沉香。平静、幸福的七年很快就过去了，有一天二郎神突然下凡，并用小沉香威胁三圣母交出宝莲灯并被其压在华山下。一个美好的家庭也由此破碎。沉香从土地神口中知道了自己的身世，为了夺回宝莲灯，救出母亲，由此踏上了艰辛的寻母之路。多年的磨练，让沉香成长为一个英勇的少年，并在孙悟空（陈佩斯 配音）的点拨下，获得一把神斧，最终宝莲灯与沉香合二为一，战胜了二郎神，劈开华山，救出了母亲。",
+              "year": 1999,
+              "season": 1,
+              "genres": [
+                "动画"
+              ],
+              "directors": [
+                "常光希"
+              ],
+              "actors": [
+                "姜文",
+                "徐帆",
+                "宁静",
+                "陈佩斯",
+                "崔杰",
+                "丁嘉丽",
+                "江平",
+                "雷恪生",
+                "梁天",
+                "马精武",
+                "马羚",
+                "马晓晴"
+              ],
+              "regions": [
+                "大陆"
+              ],
+              "languages": [
+                "国语"
+              ],
+              "doubanScore": 8.6,
+              "imdbScore": 6.9,
+              "runtimeMinutes": 85,
+              "resourceCount": 5,
+              "rating": 8.6,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "gying_mv_6LjZ",
+              "titleCn": "麦兜·当当伴我心",
+              "titleEn": " 麥兜‧噹噹伴我心",
+              "category": "mv",
+              "seriesName": "麦兜·当当伴我心",
+              "summary": "麦兜电影版的第五部作品，春田花花幼稚园出现了史无前例的经济困难。即使校长（黄秋生 配音）和陈老师（许飞 配音）以及麦太（吴君如 配音）等家长使出浑身解数也没法解决。于是学校召开了一次校友筹款晚会，但是长大成人的校友们都没什么出息，欣慰的是校长无意之中发现了麦兜等小朋友的音乐天赋。经过挫折，校长终于找到了胶牌经理人（郑中基 配音）为小朋友合唱团打理事宜，演出大获成功通告不断。可惜最后关头经理人失踪，合唱团并没有为学校带来大收益。可校长在最后一场演出中发现了惊喜，春田花花幼稚园也还有成功的校友存在，众校友再一次感到了人生的真谛。",
+              "year": 2012,
+              "season": 1,
+              "genres": [
+                "喜剧",
+                "动画",
+                "励志"
+              ],
+              "directors": [
+                "谢立文"
+              ],
+              "actors": [
+                "黄秋生",
+                "吴君如",
+                "胡歌",
+                "郑中基",
+                "许飞"
+              ],
+              "regions": [
+                "大陆",
+                "香港"
+              ],
+              "languages": [
+                "国语",
+                "粤语"
+              ],
+              "doubanScore": 8.5,
+              "imdbScore": 6.8,
+              "runtimeMinutes": 80,
+              "resourceCount": 0,
+              "rating": 8.5,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 31,
+          "returned": 3,
+          "truncated": true,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [
+            "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+          ],
+          "answer": "按本次已识别条件找到 31 部，先展示 3 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。"
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+          "queriedAt": "2026-11-03T12:25:59.152063600Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [],
+          "returned": 0,
+          "truncated": true,
+          "rawReturned": 0,
+          "identityReturned": 0,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "81a054d3-1fba-4ce6-95a3-10d42be46488",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:25:55.574028500Z",
+          "durationMs": 7315
+        },
+        {
+          "requestId": "81a054d3-1fba-4ce6-95a3-10d42be46488",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:25:55.750345Z",
+          "durationMs": 176,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAny": [
+              "动画"
+            ],
+            "unsupportedConditions": [
+              "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+            ],
+            "minRuntime": 70,
+            "maxRuntime": 94,
+            "limit": 3,
+            "languagesAny": [
+              "中文",
+              "西班牙语"
+            ],
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:25:55.676065100Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "genresAny": [
+                  "动画"
+                ],
+                "unsupportedConditions": [
+                  "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+                ],
+                "minRuntime": 70,
+                "maxRuntime": 94,
+                "limit": 3,
+                "languagesAny": [
+                  "中文",
+                  "西班牙语"
+                ],
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "YMnB",
+                  "titleCn": "魁拔Ⅲ战神崛起",
+                  "category": "mv",
+                  "seriesName": "魁拔Ⅲ战神崛起",
+                  "summary": "历经惨烈的元泱界大战，成功突破魁拔十二妖第一道防线的蛮吉（刘婧荦 配音）、镜心（刘校妤 配音）一行，为追赶曲境一号再踏征途，却意外闯入萨库人大仓（王宇腾 配音）与粼妖姑娘海问香（姚姝 配音）所设下的诡异防线。面对大仓与海问香的步步紧逼，蛮吉等人无奈应战。激战中，神秘少年 敖江（刘校妤 配音）凭空出现、曲境一号舰长远浪（杨晨 配音）更做出种种令人匪夷所思的决定，让本已复杂的局面，越发显得扑朔迷离；而机缘巧合下，脉门封闭已久的蛮吉竟意外开启六大脉门，化身无敌战神，携魁拔脉兽驰骋于漫天烽火中，上演了一场气势磅礴的惊世之战……",
+                  "year": 2014,
+                  "genres": [
+                    "动作",
+                    "冒险",
+                    "奇幻",
+                    "动画"
+                  ],
+                  "directors": [
+                    "王川",
+                    "张钢",
+                    "周洁"
+                  ],
+                  "actors": [
+                    "刘婧荦",
+                    "姚姝",
+                    "王宇腾",
+                    "杨晨",
+                    "刘校妤",
+                    "王凯",
+                    "敖磊",
+                    "石困困",
+                    "宝木中阳",
+                    "马斑马",
+                    "杨凝",
+                    "张杰",
+                    "范哲琛",
+                    "图特哈蒙",
+                    "姜广涛"
+                  ],
+                  "regions": [
+                    "大陆"
+                  ],
+                  "languages": [
+                    "国语"
+                  ],
+                  "doubanScore": 8.6,
+                  "imdbScore": 6.8,
+                  "runtimeMinutes": 90,
+                  "resourceCount": 2,
+                  "rating": 8.6,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "gying_mv_WLn7",
+                  "titleCn": "宝莲灯",
+                  "titleEn": "Lotus Lantern",
+                  "category": "mv",
+                  "seriesName": "宝莲灯",
+                  "summary": "天神爱上凡人，这原本就是不被允许的事情。但是，天宫中的三圣母（徐帆 配音）却执意爱上了人间的书生刘彦昌。不顾二郎神（姜文 配音）的反对，三圣母带着神器宝莲灯私下凡间与刘彦昌私定终身并生下一子取名叫沉香。平静、幸福的七年很快就过去了，有一天二郎神突然下凡，并用小沉香威胁三圣母交出宝莲灯并被其压在华山下。一个美好的家庭也由此破碎。沉香从土地神口中知道了自己的身世，为了夺回宝莲灯，救出母亲，由此踏上了艰辛的寻母之路。多年的磨练，让沉香成长为一个英勇的少年，并在孙悟空（陈佩斯 配音）的点拨下，获得一把神斧，最终宝莲灯与沉香合二为一，战胜了二郎神，劈开华山，救出了母亲。",
+                  "year": 1999,
+                  "season": 1,
+                  "genres": [
+                    "动画"
+                  ],
+                  "directors": [
+                    "常光希"
+                  ],
+                  "actors": [
+                    "姜文",
+                    "徐帆",
+                    "宁静",
+                    "陈佩斯",
+                    "崔杰",
+                    "丁嘉丽",
+                    "江平",
+                    "雷恪生",
+                    "梁天",
+                    "马精武",
+                    "马羚",
+                    "马晓晴"
+                  ],
+                  "regions": [
+                    "大陆"
+                  ],
+                  "languages": [
+                    "国语"
+                  ],
+                  "doubanScore": 8.6,
+                  "imdbScore": 6.9,
+                  "runtimeMinutes": 85,
+                  "resourceCount": 5,
+                  "rating": 8.6,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "gying_mv_6LjZ",
+                  "titleCn": "麦兜·当当伴我心",
+                  "titleEn": " 麥兜‧噹噹伴我心",
+                  "category": "mv",
+                  "seriesName": "麦兜·当当伴我心",
+                  "summary": "麦兜电影版的第五部作品，春田花花幼稚园出现了史无前例的经济困难。即使校长（黄秋生 配音）和陈老师（许飞 配音）以及麦太（吴君如 配音）等家长使出浑身解数也没法解决。于是学校召开了一次校友筹款晚会，但是长大成人的校友们都没什么出息，欣慰的是校长无意之中发现了麦兜等小朋友的音乐天赋。经过挫折，校长终于找到了胶牌经理人（郑中基 配音）为小朋友合唱团打理事宜，演出大获成功通告不断。可惜最后关头经理人失踪，合唱团并没有为学校带来大收益。可校长在最后一场演出中发现了惊喜，春田花花幼稚园也还有成功的校友存在，众校友再一次感到了人生的真谛。",
+                  "year": 2012,
+                  "season": 1,
+                  "genres": [
+                    "喜剧",
+                    "动画",
+                    "励志"
+                  ],
+                  "directors": [
+                    "谢立文"
+                  ],
+                  "actors": [
+                    "黄秋生",
+                    "吴君如",
+                    "胡歌",
+                    "郑中基",
+                    "许飞"
+                  ],
+                  "regions": [
+                    "大陆",
+                    "香港"
+                  ],
+                  "languages": [
+                    "国语",
+                    "粤语"
+                  ],
+                  "doubanScore": 8.5,
+                  "imdbScore": 6.8,
+                  "runtimeMinutes": 80,
+                  "resourceCount": 0,
+                  "rating": 8.5,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 31,
+              "returned": 3,
+              "truncated": true,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [
+                "片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验"
+              ],
+              "answer": "按本次已识别条件找到 31 部，先展示 3 部。 片库不能完整核验这些要求：片库语言字段未区分原始对白与发行配音，原始语言条件仍待核验；不能保证下列候选满足它们。"
+            }
+          }
+        },
+        {
+          "requestId": "81a054d3-1fba-4ce6-95a3-10d42be46488",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T12:25:59.229057300Z",
+          "durationMs": 3477,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "找动画电影，原始对白是中文或西班牙语，片长至少70分钟但严格小于95分钟，列最多三部；只有配音语言的信息就先标成未核验。",
+              "queriedAt": "2026-11-03T12:25:59.152063600Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [],
+              "returned": 0,
+              "truncated": true,
+              "rawReturned": 0,
+              "identityReturned": 0,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "动画电影",
+          "原始对白中文或西班牙语，按并集处理",
+          "70分钟 <= 片长 < 95分钟",
+          "最多三部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "逐项核对可用字段，区分原始对白与发行配音",
+          "只有配音信息时不得声称原始对白满足"
+        ],
+        "usefulApproximationBoundary": "未知语言或片长的候选可以单列待核验，不能混入已满足硬条件的清单。"
+      },
+      "durationSeconds": 11.0,
+      "roundContext": {
+        "candidateIds": [
+          "YMnB",
+          "gying_mv_WLn7",
+          "gying_mv_6LjZ"
+        ],
+        "candidates": [
+          {
+            "id": "YMnB",
+            "titleCn": "魁拔Ⅲ战神崛起",
+            "year": 2014
+          },
+          {
+            "id": "gying_mv_WLn7",
+            "titleCn": "宝莲灯",
+            "titleEn": "Lotus Lantern",
+            "year": 1999
+          },
+          {
+            "id": "gying_mv_6LjZ",
+            "titleCn": "麦兜·当当伴我心",
+            "titleEn": " 麥兜‧噹噹伴我心",
+            "year": 2012
+          }
+        ],
+        "expiresAt": "2026-11-03T12:40:59.234059+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "turn": 1,
+      "message": "找以火车旅行为主题的纪录电影，最多四部，按豆瓣评分从高到低排；没有豆瓣分的放最后并写“暂无”，不能拿IMDb分补。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "answerSha256": "e0e1fdb278964fc91f8240811b6512c421a7c8d90ee1dd2c486d034e0acc701f",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "以火车旅行为主题",
+        "inheritContext": false,
+        "genresAll": [
+          "纪录片"
+        ],
+        "limit": 4,
+        "sort": "rating_desc",
+        "category": "mv",
+        "ratingSource": "douban",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:26:09.339246600Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以火车旅行为主题",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 4,
+            "sort": "rating_desc",
+            "category": "mv",
+            "ratingSource": "douban",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": true,
+          "semanticStaleCandidates": 1,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+          "recalledTotal": 35,
+          "relevanceChecked": true
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "以火车旅行为主题 电影",
+          "queriedAt": "2026-11-03T12:27:19.289175200Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [],
+          "returned": 0,
+          "truncated": true,
+          "rawReturned": 1,
+          "identityReturned": 1,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "e00dee70-4f02-4888-bc76-0bce7442a9b6",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:26:03.233689100Z",
+          "durationMs": 3988
+        },
+        {
+          "requestId": "e00dee70-4f02-4888-bc76-0bce7442a9b6",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:26:09.319932400Z",
+          "durationMs": 6085,
+          "returned": 100
+        },
+        {
+          "requestId": "e00dee70-4f02-4888-bc76-0bce7442a9b6",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:26:09.517998200Z",
+          "durationMs": 197,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以火车旅行为主题",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 4,
+            "sort": "rating_desc",
+            "category": "mv",
+            "ratingSource": "douban"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:26:09.339246600Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以火车旅行为主题",
+                "inheritContext": false,
+                "genresAll": [
+                  "纪录片"
+                ],
+                "limit": 4,
+                "sort": "rating_desc",
+                "category": "mv",
+                "ratingSource": "douban",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": true,
+              "semanticStaleCandidates": 1,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "片库召回的候选暂没有足够剧情依据，继续联网核对。",
+              "recalledTotal": 35,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "e00dee70-4f02-4888-bc76-0bce7442a9b6",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:15.361033600Z",
+          "durationMs": 65842
+        },
+        {
+          "requestId": "e00dee70-4f02-4888-bc76-0bce7442a9b6",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:19.304547200Z",
+          "durationMs": 3943,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "以火车旅行为主题 电影",
+              "queriedAt": "2026-11-03T12:27:19.289175200Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [],
+              "returned": 0,
+              "truncated": true,
+              "rawReturned": 1,
+              "identityReturned": 1,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "纪录电影",
+          "主题为火车旅行",
+          "最多四部",
+          "按豆瓣评分降序；缺豆瓣分放末尾且标暂无",
+          "不以IMDb分替代豆瓣分"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "核对候选主题及评分出处",
+          "不得把缺分显示为零分或改用综合分"
+        ],
+        "usefulApproximationBoundary": "候选不足可少给，评分缺失可保留并标明；主题不相关不能用于补足数量。"
+      },
+      "durationSeconds": 83.53,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-03T12:42:22.771797+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-03",
+      "sourceGroup": "dev-v3-rating-source-and-missing",
+      "turn": 2,
+      "message": "现在改用IMDb评分排，还是刚才这些片，不要重新补片。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。",
+      "answerSha256": "93eabd68bf5e0e654b9c61b24fecb78761a384ab8124cc8dfc563fd7958af207",
+      "queryPlan": {
+        "intent": "clarify",
+        "semanticText": "以火车旅行为主题",
+        "inheritContext": false,
+        "genresAll": [
+          "纪录片"
+        ],
+        "limit": 4,
+        "sort": "rating_desc",
+        "category": "mv",
+        "ratingSource": "imdb",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": [],
+        "scope": "previousResults",
+        "clarification": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。"
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:27:39.292056900Z",
+          "queryPlan": {
+            "intent": "clarify",
+            "semanticText": "以火车旅行为主题",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 4,
+            "sort": "rating_desc",
+            "category": "mv",
+            "ratingSource": "imdb",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "scope": "previousResults",
+            "clarification": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。"
+          },
+          "answer": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。",
+          "total": 0,
+          "movies": []
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "c92fabed-ad61-493d-9091-d86de21026e0",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:33.245804200Z",
+          "durationMs": 10428
+        },
+        {
+          "requestId": "c92fabed-ad61-493d-9091-d86de21026e0",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:39.280340300Z",
+          "durationMs": 5976,
+          "returned": 100
+        },
+        {
+          "requestId": "c92fabed-ad61-493d-9091-d86de21026e0",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:39.293593900Z",
+          "durationMs": 13,
+          "arguments": {
+            "intent": "clarify",
+            "semanticText": "以火车旅行为主题",
+            "inheritContext": false,
+            "genresAll": [
+              "纪录片"
+            ],
+            "limit": 4,
+            "sort": "rating_desc",
+            "category": "mv",
+            "ratingSource": "imdb",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "scope": "previousResults",
+            "clarification": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:27:39.292056900Z",
+              "queryPlan": {
+                "intent": "clarify",
+                "semanticText": "以火车旅行为主题",
+                "inheritContext": false,
+                "genresAll": [
+                  "纪录片"
+                ],
+                "limit": 4,
+                "sort": "rating_desc",
+                "category": "mv",
+                "ratingSource": "imdb",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "scope": "previousResults",
+                "clarification": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。"
+              },
+              "answer": "上一轮没有可用的影片候选，暂不能在那份列表中筛选或排序。请先补充查找条件，或明确要重新查片库。",
+              "total": 0,
+              "movies": []
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "以火车旅行为主题",
+          "inheritContext": false,
+          "genresAll": [
+            "纪录片"
+          ],
+          "limit": 4,
+          "sort": "rating_desc",
+          "category": "mv",
+          "ratingSource": "douban",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-03T12:42:22.771797+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "找以火车旅行为主题的纪录电影，最多四部，按豆瓣评分从高到低排；没有豆瓣分的放最后并写“暂无”，不能拿IMDb分补。"
+        },
+        {
+          "role": "assistant",
+          "content": "片库召回的候选暂没有足够剧情依据，继续联网核对。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "保持上一轮候选身份集合",
+          "使用IMDb评分降序，缺失仍放末尾并标暂无",
+          "不增加候选"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "只切换评分来源及顺序，候选身份来自上一轮观测",
+          "若全部缺分，说明无法比较"
+        ],
+        "usefulApproximationBoundary": "无IMDb分时承认不能排序，不推测评分或沿用豆瓣次序称为IMDb结果。"
+      },
+      "durationSeconds": 16.52,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-03T12:42:39.297127+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "turn": 1,
+      "message": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "按本次已识别条件找到 2 部，先展示 2 部。\n1. 《小妇人》；年份：2019；导演：格蕾塔·葛韦格；主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤、伊莱扎·斯坎伦、劳拉·邓恩、提莫西·查拉梅、梅丽尔·斯特里普、鲍勃·奥登科克、詹姆斯·诺顿、路易·加瑞尔、克里斯·库珀、崔西·莱茨、艾比·奎因、萨莎·弗罗洛娃、莉莉·恩格勒特、爱德华德·弗莱彻、杰妮·霍蒂谢尔、多梅尼克·阿尔迪诺、汤姆·斯特拉特福、托马斯·马里亚诺、哈德莉·罗宾逊、杰米·加扎里安；片长：135分钟；豆瓣评分：8.0；IMDb评分：7.7；TMDB评分：7.8\n2. 《小妇人》；年份：1994；导演：Gillian Armstrong；主演：薇诺娜·瑞德、翠尼·阿瓦拉多、萨曼莎·马蒂斯、克斯汀·邓斯特、克莱尔·丹尼斯、克里斯蒂安·贝尔、苏珊·萨兰登、加布里埃尔·伯恩、艾瑞克·斯托罗兹、约翰·内维尔、玛丽·威克斯、Florence Paterson；片长：115分钟；TMDB评分：7.3",
+      "answerSha256": "780a1374ce210c7f4b601f59b929bff747f7e3c44c46655914c47e83d3ab6107",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "titles": [
+          "小妇人"
+        ],
+        "limit": 10,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:27:59.550329700Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "gying_mv_M4Lk",
+              "titleCn": "小妇人",
+              "titleEn": " Little Women",
+              "category": "mv",
+              "seriesName": "小妇人",
+              "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+              "aliases": "Unge Kvinner / Mujercitas / 작은 아씨들 / Adoráveis Mulheres / Малки жени / 小妇人 / 小婦人 / 她們 / Küçük Kadınlar / Những người phụ nữ nhỏ bé / Čas deklištva / Fiicele doctorului March / Mažosios moterys / Piccole donne / Μικρές κυρίες / Kisasszonyok / Pikku naisia / نساء صغيرات / Փոքրիկ Կանայք",
+              "year": 2019,
+              "season": 1,
+              "genres": [
+                "剧情",
+                "爱情",
+                "女性"
+              ],
+              "directors": [
+                "格蕾塔·葛韦格"
+              ],
+              "actors": [
+                "西尔莎·罗南",
+                "艾玛·沃森",
+                "弗洛伦丝·皮尤",
+                "伊莱扎·斯坎伦",
+                "劳拉·邓恩",
+                "提莫西·查拉梅",
+                "梅丽尔·斯特里普",
+                "鲍勃·奥登科克",
+                "詹姆斯·诺顿",
+                "路易·加瑞尔",
+                "克里斯·库珀",
+                "崔西·莱茨",
+                "艾比·奎因",
+                "萨莎·弗罗洛娃",
+                "莉莉·恩格勒特",
+                "爱德华德·弗莱彻",
+                "杰妮·霍蒂谢尔",
+                "多梅尼克·阿尔迪诺",
+                "汤姆·斯特拉特福",
+                "托马斯·马里亚诺",
+                "哈德莉·罗宾逊",
+                "杰米·加扎里安"
+              ],
+              "regions": [
+                "美国"
+              ],
+              "languages": [
+                "英语"
+              ],
+              "doubanScore": 8.0,
+              "imdbScore": 7.7,
+              "tmdbVoteAverage": 7.8,
+              "runtimeMinutes": 135,
+              "resourceCount": 6,
+              "rating": 8.0,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "tmdb_movie_9587",
+              "titleCn": "小妇人",
+              "titleEn": "Little Women",
+              "category": "mv",
+              "summary": "丈夫远赴战场后，马奇太太独自抚养四个女儿——她珍贵的“小妇人”。她们分别是桀骜不驯的乔、娴静保守的梅格、柔婉脆弱的贝丝，以及浪漫多情的艾米。时光荏苒，在母亲与马奇姑婆的引领下，四姐妹历经关于独立、爱情与品格的种种考验，共同编织了成长路上那些最珍贵与痛楚的自我觉醒记忆。[索尼影业]",
+              "aliases": "新小妇人 / Adoráveis Mulheres / Mujercitas",
+              "year": 1994,
+              "genres": [
+                "剧情",
+                "爱情"
+              ],
+              "directors": [
+                "Gillian Armstrong"
+              ],
+              "actors": [
+                "薇诺娜·瑞德",
+                "翠尼·阿瓦拉多",
+                "萨曼莎·马蒂斯",
+                "克斯汀·邓斯特",
+                "克莱尔·丹尼斯",
+                "克里斯蒂安·贝尔",
+                "苏珊·萨兰登",
+                "加布里埃尔·伯恩",
+                "艾瑞克·斯托罗兹",
+                "约翰·内维尔",
+                "玛丽·威克斯",
+                "Florence Paterson"
+              ],
+              "regions": [
+                "United States of America"
+              ],
+              "languages": [
+                "English",
+                "German",
+                "French"
+              ],
+              "tmdbVoteAverage": 7.3,
+              "runtimeMinutes": 115,
+              "resourceCount": 4,
+              "rating": 7.3,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 2,
+          "returned": 2,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "按本次已识别条件找到 2 部，先展示 2 部。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "0b94f5b6-1a10-4f06-84e5-c22df85e83c7",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:27:59.541327800Z",
+          "durationMs": 20210
+        },
+        {
+          "requestId": "0b94f5b6-1a10-4f06-84e5-c22df85e83c7",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:01.217716800Z",
+          "durationMs": 1676,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:27:59.550329700Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "titles": [
+                  "小妇人"
+                ],
+                "limit": 10,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "gying_mv_M4Lk",
+                  "titleCn": "小妇人",
+                  "titleEn": " Little Women",
+                  "category": "mv",
+                  "seriesName": "小妇人",
+                  "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+                  "aliases": "Unge Kvinner / Mujercitas / 작은 아씨들 / Adoráveis Mulheres / Малки жени / 小妇人 / 小婦人 / 她們 / Küçük Kadınlar / Những người phụ nữ nhỏ bé / Čas deklištva / Fiicele doctorului March / Mažosios moterys / Piccole donne / Μικρές κυρίες / Kisasszonyok / Pikku naisia / نساء صغيرات / Փոքրիկ Կանայք",
+                  "year": 2019,
+                  "season": 1,
+                  "genres": [
+                    "剧情",
+                    "爱情",
+                    "女性"
+                  ],
+                  "directors": [
+                    "格蕾塔·葛韦格"
+                  ],
+                  "actors": [
+                    "西尔莎·罗南",
+                    "艾玛·沃森",
+                    "弗洛伦丝·皮尤",
+                    "伊莱扎·斯坎伦",
+                    "劳拉·邓恩",
+                    "提莫西·查拉梅",
+                    "梅丽尔·斯特里普",
+                    "鲍勃·奥登科克",
+                    "詹姆斯·诺顿",
+                    "路易·加瑞尔",
+                    "克里斯·库珀",
+                    "崔西·莱茨",
+                    "艾比·奎因",
+                    "萨莎·弗罗洛娃",
+                    "莉莉·恩格勒特",
+                    "爱德华德·弗莱彻",
+                    "杰妮·霍蒂谢尔",
+                    "多梅尼克·阿尔迪诺",
+                    "汤姆·斯特拉特福",
+                    "托马斯·马里亚诺",
+                    "哈德莉·罗宾逊",
+                    "杰米·加扎里安"
+                  ],
+                  "regions": [
+                    "美国"
+                  ],
+                  "languages": [
+                    "英语"
+                  ],
+                  "doubanScore": 8.0,
+                  "imdbScore": 7.7,
+                  "tmdbVoteAverage": 7.8,
+                  "runtimeMinutes": 135,
+                  "resourceCount": 6,
+                  "rating": 8.0,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "tmdb_movie_9587",
+                  "titleCn": "小妇人",
+                  "titleEn": "Little Women",
+                  "category": "mv",
+                  "summary": "丈夫远赴战场后，马奇太太独自抚养四个女儿——她珍贵的“小妇人”。她们分别是桀骜不驯的乔、娴静保守的梅格、柔婉脆弱的贝丝，以及浪漫多情的艾米。时光荏苒，在母亲与马奇姑婆的引领下，四姐妹历经关于独立、爱情与品格的种种考验，共同编织了成长路上那些最珍贵与痛楚的自我觉醒记忆。[索尼影业]",
+                  "aliases": "新小妇人 / Adoráveis Mulheres / Mujercitas",
+                  "year": 1994,
+                  "genres": [
+                    "剧情",
+                    "爱情"
+                  ],
+                  "directors": [
+                    "Gillian Armstrong"
+                  ],
+                  "actors": [
+                    "薇诺娜·瑞德",
+                    "翠尼·阿瓦拉多",
+                    "萨曼莎·马蒂斯",
+                    "克斯汀·邓斯特",
+                    "克莱尔·丹尼斯",
+                    "克里斯蒂安·贝尔",
+                    "苏珊·萨兰登",
+                    "加布里埃尔·伯恩",
+                    "艾瑞克·斯托罗兹",
+                    "约翰·内维尔",
+                    "玛丽·威克斯",
+                    "Florence Paterson"
+                  ],
+                  "regions": [
+                    "United States of America"
+                  ],
+                  "languages": [
+                    "English",
+                    "German",
+                    "French"
+                  ],
+                  "tmdbVoteAverage": 7.3,
+                  "runtimeMinutes": 115,
+                  "resourceCount": 4,
+                  "rating": 7.3,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 2,
+              "returned": 2,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "按本次已识别条件找到 2 部，先展示 2 部。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "只列本次有依据的《小妇人》电影版本",
+          "按年份和导演区分身份",
+          "不混用演员"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "从实际片库候选或公开来源核对版本",
+          "未查到某版本不等于断言它不存在"
+        ],
+        "usefulApproximationBoundary": "元数据缺失时明确缺失，不编导演或版本年份。"
+      },
+      "durationSeconds": 21.91,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_M4Lk",
+          "tmdb_movie_9587"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "year": 2019
+          },
+          {
+            "id": "tmdb_movie_9587",
+            "titleCn": "小妇人",
+            "titleEn": "Little Women",
+            "year": 1994
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:01.221224+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-04",
+      "sourceGroup": "dev-v3-same-title-edition",
+      "turn": 2,
+      "message": "只查2019年那个版本的主演，其他版本不要带进来。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "《小妇人》（2019）。本次片库返回主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤。\n马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+      "answerSha256": "0a938eb7d2d098d11a86dda3d7b6ae0df4ebdf12ae14b85b8eaefa5409c9e680",
+      "queryPlan": {
+        "intent": "details",
+        "inheritContext": false,
+        "titles": [
+          "小妇人"
+        ],
+        "limit": 10,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": [],
+        "yearFrom": 2019,
+        "yearTo": 2019
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:28:06.567279300Z",
+          "queryPlan": {
+            "intent": "details",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2019,
+            "yearTo": 2019
+          },
+          "selectedId": "gying_mv_M4Lk",
+          "total": 1,
+          "answer": "已定位片库影片，继续查询本次详情。"
+        },
+        {
+          "tool": "getMovieDetails",
+          "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+          "queriedAt": "2026-11-03T12:28:07.119541300Z",
+          "externalLinksVerifiedNow": false,
+          "movie": {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "category": "mv",
+            "year": 2019,
+            "doubanScore": 8.0,
+            "tmdbVoteAverage": 7.8,
+            "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+            "directors": [
+              "格蕾塔·葛韦格"
+            ],
+            "actors": [
+              "西尔莎·罗南",
+              "艾玛·沃森",
+              "弗洛伦丝·皮尤"
+            ],
+            "fieldsTruncated": true,
+            "genres": [
+              "剧情",
+              "爱情",
+              "女性"
+            ],
+            "resourceCount": 0
+          },
+          "resourceSummary": {
+            "approvedNormal": 0,
+            "returned": 0,
+            "excluded": 0
+          },
+          "truncated": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "f2c7c6c0-be61-40b0-991d-1d1c694818aa",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:06.016408500Z",
+          "durationMs": 4778
+        },
+        {
+          "requestId": "f2c7c6c0-be61-40b0-991d-1d1c694818aa",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:07.114912500Z",
+          "durationMs": 561,
+          "arguments": {
+            "intent": "details",
+            "inheritContext": false,
+            "titles": [
+              "小妇人"
+            ],
+            "limit": 10,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2019,
+            "yearTo": 2019
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:28:06.567279300Z",
+              "queryPlan": {
+                "intent": "details",
+                "inheritContext": false,
+                "titles": [
+                  "小妇人"
+                ],
+                "limit": 10,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "yearFrom": 2019,
+                "yearTo": 2019
+              },
+              "selectedId": "gying_mv_M4Lk",
+              "total": 1,
+              "answer": "已定位片库影片，继续查询本次详情。"
+            }
+          }
+        },
+        {
+          "requestId": "f2c7c6c0-be61-40b0-991d-1d1c694818aa",
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:07.119541300Z",
+          "durationMs": 4,
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "http://127.0.0.1:18883/api/movies/gying_mv_M4Lk",
+              "queriedAt": "2026-11-03T12:28:07.119541300Z",
+              "externalLinksVerifiedNow": false,
+              "movie": {
+                "id": "gying_mv_M4Lk",
+                "titleCn": "小妇人",
+                "titleEn": " Little Women",
+                "category": "mv",
+                "year": 2019,
+                "doubanScore": 8.0,
+                "tmdbVoteAverage": 7.8,
+                "summary": "马奇夫人（劳拉·邓恩 Laura Dern 饰）有着四个如花似玉的女儿，大女儿梅格（艾玛·沃森 Emma Watson 饰）拥有着美丽的外表，和对于爱情的天真憧憬。二女儿乔（西尔莎·罗南 Saoirse Ronan 饰）满脑子塞着古灵精怪的念头，整天拿着蘸水笔东写西写，她的故事在全家上下都受到了热烈的欢迎。三女儿贝斯（伊莱扎·斯坎伦 Eliza Scanlen 饰）虽然个性比起姐姐们要内向得多，却拥有杰出的音乐天赋。 最小的女儿艾米（佛罗伦斯·珀 Florence Pugh 饰）渴望成为一名画家。\n在马奇夫人的教导之下，四个姑娘渐渐成长为了拥有独立人格的杰出女性，她们热情、乐观、善良，每个人都在各自的道路上坚强而又坚定的前进着。",
+                "directors": [
+                  "格蕾塔·葛韦格"
+                ],
+                "actors": [
+                  "西尔莎·罗南",
+                  "艾玛·沃森",
+                  "弗洛伦丝·皮尤"
+                ],
+                "fieldsTruncated": true,
+                "genres": [
+                  "剧情",
+                  "爱情",
+                  "女性"
+                ],
+                "resourceCount": 0
+              },
+              "resourceSummary": {
+                "approvedNormal": 0,
+                "returned": 0,
+                "excluded": 0
+              },
+              "truncated": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "titles": [
+            "小妇人"
+          ],
+          "limit": 10,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [
+          "gying_mv_M4Lk",
+          "tmdb_movie_9587"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "year": 2019
+          },
+          {
+            "id": "tmdb_movie_9587",
+            "titleCn": "小妇人",
+            "titleEn": "Little Women",
+            "year": 1994
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:01.221224+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "片库里的《小妇人》是不是有多个电影版本？请用年份和导演区分，不要把几个版本的演员混在一起。"
+        },
+        {
+          "role": "assistant",
+          "content": "按本次已识别条件找到 2 部，先展示 2 部。\n1. 《小妇人》；年份：2019；导演：格蕾塔·葛韦格；主演：西尔莎·罗南、艾玛·沃森、弗洛伦丝·皮尤、伊莱扎·斯坎伦、劳拉·邓恩、提莫西·查拉梅、梅丽尔·斯特里普、鲍勃·奥登科克、詹姆斯·诺顿、路易·加瑞尔、克里斯·库珀、崔西·莱茨、艾比·奎因、萨莎·弗罗洛娃、莉莉·恩格勒特、爱德华德·弗莱彻、杰妮·霍蒂谢尔、多梅尼克·阿尔迪诺、汤姆·斯特拉特福、托马斯·马里亚诺、哈德莉·罗宾逊、杰米·加扎里安；片长：135分钟；豆瓣评分：8.0；IMDb评分：7.7；TMDB评分：7.8\n2. 《小妇人》；年份：1994；导演：Gillian Armstrong；主演：薇诺娜·瑞德、翠尼·阿瓦拉多、萨曼莎·马蒂斯、克斯汀·邓斯特、克莱尔·丹尼斯、克里斯蒂安·贝尔、苏珊·萨兰登、加布里埃尔·伯恩、艾瑞克·斯托罗兹、约翰·内维尔、玛丽·威克斯、Florence Paterson；片长：115分钟；TMDB评分：7.3\n1. 小妇人 (2019) 片库 ID: gying_mv_M4Lk\n2. 小妇人 (1994) 片库 ID: tmdb_movie_9587"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "限定《小妇人》2019年电影版本",
+          "主演与该版本的真实身份绑定",
+          "排除其他版本"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "从前轮证据解析身份；前轮未找到该版本时可以再查或说明未找到",
+          "身份仍不能确认时先澄清"
+        ],
+        "usefulApproximationBoundary": "可以承认缺少演员资料，不能拿另一版同名电影补答。"
+      },
+      "durationSeconds": 5.89,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_M4Lk"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_M4Lk",
+            "titleCn": "小妇人",
+            "titleEn": " Little Women",
+            "year": 2019
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:07.122542+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-05",
+      "sourceGroup": "dev-v3-content-absence-evidence",
+      "turn": 1,
+      "message": "想看野外徒步纪录片，但必须没有动物受伤的镜头。如果你没有逐场内容指南或可核查的相关说明，就不要保证这一点，可以直接说还不能确认。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "本次片库检索没有找到可确认的候选。 片库不能完整核验这些要求：片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验；不能保证下列候选满足它们。\n尚未核实的条件：片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验。片库候选尚不能视为满足全部硬条件。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "answerSha256": "1136f61b4ff55d74cb29ec1519a5f36452fe7a4b8e515c2b896c42374cd8ace5",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "野外徒步",
+        "category": "ac",
+        "inheritContext": false,
+        "genresAny": [
+          "纪录片"
+        ],
+        "unsupportedConditions": [
+          "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+        ],
+        "limit": 10,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:28:18.081864500Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "野外徒步",
+            "category": "ac",
+            "inheritContext": false,
+            "genresAny": [
+              "纪录片"
+            ],
+            "unsupportedConditions": [
+              "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+            ],
+            "limit": 10,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [],
+          "total": 0,
+          "returned": 0,
+          "truncated": false,
+          "semanticStaleCandidates": 1,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [
+            "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+          ],
+          "answer": "本次片库检索没有找到可确认的候选。 片库不能完整核验这些要求：片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验；不能保证下列候选满足它们。"
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "野外徒步 电影 片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验",
+          "queriedAt": "2026-11-03T12:28:22.262080700Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [],
+          "returned": 0,
+          "truncated": true,
+          "rawReturned": 1,
+          "identityReturned": 1,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "f5d1a33f-7a2c-40f1-bf08-107011524ea6",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:12.017837700Z",
+          "durationMs": 4884
+        },
+        {
+          "requestId": "f5d1a33f-7a2c-40f1-bf08-107011524ea6",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:18.070673300Z",
+          "durationMs": 6052,
+          "returned": 100
+        },
+        {
+          "requestId": "f5d1a33f-7a2c-40f1-bf08-107011524ea6",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:18.132585100Z",
+          "durationMs": 62,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "野外徒步",
+            "category": "ac",
+            "inheritContext": false,
+            "genresAny": [
+              "纪录片"
+            ],
+            "unsupportedConditions": [
+              "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+            ],
+            "limit": 10
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:28:18.081864500Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "野外徒步",
+                "category": "ac",
+                "inheritContext": false,
+                "genresAny": [
+                  "纪录片"
+                ],
+                "unsupportedConditions": [
+                  "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+                ],
+                "limit": 10,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [],
+              "total": 0,
+              "returned": 0,
+              "truncated": false,
+              "semanticStaleCandidates": 1,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [
+                "片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验"
+              ],
+              "answer": "本次片库检索没有找到可确认的候选。 片库不能完整核验这些要求：片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验；不能保证下列候选满足它们。"
+            }
+          }
+        },
+        {
+          "requestId": "f5d1a33f-7a2c-40f1-bf08-107011524ea6",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:22.273074400Z",
+          "durationMs": 4138,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "野外徒步 电影 片库普通简介不能逐场核验镜头内容和伤害排除条件，需要完整内容指南核验",
+              "queriedAt": "2026-11-03T12:28:22.262080700Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [],
+              "returned": 0,
+              "truncated": true,
+              "rawReturned": 1,
+              "identityReturned": 1,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "野外徒步纪录片",
+          "明确排除动物受伤镜头",
+          "没有相关内容依据不能保证满足排除"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "区分简介未提及与有依据证明排除",
+          "证据不足时标待核验或请求进一步核查"
+        ],
+        "usefulApproximationBoundary": "主题相符但排除未核实的候选只能单列为待核验线索，不计满足硬条件或有用近似。"
+      },
+      "durationSeconds": 27.83,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-03T12:43:34.957953+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 1,
+      "message": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "按本次已识别条件找到 17 部，先展示 2 部。\n1. 《电台司令: 彩虹里》；年份：2008；片长：43分钟；豆瓣评分：9.5；IMDb评分：8.7\n2. 《放牛班的春天》；年份：2004；片长：97分钟；豆瓣评分：9.3；IMDb评分：7.9；TMDB评分：7.7",
+      "answerSha256": "7e0928734777d547fa2b4b4e5ad57c7c6fe51205872efba2aa3ea5eadda3753c",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "genresAll": [
+          "音乐"
+        ],
+        "yearFrom": 2000,
+        "yearTo": 2010,
+        "maxRuntime": 110,
+        "limit": 2,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:28:45.188424500Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "1MeM",
+              "titleCn": "电台司令: 彩虹里",
+              "titleEn": " Radiohead: In Rainbows",
+              "category": "mv",
+              "summary": "这是Radiohead(电台司令乐队)2008年在他们地下室的录音棚里的现场录像，没有观众，有的只是乐队成员和制作人员。演出曲目为2007年专辑<In Rainbows>中的歌曲。\n乐队介绍\n英国的牛津不仅拥有世界著名学府，也是英国摇滚名团的盛产地之一，除了 RADIOHEAD，另外两个名噪一时的BRITPOP团体RIDE和SUPERGRASS也出身于此。RADIOHEAD的五位成员均是土生土长的牛津人，并且在风景如画的牛津近郊小镇 ABINGDON的私立男校里结识，开始了传奇生涯。 RADIOHEAD的灵魂人物，主音歌手兼吉他手THOM YORKE 八岁那年得到平生的第一件乐器：母亲送的一把西班牙吉他，两年后他便开始组团，随后加入了一支名为TNT的校园PUNK乐队。THOM第一次唱歌时便意识到他需要更加默契的合作乐手。很快他认识了 COLIN GREENWOOD，\"因为我们年龄相仿并且常常在同一个派对结束时碰上\"。出于对JOY DIVISION，THE SMITH，MAGAZINE以及怪异着装的喜爱，他们顺理成章地结成死党。另外一位校友ED O'BRIEN的加入是因为THOM认为他\"很酷而且看上去象MORRISSEY\"。举止温文尔雅的鼓手PHIL SELWAY随后取代了鼓机， 在一个星期五形成了最初的四人阵容。不久，COLIN的弟弟，爵士乐迷JONNY经过同哥哥及其朋友们的苦苦纠缠，终于作为口琴手加入进来。乐队在一个周末于牛津的JERICHO TAVERN（现已不存在）做了第一场表演，他们增加了一对演奏萨克斯风的姐妹，乐队的风格就象是年轻版的TALKING HEAD。 为了平",
+              "year": 2008,
+              "genres": [
+                "纪录",
+                "音乐"
+              ],
+              "directors": [
+                "David Barnard"
+              ],
+              "actors": [
+                "科林·格林伍德",
+                "强尼·格林伍德",
+                "Malcolm Hughes",
+                "艾德·奥布莱恩",
+                "菲尔·塞尔维",
+                "汤姆·约克",
+                "Richard Young"
+              ],
+              "regions": [
+                "英国"
+              ],
+              "languages": [
+                "英语"
+              ],
+              "doubanScore": 9.5,
+              "imdbScore": 8.7,
+              "runtimeMinutes": 43,
+              "resourceCount": 0,
+              "rating": 9.5,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "gying_mv_X5Dz",
+              "titleCn": "放牛班的春天",
+              "titleEn": " Les choristes",
+              "category": "mv",
+              "summary": "1949年的法国乡村，音乐家克莱门特（热拉尔·朱尼奥 饰）到了一间外号叫“塘低”的男子寄宿学校当助理教师。学校里的学生大部分都是难缠的问题儿童，体罚在这里司空见惯，学校的校长（弗朗索瓦·贝莱昂 饰）只顾自己的前途，残暴高压。\n性格沉静的克莱门特尝试用自己的方法改善这种状况，他重新创作音乐作品，组织合唱团，决定用音乐的方法来打开学生们封闭的心灵。\n然而，事情并不顺利，克莱门特发现学生皮埃尔·莫安琦（让-巴蒂斯特·莫尼耶 饰）拥有非同一般的音乐天赋，但是单亲家庭长大的他，性格异常敏感孤僻，怎样释放皮埃尔的音乐才能，让克莱门特头痛不已；同时，他与皮埃尔母亲的感情也渐渐微妙起来。",
+              "aliases": "Koret / Gorooh e Kor / Choristai / Los coristas / Mathieu og korguttene / Os Coristas / Corul / The Choir Boys / Die Kinder des Monsieur Mathieu / Gosskören / The Chorus / The Choristers / The Choirboys / 唱诗班的春天 / 唱诗班男孩",
+              "year": 2004,
+              "genres": [
+                "剧情",
+                "音乐",
+                "励志"
+              ],
+              "directors": [
+                "克里斯托夫·巴哈蒂"
+              ],
+              "actors": [
+                "让-巴蒂斯特·莫尼耶",
+                "热拉尔·朱尼奥",
+                "弗朗索瓦·贝莱昂",
+                "凯德·麦拉德",
+                "让-保罗·博奈雷",
+                "雅克·贝汉",
+                "玛丽·布奈尔",
+                "马克桑斯·贝汉",
+                "格雷戈里·加迪诺尔",
+                "托马斯·布伦门塔尔",
+                "西里尔·伯尔尼科特",
+                "西蒙·法戈特",
+                "泰奥杜尔·卡雷-卡赛尼",
+                "菲利普·杜·詹纳兰德",
+                "埃里克·德斯玛莱茨",
+                "狄迪尔·弗拉蒙",
+                "Carole Weiss"
+              ],
+              "regions": [
+                "法国",
+                "瑞士",
+                "德国"
+              ],
+              "languages": [
+                "法语"
+              ],
+              "doubanScore": 9.3,
+              "imdbScore": 7.9,
+              "tmdbVoteAverage": 7.7,
+              "runtimeMinutes": 97,
+              "resourceCount": 2,
+              "rating": 9.3,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 17,
+          "returned": 2,
+          "truncated": true,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "按本次已识别条件找到 17 部，先展示 2 部。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "e973344c-5161-4d08-9ced-8b6bc1f7bdc9",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:45.116309100Z",
+          "durationMs": 10121
+        },
+        {
+          "requestId": "e973344c-5161-4d08-9ced-8b6bc1f7bdc9",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:45.215314900Z",
+          "durationMs": 99,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:28:45.188424500Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "genresAll": [
+                  "音乐"
+                ],
+                "yearFrom": 2000,
+                "yearTo": 2010,
+                "maxRuntime": 110,
+                "limit": 2,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "1MeM",
+                  "titleCn": "电台司令: 彩虹里",
+                  "titleEn": " Radiohead: In Rainbows",
+                  "category": "mv",
+                  "summary": "这是Radiohead(电台司令乐队)2008年在他们地下室的录音棚里的现场录像，没有观众，有的只是乐队成员和制作人员。演出曲目为2007年专辑<In Rainbows>中的歌曲。\n乐队介绍\n英国的牛津不仅拥有世界著名学府，也是英国摇滚名团的盛产地之一，除了 RADIOHEAD，另外两个名噪一时的BRITPOP团体RIDE和SUPERGRASS也出身于此。RADIOHEAD的五位成员均是土生土长的牛津人，并且在风景如画的牛津近郊小镇 ABINGDON的私立男校里结识，开始了传奇生涯。 RADIOHEAD的灵魂人物，主音歌手兼吉他手THOM YORKE 八岁那年得到平生的第一件乐器：母亲送的一把西班牙吉他，两年后他便开始组团，随后加入了一支名为TNT的校园PUNK乐队。THOM第一次唱歌时便意识到他需要更加默契的合作乐手。很快他认识了 COLIN GREENWOOD，\"因为我们年龄相仿并且常常在同一个派对结束时碰上\"。出于对JOY DIVISION，THE SMITH，MAGAZINE以及怪异着装的喜爱，他们顺理成章地结成死党。另外一位校友ED O'BRIEN的加入是因为THOM认为他\"很酷而且看上去象MORRISSEY\"。举止温文尔雅的鼓手PHIL SELWAY随后取代了鼓机， 在一个星期五形成了最初的四人阵容。不久，COLIN的弟弟，爵士乐迷JONNY经过同哥哥及其朋友们的苦苦纠缠，终于作为口琴手加入进来。乐队在一个周末于牛津的JERICHO TAVERN（现已不存在）做了第一场表演，他们增加了一对演奏萨克斯风的姐妹，乐队的风格就象是年轻版的TALKING HEAD。 为了平",
+                  "year": 2008,
+                  "genres": [
+                    "纪录",
+                    "音乐"
+                  ],
+                  "directors": [
+                    "David Barnard"
+                  ],
+                  "actors": [
+                    "科林·格林伍德",
+                    "强尼·格林伍德",
+                    "Malcolm Hughes",
+                    "艾德·奥布莱恩",
+                    "菲尔·塞尔维",
+                    "汤姆·约克",
+                    "Richard Young"
+                  ],
+                  "regions": [
+                    "英国"
+                  ],
+                  "languages": [
+                    "英语"
+                  ],
+                  "doubanScore": 9.5,
+                  "imdbScore": 8.7,
+                  "runtimeMinutes": 43,
+                  "resourceCount": 0,
+                  "rating": 9.5,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "gying_mv_X5Dz",
+                  "titleCn": "放牛班的春天",
+                  "titleEn": " Les choristes",
+                  "category": "mv",
+                  "summary": "1949年的法国乡村，音乐家克莱门特（热拉尔·朱尼奥 饰）到了一间外号叫“塘低”的男子寄宿学校当助理教师。学校里的学生大部分都是难缠的问题儿童，体罚在这里司空见惯，学校的校长（弗朗索瓦·贝莱昂 饰）只顾自己的前途，残暴高压。\n性格沉静的克莱门特尝试用自己的方法改善这种状况，他重新创作音乐作品，组织合唱团，决定用音乐的方法来打开学生们封闭的心灵。\n然而，事情并不顺利，克莱门特发现学生皮埃尔·莫安琦（让-巴蒂斯特·莫尼耶 饰）拥有非同一般的音乐天赋，但是单亲家庭长大的他，性格异常敏感孤僻，怎样释放皮埃尔的音乐才能，让克莱门特头痛不已；同时，他与皮埃尔母亲的感情也渐渐微妙起来。",
+                  "aliases": "Koret / Gorooh e Kor / Choristai / Los coristas / Mathieu og korguttene / Os Coristas / Corul / The Choir Boys / Die Kinder des Monsieur Mathieu / Gosskören / The Chorus / The Choristers / The Choirboys / 唱诗班的春天 / 唱诗班男孩",
+                  "year": 2004,
+                  "genres": [
+                    "剧情",
+                    "音乐",
+                    "励志"
+                  ],
+                  "directors": [
+                    "克里斯托夫·巴哈蒂"
+                  ],
+                  "actors": [
+                    "让-巴蒂斯特·莫尼耶",
+                    "热拉尔·朱尼奥",
+                    "弗朗索瓦·贝莱昂",
+                    "凯德·麦拉德",
+                    "让-保罗·博奈雷",
+                    "雅克·贝汉",
+                    "玛丽·布奈尔",
+                    "马克桑斯·贝汉",
+                    "格雷戈里·加迪诺尔",
+                    "托马斯·布伦门塔尔",
+                    "西里尔·伯尔尼科特",
+                    "西蒙·法戈特",
+                    "泰奥杜尔·卡雷-卡赛尼",
+                    "菲利普·杜·詹纳兰德",
+                    "埃里克·德斯玛莱茨",
+                    "狄迪尔·弗拉蒙",
+                    "Carole Weiss"
+                  ],
+                  "regions": [
+                    "法国",
+                    "瑞士",
+                    "德国"
+                  ],
+                  "languages": [
+                    "法语"
+                  ],
+                  "doubanScore": 9.3,
+                  "imdbScore": 7.9,
+                  "tmdbVoteAverage": 7.7,
+                  "runtimeMinutes": 97,
+                  "resourceCount": 2,
+                  "rating": 9.3,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 17,
+              "returned": 2,
+              "truncated": true,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "按本次已识别条件找到 17 部，先展示 2 部。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "音乐电影",
+          "上映年份2000至2010年，含端点",
+          "片长不超过110分钟",
+          "最多两部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "按真实资料核对条件",
+          "不足两部不补不合条件的影片"
+        ],
+        "usefulApproximationBoundary": "可以少给或说明无结果，超时长或错年份不算满足。"
+      },
+      "durationSeconds": 10.23,
+      "roundContext": {
+        "candidateIds": [
+          "1MeM",
+          "gying_mv_X5Dz"
+        ],
+        "candidates": [
+          {
+            "id": "1MeM",
+            "titleCn": "电台司令: 彩虹里",
+            "titleEn": " Radiohead: In Rainbows",
+            "year": 2008
+          },
+          {
+            "id": "gying_mv_X5Dz",
+            "titleCn": "放牛班的春天",
+            "titleEn": " Les choristes",
+            "year": 2004
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:45.219334+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 2,
+      "message": "年份改成2015年及以后，其他条件不变，重新给两部。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "按本次已识别条件找到 42 部，先展示 2 部。\n1. 《RAYE at the Royal Albert Hall》；年份：2024；片长：80分钟；豆瓣评分：9.5；IMDb评分：9.2\n2. 《坂本龙一：杰作》；年份：2023；片长：103分钟；豆瓣评分：9.4；IMDb评分：8.0",
+      "answerSha256": "6262f8acf6ed6f3a3b661907da6c6f5bc07428432b70961a9a2fbc40b9637185",
+      "queryPlan": {
+        "intent": "search",
+        "inheritContext": false,
+        "genresAll": [
+          "音乐"
+        ],
+        "maxRuntime": 110,
+        "limit": 2,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": [],
+        "yearFrom": 2015,
+        "scope": "catalog"
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:28:51.875711600Z",
+          "queryPlan": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2015,
+            "scope": "catalog"
+          },
+          "movies": [
+            {
+              "id": "za3R",
+              "titleCn": "RAYE at the Royal Albert Hall",
+              "category": "mv",
+              "summary": "电视特辑节目\nRAYE takes to the stage of London's iconic Royal Albert Hall to perform songs from her Mercury Prize-nominated album My 21st Century Blues.\n现场演唱曲目：\n01. Overture\n02. Oscar Winning Tears\n03. Hard Out Here\n04. The Thrill Is Gone Requiem\n05. The Thrill is Gone\n06. Five Star Hotels\n07. Mary Jane vs Graeme Blevins\n08. Mary Jane\n09. Environmental Anxiety\n10. Body Dysmorphia\n11. Ice Cream Man\n12. Dani's Interlude\n13. Flip A Switch\n14. Worth It Prelude\n15. Worth It\n16. Black Mascara\n17. Buss It Down\n18. Escapism",
+              "year": 2024,
+              "genres": [
+                "音乐"
+              ],
+              "directors": [
+                "保罗·达格代尔"
+              ],
+              "actors": [
+                "Raye"
+              ],
+              "regions": [
+                "英国"
+              ],
+              "languages": [
+                "英语"
+              ],
+              "doubanScore": 9.5,
+              "imdbScore": 9.2,
+              "runtimeMinutes": 80,
+              "resourceCount": 0,
+              "rating": 9.5,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            },
+            {
+              "id": "3gLG",
+              "titleCn": "坂本龙一：杰作",
+              "titleEn": " Ryuichi Sakamoto | Opus",
+              "category": "mv",
+              "summary": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。",
+              "year": 2023,
+              "genres": [
+                "音乐",
+                "纪录"
+              ],
+              "directors": [
+                "空音央"
+              ],
+              "actors": [
+                "坂本龙一"
+              ],
+              "regions": [
+                "日本"
+              ],
+              "languages": [
+                "日语"
+              ],
+              "doubanScore": 9.4,
+              "imdbScore": 8.0,
+              "runtimeMinutes": 103,
+              "resourceCount": 1,
+              "rating": 9.4,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 42,
+          "returned": 2,
+          "truncated": true,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [],
+          "answer": "按本次已识别条件找到 42 部，先展示 2 部。"
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "04105f38-23ba-4642-bd61-b4e5ca9d26c0",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:51.812805Z",
+          "durationMs": 6575
+        },
+        {
+          "requestId": "04105f38-23ba-4642-bd61-b4e5ca9d26c0",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:51.905378200Z",
+          "durationMs": 38,
+          "arguments": {
+            "intent": "search",
+            "inheritContext": false,
+            "genresAll": [
+              "音乐"
+            ],
+            "maxRuntime": 110,
+            "limit": 2,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": [],
+            "yearFrom": 2015,
+            "scope": "catalog"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:28:51.875711600Z",
+              "queryPlan": {
+                "intent": "search",
+                "inheritContext": false,
+                "genresAll": [
+                  "音乐"
+                ],
+                "maxRuntime": 110,
+                "limit": 2,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": [],
+                "yearFrom": 2015,
+                "scope": "catalog"
+              },
+              "movies": [
+                {
+                  "id": "za3R",
+                  "titleCn": "RAYE at the Royal Albert Hall",
+                  "category": "mv",
+                  "summary": "电视特辑节目\nRAYE takes to the stage of London's iconic Royal Albert Hall to perform songs from her Mercury Prize-nominated album My 21st Century Blues.\n现场演唱曲目：\n01. Overture\n02. Oscar Winning Tears\n03. Hard Out Here\n04. The Thrill Is Gone Requiem\n05. The Thrill is Gone\n06. Five Star Hotels\n07. Mary Jane vs Graeme Blevins\n08. Mary Jane\n09. Environmental Anxiety\n10. Body Dysmorphia\n11. Ice Cream Man\n12. Dani's Interlude\n13. Flip A Switch\n14. Worth It Prelude\n15. Worth It\n16. Black Mascara\n17. Buss It Down\n18. Escapism",
+                  "year": 2024,
+                  "genres": [
+                    "音乐"
+                  ],
+                  "directors": [
+                    "保罗·达格代尔"
+                  ],
+                  "actors": [
+                    "Raye"
+                  ],
+                  "regions": [
+                    "英国"
+                  ],
+                  "languages": [
+                    "英语"
+                  ],
+                  "doubanScore": 9.5,
+                  "imdbScore": 9.2,
+                  "runtimeMinutes": 80,
+                  "resourceCount": 0,
+                  "rating": 9.5,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                },
+                {
+                  "id": "3gLG",
+                  "titleCn": "坂本龙一：杰作",
+                  "titleEn": " Ryuichi Sakamoto | Opus",
+                  "category": "mv",
+                  "summary": "作为坂本龙一献给世界最后的礼物，影片记录了坂本龙一生前最后一场钢琴独奏音乐会，其中包括《圣诞快乐，劳伦斯先生》《末代皇帝》《水》等在内的二十首经典曲目。",
+                  "year": 2023,
+                  "genres": [
+                    "音乐",
+                    "纪录"
+                  ],
+                  "directors": [
+                    "空音央"
+                  ],
+                  "actors": [
+                    "坂本龙一"
+                  ],
+                  "regions": [
+                    "日本"
+                  ],
+                  "languages": [
+                    "日语"
+                  ],
+                  "doubanScore": 9.4,
+                  "imdbScore": 8.0,
+                  "runtimeMinutes": 103,
+                  "resourceCount": 1,
+                  "rating": 9.4,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 42,
+              "returned": 2,
+              "truncated": true,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [],
+              "answer": "按本次已识别条件找到 42 部，先展示 2 部。"
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "yearFrom": 2000,
+          "yearTo": 2010,
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [
+          "1MeM",
+          "gying_mv_X5Dz"
+        ],
+        "candidates": [
+          {
+            "id": "1MeM",
+            "titleCn": "电台司令: 彩虹里",
+            "titleEn": " Radiohead: In Rainbows",
+            "year": 2008
+          },
+          {
+            "id": "gying_mv_X5Dz",
+            "titleCn": "放牛班的春天",
+            "titleEn": " Les choristes",
+            "year": 2004
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:45.219334+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。"
+        },
+        {
+          "role": "assistant",
+          "content": "按本次已识别条件找到 17 部，先展示 2 部。\n1. 《电台司令: 彩虹里》；年份：2008；片长：43分钟；豆瓣评分：9.5；IMDb评分：8.7\n2. 《放牛班的春天》；年份：2004；片长：97分钟；豆瓣评分：9.3；IMDb评分：7.9；TMDB评分：7.7\n1. 电台司令: 彩虹里 (2008) 片库 ID: 1MeM\n2. 放牛班的春天 (2004) 片库 ID: gying_mv_X5Dz"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "新年份 >= 2015，替换原年份区间",
+          "保留音乐电影及不超过110分钟",
+          "最多两部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "替换而非叠加相互冲突的年份过滤",
+          "返回当前轮的新候选清单"
+        ],
+        "usefulApproximationBoundary": "结果不足可少给，不自动放宽片长。"
+      },
+      "durationSeconds": 6.69,
+      "roundContext": {
+        "candidateIds": [
+          "za3R",
+          "3gLG"
+        ],
+        "candidates": [
+          {
+            "id": "za3R",
+            "titleCn": "RAYE at the Royal Albert Hall",
+            "year": 2024
+          },
+          {
+            "id": "3gLG",
+            "titleCn": "坂本龙一：杰作",
+            "titleEn": " Ryuichi Sakamoto | Opus",
+            "year": 2023
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:51.908893+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "turn": 3,
+      "message": "我问的是最开始那份2000到2010年列表里的第一部，它的导演是谁？",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "《电台司令: 彩虹里》（2008）。本次片库返回导演：David Barnard。\n这是Radiohead(电台司令乐队)2008年在他们地下室的录音棚里的现场录像，没有观众，有的只是乐队成员和制作人员。演出曲目为2007年专辑<In Rainbows>中的歌曲。\n乐队介绍\n英国的牛津不仅拥有世界著名学府，也是英国摇滚名团的盛产地之一，除了 RADIOHEAD，另外两个名噪一时的BRITPOP团体RIDE和SUPERGRASS也出身于此。RADIOHEAD的五位成员均是土生土长的牛津人，并且在风景如画的牛津近郊小镇 ABINGDON的私立男校里结识，开始了传奇生涯。 RADIOHEAD的灵魂人物，主音歌手兼吉他手THOM YORKE 八岁那年得到平生的第一件乐器：母亲送的一把西班牙吉他，两年后他便开始组团，随后加入了一支名为TNT的校园PUNK乐队。THOM第一次唱歌时便意识到他需要更加默契的合作乐手。很快他认识了 COLIN GREENWOOD，\"因为我们年龄相仿并且常常在同一个派对结束时碰上\"。出于对JOY DIVISION，THE SMITH，MAGAZINE以及怪异着装的喜爱，他们顺理成章地结成死党。另外一位校友ED O'BRIEN的加入是因为THOM认为他\"很酷而且看上去象MORRISSEY\"。举止温文尔雅的鼓手PHIL SELWAY随后取代了鼓机， 在一个星期五形成了最初的四人阵容。不久，COLIN的弟弟，爵士乐迷JONNY经过同哥哥及其朋友们的苦苦纠缠，终于作为口琴手加入进来。乐队在一个周末于牛津的JERICHO TAVERN（现已不存在）做了第一场表演，他们增加了一对演奏萨克斯风的姐妹，乐队的风格就象是年轻版的TALKING HEAD。 为了平",
+      "answerSha256": "63b80c604ac0be1b091478b58ff13e5dda6e3e23567c194d982cd44e2fd5a247",
+      "queryPlan": {
+        "intent": "details",
+        "scope": "catalog",
+        "inheritContext": false,
+        "yearFrom": 2000,
+        "yearTo": 2010,
+        "movieId": "1MeM",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:28:55.341166700Z",
+          "queryPlan": {
+            "intent": "details",
+            "scope": "catalog",
+            "inheritContext": false,
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "movieId": "1MeM",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "selectedId": "1MeM",
+          "total": 1,
+          "answer": "已定位片库影片，继续查询本次详情。"
+        },
+        {
+          "tool": "getMovieDetails",
+          "source": "http://127.0.0.1:18883/api/movies/1MeM",
+          "queriedAt": "2026-11-03T12:28:55.345160900Z",
+          "externalLinksVerifiedNow": false,
+          "movie": {
+            "id": "1MeM",
+            "titleCn": "电台司令: 彩虹里",
+            "titleEn": " Radiohead: In Rainbows",
+            "category": "mv",
+            "year": 2008,
+            "doubanScore": 9.5,
+            "summary": "这是Radiohead(电台司令乐队)2008年在他们地下室的录音棚里的现场录像，没有观众，有的只是乐队成员和制作人员。演出曲目为2007年专辑<In Rainbows>中的歌曲。\n乐队介绍\n英国的牛津不仅拥有世界著名学府，也是英国摇滚名团的盛产地之一，除了 RADIOHEAD，另外两个名噪一时的BRITPOP团体RIDE和SUPERGRASS也出身于此。RADIOHEAD的五位成员均是土生土长的牛津人，并且在风景如画的牛津近郊小镇 ABINGDON的私立男校里结识，开始了传奇生涯。 RADIOHEAD的灵魂人物，主音歌手兼吉他手THOM YORKE 八岁那年得到平生的第一件乐器：母亲送的一把西班牙吉他，两年后他便开始组团，随后加入了一支名为TNT的校园PUNK乐队。THOM第一次唱歌时便意识到他需要更加默契的合作乐手。很快他认识了 COLIN GREENWOOD，\"因为我们年龄相仿并且常常在同一个派对结束时碰上\"。出于对JOY DIVISION，THE SMITH，MAGAZINE以及怪异着装的喜爱，他们顺理成章地结成死党。另外一位校友ED O'BRIEN的加入是因为THOM认为他\"很酷而且看上去象MORRISSEY\"。举止温文尔雅的鼓手PHIL SELWAY随后取代了鼓机， 在一个星期五形成了最初的四人阵容。不久，COLIN的弟弟，爵士乐迷JONNY经过同哥哥及其朋友们的苦苦纠缠，终于作为口琴手加入进来。乐队在一个周末于牛津的JERICHO TAVERN（现已不存在）做了第一场表演，他们增加了一对演奏萨克斯风的姐妹，乐队的风格就象是年轻版的TALKING HEAD。 为了平",
+            "fieldsTruncated": true,
+            "directors": [
+              "David Barnard"
+            ],
+            "actors": [
+              "科林·格林伍德",
+              "强尼·格林伍德",
+              "Malcolm Hughes"
+            ],
+            "genres": [
+              "纪录",
+              "音乐"
+            ],
+            "resourceCount": 0
+          },
+          "resourceSummary": {
+            "approvedNormal": 0,
+            "returned": 0,
+            "excluded": 0
+          },
+          "truncated": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "e0de2d4d-c628-4d48-bced-de4553c0732f",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:55.333322300Z",
+          "durationMs": 3402
+        },
+        {
+          "requestId": "e0de2d4d-c628-4d48-bced-de4553c0732f",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:55.342162100Z",
+          "durationMs": 8,
+          "arguments": {
+            "intent": "details",
+            "scope": "catalog",
+            "inheritContext": false,
+            "yearFrom": 2000,
+            "yearTo": 2010,
+            "movieId": "1MeM"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:28:55.341166700Z",
+              "queryPlan": {
+                "intent": "details",
+                "scope": "catalog",
+                "inheritContext": false,
+                "yearFrom": 2000,
+                "yearTo": 2010,
+                "movieId": "1MeM",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "selectedId": "1MeM",
+              "total": 1,
+              "answer": "已定位片库影片，继续查询本次详情。"
+            }
+          }
+        },
+        {
+          "requestId": "e0de2d4d-c628-4d48-bced-de4553c0732f",
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-03T12:28:55.345160900Z",
+          "durationMs": 2,
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "http://127.0.0.1:18883/api/movies/1MeM",
+              "queriedAt": "2026-11-03T12:28:55.345160900Z",
+              "externalLinksVerifiedNow": false,
+              "movie": {
+                "id": "1MeM",
+                "titleCn": "电台司令: 彩虹里",
+                "titleEn": " Radiohead: In Rainbows",
+                "category": "mv",
+                "year": 2008,
+                "doubanScore": 9.5,
+                "summary": "这是Radiohead(电台司令乐队)2008年在他们地下室的录音棚里的现场录像，没有观众，有的只是乐队成员和制作人员。演出曲目为2007年专辑<In Rainbows>中的歌曲。\n乐队介绍\n英国的牛津不仅拥有世界著名学府，也是英国摇滚名团的盛产地之一，除了 RADIOHEAD，另外两个名噪一时的BRITPOP团体RIDE和SUPERGRASS也出身于此。RADIOHEAD的五位成员均是土生土长的牛津人，并且在风景如画的牛津近郊小镇 ABINGDON的私立男校里结识，开始了传奇生涯。 RADIOHEAD的灵魂人物，主音歌手兼吉他手THOM YORKE 八岁那年得到平生的第一件乐器：母亲送的一把西班牙吉他，两年后他便开始组团，随后加入了一支名为TNT的校园PUNK乐队。THOM第一次唱歌时便意识到他需要更加默契的合作乐手。很快他认识了 COLIN GREENWOOD，\"因为我们年龄相仿并且常常在同一个派对结束时碰上\"。出于对JOY DIVISION，THE SMITH，MAGAZINE以及怪异着装的喜爱，他们顺理成章地结成死党。另外一位校友ED O'BRIEN的加入是因为THOM认为他\"很酷而且看上去象MORRISSEY\"。举止温文尔雅的鼓手PHIL SELWAY随后取代了鼓机， 在一个星期五形成了最初的四人阵容。不久，COLIN的弟弟，爵士乐迷JONNY经过同哥哥及其朋友们的苦苦纠缠，终于作为口琴手加入进来。乐队在一个周末于牛津的JERICHO TAVERN（现已不存在）做了第一场表演，他们增加了一对演奏萨克斯风的姐妹，乐队的风格就象是年轻版的TALKING HEAD。 为了平",
+                "fieldsTruncated": true,
+                "directors": [
+                  "David Barnard"
+                ],
+                "actors": [
+                  "科林·格林伍德",
+                  "强尼·格林伍德",
+                  "Malcolm Hughes"
+                ],
+                "genres": [
+                  "纪录",
+                  "音乐"
+                ],
+                "resourceCount": 0
+              },
+              "resourceSummary": {
+                "approvedNormal": 0,
+                "returned": 0,
+                "excluded": 0
+              },
+              "truncated": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "inheritContext": false,
+          "genresAll": [
+            "音乐"
+          ],
+          "maxRuntime": 110,
+          "limit": 2,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": [],
+          "yearFrom": 2015,
+          "scope": "catalog"
+        },
+        "candidateIds": [
+          "za3R",
+          "3gLG"
+        ],
+        "candidates": [
+          {
+            "id": "za3R",
+            "titleCn": "RAYE at the Royal Albert Hall",
+            "year": 2024
+          },
+          {
+            "id": "3gLG",
+            "titleCn": "坂本龙一：杰作",
+            "titleEn": " Ryuichi Sakamoto | Opus",
+            "year": 2023
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:51.908893+00:00",
+        "candidateHistory": [
+          {
+            "candidateIds": [
+              "1MeM",
+              "gying_mv_X5Dz"
+            ],
+            "candidates": [
+              {
+                "id": "1MeM",
+                "titleCn": "电台司令: 彩虹里",
+                "titleEn": " Radiohead: In Rainbows",
+                "year": 2008
+              },
+              {
+                "id": "gying_mv_X5Dz",
+                "titleCn": "放牛班的春天",
+                "titleEn": " Les choristes",
+                "year": 2004
+              }
+            ],
+            "expiresAt": "2026-11-03T12:43:45.219334+00:00"
+          }
+        ],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "先找2000至2010年上映、最多110分钟的音乐电影，给两部并列出年份。"
+        },
+        {
+          "role": "assistant",
+          "content": "按本次已识别条件找到 17 部，先展示 2 部。\n1. 《电台司令: 彩虹里》；年份：2008；片长：43分钟；豆瓣评分：9.5；IMDb评分：8.7\n2. 《放牛班的春天》；年份：2004；片长：97分钟；豆瓣评分：9.3；IMDb评分：7.9；TMDB评分：7.7\n1. 电台司令: 彩虹里 (2008) 片库 ID: 1MeM\n2. 放牛班的春天 (2004) 片库 ID: gying_mv_X5Dz"
+        },
+        {
+          "role": "user",
+          "content": "年份改成2015年及以后，其他条件不变，重新给两部。"
+        },
+        {
+          "role": "assistant",
+          "content": "按本次已识别条件找到 42 部，先展示 2 部。\n1. 《RAYE at the Royal Albert Hall》；年份：2024；片长：80分钟；豆瓣评分：9.5；IMDb评分：9.2\n2. 《坂本龙一：杰作》；年份：2023；片长：103分钟；豆瓣评分：9.4；IMDb评分：8.0\n1. RAYE at the Royal Albert Hall (2024) 片库 ID: za3R\n2. 坂本龙一：杰作 (2023) 片库 ID: 3gLG"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "指向第一轮实际列表首个候选",
+          "导演资料与该候选身份一致"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "依据第一轮观测解析身份，不能误用最新一轮首个候选",
+          "第一轮没有可用候选或历史缺失时说明无法定位并澄清"
+        ],
+        "usefulApproximationBoundary": "无法定位时有效澄清可以满足需求，猜测片名或导演不算。"
+      },
+      "durationSeconds": 3.44,
+      "roundContext": {
+        "candidateIds": [
+          "1MeM"
+        ],
+        "candidates": [
+          {
+            "id": "1MeM",
+            "titleCn": "电台司令: 彩虹里",
+            "titleEn": " Radiohead: In Rainbows",
+            "year": 2008
+          }
+        ],
+        "expiresAt": "2026-11-03T12:43:55.348164+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-07",
+      "sourceGroup": "dev-v3-original-author-role",
+      "turn": 1,
+      "message": "找村上春树原著改编的电影，最多三部，写清对应哪篇原作并给依据。这里说的是原作者，不是让你查他当主演或导演的作品。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。 仍不能完整核验：[\"原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段\"]。\n1. 《燃烧》；年份：2018；导演：李沧东；主演：刘亚仁、史蒂文·元、全钟瑞、金秀京、崔承浩、玉子妍；片长：148分钟；豆瓣评分：8.1；IMDb评分：7.4；TMDB评分：7.4；剧情资料依据：“本片根据村上春树的短篇小说《烧仓房》改编。”\n尚未核实的条件：原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段。片库候选尚不能视为满足全部硬条件。\n本次联网结果没有足够相关的影视依据，请补充人物、场景、语言或大致年代。",
+      "answerSha256": "022d20cd201e078f2acacab01029714ad48f8d67aa5b16bed0f414481872f1b4",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "村上春树原著改编",
+        "inheritContext": false,
+        "unsupportedConditions": [
+          "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+        ],
+        "limit": 3,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:29:06.418504500Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "村上春树原著改编",
+            "inheritContext": false,
+            "unsupportedConditions": [
+              "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "gying_mv_Rbmw",
+              "titleCn": "燃烧",
+              "titleEn": " 버닝",
+              "category": "mv",
+              "seriesName": "燃烧",
+              "summary": "目标成为作家的青年李钟秀（刘亚仁 饰），平日里靠兼职养活自己。经营畜牧业的父亲不谙人情，官司缠身，迫使钟秀又要为了搭救父亲而四处奔走。这一日，钟秀在某大型卖场重逢了当年的同学申惠美（全钟淑 饰）。惠美计划近期前往非洲旅行，于是拜托钟秀照看爱猫Boil。不久后惠美回国，与之一同下飞机的还有名叫本（史蒂文·元 饰）的男子。本驾驶保时捷，居住在高级公寓内，优哉游哉，不见工作，四处玩乐，和钟秀相比有如天上地下。不知为何，本走入平民钟秀和惠美的生活，更向新朋友讲述了他奇特的癖好。在钟秀家小聚的那个晚上过后，惠美仿佛人间蒸发了一般无影无踪……\n本片根据村上春树的短篇小说《烧仓房》改编。",
+              "aliases": "Ardiente / Em Chamas / 燃烧烈爱 / มือเพลิง / Beoning",
+              "year": 2018,
+              "season": 1,
+              "genres": [
+                "剧情",
+                "悬疑",
+                "人性"
+              ],
+              "directors": [
+                "李沧东"
+              ],
+              "actors": [
+                "刘亚仁",
+                "史蒂文·元",
+                "全钟瑞",
+                "金秀京",
+                "崔承浩",
+                "玉子妍"
+              ],
+              "regions": [
+                "韩国"
+              ],
+              "languages": [
+                "韩语"
+              ],
+              "doubanScore": 8.1,
+              "imdbScore": 7.4,
+              "tmdbVoteAverage": 7.4,
+              "runtimeMinutes": 148,
+              "resourceCount": 6,
+              "rating": 8.1,
+              "ratingSource": "any",
+              "reasons": [
+                "资料关键词：改编、春、村上、树",
+                "简介语义候选（需结合资料核对）",
+                "剧情资料依据：“本片根据村上春树的短篇小说《烧仓房》改编。”"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": true,
+          "semanticStaleCandidates": 0,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [
+            "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+          ],
+          "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。 仍不能完整核验：[\"原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段\"]。",
+          "recalledTotal": 128,
+          "relevanceChecked": true
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "村上春树原著改编 电影 原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段",
+          "queriedAt": "2026-11-03T12:30:11.064101600Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [],
+          "returned": 0,
+          "truncated": true,
+          "rawReturned": 1,
+          "identityReturned": 1,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "d0ab6408-de22-4589-9ea4-b4edfb141ec0",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:29:00.345437400Z",
+          "durationMs": 4982
+        },
+        {
+          "requestId": "d0ab6408-de22-4589-9ea4-b4edfb141ec0",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:29:06.406755400Z",
+          "durationMs": 6061,
+          "returned": 100
+        },
+        {
+          "requestId": "d0ab6408-de22-4589-9ea4-b4edfb141ec0",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:29:06.544509100Z",
+          "durationMs": 137,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "村上春树原著改编",
+            "inheritContext": false,
+            "unsupportedConditions": [
+              "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+            ],
+            "limit": 3,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:29:06.418504500Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "村上春树原著改编",
+                "inheritContext": false,
+                "unsupportedConditions": [
+                  "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "gying_mv_Rbmw",
+                  "titleCn": "燃烧",
+                  "titleEn": " 버닝",
+                  "category": "mv",
+                  "seriesName": "燃烧",
+                  "summary": "目标成为作家的青年李钟秀（刘亚仁 饰），平日里靠兼职养活自己。经营畜牧业的父亲不谙人情，官司缠身，迫使钟秀又要为了搭救父亲而四处奔走。这一日，钟秀在某大型卖场重逢了当年的同学申惠美（全钟淑 饰）。惠美计划近期前往非洲旅行，于是拜托钟秀照看爱猫Boil。不久后惠美回国，与之一同下飞机的还有名叫本（史蒂文·元 饰）的男子。本驾驶保时捷，居住在高级公寓内，优哉游哉，不见工作，四处玩乐，和钟秀相比有如天上地下。不知为何，本走入平民钟秀和惠美的生活，更向新朋友讲述了他奇特的癖好。在钟秀家小聚的那个晚上过后，惠美仿佛人间蒸发了一般无影无踪……\n本片根据村上春树的短篇小说《烧仓房》改编。",
+                  "aliases": "Ardiente / Em Chamas / 燃烧烈爱 / มือเพลิง / Beoning",
+                  "year": 2018,
+                  "season": 1,
+                  "genres": [
+                    "剧情",
+                    "悬疑",
+                    "人性"
+                  ],
+                  "directors": [
+                    "李沧东"
+                  ],
+                  "actors": [
+                    "刘亚仁",
+                    "史蒂文·元",
+                    "全钟瑞",
+                    "金秀京",
+                    "崔承浩",
+                    "玉子妍"
+                  ],
+                  "regions": [
+                    "韩国"
+                  ],
+                  "languages": [
+                    "韩语"
+                  ],
+                  "doubanScore": 8.1,
+                  "imdbScore": 7.4,
+                  "tmdbVoteAverage": 7.4,
+                  "runtimeMinutes": 148,
+                  "resourceCount": 6,
+                  "rating": 8.1,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "资料关键词：改编、春、村上、树",
+                    "简介语义候选（需结合资料核对）",
+                    "剧情资料依据：“本片根据村上春树的短篇小说《烧仓房》改编。”"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": true,
+              "semanticStaleCandidates": 0,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [
+                "原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段"
+              ],
+              "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。 仍不能完整核验：[\"原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段\"]。",
+              "recalledTotal": 128,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "d0ab6408-de22-4589-9ea4-b4edfb141ec0",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:07.663910100Z",
+          "durationMs": 61118
+        },
+        {
+          "requestId": "d0ab6408-de22-4589-9ea4-b4edfb141ec0",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:11.072527600Z",
+          "durationMs": 3407,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "村上春树原著改编 电影 原作改编关系及对应原著需实际来源核验，片库未提供可验证的原作者关系字段",
+              "queriedAt": "2026-11-03T12:30:11.064101600Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [],
+              "returned": 0,
+              "truncated": true,
+              "rawReturned": 1,
+              "identityReturned": 1,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "电影改编自村上春树原作",
+          "最多三部",
+          "写明对应原作并提供依据",
+          "不把原作者当演员或导演过滤"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "固定片库元数据缺少改编字段时，说明限制或使用受限资料检索核实",
+          "区分改编关系与仅受启发的相似题材"
+        ],
+        "usefulApproximationBoundary": "只有相似主题而无改编依据的候选不能满足，无法证实时少给或保留待核验。"
+      },
+      "durationSeconds": 79.14,
+      "roundContext": {
+        "candidateIds": [
+          "gying_mv_Rbmw"
+        ],
+        "candidates": [
+          {
+            "id": "gying_mv_Rbmw",
+            "titleCn": "燃烧",
+            "titleEn": " 버닝",
+            "year": 2018
+          }
+        ],
+        "expiresAt": "2026-11-03T12:45:14.497867+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-08",
+      "sourceGroup": "dev-v3-dated-official-release",
+      "turn": 1,
+      "message": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "本次查询日期：2026-11-03。片库元数据不能确认当前官方发行公告的地区、版本和发布日期。\n本次搜索未找到足够相关的官方公告依据，是否已公布及公告发布日期仍待核验。\n搜索摘要与链接列在下方；未核实的官方身份、地区、版本和公告发布日期仍未知，不能用影片年份或查询日期代替公告发布日期。",
+      "answerSha256": "53a7a8ce0a5f875f5cbde4497b3c6e371e7b65f0ed830e70c6840f0c7e5327bc",
+      "queryPlan": {
+        "intent": "web",
+        "inheritContext": false,
+        "titles": [
+          "花样年华"
+        ],
+        "unsupportedConditions": [
+          "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+        ],
+        "limit": 10,
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:30:24.947380Z",
+          "queryPlan": {
+            "intent": "web",
+            "inheritContext": false,
+            "titles": [
+              "花样年华"
+            ],
+            "unsupportedConditions": [
+              "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+            ],
+            "limit": 10,
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "tmdb_movie_843",
+              "titleCn": "花样年华",
+              "titleEn": "花樣年華",
+              "category": "mv",
+              "seriesName": "爱情三部曲",
+              "summary": "1962年的香港，报馆编辑周慕云与妻子搬进一间住满上海人的公寓，同一天搬来的还有在贸易公司工作的苏丽珍和她的丈夫。由于各自的配偶经常因工作不在家，周慕云与苏丽珍在一次次碰面中逐渐熟悉起来。不久，两人从一些生活中的蛛丝马迹发现，自己的配偶竟背着他们发展出了一段婚外情。面对同样的背叛，他们开始频繁见面，试图弄清这段关系究竟是如何开始的，并在相处中逐渐产生了超越普通朋友的感情。然而，他们始终不愿成为和各自配偶一样的人，邻里间的目光与流言也让这段感情愈发克制而隐秘……",
+              "aliases": "Stvorení pre lásku / Huāyàng Niánhuá / In the Mood for Love - Der Klang der Liebe / Aşk Zamanı / 화양연화 리마스터링 / 花様年華：2000 / Desando Amar / Fa yeung nin wa / 花样年华 / 花樣年華 / In The Mood For Love / In the Mood for Love / Dalam Gejolak Cinta / Fa yeung nin wah",
+              "year": 2000,
+              "genres": [
+                "剧情",
+                "爱情"
+              ],
+              "directors": [
+                "王家卫"
+              ],
+              "actors": [
+                "张曼玉",
+                "梁朝伟",
+                "萧炳林",
+                "潘迪华",
+                "雷震",
+                "张同祖",
+                "陈万雷",
+                "顾锦华",
+                "钱似莺",
+                "孙佳君",
+                "张耀扬",
+                "朱连·卡邦"
+              ],
+              "regions": [
+                "Hong Kong",
+                "France"
+              ],
+              "languages": [
+                "Cantonese",
+                "French",
+                "Spanish"
+              ],
+              "tmdbVoteAverage": 8.1,
+              "runtimeMinutes": 99,
+              "resourceCount": 5,
+              "rating": 8.1,
+              "ratingSource": "any",
+              "reasons": [
+                "符合本次可核验的片库筛选条件"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": false,
+          "semanticStaleCandidates": 0,
+          "retrieval": "lexical",
+          "unverifiedConditions": [
+            "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+          ],
+          "answer": "按本次已识别条件找到 1 部，先展示 1 部。 片库不能完整核验这些要求：官方发行公告的地区、版本及发布日期需要实际官方来源核验；不能保证下列候选满足它们。"
+        },
+        {
+          "tool": "searchMovieWeb",
+          "provider": "bing-html",
+          "source": "https://www.bing.com/search",
+          "query": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。 film",
+          "queriedAt": "2026-11-03T12:30:28.486980500Z",
+          "externalLinksVerifiedNow": false,
+          "webResults": [],
+          "returned": 0,
+          "truncated": true,
+          "rawReturned": 0,
+          "identityReturned": 0,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "07233f66-1830-493a-84cc-03cc4657e493",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:24.896167800Z",
+          "durationMs": 10358
+        },
+        {
+          "requestId": "07233f66-1830-493a-84cc-03cc4657e493",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:26.933357900Z",
+          "durationMs": 2036,
+          "arguments": {
+            "intent": "web",
+            "inheritContext": false,
+            "titles": [
+              "花样年华"
+            ],
+            "unsupportedConditions": [
+              "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+            ],
+            "limit": 10
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:30:24.947380Z",
+              "queryPlan": {
+                "intent": "web",
+                "inheritContext": false,
+                "titles": [
+                  "花样年华"
+                ],
+                "unsupportedConditions": [
+                  "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+                ],
+                "limit": 10,
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "tmdb_movie_843",
+                  "titleCn": "花样年华",
+                  "titleEn": "花樣年華",
+                  "category": "mv",
+                  "seriesName": "爱情三部曲",
+                  "summary": "1962年的香港，报馆编辑周慕云与妻子搬进一间住满上海人的公寓，同一天搬来的还有在贸易公司工作的苏丽珍和她的丈夫。由于各自的配偶经常因工作不在家，周慕云与苏丽珍在一次次碰面中逐渐熟悉起来。不久，两人从一些生活中的蛛丝马迹发现，自己的配偶竟背着他们发展出了一段婚外情。面对同样的背叛，他们开始频繁见面，试图弄清这段关系究竟是如何开始的，并在相处中逐渐产生了超越普通朋友的感情。然而，他们始终不愿成为和各自配偶一样的人，邻里间的目光与流言也让这段感情愈发克制而隐秘……",
+                  "aliases": "Stvorení pre lásku / Huāyàng Niánhuá / In the Mood for Love - Der Klang der Liebe / Aşk Zamanı / 화양연화 리마스터링 / 花様年華：2000 / Desando Amar / Fa yeung nin wa / 花样年华 / 花樣年華 / In The Mood For Love / In the Mood for Love / Dalam Gejolak Cinta / Fa yeung nin wah",
+                  "year": 2000,
+                  "genres": [
+                    "剧情",
+                    "爱情"
+                  ],
+                  "directors": [
+                    "王家卫"
+                  ],
+                  "actors": [
+                    "张曼玉",
+                    "梁朝伟",
+                    "萧炳林",
+                    "潘迪华",
+                    "雷震",
+                    "张同祖",
+                    "陈万雷",
+                    "顾锦华",
+                    "钱似莺",
+                    "孙佳君",
+                    "张耀扬",
+                    "朱连·卡邦"
+                  ],
+                  "regions": [
+                    "Hong Kong",
+                    "France"
+                  ],
+                  "languages": [
+                    "Cantonese",
+                    "French",
+                    "Spanish"
+                  ],
+                  "tmdbVoteAverage": 8.1,
+                  "runtimeMinutes": 99,
+                  "resourceCount": 5,
+                  "rating": 8.1,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "符合本次可核验的片库筛选条件"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": false,
+              "semanticStaleCandidates": 0,
+              "retrieval": "lexical",
+              "unverifiedConditions": [
+                "官方发行公告的地区、版本及发布日期需要实际官方来源核验"
+              ],
+              "answer": "按本次已识别条件找到 1 部，先展示 1 部。 片库不能完整核验这些要求：官方发行公告的地区、版本及发布日期需要实际官方来源核验；不能保证下列候选满足它们。"
+            }
+          }
+        },
+        {
+          "requestId": "07233f66-1830-493a-84cc-03cc4657e493",
+          "kind": "tool",
+          "name": "searchMovieWeb",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:28.492433Z",
+          "durationMs": 1558,
+          "result": {
+            "ok": true,
+            "data": {
+              "provider": "bing-html",
+              "source": "https://www.bing.com/search",
+              "query": "截至你本次查询这一天，官方有没有宣布《花样年华》4K修复版在中国大陆的新一轮院线重映？给公告来源和发布日期；只查公告，不帮我买票。 film",
+              "queriedAt": "2026-11-03T12:30:28.486980500Z",
+              "externalLinksVerifiedNow": false,
+              "webResults": [],
+              "returned": 0,
+              "truncated": true,
+              "rawReturned": 0,
+              "identityReturned": 0,
+              "relevanceChecked": true
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "记录本次实际查询日期",
+          "中国大陆院线重映公告",
+          "识别4K修复版及新一轮公告时间",
+          "提供来源与发布日期",
+          "不得执行购票或外部写操作"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "优先核对官方原始公告，区分旧公告、转载日期和新上映安排",
+          "搜索无结果或只有非官方信息时保留未知，不把未找到说成确认没有"
+        ],
+        "usefulApproximationBoundary": "可提供已找到的历史公告但必须标明不是本次新公告；不能据旧消息保证当前安排。"
+      },
+      "durationSeconds": 13.97,
+      "roundContext": {
+        "candidateIds": [
+          "tmdb_movie_843"
+        ],
+        "candidates": [
+          {
+            "id": "tmdb_movie_843",
+            "titleCn": "花样年华",
+            "titleEn": "花樣年華",
+            "year": 2000
+          }
+        ],
+        "expiresAt": "2026-11-03T12:45:28.494812+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-09",
+      "sourceGroup": "dev-v3-contradictory-runtime",
+      "turn": 1,
+      "message": "找一部电影，片长至少150分钟，同时不能超过100分钟。这两个都是硬条件；先告诉我条件能不能同时满足。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+      "answerSha256": "36d53ff69964154ab551048eb6c43d005e0cbaeaa5210e5942f0e1d9ad2970f9",
+      "queryPlan": {
+        "intent": "clarify",
+        "semanticText": "片长至少150分钟；同时不能超过100分钟",
+        "clarification": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+        "inheritContext": false,
+        "limit": 10,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:30:39.799561100Z",
+          "queryPlan": {
+            "intent": "clarify",
+            "semanticText": "片长至少150分钟；同时不能超过100分钟",
+            "clarification": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+            "inheritContext": false,
+            "limit": 10,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "answer": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+          "movies": [],
+          "total": 0
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "80ebbe23-673c-423b-9c7e-14cca7ba6f34",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:33.819158500Z",
+          "durationMs": 5295
+        },
+        {
+          "requestId": "80ebbe23-673c-423b-9c7e-14cca7ba6f34",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:39.765525700Z",
+          "durationMs": 5946,
+          "returned": 100
+        },
+        {
+          "requestId": "80ebbe23-673c-423b-9c7e-14cca7ba6f34",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:39.800579800Z",
+          "durationMs": 35,
+          "arguments": {
+            "intent": "clarify",
+            "semanticText": "片长至少150分钟；同时不能超过100分钟",
+            "clarification": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+            "inheritContext": false,
+            "limit": 10,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:30:39.799561100Z",
+              "queryPlan": {
+                "intent": "clarify",
+                "semanticText": "片长至少150分钟；同时不能超过100分钟",
+                "clarification": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+                "inheritContext": false,
+                "limit": 10,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "answer": "条件矛盾：150分钟大于100分钟，无法同时满足。 片长的最低要求超过最高限制，两个硬条件不能同时满足。请确认要修改哪一项。",
+              "movies": [],
+              "total": 0
+            }
+          }
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "同一电影片长 >= 150分钟且 <= 100分钟",
+          "两个条件均为硬条件",
+          "先判断条件是否同时可满足"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "明确两个片长条件冲突，询问用户愿意修改哪一项",
+          "不能靠截短版、拆集或自行放宽来声称满足"
+        ],
+        "usefulApproximationBoundary": "有效解释冲突和澄清可满足需求，不需要虚构候选。"
+      },
+      "durationSeconds": 11.3,
+      "roundContext": {
+        "candidateIds": [],
+        "candidates": [],
+        "expiresAt": "2026-11-03T12:45:39.803575+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "turn": 1,
+      "message": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。\n1. 《天堂电影院》；年份：1988；片长：124分钟；TMDB评分：8.4；剧情资料依据：“在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放”；偏好未核验：结尾温暖",
+      "answerSha256": "7d5b59435c6f48d7094945b49ac662218c85709d575b284f40d593050bff6c4f",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "以小镇电影院为故事重要场景",
+        "inheritContext": false,
+        "genresAll": [
+          "剧情"
+        ],
+        "limit": 3,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:31:05.894002400Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "tmdb_movie_11216",
+              "titleCn": "天堂电影院",
+              "titleEn": "Nuovo Cinema Paradiso",
+              "category": "mv",
+              "summary": "　　在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放映之前都要经由牧师检查，把认为观众不宜的镜头（比如接吻戏）严格地剪掉之后，才可以放映。好心的艾佛特为了让更多的观众看到电影，搞了一次露天电影，结果胶片着火了，多多把艾弗达从火海中救了出来，但艾弗达双目失明。多多成了小镇唯一会放电影的人，他接替艾佛特成了小镇的电影放映师。多多渐渐长大，他爱上了银行家的女儿艾莲娜。初恋的纯洁情愫美如天堂，但是一对小情侣的海誓山盟被艾莲娜父亲的阻挠给隔断了，托托去服兵役，而艾莲娜去念大学。伤心的多多在艾佛达的鼓励下，离开小镇，追寻自己生命中的梦想……30年后，艾佛达去世，此时的多多已经是功成名就的导演，他回到了家乡参加艾弗达的葬礼。老放映员留给他一份礼物，原来是当初被镇上的检查员勒令剪掉的吻戏胶片。多多看着这些镜头，突然发现自己已经理解了生命中的一切。",
+              "aliases": "Nyû shinema paradaisu / Bioskop Paradizo",
+              "year": 1988,
+              "genres": [
+                "剧情",
+                "爱情"
+              ],
+              "directors": [
+                "朱塞佩·托纳多雷"
+              ],
+              "actors": [
+                "菲利浦·诺瓦雷",
+                "雅克·贝汉",
+                "马可·莱昂纳迪",
+                "萨瓦特利·卡西欧",
+                "阿格妮丝·那诺",
+                "安东内拉·阿蒂利",
+                "普佩拉·玛奇奥",
+                "布丽吉特·佛西",
+                "恩佐·卡拉瓦勒",
+                "伊萨·丹尼尔",
+                "Leo Gullotta",
+                "里奧普爾多·特里斯特"
+              ],
+              "regions": [
+                "Italy",
+                "France"
+              ],
+              "languages": [
+                "Italian"
+              ],
+              "tmdbVoteAverage": 8.4,
+              "runtimeMinutes": 124,
+              "resourceCount": 1,
+              "rating": 8.4,
+              "ratingSource": "any",
+              "reasons": [
+                "资料关键词：小、镇、院",
+                "简介语义候选（需结合资料核对）",
+                "剧情资料依据：“在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放”",
+                "偏好未核验：结尾温暖"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": true,
+          "semanticStaleCandidates": 4,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+          "recalledTotal": 146,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "c1337e43-610f-4d7a-9dfd-498310ff4162",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:30:59.889664700Z",
+          "durationMs": 20068
+        },
+        {
+          "requestId": "c1337e43-610f-4d7a-9dfd-498310ff4162",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:31:05.882481700Z",
+          "durationMs": 5992,
+          "returned": 100
+        },
+        {
+          "requestId": "c1337e43-610f-4d7a-9dfd-498310ff4162",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:31:06.026338900Z",
+          "durationMs": 143,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv"
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:31:05.894002400Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "tmdb_movie_11216",
+                  "titleCn": "天堂电影院",
+                  "titleEn": "Nuovo Cinema Paradiso",
+                  "category": "mv",
+                  "summary": "　　在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放映之前都要经由牧师检查，把认为观众不宜的镜头（比如接吻戏）严格地剪掉之后，才可以放映。好心的艾佛特为了让更多的观众看到电影，搞了一次露天电影，结果胶片着火了，多多把艾弗达从火海中救了出来，但艾弗达双目失明。多多成了小镇唯一会放电影的人，他接替艾佛特成了小镇的电影放映师。多多渐渐长大，他爱上了银行家的女儿艾莲娜。初恋的纯洁情愫美如天堂，但是一对小情侣的海誓山盟被艾莲娜父亲的阻挠给隔断了，托托去服兵役，而艾莲娜去念大学。伤心的多多在艾佛达的鼓励下，离开小镇，追寻自己生命中的梦想……30年后，艾佛达去世，此时的多多已经是功成名就的导演，他回到了家乡参加艾弗达的葬礼。老放映员留给他一份礼物，原来是当初被镇上的检查员勒令剪掉的吻戏胶片。多多看着这些镜头，突然发现自己已经理解了生命中的一切。",
+                  "aliases": "Nyû shinema paradaisu / Bioskop Paradizo",
+                  "year": 1988,
+                  "genres": [
+                    "剧情",
+                    "爱情"
+                  ],
+                  "directors": [
+                    "朱塞佩·托纳多雷"
+                  ],
+                  "actors": [
+                    "菲利浦·诺瓦雷",
+                    "雅克·贝汉",
+                    "马可·莱昂纳迪",
+                    "萨瓦特利·卡西欧",
+                    "阿格妮丝·那诺",
+                    "安东内拉·阿蒂利",
+                    "普佩拉·玛奇奥",
+                    "布丽吉特·佛西",
+                    "恩佐·卡拉瓦勒",
+                    "伊萨·丹尼尔",
+                    "Leo Gullotta",
+                    "里奧普爾多·特里斯特"
+                  ],
+                  "regions": [
+                    "Italy",
+                    "France"
+                  ],
+                  "languages": [
+                    "Italian"
+                  ],
+                  "tmdbVoteAverage": 8.4,
+                  "runtimeMinutes": 124,
+                  "resourceCount": 1,
+                  "rating": 8.4,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "资料关键词：小、镇、院",
+                    "简介语义候选（需结合资料核对）",
+                    "剧情资料依据：“在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放”",
+                    "偏好未核验：结尾温暖"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": true,
+              "semanticStaleCandidates": 4,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+              "recalledTotal": 146,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "c1337e43-610f-4d7a-9dfd-498310ff4162",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T12:32:48.699304500Z",
+          "durationMs": 102671
+        }
+      ],
+      "submittedContext": {},
+      "submittedHistory": [],
+      "reviewRubric": {
+        "hardConditions": [
+          "剧情电影，不要剧集",
+          "小镇电影院是故事重要场景",
+          "最多三部",
+          "提供支持主题的剧情依据"
+        ],
+        "softPreferences": [
+          "结尾温暖，非硬性排除"
+        ],
+        "expectedBehavior": [
+          "区分主题证据和主观感受，结尾未经核实则说明未知",
+          "与偏好不完全一致时解释差异"
+        ],
+        "usefulApproximationBoundary": "核心主题及电影类型满足时，不那么温暖的结尾可列为有用近似；仍需用户或人工复核确认实用性。"
+      },
+      "durationSeconds": 128.88,
+      "roundContext": {
+        "candidateIds": [
+          "tmdb_movie_11216"
+        ],
+        "candidates": [
+          {
+            "id": "tmdb_movie_11216",
+            "titleCn": "天堂电影院",
+            "titleEn": "Nuovo Cinema Paradiso",
+            "year": 1988
+          }
+        ],
+        "expiresAt": "2026-11-03T12:47:48.701317+00:00"
+      }
+    },
+    {
+      "caseId": "dev-v3-10",
+      "sourceGroup": "dev-v3-soft-preference-relaxation",
+      "turn": 2,
+      "message": "结尾不用温暖也行，但电影院必须是核心场景，电影类型和最多三部都别改。",
+      "executed": true,
+      "apiCode": 200,
+      "status": "completed",
+      "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。\n1. 《沼泽深处的女孩》；年份：2022；片长：126分钟；TMDB评分：7.5；剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”；剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”",
+      "answerSha256": "12fd79aece80b7070e7393900b9c3a4fff4789eded00993b25e01f23382bf85e",
+      "queryPlan": {
+        "intent": "search",
+        "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+        "inheritContext": false,
+        "genresAll": [
+          "剧情"
+        ],
+        "limit": 3,
+        "category": "mv",
+        "actors": [],
+        "actorsAny": [],
+        "directors": [],
+        "directorsAny": [],
+        "excludedActors": [],
+        "excludedDirectors": []
+      },
+      "evidence": [
+        {
+          "tool": "queryCatalog",
+          "source": "GYing catalog",
+          "queriedAt": "2026-11-03T12:33:04.984830600Z",
+          "queryPlan": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "movies": [
+            {
+              "id": "tmdb_movie_682507",
+              "titleCn": "沼泽深处的女孩",
+              "titleEn": "Where the Crawdads Sing",
+              "category": "mv",
+              "summary": "电影改编自一部扣人心弦的畅销悬疑小说。主角是一名叫做基亚的女孩，她遭到家人遗弃，在北卡罗来纳州中一片危险的沼泽地里独自生活并长大。多年来，巴克利湾一直萦绕着一则关于“沼泽女孩”的传言，导致聪明坚强的基亚遭到当地居民的排斥。有一天，基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后，她立刻被小镇认定为头号嫌疑人。随着案件调查取得新的进展，真相反而变得愈发难以捉摸。沼泽内暗藏的诸多秘密即将被揭开。",
+              "aliases": "蝲蛄吟唱的地方 / Bataklık Kızı / La Noia Salvatge / Այնտեղ, Որտեղ Խեցգետիններն են Երգում / جایی که خرچنگ‌ها آواز می‌خوانند / Ол Онно Раактар Ыллыыллар / 沼泽谋杀案",
+              "year": 2022,
+              "genres": [
+                "剧情",
+                "悬疑",
+                "爱情"
+              ],
+              "directors": [
+                "奥利维亚·纽曼"
+              ],
+              "actors": [
+                "黛西·埃德加-琼斯",
+                "泰勒·约翰·史密斯",
+                "哈里斯·迪金森",
+                "大卫·斯特雷泽恩",
+                "迈克尔·凯悦",
+                "小斯特林·马塞尔",
+                "Logan Macrae",
+                "Bill Kelly",
+                "阿娜·欧蕾利",
+                "加瑞特·迪拉胡特",
+                "乔乔·里贾纳",
+                "卢克·大卫·布鲁姆"
+              ],
+              "regions": [
+                "United States of America"
+              ],
+              "languages": [
+                "English"
+              ],
+              "tmdbVoteAverage": 7.5,
+              "runtimeMinutes": 126,
+              "resourceCount": 4,
+              "rating": 7.5,
+              "ratingSource": "any",
+              "reasons": [
+                "资料关键词：为、小、镇",
+                "简介语义候选（需结合资料核对）",
+                "剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”",
+                "剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”"
+              ]
+            }
+          ],
+          "total": 1,
+          "returned": 1,
+          "truncated": true,
+          "semanticStaleCandidates": 3,
+          "retrieval": "hybrid-rrf",
+          "unverifiedConditions": [],
+          "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+          "recalledTotal": 147,
+          "relevanceChecked": true
+        }
+      ],
+      "trace": [
+        {
+          "requestId": "c9f0a14b-72e6-451c-aed2-0d901c094b70",
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T12:32:58.361206600Z",
+          "durationMs": 9646
+        },
+        {
+          "requestId": "c9f0a14b-72e6-451c-aed2-0d901c094b70",
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T12:33:04.974967Z",
+          "durationMs": 6446,
+          "returned": 100
+        },
+        {
+          "requestId": "c9f0a14b-72e6-451c-aed2-0d901c094b70",
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T12:33:05.147489500Z",
+          "durationMs": 172,
+          "arguments": {
+            "intent": "search",
+            "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+            "inheritContext": false,
+            "genresAll": [
+              "剧情"
+            ],
+            "limit": 3,
+            "category": "mv",
+            "actors": [],
+            "actorsAny": [],
+            "directors": [],
+            "directorsAny": [],
+            "excludedActors": [],
+            "excludedDirectors": []
+          },
+          "result": {
+            "ok": true,
+            "data": {
+              "source": "GYing catalog",
+              "queriedAt": "2026-11-03T12:33:04.984830600Z",
+              "queryPlan": {
+                "intent": "search",
+                "semanticText": "以小镇电影院为故事重要场景；电影院必须是核心场景",
+                "inheritContext": false,
+                "genresAll": [
+                  "剧情"
+                ],
+                "limit": 3,
+                "category": "mv",
+                "actors": [],
+                "actorsAny": [],
+                "directors": [],
+                "directorsAny": [],
+                "excludedActors": [],
+                "excludedDirectors": []
+              },
+              "movies": [
+                {
+                  "id": "tmdb_movie_682507",
+                  "titleCn": "沼泽深处的女孩",
+                  "titleEn": "Where the Crawdads Sing",
+                  "category": "mv",
+                  "summary": "电影改编自一部扣人心弦的畅销悬疑小说。主角是一名叫做基亚的女孩，她遭到家人遗弃，在北卡罗来纳州中一片危险的沼泽地里独自生活并长大。多年来，巴克利湾一直萦绕着一则关于“沼泽女孩”的传言，导致聪明坚强的基亚遭到当地居民的排斥。有一天，基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后，她立刻被小镇认定为头号嫌疑人。随着案件调查取得新的进展，真相反而变得愈发难以捉摸。沼泽内暗藏的诸多秘密即将被揭开。",
+                  "aliases": "蝲蛄吟唱的地方 / Bataklık Kızı / La Noia Salvatge / Այնտեղ, Որտեղ Խեցգետիններն են Երգում / جایی که خرچنگ‌ها آواز می‌خوانند / Ол Онно Раактар Ыллыыллар / 沼泽谋杀案",
+                  "year": 2022,
+                  "genres": [
+                    "剧情",
+                    "悬疑",
+                    "爱情"
+                  ],
+                  "directors": [
+                    "奥利维亚·纽曼"
+                  ],
+                  "actors": [
+                    "黛西·埃德加-琼斯",
+                    "泰勒·约翰·史密斯",
+                    "哈里斯·迪金森",
+                    "大卫·斯特雷泽恩",
+                    "迈克尔·凯悦",
+                    "小斯特林·马塞尔",
+                    "Logan Macrae",
+                    "Bill Kelly",
+                    "阿娜·欧蕾利",
+                    "加瑞特·迪拉胡特",
+                    "乔乔·里贾纳",
+                    "卢克·大卫·布鲁姆"
+                  ],
+                  "regions": [
+                    "United States of America"
+                  ],
+                  "languages": [
+                    "English"
+                  ],
+                  "tmdbVoteAverage": 7.5,
+                  "runtimeMinutes": 126,
+                  "resourceCount": 4,
+                  "rating": 7.5,
+                  "ratingSource": "any",
+                  "reasons": [
+                    "资料关键词：为、小、镇",
+                    "简介语义候选（需结合资料核对）",
+                    "剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”",
+                    "剧情资料依据：“基亚被镇上来的两位年轻人所吸引，面对一个全新的、令人震撼的世界，她敞开了自己的心扉。但是，在其中一位年轻人的尸体被发现后”"
+                  ]
+                }
+              ],
+              "total": 1,
+              "returned": 1,
+              "truncated": true,
+              "semanticStaleCandidates": 3,
+              "retrieval": "hybrid-rrf",
+              "unverifiedConditions": [],
+              "answer": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。",
+              "recalledTotal": 147,
+              "relevanceChecked": true
+            }
+          }
+        },
+        {
+          "requestId": "c9f0a14b-72e6-451c-aed2-0d901c094b70",
+          "kind": "planning",
+          "name": "candidate-relevance",
+          "status": "success",
+          "timestamp": "2026-11-03T12:35:01.970858Z",
+          "durationMs": 116821
+        }
+      ],
+      "submittedContext": {
+        "queryPlan": {
+          "intent": "search",
+          "semanticText": "以小镇电影院为故事重要场景",
+          "inheritContext": false,
+          "genresAll": [
+            "剧情"
+          ],
+          "limit": 3,
+          "category": "mv",
+          "actors": [],
+          "actorsAny": [],
+          "directors": [],
+          "directorsAny": [],
+          "excludedActors": [],
+          "excludedDirectors": []
+        },
+        "candidateIds": [
+          "tmdb_movie_11216"
+        ],
+        "candidates": [
+          {
+            "id": "tmdb_movie_11216",
+            "titleCn": "天堂电影院",
+            "titleEn": "Nuovo Cinema Paradiso",
+            "year": 1988
+          }
+        ],
+        "expiresAt": "2026-11-03T12:47:48.701317+00:00",
+        "candidateHistory": [],
+        "historyComplete": true
+      },
+      "submittedHistory": [
+        {
+          "role": "user",
+          "content": "想看以小镇电影院为故事重要场景的剧情电影，不要剧集。最好结尾温暖，但这只是偏好；先给最多三部，并说明剧情依据。"
+        },
+        {
+          "role": "assistant",
+          "content": "根据本次片库简介核对后保留 1 部可能符合描述的候选，依据列在下方。\n1. 《天堂电影院》；年份：1988；片长：124分钟；TMDB评分：8.4；剧情资料依据：“在意大利南部小镇姜卡尔多，童年的小多多不仅喜欢看电影，还喜欢看放映师艾弗达“剪”电影：在40年代的意大利小镇上，电影在放”；偏好未核验：结尾温暖\n1. 天堂电影院 (1988) 片库 ID: tmdb_movie_11216"
+        }
+      ],
+      "reviewRubric": {
+        "hardConditions": [
+          "剧情电影，不要剧集",
+          "电影院是核心场景",
+          "最多三部"
+        ],
+        "softPreferences": [],
+        "expectedBehavior": [
+          "移除温暖结尾偏好，保留并加强明确主题与类型限制",
+          "不能把只短暂出现电影院的影片充作符合"
+        ],
+        "usefulApproximationBoundary": "允许的变化仅限结尾偏好；不得把剧集或仅一幕电影院的影片当成已获准近似。"
+      },
+      "durationSeconds": 133.27,
+      "roundContext": {
+        "candidateIds": [
+          "tmdb_movie_682507"
+        ],
+        "candidates": [
+          {
+            "id": "tmdb_movie_682507",
+            "titleCn": "沼泽深处的女孩",
+            "titleEn": "Where the Crawdads Sing",
+            "year": 2022
+          }
+        ],
+        "expiresAt": "2026-11-03T12:50:01.975884+00:00"
+      }
+    }
+  ],
+  "launchEnvironment": "allowlist system environment plus explicit fixture settings; production env not loaded",
+  "harnessHealth": {
+    "status": "ready",
+    "ready": true,
+    "port": 18883,
+    "pid": 40120,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+    "datasetSelectCalls": 1,
+    "queryCalls": 0,
+    "contextUpdates": 0,
+    "detailGets": 0,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-query-quality-20261103/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-03T12:24:12.199357Z"
+  },
+  "agentHealthAndIdentityPassed": true,
+  "executedTurns": 15,
+  "completedTurns": 15,
+  "agentExitCode": 0,
+  "agentGracefullyStopped": true,
+  "harnessFinalStats": {
+    "status": "stopping",
+    "ready": false,
+    "port": 18883,
+    "pid": 40120,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+    "datasetSelectCalls": 6,
+    "queryCalls": 19,
+    "contextUpdates": 15,
+    "detailGets": 2,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-query-quality-20261103/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-03T12:35:02.672029600Z",
+    "stopping": true
+  },
+  "harnessExitCode": 0,
+  "harnessStopReceipt": {
+    "status": "stopped",
+    "ready": false,
+    "port": 18883,
+    "pid": 40120,
+    "rows": 12822,
+    "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+    "datasetSelectSqlSha256": "58c533e81cecdeece01e202cd6c886d266996f5e2b5af2c9a27442d57dd15fc3",
+    "datasetSelectCalls": 6,
+    "queryCalls": 19,
+    "contextUpdates": 15,
+    "detailGets": 2,
+    "dataSourcePresent": false,
+    "databaseConnections": 0,
+    "databaseWrites": 0,
+    "queueClaims": 0,
+    "resourceLinksIncluded": false,
+    "springApplicationStarted": false,
+    "schedulersStarted": false,
+    "catalogClassLocation": "file:/E:/gying-tools/releases/ai-query-quality-20261103/catalog-harness-runtime/BOOT-INF/classes/",
+    "observedAt": "2026-11-03T12:35:04.831182800Z",
+    "gracefullyStopped": true
+  },
+  "completedAt": "2026-11-03T12:35:04.934655+00:00"
+}

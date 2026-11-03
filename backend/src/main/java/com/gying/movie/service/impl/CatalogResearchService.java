@@ -168,8 +168,11 @@ public class CatalogResearchService {
             List<int[]> occupied=new ArrayList<>();
             for(var entry:ordered){
                 String word=entry.getKey();int position=literal.indexOf(word);if(position<0)continue;
+                while(position>=0&&numericFragment(literal,word,position))position=literal.indexOf(word,position+word.length());
+                if(position<0){clearPerson(plan,word);continue;}
                 int end=position+word.length();boolean overlaps=false;for(int[] span:occupied)if(position<span[1]&&end>span[0]){overlaps=true;break;}if(overlaps)continue;
                 occupied.add(new int[]{position,end});
+                if(nonPerformingReference(unquoted,word)){clearPerson(plan,word);continue;}
                 boolean other=data.people(field.equals("actors")?"directors":"actors").exact.containsKey(key(entry.getValue()));
                 if(other){boolean directing=literal.matches("(?s).*"+java.util.regex.Pattern.quote(word)+".{0,6}(?:导演|执导|作品).*" );if(directing==field.equals("actors"))continue;}
                 boolean exclude=negativePerson(unquoted,word);String target=exclude?(field.equals("actors")?"excludedActors":"excludedDirectors"):(strings(plan,field+"Any").isEmpty()?field:field+"Any");
@@ -182,6 +185,29 @@ public class CatalogResearchService {
             }
         }
         return MovieQueryPlan.parse(plan,mapper);
+    }
+    private void clearPerson(ObjectNode plan,String word){
+        for(String field:List.of("actors","actorsAny","directors","directorsAny","excludedActors","excludedDirectors")){
+            ArrayNode keep=mapper.createArrayNode();for(JsonNode n:plan.path(field))if(!key(n.asText()).contains(word)&&!word.contains(key(n.asText())))keep.add(n);
+            if(plan.has(field))plan.set(field,keep);
+        }
+    }
+    private static boolean numericFragment(String literal,String word,int position){
+        return !word.isEmpty()&&Character.isDigit(word.charAt(0))&&position>0&&Character.isDigit(literal.charAt(position-1));
+    }
+    private static boolean nonPerformingReference(String message,String word){
+        boolean authored=false;
+        for(String clause:message.split("[，。；,;!?！？]")){
+            String text=key(clause);
+            for(int at=text.indexOf(word);at>=0;at=text.indexOf(word,at+word.length())){
+                String before=text.substring(Math.max(0,at-10),at),after=text.substring(at+word.length(),Math.min(text.length(),at+word.length()+12));
+                // Scan every mention: an author may be requested as an actor/director later in the same clause.
+                boolean deniedRole=before.matches(".*(?:不是|并非|不当|不作为)(?:演员|主演|参演|出演|饰演|导演|执导)(?:为|是|由)?$");
+                if(!deniedRole&&(before.matches(".*(?:演员|主演|参演|出演|饰演|导演|执导)(?:为|是|由)?$")||after.matches("^(?:[的所]{0,2})?(?:主演|参演|出演|饰演|导演|执导).*")))return false;
+                if(before.matches(".*(?:原作者|作者|作家|编剧|原著|原作)(?:是|为|由)?$")||after.matches("^.{0,6}(?:原著|原作|小说|著作|作品改编|创作|编剧).*"))authored=true;
+            }
+        }
+        return authored;
     }
     private static boolean negativePerson(String message,String word){
         for(String clause:message.split("[，。；,;!?！？]|(?:但是|而是|不过)")){
@@ -201,7 +227,10 @@ public class CatalogResearchService {
         }
         if(p.text("intent").equals("clarify")){result.put("answer",p.text("clarification").isBlank()?"请补充片名、人物或你最在意的条件。":p.text("clarification"));result.putArray("movies");return result.put("total",0);}
         if(p.text("intent").equals("details")){
-            String id=p.text("movieId");int ordinal=p.integer("ordinal",0);if(id.isBlank()&&ordinal>0&&ordinal<=previous.size())id=new ArrayList<>(previous).get(ordinal-1);
+            String id=p.text("movieId");
+            if(!id.isBlank()&&leasedHistoricalDetails(body,context,message)&&!liveFirstCandidate(context,id))
+                return clarify(result,p,"更早列表的影片上下文已过期或无法完整核对，请重新提供片名及版本信息，再查询本次详情。");
+            int ordinal=p.integer("ordinal",0);if(id.isBlank()&&ordinal>0&&ordinal<=previous.size())id=new ArrayList<>(previous).get(ordinal-1);
             if(id.isBlank()&&!p.list("titles").isEmpty()){
                 List<ObjectNode> exact=data.docs.stream().filter(d->p.list("titles").stream().anyMatch(t->key(t).equals(key(d.path("titleCn").asText()))||key(t).equals(key(d.path("titleEn").asText())))).filter(d->eligible(d,p,previous,Set.of())).toList();
                 if(exact.size()==1)id=exact.get(0).path("id").asText();
@@ -240,6 +269,24 @@ public class CatalogResearchService {
         String answer=movies.isEmpty()?"本次片库检索没有找到可确认的候选。":themed?"找到以下可能符合描述的候选，简介和匹配依据列在下方。":"按本次已识别条件找到 "+matches.size()+" 部，先展示 "+movies.size()+" 部。";
         if(!p.list("unsupportedConditions").isEmpty())answer+=" 片库不能完整核验这些要求："+String.join("、",p.list("unsupportedConditions"))+"；不能保证下列候选满足它们。";
         return result.put("answer",answer);
+    }
+    private static boolean leasedHistoricalDetails(JsonNode body,JsonNode context,String message) {
+        // The controller has already resolved this context through the current job/lease.
+        return body.path("jobId").asText().matches("[a-f0-9-]{36}")&&body.path("lease").asText().matches("[a-f0-9-]{36}")
+            &&(context.has("historyComplete")||context.has("candidateHistory")||context.has("expiresAt"))
+            &&message.replaceAll("《[^》]*》"," ").matches("(?s).*(?:最开始|第一轮|最早那份|第一份(?:列表|名单|结果)).*");
+    }
+    private static boolean liveFirstCandidate(JsonNode context,String id) {
+        if(!context.path("historyComplete").asBoolean()||!liveCandidateRound(context))return false;
+        JsonNode history=context.path("candidateHistory");
+        if(!history.isArray()||history.size()>3)return false;
+        for(JsonNode round:history)if(!liveCandidateRound(round))return false;
+        JsonNode first=history.isEmpty()?context:history.get(0);
+        return strings(first,"candidateIds").contains(id);
+    }
+    private static boolean liveCandidateRound(JsonNode round) {
+        try { return round.isObject()&&Instant.now().isBefore(Instant.parse(round.path("expiresAt").asText())); }
+        catch(RuntimeException e) { return false; }
     }
     private ObjectNode clarify(ObjectNode result,MovieQueryPlan plan,String message){
         ObjectNode value=plan.json();value.put("intent","clarify").put("clarification",message).put("inheritContext",false);

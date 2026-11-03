@@ -1,0 +1,23 @@
+{
+  "startedAt": "2026-11-03T12:21:12.279022+00:00",
+  "sourceSha256": "486dcb6eb82ae644a0af34be1291d92a3ea9d4b1f238933bff4c4d606d12b5bd",
+  "sourceFileCount": 48,
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "tests": {
+    "tests": 173,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "skippedClasses": [],
+  "compileExitCode": 0,
+  "jarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+  "jarSize": 35503379,
+  "candidatePath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\agent-candidate-055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda.jar",
+  "sourceStillMatches": true,
+  "completedAt": "2026-11-03T12:22:16.111130+00:00",
+  "passedTests": 173,
+  "environmentScope": "Offline Maven source copy and allowlist environment. Production env and database not loaded."
+}
