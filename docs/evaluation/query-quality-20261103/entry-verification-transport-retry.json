@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-11-03T13:59:35.439756+00:00",
+  "scope": "Only three transport-failed read-only public entry checks; original attempts retained",
+  "inferenceSubmitted": 0,
+  "accountMutated": false,
+  "publicTransport": "Existing HTTP proxy 127.0.0.1:7897; not a direct host network test",
+  "browserUiVerified": false,
+  "checks": [
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 1911,
+      "sha256": "ae46b56b706db3fc2130558fdb7af68f9da32490c80d9c3c77d168ae32b44092",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 189747,
+      "sha256": "c8d16b8725819ee60b1590f5851b36e4e936a427a9872013cc639010e58d2fcb",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 68345,
+      "sha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+      "passed": true,
+      "htmlVerified": true
+    }
+  ],
+  "allPassed": true
+}

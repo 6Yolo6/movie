@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-11-03T14:08:07.591696+00:00",
+  "externalScripts": [
+    {
+      "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\VerifyDeployedEntries.py",
+      "sha256": "02a25ed6bd73d3828c5ea11a54c9d084a724b5cf58b8af6e591dd5be07cfb505"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\VerifyDeployedEntriesBrowserUA.py",
+      "sha256": "232888214aeafb87a52ce7675cefad2c398aa8ea9ef2d624b46985f6768e638f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\VerifyPublicTransportFailures.py",
+      "sha256": "9b51b6df0f74d148d10d1d38559e0a578cea07ffc92ffab246fd1fe2264e989c"
+    }
+  ],
+  "archivedNewFiles": [
+    {
+      "path": "backend-deployment-receipt.json",
+      "sha256": "36e797d1063bd807e7c7697abf05693f6f5ae1e97bccdf1d1922230208a54980"
+    },
+    {
+      "path": "backend-deployment-dry-run.json",
+      "sha256": "1d5610cbd616f3c1a1d525c04a603f36f88ae51acd1a66f72bac660582e1a8ba"
+    },
+    {
+      "path": "backend-checkpoint.json",
+      "sha256": "ffaba2b592d8db4a5e3298c5d813295a263e90b23f5431a3669d693ae41f6301"
+    },
+    {
+      "path": "daily-backup-overlay.json",
+      "sha256": "0bf5efcb03bc2299958fa572f68627f3cc182a3ba06008bdd1256d0b5e2afa57"
+    },
+    {
+      "path": "pinned-helper-checkpoint.json",
+      "sha256": "2443a81d0ae19d7dea52bed7b0e38f30f567436d9c7ad3ece56a645b0ad698d5"
+    },
+    {
+      "path": "pinned-helper-hashes.json",
+      "sha256": "515a69b829a3d72ae2adfe11f1195e7351d2419794e7779848a3871660244d0a"
+    },
+    {
+      "path": "pinned-source-guard-validation.json",
+      "sha256": "4b30f8d2da63cf6bebaf6b9c0f7ccabf0d3e429ebf9eb145d8b536f8986e9573"
+    },
+    {
+      "path": "source-binding-proof.json",
+      "sha256": "ec71982ea853614851b626dd4db2b2225f9aeb2a8246f9801b467c8c81957946"
+    },
+    {
+      "path": "source-binding-initial-failure.json",
+      "sha256": "63a376bde5b8c2936b2b9a2f9bbf4c6f133a90797f2c8a8aac5e27751cccc53e"
+    },
+    {
+      "path": "entry-verification-initial.json",
+      "sha256": "d0c4a5c0a5af1cda2a9fc9ed3201a11ba34d9ace36a74f25525cda9b3856f3d3"
+    },
+    {
+      "path": "entry-verification-browser-ua.json",
+      "sha256": "b968cb3e6c6ab2f7323ddd56bfb6c49970bd2cae0dea007898fb5b832dbf0568"
+    },
+    {
+      "path": "entry-verification-transport-retry.json",
+      "sha256": "c3885dbd5319a975cd87fff469cb20ce31b1f767bdb269bcf1b500875c431cda"
+    },
+    {
+      "path": "runtime-after-deployment.md",
+      "sha256": "c8d5c5febf5ea877ce55913170349e6bcb4d557e2236a92b5548e1cf30c23978"
+    },
+    {
+      "path": "entry-verification.json",
+      "sha256": "acd17194f4c0304200ec1c1c524d5d4f67cf1fd0d25114713077edd8f55666e2"
+    },
+    {
+      "path": "deployment-result.json",
+      "sha256": "d83f50f1c263def1da454b66079c8a37fac46e29b8f4116b91d2eb1b5f167989"
+    },
+    {
+      "path": "deployment.md",
+      "sha256": "af52b5f105b275829ec112b3eebad4ad7f3055e0f67f6a856d5d7a535e412b73"
+    }
+  ],
+  "originalFifteenRoundsChanged": false,
+  "privateConfigurationArchivedInRepository": false
+}

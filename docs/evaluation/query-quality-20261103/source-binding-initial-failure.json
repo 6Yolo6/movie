@@ -1,0 +1,49 @@
+{
+  "helperSha256": "02ebc9faf91eda5435edce0f89a4bf10e76cbbcde0e678535acc0133e1082745",
+  "oldFailureArchive": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-deployment\\deployment\\initial-source-path-failure.json",
+  "helperAlreadyUsesBackendContainedBase": true,
+  "manifestSourceSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+  "all349PathsExistAndContained": true,
+  "mismatchCount": 6,
+  "mismatches": [
+    {
+      "path": "src/main/java/com/gying/movie/client/QuarkAutoSaveClient.java",
+      "contained": true,
+      "expectedSha256": "ed09f915a7fc713e0992038cb0945de2bee38e138a6d4f0a12783fc6d3211c4a",
+      "actualSha256": "d3f1761cad5d934a23afb5ce35d6d81c00290940fb9535e71f35dc5d66afb25a"
+    },
+    {
+      "path": "src/main/java/com/gying/movie/config/ResourceHubProperties.java",
+      "contained": true,
+      "expectedSha256": "bfe2c14bb2014a5511fbe368504968055e59f47373f177500859e299ade3bc4e",
+      "actualSha256": "2cd636297b360733759a54e6dd11e35d964689b7f3f339dc0a3d43e7c21b110a"
+    },
+    {
+      "path": "src/main/java/com/gying/movie/service/impl/QuarkTransferRunnerServiceImpl.java",
+      "contained": true,
+      "expectedSha256": "294be85a7006d789ce9bd6cc1eea76a8179baff9f090ae033705e18444ab1eaf",
+      "actualSha256": "68018bf3f0d01cda12ad8bd646cf6fbf9f5ee7d581610e508b9089ad114e8bb9"
+    },
+    {
+      "path": "src/main/resources/application-prod.yml",
+      "contained": true,
+      "expectedSha256": "7a4344928e1e2d5ffc6ea5ecdd9711470d3b6c50485f8580a283f46c086847ae",
+      "actualSha256": "a2bea6deb314229472bce00c89a4621edf66f4cada35104fbed6dea63f0cf32e"
+    },
+    {
+      "path": "src/main/resources/application.yml",
+      "contained": true,
+      "expectedSha256": "76d1d7154fff3bfd37f0b8dcb1a300ad0c308bacd611f43fb802689a1fec20de",
+      "actualSha256": "66d086b16dbc76c6e02f8e83d400e9a8274fc4af1bb06e5dfc2276a2526be85f"
+    },
+    {
+      "path": "src/test/java/com/gying/movie/service/impl/QuarkTransferRunnerServiceImplTest.java",
+      "contained": true,
+      "expectedSha256": "34c5fccc8c504bff5462ff9166a41e0a148110edab64461e1035ffea90f2b95d",
+      "actualSha256": "e200d721e34ed067c134671240aa80296f3e5dbec0a08959d7cb1662d079eed7"
+    }
+  ],
+  "productionChanged": false,
+  "helperModified": false,
+  "preparatoryCheckpointModifiedOrRecaptured": false
+}

@@ -1,0 +1,20 @@
+{
+  "sourceOrigin": {
+    "kind": "tested-immutable-snapshot-and-pinned-git-commit",
+    "candidateSourceRoot": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\reviewed-role-boundary\\movie-build-final\\backend",
+    "manifestPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-deployment\\backend-source-manifest.json",
+    "manifestByteSha256": "1b61df539092b4e88d98360ac9e9e09db47f58ebfedf669240b5d5436b3f90a5",
+    "sourceCanonicalSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+    "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+    "fileCount": 349,
+    "snapshotRawFileHashesVerified": true,
+    "completeSnapshotAndGitInventoryVerified": true,
+    "gitContentNormalization": "CRLF to LF only; all other bytes must match",
+    "gitNormalizedInventorySha256": "b4645ca066a927eab0523f348a8f59082f1bcb77ada03e7eab953e9401450e3a"
+  },
+  "workingTreeChangesExcluded": true,
+  "workingTreeCandidateSourceUsed": false,
+  "runtimeEnvAndComposeWorkspace": "D:\\gying-movie\\movie",
+  "expectedJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+  "expectedImageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44"
+}

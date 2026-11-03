@@ -1,0 +1,119 @@
+{
+  "status": "passed",
+  "helperSha256": "ee94ee4522c09f023ff9b30931e7e9fdcd526cf6d3b590e802c5e6d7d5c812ad",
+  "testedSourceFunctionSha256": "15a94963e18e43c5719b79c24a63ab2bfddf28287e2de8c9714ee8c7be41f5c6",
+  "testMode": "Actual cloned sources() extracted by AST; isolated fake Git archive and fixed fixture roots; production configuration not loaded",
+  "tests": [
+    {
+      "name": "exact-349-snapshot-and-pinned-git",
+      "accepted": true,
+      "expectedAccept": true,
+      "passed": true,
+      "fileCount": 349
+    },
+    {
+      "name": "crlf-only-normalization-accepted",
+      "accepted": true,
+      "expectedAccept": true,
+      "passed": true,
+      "fileCount": 349
+    },
+    {
+      "name": "snapshot-raw-hash-drift-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "extra-snapshot-source-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "duplicate-inventory-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "parent-traversal-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "missing-pinned-git-file-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "extra-pinned-git-file-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "non-crlf-git-byte-change-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "wrong-pinned-commit-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "existing-proof-change-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "manifest-byte-drift-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "canonical-manifest-drift-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    },
+    {
+      "name": "arbitrary-manifest-path-rejected",
+      "accepted": false,
+      "expectedAccept": false,
+      "passed": true,
+      "fileCount": null
+    }
+  ],
+  "deploymentMutationFunctionsAstUnchanged": {
+    "model_matches": true,
+    "natural_idle": true,
+    "stop_service": true,
+    "verify_live": true,
+    "rollback_state": true,
+    "recover": true,
+    "main": true
+  },
+  "fixedJarImageAndCommitExecutionGatesPresent": true,
+  "workingTreeCandidateSourceUsed": false,
+  "guardNotLowered": true,
+  "productionChanges": false
+}

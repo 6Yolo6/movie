@@ -1,0 +1,171 @@
+{
+  "status": "verified-across-retained-attempts",
+  "checkedAt": "2026-11-03T14:08:07.566979+00:00",
+  "allPassed": true,
+  "entryCount": 14,
+  "localEntries": 7,
+  "publicEntries": 7,
+  "publicTransport": "Existing HTTP proxy 127.0.0.1:7897; not a direct host network test",
+  "browserUiVerified": false,
+  "inferenceSubmitted": 0,
+  "accountMutated": false,
+  "attempts": [
+    "entry-verification-initial.json",
+    "entry-verification-browser-ua.json",
+    "entry-verification-transport-retry.json"
+  ],
+  "initialDefaultUserAgentFailure": "Five public default urllib User-Agent responses were403; all had17-byte SHA2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c, equal to error code:1010 plus newline. Public catalog identity checks were not executed in that attempt.",
+  "browserUserAgentTransportFailures": "Three URLError results for detail API/detail SSR/home retained; only these three read-only requests were repeated and passed.",
+  "checks": [
+    {
+      "url": "http://127.0.0.1:80/api/movies/list?page=1&size=2",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 4413,
+      "sha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/movies/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 1911,
+      "sha256": "ae46b56b706db3fc2130558fdb7af68f9da32490c80d9c3c77d168ae32b44092",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "http://127.0.0.1:80/movie/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 189380,
+      "sha256": "6dd4b63b05590d4a966642ca63e58a1db8a54864a869a933016f39c3662789b7",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "http://127.0.0.1:80/",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 67978,
+      "sha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/internal/ai/catalog/documents",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 548,
+      "sha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/qq-bot/health",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 548,
+      "sha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/admin/users",
+      "expected": [
+        401
+      ],
+      "observed": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 4413,
+      "sha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 1911,
+      "sha256": "ae46b56b706db3fc2130558fdb7af68f9da32490c80d9c3c77d168ae32b44092",
+      "passed": true,
+      "identityInBody": true,
+      "verifiedBy": "targeted-read-only-transport-retry"
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 189747,
+      "sha256": "c8d16b8725819ee60b1590f5851b36e4e936a427a9872013cc639010e58d2fcb",
+      "passed": true,
+      "identityInBody": true,
+      "verifiedBy": "targeted-read-only-transport-retry"
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 68345,
+      "sha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+      "passed": true,
+      "htmlVerified": true,
+      "verifiedBy": "targeted-read-only-transport-retry"
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 915,
+      "sha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 915,
+      "sha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/users",
+      "expected": [
+        302
+      ],
+      "observed": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "redirectHost": "frosty-haze-36b0.cloudflareaccess.com",
+      "accessRedirectVerified": true
+    }
+  ]
+}

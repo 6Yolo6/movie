@@ -1,6 +1,6 @@
-# 2026-11-03 查询条件、主题与可信历史候选
+# 2026-11-03 查询条件、主题与可信历史修复
 
-本轮继续质量闭环，修复作者被当作演员、数字姓名误匹配、正向主题遗漏、撤回偏好仍保留，以及较早列表详情指代。完整验证与两仓源码已分别记录；第一阶段仍未完成。
+本轮继续质量闭环，修复作者被当作演员、数字姓名误匹配、正向主题遗漏、撤回偏好仍保留，以及较早列表详情指代。完整验证与两仓源码已分别记录；21:12 Agent和21:47 Movie后端已按本轮授权上线，第一阶段仍未完成。
 
 ## 实现与运行范围
 
@@ -34,10 +34,12 @@ Movie只在原句有实际主演/执导要求时恢复人物条件，数字姓�
 - [model-and-corpus.json](model-and-corpus.json)、[runner-manifest.json](runner-manifest.json)：模型/语料与运行脚本来源。
 - [runtime-before.json](runtime-before.json)、[runtime-after.json](runtime-after.json)：只读入口、容器和stored Agent身份；未复验生产argv，非候选上线证据。
 
-无网站USER会话、生产state/queue领取、DB连接/写入、浏览器页面或真实外发。未再次启用test。临时15001/18883监听已清理；旧网站15轮属于此前现役版本的[问题来源](../answer-quality-20261103/README.md)，不能复用作本候选上线验收。
+原15轮隔离观测阶段无网站USER会话、生产state/queue领取、DB连接/写入、浏览器页面或真实外发。该阶段未再次启用test。临时15001/18883监听已清理；旧网站15轮属于此前现役版本的[问题来源](../answer-quality-20261103/README.md)，不能复用作本候选上线验收。
 
 ## 部署与回退边界
 
 20:46只读[安全复检](security-gates.json)仍为58 PASS/11 FAIL/1 UNKNOWN，G01–G11全FAIL；就绪检查11通过/1既有schema警告/0失败。按[gying-project-ops技能](../../../.agents/skills/gying-project-ops/SKILL.md)的[部署规则](../../../.agents/skills/gying-project-ops/references/deployment-recovery.md)，“门禁 FAIL、测试失败或目标不清时停止相应动作并汇报”。20:46检查时尚无本次例外，生产替换暂停；随后用户明确“可部署”，授权本轮Movie后端与本机Agent。按新Agent兼容旧后端的顺序进入部署，结果由[部署记录](deployment-result.json)和[部署验收](deployment.md)另记。
 
-当前Movie容器和Agent stored身份保持；本轮未建立应用部署加密检查点、未执行应用回退。已有原生产恢复材料仍按[当前状态](../../current-project-status.md)维护，上一轮test行备份不能替代部署备份。最终上线须重新核验受影响服务、自然空闲、配置/密钥/状态检查点和实际入口，不沿用旧模型报告冒称上线通过。
+21:12:14 Agent055f1bdc…、21:47:47 Movie固定f2b7361b…/实际JAR1b8a09d5…上线；Agent三age、Movie最终五age与固定助手单age完整认证及内容核对通过。共享工作树夸克改动保留，部署使用349文件固定副本与13660c9提交绑定。运行参数及其他容器保持，日常备份新覆盖apply/dry-run通过；未执行应用回退，新v2请求出现后禁止旧Movie自动回退并保留当前SQL/state/key。详见[实际上线](deployment.md)。
+
+[本机/经代理公网14入口](entry-verification.json)分次通过，默认UA1010和三项URLError原记录保留。21:53–21:55[真实网站4轮](website-report.json)4提交/4成功/4机械通过/0重试；首轮候选指代与矛盾澄清通过。test恢复disabled、有效设备0、token401、密码USER角色不变及临时凭据删除通过。[网站模型复核](website-review.md)为满足2/未满足1/缺证1，三维完整2/4、真人0；电影身份问题仍保留。该网站runner使用机械passed与v2规范JSON hash协议，与原15轮自定义v1原字节协议分别保存；不是独立盲测提升、密码登录或浏览器验收。

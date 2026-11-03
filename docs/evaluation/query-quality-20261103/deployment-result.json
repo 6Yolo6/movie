@@ -1,0 +1,74 @@
+{
+  "status": "deployed-and-verified",
+  "affected": [
+    "movie-backend",
+    "local-agent-backend"
+  ],
+  "schemaChanged": false,
+  "movie": {
+    "commit": "13660c92735af71e01782e529a82051f92936e2d",
+    "completedAt": "2026-11-03T13:47:47.006751+00:00",
+    "imageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+    "jarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+    "receipt": "backend-deployment-receipt.json",
+    "independentVerification": "backend-deployment.json",
+    "finalCheckpoint": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T134656.321321Z",
+    "supplementalCheckpoint": "pinned-helper-checkpoint.json"
+  },
+  "agent": {
+    "commit": "15a2b8a8efffaad7aabe6595c43b99433f136f11",
+    "jarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+    "independentVerification": "agent-deployment.json"
+  },
+  "publicAndLocalEntries": "entry-verification.json",
+  "website": {
+    "summary": {
+      "turns": 4,
+      "mechanicalPasses": 4,
+      "mechanicalFailures": 0,
+      "manualReviewRequired": 4,
+      "latencySampleCount": 4,
+      "p50Ms": 10219.0,
+      "p95Ms": 33250.0,
+      "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+      "qualityScope": "Development observations and mechanical checks only; reviewRubric is ungraded, human quality scores pending. Not an independent holdout.",
+      "plannedTurns": 4,
+      "executedTurns": 4,
+      "notExecutedTurns": 0,
+      "submissionAttempts": 4,
+      "uncertainCompletionTurns": 0,
+      "routeCounts": {
+        "structured-query": 4
+      },
+      "tokens": null,
+      "monetaryCost": null
+    },
+    "mechanicalProtocol": "Existing website runner with passed fields and canonical JSON identities; separate from original15 custom byte-hash v1 review",
+    "evidence": [
+      "website-runtime.json",
+      "website-report.json",
+      "website-contract-validation.json",
+      "website-review.json",
+      "website-review-validation.json"
+    ],
+    "humanReviews": 0,
+    "qualitySummary": "2 satisfied /1 unmet /1 insufficient evidence; not an independent quality improvement comparison"
+  },
+  "oldFifteenRoundsReexecuted": false,
+  "firstStageComplete": false,
+  "security": {
+    "pass": 58,
+    "fail": 11,
+    "unknown": 1,
+    "G01toG11Closed": false,
+    "authorization": "User explicitly authorized this limited backend+Agent deployment after being informed of failed gates"
+  },
+  "rollback": {
+    "performed": false,
+    "retainLiveSQLStateKey": true,
+    "guard": "New requestHashVersion2 identity prevents automatic old-backend rollback; forward fix preferred"
+  },
+  "dailyBackupOverlayIncluded": true,
+  "naturalDailyFullBackupVerified": false,
+  "secretsInArchivedEvidence": false
+}

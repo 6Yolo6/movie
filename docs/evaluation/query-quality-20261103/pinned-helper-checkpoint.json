@@ -1,0 +1,16 @@
+{
+  "directory": "G:\\gying-backups\\ai-query-quality-pinned-helper-20261103-20261103T134458.791036Z",
+  "artifacts": 1,
+  "authenticated": true,
+  "manifestSha256": "db0a30c5ef0a7d8654f0d90b36970c31d63d8980ce577864e8a3b635d8aca341",
+  "archiveSha256": "f18fdd5c8b588e16e9257b6a9edc283f63885cf33eb9607b2bacfe64c4837c0c",
+  "includedFileSha256": {
+    "DeployBackendPinned.py": "ee94ee4522c09f023ff9b30931e7e9fdcd526cf6d3b590e802c5e6d7d5c812ad",
+    "source-binding-proof.json": "ec71982ea853614851b626dd4db2b2225f9aeb2a8246f9801b467c8c81957946",
+    "backend-source-manifest.json": "1b61df539092b4e88d98360ac9e9e09db47f58ebfedf669240b5d5436b3f90a5"
+  },
+  "sourceCanonicalSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+  "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+  "previousFiveArtifactCheckpointUnchanged": true,
+  "productionServicesChanged": false
+}

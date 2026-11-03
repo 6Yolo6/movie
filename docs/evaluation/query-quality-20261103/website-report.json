@@ -1,0 +1,261 @@
+{
+  "reportSchemaVersion": 1,
+  "datasetSha256": "70ee9ddab7ad2ad537cc98b0cec31fb92738c3a6a643d1ff0e3cd0aec34ebfeb",
+  "datasetVersion": "gying-development-v3",
+  "provenance": "agent-authored-regression",
+  "evaluatedAt": "2026-11-03T13:55:09.065754+00:00",
+  "repeat": 1,
+  "transport": "authenticated-website-api",
+  "browserUiCovered": false,
+  "completedAllTurns": true,
+  "selectionSha256": "4f946f749c52cc2458bcc5b32def3a958c85f89bbecbd5419692f8574ef05d52",
+  "summary": {
+    "turns": 4,
+    "mechanicalPasses": 4,
+    "mechanicalFailures": 0,
+    "manualReviewRequired": 4,
+    "latencySampleCount": 4,
+    "p50Ms": 10219.0,
+    "p95Ms": 33250.0,
+    "latencyScope": "Observed sequential requests; small sample, not a production SLA",
+    "qualityScope": "Development observations and mechanical checks only; reviewRubric is ungraded, human quality scores pending. Not an independent holdout.",
+    "plannedTurns": 4,
+    "executedTurns": 4,
+    "notExecutedTurns": 0,
+    "submissionAttempts": 4,
+    "uncertainCompletionTurns": 0,
+    "routeCounts": {
+      "structured-query": 4
+    },
+    "tokens": null,
+    "monetaryCost": null
+  },
+  "rows": [
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "e2cecc09-d8f4-47d4-b71f-933f9b761223",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T13:54:28.923018+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:19.846661200Z",
+          "durationMs": 22821
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:26.601794200Z",
+          "durationMs": 6754
+        }
+      ],
+      "answerSha256": "409631f82099f2597d4f8797305165fca3028bb9602a59ca63bfa64772aaef08",
+      "answerChars": 134,
+      "evidenceSha256": "1407573a66ebda1643caba7dd4ee04101ee3161225db45180d67923dd547c07a",
+      "queryPlanSha256": "ddef10b876282cf9304cde1b7a3e72ccacef1b9f5ee9ada322ac43e8d8ea3996",
+      "durationMs": 33250.0
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 2,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 2,
+      "historyTruncated": false,
+      "historySha256": "28d14ff1afd086c5b61c55b3d335c8b89a382a2c0dbca569ac40ac85df5218fb",
+      "previousJobReferenced": true,
+      "jobId": "d5ca7883-37f3-46df-8f93-cdb84e49e093",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T13:54:39.139951+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:37.255455200Z",
+          "durationMs": 6551
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:37.435804500Z",
+          "durationMs": 78
+        }
+      ],
+      "answerSha256": "59f070c322b1270e34a69b7f2de4d4ef316fb18f0262b3fd849d4149219bbb6c",
+      "answerChars": 145,
+      "evidenceSha256": "dd14d54309ebc6f12b32f9fb976c6da1eb9e141f08704afd24031404eba92dc3",
+      "queryPlanSha256": "8aef483d0a2ae07b09d6ac716df458dacc1d6e57097f6c269e362e22f62fcf1d",
+      "durationMs": 10219.0
+    },
+    {
+      "caseId": "dev-v3-06",
+      "sourceGroup": "dev-v3-constraint-replacement-history",
+      "split": "development",
+      "repetition": 1,
+      "turn": 3,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 4,
+      "historyTruncated": false,
+      "historySha256": "985bd6599a5266a34f8f2505e9481107d27b878aa572680619aab49db4797662",
+      "previousJobReferenced": true,
+      "jobId": "049825a9-5bba-4024-b05c-b2dfa6370c13",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T13:54:47.631514+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:45.038057Z",
+          "durationMs": 3508
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:45.071021900Z",
+          "durationMs": 33
+        },
+        {
+          "kind": "tool",
+          "name": "getMovieDetails",
+          "status": "success",
+          "timestamp": "2026-11-03T13:54:45.109554300Z",
+          "durationMs": 38
+        }
+      ],
+      "answerSha256": "a304dc4578d9839f8d9fdcb7d873b4eb5163fb2db5c11c677a50a0a3f4488878",
+      "answerChars": 742,
+      "evidenceSha256": "dd8bdba6708b0a7ee31171156ba65712cfc22b9d9019a2aca240c7a23cae012f",
+      "queryPlanSha256": "fc4c139d50bdbc58705abc501066603db28b0239f8e77cbcf597bb303573e011",
+      "durationMs": 7703.0
+    },
+    {
+      "caseId": "dev-v3-09",
+      "sourceGroup": "dev-v3-contradictory-runtime",
+      "split": "development",
+      "repetition": 1,
+      "turn": 1,
+      "executed": true,
+      "passed": true,
+      "submissionAttempted": true,
+      "manualReviewRequired": true,
+      "historyEntries": 0,
+      "historyTruncated": false,
+      "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "previousJobReferenced": false,
+      "jobId": "ccb50e63-6ae7-42e4-937a-a839dbc427cd",
+      "jobStatus": "SUCCEEDED",
+      "observedAt": "2026-11-03T13:55:09.064691+00:00",
+      "route": "structured-query",
+      "checks": {
+        "businessSuccess": true,
+        "nonEmptyAnswer": true,
+        "answerContract": true,
+        "evidenceContract": true,
+        "toolAllowlist": true,
+        "queryTimestamps": true,
+        "traceContract": true,
+        "queryPlanContract": true
+      },
+      "partial": false,
+      "trace": [
+        {
+          "kind": "planning",
+          "name": "qwen3:4b-instruct-2507-q4_K_M",
+          "status": "success",
+          "timestamp": "2026-11-03T13:55:00.000482400Z",
+          "durationMs": 8786
+        },
+        {
+          "kind": "retrieval",
+          "name": "bge-m3",
+          "status": "success",
+          "timestamp": "2026-11-03T13:55:07.810960600Z",
+          "durationMs": 7809
+        },
+        {
+          "kind": "tool",
+          "name": "queryCatalog",
+          "status": "success",
+          "timestamp": "2026-11-03T13:55:07.923075300Z",
+          "durationMs": 111
+        }
+      ],
+      "answerSha256": "0aedb2e9bd5fe52d2afd484637c5b27cf752aa667d8732b3596c5f0f459a0e74",
+      "answerChars": 82,
+      "evidenceSha256": "d752e2e98b1abcae396b98cee0c0a780fee6f6751619c0fe978010870afd8f54",
+      "queryPlanSha256": "dc4cda379250f3fbadd38f23b0db0610fc15acc3ee12d5c12ce7c589913571aa",
+      "durationMs": 18125.0
+    }
+  ],
+  "freezeSha256": "a3b4437d16dae3371ee140026faf8f1e3996d66c215f30f262d4af50c3ca84e8",
+  "websiteIdentityRole": "USER",
+  "evaluatorSha256": "86f8db57c56088d44e0a51eb2d18d8c2d6fdd73615e840aaebca329b9b694d15",
+  "dependencySha256": {
+    "evaluate_agent.py": "ec51b933ce1651fae418a49fd751de85d8d62df2b5393e0a6cc141f8011dc120",
+    "comparable_evaluation.py": "04d106123db0cafeb159c40d970c55ef21478f4faf0d55f777c2a6f60d09d157",
+    "evaluate_website.py": "155861acbfc400abd3351d02988dce837f8b421d1563371c29d42db8a807943d"
+  }
+}

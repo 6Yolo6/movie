@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "observedAt": "2026-11-03T21:18:51.198635+08:00",
+  "observedTimeZone": "Asia/Shanghai",
+  "scope": "Independent read-only verification after Agent-first deployment; Movie backend rollout is coordinated separately",
+  "codeCommit": "15a2b8a8efffaad7aabe6595c43b99433f136f11",
+  "runtimeJarSha256": "055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda",
+  "recordedIdentity": {
+    "instanceId": "7d5364c2-a479-4451-b632-68cbde0afffa",
+    "processId": 38460,
+    "startedAt": "2026-11-03T13:11:57.8571364Z",
+    "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\7d5364c2-a479-4451-b632-68cbde0afffa",
+    "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+  },
+  "deploymentCompletedAt": "2026-11-03T13:12:14.813390+00:00",
+  "receipts": {
+    "deploymentResultPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\deployment-agent-20261103\\agent-deployment-result.json",
+    "deploymentResultSha256": "057dc6714088c2af221df937ff19e3a0526f38c0cd2e90457b86f8de6ad6a53b",
+    "elevatedResultSha256": "a02558f50f8237fd2502912aebeb3b58f026dc9c516d8e3db9ee078594834bf5",
+    "administratorPreflightSha256": "578c1895a3f497a5804e5f211e1ba103f611b26ac464d96ea4afcd833886a6b1",
+    "deploymentPlanSha256": "401857e9b4e75848573bfb7840d8285b3d58410f15998bfaecd0177cecb24f8b",
+    "helperSha256": {
+      "DeployAgent.py": "7add2cd943e5f8f05d850335cdbcc008f3ed4bcf2dffc9bdef074a43ffc4dfbe",
+      "RunAgent.ps1": "2aa93b2aaa6c2afb8d07e7351a4d38bb2e0a5413a28f8c3534379b204528ec6c",
+      "Common.py": "d86abd9b0f581dcb67327dd5e3d863ea0c07a5fbf8da4bcef774b3da1d90f921",
+      "ReadAiStateCounts.js": "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94"
+    }
+  },
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\ai-agent-query-quality-20261103-20261103T131135.560714Z",
+    "manifestSha256": "139a41049df84662c7825570306804d88b21e79afca676a9ed247414e5adcbfb",
+    "artifacts": [
+      {
+        "name": "agent-rollback.tar.age",
+        "size": 35500696,
+        "sha256": "30ac079673ad831513c392855fb75f0bdc990059e18dab6bdc72c45a9639f972",
+        "sizeMatchesManifest": true,
+        "hashMatchesManifest": true,
+        "authenticatedDecryptionReceipt": true
+      },
+      {
+        "name": "private-ai-state-config.tar.age",
+        "size": 10440,
+        "sha256": "e6992fe622046ed24e10e347bf32a407a4ccdb06a7d38cdf759e7659d785d5bf",
+        "sizeMatchesManifest": true,
+        "hashMatchesManifest": true,
+        "authenticatedDecryptionReceipt": true
+      },
+      {
+        "name": "startup-rollback.tar.age",
+        "size": 164072,
+        "sha256": "e3885dfc1e200da5ab705bde1f305ec6261aad8bcee7b144510808f6bbf45e30",
+        "sizeMatchesManifest": true,
+        "hashMatchesManifest": true,
+        "authenticatedDecryptionReceipt": true
+      }
+    ],
+    "authentication": "Existing completed deployment receipt plus per-artifact authenticatedDecryption flags, bound to unchanged reviewed helpers and freshly verified size/SHA-256; no repeat decryption",
+    "fullDecryptionRepeated": false,
+    "applicationRollbackExecuted": false,
+    "crossServiceAtomicity": false
+  },
+  "oldBackendGracefullyStopped": {
+    "instanceId": "a9366577-1b6c-491b-88a0-3a8f996158d4",
+    "processId": 7700,
+    "startedAt": "2026-11-01T09:12:18.7178929Z",
+    "status": "stopped"
+  },
+  "independentStartup": {
+    "requestDirectory": "D:\\ai\\local-ai-agent\\.local\\startup\\66f356d9-500a-47dd-b514-b64e7456f22f",
+    "resultFileSha256": "2284ca1cdbbda424c4cc8ade330f4d5d7e3961e896308d7ee6032553a27dfd59",
+    "hostPid": 34128,
+    "recordedHostInJob": false,
+    "status": "ready"
+  },
+  "freshProcessObservation": {
+    "processExists": true,
+    "processId": 38460,
+    "creationTimeMatches": true,
+    "listenerCount": 1,
+    "listenerOwnedByRecordedProcess": true,
+    "commandLineAvailable": false,
+    "expectedRuntimePathAppearsInCommandLine": null,
+    "old7700ProcessAbsent": true
+  },
+  "currentRuntimeArgvProof": {
+    "deploymentAdministratorProof": "passed via unchanged reviewed helper runtime_proof before completed receipt",
+    "freshNonElevatedArgv": "UNKNOWN: protected administrator process command line unavailable; stored/lifecycle identity, creation time, listener and immutable file hash independently checked"
+  },
+  "health": [
+    {
+      "url": "http://127.0.0.1:5000/api/health",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:21434/api/version",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5002/health",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:3000/",
+      "status": 200
+    }
+  ],
+  "otherLocalIdentityRecordsMatchBaseline": {
+    "ollama": true,
+    "router": true,
+    "frontend": true
+  },
+  "checks": [
+    {
+      "id": "both-deployment-receipts-deployed",
+      "status": "PASS"
+    },
+    {
+      "id": "candidate-and-final-runtime-receipt-bound",
+      "status": "PASS"
+    },
+    {
+      "id": "helper-files-and-both-receipts-match-reviewed-hashes",
+      "status": "PASS"
+    },
+    {
+      "id": "reviewed-plan-hash-and-commit-bound",
+      "status": "PASS"
+    },
+    {
+      "id": "administrator-checkonly-proof-bound",
+      "status": "PASS"
+    },
+    {
+      "id": "authenticated-stopped-checkpoint-receipt-bound",
+      "status": "PASS"
+    },
+    {
+      "id": "artifact:agent-rollback.tar.age",
+      "status": "PASS"
+    },
+    {
+      "id": "artifact:private-ai-state-config.tar.age",
+      "status": "PASS"
+    },
+    {
+      "id": "artifact:startup-rollback.tar.age",
+      "status": "PASS"
+    },
+    {
+      "id": "old7700-graceful-stop-receipt-matches",
+      "status": "PASS"
+    },
+    {
+      "id": "current-pid-record-lifecycle-and-deployment-match",
+      "status": "PASS"
+    },
+    {
+      "id": "current-runtime-jar-file-hash",
+      "status": "PASS"
+    },
+    {
+      "id": "target-jar-remains-candidate",
+      "status": "PASS"
+    },
+    {
+      "id": "independent-startup-result-matches-host-outside-job",
+      "status": "PASS"
+    },
+    {
+      "id": "fresh-process-metadata-probe-completed",
+      "status": "PASS"
+    },
+    {
+      "id": "fresh-new-process-start-and-listener-match",
+      "status": "PASS"
+    },
+    {
+      "id": "fresh-old7700-process-absent",
+      "status": "PASS"
+    },
+    {
+      "id": "health:http://127.0.0.1:5000/api/health",
+      "status": "PASS"
+    },
+    {
+      "id": "health:http://127.0.0.1:21434/api/version",
+      "status": "PASS"
+    },
+    {
+      "id": "health:http://127.0.0.1:5002/health",
+      "status": "PASS"
+    },
+    {
+      "id": "health:http://127.0.0.1:3000/",
+      "status": "PASS"
+    },
+    {
+      "id": "current-agent-commit-and-working-tree-clean",
+      "status": "PASS"
+    },
+    {
+      "id": "other-local-service-identity-records-preserved",
+      "status": "PASS"
+    },
+    {
+      "id": "bound-deployment-preservation-receipts",
+      "status": "PASS"
+    },
+    {
+      "id": "deployment-receipts-did-not-change-during-verification",
+      "status": "PASS"
+    }
+  ],
+  "limits": [
+    "No inference or website USER session was executed in this independent verification",
+    "No production state decryption, process changes or UAC request",
+    "Startup hostInJob is a bound completed startup receipt, not a new current host-process measurement",
+    "Production quality and Movie-backend rollout require their own results"
+  ],
+  "observedAtUtc": "2026-11-03T13:18:51.198635+00:00"
+}

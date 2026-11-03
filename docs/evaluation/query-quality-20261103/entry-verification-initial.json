@@ -1,0 +1,137 @@
+{
+  "checkedAt": "2026-11-03T13:51:58.136815+00:00",
+  "publicTransport": "Existing HTTP proxy 127.0.0.1:7897; not a direct host network test",
+  "checks": [
+    {
+      "url": "http://127.0.0.1:80/api/movies/list?page=1&size=2",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 4413,
+      "sha256": "87cba8066bbc8135314de9b9a225ac5c72992798db09269eb8779f52d3743491",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/movies/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 1911,
+      "sha256": "ae46b56b706db3fc2130558fdb7af68f9da32490c80d9c3c77d168ae32b44092",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "http://127.0.0.1:80/movie/tmdb_movie_10399",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 189380,
+      "sha256": "6dd4b63b05590d4a966642ca63e58a1db8a54864a869a933016f39c3662789b7",
+      "passed": true,
+      "identityInBody": true
+    },
+    {
+      "url": "http://127.0.0.1:80/",
+      "expected": [
+        200
+      ],
+      "observed": 200,
+      "bytes": 67978,
+      "sha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/internal/ai/catalog/documents",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/qq-bot/health",
+      "expected": [
+        404
+      ],
+      "observed": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1:80/api/admin/users",
+      "expected": [
+        401
+      ],
+      "observed": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+      "expected": [
+        200
+      ],
+      "observed": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "passed": false
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "expected": [
+        200
+      ],
+      "observed": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "passed": false
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+      "expected": [
+        404
+      ],
+      "observed": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "passed": false
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+      "expected": [
+        404
+      ],
+      "observed": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "passed": false
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/users",
+      "expected": [
+        302
+      ],
+      "observed": 403,
+      "bytes": 17,
+      "sha256": "2938e9f1284180959e33ab1718d0793a72ff6e4cdb8108c34dcd14e69446de5c",
+      "passed": false
+    }
+  ],
+  "inferenceSubmitted": 0,
+  "accountMutated": false,
+  "localCatalog": {
+    "total": 13518,
+    "records": 2,
+    "firstId": "tmdb_movie_10399"
+  },
+  "publicCatalogError": "JSONDecodeError",
+  "allPassed": false
+}

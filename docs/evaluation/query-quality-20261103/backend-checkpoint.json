@@ -1,0 +1,48 @@
+{
+  "directory": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T134656.321321Z",
+  "artifacts": 5,
+  "authenticated": true,
+  "manifestSha256": "bbb963c7f272318bd348bbaaa43bcc254338d12a7974f7847c57bfa815a93cdd",
+  "backendStopped": true,
+  "deploymentCheckpointReady": true,
+  "consistency": "Backend remains normally stopped throughout final SQL/data/key checkpoint; unrelated writers retained; not a cross-service atomic snapshot",
+  "offlineVerification": {
+    "verifiedAt": "2026-11-03T13:47:09.104183+00:00",
+    "plaintextArchivesWritten": false,
+    "productionDataRestored": false,
+    "configuration": {
+      "uniqueMembers": 22,
+      "contentHashesMatched": true
+    },
+    "images": {
+      "backend": {
+        "fixedImageRootDigestMatched": true,
+        "layersPresent": 10,
+        "contentAddressedBlobsVerified": 16
+      }
+    },
+    "mysql": {
+      "dumpBytes": 102446398,
+      "tableObjects": 25,
+      "completionMarkerPresent": true,
+      "singleTransaction": true,
+      "databaseImportPerformed": false
+    },
+    "backend-data": {
+      "regularFiles": 4,
+      "persistedQueueMemberRecovered": true
+    },
+    "ai-state-key": {
+      "regularFiles": 1,
+      "persistedQueueMemberRecovered": true
+    },
+    "queueRestore": {
+      "authenticatedFromBothBackedUpMembers": true,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    }
+  },
+  "productionConfigWritten": false,
+  "servicesStopped": false
+}

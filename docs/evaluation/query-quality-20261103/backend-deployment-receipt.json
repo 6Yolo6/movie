@@ -1,0 +1,121 @@
+{
+  "status": "deployed-local-verification-passed",
+  "startedAt": "2026-11-03T13:46:22.918789+00:00",
+  "affected": [
+    "backend"
+  ],
+  "deploymentPerformed": true,
+  "schemaChanged": false,
+  "liveDataStateKeyRetained": true,
+  "publicVerificationPerformed": false,
+  "authorizationScope": "Explicit current backend+Agent deployment authorization after known G01-G11 failures; no infrastructure hardening or credential changes",
+  "rollbackCompatibility": "Forward fix preferred. Old backend can read persisted state, but newly written requestHashVersion2 jobs may return409 on same requestKey retry; never restore old SQL/state/key",
+  "sourceOrigin": {
+    "kind": "tested-immutable-snapshot-and-pinned-git-commit",
+    "candidateSourceRoot": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\reviewed-role-boundary\\movie-build-final\\backend",
+    "manifestPath": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-deployment\\backend-source-manifest.json",
+    "manifestByteSha256": "1b61df539092b4e88d98360ac9e9e09db47f58ebfedf669240b5d5436b3f90a5",
+    "sourceCanonicalSha256": "90a1533dffaf5aa9221b57972d243ba53188298b670b276cedfe3fa84a45ec3a",
+    "pinnedCommit": "13660c92735af71e01782e529a82051f92936e2d",
+    "fileCount": 349,
+    "snapshotRawFileHashesVerified": true,
+    "completeSnapshotAndGitInventoryVerified": true,
+    "gitContentNormalization": "CRLF to LF only; all other bytes must match",
+    "gitNormalizedInventorySha256": "b4645ca066a927eab0523f348a8f59082f1bcb77ada03e7eab953e9401450e3a"
+  },
+  "workingTreeChangesExcluded": true,
+  "workingTreeCandidateSourceUsed": false,
+  "runtimeEnvAndComposeWorkspace": "D:\\gying-movie\\movie",
+  "expectedJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+  "expectedImageId": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44",
+  "candidateImages": {
+    "backend": "sha256:f2b7361bc19b547611ed4e963105b9e1d38648de44a0cae4407e1e1bf30d4a44"
+  },
+  "backendJarSha256": "1b8a09d55b13c21b00b4bc4cbad730576e249a6d8222554518b216cf6bd494cd",
+  "sourceBound": true,
+  "effectiveComposeAndRuntimePreserved": true,
+  "stopSignalProofs": {
+    "backend": {
+      "signal": "SIGTERM",
+      "pid1": "java",
+      "receiver": "handler"
+    }
+  },
+  "preparatoryCheckpoint": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T131721.643886Z",
+  "finalStoppedCheckpointRequired": false,
+  "pinnedHelperSupplementalCheckpoint": {
+    "directory": "G:\\gying-backups\\ai-query-quality-pinned-helper-20261103-20261103T134458.791036Z",
+    "archiveSha256": "f18fdd5c8b588e16e9257b6a9edc283f63885cf33eb9607b2bacfe64c4837c0c",
+    "manifestSha256": "db0a30c5ef0a7d8654f0d90b36970c31d63d8980ce577864e8a3b635d8aca341",
+    "fullyAuthenticated": true,
+    "contentHashesMatched": true
+  },
+  "readinessExitCode": 0,
+  "idleChecks": [
+    {
+      "at": "2026-11-03T13:46:35.155259+00:00",
+      "phase": "Deployment preflight natural idle",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-03T13:46:47.925583+00:00",
+      "phase": "Immediately before backend TERM",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-03T13:46:55.899594+00:00",
+      "phase": "Backend drained",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    },
+    {
+      "at": "2026-11-03T13:47:17.445378+00:00",
+      "phase": "Before backend candidate start",
+      "activeBusinessJobs": 0,
+      "pendingMaintenance": 0,
+      "runningHostBusinessTasks": 0,
+      "moviePending": 0,
+      "movieRunning": 0,
+      "localAgentStateRead": false
+    }
+  ],
+  "phase": "Actual applications/configuration/nginx entries verified; public verification remains",
+  "rollbackStateBefore": {
+    "moviePending": 0,
+    "movieRunning": 0,
+    "version2Jobs": 0,
+    "version2IdentitySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "attemptedServices": [
+    "backend"
+  ],
+  "TERMReceipts": {
+    "backend": {
+      "id": "dfa8e1ce023006184d3b97765ef9c4a1251c924d62c7cd018fcc6f27c36291d4",
+      "image": "sha256:d7014158bbcd577ebf855837a5a045bdc3aa32f030d7d39518667b35dc8af1cf",
+      "exitCode": 143,
+      "finishedAt": "2026-11-03T13:46:49.711904139Z"
+    }
+  },
+  "finalCheckpoint": "G:\\gying-backups\\ai-query-quality-backend-20261103-20261103T134656.321321Z",
+  "candidateStartAttempted": true,
+  "actualJarVerified": true,
+  "localEntriesVerified": true,
+  "unaffectedContainersPreserved": true,
+  "dailyBackupOverlayIncluded": true,
+  "completedAt": "2026-11-03T13:47:47.006751+00:00"
+}
