@@ -98,6 +98,15 @@ public class ResourceHubProperties {
         private String sharePasscode = "";
         private int sharePollAttempts = 30;
         private long sharePollIntervalMs = 1000;
+        private DirectoryAi directoryAi = new DirectoryAi();
+    }
+
+    @Data
+    public static class DirectoryAi {
+        private boolean enabled = true;
+        private String baseUrl = "http://host.docker.internal:21434";
+        private String model = "qwen3:4b-instruct-2507-q4_K_M";
+        private int timeoutSeconds = 20;
     }
 
     @Data

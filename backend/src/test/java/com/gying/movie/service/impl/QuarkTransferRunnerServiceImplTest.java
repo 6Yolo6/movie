@@ -129,7 +129,7 @@ class QuarkTransferRunnerServiceImplTest {
                 movie.getTitleCn(),
                 movie.getTitleEn(),
                 movie.getAliases(),
-                movie.getYear()))
+                movie.getYear(), discovery.getTitle()))
                 .thenReturn(new QuarkAutoSaveClient.MovieShareSelection(task.getOriginalUrl(), false));
         when(autoSaveClient.buildTaskPayload(anyString(), anyString(), anyString(), any()))
                 .thenAnswer(invocation -> {
@@ -207,7 +207,7 @@ class QuarkTransferRunnerServiceImplTest {
                 movie.getTitleCn(),
                 movie.getTitleEn(),
                 movie.getAliases(),
-                movie.getYear()))
+                movie.getYear(), discovery.getTitle()))
                 .thenReturn(new QuarkAutoSaveClient.MovieShareSelection(selectedUrl, true));
         when(autoSaveClient.addTask(any()))
                 .thenReturn(new ObjectMapper().createObjectNode().put("code", 200));

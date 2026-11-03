@@ -94,6 +94,11 @@ resource-hub:
     api-key: ${PANSOU_API_KEY:${PANSO_API_KEY:}}
   quark:
     base-url: ${QUARK_AUTO_SAVE_BASE_URL:http://localhost:5005}
+    directory-ai:
+      enabled: ${QUARK_DIRECTORY_AI_ENABLED:true}
+      base-url: ${QUARK_DIRECTORY_AI_BASE_URL:http://127.0.0.1:21434}
+      model: ${QUARK_DIRECTORY_AI_MODEL:qwen3:4b-instruct-2507-q4_K_M}
+      timeout-seconds: ${QUARK_DIRECTORY_AI_TIMEOUT_SECONDS:20}
     token: ${QUARK_AUTO_SAVE_TOKEN:}
     save-path: ${QUARK_AUTO_SAVE_PATH:/GYing Resource Hub}
     pattern: ${QUARK_AUTO_SAVE_PATTERN:(.*)\.(mp4|mkv|avi|mov|flv|wmv|webm|m4v|ts)}

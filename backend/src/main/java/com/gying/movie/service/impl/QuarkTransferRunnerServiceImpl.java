@@ -136,7 +136,8 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
                         movie.getTitleCn(),
                         movie.getTitleEn(),
                         movie.getAliases(),
-                        movie.getYear());
+                        movie.getYear(),
+                        discovery == null ? null : discovery.getTitle());
                 transferShareUrl = selection.shareUrl();
                 recursiveTransfer = selection.recursive();
             }

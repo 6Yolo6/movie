@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.text.Normalizer;
+import com.ibm.icu.text.Transliterator;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.regex.Pattern;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -43,12 +46,22 @@ public class QuarkAutoSaveClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final ResourceHubProperties properties;
+    private final QuarkMovieDirectoryAiClient directoryAi;
+    private static final ThreadLocal<Transliterator> DIRECTORY_PINYIN = ThreadLocal.withInitial(
+            () -> Transliterator.getInstance("Han-Latin; NFD; [:Nonspacing Mark:] Remove; NFC"));
 
     public QuarkAutoSaveClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
             ResourceHubProperties properties) {
+        this(restTemplateBuilder, objectMapper, properties, null);
+    }
+
+    @Autowired
+    public QuarkAutoSaveClient(RestTemplateBuilder restTemplateBuilder, ObjectMapper objectMapper,
+            ResourceHubProperties properties, QuarkMovieDirectoryAiClient directoryAi) {
         this.restTemplate = restTemplateBuilder.build();
         this.objectMapper = objectMapper;
         this.properties = properties;
+        this.directoryAi = directoryAi;
     }
 
     public void deletePath(String path) {
@@ -229,15 +242,24 @@ public class QuarkAutoSaveClient {
             String titleEn,
             String aliases,
             Integer year) {
+        return resolveMovieShareUrl(shareUrl, titleCn, titleEn, aliases, year, null);
+    }
+
+    public MovieShareSelection resolveMovieShareUrl(String shareUrl, String titleCn, String titleEn,
+            String aliases, Integer year, String sourceTitle) {
         Set<String> expectedTitles = movieDirectoryTitles(titleCn, titleEn, aliases);
         if (shareUrl == null || shareUrl.isBlank() || expectedTitles.isEmpty()) {
             throw new IllegalStateException("Quark source target movie metadata is missing");
         }
         requireConfigured();
         // A failed lookup must never silently widen a collection back to its root.
+        MovieDirectoryScan scan = new MovieDirectoryScan();
         MovieShareSelection selected = findMovieDirectory(
                 stripDirectoryFragment(shareUrl), shareUrl, "", expectedTitles, year,
-                false, 0, new HashSet<>());
+                false, 0, new HashSet<>(), "", null, false, scan);
+        if (selected == null && scan.complete && directoryAi != null) {
+            selected = selectMovieDirectoryWithAi(scan, titleCn, titleEn, aliases, year, sourceTitle, expectedTitles);
+        }
         if (selected == null) {
             throw new IllegalStateException("Quark source target movie directory could not be identified");
         }
@@ -306,8 +328,9 @@ public class QuarkAutoSaveClient {
     private MovieShareSelection findMovieDirectory(
             String baseShareUrl, String currentShareUrl, String directoryName,
             Set<String> expectedTitles, Integer year, boolean trustedParent,
-            int depth, Set<String> visited) {
-        if (!visited.add(currentShareUrl)) return null;
+            int depth, Set<String> visited, String parentPath, String parentShareUrl,
+            boolean collectionParent, MovieDirectoryScan scan) {
+        if (!visited.add(currentShareUrl)) { scan.complete = false; return null; }
         if (visited.size() > MOVIE_DIRECTORY_MAX_COUNT) {
             throw new IllegalStateException("Quark source movie directory scan limit reached");
         }
@@ -315,7 +338,11 @@ public class QuarkAutoSaveClient {
         if (!list.isArray()) {
             throw new IllegalStateException("Quark source directory listing is unavailable");
         }
+        String path = parentPath + "/" + directoryName;
+        scan.directories.add(new MovieDirectorySnapshot(currentShareUrl, parentShareUrl, directoryName,
+                path, list.deepCopy(), collectionParent));
         boolean collection = MOVIE_COLLECTION_PATTERN.matcher(directoryName).find();
+        boolean anchoredCollection = collectionParent || matchesMovieCollection(directoryName, expectedTitles);
         Integer directoryYear = extractDirectoryYear(directoryName);
         boolean wrongDirectory = year != null && directoryYear != null && !year.equals(directoryYear)
                 || hasConflictingMovieSequence(directoryName, expectedTitles)
@@ -350,7 +377,10 @@ public class QuarkAutoSaveClient {
             return new MovieShareSelection(currentShareUrl,
                     currentShareUrl.contains("#/list/share/") && directories.isEmpty());
         }
-        if (depth >= MOVIE_DIRECTORY_MAX_DEPTH) return null;
+        if (depth >= MOVIE_DIRECTORY_MAX_DEPTH) {
+            if (!directories.isEmpty()) scan.complete = false;
+            return null;
+        }
         directories.sort(Comparator.comparingInt((JsonNode item) -> {
             String name = item.path("file_name").asText("");
             int score = scoreMovieDirectory(name, expectedTitles, year);
@@ -361,10 +391,170 @@ public class QuarkAutoSaveClient {
             MovieShareSelection selected = findMovieDirectory(
                     baseShareUrl, baseShareUrl + "#/list/share/" + fid,
                     directory.path("file_name").asText(""), expectedTitles, year,
-                    trustedTitle && !conflictingVideo, depth + 1, visited);
+                    trustedTitle && !conflictingVideo, depth + 1, visited, path, currentShareUrl,
+                    anchoredCollection, scan);
             if (selected != null) return selected;
         }
         return null;
+    }
+
+
+    private static final class MovieDirectoryScan {
+        private final List<MovieDirectorySnapshot> directories = new ArrayList<>();
+        private boolean complete = true;
+    }
+
+    private record MovieDirectorySnapshot(String shareUrl, String parentShareUrl, String name,
+            String path, JsonNode list, boolean collectionParent) { }
+
+    private MovieShareSelection selectMovieDirectoryWithAi(MovieDirectoryScan scan, String titleCn,
+            String titleEn, String aliases, Integer year, String sourceTitle, Set<String> titles) {
+        if (year == null || !properties.getQuark().getDirectoryAi().isEnabled()) return null;
+        int installment = movieInstallment(titleCn, titleEn);
+        Integer sourceYear = extractDirectoryYear(sourceTitle);
+        if (sourceYear != null && !year.equals(sourceYear)) return null;
+        Set<String> primaryTitles = movieDirectoryTitles(titleCn, titleEn, null);
+        boolean verifiedSource = sourceTitle != null && primaryTitles.stream().anyMatch(t -> matchesMovieTitle(sourceTitle, t));
+        List<MovieDirectorySnapshot> eligible = new ArrayList<>();
+        List<QuarkMovieDirectoryAiClient.Candidate> candidates = new ArrayList<>();
+        for (MovieDirectorySnapshot snapshot : scan.directories) {
+            if ((!verifiedSource && !snapshot.collectionParent())
+                    || observedMoviePath(scan, snapshot).stream().anyMatch(parent -> conflictsWithMovie(parent.name(), titles, year))
+                    || !isSafeAbbreviatedMovieDirectory(snapshot, titleCn, titleEn, year, installment)) continue;
+            List<String> videoNames = new ArrayList<>();
+            for (JsonNode item : snapshot.list()) {
+                if (isVideoFile(item.path("file_name").asText(""))) videoNames.add(item.path("file_name").asText());
+            }
+            String id = "d" + eligible.size();
+            eligible.add(snapshot);
+            candidates.add(new QuarkMovieDirectoryAiClient.Candidate(id, snapshot.path(), List.copyOf(videoNames)));
+        }
+        if (candidates.isEmpty() || candidates.size() > 8) return null;
+        String selectedId = directoryAi.select(titleCn, titleEn, aliases, year, installment, List.copyOf(candidates));
+        if (selectedId == null) return null;
+        for (int i = 0; i < candidates.size(); i++) {
+            if (!selectedId.equals(candidates.get(i).id())) continue;
+            MovieDirectorySnapshot selected = eligible.get(i);
+            // Every observed ancestor contributes scope; re-read the complete path after inference.
+            for (MovieDirectorySnapshot observed : observedMoviePath(scan, selected)) {
+                JsonNode fresh = getShareDetailData(observed.shareUrl()).path("list");
+                if (!directoryInventory(observed.list()).equals(directoryInventory(fresh))) return null;
+            }
+            org.slf4j.LoggerFactory.getLogger(QuarkAutoSaveClient.class).info(
+                    "event=quark_movie_directory_ai status=CONFIRMED candidates={}", candidates.size());
+            return new MovieShareSelection(selected.shareUrl(), true);
+        }
+        return null;
+    }
+
+    private List<MovieDirectorySnapshot> observedMoviePath(MovieDirectoryScan scan, MovieDirectorySnapshot leaf) {
+        List<MovieDirectorySnapshot> path = new ArrayList<>();
+        MovieDirectorySnapshot current = leaf;
+        while (current != null) {
+            path.add(current);
+            String parent = current.parentShareUrl();
+            current = parent == null ? null : scan.directories.stream()
+                    .filter(directory -> parent.equals(directory.shareUrl())).findFirst().orElseThrow();
+        }
+        return path;
+    }
+
+    private boolean conflictsWithMovie(String name, Set<String> titles, Integer year) {
+        Integer observedYear = extractDirectoryYear(name);
+        return observedYear != null && !year.equals(observedYear)
+                || hasConflictingMovieSequence(name, titles)
+                || !MOVIE_COLLECTION_PATTERN.matcher(name).find() && hasConflictingMoviePart(name, titles);
+    }
+
+    private List<String> directoryInventory(JsonNode list) {
+        List<String> inventory = new ArrayList<>();
+        for (JsonNode item : list) inventory.add(item.path("fid").asText() + "\u0000"
+                + item.path("file_name").asText() + "\u0000" + item.path("dir").asBoolean(false)
+                + "\u0000" + item.path("size").asLong());
+        inventory.sort(String::compareTo);
+        return inventory;
+    }
+
+    private boolean isSafeAbbreviatedMovieDirectory(MovieDirectorySnapshot snapshot, String titleCn,
+            String titleEn, int year, int installment) {
+        if (snapshot.parentShareUrl() == null || snapshot.name().length() > 220
+                || MOVIE_COLLECTION_PATTERN.matcher(snapshot.name()).find()
+                || !Integer.valueOf(year).equals(extractDirectoryYear(snapshot.name()))) return false;
+        String heading = snapshot.name().replaceFirst("^[\\s\\[【（(]+", "");
+        Matcher boundary = Pattern.compile("(?:[（(]?\\s*(?:18|19|20)\\d{2}|[\\]】])").matcher(heading);
+        if (!boundary.find()) return false;
+        String abbreviation = normalizeDirectoryTitle(Normalizer.normalize(heading.substring(0, boundary.start()), Normalizer.Form.NFKC));
+        Matcher suffix = Pattern.compile("(?<![0-9])([0-9]{1,2})$").matcher(abbreviation);
+        if (!suffix.find() || Integer.parseInt(suffix.group(1)) != installment) return false;
+        String core = abbreviation.substring(0, suffix.start());
+        if (!matchesConsecutiveChineseCore(core, titleCn)) return false;
+        Set<String> titles = movieDirectoryTitles(titleCn, titleEn, null);
+        int videos = 0;
+        for (JsonNode item : snapshot.list()) {
+            if (item.path("dir").asBoolean(false)) return false;
+            String name = item.path("file_name").asText("");
+            if (!isVideoFile(name)) continue;
+            videos++;
+            if (!Integer.valueOf(year).equals(extractDirectoryYear(name)) || hasConflictingMovieSequence(name, titles)
+                    || !(scoreMovieDirectory(name, titles, year) >= MOVIE_DIRECTORY_MIN_SCORE || isEncodingOnlyVideo(name, year, snapshot.name()))) return false;
+        }
+        return videos > 0 && videos <= 8;
+    }
+
+    private boolean matchesConsecutiveChineseCore(String core, String title) {
+        if (title == null || core.length() > 80
+                || core.codePoints().filter(cp -> Character.UnicodeScript.of(cp) == Character.UnicodeScript.HAN).count() < 2) return false;
+        String normalized = normalizeDirectoryTitle(title).replaceFirst("[0-9]{1,2}$", "");
+        int[] chars = normalized.codePoints().toArray();
+        for (int start = 0; start < chars.length; start++) {
+            Set<Integer> positions = Set.of(0);
+            for (int end = start; end < chars.length; end++) {
+                int cp = chars[end];
+                if (Character.UnicodeScript.of(cp) != Character.UnicodeScript.HAN) break;
+                String literal = new String(Character.toChars(cp));
+                String pinyin = normalizeDirectoryTitle(DIRECTORY_PINYIN.get().transliterate(literal));
+                Set<Integer> next = new HashSet<>();
+                for (int position : positions) {
+                    if (core.startsWith(literal, position)) next.add(position + literal.length());
+                    if (pinyin.matches("[a-z]{2,6}") && core.startsWith(pinyin, position)) next.add(position + pinyin.length());
+                }
+                positions = next;
+                if (end - start + 1 >= 3 && positions.contains(core.length())) return true;
+                if (positions.isEmpty()) break;
+            }
+        }
+        return false;
+    }
+
+    private boolean isEncodingOnlyVideo(String name, int year, String directoryName) {
+        String base = name.replaceFirst("(?i)\\.(?:mp4|mkv|avi|mov|wmv|flv|ts|m4v|webm|rmvb|iso)$", "");
+        if (!base.matches("^" + year + "[._ -].+")) return false;
+        base = base.substring(5);
+        Matcher uploader = Pattern.compile("-([\\p{IsHan}A-Za-z0-9_]{1,30})$").matcher(base);
+        if (uploader.find() && Pattern.compile(Pattern.quote(uploader.group(1)) + "(?:独家)?封装")
+                .matcher(directoryName).find()) base = base.substring(0, uploader.start());
+        for (String token : base.split("[. _-]+")) {
+            if (!token.matches("(?i)(?:2160p|1080p|720p|4k|8k|uhd|bluray|bd|remux|hevc|avc|h26[45]|x26[45]|dv|hdr|hdr10|hdr10\\+|truehd|ddp?|aac|ac3|dts|hd|ma[0-9]?|atmos|web|dl|webrip|hdrip|proper|repack|imax|[0-9]{1,2}bit|[0-9]{1,2})")) return false;
+        }
+        return true;
+    }
+
+    private int movieInstallment(String titleCn, String titleEn) {
+        for (String title : new String[] {titleCn, titleEn}) {
+            if (title == null) continue;
+            Matcher suffix = Pattern.compile("(?<![0-9])([0-9]{1,2})$").matcher(normalizeDirectoryTitle(title));
+            if (suffix.find()) return Integer.parseInt(suffix.group(1));
+        }
+        return 1;
+    }
+
+    private boolean matchesMovieCollection(String name, Set<String> titles) {
+        if (!MOVIE_COLLECTION_PATTERN.matcher(name).find()) return false;
+        for (String title : titles) {
+            String stem = title.replaceFirst("[0-9]{1,2}$", "");
+            if (stem.length() >= 4 && matchesMovieTitle(name, stem)) return true;
+        }
+        return false;
     }
 
     private boolean hasConflictingMovieSequence(String name, Set<String> expectedTitles) {
