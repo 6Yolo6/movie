@@ -1,0 +1,106 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-04T14:34:37.652027+00:00",
+  "bindingsPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\backend-elevated-bindings.json",
+  "bindingsSha256": "7e99e17fc89fadb6f6b90e5d4b71556b832e3cc6a8c737458975f5783ca4b21f",
+  "releaseAllowlist": {
+    "files": 18,
+    "allHashesMatched": true
+  },
+  "externalAllowlist": {
+    "files": 5,
+    "allHashesMatched": true
+  },
+  "powershellSyntax": {
+    "windowsPowerShellVersion": "5.1.22621.4391",
+    "files": [
+      {
+        "file": "RunBackend.ps1",
+        "parseErrors": 0,
+        "pythonInvocations": [
+          "$pythonExecutable",
+          "-I",
+          "-X",
+          "utf8",
+          "$deploymentScript",
+          "--commit",
+          "$movieCommit",
+          "$pythonExecutable",
+          "-I",
+          "-X",
+          "utf8",
+          "$deploymentScript",
+          "--execute",
+          "--commit",
+          "$movieCommit"
+        ],
+        "startProcess": [],
+        "assertBindingCalls": 3
+      },
+      {
+        "file": "LaunchBackend.ps1",
+        "parseErrors": 0,
+        "pythonInvocations": [],
+        "startProcess": [
+          "Start-Process -FilePath $powershellExecutable -ArgumentList $arguments -Verb RunAs -WindowStyle Hidden -PassThru"
+        ],
+        "assertBindingCalls": 1
+      }
+    ],
+    "wrapperExecuted": false,
+    "uacRequested": false
+  },
+  "executionSequence": {
+    "fixedPythonIsolatedUtf8": true,
+    "realDryRunBeforeExecute": true,
+    "freshReceiptRequired": true,
+    "fullBindingsCheckedBeforeBothStagesAndAfterExecute": true,
+    "launchUsesRealUacAndHiddenWindow": true,
+    "launchReceiptDoesNotClaimCompletion": true
+  },
+  "coreGuards": {
+    "exitCode": 0,
+    "report": {
+      "status": "passed",
+      "productionChanged": false,
+      "checks": [
+        {
+          "name": "deployment-helpers-parse",
+          "passed": true
+        },
+        {
+          "name": "new-true-or-false-field-in-history-detected-and-corrupt-state-rejected",
+          "passed": true
+        },
+        {
+          "name": "history-written-between-first-check-and-TERM-blocks-old-image-and-resumes-candidate",
+          "passed": true
+        },
+        {
+          "name": "rollback-guard-is-hash-bound-and-backed-up",
+          "passed": true
+        }
+      ],
+      "scope": "Offline deployment safety regression; no production stop, start, decrypt or account operation"
+    }
+  },
+  "checkpointConfiguration": {
+    "files": 27,
+    "wrappersAndBindingsIncluded": {
+      "RunBackend.ps1": true,
+      "LaunchBackend.ps1": true,
+      "backend-elevated-bindings.json": true
+    },
+    "checkpointPlanExcludedFromBindings": true,
+    "mutableResultsExcludedFromBindings": true
+  },
+  "originalCoreReportPreserved": {
+    "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\helper-validation.json",
+    "sha256": "2617e77e71e7c083ed451e06d8a10036dfe29a719494c163e4e61a11e95cb267",
+    "savedCopy": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\helper-validation.before-elevation-20261104T143112Z.json"
+  },
+  "wrapperExecuted": false,
+  "uacRequested": false,
+  "deploymentExecuted": false,
+  "productionChanged": false
+}

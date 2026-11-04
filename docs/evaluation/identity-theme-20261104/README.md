@@ -1,6 +1,6 @@
-# 2026-11-04 电影身份与主题：第一阶段候选
+# 2026-11-04 电影身份与主题：第一阶段（双后端已上线）
 
-Asia/Shanghai。本轮继续修复11月3日实际观察到的电视特辑误作音乐电影、胶片拍摄数据误作修复过程、小镇人物误作电影院核心场景，以及徒步查询误限动画。两仓候选代码与构建已完成，**未部署，第一阶段未完成**。生产继续使用11月3日的Movie backend和Agent，当前线上版本见[状态手册](../../current-project-status.md)。
+Asia/Shanghai。本轮继续修复11月3日实际观察到的电视特辑误作音乐电影、胶片拍摄数据误作修复过程、小镇人物误作电影院核心场景，以及徒步查询误限动画。两仓代码与构建已完成，按本轮“可上线”限定授权已先Movie后Agent上线，**第一阶段未完成**。当前线上版本见[状态手册](../../current-project-status.md)，部署回执及独立只读验收见[本轮上线](deployment.md)。
 
 ## 代码与证据边界
 
@@ -35,10 +35,20 @@ Agent先保守核对电影身份，再对核心主题加独立反证审查。第
 
 Movie环境跳过为SQL26、Redis1、Windows权限/文件4；本轮SQL12另由真实隔离MySQL验收，不把其余跳过计通过。构建环境采用allowlist并复制源码，不加载生产env。独立审查发现的多轮丢身份、冲突升级、回填limit覆盖和混合电影类型四个P2均已补回归。
 
-[运行前入口](runtime-before.json)为Agent/Movie/真实nginx片库/Ollama均200、生产Agent仍PID38460；普通权限Get-Process无法读取其Path，生命周期CheckOnly未能证明完整身份，argv/JAR运行态未另验。两份最初探针使用不存在的health路径而404的原结果保留，不当作实际服务故障；后续正确片库入口复验通过。[运行后入口](runtime-after.json)四项也均200，[前后核对](runtime-validation.json)确认10个生产容器ID/镜像、Agent受管身份和索引SHA `f74cb9c6…`保持；15001/18883临时监听已清除。推理后4B模型驻留内存，模型配置与索引没有替换，不声称加载状态前后相同。
+本段“生产保持”只描述上述部署前隔离观测，不描述后续替换。 [运行前入口](runtime-before.json)为Agent/Movie/真实nginx片库/Ollama均200、生产Agent仍PID38460；普通权限Get-Process无法读取其Path，生命周期CheckOnly未能证明完整身份，argv/JAR运行态未另验。两份最初探针使用不存在的health路径而404的原结果保留，不当作实际服务故障；后续正确片库入口复验通过。[运行后入口](runtime-after.json)四项也均200，[前后核对](runtime-validation.json)确认10个生产容器ID/镜像、Agent受管身份和索引SHA `f74cb9c6…`保持；15001/18883临时监听已清除。推理后4B模型驻留内存，模型配置与索引没有替换，不声称加载状态前后相同。
 
 ## 部署门禁与回退
 
-[本轮安全只读复检](security-gates.json)为58 PASS / 11 FAIL / 1 UNKNOWN，G01–G11仍全FAIL。就绪11通过/1既有schema警告/0失败。按[运维技能](../../../.agents/skills/gying-project-ops/SKILL.md)和[部署规则](../../../.agents/skills/gying-project-ops/references/deployment-recovery.md)，“门禁 FAIL、测试失败或目标不清时停止相应动作并汇报；历史部署不代表风险关闭或授权可复用”。昨天限定例外不延伸本轮，所以本轮生产替换暂停，未建立新生产应用检查点、停止服务或执行回退。
+本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。
 
-候选已固定并可审查；未来获本轮限定授权后只替换Movie backend与Agent backend，先Movie再Agent，替换前记录最新现役身份/有效覆盖、自然空闲，并建立和完整认证新的加密检查点。现役Movie镜像`6bee2a1d…`及Agent JAR`055f1bdc…`保留；不改前端、模型、索引或外发。新电影身份字段写入任务历史后旧Movie不认识该字段，自动回退须先证明兼容，优先前向修复，保持当前SQL/state/key，不恢复旧dump。没有新库迁移。
+普通权限前置检查因不可读进程Path与bridge.bin访问拒绝而停止；实际管理员回执确认bridge.bin归BUILTIN\Administrators所有且只有一条ACL规则，不是共享冲突。零字节.lock的真实FileLock占用与该ACL拒绝分别记录。随后Windows实际确认的受限管理员路径完成读取/空闲/身份门禁，未修改ACL或绕过state。
+
+Movie正常TERM143后完成五份age检查点 `G:\gying-backups\ai-identity-theme-backend-20261104-20261104T143825.278661Z`，Agent正常停止后完成三份age检查点 `G:\gying-backups\ai-agent-identity-theme-20261104-20261104T144159.678847Z`；manifest/size/hash/完整认证检查通过，二者是各自停止窗口检查点，非跨服务原子快照。两份静态应用/回退覆盖已纳入日常备份，dry-run30通过，自然完整备份未验。现役Compose在原11层末尾追加第12层 `E:\gying-tools\releases\ai-identity-theme-20261104\deployment-backend\candidate.json`；前11份文件及参数保持，11月3日第10层rollback和第11层candidate仍保留。有效配置、当前数据/state/key/token/模型/索引及无关容器和本机服务保持。
+
+应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。
+
+独立扩展只读验收初轮误按size200分页，实际ApiSecurityFilter对internal非管理员入口限size100，因此返回400，身份投影schema/完整性检查失败；这是核验脚本请求错误，未据此改生产或回退。原失败报告raw SHA ea813a3d…保留；修正版按100分页重新只读复验通过，不称全部入口一次过。Movie部署期原15入口一次通过与该扩展验收分开记录。
+
+原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。
+
+此前门禁失败暂停、普通权限失败、UAC及入口失败attempts按原时点保留，旧授权未自动复用。当前用户仅批准本轮两后端；没有数据库迁移、账户改动、旧数据恢复或真实转存/群发/发博。原[validation-summary.json](validation-summary.json)是部署前冻结观测，其deploymentPerformed=false不改写；[部署汇总](deployment/deployment-summary.json)记录后续运行事实，[上线与回退](deployment.md)列出回执绑定及验收限制。更新README前已按原字节保存[旧README](deployment/README-before-deployment.md)和[旧材料manifest](deployment/artifact-manifest-before-deployment.json)；根[artifact-manifest](artifact-manifest.json)重新递归覆盖部署材料，final-report原字节保持。

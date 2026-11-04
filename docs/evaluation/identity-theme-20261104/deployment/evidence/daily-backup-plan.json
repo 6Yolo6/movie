@@ -1,0 +1,35 @@
+{
+  "preparedAt": "2026-11-04T14:16:09.486489+00:00",
+  "status": "applied",
+  "additions": [
+    {
+      "name": "ai-identity-theme-runtime-20261104",
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\candidate.json"
+    },
+    {
+      "name": "ai-identity-theme-runtime-20261104-rollback",
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\backup-audit\\rollback.json"
+    }
+  ],
+  "originalSha256": "4321a0e86fc3850e6ac5c5601313b7ce95a62f0cce6d886eddf63ea2f30f42d7",
+  "proposedSha256": "f7d4affcc944b4e89a7cb2c91dd8ae38d86cf99f7fd7ba151e92df518b3cb1cb",
+  "oldConfigurationCheckpoint": {
+    "directory": "G:\\gying-backups\\ai-identity-theme-daily-backup-config-20261104-20261104T141609.164926Z",
+    "archive": "G:\\gying-backups\\ai-identity-theme-daily-backup-config-20261104-20261104T141609.164926Z\\backup-config-before.tar.age",
+    "archiveSha256": "b63d630326f33eac8a088064bb2e8c24b766b6cba17bfce4595035d9ad3155f8",
+    "authenticated": true,
+    "exactOriginalContentVerified": true
+  },
+  "differenceKeys": [
+    "paths"
+  ],
+  "productionConfigurationWritten": true,
+  "dryRun": {
+    "exitCode": 0,
+    "newOverlayIncluded": true,
+    "rollbackOverlayIncluded": true,
+    "artifactCount": 30,
+    "backupExecuted": false
+  },
+  "appliedAt": "2026-11-04T14:42:54.876990+00:00"
+}

@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "productionChanged": false,
+  "checks": [
+    {
+      "name": "deployment-helpers-parse",
+      "passed": true
+    },
+    {
+      "name": "new-true-or-false-field-in-history-detected-and-corrupt-state-rejected",
+      "passed": true
+    },
+    {
+      "name": "history-written-between-first-check-and-TERM-blocks-old-image-and-resumes-candidate",
+      "passed": true
+    },
+    {
+      "name": "rollback-guard-is-hash-bound-and-backed-up",
+      "passed": true
+    }
+  ],
+  "scope": "Offline deployment safety regression; no production stop, start, decrypt or account operation"
+}

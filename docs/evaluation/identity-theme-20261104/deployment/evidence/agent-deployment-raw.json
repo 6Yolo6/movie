@@ -1,0 +1,156 @@
+{
+  "status": "deployed",
+  "affected": [
+    "local-agent-backend"
+  ],
+  "candidateSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+  "schemaOrDataRestored": false,
+  "realMessagesPostsTransfers": 0,
+  "inferenceReplay": false,
+  "authorization": "2026-11-04 user explicitly 可上线; only frozen Movie backend then Agent backend; no credential rotation/data restoration/external publishing",
+  "checkpointConsistency": "Separate stopped-service checkpoint; no cross-service atomicity claim",
+  "globalMaintenanceLockHeld": true,
+  "startedAt": "2026-11-04T14:41:31.559508+00:00",
+  "helperSha256": {
+    "DeployAgent.py": "117d3787880b2ac674a324559fba12c46bd80dffabf18e3fdb0be09e0c020d60",
+    "RunAgent.ps1": "a3da8d0d36fa503a201a28e37effca593d7b1d595922e7df3d95a06da6850513",
+    "Common.py": "64893b7ce6f0f217d3cbc1776e010e2f7b20aedb77af28c547ca6574f53a8b29",
+    "ReadAiStateCounts.js": "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94"
+  },
+  "deploymentPlanSha256": "09936fe1ddd98fb9b75b39dbb678a4c7ef3f7bc7f065aea649675ed1be624eca",
+  "validation": {
+    "sourceSha256": "70a7788e9b18af43098a06c117fdf0609c84528c67ef9014526eb8dbacbcec9b",
+    "sourceFileCount": 50,
+    "tests": {
+      "tests": 202,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "validationSha256": "083d82f66e44c48ba8de2ab6698ad214ec96f99c798e0dfdbbc43ae086627116",
+    "sourceManifestSha256": "4712252ca42250dec620a38e41f4ddb8e6bd14e76d4b6133a1d8dfe5a9dc1428",
+    "isolatedLifecycleReportSha256": "1881325d57f00ce00bf8752358f922aaaf1069218d770eb347fbc92bf978b17c"
+  },
+  "codeCommit": "6c277a4161b4840a89f8ecdca020818192f9eb3c",
+  "expectedCurrentRecordSha256": "ec3bdd34450ff27fda2a6b723699f7caf65ca78053dd37d254ad8038bba2fa9a",
+  "movieImageAtAgentPhase": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+  "movieJarAtAgentPhase": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+  "administratorPreflightSha256": "84cc1215f55843d727a8940f6307c76e462110f16f09cb30c3d5a61a5c9cefc7",
+  "idleChecks": [
+    {
+      "phase": "Agent immediately before graceful stop",
+      "at": "2026-11-04T14:41:41.270854+00:00",
+      "result": {
+        "at": "2026-11-04T14:41:41.270854+00:00",
+        "phase": "Agent immediately before graceful stop",
+        "activeBusinessJobs": 0,
+        "pendingMaintenance": 0,
+        "runningHostBusinessTasks": 0,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "agentPending": 0
+      }
+    },
+    {
+      "phase": "Agent after graceful exit",
+      "at": "2026-11-04T14:41:56.873292+00:00",
+      "result": {
+        "at": "2026-11-04T14:41:56.873292+00:00",
+        "phase": "Agent after graceful exit",
+        "activeBusinessJobs": 0,
+        "pendingMaintenance": 0,
+        "runningHostBusinessTasks": 0,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "agentPending": 0
+      }
+    },
+    {
+      "phase": "Agent before final package copy and startup",
+      "at": "2026-11-04T14:42:08.675086+00:00",
+      "result": {
+        "at": "2026-11-04T14:42:08.675086+00:00",
+        "phase": "Agent before final package copy and startup",
+        "activeBusinessJobs": 0,
+        "pendingMaintenance": 0,
+        "runningHostBusinessTasks": 0,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "agentPending": 0
+      }
+    }
+  ],
+  "oldBackendGracefullyStopped": {
+    "instanceId": "7d5364c2-a479-4451-b632-68cbde0afffa",
+    "processId": 38460,
+    "startedAt": "2026-11-03T13:11:57.8571364Z",
+    "status": "stopped"
+  },
+  "encryptedStateAtCheckpoint": {
+    "bridge.bin": {
+      "sha256": "a2ba08d90d3bb7c00a0c163e78845c73b7be1b3f1d1301394f2542f188f1de84",
+      "size": 31
+    },
+    "bridge.bin.lock": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    }
+  },
+  "backup": {
+    "directory": "G:\\gying-backups\\ai-agent-identity-theme-20261104-20261104T144159.678847Z",
+    "artifacts": 3,
+    "authenticated": true,
+    "manifestSha256": "40675bc57d27a403c42af573bcddb063fa30da1c9e3637057a90d9b4fdbd916d",
+    "status": "complete"
+  },
+  "operationPhase": "post-start-live-state-observation",
+  "startupAttempts": [
+    {
+      "runtimeSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "requestDirectory": "D:\\ai\\local-ai-agent\\.local\\startup\\795003da-fc4c-4566-ad9d-54b1bdeee719",
+      "hostPid": 43404,
+      "hostInJob": false,
+      "status": "ready"
+    }
+  ],
+  "completedAt": "2026-11-04T14:42:34.318990+00:00",
+  "runtimeSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+  "newBackendRecord": {
+    "instanceId": "ff9b164c-ee6f-4620-a1d1-e972d07a634f",
+    "processId": 21260,
+    "startedAt": "2026-11-04T14:42:17.9795764Z"
+  },
+  "healthChecks": [
+    {
+      "url": "http://127.0.0.1:5000/api/health",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:21434/api/version",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5002/health",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:3000/",
+      "status": 200
+    }
+  ],
+  "otherLocalServicesPreserved": true,
+  "movieContainersPreserved": true,
+  "configKeyTokenIndexPreserved": true,
+  "currentEncryptedStateRetained": true,
+  "encryptedStateAfterRestart": {
+    "bridge.bin": {
+      "sha256": "a2ba08d90d3bb7c00a0c163e78845c73b7be1b3f1d1301394f2542f188f1de84",
+      "size": 31
+    },
+    "bridge.bin.lock": {
+      "size": 0,
+      "contentRead": false,
+      "reason": "Active Windows writer FileLock; stopped checkpoint still hashes all files"
+    }
+  }
+}

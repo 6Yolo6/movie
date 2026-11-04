@@ -1,0 +1,22 @@
+{
+    "status":  "passed",
+    "administrator":  true,
+    "checkOnly":  true,
+    "stopRequestSent":  false,
+    "checkedAt":  "2026-11-04T14:41:30.391542Z",
+    "helperSha256":  {
+                         "DeployAgent.py":  "117d3787880b2ac674a324559fba12c46bd80dffabf18e3fdb0be09e0c020d60",
+                         "RunAgent.ps1":  "a3da8d0d36fa503a201a28e37effca593d7b1d595922e7df3d95a06da6850513",
+                         "Common.py":  "64893b7ce6f0f217d3cbc1776e010e2f7b20aedb77af28c547ca6574f53a8b29",
+                         "ReadAiStateCounts.js":  "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94"
+                     },
+    "deploymentPlanSha256":  "09936fe1ddd98fb9b75b39dbb678a4c7ef3f7bc7f065aea649675ed1be624eca",
+    "backend":  {
+                    "name":  "backend",
+                    "processId":  38460,
+                    "instanceId":  "7d5364c2-a479-4451-b632-68cbde0afffa",
+                    "startedAt":  "2026-11-03T13:11:57.8571364Z",
+                    "controlDirectory":  "D:\\ai\\local-ai-agent\\.local\\lifecycle\\7d5364c2-a479-4451-b632-68cbde0afffa",
+                    "executable":  "D:\\Java17\\jdk-17.0.1\\bin\\java.exe"
+                }
+}

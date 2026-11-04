@@ -1,0 +1,2947 @@
+{
+  "schemaVersion": 1,
+  "status": "verified-with-limitations",
+  "startedAt": "2026-11-04T14:52:14.584663+00:00",
+  "observedTimeZone": "Asia/Shanghai",
+  "readOnly": true,
+  "outputFile": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly-v2.json",
+  "scriptSha256": "e2f10e78a7e11bf5b9db8ea61e3cd92d98b421a1ebf7c8043d7e34868f39a622",
+  "newInferenceSubmissions": 0,
+  "websiteUserSessionUsed": false,
+  "testAccountEnabled": false,
+  "accountOrQueueModified": false,
+  "realMessagesPostsTransfers": 0,
+  "productionStateReadOrDecrypted": false,
+  "runtime": {
+    "movie": {
+      "imageId": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+      "containerId": "420d51fd707039fe582fd5be5a39875a2deeb092fec5a5bd49ed75edcd198312",
+      "actualJarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "startedAt": "2026-11-04T14:38:45.803472659Z",
+      "configurationPreserved": true,
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "user": "gying",
+      "memory": 1342177280,
+      "memorySwap": 2684354560,
+      "rawEnvironmentPrinted": false
+    },
+    "agent": {
+      "storedRecord": {
+        "processId": 21260,
+        "instanceId": "ff9b164c-ee6f-4620-a1d1-e972d07a634f",
+        "startedAt": "2026-11-04T14:42:17.9795764Z",
+        "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe",
+        "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\ff9b164c-ee6f-4620-a1d1-e972d07a634f"
+      },
+      "newRecordMatchesReceipt": true,
+      "readyMatches": true,
+      "runtimeJarPath": "D:\\ai\\local-ai-agent\\.local\\runtime\\backend\\1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64\\local-ai-agent.jar",
+      "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "freshProcess": {
+        "processExists": true,
+        "processId": 21260,
+        "creationTimeUtc": "2026-11-04T14:42:17.9795760Z",
+        "listenerCount": 1,
+        "listenerOwnedByRecordedProcess": true,
+        "executablePathAvailable": false,
+        "executableMatches": null,
+        "commandLineAvailable": false,
+        "expectedRuntimeAppears": null
+      },
+      "creationTimeMatches": true,
+      "listenerOwnedByRecordedProcess": true,
+      "liveArgv": "UNKNOWN",
+      "administratorDeploymentArgvProof": "attributed-to-successful-frozen-deployment-receipt"
+    }
+  },
+  "servicePreservation": {
+    "unrelatedContainersPreserved": true,
+    "agentPhaseContainersPreserved": true,
+    "otherLocalRecordsPreserved": true,
+    "configKeyTokenIndexPreserved": true,
+    "indexPreserved": true,
+    "protectedFileHashes": {
+      "config": "0028c0be790a8999134690140824ce0c099940d0d02835c8eed17ac3db613a44",
+      "stateKey": "d1d1a71d0a877e24223f7d5c5f9026eab82750574f12a8fb782511da6bf9f436",
+      "bridgeToken": "4915ab43e7eec334f858ee79a038673ce98ed776ec27c3d959952d51de3fd3a8",
+      "semanticIndex": "f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4"
+    },
+    "containerCount": 13,
+    "currentContainers": {
+      "/gying-movie-backend-1": {
+        "id": "420d51fd707039fe582fd5be5a39875a2deeb092fec5a5bd49ed75edcd198312",
+        "image": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+        "startedAt": "2026-11-04T14:38:45.803472659Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-frontend-1": {
+        "id": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+        "image": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+        "startedAt": "2026-11-02T11:08:03.837359624Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-social-publisher-1": {
+        "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+        "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+        "startedAt": "2026-11-01T13:45:26.156706042Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-quark-auto-save-1": {
+        "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+        "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+        "startedAt": "2026-11-01T01:35:51.366632892Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-gying-source-1": {
+        "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+        "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+        "startedAt": "2026-11-01T01:35:52.944975605Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-query-maven-c43cc988fc3e": {
+        "id": "cfc0b14cd143633b4e0978598add9668f86824f7fde9693fef542aa35353aa00",
+        "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+        "startedAt": "2026-10-18T02:20:04.231961268Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-query-mysql-c43cc988fc3e": {
+        "id": "55c8e60471546616c4e2df3e3bd7eecf949043549bdd3036c8a0085d028a787a",
+        "image": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+        "startedAt": "2026-10-18T02:19:47.857238091Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-xunlei-path-probe-20261006": {
+        "id": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+        "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+        "startedAt": "2026-10-06T12:51:15.863953362Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-movie-nginx-1": {
+        "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+        "image": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+        "startedAt": "2026-11-01T01:36:13.781991987Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/openclaw-openclaw-gateway-1": {
+        "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+        "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+        "startedAt": "2026-11-02T14:55:52.332257647Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-redis-1": {
+        "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+        "image": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+        "startedAt": "2026-11-01T01:35:43.909785998Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-pansou-1": {
+        "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+        "image": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+        "startedAt": "2026-11-01T01:35:49.813516013Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/minio-server": {
+        "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+        "image": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+        "startedAt": "2026-11-01T01:35:47.509532767Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      }
+    },
+    "stateReadOrDecrypted": false
+  },
+  "entries": {
+    "checks": [
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.278610+00:00",
+        "httpStatus": 200,
+        "bytes": 65,
+        "bodySha256": "3a2f4b08ed5cc9244186274fced0957b9cabf7ffbd0f09326b77d29c2c1697a2",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:5000/api/health",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.278610+00:00",
+            "httpStatus": 200,
+            "bytes": 65,
+            "bodySha256": "3a2f4b08ed5cc9244186274fced0957b9cabf7ffbd0f09326b77d29c2c1697a2"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:21434/api/version",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.290608+00:00",
+        "httpStatus": 200,
+        "bytes": 21,
+        "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:21434/api/version",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.290608+00:00",
+            "httpStatus": 200,
+            "bytes": 21,
+            "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:5002/health",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.292464+00:00",
+        "httpStatus": 200,
+        "bytes": 89,
+        "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:5002/health",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.292464+00:00",
+            "httpStatus": 200,
+            "bytes": 89,
+            "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:3000/",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.295011+00:00",
+        "httpStatus": 200,
+        "bytes": 641,
+        "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:3000/",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.295011+00:00",
+            "httpStatus": 200,
+            "bytes": 641,
+            "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.301002+00:00",
+        "httpStatus": 200,
+        "bytes": 1299,
+        "bodySha256": "67b99530614509ba79055b3c65df109a043ca998960826b5cf97b6be24761488",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.301002+00:00",
+            "httpStatus": 200,
+            "bytes": 1299,
+            "bodySha256": "67b99530614509ba79055b3c65df109a043ca998960826b5cf97b6be24761488"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.334824+00:00",
+        "httpStatus": 200,
+        "bytes": 15,
+        "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:8880/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.334824+00:00",
+            "httpStatus": 200,
+            "bytes": 15,
+            "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.348788+00:00",
+        "httpStatus": 200,
+        "bytes": 2471,
+        "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.348788+00:00",
+            "httpStatus": 200,
+            "bytes": 2471,
+            "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "catalog"
+      },
+      {
+        "url": "http://127.0.0.1/",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.382018+00:00",
+        "httpStatus": 200,
+        "bytes": 67978,
+        "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.382018+00:00",
+            "httpStatus": 200,
+            "bytes": 67978,
+            "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1/api/movies/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.389631+00:00",
+        "httpStatus": 200,
+        "bytes": 1261,
+        "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/movies/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.389631+00:00",
+            "httpStatus": 200,
+            "bytes": 1261,
+            "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "detail",
+        "sameMovieId": true,
+        "computedMediaIdentityRequired": false
+      },
+      {
+        "url": "http://127.0.0.1/movie/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.438053+00:00",
+        "httpStatus": 200,
+        "bytes": 187860,
+        "bodySha256": "d5d2b6a6979171a35b7410b076065be7d8fedf3b2d4195aeec0d7fda2a877488",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/movie/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.438053+00:00",
+            "httpStatus": 200,
+            "bytes": 187860,
+            "bodySha256": "d5d2b6a6979171a35b7410b076065be7d8fedf3b2d4195aeec0d7fda2a877488"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.565313+00:00",
+        "httpStatus": 404,
+        "bytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.565313+00:00",
+            "httpStatus": 404,
+            "bytes": 548,
+            "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.570315+00:00",
+        "httpStatus": 404,
+        "bytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.570315+00:00",
+            "httpStatus": 404,
+            "bytes": 548,
+            "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/admin/users",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.598188+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/admin/users",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.598188+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/ai/status",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.612540+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/ai/status",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.612540+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "at": "2026-11-04T14:52:18.624221+00:00",
+        "httpStatus": 200,
+        "bytes": 2471,
+        "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+            "method": "GET",
+            "at": "2026-11-04T14:52:18.624221+00:00",
+            "httpStatus": 200,
+            "bytes": 2471,
+            "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "catalog"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/",
+        "method": "GET",
+        "at": "2026-11-04T14:52:19.732995+00:00",
+        "httpStatus": 200,
+        "bytes": 68345,
+        "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/",
+            "method": "GET",
+            "at": "2026-11-04T14:52:19.732995+00:00",
+            "httpStatus": 200,
+            "bytes": 68345,
+            "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:52:21.968615+00:00",
+        "httpStatus": 200,
+        "bytes": 1261,
+        "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:52:21.968615+00:00",
+            "httpStatus": 200,
+            "bytes": 1261,
+            "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "detail",
+        "sameMovieId": true,
+        "computedMediaIdentityRequired": false
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:52:22.920437+00:00",
+        "httpStatus": 200,
+        "bytes": 188227,
+        "bodySha256": "d698d8f37ab60679aa6d7ac1b6f2c02b00559c1d17c04aa540057358fb766653",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:52:22.920437+00:00",
+            "httpStatus": 200,
+            "bytes": 188227,
+            "bodySha256": "d698d8f37ab60679aa6d7ac1b6f2c02b00559c1d17c04aa540057358fb766653"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "at": "2026-11-04T14:52:25.209742+00:00",
+        "httpStatus": 404,
+        "bytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+            "method": "GET",
+            "at": "2026-11-04T14:52:25.209742+00:00",
+            "httpStatus": 404,
+            "bytes": 915,
+            "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:52:26.099823+00:00",
+        "httpStatus": 404,
+        "bytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:52:26.099823+00:00",
+            "httpStatus": 404,
+            "bytes": 915,
+            "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/admin/users",
+        "method": "GET",
+        "at": "2026-11-04T14:52:27.349230+00:00",
+        "httpStatus": 302,
+        "bytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "redirectHost": "frosty-haze-36b0.cloudflareaccess.com",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/admin/users",
+            "method": "GET",
+            "at": "2026-11-04T14:52:27.349230+00:00",
+            "httpStatus": 302,
+            "bytes": 510,
+            "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+            "redirectHost": "frosty-haze-36b0.cloudflareaccess.com"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          302
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/ai/status",
+        "method": "GET",
+        "at": "2026-11-04T14:52:28.109193+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/ai/status",
+            "method": "GET",
+            "at": "2026-11-04T14:52:28.109193+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      }
+    ],
+    "allPassed": true,
+    "sampleMovieId": "tmdb_movie_614933",
+    "publicTransport": "existing-loopback-proxy-7897",
+    "browserUiVerified": false,
+    "passwordLoginVerified": false,
+    "authenticatedWebsiteSessionUsed": false,
+    "originalReportsChanged": false
+  },
+  "localServices": {
+    "agent": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "ollama": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "router": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "agentFrontend": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "backend": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "qqBackendHealth": {
+      "httpStatus": 200,
+      "passed": true
+    }
+  },
+  "checks": [
+    {
+      "name": "movie-fixed-image-and-actual-jar",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "movie-runtime-configuration-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "movie-running-no-restart-no-oom",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-new-managed-record-ready-runtime",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-process-creation-and-listener",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-current-argv-when-readable",
+      "passed": null,
+      "required": false
+    },
+    {
+      "name": "agent-current-executable-when-readable",
+      "passed": null,
+      "required": false
+    },
+    {
+      "name": "old-agent-matching-normal-stop",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-bound-independent-startup-host",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "unrelated-container-identities-and-starts-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-phase-all-container-identities-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "ollama-router-frontend-records-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "configuration-key-token-index-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "real-local-and-public-read-only-entry-contracts",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-registered-research-tools-read-only",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "production-bridge-authenticated-catalog-schema",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "projection-complete-with-stable-total",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "season-alone-not-tv-and-tv-source-not-supported-film",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "current-candidate-window-no-error-exception-oom",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "deployment-receipts-unchanged-during-check",
+      "passed": true,
+      "required": true
+    }
+  ],
+  "limitations": [
+    "Health/tools registration and authenticated catalog reads do not verify website USER jobs or model answer quality.",
+    "No account login, token issuance, USER session, inference, queue claim, heartbeat submission, transfer or publishing.",
+    "Seven earlier observations and scores remain frozen; no blind-test or quality-improvement comparison.",
+    "Live catalog pagination is not an atomic database snapshot; stable counts describe this observation.",
+    "Ordinary movie entity responses need not contain catalog computed mediaIdentity.",
+    "Current protected administrator argv may remain UNKNOWN; deployment-time proof is attributed separately.",
+    "Short current logs do not cover all old-process drain lines or long-term stability.",
+    "Known G01-G11 security gates remain outside limited deployment approval."
+  ],
+  "previousVerification": {
+    "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly.json",
+    "sha256": "ea813a3d48dd742ee76b5631ad58acee1bc3064862e62d9d99a4887504eb4498",
+    "status": "failed",
+    "catalogHttpStatus": 400,
+    "errorClassification": "REQUEST_REJECTED: Request parameter is outside the allowed bounds",
+    "cause": "Verifier requested size=200; ApiSecurityFilter restricts internal non-admin size to 100",
+    "correction": "Verifier-only pageSize=100/maxPages=500 and matching completion calculations; requests spaced 1.05s with bounded natural Retry-After handling",
+    "productionChangedByVerificationCorrection": false,
+    "originalReportPreserved": true,
+    "fixedJarFilterEvidence": {
+      "jarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "classPath": "BOOT-INF/classes/com/gying/movie/security/ApiSecurityFilter.class",
+      "classSha256": "6b415bc2aa08fdba7c2f896817d7928aa1a76eaab7d195c030e414bfc3c4d4d0",
+      "publicLimitMaxConstant": 100,
+      "adminLimitMaxConstant": 5000,
+      "internalIsNonAdmin": true
+    }
+  },
+  "receiptBindings": {
+    "movie": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\deployment-result.json",
+      "sha256": "b5cabee8324e5111ad7f2579706e1cd4bc7154727b6c397e715b8636ba00e7e0",
+      "status": "deployed-entrypoints-verification-passed",
+      "startedAt": "2026-11-04T14:37:02.975412+00:00",
+      "completedAt": "2026-11-04T14:39:17.278199+00:00",
+      "jarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "codeCommit": "d6641e749a5d36d4823589a5202d7d5f9856fd26",
+      "imageId": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521"
+    },
+    "agent": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-deployment-result.json",
+      "sha256": "2485020d1c6786f496f115a4a068eb8f24a3229cb62a145beb1270e052e5f93d",
+      "status": "deployed",
+      "startedAt": "2026-11-04T14:41:31.559508+00:00",
+      "completedAt": "2026-11-04T14:42:34.318990+00:00",
+      "jarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "codeCommit": "6c277a4161b4840a89f8ecdca020818192f9eb3c"
+    }
+  },
+  "researchCapabilities": {
+    "agentHealth": true,
+    "toolsSchema": {
+      "httpStatus": 200,
+      "functionNames": [
+        "searchMovies",
+        "getMovieDetails",
+        "searchMovieWeb"
+      ],
+      "registeredResearchToolsPresent": true,
+      "responseSha256": "736f26faf74b615a9df1cdc8f70170142a4c7c13cf5408193124e6be8f7d7c89"
+    },
+    "authenticatedWebsiteStatusChecked": false,
+    "endToEndQueryAvailabilityVerified": false,
+    "newInferenceSubmissions": 0,
+    "realCatalogBridgeDependencyVerified": true
+  },
+  "catalogProjection": {
+    "authenticated": true,
+    "readOnly": true,
+    "schemaValid": true,
+    "complete": true,
+    "snapshotIsAtomic": false,
+    "truncated": false,
+    "pageReceipts": [
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=1&size=100",
+        "at": "2026-11-04T14:52:30.453483+00:00",
+        "httpStatus": 200,
+        "bytes": 274950,
+        "bodySha256": "7cebf228bfdc4ff2d7433453646897fd7221063eaadf3e3166c1c9e646866a94",
+        "page": 1,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:33.995486263Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=2&size=100",
+        "at": "2026-11-04T14:52:35.087288+00:00",
+        "httpStatus": 200,
+        "bytes": 271795,
+        "bodySha256": "1445cf7ab011eef403250a31a823214ddbe45938c53c4292226b1e7007969ac9",
+        "page": 2,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:35.094066168Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=3&size=100",
+        "at": "2026-11-04T14:52:36.169602+00:00",
+        "httpStatus": 200,
+        "bytes": 290087,
+        "bodySha256": "93453c0b29f884388dd88e2e80f854d3f5ed32a2128811cae0eb77c5a483b075",
+        "page": 3,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:36.175987792Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=4&size=100",
+        "at": "2026-11-04T14:52:37.253818+00:00",
+        "httpStatus": 200,
+        "bytes": 276172,
+        "bodySha256": "c17937659de6ac03350d9c1ebbc5ae30dd3180c81db8a6c895be48b553e4cd2c",
+        "page": 4,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:37.258953181Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=5&size=100",
+        "at": "2026-11-04T14:52:38.325375+00:00",
+        "httpStatus": 200,
+        "bytes": 250526,
+        "bodySha256": "fd36538ee957a17718d9f8b3ca81fb6e8edb8003da186b09751e9ef00801c3db",
+        "page": 5,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:38.333461579Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=6&size=100",
+        "at": "2026-11-04T14:52:39.406773+00:00",
+        "httpStatus": 200,
+        "bytes": 235177,
+        "bodySha256": "66a8aceb8a57d07085aa438471670f56cade6cca99abb622d3c9f34a2b0c090d",
+        "page": 6,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:39.416035759Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=7&size=100",
+        "at": "2026-11-04T14:52:40.490528+00:00",
+        "httpStatus": 200,
+        "bytes": 227300,
+        "bodySha256": "ef993b71c3f3f59a30f55216c3ac2f1c80af201e42b281064c7ad1b69a12e951",
+        "page": 7,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:40.498031305Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=8&size=100",
+        "at": "2026-11-04T14:52:41.561329+00:00",
+        "httpStatus": 200,
+        "bytes": 249944,
+        "bodySha256": "02d6b89a9abac3f366529b5444899644b9a8ca68c47c32f162e5f2819aa972bb",
+        "page": 8,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:41.580648927Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=9&size=100",
+        "at": "2026-11-04T14:52:42.642611+00:00",
+        "httpStatus": 200,
+        "bytes": 240814,
+        "bodySha256": "a7ced60386b6ab74077222f085bbcf5955fd1303328b9a59f112f6b1bce1fda0",
+        "page": 9,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:42.648893873Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=10&size=100",
+        "at": "2026-11-04T14:52:43.708874+00:00",
+        "httpStatus": 200,
+        "bytes": 238904,
+        "bodySha256": "6bef530b1425f211615a2a0f76a76fd88d7ddfdb57d2ec598bf1850ab7d1c272",
+        "page": 10,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:43.716851831Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=11&size=100",
+        "at": "2026-11-04T14:52:44.777146+00:00",
+        "httpStatus": 200,
+        "bytes": 253110,
+        "bodySha256": "08e5de8a94a0cdb51931fbe2af0cc90d5b80716ecf130b64f3a42413a5c42c63",
+        "page": 11,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:44.782683Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=12&size=100",
+        "at": "2026-11-04T14:52:45.847628+00:00",
+        "httpStatus": 200,
+        "bytes": 247316,
+        "bodySha256": "badf5be84a9fa983cdeff64e74292d02432ca42fdd6fb1c0707c9d64f926c761",
+        "page": 12,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:45.854945970Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=13&size=100",
+        "at": "2026-11-04T14:52:46.917216+00:00",
+        "httpStatus": 200,
+        "bytes": 243600,
+        "bodySha256": "9d4c5e6fd24c83a418d475fc0e83937875b13cbae60c655e6106822211b52ebc",
+        "page": 13,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:46.938896492Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=14&size=100",
+        "at": "2026-11-04T14:52:48.012360+00:00",
+        "httpStatus": 200,
+        "bytes": 254594,
+        "bodySha256": "b6597725c92301d30b13634dbb199de573c941d01a2c3fc7b6d5b038c0d854b7",
+        "page": 14,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:48.019202505Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=15&size=100",
+        "at": "2026-11-04T14:52:49.079169+00:00",
+        "httpStatus": 200,
+        "bytes": 240656,
+        "bodySha256": "84fbc2273cb6c859bfc346e1b5895eebc33c662d86e0ff5fbe4fec5162880a0e",
+        "page": 15,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:49.085377220Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=16&size=100",
+        "at": "2026-11-04T14:52:50.156635+00:00",
+        "httpStatus": 200,
+        "bytes": 251361,
+        "bodySha256": "7d55c5c0130dfb269478ac5a576b4760b184926089db20035a397fb8ca632961",
+        "page": 16,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:50.162797737Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=17&size=100",
+        "at": "2026-11-04T14:52:51.228378+00:00",
+        "httpStatus": 200,
+        "bytes": 249550,
+        "bodySha256": "bbc25c0b1c9c14472f8c3217475585175367c16e1d3c16c370c2a277db761fe2",
+        "page": 17,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:51.235091828Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=18&size=100",
+        "at": "2026-11-04T14:52:52.301026+00:00",
+        "httpStatus": 200,
+        "bytes": 252654,
+        "bodySha256": "fda5f97e1cb6af89813d403baca9d6044880d4034b927b0fa90860fb3c7bccac",
+        "page": 18,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:52.308607428Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=19&size=100",
+        "at": "2026-11-04T14:52:53.376635+00:00",
+        "httpStatus": 200,
+        "bytes": 255916,
+        "bodySha256": "65788dcc62c1f83d4bb64798218538f295bcb72a96cfaf8835948c93bb040967",
+        "page": 19,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:53.398678346Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=20&size=100",
+        "at": "2026-11-04T14:52:54.466946+00:00",
+        "httpStatus": 200,
+        "bytes": 259980,
+        "bodySha256": "26a6748abe03e5f9644099d6ef5776de54bc02e4114c39d019af5d314dc8b6d7",
+        "page": 20,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:54.474265433Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=21&size=100",
+        "at": "2026-11-04T14:52:55.540630+00:00",
+        "httpStatus": 200,
+        "bytes": 275437,
+        "bodySha256": "2f75a13417a9945bb2f2ef735a95fb0137f8c41de189660ae951d01dd0a3b0fc",
+        "page": 21,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:55.547486045Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=22&size=100",
+        "at": "2026-11-04T14:52:56.616718+00:00",
+        "httpStatus": 200,
+        "bytes": 234395,
+        "bodySha256": "c8d11426284cf601861f3d7b79a04c92a9c7942841933e209e6686c54fe9070d",
+        "page": 22,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:56.623521632Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=23&size=100",
+        "at": "2026-11-04T14:52:57.690707+00:00",
+        "httpStatus": 200,
+        "bytes": 242906,
+        "bodySha256": "3945c2e1297ceed75c5260b367f63cf4e1f15dd058e262ed6f113174ca63bfe8",
+        "page": 23,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:57.701010457Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=24&size=100",
+        "at": "2026-11-04T14:52:58.768536+00:00",
+        "httpStatus": 200,
+        "bytes": 254401,
+        "bodySha256": "681f05ab6a03ce97645342ed2520ad5e2918d13c9d966d1d6ba25c49ce258de6",
+        "page": 24,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:58.776916256Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=25&size=100",
+        "at": "2026-11-04T14:52:59.842185+00:00",
+        "httpStatus": 200,
+        "bytes": 273698,
+        "bodySha256": "b2c14058e17f97f603e299bab3de3f1eb3874923316c9013e721d27a7aa7c00e",
+        "page": 25,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:52:59.862901276Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=26&size=100",
+        "at": "2026-11-04T14:53:00.932808+00:00",
+        "httpStatus": 200,
+        "bytes": 285184,
+        "bodySha256": "7136b4161d86163191b971159bef746a840aabf168bc27cb1653f8661f6c3879",
+        "page": 26,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:00.956713606Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=27&size=100",
+        "at": "2026-11-04T14:53:02.022326+00:00",
+        "httpStatus": 200,
+        "bytes": 308975,
+        "bodySha256": "2f279b2af3509ef7b8e8d0bd0eecc4e0fb1f768c33c5a489e409946120078d3d",
+        "page": 27,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:02.031039308Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=28&size=100",
+        "at": "2026-11-04T14:53:03.091990+00:00",
+        "httpStatus": 200,
+        "bytes": 290982,
+        "bodySha256": "b9402a543dde32c6932bdcc11be983ff76d0cc3d7a96a21ee2f393d9d66390c1",
+        "page": 28,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:03.112135562Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=29&size=100",
+        "at": "2026-11-04T14:53:04.183102+00:00",
+        "httpStatus": 200,
+        "bytes": 311438,
+        "bodySha256": "9f1ee73334afa7991ce722be62f3422c2154174299b59cfcf2aac637d6a5aad9",
+        "page": 29,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:04.193088967Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=30&size=100",
+        "at": "2026-11-04T14:53:05.268162+00:00",
+        "httpStatus": 200,
+        "bytes": 305384,
+        "bodySha256": "9dfdd037e89157b1a6488c651d9cc221c8474218987166c413ca6b0ed27360a3",
+        "page": 30,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:05.275734064Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=31&size=100",
+        "at": "2026-11-04T14:53:06.351939+00:00",
+        "httpStatus": 200,
+        "bytes": 307691,
+        "bodySha256": "77f73b36b9cbc2ecb43a20a4b7f1683804815c0190076c2fd0de09c9d1b9e05a",
+        "page": 31,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:06.360936534Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=32&size=100",
+        "at": "2026-11-04T14:53:07.433721+00:00",
+        "httpStatus": 200,
+        "bytes": 264674,
+        "bodySha256": "18f41db7e2f387c3dda64490ee880259fe6fba69c26845cbd02c786c57bcc7a7",
+        "page": 32,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:07.440937367Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=33&size=100",
+        "at": "2026-11-04T14:53:08.506194+00:00",
+        "httpStatus": 200,
+        "bytes": 314585,
+        "bodySha256": "fd1f4404037037f12dd06da423bb800907c04746f2a85250d0c5c19567119eb5",
+        "page": 33,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:08.513511021Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=34&size=100",
+        "at": "2026-11-04T14:53:09.575120+00:00",
+        "httpStatus": 200,
+        "bytes": 293082,
+        "bodySha256": "953d1298778201071f76d314f9e022df80a2a0848679a2039381f876d532850f",
+        "page": 34,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:09.580494815Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=35&size=100",
+        "at": "2026-11-04T14:53:10.646121+00:00",
+        "httpStatus": 200,
+        "bytes": 301106,
+        "bodySha256": "33687a44df9167f960364b5ef9379552fcf92338a3182e365c45b1f8f00b2d04",
+        "page": 35,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:10.666502760Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=36&size=100",
+        "at": "2026-11-04T14:53:11.732749+00:00",
+        "httpStatus": 200,
+        "bytes": 297003,
+        "bodySha256": "abcfd81461148a2d95254117cddfecceb75d58cd66f401845dc0bae88ce8089b",
+        "page": 36,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:11.739489221Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=37&size=100",
+        "at": "2026-11-04T14:53:12.808540+00:00",
+        "httpStatus": 200,
+        "bytes": 302080,
+        "bodySha256": "d2f8f9aaca7e025b31dd04947d8e018fbd390ecf4ba0c34c55cd19e151f97c77",
+        "page": 37,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:12.814612495Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=38&size=100",
+        "at": "2026-11-04T14:53:13.879833+00:00",
+        "httpStatus": 200,
+        "bytes": 298817,
+        "bodySha256": "8e4ca558021784c5f5dd6758ee9f665b8248b71f682a71a81be293f4ef8c8b61",
+        "page": 38,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:13.885549065Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=39&size=100",
+        "at": "2026-11-04T14:53:14.949961+00:00",
+        "httpStatus": 200,
+        "bytes": 296577,
+        "bodySha256": "5918179275f182e7bfa05b19043f127d3cf2c2f86b5cb878b83a0c828875a06a",
+        "page": 39,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:14.954899894Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=40&size=100",
+        "at": "2026-11-04T14:53:16.024987+00:00",
+        "httpStatus": 200,
+        "bytes": 309515,
+        "bodySha256": "f2cdbf6f0c26e83bf8f240b4bdb32a2cc1f4bfbb16a3b7d70c4fe2881741d5e8",
+        "page": 40,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:16.029460346Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=41&size=100",
+        "at": "2026-11-04T14:53:17.095870+00:00",
+        "httpStatus": 200,
+        "bytes": 303623,
+        "bodySha256": "99aac3c98692b6581cb9c1cd1f339e7f0aa9de5a64f1037879ef723cc3c5ac8e",
+        "page": 41,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:17.102017444Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=42&size=100",
+        "at": "2026-11-04T14:53:18.170559+00:00",
+        "httpStatus": 200,
+        "bytes": 313516,
+        "bodySha256": "b7600dc223a3ad35be1dda055e4e66ec73ca19ab05102a398398decece267492",
+        "page": 42,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:18.190001501Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=43&size=100",
+        "at": "2026-11-04T14:53:19.260845+00:00",
+        "httpStatus": 200,
+        "bytes": 295734,
+        "bodySha256": "be87cdf039eba91d07b230f119e944dbca3d0b1d5b96c719e5cba95d8b09feb2",
+        "page": 43,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:19.266289660Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=44&size=100",
+        "at": "2026-11-04T14:53:20.332655+00:00",
+        "httpStatus": 200,
+        "bytes": 295915,
+        "bodySha256": "0ffb0ce4cfe07e8f04a7a838c4e60f9d4b2c394ca888f5cb211872a684b6e3f5",
+        "page": 44,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:20.346224642Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=45&size=100",
+        "at": "2026-11-04T14:53:21.433012+00:00",
+        "httpStatus": 200,
+        "bytes": 275359,
+        "bodySha256": "7277455c52bae3e9d95d18a8adac87bd5137b1b68c2ebe1a20f41c7f32536683",
+        "page": 45,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:21.441779256Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=46&size=100",
+        "at": "2026-11-04T14:53:22.504624+00:00",
+        "httpStatus": 200,
+        "bytes": 273137,
+        "bodySha256": "277cc70924215f4849d292aaf17e36c881d5b611b9631d33f5459dfc778f74c9",
+        "page": 46,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:22.523847565Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=47&size=100",
+        "at": "2026-11-04T14:53:23.591168+00:00",
+        "httpStatus": 200,
+        "bytes": 282350,
+        "bodySha256": "6cd9e30eb2c1e692a97415944bd121dc87b7689374c6fd8383a0628435ec91c8",
+        "page": 47,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:23.612538016Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=48&size=100",
+        "at": "2026-11-04T14:53:24.671467+00:00",
+        "httpStatus": 200,
+        "bytes": 284007,
+        "bodySha256": "6b51bf5669d35cad7e51b92699c9810ffbf708ee021beb4431286bf4995176d2",
+        "page": 48,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:24.690356931Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=49&size=100",
+        "at": "2026-11-04T14:53:25.756753+00:00",
+        "httpStatus": 200,
+        "bytes": 271109,
+        "bodySha256": "51ac6bfb3e850edea3f334599137b2b43adca36672479cc33b4d8ea4098b8f9b",
+        "page": 49,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:25.763584274Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=50&size=100",
+        "at": "2026-11-04T14:53:26.832431+00:00",
+        "httpStatus": 200,
+        "bytes": 263132,
+        "bodySha256": "9fcfb3b8b7c4f46439b5ad4b4561eca5681e9f40feb0615c43bcf63a54021991",
+        "page": 50,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:26.854818558Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=51&size=100",
+        "at": "2026-11-04T14:53:27.918042+00:00",
+        "httpStatus": 200,
+        "bytes": 272942,
+        "bodySha256": "31fb905de59fcc511c8812492592cd4c43588230fe016b608e97caba362dc734",
+        "page": 51,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:27.924584934Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=52&size=100",
+        "at": "2026-11-04T14:53:28.985611+00:00",
+        "httpStatus": 200,
+        "bytes": 280793,
+        "bodySha256": "91bbe6033d515908e5e9510b83b32ebe381d1a1421896ecceb7b2bca5d48e668",
+        "page": 52,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:29.007403214Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=53&size=100",
+        "at": "2026-11-04T14:53:30.076255+00:00",
+        "httpStatus": 200,
+        "bytes": 262931,
+        "bodySha256": "45c93f4d10175942ff5bbbcd11756d13173065b9f92773da90affb881dab9b8e",
+        "page": 53,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:30.082980649Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=54&size=100",
+        "at": "2026-11-04T14:53:31.145545+00:00",
+        "httpStatus": 200,
+        "bytes": 273653,
+        "bodySha256": "84cd2e9fc41eaeae2efda11a08770fdc36599e013385017615f693e0bb79974a",
+        "page": 54,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:31.153401596Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=55&size=100",
+        "at": "2026-11-04T14:53:32.226569+00:00",
+        "httpStatus": 200,
+        "bytes": 276197,
+        "bodySha256": "2e0e0087cce056c2714e50a3872ef2bb94c830a71760e354d477d3f2806ce208",
+        "page": 55,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:32.245494978Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=56&size=100",
+        "at": "2026-11-04T14:53:33.311656+00:00",
+        "httpStatus": 200,
+        "bytes": 279242,
+        "bodySha256": "77aa49d424309d9efec9861aa8c7840a65122c560990bad1ff6a76c3bcf8ae66",
+        "page": 56,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:33.318479625Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=57&size=100",
+        "at": "2026-11-04T14:53:34.386736+00:00",
+        "httpStatus": 200,
+        "bytes": 302646,
+        "bodySha256": "0dbb2ff412ef104c9cee8f26544f21e037ca64000812e955bda377fea8f33412",
+        "page": 57,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:37.720832008Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=58&size=100",
+        "at": "2026-11-04T14:53:38.787515+00:00",
+        "httpStatus": 200,
+        "bytes": 271455,
+        "bodySha256": "3d2c53bb20d6b3a15df4e753567f38cb605c8bcca6327b6dce22741ac8120ade",
+        "page": 58,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:38.793449040Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=59&size=100",
+        "at": "2026-11-04T14:53:39.869707+00:00",
+        "httpStatus": 200,
+        "bytes": 271494,
+        "bodySha256": "1b509a30f212e9ed9a6fdbefd854dc3a7a301513fb7ac629548fcdde984354b0",
+        "page": 59,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:39.875470589Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=60&size=100",
+        "at": "2026-11-04T14:53:40.960124+00:00",
+        "httpStatus": 200,
+        "bytes": 289742,
+        "bodySha256": "928d022e9aefbdb91e3f556f8ebfefedf336691c7c3daf21e3bb4358041b608b",
+        "page": 60,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:40.966060394Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=61&size=100",
+        "at": "2026-11-04T14:53:42.031094+00:00",
+        "httpStatus": 200,
+        "bytes": 283050,
+        "bodySha256": "f1c6e07aa2b5028ba5ca7daf0e53f05a0704feac142efdd55f4b1586c3eac9e1",
+        "page": 61,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:42.037196675Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=62&size=100",
+        "at": "2026-11-04T14:53:43.104094+00:00",
+        "httpStatus": 200,
+        "bytes": 289673,
+        "bodySha256": "2d1e8f1b801e2b9f0375d30843c84a613f151be2dd8862e3295810e8d7396ab7",
+        "page": 62,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:43.110896205Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=63&size=100",
+        "at": "2026-11-04T14:53:44.170738+00:00",
+        "httpStatus": 200,
+        "bytes": 298462,
+        "bodySha256": "0b95babf8a2287daa30d29ea5f0dc1eddc8b5a2f5f980e8205651aef924d2dc4",
+        "page": 63,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:44.176360844Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=64&size=100",
+        "at": "2026-11-04T14:53:45.247307+00:00",
+        "httpStatus": 200,
+        "bytes": 291124,
+        "bodySha256": "ade89cd9486cc0ff53c68081ddd5320c3dc67404ba7150595c24e0a9043780d0",
+        "page": 64,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:45.252613539Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=65&size=100",
+        "at": "2026-11-04T14:53:46.314590+00:00",
+        "httpStatus": 200,
+        "bytes": 288991,
+        "bodySha256": "863db5b0587f94f25cd1ee335cae417a34b383e19e4fae85d8e1dcba349aff99",
+        "page": 65,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:46.320638188Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=66&size=100",
+        "at": "2026-11-04T14:53:47.389030+00:00",
+        "httpStatus": 200,
+        "bytes": 285612,
+        "bodySha256": "7c906a11631e23ea9cae678c8decca9d3d064995db3004815b12509eeb535ee1",
+        "page": 66,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:47.409336211Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=67&size=100",
+        "at": "2026-11-04T14:53:48.479970+00:00",
+        "httpStatus": 200,
+        "bytes": 280456,
+        "bodySha256": "1a30d63bad00ee392ecc60c02e2f5daffff63ee4ffb5b1668adcf01896b23eb5",
+        "page": 67,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:48.499874561Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=68&size=100",
+        "at": "2026-11-04T14:53:49.566213+00:00",
+        "httpStatus": 200,
+        "bytes": 304005,
+        "bodySha256": "1313b2387031ea4c624f4571623dbac81f3ba852e64005c33241a4516d55ab11",
+        "page": 68,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:49.572823082Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=69&size=100",
+        "at": "2026-11-04T14:53:50.640171+00:00",
+        "httpStatus": 200,
+        "bytes": 287148,
+        "bodySha256": "d6ced57398e7a018014a656bb67c3d0c5fb5ae083d1b1f54d7c8e5aa5efe6c4a",
+        "page": 69,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:50.646860070Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=70&size=100",
+        "at": "2026-11-04T14:53:51.716026+00:00",
+        "httpStatus": 200,
+        "bytes": 287356,
+        "bodySha256": "55db10c50281ca9644cd1989557a28fe77086f6dd1f73f7597769ff63c6e0b1c",
+        "page": 70,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:51.723363222Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=71&size=100",
+        "at": "2026-11-04T14:53:52.791637+00:00",
+        "httpStatus": 200,
+        "bytes": 301091,
+        "bodySha256": "5138dc007f25a8b97939788373821b0b7582ad23d84114132a1ca6535a0dfd42",
+        "page": 71,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:52.797535087Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=72&size=100",
+        "at": "2026-11-04T14:53:53.863493+00:00",
+        "httpStatus": 200,
+        "bytes": 283557,
+        "bodySha256": "8e21076cb0328a08c5afe62e73b46824985805578891e33b46b1d0213b4443fa",
+        "page": 72,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:53.872525112Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=73&size=100",
+        "at": "2026-11-04T14:53:54.939372+00:00",
+        "httpStatus": 200,
+        "bytes": 280101,
+        "bodySha256": "a8a2a5a0b889f1222b86a062eed34265763f9618fb6bded3a3ea9a9cefa7d59a",
+        "page": 73,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:54.946687613Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=74&size=100",
+        "at": "2026-11-04T14:53:56.012988+00:00",
+        "httpStatus": 200,
+        "bytes": 285830,
+        "bodySha256": "e75be119fbeee70b0baee20f4e59d6b28ce1651c4e1e4ca7ba0b80fa0f7f55d0",
+        "page": 74,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:56.034591387Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=75&size=100",
+        "at": "2026-11-04T14:53:57.103214+00:00",
+        "httpStatus": 200,
+        "bytes": 288713,
+        "bodySha256": "170052dcd27278fd335590fa7da9cf43c9f4e8e87d631d534d3e5c2387d1653b",
+        "page": 75,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:57.111532454Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=76&size=100",
+        "at": "2026-11-04T14:53:58.177481+00:00",
+        "httpStatus": 200,
+        "bytes": 304466,
+        "bodySha256": "914e258dce96c10eb99a3489c762ac35b9259a8c8580003a04b6da6c85f6e81e",
+        "page": 76,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:58.185294291Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=77&size=100",
+        "at": "2026-11-04T14:53:59.251182+00:00",
+        "httpStatus": 200,
+        "bytes": 274263,
+        "bodySha256": "0682102f9ab5ae1e241da01804e29c679b00ef1dc82abb537b5dacb415c1e6fe",
+        "page": 77,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:53:59.272237248Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=78&size=100",
+        "at": "2026-11-04T14:54:00.333246+00:00",
+        "httpStatus": 200,
+        "bytes": 298243,
+        "bodySha256": "a7098ed38c6f14a70f8f64ee20b61feb60b2375ad754f5d163a88f9414c54eb3",
+        "page": 78,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:00.354774649Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=79&size=100",
+        "at": "2026-11-04T14:54:01.425511+00:00",
+        "httpStatus": 200,
+        "bytes": 309573,
+        "bodySha256": "1a5f3aa502c3bbd70d610e78b8287c40381c608cab8ed09703c2d779c431b5f6",
+        "page": 79,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:01.432727016Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=80&size=100",
+        "at": "2026-11-04T14:54:02.494671+00:00",
+        "httpStatus": 200,
+        "bytes": 288561,
+        "bodySha256": "a1d2976debccc87251f399642fea5e1494ec3d396ddc35b43b97cdb86f70f455",
+        "page": 80,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:02.499122988Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=81&size=100",
+        "at": "2026-11-04T14:54:03.569408+00:00",
+        "httpStatus": 200,
+        "bytes": 290251,
+        "bodySha256": "0cbb6e49ddbc495d602ef10322893019983138b9a77224b9c79ff103047ff8f8",
+        "page": 81,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:03.575327957Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=82&size=100",
+        "at": "2026-11-04T14:54:04.637701+00:00",
+        "httpStatus": 200,
+        "bytes": 280825,
+        "bodySha256": "bf4f540cce481e9cad19ead505e63e27a9c6fec8eb7958071fc1d668096fb3c6",
+        "page": 82,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:04.643334845Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=83&size=100",
+        "at": "2026-11-04T14:54:05.705827+00:00",
+        "httpStatus": 200,
+        "bytes": 276914,
+        "bodySha256": "6cc3811319aa02e3a227c0471956e36c95e83eeedc1408dfba0eabae59752a10",
+        "page": 83,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:05.725161417Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=84&size=100",
+        "at": "2026-11-04T14:54:06.791299+00:00",
+        "httpStatus": 200,
+        "bytes": 289193,
+        "bodySha256": "3fe2c72d6de44876cbcc0c70a491e146243001c97f34845d49e7480c1f696eed",
+        "page": 84,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:06.798946695Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=85&size=100",
+        "at": "2026-11-04T14:54:07.866497+00:00",
+        "httpStatus": 200,
+        "bytes": 286449,
+        "bodySha256": "80361b77e26335dd4be25ec2c478257dc42c56e6e20ccb27f847033c0cd18bb5",
+        "page": 85,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:07.873587829Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=86&size=100",
+        "at": "2026-11-04T14:54:08.940393+00:00",
+        "httpStatus": 200,
+        "bytes": 276422,
+        "bodySha256": "c6b9baf2998d18749786bbc645ecbf4155809e4136688ee40066b310ac24248e",
+        "page": 86,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:08.945902723Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=87&size=100",
+        "at": "2026-11-04T14:54:10.011827+00:00",
+        "httpStatus": 200,
+        "bytes": 290174,
+        "bodySha256": "cd9806cd4af3ba7f0e7105b5fd08f1f27fc43284e6d2a13f537fd019ec066885",
+        "page": 87,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:10.018597899Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=88&size=100",
+        "at": "2026-11-04T14:54:11.081280+00:00",
+        "httpStatus": 200,
+        "bytes": 281648,
+        "bodySha256": "9bde184c14f7178af38cf345bcfeb6e752f0838be464357115dc95808ac40683",
+        "page": 88,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:11.086004082Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=89&size=100",
+        "at": "2026-11-04T14:54:12.149824+00:00",
+        "httpStatus": 200,
+        "bytes": 265986,
+        "bodySha256": "20f61546965cac1fa8e79b1d0f5aeaa663aeacecdf446630d95a77a545bb6df5",
+        "page": 89,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:12.157006832Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=90&size=100",
+        "at": "2026-11-04T14:54:13.216805+00:00",
+        "httpStatus": 200,
+        "bytes": 266127,
+        "bodySha256": "535cf17dd04d37be1260563d440e30373f91718363b3b6785920b4edb647aded",
+        "page": 90,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:13.222585381Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=91&size=100",
+        "at": "2026-11-04T14:54:14.282728+00:00",
+        "httpStatus": 200,
+        "bytes": 271970,
+        "bodySha256": "358eea324e5004b869d1d503e94759055bbb37a2f344aedfda7ead9307d60393",
+        "page": 91,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:14.288836341Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=92&size=100",
+        "at": "2026-11-04T14:54:15.347507+00:00",
+        "httpStatus": 200,
+        "bytes": 273442,
+        "bodySha256": "2249f4e9802420054fcbb775b57ade4d7ca22d1a92d5b0092389e7c9ea5851e1",
+        "page": 92,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:15.352732030Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=93&size=100",
+        "at": "2026-11-04T14:54:16.419832+00:00",
+        "httpStatus": 200,
+        "bytes": 273414,
+        "bodySha256": "e33eb9659cab1642b340dd37f1f9c44fbacaf238eeee80b0702104a04a7a957a",
+        "page": 93,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:16.426245061Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=94&size=100",
+        "at": "2026-11-04T14:54:17.487454+00:00",
+        "httpStatus": 200,
+        "bytes": 275513,
+        "bodySha256": "c0e094e948448fe76255d58f9c244bb7c7f3262932211dcb1d3847c52dd6d033",
+        "page": 94,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:17.508930430Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=95&size=100",
+        "at": "2026-11-04T14:54:18.574869+00:00",
+        "httpStatus": 200,
+        "bytes": 256070,
+        "bodySha256": "e4347b6b1b0dd36e6a724db50780d1920253fe73bd266ccbc9af555d4853adc8",
+        "page": 95,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:18.581157785Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=96&size=100",
+        "at": "2026-11-04T14:54:19.650357+00:00",
+        "httpStatus": 200,
+        "bytes": 279844,
+        "bodySha256": "6973e4b0bf9d74f5db9c5d9bed3f8c3ec1d2e0c686695c039702663c57b624d2",
+        "page": 96,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:19.656040355Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=97&size=100",
+        "at": "2026-11-04T14:54:20.723745+00:00",
+        "httpStatus": 200,
+        "bytes": 259976,
+        "bodySha256": "f4af8ce7b02352f17209f1f5b4a81cf93ee6b11e1ddf6348ed0b2a8b6cd36a63",
+        "page": 97,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:20.730965923Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=98&size=100",
+        "at": "2026-11-04T14:54:21.799335+00:00",
+        "httpStatus": 200,
+        "bytes": 259066,
+        "bodySha256": "fb88e0341f2a515613aa48ada98579cf56d2afd35d5f02aa316f5cb49ed2ba72",
+        "page": 98,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:21.819790950Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=99&size=100",
+        "at": "2026-11-04T14:54:22.884186+00:00",
+        "httpStatus": 200,
+        "bytes": 264377,
+        "bodySha256": "bee4c63e737ff2fec66c1cebf043123c45ee3ecbaae048c0d54889cd31012633",
+        "page": 99,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:22.890993675Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=100&size=100",
+        "at": "2026-11-04T14:54:23.955923+00:00",
+        "httpStatus": 200,
+        "bytes": 274704,
+        "bodySha256": "7e2a9781651803d9e64d8d67b1f7993a33226cca5b610d18569f82b26eedb0f7",
+        "page": 100,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:23.976848972Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=101&size=100",
+        "at": "2026-11-04T14:54:25.046656+00:00",
+        "httpStatus": 200,
+        "bytes": 254027,
+        "bodySha256": "5d8f29668f75ee69ad5f54134139fc803e6bc66bc3f6e04a5566646b335a64b3",
+        "page": 101,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:25.068412244Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=102&size=100",
+        "at": "2026-11-04T14:54:26.139636+00:00",
+        "httpStatus": 200,
+        "bytes": 261119,
+        "bodySha256": "589d5d9528622a15b4414dc0d95a19d55f581fe835852421b0776742382facf3",
+        "page": 102,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:26.145914945Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=103&size=100",
+        "at": "2026-11-04T14:54:27.209660+00:00",
+        "httpStatus": 200,
+        "bytes": 268249,
+        "bodySha256": "73892fb9968dba3f6e31c30cf161064d6e75320ca4967be2861d08948df0b138",
+        "page": 103,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:27.217619619Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=104&size=100",
+        "at": "2026-11-04T14:54:28.286095+00:00",
+        "httpStatus": 200,
+        "bytes": 272888,
+        "bodySha256": "8e9db6e546d20d2ed949437512494192027e54b5f542cf8459f39015a4a1e602",
+        "page": 104,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:28.293488231Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=105&size=100",
+        "at": "2026-11-04T14:54:29.354101+00:00",
+        "httpStatus": 200,
+        "bytes": 278239,
+        "bodySha256": "e481ed3bb6b3e80ace31c151b2d08a4e852e9420246c8693d089c250137d1b1d",
+        "page": 105,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:29.375804665Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=106&size=100",
+        "at": "2026-11-04T14:54:30.441704+00:00",
+        "httpStatus": 200,
+        "bytes": 273043,
+        "bodySha256": "af1ede547a921a14672c246f78e1fa62671d96fba2a4a371959fa43b4f5f03d3",
+        "page": 106,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:30.449520476Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=107&size=100",
+        "at": "2026-11-04T14:54:31.511694+00:00",
+        "httpStatus": 200,
+        "bytes": 265726,
+        "bodySha256": "9166bfe6c9b1e1a68c67638b9bdcc97968097578e7f9b6c52623f06ae6583657",
+        "page": 107,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:31.532870865Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=108&size=100",
+        "at": "2026-11-04T14:54:32.600835+00:00",
+        "httpStatus": 200,
+        "bytes": 269081,
+        "bodySha256": "37fa8951fce541a67045a3ce3c1031f5a4a5d11acc2aaf3780f72b252e7916c0",
+        "page": 108,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:32.606792930Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=109&size=100",
+        "at": "2026-11-04T14:54:33.671779+00:00",
+        "httpStatus": 200,
+        "bytes": 282123,
+        "bodySha256": "a43969127d85a7cac98e21f2ed47c69edab02e19ac63dfb33805f945f167e9d5",
+        "page": 109,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:33.691073283Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=110&size=100",
+        "at": "2026-11-04T14:54:34.759304+00:00",
+        "httpStatus": 200,
+        "bytes": 296659,
+        "bodySha256": "68d1d090a6760505b588003f7d123ed994a53dcca5807496b2b1d9e0857ff9a4",
+        "page": 110,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:34.763791799Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=111&size=100",
+        "at": "2026-11-04T14:54:35.830459+00:00",
+        "httpStatus": 200,
+        "bytes": 275858,
+        "bodySha256": "2b29fdd002e3cbc1db52a340ee8a5633f0d0f70067b9bd05ad550d512cc24bb7",
+        "page": 111,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:35.849951689Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=112&size=100",
+        "at": "2026-11-04T14:54:36.919506+00:00",
+        "httpStatus": 200,
+        "bytes": 262414,
+        "bodySha256": "e16456d4c648e0450b619d84471ac922fccc8057ef17c19881e9f28a9a4662fa",
+        "page": 112,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:36.937945679Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=113&size=100",
+        "at": "2026-11-04T14:54:37.996141+00:00",
+        "httpStatus": 200,
+        "bytes": 199368,
+        "bodySha256": "f8a9e9ed04d48019b6e8de7c4faf7db28bc2a869c05622555e2c6e4da85fab3f",
+        "page": 113,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:40.316351055Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=114&size=100",
+        "at": "2026-11-04T14:54:41.377592+00:00",
+        "httpStatus": 200,
+        "bytes": 217951,
+        "bodySha256": "40f46706aeb4405e32534a04820e307988003a8fd9cf1e3fef1c5949252d9abb",
+        "page": 114,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:41.394903107Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=115&size=100",
+        "at": "2026-11-04T14:54:42.457684+00:00",
+        "httpStatus": 200,
+        "bytes": 210562,
+        "bodySha256": "7a18c49e4b16d785fd573fbcb852b0d0a9c1abc5f46ead97a208513f6affcb01",
+        "page": 115,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:42.478782985Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=116&size=100",
+        "at": "2026-11-04T14:54:43.544166+00:00",
+        "httpStatus": 200,
+        "bytes": 204017,
+        "bodySha256": "f495f9d20cfcc964acc01a0c9ef20fef4d30edaa30986a3eb7d74a91a53c1db9",
+        "page": 116,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:43.549362831Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=117&size=100",
+        "at": "2026-11-04T14:54:44.613438+00:00",
+        "httpStatus": 200,
+        "bytes": 233308,
+        "bodySha256": "cd6b6729b2fffde558995d4fe5d67686bd7481a2a5e83a7fb58f6ae7a5236f28",
+        "page": 117,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:44.639346678Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=118&size=100",
+        "at": "2026-11-04T14:54:45.696470+00:00",
+        "httpStatus": 200,
+        "bytes": 223229,
+        "bodySha256": "ab23dda2d21fff1d8291ac4e7843a8f84484761135f76d7aceb63e00b958f9c8",
+        "page": 118,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:45.701980128Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=119&size=100",
+        "at": "2026-11-04T14:54:46.767532+00:00",
+        "httpStatus": 200,
+        "bytes": 228304,
+        "bodySha256": "6d44a25636a176e46c0a258308cfdbe76fdd97f737c817a5d540eaeae619b8b1",
+        "page": 119,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:46.789366392Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=120&size=100",
+        "at": "2026-11-04T14:54:47.858794+00:00",
+        "httpStatus": 200,
+        "bytes": 235678,
+        "bodySha256": "bff7480a94946518b82660a8d584bbde4bde777cf6beeabb033138d03753ebb8",
+        "page": 120,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:47.864928988Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=121&size=100",
+        "at": "2026-11-04T14:54:48.926765+00:00",
+        "httpStatus": 200,
+        "bytes": 208692,
+        "bodySha256": "cbdc5e4344137a659d05169fbae12ad6e94fdf8625c90c84ad719c5970b26256",
+        "page": 121,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:48.931966776Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=122&size=100",
+        "at": "2026-11-04T14:54:49.995466+00:00",
+        "httpStatus": 200,
+        "bytes": 216681,
+        "bodySha256": "6ef561678073129164a28818b4b21dcbde59e2489a3e62e215a94dd4e70310a9",
+        "page": 122,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:50.021027179Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=123&size=100",
+        "at": "2026-11-04T14:54:51.078827+00:00",
+        "httpStatus": 200,
+        "bytes": 261786,
+        "bodySha256": "7c89a769b32c34ce44f9a6688457dff64dff697bff6afa06a43a48503f725fd7",
+        "page": 123,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:51.084347163Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=124&size=100",
+        "at": "2026-11-04T14:54:52.147935+00:00",
+        "httpStatus": 200,
+        "bytes": 251394,
+        "bodySha256": "d3429f27bf62e6198cd46b6fdfc8b77a136c81f38b6740388389f99a9250a70c",
+        "page": 124,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:52.154393691Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=125&size=100",
+        "at": "2026-11-04T14:54:53.211956+00:00",
+        "httpStatus": 200,
+        "bytes": 251951,
+        "bodySha256": "87640c45a2770a97ef7aeae6d3b103cb3cbce827b2a8a5343a0994d23052fb01",
+        "page": 125,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:53.217810665Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=126&size=100",
+        "at": "2026-11-04T14:54:54.281876+00:00",
+        "httpStatus": 200,
+        "bytes": 256261,
+        "bodySha256": "078f381dc7e3300baadcb16444c500c75ee93964d6384ef1504ee9bbc777c1d5",
+        "page": 126,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:54.306829531Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=127&size=100",
+        "at": "2026-11-04T14:54:55.370661+00:00",
+        "httpStatus": 200,
+        "bytes": 238495,
+        "bodySha256": "003b7937706ead17f30260b53523b960ff5657730028392ced665facb60769fd",
+        "page": 127,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:55.378789980Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=128&size=100",
+        "at": "2026-11-04T14:54:56.436717+00:00",
+        "httpStatus": 200,
+        "bytes": 263216,
+        "bodySha256": "9598f50358243067246dab5bb7af75e3fc7c5eeca9d7321915c52aa7914ecb6c",
+        "page": 128,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:56.457706672Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=129&size=100",
+        "at": "2026-11-04T14:54:57.516797+00:00",
+        "httpStatus": 200,
+        "bytes": 248272,
+        "bodySha256": "0c35cc5491775bf7274d84dfc8b016a4cf38d9f245df5c805940775fa6cd1514",
+        "page": 129,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:57.521836757Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=130&size=100",
+        "at": "2026-11-04T14:54:58.579039+00:00",
+        "httpStatus": 200,
+        "bytes": 227853,
+        "bodySha256": "4d01edd470b30873f07b79bb460c8ace9a40db2f5746c1ef7100e94fb081746e",
+        "page": 130,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:58.584722433Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=131&size=100",
+        "at": "2026-11-04T14:54:59.648081+00:00",
+        "httpStatus": 200,
+        "bytes": 240268,
+        "bodySha256": "be774d7a4171c2da0ca808fa396f5e519ae3e096b7b828b613f9ddb536e95141",
+        "page": 131,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:54:59.653795603Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=132&size=100",
+        "at": "2026-11-04T14:55:00.721898+00:00",
+        "httpStatus": 200,
+        "bytes": 233015,
+        "bodySha256": "fea5eff546eab2763c07b837555ab092a0fa3fd0acd025b40b0b8896fd654f2f",
+        "page": 132,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:00.743163361Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=133&size=100",
+        "at": "2026-11-04T14:55:01.807853+00:00",
+        "httpStatus": 200,
+        "bytes": 234743,
+        "bodySha256": "9e1b94047089146c50e9005ad751a9e91d8518b9740cebaec9a448d6534714b9",
+        "page": 133,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:01.828186330Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=134&size=100",
+        "at": "2026-11-04T14:55:02.893226+00:00",
+        "httpStatus": 200,
+        "bytes": 220668,
+        "bodySha256": "b98392a886203104b37e796fdfcd6d2eb3d1bab64e5ace87b5d6f46d752d8070",
+        "page": 134,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:02.912048803Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=135&size=100",
+        "at": "2026-11-04T14:55:03.979925+00:00",
+        "httpStatus": 200,
+        "bytes": 224378,
+        "bodySha256": "c099e62c271047d6c1cd26ea080a8aacb4a2a216c56778ec3e9183341ebac110",
+        "page": 135,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:03.984731078Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=136&size=100",
+        "at": "2026-11-04T14:55:05.054258+00:00",
+        "httpStatus": 200,
+        "bytes": 240406,
+        "bodySha256": "6bc6bffa2c06cb5850397485300879ad1042546853e3c5b259d5a9eece2e531b",
+        "page": 136,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:05.059280386Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=137&size=100",
+        "at": "2026-11-04T14:55:06.117847+00:00",
+        "httpStatus": 200,
+        "bytes": 271117,
+        "bodySha256": "a770d5a5040f4cb7bc2a94c2c176621de06ac4426fe73f31734bd154dd61d2c0",
+        "page": 137,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:06.137751568Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=138&size=100",
+        "at": "2026-11-04T14:55:07.205404+00:00",
+        "httpStatus": 200,
+        "bytes": 283904,
+        "bodySha256": "c62d20a10a5f84c31b67ed9d1c1c28a6a5b9203edd7d0d64337671ca5dc9e033",
+        "page": 138,
+        "attempt": 1,
+        "returned": 100,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:07.224598162Z"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=139&size=100",
+        "at": "2026-11-04T14:55:08.289632+00:00",
+        "httpStatus": 200,
+        "bytes": 14707,
+        "bodySha256": "7bf593982b6e28a797c0277ab402c601ff7d3a827f010a8a2134727c612a8e5c",
+        "page": 139,
+        "attempt": 1,
+        "returned": 5,
+        "total": 13805,
+        "queriedAt": "2026-11-04T14:55:08.294807761Z"
+      }
+    ],
+    "sampleExamples": [
+      {
+        "id": "0319",
+        "titleCn": "大“反”派",
+        "year": 2024,
+        "category": "mv",
+        "tmdbTypePresent": false,
+        "tmdbType": null,
+        "seasonPresent": false,
+        "season": null,
+        "identityStatus": "uncertain",
+        "identityKind": "unknown",
+        "evidenceSourceFields": [
+          "category"
+        ],
+        "evidenceQuoteHashes": [
+          "d1829078fe03f2ec5f692c7a217859409b6822240625c10282bb022888657148"
+        ]
+      },
+      {
+        "id": "0aOy",
+        "titleCn": "人生七年3",
+        "year": 1977,
+        "category": "mv",
+        "tmdbTypePresent": false,
+        "tmdbType": null,
+        "seasonPresent": false,
+        "season": null,
+        "identityStatus": "uncertain",
+        "identityKind": "unknown",
+        "evidenceSourceFields": [
+          "category"
+        ],
+        "evidenceQuoteHashes": [
+          "d1829078fe03f2ec5f692c7a217859409b6822240625c10282bb022888657148"
+        ]
+      },
+      {
+        "id": "0Dp0",
+        "titleCn": "蚁人2：黄蜂女现身",
+        "year": 2018,
+        "category": "mv",
+        "tmdbTypePresent": true,
+        "tmdbType": "movie",
+        "seasonPresent": false,
+        "season": null,
+        "identityStatus": "supported",
+        "identityKind": "movie",
+        "evidenceSourceFields": [
+          "tmdbType"
+        ],
+        "evidenceQuoteHashes": [
+          "8a6ba32c9bed6ce703f999f9af6ec23686d44e144e4da572d94c8daca4a9cbab"
+        ]
+      },
+      {
+        "id": "0PW0",
+        "titleCn": "黑豹",
+        "year": 2018,
+        "category": "mv",
+        "tmdbTypePresent": true,
+        "tmdbType": "movie",
+        "seasonPresent": true,
+        "season": 1,
+        "identityStatus": "supported",
+        "identityKind": "movie",
+        "evidenceSourceFields": [
+          "season",
+          "tmdbType"
+        ],
+        "evidenceQuoteHashes": [
+          "8a6ba32c9bed6ce703f999f9af6ec23686d44e144e4da572d94c8daca4a9cbab",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        ]
+      },
+      {
+        "id": "0RZl",
+        "titleCn": "塔尔萨之王 第三季",
+        "year": 2025,
+        "category": "tv",
+        "tmdbTypePresent": true,
+        "tmdbType": "tv",
+        "seasonPresent": true,
+        "season": 3,
+        "identityStatus": "contradicted",
+        "identityKind": "nonMovie",
+        "evidenceSourceFields": [
+          "season",
+          "tmdbType"
+        ],
+        "evidenceQuoteHashes": [
+          "a46e5d2bbe2d3b05b2d28b6054d98c18046bce28893d04e050724168116d5587",
+          "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce"
+        ]
+      },
+      {
+        "id": "1a1l",
+        "titleCn": "行尸走肉：达里尔·迪克森 第一季",
+        "year": 2023,
+        "category": "tv",
+        "tmdbTypePresent": true,
+        "tmdbType": "tv",
+        "seasonPresent": true,
+        "season": 1,
+        "identityStatus": "contradicted",
+        "identityKind": "nonMovie",
+        "evidenceSourceFields": [
+          "season",
+          "tmdbType"
+        ],
+        "evidenceQuoteHashes": [
+          "a46e5d2bbe2d3b05b2d28b6054d98c18046bce28893d04e050724168116d5587",
+          "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        ]
+      },
+      {
+        "id": "2V5B",
+        "titleCn": "异形4",
+        "year": 1997,
+        "category": "mv",
+        "tmdbTypePresent": false,
+        "tmdbType": null,
+        "seasonPresent": true,
+        "season": 4,
+        "identityStatus": "uncertain",
+        "identityKind": "unknown",
+        "evidenceSourceFields": [
+          "season"
+        ],
+        "evidenceQuoteHashes": [
+          "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+        ]
+      },
+      {
+        "id": "2w41",
+        "titleCn": "异形：契约",
+        "year": 2017,
+        "category": "mv",
+        "tmdbTypePresent": false,
+        "tmdbType": null,
+        "seasonPresent": true,
+        "season": 6,
+        "identityStatus": "uncertain",
+        "identityKind": "unknown",
+        "evidenceSourceFields": [
+          "season"
+        ],
+        "evidenceQuoteHashes": [
+          "e7f6c011776e8db7cd330b54174fd76f7d0216b612387a5ffcfb81e6f0919683"
+        ]
+      }
+    ],
+    "invalidSchemaRows": 0,
+    "duplicateIds": 0,
+    "ordinaryMovieEntityDoesNotRequireComputedIdentity": true,
+    "tokenPrinted": false,
+    "pagination": {
+      "pageSize": 100,
+      "maxPages": 500,
+      "apiSecurityFilterInternalSizeMax": 100,
+      "serviceSizeClamp": 200,
+      "pageDelaySeconds": 1.05,
+      "max429RetriesPerPage": 1,
+      "maxRateLimitWaitSeconds": 60,
+      "limiterConfigurationChanged": false
+    },
+    "counts": {
+      "observedDocuments": 13805,
+      "withoutTmdbType": 5236,
+      "withTmdbType": 8569,
+      "withSeason": 8258,
+      "bareSeasonOnlyEvidence": 2790
+    },
+    "statusCounts": {
+      "uncertain": 3413,
+      "supported": 5854,
+      "contradicted": 4510,
+      "conflict": 28
+    },
+    "tmdbTypeCounts": {
+      "<missing-or-blank>": 5236,
+      "movie": 5807,
+      "tv": 2762
+    },
+    "totalsObserved": [
+      13805
+    ],
+    "observedUniqueIds": 13805,
+    "identityInvariantViolations": 0
+  },
+  "logs": {
+    "windowEnd": "2026-11-04T14:55:08.298325+00:00",
+    "movieWindowStart": "2026-11-04T14:37:02.975412+00:00",
+    "agentWindowStart": "2026-11-04T14:41:31.559508+00:00",
+    "movieStreams": [
+      {
+        "source": "current-movie-stdout",
+        "bytes": 3651,
+        "sha256": "b52346fa426e784f78b3961a433ebc8e2a4d8c1177a4b354f9e3cec3bf135492",
+        "lines": 26,
+        "timestampedLines": 26,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      },
+      {
+        "source": "current-movie-stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "lines": 0,
+        "timestampedLines": 0,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      }
+    ],
+    "agentFiles": [
+      {
+        "source": "D:\\ai\\local-ai-agent\\logs\\backend.out.log",
+        "bytes": 6150,
+        "sha256": "b2d819ffdaf145b5347dd740cf1a76eefd4584eb5340841dd72e6b48508f0d3f",
+        "lines": 47,
+        "timestampedLines": 30,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      },
+      {
+        "source": "D:\\ai\\local-ai-agent\\logs\\backend.err.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "lines": 0,
+        "timestampedLines": 0,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      }
+    ],
+    "allCurrentWindowCountsZero": true,
+    "preDeploymentOldLogs": {
+      "observedAt": "2026-11-04T14:32:24.098346+00:00",
+      "oldLogs": [
+        {
+          "source": "agent-old-backend.out.log",
+          "path": "D:\\ai\\local-ai-agent\\logs\\backend.out.log",
+          "bytes": 6326,
+          "sha256": "628540e9f951806893510fcb4755bc0252075b451c523472a36dcf79ccbaf537",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 48
+        },
+        {
+          "source": "agent-old-backend.err.log",
+          "path": "D:\\ai\\local-ai-agent\\logs\\backend.err.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 0
+        },
+        {
+          "source": "movie-old-stdout",
+          "containerName": "gying-movie-backend-1",
+          "bytes": 51680,
+          "sha256": "bed714814c6ba96d349200462af957d5e81f2d9b2598b5dabb1d21648a6d91c4",
+          "lineMatchCounts": {
+            "ERROR": 4,
+            "Exception": 15,
+            "OOM": 0
+          },
+          "lines": 335
+        },
+        {
+          "source": "movie-old-stderr",
+          "containerName": "gying-movie-backend-1",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 0
+        }
+      ],
+      "movieLogsExitCode": 0
+    },
+    "oldProcessDrainCompleteLogCoverageClaimed": false,
+    "scope": "Current candidate logs in deployment-start-to-observation window; old replaced process logs are baseline only; no long-term stability claim."
+  },
+  "completedAt": "2026-11-04T14:55:08.512477+00:00",
+  "allRequiredChecksPassed": true
+}

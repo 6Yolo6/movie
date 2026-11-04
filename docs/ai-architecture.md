@@ -1,6 +1,6 @@
 # GYing AI 架构：从问题到可核查回答
 
-机制按 2026-10-25 源码整理，部署事实截至当日 17:26。版本、包 hash 与回退见[当前状态](current-project-status.md)和[发布台账](history/releases.md)。本文解释当前系统；历次测试结果见[评测手册](ai-evaluation.md)。
+基础机制按2026-10-25源码整理，后续变更各保留来源日期；当前双后端身份/主题机制按本轮实际部署回执更新。版本、包 hash 与回退见[当前状态](current-project-status.md)和[发布台账](history/releases.md)。本文解释当前系统；历次测试结果见[评测手册](ai-evaluation.md)。
 
 ## 1. 系统各层负责什么
 
@@ -181,8 +181,10 @@ sequenceDiagram
 
 15轮模型报告仍绑定原观测候选Movie4f73846f…/Agent055f1bdc…。审查后Movie另补同一无标点句中作者与同人主演/执导的逐次姓名匹配边界，新增构建与回归单独记录于[审查后构建](evaluation/query-quality-20261103/movie-reviewed-build.json)。这次边界修复未重跑模型，原15轮不能当作最终Movie源码已经执行的观测。
 
-## 2026-11-04 候选：电影身份与主题证据
+## 2026-11-04 电影身份与主题证据（双后端已上线）
 
-11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。Movie从现有tmdb_type与summary公开投影生成mediaIdentity，filmIdentityRequired独立于mv/ac分类，随服务端queryPlan继承；不迁移真实数据库。Agent保守筛身份后用不含片名/评分/首轮判断的实际简介反证复核完整主题。片名回填保持全部条件、额外召回20与复核8的预算和用户limit；只有真实本地核对后因缺证为空的可用结论，才在补充联网失败时保留partial completed及错误trace。未知并不等于不存在。
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。Movie从现有tmdb_type与summary公开投影生成mediaIdentity，filmIdentityRequired独立于mv/ac分类，随服务端queryPlan继承；不迁移真实数据库。Agent保守筛身份后用不含片名/评分/首轮判断的实际简介反证复核完整主题。片名回填保持全部条件、额外召回20与复核8的预算和用户limit；只有真实本地核对后因缺证为空的可用结论，才在补充联网失败时保留partial completed及错误trace。未知并不等于不存在。
 
-旧快照无tmdbType但8244条有season；裸季号不得单独证剧集。详情保留受限公共来源/季字段并重新生成身份，保留未知。新字段进入任务历史后旧Movie不能直接解析，未来部署先Movie再Agent，回退须先证兼容且保持SQL/state/key；目前未建立新生产检查点或替换现役应用。
+旧快照无tmdbType但8244条有season；裸季号不得单独证剧集。详情保留受限公共来源/季字段并重新生成身份，保留未知。新字段进入任务历史后旧Movie不能直接解析；本次已先Movie再Agent上线，新的停止窗口检查点认证通过。应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。
+
+原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。 [部署验收](evaluation/identity-theme-20261104/deployment.md)。

@@ -1,0 +1,1089 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "startedAt": "2026-11-04T14:46:04.707479+00:00",
+  "observedTimeZone": "Asia/Shanghai",
+  "readOnly": true,
+  "outputFile": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\post-deployment-readonly.json",
+  "scriptSha256": "4074162b7ace20b80853ddf0088d4fa47e80f3ab725c19e8f1d731c870172f51",
+  "newInferenceSubmissions": 0,
+  "websiteUserSessionUsed": false,
+  "testAccountEnabled": false,
+  "accountOrQueueModified": false,
+  "realMessagesPostsTransfers": 0,
+  "productionStateReadOrDecrypted": false,
+  "runtime": {
+    "movie": {
+      "imageId": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+      "containerId": "420d51fd707039fe582fd5be5a39875a2deeb092fec5a5bd49ed75edcd198312",
+      "actualJarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "startedAt": "2026-11-04T14:38:45.803472659Z",
+      "configurationPreserved": true,
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "user": "gying",
+      "memory": 1342177280,
+      "memorySwap": 2684354560,
+      "rawEnvironmentPrinted": false
+    },
+    "agent": {
+      "storedRecord": {
+        "processId": 21260,
+        "instanceId": "ff9b164c-ee6f-4620-a1d1-e972d07a634f",
+        "startedAt": "2026-11-04T14:42:17.9795764Z",
+        "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe",
+        "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\ff9b164c-ee6f-4620-a1d1-e972d07a634f"
+      },
+      "newRecordMatchesReceipt": true,
+      "readyMatches": true,
+      "runtimeJarPath": "D:\\ai\\local-ai-agent\\.local\\runtime\\backend\\1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64\\local-ai-agent.jar",
+      "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "freshProcess": {
+        "processExists": true,
+        "processId": 21260,
+        "creationTimeUtc": "2026-11-04T14:42:17.9795760Z",
+        "listenerCount": 1,
+        "listenerOwnedByRecordedProcess": true,
+        "executablePathAvailable": false,
+        "executableMatches": null,
+        "commandLineAvailable": false,
+        "expectedRuntimeAppears": null
+      },
+      "creationTimeMatches": true,
+      "listenerOwnedByRecordedProcess": true,
+      "liveArgv": "UNKNOWN",
+      "administratorDeploymentArgvProof": "attributed-to-successful-frozen-deployment-receipt"
+    }
+  },
+  "servicePreservation": {
+    "unrelatedContainersPreserved": true,
+    "agentPhaseContainersPreserved": true,
+    "otherLocalRecordsPreserved": true,
+    "configKeyTokenIndexPreserved": true,
+    "indexPreserved": true,
+    "protectedFileHashes": {
+      "config": "0028c0be790a8999134690140824ce0c099940d0d02835c8eed17ac3db613a44",
+      "stateKey": "d1d1a71d0a877e24223f7d5c5f9026eab82750574f12a8fb782511da6bf9f436",
+      "bridgeToken": "4915ab43e7eec334f858ee79a038673ce98ed776ec27c3d959952d51de3fd3a8",
+      "semanticIndex": "f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4"
+    },
+    "containerCount": 13,
+    "currentContainers": {
+      "/gying-movie-backend-1": {
+        "id": "420d51fd707039fe582fd5be5a39875a2deeb092fec5a5bd49ed75edcd198312",
+        "image": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521",
+        "startedAt": "2026-11-04T14:38:45.803472659Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-frontend-1": {
+        "id": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+        "image": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841",
+        "startedAt": "2026-11-02T11:08:03.837359624Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-social-publisher-1": {
+        "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+        "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+        "startedAt": "2026-11-01T13:45:26.156706042Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-quark-auto-save-1": {
+        "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+        "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+        "startedAt": "2026-11-01T01:35:51.366632892Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-gying-source-1": {
+        "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+        "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+        "startedAt": "2026-11-01T01:35:52.944975605Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-query-maven-c43cc988fc3e": {
+        "id": "cfc0b14cd143633b4e0978598add9668f86824f7fde9693fef542aa35353aa00",
+        "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+        "startedAt": "2026-10-18T02:20:04.231961268Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-query-mysql-c43cc988fc3e": {
+        "id": "55c8e60471546616c4e2df3e3bd7eecf949043549bdd3036c8a0085d028a787a",
+        "image": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+        "startedAt": "2026-10-18T02:19:47.857238091Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-xunlei-path-probe-20261006": {
+        "id": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+        "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+        "startedAt": "2026-10-06T12:51:15.863953362Z",
+        "restarts": 0,
+        "running": false,
+        "oomKilled": false
+      },
+      "/gying-movie-nginx-1": {
+        "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+        "image": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+        "startedAt": "2026-11-01T01:36:13.781991987Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/openclaw-openclaw-gateway-1": {
+        "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+        "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+        "startedAt": "2026-11-02T14:55:52.332257647Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-redis-1": {
+        "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+        "image": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+        "startedAt": "2026-11-01T01:35:43.909785998Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/gying-movie-pansou-1": {
+        "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+        "image": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+        "startedAt": "2026-11-01T01:35:49.813516013Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      },
+      "/minio-server": {
+        "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+        "image": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+        "startedAt": "2026-11-01T01:35:47.509532767Z",
+        "restarts": 0,
+        "running": true,
+        "oomKilled": false
+      }
+    },
+    "stateReadOrDecrypted": false
+  },
+  "entries": {
+    "checks": [
+      {
+        "url": "http://127.0.0.1:5000/api/health",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.231771+00:00",
+        "httpStatus": 200,
+        "bytes": 65,
+        "bodySha256": "ece8e9b20f793a05aa6a4f9629d98b3a8e660bf687a376c6268b2ed5115d6f91",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:5000/api/health",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.231771+00:00",
+            "httpStatus": 200,
+            "bytes": 65,
+            "bodySha256": "ece8e9b20f793a05aa6a4f9629d98b3a8e660bf687a376c6268b2ed5115d6f91"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:21434/api/version",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.244318+00:00",
+        "httpStatus": 200,
+        "bytes": 21,
+        "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:21434/api/version",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.244318+00:00",
+            "httpStatus": 200,
+            "bytes": 21,
+            "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:5002/health",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.247839+00:00",
+        "httpStatus": 200,
+        "bytes": 89,
+        "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:5002/health",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.247839+00:00",
+            "httpStatus": 200,
+            "bytes": 89,
+            "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:3000/",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.264330+00:00",
+        "httpStatus": 200,
+        "bytes": 641,
+        "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:3000/",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.264330+00:00",
+            "httpStatus": 200,
+            "bytes": 641,
+            "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.282696+00:00",
+        "httpStatus": 200,
+        "bytes": 1299,
+        "bodySha256": "67b99530614509ba79055b3c65df109a043ca998960826b5cf97b6be24761488",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:8880/api/movies/list?page=1&size=1",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.282696+00:00",
+            "httpStatus": 200,
+            "bytes": 1299,
+            "bodySha256": "67b99530614509ba79055b3c65df109a043ca998960826b5cf97b6be24761488"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1:8880/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.316555+00:00",
+        "httpStatus": 200,
+        "bytes": 15,
+        "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1:8880/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.316555+00:00",
+            "httpStatus": 200,
+            "bytes": 15,
+            "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "json"
+      },
+      {
+        "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.327618+00:00",
+        "httpStatus": 200,
+        "bytes": 2471,
+        "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.327618+00:00",
+            "httpStatus": 200,
+            "bytes": 2471,
+            "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "catalog"
+      },
+      {
+        "url": "http://127.0.0.1/",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.365355+00:00",
+        "httpStatus": 200,
+        "bytes": 67978,
+        "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.365355+00:00",
+            "httpStatus": 200,
+            "bytes": 67978,
+            "bodySha256": "dd3c447854958a9b462721735deefd36077dfc6666998a6e4a86b473b2e686cc"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1/api/movies/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.373155+00:00",
+        "httpStatus": 200,
+        "bytes": 1261,
+        "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/movies/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.373155+00:00",
+            "httpStatus": 200,
+            "bytes": 1261,
+            "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "detail",
+        "sameMovieId": true,
+        "computedMediaIdentityRequired": false
+      },
+      {
+        "url": "http://127.0.0.1/movie/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.412508+00:00",
+        "httpStatus": 200,
+        "bytes": 187860,
+        "bodySha256": "d5d2b6a6979171a35b7410b076065be7d8fedf3b2d4195aeec0d7fda2a877488",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/movie/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.412508+00:00",
+            "httpStatus": 200,
+            "bytes": 187860,
+            "bodySha256": "d5d2b6a6979171a35b7410b076065be7d8fedf3b2d4195aeec0d7fda2a877488"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.532450+00:00",
+        "httpStatus": 404,
+        "bytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.532450+00:00",
+            "httpStatus": 404,
+            "bytes": 548,
+            "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.535770+00:00",
+        "httpStatus": 404,
+        "bytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.535770+00:00",
+            "httpStatus": 404,
+            "bytes": 548,
+            "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/admin/users",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.555985+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/admin/users",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.555985+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      },
+      {
+        "url": "http://127.0.0.1/api/ai/status",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.574029+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "http://127.0.0.1/api/ai/status",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.574029+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "direct-loopback",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "at": "2026-11-04T14:46:08.590083+00:00",
+        "httpStatus": 200,
+        "bytes": 2471,
+        "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+            "method": "GET",
+            "at": "2026-11-04T14:46:08.590083+00:00",
+            "httpStatus": 200,
+            "bytes": 2471,
+            "bodySha256": "5321731f2576ed9ee662d104473d41356f9d38ae3c22982e98260dcf7909967f"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "catalog"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/",
+        "method": "GET",
+        "at": "2026-11-04T14:46:10.361273+00:00",
+        "httpStatus": 200,
+        "bytes": 68345,
+        "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/",
+            "method": "GET",
+            "at": "2026-11-04T14:46:10.361273+00:00",
+            "httpStatus": 200,
+            "bytes": 68345,
+            "bodySha256": "8140bb33a03423f2e3211f1f912ef998e69d3121e7094e3283338ef7994af9ae"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:46:12.246933+00:00",
+        "httpStatus": 200,
+        "bytes": 1261,
+        "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/movies/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:46:12.246933+00:00",
+            "httpStatus": 200,
+            "bytes": 1261,
+            "bodySha256": "db6d97b6457e8c7c8250b43ab0b86a6d099adac52b45cd8b189e2b434406746b"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "detail",
+        "sameMovieId": true,
+        "computedMediaIdentityRequired": false
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_614933",
+        "method": "GET",
+        "at": "2026-11-04T14:46:14.209846+00:00",
+        "httpStatus": 200,
+        "bytes": 188227,
+        "bodySha256": "d698d8f37ab60679aa6d7ac1b6f2c02b00559c1d17c04aa540057358fb766653",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_614933",
+            "method": "GET",
+            "at": "2026-11-04T14:46:14.209846+00:00",
+            "httpStatus": 200,
+            "bytes": 188227,
+            "bodySha256": "d698d8f37ab60679aa6d7ac1b6f2c02b00559c1d17c04aa540057358fb766653"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          200
+        ],
+        "shape": "html"
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "at": "2026-11-04T14:46:16.234982+00:00",
+        "httpStatus": 404,
+        "bytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+            "method": "GET",
+            "at": "2026-11-04T14:46:16.234982+00:00",
+            "httpStatus": 404,
+            "bytes": 915,
+            "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+        "method": "GET",
+        "at": "2026-11-04T14:46:18.020923+00:00",
+        "httpStatus": 404,
+        "bytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+            "method": "GET",
+            "at": "2026-11-04T14:46:18.020923+00:00",
+            "httpStatus": 404,
+            "bytes": 915,
+            "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          404
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/admin/users",
+        "method": "GET",
+        "at": "2026-11-04T14:46:18.932944+00:00",
+        "httpStatus": 302,
+        "bytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "redirectHost": "frosty-haze-36b0.cloudflareaccess.com",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/admin/users",
+            "method": "GET",
+            "at": "2026-11-04T14:46:18.932944+00:00",
+            "httpStatus": 302,
+            "bytes": 510,
+            "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+            "redirectHost": "frosty-haze-36b0.cloudflareaccess.com"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          302
+        ],
+        "shape": null
+      },
+      {
+        "url": "https://gyinghub.dpdns.org/api/ai/status",
+        "method": "GET",
+        "at": "2026-11-04T14:46:20.295375+00:00",
+        "httpStatus": 401,
+        "bytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+        "attempts": [
+          {
+            "url": "https://gyinghub.dpdns.org/api/ai/status",
+            "method": "GET",
+            "at": "2026-11-04T14:46:20.295375+00:00",
+            "httpStatus": 401,
+            "bytes": 60,
+            "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+          }
+        ],
+        "transport": "existing-loopback-proxy-7897",
+        "passed": true,
+        "expectedStatuses": [
+          401
+        ],
+        "shape": null
+      }
+    ],
+    "allPassed": true,
+    "sampleMovieId": "tmdb_movie_614933",
+    "publicTransport": "existing-loopback-proxy-7897",
+    "browserUiVerified": false,
+    "passwordLoginVerified": false,
+    "authenticatedWebsiteSessionUsed": false,
+    "originalReportsChanged": false
+  },
+  "localServices": {
+    "agent": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "ollama": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "router": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "agentFrontend": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "backend": {
+      "httpStatus": 200,
+      "passed": true
+    },
+    "qqBackendHealth": {
+      "httpStatus": 200,
+      "passed": true
+    }
+  },
+  "checks": [
+    {
+      "name": "movie-fixed-image-and-actual-jar",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "movie-runtime-configuration-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "movie-running-no-restart-no-oom",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-new-managed-record-ready-runtime",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-process-creation-and-listener",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-current-argv-when-readable",
+      "passed": null,
+      "required": false
+    },
+    {
+      "name": "agent-current-executable-when-readable",
+      "passed": null,
+      "required": false
+    },
+    {
+      "name": "old-agent-matching-normal-stop",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-bound-independent-startup-host",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "unrelated-container-identities-and-starts-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-phase-all-container-identities-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "ollama-router-frontend-records-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "configuration-key-token-index-preserved",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "real-local-and-public-read-only-entry-contracts",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "agent-registered-research-tools-read-only",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "production-bridge-authenticated-catalog-schema",
+      "passed": false,
+      "required": true
+    },
+    {
+      "name": "projection-complete-with-stable-total",
+      "passed": false,
+      "required": true
+    },
+    {
+      "name": "season-alone-not-tv-and-tv-source-not-supported-film",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "current-candidate-window-no-error-exception-oom",
+      "passed": true,
+      "required": true
+    },
+    {
+      "name": "deployment-receipts-unchanged-during-check",
+      "passed": true,
+      "required": true
+    }
+  ],
+  "limitations": [
+    "Health/tools registration and authenticated catalog reads do not verify website USER jobs or model answer quality.",
+    "No account login, token issuance, USER session, inference, queue claim, heartbeat submission, transfer or publishing.",
+    "Seven earlier observations and scores remain frozen; no blind-test or quality-improvement comparison.",
+    "Live catalog pagination is not an atomic database snapshot; stable counts describe this observation.",
+    "Ordinary movie entity responses need not contain catalog computed mediaIdentity.",
+    "Current protected administrator argv may remain UNKNOWN; deployment-time proof is attributed separately.",
+    "Short current logs do not cover all old-process drain lines or long-term stability.",
+    "Known G01-G11 security gates remain outside limited deployment approval."
+  ],
+  "receiptBindings": {
+    "movie": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\deployment\\deployment-result.json",
+      "sha256": "b5cabee8324e5111ad7f2579706e1cd4bc7154727b6c397e715b8636ba00e7e0",
+      "status": "deployed-entrypoints-verification-passed",
+      "startedAt": "2026-11-04T14:37:02.975412+00:00",
+      "completedAt": "2026-11-04T14:39:17.278199+00:00",
+      "jarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+      "codeCommit": "d6641e749a5d36d4823589a5202d7d5f9856fd26",
+      "imageId": "sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521"
+    },
+    "agent": {
+      "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-agent\\agent-deployment-result.json",
+      "sha256": "2485020d1c6786f496f115a4a068eb8f24a3229cb62a145beb1270e052e5f93d",
+      "status": "deployed",
+      "startedAt": "2026-11-04T14:41:31.559508+00:00",
+      "completedAt": "2026-11-04T14:42:34.318990+00:00",
+      "jarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+      "codeCommit": "6c277a4161b4840a89f8ecdca020818192f9eb3c"
+    }
+  },
+  "researchCapabilities": {
+    "agentHealth": true,
+    "toolsSchema": {
+      "httpStatus": 200,
+      "functionNames": [
+        "searchMovies",
+        "getMovieDetails",
+        "searchMovieWeb"
+      ],
+      "registeredResearchToolsPresent": true,
+      "responseSha256": "62d4b698407c33d887c0a296bf698ff76dcd1946f339a74b23f32c5258c4ee36"
+    },
+    "authenticatedWebsiteStatusChecked": false,
+    "endToEndQueryAvailabilityVerified": false,
+    "newInferenceSubmissions": 0,
+    "realCatalogBridgeDependencyVerified": false
+  },
+  "catalogProjection": {
+    "authenticated": false,
+    "readOnly": true,
+    "schemaValid": false,
+    "complete": false,
+    "snapshotIsAtomic": false,
+    "truncated": false,
+    "pageReceipts": [
+      {
+        "url": "http://127.0.0.1:8880/api/internal/ai/catalog/documents?page=1&size=200",
+        "at": "2026-11-04T14:46:21.946295+00:00",
+        "httpStatus": 400,
+        "bytes": 99,
+        "bodySha256": "ff32f5e5f09b363b63bb6070cfe72a0f5a66648f16adddcb7d1398e82f7b6896"
+      }
+    ],
+    "sampleExamples": [],
+    "invalidSchemaRows": 0,
+    "duplicateIds": 0,
+    "ordinaryMovieEntityDoesNotRequireComputedIdentity": true,
+    "tokenPrinted": false,
+    "counts": {},
+    "statusCounts": {},
+    "tmdbTypeCounts": {},
+    "totalsObserved": [],
+    "observedUniqueIds": 0,
+    "identityInvariantViolations": 0
+  },
+  "logs": {
+    "windowEnd": "2026-11-04T14:46:21.958059+00:00",
+    "movieWindowStart": "2026-11-04T14:37:02.975412+00:00",
+    "agentWindowStart": "2026-11-04T14:41:31.559508+00:00",
+    "movieStreams": [
+      {
+        "source": "current-movie-stdout",
+        "bytes": 2711,
+        "sha256": "22c1654d3c3cc778a211daf3ffb2732222fda22696eb8c8e67e4f9b8939afa65",
+        "lines": 22,
+        "timestampedLines": 22,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      },
+      {
+        "source": "current-movie-stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "lines": 0,
+        "timestampedLines": 0,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      }
+    ],
+    "agentFiles": [
+      {
+        "source": "D:\\ai\\local-ai-agent\\logs\\backend.out.log",
+        "bytes": 6150,
+        "sha256": "b2d819ffdaf145b5347dd740cf1a76eefd4584eb5340841dd72e6b48508f0d3f",
+        "lines": 47,
+        "timestampedLines": 30,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      },
+      {
+        "source": "D:\\ai\\local-ai-agent\\logs\\backend.err.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "lines": 0,
+        "timestampedLines": 0,
+        "windowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "outsideWindowLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "unscopedLineMatchCounts": {
+          "ERROR": 0,
+          "Exception": 0,
+          "OOM": 0
+        },
+        "rawLogsPrinted": false
+      }
+    ],
+    "allCurrentWindowCountsZero": true,
+    "preDeploymentOldLogs": {
+      "observedAt": "2026-11-04T14:32:24.098346+00:00",
+      "oldLogs": [
+        {
+          "source": "agent-old-backend.out.log",
+          "path": "D:\\ai\\local-ai-agent\\logs\\backend.out.log",
+          "bytes": 6326,
+          "sha256": "628540e9f951806893510fcb4755bc0252075b451c523472a36dcf79ccbaf537",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 48
+        },
+        {
+          "source": "agent-old-backend.err.log",
+          "path": "D:\\ai\\local-ai-agent\\logs\\backend.err.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 0
+        },
+        {
+          "source": "movie-old-stdout",
+          "containerName": "gying-movie-backend-1",
+          "bytes": 51680,
+          "sha256": "bed714814c6ba96d349200462af957d5e81f2d9b2598b5dabb1d21648a6d91c4",
+          "lineMatchCounts": {
+            "ERROR": 4,
+            "Exception": 15,
+            "OOM": 0
+          },
+          "lines": 335
+        },
+        {
+          "source": "movie-old-stderr",
+          "containerName": "gying-movie-backend-1",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "lineMatchCounts": {
+            "ERROR": 0,
+            "Exception": 0,
+            "OOM": 0
+          },
+          "lines": 0
+        }
+      ],
+      "movieLogsExitCode": 0
+    },
+    "oldProcessDrainCompleteLogCoverageClaimed": false,
+    "scope": "Current candidate logs in deployment-start-to-observation window; old replaced process logs are baseline only; no long-term stability claim."
+  },
+  "completedAt": "2026-11-04T14:46:22.217011+00:00",
+  "allRequiredChecksPassed": false
+}

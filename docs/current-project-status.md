@@ -2,7 +2,7 @@
 
 更新时间：2026-11-04
 
-11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。
 
 11月3日23:04:50 QQ电影目录识别修复仅backend上线6bee2a1d…/代码d24e08f，保留21:47查询改进；940项939过/1 Redis跳过、真实SQL/compile及35项部署回归通过。23:06仅原失败2177重试成功，正确第二部自有分享/资源1579 NORMAL/QQ LIBRARY_RESOURCE含新分享通过；2176未重试、未发群消息。最终五age与两日常覆盖验证通过；此前公网传输失败回退已实证、原失败保留，安全58/11/1未关闭。[修复与验收](evaluation/qq-prada-transfer-20261103/README.md)。
 
@@ -44,11 +44,13 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 当前部署与恢复基线
 
+两后端已按本轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 Movie正常TERM143后完成五份age检查点 `G:\gying-backups\ai-identity-theme-backend-20261104-20261104T143825.278661Z`，Agent正常停止后完成三份age检查点 `G:\gying-backups\ai-agent-identity-theme-20261104-20261104T144159.678847Z`；manifest/size/hash/完整认证检查通过，二者是各自停止窗口检查点，非跨服务原子快照。两份静态应用/回退覆盖已纳入日常备份，dry-run30通过，自然完整备份未验。现役Compose在原11层末尾追加第12层 `E:\gying-tools\releases\ai-identity-theme-20261104\deployment-backend\candidate.json`；前11份文件及参数保持，11月3日第10层rollback和第11层candidate仍保留。有效配置、当前数据/state/key/token/模型/索引及无关容器和本机服务保持。 应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。 [本轮部署验收](evaluation/identity-theme-20261104/deployment.md)。
+
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e`，代码d24e08f/完整源绑定065b7ce、实际JARf805f065…；11月3日23:04:50夸克电影目录AI兜底上线，保留21:47查询条件/可信历史及原TMDB/微博/QQ/GYING能力，Xmx768MiB/容器1280MiB/含swap2560MiB保持 |
+| Movie backend | `sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521`，代码`d6641e749a5d36d4823589a5202d7d5f9856fd26`、实际JAR `2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054`；2026-11-04 22:39:17电影身份/主题配套上线，354源文件绑定；现役有效配置、Xmx768MiB/容器1280MiB/含swap2560MiB保持 |
 | Movie frontend | `sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841`，代码fe042692；11月2日19:08上线TMDB实测末页、范围无数据及北京时间复查提示 |
-| 本机Agent | 11月3日21:12:14上线JAR `055f1bdc4bc8d52b8e9c2330d8a3937085d6043f96323cc2461db16f71d75eda`，代码15a2b8a；PID38460/instance7d5364c2…，不可变runtime/受管身份/ready/hostInJob=false通过；部署期管理员argv证明已绑定，普通权限实时argv UNKNOWN |
+| 本机Agent | 2026-11-04 22:42:34上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`；PID21260/instance`ff9b164c-ee6f-4620-a1d1-e972d07a634f`，不可变runtime/受管身份/ready/监听核对通过；普通权限实时argv UNKNOWN |
 | OpenClaw QQ插件 | 11月2日22:56源/唯一运行时gateway错误回退修复上线，SHA `94922920…`；原固定镜像/config/白名单保持，其他9容器保持，真实群内端到端待验 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
@@ -75,6 +77,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 配置与安全
 
+- 本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 普通权限前置检查因不可读进程Path与bridge.bin访问拒绝而停止；实际管理员回执确认bridge.bin归BUILTIN\Administrators所有且只有一条ACL规则，不是共享冲突。零字节.lock的真实FileLock占用与该ACL拒绝分别记录。随后Windows实际确认的受限管理员路径完成读取/空闲/身份门禁，未修改ACL或绕过state。 本轮授权只覆盖此次两后端，不延伸未来部署。
+
 - 11月3日本次QQ目录修复按当前用户“可授权部署”仅backend限定授权上线；58 PASS/11 FAIL/1 UNKNOWN保持，未加固/轮换凭据，不延伸未来授权。[本次范围](evaluation/qq-prada-transfer-20261103/validation.json)。
 - 11月3日用户获知58 PASS/11 FAIL/1 UNKNOWN后明确“可部署”，本轮限定Agent+Movie双后端已上线；未加固或轮换凭据，不作为未来部署授权。[本次部署](evaluation/query-quality-20261103/deployment.md)。
 - 11月3日本次只读复检 **58 PASS / 11 FAIL / 1 UNKNOWN**；G01–G11未关闭，UNKNOWN为退出的旧迅雷探针root_processes。10月23历史为59/11/0，业务部署例外批准不等于安全加固或未来授权。[门禁](security/hardening-gates.md)、[风险](security/risk-register.md)。
@@ -89,7 +93,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。线上旧版的胶片修复及电影院核心主题错判、徒步ac/空、mv与电视特辑冲突仍待替换和正式验收；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
+| AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。旧观测中的胶片修复、电影院核心主题、徒步ac/空及mv与电视特辑冲突已补机制上线，正式主题回答与真人验收仍待补；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
@@ -115,7 +119,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 验收
 
-11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 候选固定JAR Movie2c1301be…/Agent1d1ad180…，来源354/50文件绑定。首轮10计划/9提交/8完成，影院WEB_TIMEOUT与后续未执行保留；最终定向三场景7/7 completed，双临时进程正常exit0、15001/18883监听清理。前后10生产容器/Agent受管身份/索引保持，四真实入口200；普通权限实时argv仍UNKNOWN，不混合为盲测提升。真人0，无生产启停、队列/state、账户或外发；线上仍按11月3日版本。[电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。
+两后端已按本轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。 [独立只读证据](evaluation/identity-theme-20261104/deployment/evidence/post-deployment-readonly.json)。
+
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 候选固定JAR Movie2c1301be…/Agent1d1ad180…，来源354/50文件绑定。首轮10计划/9提交/8完成，影院WEB_TIMEOUT与后续未执行保留；最终定向三场景7/7 completed，双临时进程正常exit0、15001/18883监听清理。前后10生产容器/Agent受管身份/索引保持，四真实入口200；普通权限实时argv仍UNKNOWN，不混合为盲测提升。真人0；此处前后容器/身份保持与无生产启停仅描述21:36–21:42隔离观测，后续限定两后端上线另记。[电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。
 
 11月3日QQ目录修复：940项中939通过/1 Redis环境跳过，真实SQL与独立compile、35项部署/回退/只读网络回归通过；最终JAR真实只读确认两份源叶目录。23:04:50固定6bee backend上线，五age/配置/其他容器与15入口通过，公网经既有7897代理且失败attempts保留。23:06仅2177一次重试：submitted1/failed0，自有分享含1个46,357,645,187字节目标视频、源名称/size相同且无2006第一部；9339 SAVED/原资源1579 ACTIVE+NORMAL+approved，QQ455字符回复含新分享、LIBRARY_RESOURCE，未发送。2176/任务数/QQ清理marker与配置保持；群内实发、自然清理与下一次完整日常备份未代验。[结果](evaluation/qq-prada-transfer-20261103/validation.json)。
 

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "checks": [
+    {
+      "id": "20-critical-runtime-idle-graceful-start-rollback-functions-unchanged",
+      "passed": true
+    },
+    {
+      "id": "private-authenticated-count-helper-byte-identical",
+      "passed": true
+    },
+    {
+      "id": "fresh-checkpoints-authenticate-once-and-finish-verifies-receipt-hashes",
+      "passed": true
+    },
+    {
+      "id": "only-live-empty-writer-lock-content-skipped",
+      "passed": true
+    },
+    {
+      "id": "stopped-checkpoint-still-hashes-writer-lock",
+      "passed": true
+    },
+    {
+      "id": "nonempty-live-lock-rejected",
+      "passed": true
+    },
+    {
+      "id": "202-test-50-file-candidate-artifact-gates-with-only-git-mocked",
+      "passed": true
+    },
+    {
+      "id": "changed-review-plan-hash-rejected",
+      "passed": true
+    },
+    {
+      "id": "pending-commit-plan-rejected",
+      "passed": true
+    },
+    {
+      "id": "changed-reviewed-source-rejected",
+      "passed": true
+    },
+    {
+      "id": "changed-isolated-test-report-rejected",
+      "passed": true
+    },
+    {
+      "id": "production-queue-claimed-startup-rejected",
+      "passed": true
+    },
+    {
+      "id": "exact-current-managed-instance-pinned",
+      "passed": true
+    },
+    {
+      "id": "fresh-admin-proof-with-preserved-upgraded-movie-accepted",
+      "passed": true
+    },
+    {
+      "id": "obsolete-managed-instance-rejected",
+      "passed": true
+    },
+    {
+      "id": "changed-helper-binding-rejected",
+      "passed": true
+    },
+    {
+      "id": "stale-admin-proof-rejected",
+      "passed": true
+    },
+    {
+      "id": "nonadmin-proof-rejected",
+      "passed": true
+    },
+    {
+      "id": "preflight-plan-mismatch-rejected",
+      "passed": true
+    },
+    {
+      "id": "missing-execution-movie-image-rejected",
+      "passed": true
+    },
+    {
+      "id": "changed-upgraded-movie-jar-rejected",
+      "passed": true
+    }
+  ],
+  "deploymentExecuted": false,
+  "uacRequested": false,
+  "productionStateLoaded": false,
+  "inferenceExecuted": false,
+  "helperSha256": "117d3787880b2ac674a324559fba12c46bd80dffabf18e3fdb0be09e0c020d60"
+}
