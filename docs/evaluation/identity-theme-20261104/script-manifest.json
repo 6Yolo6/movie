@@ -1,0 +1,42 @@
+{
+  "recordedAt": "2026-11-04T13:51:23.311427+00:00",
+  "files": [
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/BuildCandidate.py",
+      "sha256": "6b2d50307a596c9d4d56dbfb87d6cc6eca7b5449096a91caf1705954ca9143dc"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/PrepareCatalogHarness.py",
+      "sha256": "c7338f8eae318d80887893efc4b25cef090c13635033c2ab0fa335775efe41f0"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/RunCandidateProbes.py",
+      "sha256": "75b2299dc7de7252ae109574cef34943049015643220666e953f14e49f594e1a"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/CatalogSnapshotHarness.java",
+      "sha256": "83f471b77c61eb728f36f535d85e724e083a393e795b0efc3f5ee3a06ac74f7f"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/RecordRuntime.py",
+      "sha256": "4e05c27395a4c7f4d1342943d17ebcd96916ec0728d4be3abf0b04eeeca22648"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/BuildCandidate.py",
+      "sha256": "6b2d50307a596c9d4d56dbfb87d6cc6eca7b5449096a91caf1705954ca9143dc"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/PrepareCatalogHarness.py",
+      "sha256": "bc41e893fb5d5f091be3de68fbd46053c8bd2ce8b415eee9321c77caa325ef39"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/RunCandidateProbes.py",
+      "sha256": "75b2299dc7de7252ae109574cef34943049015643220666e953f14e49f594e1a"
+    },
+    {
+      "path": "E:/gying-tools/releases/ai-identity-theme-20261104/final-candidate/CatalogSnapshotHarness.java",
+      "sha256": "83f471b77c61eb728f36f535d85e724e083a393e795b0efc3f5ee3a06ac74f7f"
+    }
+  ],
+  "hashProtocol": "SHA256 over actual raw file bytes; earlier script versions and observations are preserved separately"
+}

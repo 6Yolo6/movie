@@ -29,7 +29,7 @@ class CatalogAiMySqlTest {
         assertEquals("gying-query-fixture",jdbc.queryForObject("SELECT @@hostname",String.class));
         assertEquals(List.of("fixture_marker"),jdbc.queryForList("SHOW TABLES",String.class));
         assertEquals(id,jdbc.queryForObject("SELECT run_id FROM fixture_marker",String.class));
-        jdbc.execute("CREATE TABLE movie_metadata(id VARCHAR(64) PRIMARY KEY,title_cn VARCHAR(255),title_en VARCHAR(255),aliases JSON,series_name VARCHAR(255),year INT,season INT,category VARCHAR(8),poster_url VARCHAR(255),genres JSON,directors JSON,actors JSON,summary TEXT,regions JSON,languages JSON,runtime VARCHAR(100),douban_score DOUBLE,imdb_score DOUBLE,tmdb_vote_average DOUBLE,tmdb_popularity DOUBLE,popularity INT,status VARCHAR(20),deleted_at DATETIME) CHARACTER SET utf8mb4");
+        jdbc.execute("CREATE TABLE movie_metadata(id VARCHAR(64) PRIMARY KEY,title_cn VARCHAR(255),title_en VARCHAR(255),aliases JSON,series_name VARCHAR(255),year INT,season INT,category VARCHAR(8),tmdb_type VARCHAR(20),poster_url VARCHAR(255),genres JSON,directors JSON,actors JSON,summary TEXT,regions JSON,languages JSON,runtime VARCHAR(100),douban_score DOUBLE,imdb_score DOUBLE,tmdb_vote_average DOUBLE,tmdb_popularity DOUBLE,popularity INT,status VARCHAR(20),deleted_at DATETIME) CHARACTER SET utf8mb4");
         jdbc.execute("CREATE TABLE resource_link(id BIGINT PRIMARY KEY,movie_id VARCHAR(64),status VARCHAR(20),audit_status INT,deleted_at DATETIME,link_status VARCHAR(20))");
         jdbc.execute("CREATE TABLE user_favorite(user_id BIGINT,movie_id VARCHAR(64),created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
         jdbc.execute("CREATE TABLE resource_operation_log(id BIGINT AUTO_INCREMENT PRIMARY KEY,user_id BIGINT,movie_id VARCHAR(64),operation_type VARCHAR(20),status VARCHAR(20) DEFAULT 'SUCCESS',created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
@@ -143,5 +143,17 @@ class CatalogAiMySqlTest {
     @Test void researchYearRuntimeAndLanguageFiltersExecuteAgainstRealSqlRows() {
         var body=mapper.createObjectNode();var p=body.putObject("plan").put("intent","search").put("maxRuntime",120);p.putArray("languagesAny").add("English");p.putArray("regionsAny").add("United States of America");
         var result=new CatalogResearchService(jdbc,mapper).query(body,mapper.createObjectNode());assertEquals(1,result.path("movies").size());assertEquals("spider_1",result.path("movies").get(0).path("id").asText());assertEquals(118,result.path("movies").get(0).path("runtimeMinutes").asInt());assertEquals(1,result.path("movies").get(0).path("resourceCount").asInt());
+    }
+    @Test void researchIdentityProjectionUsesRealNullableTypeAndPreservesConflictingSummary(){
+        jdbc.update("INSERT INTO movie_metadata(id,title_cn,year,category,tmdb_type,season,summary,status) VALUES('identity_unknown','未知身份样本',2026,'mv',NULL,2,'钢琴家演奏自己的曲目。','ACTIVE'),('identity_movie','来源电影样本',2026,'mv','movie',1,'一家人寻找失踪的亲人。','ACTIVE'),('identity_conflict','身份冲突样本',2026,'mv','movie',1,'电视特辑节目，歌手现场演唱。','ACTIVE')");
+        var research=new CatalogResearchService(jdbc,mapper);var exported=research.documents(1,100).path("documents");
+        var rows=new HashMap<String,com.fasterxml.jackson.databind.JsonNode>();exported.forEach(d->rows.put(d.path("id").asText(),d));
+        assertEquals(2,rows.get("identity_unknown").path("season").asInt());assertEquals(1,rows.get("identity_movie").path("season").asInt());
+        assertFalse(rows.get("identity_unknown").has("tmdbType"));assertEquals("uncertain",rows.get("identity_unknown").path("mediaIdentity").path("status").asText());
+        assertEquals("movie",rows.get("identity_movie").path("tmdbType").asText());assertEquals("supported",rows.get("identity_movie").path("mediaIdentity").path("status").asText());
+        assertEquals("conflict",rows.get("identity_conflict").path("mediaIdentity").path("status").asText());
+        var body=mapper.createObjectNode();body.putObject("plan").put("intent","search").put("category","mv").put("yearFrom",2026).put("limit",20);
+        var found=new HashSet<String>();research.query(body,mapper.createObjectNode()).path("movies").forEach(d->found.add(d.path("id").asText()));
+        assertTrue(found.contains("identity_movie"));assertTrue(found.contains("identity_unknown"));assertFalse(found.contains("identity_conflict"));
     }
 }

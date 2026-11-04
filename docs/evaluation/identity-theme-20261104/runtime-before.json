@@ -1,0 +1,83 @@
+{
+  "observedAt": "2026-11-04T12:58:32.884767+00:00",
+  "deploymentPerformed": false,
+  "productionArgvVerified": false,
+  "storedAgent": {
+    "instanceId": "7d5364c2-a479-4451-b632-68cbde0afffa",
+    "processId": 38460,
+    "startedAt": "2026-11-03T13:11:57.8571364Z",
+    "executable": "D:\\Java17\\jdk-17.0.1\\bin\\java.exe",
+    "controlDirectory": "D:\\ai\\local-ai-agent\\.local\\lifecycle\\7d5364c2-a479-4451-b632-68cbde0afffa"
+  },
+  "health": {
+    "agent": {
+      "httpStatus": 200
+    },
+    "movie": {
+      "httpStatus": 200
+    },
+    "entry": {
+      "httpStatus": 200
+    },
+    "ollama": {
+      "httpStatus": 200
+    }
+  },
+  "containers": [
+    {
+      "id": "6a70e9f13de8742096f244a8aa14876e01d4964552f5dd5ddc8b4c84f036b967",
+      "name": "gying-movie-backend-1",
+      "image": "sha256:6bee2a1d65a7114c05dcffed559bab9bbf1791751b855ba5c44a75ef2dcd471e"
+    },
+    {
+      "id": "163716fe61d2d115f082ce553ed58c551ddbc75c6efebd1b9d9090b1d47fb30c",
+      "name": "gying-movie-frontend-1",
+      "image": "sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841"
+    },
+    {
+      "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+      "name": "gying-movie-social-publisher-1",
+      "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb"
+    },
+    {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "name": "gying-movie-quark-auto-save-1",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be"
+    },
+    {
+      "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+      "name": "gying-movie-gying-source-1",
+      "image": "gying-resource-p2p-source:20261019b"
+    },
+    {
+      "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+      "name": "gying-movie-nginx-1",
+      "image": "nginx:stable-alpine"
+    },
+    {
+      "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+      "name": "openclaw-openclaw-gateway-1",
+      "image": "ghcr.io/openclaw/openclaw:2026.6.11"
+    },
+    {
+      "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+      "name": "gying-movie-redis-1",
+      "image": "redis:7-alpine"
+    },
+    {
+      "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+      "name": "gying-movie-pansou-1",
+      "image": "ghcr.io/fish2018/pansou:latest"
+    },
+    {
+      "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+      "name": "minio-server",
+      "image": "quay.io/minio/minio:latest"
+    }
+  ],
+  "researchModel": "qwen3:4b-instruct-2507-q4_K_M",
+  "workspaceModel": "qwen3:1.7b",
+  "storedReadyMatches": true,
+  "indexSha256": "f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4",
+  "loadedModels": []
+}

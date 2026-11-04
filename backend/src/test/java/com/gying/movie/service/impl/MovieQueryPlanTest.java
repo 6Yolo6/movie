@@ -17,6 +17,19 @@ class MovieQueryPlanTest {
     @Test void independentQuestionDoesNotInherit()throws Exception{
         var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"yearFrom\":2020}"));assertThat(plan("{\"intent\":\"search\"}").inherit(context,mapper).has("yearFrom")).isFalse();
     }
+    @Test void animatedFilmIdentityRequirementSurvivesFollowupAndCanBeExplicitlyReplaced()throws Exception{
+        var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"category\":\"ac\",\"filmIdentityRequired\":true,\"maxRuntime\":100}"));
+        var unchanged=context.deepCopy();
+        var next=plan("{\"intent\":\"search\",\"inheritContext\":true,\"yearFrom\":2015}").inherit(context,mapper);
+        assertThat(next.flag("filmIdentityRequired")).isTrue();assertThat(next.text("category")).isEqualTo("ac");
+        var series=plan("{\"intent\":\"search\",\"inheritContext\":true,\"category\":\"tv\",\"filmIdentityRequired\":false}").inherit(context,mapper);
+        assertThat(series.flag("filmIdentityRequired")).isFalse();assertThat(series.text("category")).isEqualTo("tv");
+        assertThat(plan("{\"intent\":\"search\"}").inherit(context,mapper).has("filmIdentityRequired")).isFalse();assertThat(context).isEqualTo(unchanged);
+    }
+    @Test void filmIdentityRequirementRequiresAnActualBoolean()throws Exception{
+        for(String value:new String[]{"\"true\"","1","[]","{}"})
+            assertThatThrownBy(()->plan("{\"intent\":\"search\",\"filmIdentityRequired\":"+value+"}")).isInstanceOf(IllegalArgumentException.class);
+    }
     @Test void conflictingValidInheritedRangesAreExplainedInsteadOfRelaxed()throws Exception{
         var context=mapper.createObjectNode();context.set("queryPlan",mapper.readTree("{\"intent\":\"search\",\"yearFrom\":2020,\"maxRuntime\":110}"));
         var conflict=plan("{\"intent\":\"search\",\"inheritContext\":true,\"yearTo\":2019}").inherit(context,mapper);

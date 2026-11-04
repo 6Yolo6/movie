@@ -379,4 +379,67 @@ class CatalogResearchServiceTest {
         assertThat(ids(result)).containsExactly("a");assertThat(result.path("queryPlan").path("actors").toString()).contains("50分");
     }
 
+    @Test void originalMovieCategoryOverridesAnUnsupportedAnimationPlan(){
+        var body=mapper.createObjectNode().put("message","推荐野外徒步电影");body.putObject("plan").put("intent","search").put("category","ac");
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+        assertThat(ids(result)).hasSize(3);
+        body.put("message","推荐野外徒步，不超过120分钟");
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").has("category")).isFalse();assertThat(ids(result)).hasSize(3);
+    }
+    @Test void aFollowupWithoutATypeUsesTrustedPreviousCategoryInsteadOfModelGuess(){
+        var context=mapper.createObjectNode();context.putObject("queryPlan").put("intent","search").put("category","mv");
+        var body=mapper.createObjectNode().put("message","年份换成2020年以后");body.putObject("plan").put("intent","search").put("inheritContext",true).put("category","ac");
+        var result=service.query(body,context);assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");assertThat(ids(result)).hasSize(3);
+    }
+    @Test void quotedAndNegatedTypeWordsCannotOverrideTheCurrentLiteralType(){
+        var body=mapper.createObjectNode().put("message","类似《动画电影》，不要剧集，只看电影");body.putObject("plan").put("intent","search").put("category","tv");
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+    }
+    @Test void movieSearchExcludesAnExplicitTvSpecialButRetainsUncertainRecordsWithEvidence()throws Exception{
+        docs.get(0).put("summary","电视特辑节目\n音乐家在音乐厅演唱。");
+        docs.get(1).put("summary","这是乐队在录音棚的现场录像。");
+        var result=query("{\"intent\":\"search\",\"category\":\"mv\"}");
+        assertThat(ids(result)).containsExactlyInAnyOrder("b","c");
+        assertThat(result.path("movies").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("uncertain");
+        assertThat(service.documents(1,20).path("documents").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("conflict");
+    }
+    @Test void titleAndDetailsQueriesRetainIdentityConflictsForAnExplicitExplanation()throws Exception{
+        docs.get(0).put("summary","电视特辑节目\n音乐家演唱。");
+        assertThat(ids(query("{\"intent\":\"search\",\"category\":\"mv\",\"titles\":[\"星际样本\"]}"))).containsExactly("a");
+        assertThat(query("{\"intent\":\"details\",\"movieId\":\"a\"}").path("selectedId").asText()).isEqualTo("a");
+    }
+    @Test void anAnimatedMovieRequestKeepsIdentityRequiredWhileGeneralAnimeClearsIt(){
+        docs.get(0).put("category","ac").put("tmdbType","tv").put("season",1);docs.get(1).put("category","ac").put("summary","影片讲述一家人的旅行。");
+        var body=mapper.createObjectNode().put("message","找动画电影");body.putObject("plan").put("intent","search").put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();assertThat(ids(result)).containsExactly("b");
+        body.put("message","找动漫");body.with("plan").put("filmIdentityRequired",true);
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();assertThat(ids(result)).containsExactlyInAnyOrder("a","b");
+    }
+    @Test void trustedFilmIdentitySurvivesUntypedFollowupAndCannotBeSuppliedByTheModel(){
+        var context=mapper.createObjectNode();context.putObject("queryPlan").put("intent","search").put("category","ac").put("filmIdentityRequired",true);
+        var body=mapper.createObjectNode().put("message","年份换成2020年以后");body.putObject("plan").put("intent","search").put("inheritContext",true).put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,context);assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();
+        body.put("message","推荐野外徒步");body.with("plan").put("inheritContext",false).put("filmIdentityRequired",true);
+        result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();
+    }
+    @Test void alternativesBetweenFilmCategoriesDoNotPermitTvSpecialsOrAnimeSeasons(){
+        docs.get(0).put("category","ac").put("tmdbType","tv").put("season",1);docs.get(1).put("summary","电视特辑节目，现场音乐表演。");
+        docs.get(2).put("summary","影片讲述一群朋友的野外旅行。");
+        var body=mapper.createObjectNode().put("message","动画电影或真人电影都可以");
+        body.putObject("plan").put("intent","search").put("category","ac").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());assertThat(result.path("queryPlan").path("category").asText()).isEmpty();
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();assertThat(ids(result)).containsExactly("c");
+        body.put("message","电影或剧集都可以");result=service.query(body,mapper.createObjectNode());
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isFalse();assertThat(ids(result)).containsExactlyInAnyOrder("a","b","c");
+    }
+    @Test void aMultipleMovieVersionsQuestionCannotRemoveTheFilmRequirement(){
+        docs.get(0).put("season",1);
+        var body=mapper.createObjectNode().put("message","片库里的《小妇人》是不是有多个电影版本");
+        body.putObject("plan").put("intent","search").put("category","mv").put("filmIdentityRequired",false);
+        var result=service.query(body,mapper.createObjectNode());
+        assertThat(result.path("queryPlan").path("filmIdentityRequired").asBoolean()).isTrue();
+        assertThat(result.path("queryPlan").path("category").asText()).isEqualTo("mv");
+        assertThat(ids(result)).containsExactlyInAnyOrder("a","b","c");
+        assertThat(service.documents(1,20).path("documents").get(0).path("mediaIdentity").path("status").asText()).isEqualTo("uncertain");
+    }
 }

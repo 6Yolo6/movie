@@ -1,0 +1,46 @@
+{
+  "startedAt": "2026-11-04T13:33:02.717649+00:00",
+  "sourceSha256": "35f97ec81590a7a7b8e91f0f9f0866b593b7c80f289daf9675685663677ba302",
+  "sourceFileCount": 354,
+  "productionEnvLoaded": false,
+  "deploymentPerformed": false,
+  "verifyExitCode": 0,
+  "tests": {
+    "tests": 973,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 31
+  },
+  "skippedClasses": [
+    {
+      "class": "com.gying.movie.client.XunleiTokenPersistenceTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.security.RedisRateLimiterIntegrationTest",
+      "skipped": 1
+    },
+    {
+      "class": "com.gying.movie.service.impl.CatalogAiMySqlTest",
+      "skipped": 12
+    },
+    {
+      "class": "com.gying.movie.service.impl.MonitoringServiceMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.service.impl.QueryBoundaryMySqlTest",
+      "skipped": 7
+    },
+    {
+      "class": "com.gying.movie.util.PrivateFileWriterTest",
+      "skipped": 3
+    }
+  ],
+  "compileExitCode": 0,
+  "jarSha256": "2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054",
+  "jarSize": 80460335,
+  "candidatePath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\final-candidate\\movie-candidate-2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054.jar",
+  "sourceStillMatches": true,
+  "completedAt": "2026-11-04T13:35:26.985799+00:00"
+}

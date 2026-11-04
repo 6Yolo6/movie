@@ -58,4 +58,50 @@ class NaturalMovieQueryTest {
         var other=new CatalogRecommendationEngine.Film("n","另一影片",null,2024,"mv",null,null,List.of(),List.of(),List.of("罗伯特·帕丁森"),8.5,1,0);
         assertFalse(plan.constraints().matches(other));
     }
+    @Test void themesAndQuotedTitlesCannotSupplyAnAnimationOrMovieCategory(){
+        assertNull(NaturalMovieQuery.explicitCategory("推荐野外徒步，长度不超过120分钟"));
+        assertNull(NaturalMovieQuery.explicitCategory("找有电影院的故事"));
+        for(String message:List.of("类似《动画电影》", "类似‘电影故事’", "类似\"电影故事\""))assertNull(NaturalMovieQuery.explicitCategory(message),message);
+    }
+    @Test void literalCategoriesRespectNegationAndKeepPositiveMovieRequests(){
+        for(String message:List.of("不要动画片，只看电影", "不看动漫但要电影", "不是剧集，想找电影", "Find movies, no anime"))
+            assertEquals("mv",NaturalMovieQuery.explicitCategory(message),message);
+        assertEquals("mv",NaturalMovieQuery.explicitCategory("找非线性的电影"));
+        assertEquals("ac",NaturalMovieQuery.explicitCategory("找动画电影"));
+        assertEquals("tv",NaturalMovieQuery.explicitCategory("推荐电视剧"));
+    }
+    @Test void requestsForSeveralMediaTypesCannotBeNarrowedToOne(){
+        assertEquals("",NaturalMovieQuery.explicitCategory("电影或剧集都可以"));
+        assertEquals("",NaturalMovieQuery.explicitCategory("动画片或电影都可以"));
+    }
+    @Test void explicitFilmIdentityDistinguishesAnimatedFilmsFromGeneralAnimation(){
+        for(String text:List.of("动画电影", "animated movies", "找电视剧的电影版本", "找电影"))assertEquals(true,NaturalMovieQuery.explicitFilmIdentityRequired(text),text);
+        for(String text:List.of("找动漫", "想看动画", "推荐电视剧", "电影或剧集都可以"))assertEquals(false,NaturalMovieQuery.explicitFilmIdentityRequired(text),text);
+        for(String text:List.of("年份改成2015年以后", "类似《动画电影》", "关于电影院的故事"))assertNull(NaturalMovieQuery.explicitFilmIdentityRequired(text),text);
+        assertEquals("mv",NaturalMovieQuery.explicitCategory("找电视剧的电影版本"));
+    }
+    @Test void negatedTypeModifiersCannotConsumeTheFollowingPositiveRequest(){
+        for(String text:List.of("不要法国电影，只看剧集", "不要法国电影只看剧集", "不看他们推荐的电影，而是电视剧"))
+            assertEquals("tv",NaturalMovieQuery.explicitCategory(text),text);
+        assertEquals("ac",NaturalMovieQuery.explicitCategory("不要德国电影但要动画电影"));
+        assertEquals(true,NaturalMovieQuery.explicitFilmIdentityRequired("不要德国电影但要动画电影"));
+        assertEquals("mv",NaturalMovieQuery.explicitCategory("不要偏恐怖的动画片，只看电影"));
+        assertEquals("mv",NaturalMovieQuery.explicitCategory("找非线性电影"));
+    }
+    @Test void mixedAnimatedAndLiveActionFilmsStillRequireFilmIdentity(){
+        for(String text:List.of("动画电影或真人电影都可以", "animated films or live action movies")){
+            assertEquals("",NaturalMovieQuery.explicitCategory(text),text);
+            assertEquals(true,NaturalMovieQuery.explicitFilmIdentityRequired(text),text);
+        }
+        for(String text:List.of("电影或电视剧都可以", "动画电影或剧集都可以", "动画片或电影都可以"))
+            assertEquals(false,NaturalMovieQuery.explicitFilmIdentityRequired(text),text);
+    }
+    @Test void anIsItQuestionDoesNotNegateItsRequestedMovieIdentity(){
+        String message="片库里的《小妇人》是不是有多个电影版本";
+        assertEquals("mv",NaturalMovieQuery.explicitCategory(message));
+        assertEquals(true,NaturalMovieQuery.explicitFilmIdentityRequired(message));
+        assertEquals(true,NaturalMovieQuery.explicitFilmIdentityRequired("这是不是动画电影"));
+        assertNull(NaturalMovieQuery.explicitCategory("这不是电影"));
+        assertNull(NaturalMovieQuery.explicitCategory("这并不是电影"));
+    }
 }

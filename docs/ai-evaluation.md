@@ -183,3 +183,7 @@ python -X utf8 tools/ai/build_quality_review_page.py --dataset docs/evaluation/h
 [自定义v1模型复核](evaluation/query-quality-20261103/candidate-review.json)绑定原report字节hash与每轮answer的UTF8字节hash，避免冒称v2的规范JSON digest。15条均有答案，需求与依据已评，三维完整12、事实null3；[汇总](evaluation/query-quality-20261103/review.md)为满足5/部分有用2/有效澄清2/未满足4/证据不足2，真人0。01胶片里程不证明修复主题、10-t2小镇人物引文不证明电影院核心场景；06-t2片库电影分类与电视特辑简介冲突，事实未知。真实引文身份可验证，语义支持仍须单独审查，不能靠模型supported状态计事实成立。
 
 开发题已经观察过，固定10月31日12822公开快照不是原子数据库或现役实时语料；模型与索引沿用现役。历史fixture来自实际前轮候选，但非生产owner/TTL加密队列验收。15轮各提交一次，无失败推理重试；没有网站USER、生产队列/state、DB连接/写入、页面或外发。临时进程exit0与监听清理已确认，原线上身份保持；完整边界、脚本/语料hash、安全门禁与未知见[本轮证据](evaluation/query-quality-20261103/README.md)。第一阶段未完成，不报告独立质量提升率或生产SLA。
+
+## 2026-11-04 身份与主题候选验收
+
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。初轮6开发场景10计划/9执行/8completed，Movie1d06…/Agented32…；自定义v1原文件字节hash/answer UTF8协议保持，影院WEB_TIMEOUT失败和后一轮未执行不填质量分。修后最终Movie2c13…/Agent1d1a…固定构建，新目录三场景7轮均completed；正常停止与零推理重试通过，不覆盖初轮或11月3日材料。最终复核三维完整3/7、事实null4，影院第二轮文学摘录相关性不足记未满足，不能把诚实空结果计完全满足。真实模型和索引/公开快照范围声明不变，模型复核不当真人，completed不当全满足，不计算独立提升率。完整原报告、版本来源和正常退出证据见专项目录。

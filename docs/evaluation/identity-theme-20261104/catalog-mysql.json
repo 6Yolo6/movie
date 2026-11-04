@@ -1,0 +1,117 @@
+{
+  "run_id": "ee1e4172af1c",
+  "started_at": "2026-11-04T13:32:57.391959+00:00",
+  "images": {
+    "mysql": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+    "maven": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf"
+  },
+  "stage": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-ee1e4172af1c",
+  "production_changed": false,
+  "full_suite": false,
+  "compile_check_requested": false,
+  "cleanup": [
+    {
+      "id": "b844557e0cfed699c64db8d55c01c083ccd2b2e7ac25166084446138e0d3680a",
+      "removed": true
+    },
+    {
+      "id": "8d85243c47e77907b08e7e30e4e0c24aa75206af8465f1d17b2a1f792dc6a3ca",
+      "removed": true
+    }
+  ],
+  "mysql_isolation": {
+    "id": "8d85243c47e77907b08e7e30e4e0c24aa75206af8465f1d17b2a1f792dc6a3ca",
+    "labels": {
+      "com.gying.fixture": "query-boundaries-mysql",
+      "com.gying.fixture.run": "ee1e4172af1c"
+    },
+    "network": "none",
+    "ports": {},
+    "mounts": [],
+    "tmpfs": {
+      "/tmp": "rw,noexec,nosuid,size=128m,mode=1777",
+      "/var/lib/mysql": "rw,noexec,nosuid,size=512m,uid=999,gid=999",
+      "/var/run/mysqld": "rw,noexec,nosuid,size=16m,uid=999,gid=999"
+    },
+    "user": "999:999",
+    "privileged": false,
+    "readonly": true,
+    "security": [
+      "no-new-privileges"
+    ],
+    "status": "created",
+    "exit": 0
+  },
+  "maven_isolation": {
+    "id": "b844557e0cfed699c64db8d55c01c083ccd2b2e7ac25166084446138e0d3680a",
+    "labels": {
+      "com.gying.fixture": "query-boundaries-mysql",
+      "com.gying.fixture.run": "ee1e4172af1c",
+      "org.opencontainers.image.description": "Apache Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting and documentation from a central piece of information.",
+      "org.opencontainers.image.source": "https://github.com/carlossg/docker-maven",
+      "org.opencontainers.image.title": "Apache Maven",
+      "org.opencontainers.image.url": "https://github.com/carlossg/docker-maven",
+      "org.opencontainers.image.version": "24.04"
+    },
+    "network": "container:8d85243c47e77907b08e7e30e4e0c24aa75206af8465f1d17b2a1f792dc6a3ca",
+    "ports": {},
+    "mounts": [
+      {
+        "Destination": "/workspace",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": true,
+        "Source": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-ee1e4172af1c\\backend",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/m2",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "C:\\Users\\ASUS\\.m2\\repository",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/fixture-settings.xml",
+        "Mode": "",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-ee1e4172af1c\\maven-settings.xml",
+        "Type": "bind"
+      }
+    ],
+    "tmpfs": {
+      "/tmp": "rw,nosuid,size=1g,mode=1777"
+    },
+    "user": "10001:10001",
+    "privileged": false,
+    "readonly": true,
+    "security": [
+      "no-new-privileges"
+    ],
+    "status": "created",
+    "exit": 0
+  },
+  "maven_exit": 0,
+  "test_summary": {
+    "totals": {
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 12
+    },
+    "classes": {
+      "CatalogAiMySqlTest": {
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "required_sql_verified": true
+  },
+  "exit": 0,
+  "completed_at": "2026-11-04T13:38:12.140512+00:00"
+}

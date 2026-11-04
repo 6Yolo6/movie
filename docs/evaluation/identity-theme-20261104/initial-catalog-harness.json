@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "candidateJarSha256": "1d06d8dbb16773cef8aa2ddd1381696bdfbb4574777d3436e7777731aae4c204",
+  "candidateSourceSha256": "966bdab14fe116e11598de1016adb27566b687920660ff3f7e293f9d04b467d3",
+  "catalogClassSha256": "02198c53ff7acfcc93fa02bf5d8b4c6dd8c34db55331fbc3a25072c4fbe83807",
+  "harnessSourceSha256": "83f471b77c61eb728f36f535d85e724e083a393e795b0efc3f5ee3a06ac74f7f",
+  "datasetSelectSqlSha256": "92bf4bfbf11020e6eaac95917298c7a58c8dd33cee34b188270b8a00ede7cfee",
+  "compileExitCode": 0,
+  "port": 18883,
+  "springApplicationStarted": false,
+  "databaseConfigured": false,
+  "resourceLinksIncluded": false,
+  "contextFieldLimits": {
+    "contextUtf16Chars": 10000,
+    "candidateRows": 30,
+    "candidateUtf16Chars": 500,
+    "candidateFields": [
+      "id",
+      "titleCn",
+      "titleEn",
+      "year"
+    ]
+  },
+  "snapshotSha256": "0605c5b8db9ac6209d9255a0a137ff7b25aaa5d0596dbad9434e3e652b3e747a",
+  "mediaIdentityClassSha256": "33f704dd3388e833914aa5b565a7a4b8354cdebcc90925fb41b983f121c4b62a",
+  "mediaIdentityProjection": "Actual candidate CatalogResearchService dataset postprocess, also used for snapshot GET details; missing source fields remain missing",
+  "snapshotPath": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\catalog-public-documents.json",
+  "receiptPath": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\catalog-harness-stopped.json"
+}

@@ -40,10 +40,7 @@ public final class NaturalMovieQuery {
             Pattern positive=Pattern.compile(word.matches("[a-z -]+")?"\\b"+Pattern.quote(word)+"\\b":Pattern.quote(word));
             Matcher yes=positive.matcher(text);if(yes.find()) {genres.add(entry.getValue());text=yes.replaceAll(" ");structured=true;}
         }
-        String category=null;
-        if(categoryText.matches("(?s).*(?:动漫|动画片|\\banime\\b).*"))category="ac";
-        else if(categoryText.matches("(?s).*(?:电视剧|剧集|电视剧|演的剧|主演的剧|\\btv series\\b|\\bshows?\\b).*"))category="tv";
-        else if(categoryText.matches("(?s).*(?:电影|影片|片子|(?:科幻|动作|喜剧|爱情|悬疑|惊悚|恐怖|冒险|犯罪|剧情|奇幻|战争|历史|家庭)片|(?:演的|演过的|主演的|出演的|参演的|导演的|执导的)片|\\bfilms?\\b|\\bmovies?\\b).*"))category="mv";
+        String category=explicitCategory(categoryText);if(category!=null&&category.isBlank())category=null;
         Integer year=null,from=null,to=null,maxRuntime=null;double rating=0;int current=LocalDate.now(clock).getYear();
         Matcher range=Pattern.compile("((?:19|20)\\d{2})\\s*(?:到|至|[-~–])\\s*((?:19|20)\\d{2})\\s*年?").matcher(text);
         if(range.find()) {from=Integer.valueOf(range.group(1));to=Integer.valueOf(range.group(2));text=range.replaceAll(" ");structured=true;}
@@ -79,6 +76,43 @@ public final class NaturalMovieQuery {
         if(from!=null&&to!=null&&from>to)throw new IllegalArgumentException("年份范围不正确");
         if(maxRuntime!=null&&(maxRuntime<1||maxRuntime>600))throw new IllegalArgumentException("时长条件超出支持范围");
         return new Plan(query,text,new Constraints(genres,category,year,rating,from,to,maxRuntime,excluded,directors,actors,regions,languages),structured);
+    }
+    /** Media categories require literal user support; a theme is not an animation request. */
+    private static String mediaRequestText(String message) {
+        String text=Normalizer.normalize(Objects.toString(message,""),Normalizer.Form.NFKC).toLowerCase(Locale.ROOT)
+            .replaceAll("《[^》]*》|“[^”]*”|‘[^’]*’|\\x22[^\\x22]*\\x22|\\x27[^\\x27]*\\x27", " ");
+        String terms="(?:动漫|动画片|动画电影|动画影片|电视剧|剧集|电影|影片|片子|anime|animated (?:films?|movies?)|tv series|television series|shows?|films?|movies?)";
+        String modifiers="(?:科幻|动作|喜剧|爱情|悬疑|惊悚|恐怖|冒险|犯罪|剧情|奇幻|战争|历史|家庭)?";
+        String negative="(?:不要|不看|不想看|排除|不含|不包括|(?<!是)不是|并非|别看|别推荐|without\\s+|exclude\\s+|no\\s+)";
+        String phrase="(?:(?!但|而是|只看|只要|不过)[^,，。；;.!?！？]){0,20}?";
+        return text.replaceAll(negative+phrase+terms," ").replaceAll("非"+modifiers+terms," ");
+    }
+    private static boolean movieWord(String text){
+        return text.matches("(?s).*(?:电影(?!院|节|人|制作)|影片|片子|(?:科幻|动作|喜剧|爱情|悬疑|惊悚|恐怖|冒险|犯罪|剧情|奇幻|战争|历史|家庭)片|(?:演的|演过的|主演的|出演的|参演的|导演的|执导的)片|\\bfilms?\\b|\\bmovies?\\b).*" );
+    }
+    public static String explicitCategory(String message) {
+        if(message==null||message.isBlank())return null;
+        String text=mediaRequestText(message);
+        boolean animation=text.matches("(?s).*(?:动漫|动画片|动画电影|动画影片|\\banime\\b|\\banimated (?:films?|movies?)\\b).*"),
+            television=text.matches("(?s).*(?:电视剧|剧集|演的剧|主演的剧|\\btv series\\b|\\btelevision series\\b|\\bshows?\\b).*"),
+            movie=movieWord(text.replaceAll("动画电影|动画影片|animated (?:films?|movies?)", " "));
+        if(text.matches("(?s).*(?:电影版(?:本)?|\\b(?:film|movie) version\\b).*"))return animation?"ac":"mv";
+        int types=(animation?1:0)+(television?1:0)+(movie?1:0);
+        if(types==0)return null;
+        if(types>1)return ""; // Explicit alternatives must not inherit a narrower media category.
+        return animation?"ac":television?"tv":"mv";
+    }
+    public static Boolean explicitFilmIdentityRequired(String message) {
+        if(message==null||message.isBlank())return null;
+        String text=mediaRequestText(message),category=explicitCategory(message);
+        if(category!=null&&category.isBlank()){
+            String remaining=text.replaceAll("动画电影|动画影片|animated (?:films?|movies?)", " ");
+            boolean nonFilmAlternative=remaining.matches("(?s).*(?:动漫|动画片|电视剧|剧集|\\banime\\b|\\btv series\\b|\\btelevision series\\b|\\bshows?\\b).*" );
+            return !nonFilmAlternative&&movieWord(text);
+        }
+        if(movieWord(text))return true;
+        if(category!=null||text.matches("(?s).*(?:动画|\\banimation\\b).*"))return false;
+        return null;
     }
     public static boolean isFollowup(String query) {
         return query != null && query.matches("(?is).*(?:这部|这些|刚才|刚刚|上面|上一部|前面|片库.?id|第[一二三四五六七八九十0-9]+[部个项]).*");

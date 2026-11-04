@@ -180,3 +180,9 @@ sequenceDiagram
 模型观测所用候选的离线构建为Movie899项中869通过、30项环境跳过，Agent173项全部通过，两侧verify/compile均exit0。一次隔离真实模型观测为10场景15轮、15次completed，各轮只提交一次；使用2026-10-31分页采集的12822条公开快照，非数据库原子快照。dev-v3-01与dev-v3-10第二轮仍出现核心主题误判，说明真实引文和合法合同仍不足以证明主题正确；最终逐条质量诊断单独记录于[查询质量证据](evaluation/query-quality-20261103/README.md)。这次隔离观测不代替生产队列、同用户历史归属、租约、浏览器及真人验收。随后21:12 Agent055f…、21:47 Movief2b7361b…/1b8a09d5…上线，[网站4轮](evaluation/query-quality-20261103/website-contract-validation.json)沿新USER任务链验证年份替换、首轮身份和矛盾澄清，机械4通过；900秒TTL逻辑、跨owner和伪造身份隔离由既有回归覆盖；生产自然过期待观察。网站模型满足2/未满足1/缺证1、真人0，电影身份仍不足，第一阶段未完成；[部署/回退边界](evaluation/query-quality-20261103/deployment.md)另记。
 
 15轮模型报告仍绑定原观测候选Movie4f73846f…/Agent055f1bdc…。审查后Movie另补同一无标点句中作者与同人主演/执导的逐次姓名匹配边界，新增构建与回归单独记录于[审查后构建](evaluation/query-quality-20261103/movie-reviewed-build.json)。这次边界修复未重跑模型，原15轮不能当作最终Movie源码已经执行的观测。
+
+## 2026-11-04 候选：电影身份与主题证据
+
+11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。尚未部署，安全58/11/1阻断本轮生产替换，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。Movie从现有tmdb_type与summary公开投影生成mediaIdentity，filmIdentityRequired独立于mv/ac分类，随服务端queryPlan继承；不迁移真实数据库。Agent保守筛身份后用不含片名/评分/首轮判断的实际简介反证复核完整主题。片名回填保持全部条件、额外召回20与复核8的预算和用户limit；只有真实本地核对后因缺证为空的可用结论，才在补充联网失败时保留partial completed及错误trace。未知并不等于不存在。
+
+旧快照无tmdbType但8244条有season；裸季号不得单独证剧集。详情保留受限公共来源/季字段并重新生成身份，保留未知。新字段进入任务历史后旧Movie不能直接解析，未来部署先Movie再Agent，回退须先证兼容且保持SQL/state/key；目前未建立新生产检查点或替换现役应用。

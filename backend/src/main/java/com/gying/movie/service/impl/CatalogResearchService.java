@@ -91,9 +91,9 @@ public class CatalogResearchService {
     private static Set<String> canonicalGenres(Collection<String> values){Set<String> out=new HashSet<>();for(String value:values)out.add(canonicalGenre(value));return out;}
     private synchronized Dataset dataset(){
         if(cached!=null&&System.currentTimeMillis()-refreshed<60000)return cached;
-        List<ObjectNode> docs=jdbc.query("SELECT m.id,m.title_cn,m.title_en,m.year,m.category,m.season,m.series_name,m.genres,m.directors,m.actors,m.summary,m.aliases,m.regions,m.languages,m.runtime,m.douban_score,m.imdb_score,m.tmdb_vote_average,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",(rs,n)->{
-            ObjectNode d=mapper.createObjectNode();for(String k:List.of("id","title_cn","title_en","category","series_name","summary","aliases")){
-                String value=rs.getString(k);if(value!=null)d.put(switch(k){case "title_cn"->"titleCn";case "title_en"->"titleEn";case "series_name"->"seriesName";default->k;},value);
+        List<ObjectNode> docs=jdbc.query("SELECT m.id,m.title_cn,m.title_en,m.year,m.category,m.tmdb_type,m.season,m.series_name,m.genres,m.directors,m.actors,m.summary,m.aliases,m.regions,m.languages,m.runtime,m.douban_score,m.imdb_score,m.tmdb_vote_average,COALESCE(m.tmdb_popularity,0)+COALESCE(m.popularity,0) heat,(SELECT COUNT(*) FROM resource_link r WHERE r.movie_id=m.id AND r.status='ACTIVE' AND r.audit_status=1 AND r.deleted_at IS NULL AND r.link_status='NORMAL') resources FROM movie_metadata m WHERE m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY m.id LIMIT 50000",(rs,n)->{
+            ObjectNode d=mapper.createObjectNode();for(String k:List.of("id","title_cn","title_en","category","tmdb_type","series_name","summary","aliases")){
+                String value=rs.getString(k);if(value!=null)d.put(switch(k){case "title_cn"->"titleCn";case "title_en"->"titleEn";case "series_name"->"seriesName";case "tmdb_type"->"tmdbType";default->k;},value);
             }
             if(rs.getObject("year")!=null)d.put("year",rs.getInt("year"));if(rs.getObject("season")!=null)d.put("season",rs.getInt("season"));
             for(String k:List.of("genres","directors","actors","regions","languages")){try{JsonNode a=mapper.readTree(Objects.toString(rs.getString(k),"[]"));if(a.isArray())d.set(k,a);}catch(Exception ignored){d.putArray(k);}}
@@ -104,6 +104,7 @@ public class CatalogResearchService {
             if(embedding.length()>2200)embedding=embedding.substring(0,2200);
             d.put("embeddingText",embedding).put("fingerprint",fingerprint(embedding));return d;
         });
+        for(ObjectNode doc:docs)doc.set("mediaIdentity",CatalogMediaIdentity.describe(doc,mapper));
         if(cached!=null&&cached.docs.equals(docs)){refreshed=System.currentTimeMillis();return cached;}
         List<Film> films=new ArrayList<>();Map<String,ObjectNode> byId=new HashMap<>();for(ObjectNode d:docs){
             films.add(new Film(d.path("id").asText(),d.path("titleCn").asText(),d.path("titleEn").asText(),d.has("year")?d.path("year").asInt():null,d.path("category").asText(),null,d.path("seriesName").asText(),strings(d,"genres"),strings(d,"directors"),strings(d,"actors"),rating(d,"any"),d.path("popularity").asDouble(),d.path("resourceCount").asInt(),d.path("summary").asText(),d.path("aliases").asText(),strings(d,"regions"),strings(d,"languages"),d.has("runtimeMinutes")?d.path("runtimeMinutes").asInt():null));byId.put(d.path("id").asText(),d);
@@ -120,6 +121,8 @@ public class CatalogResearchService {
         if(seeds.contains(d.path("id").asText())||p.list("excludedIds").contains(d.path("id").asText()))return false;
         if(p.text("scope").equals("previousResults")&&!previous.contains(d.path("id").asText()))return false;
         if(!p.text("category").isBlank()&&!p.text("category").equals(d.path("category").asText()))return false;
+        boolean filmRequired=p.has("filmIdentityRequired")?p.flag("filmIdentityRequired"):p.text("category").equals("mv");
+        if(filmRequired&&p.list("titles").isEmpty()&&CatalogMediaIdentity.contradictsMovie(d,mapper))return false;
         if(p.has("yearFrom")&&(!d.has("year")||d.path("year").asInt()<p.integer("yearFrom",1900))||p.has("yearTo")&&(!d.has("year")||d.path("year").asInt()>p.integer("yearTo",2100)))return false;
         if(p.has("minRuntime")&&(!d.has("runtimeMinutes")||d.path("runtimeMinutes").asInt()<p.integer("minRuntime",1))||p.has("maxRuntime")&&(!d.has("runtimeMinutes")||d.path("runtimeMinutes").asInt()>p.integer("maxRuntime",600)))return false;
         double r=rating(d,p.text("ratingSource"));if(p.has("minRating")&&r<p.number("minRating",0)||p.has("maxRating")&&(r<0||r>p.number("maxRating",10)))return false;
@@ -215,8 +218,23 @@ public class CatalogResearchService {
         }
         return false;
     }
+    private MovieQueryPlan explicitCategory(MovieQueryPlan initial,JsonNode request,JsonNode context,String message){
+        if(message.isBlank()||initial.text("intent").equals("details")||initial.text("intent").equals("clarify"))return initial;
+        ObjectNode plan=initial.json();String literal=NaturalMovieQuery.explicitCategory(message);
+        if(literal!=null)plan.put("category",literal);
+        else if(request.path("inheritContext").asBoolean()&&context.path("queryPlan").has("category"))
+            plan.set("category",context.path("queryPlan").path("category").deepCopy());
+        else plan.remove("category");
+        Boolean identity=NaturalMovieQuery.explicitFilmIdentityRequired(message);
+        if(identity!=null)plan.put("filmIdentityRequired",identity);
+        else if(request.path("inheritContext").asBoolean()&&context.path("queryPlan").isObject()){
+            JsonNode trusted=context.path("queryPlan");
+            plan.put("filmIdentityRequired",trusted.has("filmIdentityRequired")?trusted.path("filmIdentityRequired").asBoolean():trusted.path("category").asText().equals("mv"));
+        }else plan.put("filmIdentityRequired",false);
+        return MovieQueryPlan.parse(plan,mapper);
+    }
     public ObjectNode query(JsonNode body,JsonNode context){
-        MovieQueryPlan initial=MovieQueryPlan.parse(body.path("plan"),mapper).inherit(context,mapper);Dataset data=dataset();List<String> unresolved=new ArrayList<>();String message=body.path("message").asText("");if(message.length()>1200||message.chars().anyMatch(c->c<32&&c!=10&&c!=13))throw new IllegalArgumentException("查询原文格式无效");MovieQueryPlan p=resolvePeople(explicitPeople(initial,data,message),data,unresolved);
+        MovieQueryPlan initial=MovieQueryPlan.parse(body.path("plan"),mapper).inherit(context,mapper);Dataset data=dataset();List<String> unresolved=new ArrayList<>();String message=body.path("message").asText("");if(message.length()>1200||message.chars().anyMatch(c->c<32&&c!=10&&c!=13))throw new IllegalArgumentException("查询原文格式无效");MovieQueryPlan p=resolvePeople(explicitPeople(explicitCategory(initial,body.path("plan"),context,message),data,message),data,unresolved);
         ObjectNode result=mapper.createObjectNode().put("source","GYing catalog").put("queriedAt",Instant.now().toString());result.set("queryPlan",p.json());
         Set<String> previous=new LinkedHashSet<>(strings(context,"candidateIds"));
         if(p.text("scope").equals("previousResults")&&previous.stream().noneMatch(data.byId::containsKey)){

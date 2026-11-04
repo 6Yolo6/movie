@@ -1,0 +1,1418 @@
+[
+  {
+    "path": "backend/pom.xml",
+    "sha256": "7dca3e2197533a848999c88f476e0c3794b9c8de4ab09c5e3c941bd7f3e9d0cf"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/GyingMovieApplication.java",
+    "sha256": "b1158ebb480e2650b3ca1dfdbb04359e1e9e6864b37ea93bddb5238cd74d5998"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/GyingSourceClient.java",
+    "sha256": "1809a742f5fa7e85cc2fd594d73f7bd7fe5d7b3eff14e77d686ee6a8c31471e9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/NapCatClient.java",
+    "sha256": "34d6f6c0ec6fe6ddaa6033a170b7b01d6b2c31a3bc1365f66d1024950075d927"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/P2pCloudArchiveClient.java",
+    "sha256": "2682fb9c4b7323578f473a58fd4f8b7cf9a77ecda0d09988eefd4bb7386e9a94"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/PanSouApiClient.java",
+    "sha256": "eec11b14e74717638e23538d700a04b4dd02c7dec962852c1452da870d5243ac"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/PanSouClient.java",
+    "sha256": "aa4da21e1ef666c9decb2b601396f1987d7413eb6a083a11ab438e4e022e7dfc"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/PanSouSearchResultParser.java",
+    "sha256": "c038db6fb936c2f0168adc61de4336213ac903fe14021a14f01186d8220c079f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/QqChannelPublisherClient.java",
+    "sha256": "708d02295c39ce00d6a36981c2f8a811ac95ec85aa6382c6dbce8f95016a4223"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/QqOfficialBotClient.java",
+    "sha256": "f7afe3dc48b40607752e6d504cfce21bb83d6e2f3a3e4e530f4a6f931c987c47"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/QuarkAutoSaveClient.java",
+    "sha256": "74e20860f616d47dc1fbb79c5d82b135816c4435bda6cd230d4393d2c1609899"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/QuarkMovieDirectoryAiClient.java",
+    "sha256": "5fcfab1b4f1fb3348518034a84e757ba7c8f8cdebd014fd8301217de4dd6bece"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/QuarkShareClient.java",
+    "sha256": "67a9d4e3d1d01d4d441df0304ab21cd695040e661b6d42b0d8571e39a4867909"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/SocialPublisherClient.java",
+    "sha256": "f15a301c09f182ed978fc6ddddfc49daaf7982194c900e45fae1dd57e0125e00"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/TmdbClient.java",
+    "sha256": "dae1122aaf756d2cedcb3ceb25447f647626f3ee4a256c0d37fe41aa5a3ac1ce"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/client/XunleiClient.java",
+    "sha256": "0ee2ef7cf47b66176acbd76ea1ea6a6db227d400659f32c9510451b1bf170c33"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/AccessLogFilter.java",
+    "sha256": "0329b135a7db9686d0153a29ff857808244d2fa2512543a802df983ea8290876"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/MybatisPlusConfig.java",
+    "sha256": "1308858aff097acdaf0ab37ebbadf711d9424b0e8d711d3fe1ff109348e18a4b"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/QqBotConfig.java",
+    "sha256": "fdb91641e4a816c7d48fdedc406425caebc3a9072c37001ce0859e5709534c2f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/QqBotProperties.java",
+    "sha256": "f72c310849e97bea982efbdc9faa2573352956923f838044d8bb334c314469fb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/ResourceHubConfig.java",
+    "sha256": "48db3a2337104cfd60d8f05115ff895afaf97857690a264d71139d25b02f2a44"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/ResourceHubProperties.java",
+    "sha256": "2cd636297b360733759a54e6dd11e35d964689b7f3f339dc0a3d43e7c21b110a"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/config/WebConfig.java",
+    "sha256": "bb1eba94e718274d71f1254de269c323a4a8543fcc9016f1d679cff0c1c8ee3a"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AdminCommentController.java",
+    "sha256": "cbd184b3af8968bdb0cb7259f647d06797e944120c57ef271f5d1b0045291039"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
+    "sha256": "0102e36840df47ff9ea59df052c9a3e16048f37c1497dc95ef5b23bc8e317cea"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AdminResourceReportController.java",
+    "sha256": "9099d4fd6ddc937e47e66617e382a1e0a43828190a4b9b3bc943199f695c6763"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
+    "sha256": "96ac6259cb955268d61f132bc39b57643f4f95a2afe8bec1041d6655288265ac"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
+    "sha256": "8ab46e3f028ee5ba4245788e7bedac91c8d7c41f8ab3f61ce423b8f7a4d738ea"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/CaptchaController.java",
+    "sha256": "64816f2f17c75f53e90dfb9d024558cda978b1b65d3354c3e10ae823c02c53dd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
+    "sha256": "78f13dd19204b3925d116faff18a93743f6a467fce3ec89667c07e6ca4882eb5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/CatalogResearchController.java",
+    "sha256": "bd88e3f9629551999ac9ffa945f9b6c9146e69964146c234f0539428fe4f010d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/CommentController.java",
+    "sha256": "beaa6c71d43c4ea9e01e13bc6b0cc06ed00c49a21c50e50146d0da5118f39584"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
+    "sha256": "0e17d273e7482dbb83850079afe33359f08fdd3ce8f16ec69064aedbf3c2ed19"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
+    "sha256": "afe26f7e36c4478e60f11d5c093650ef5a319b74f959003b4745891b9e592a96"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/InvitationController.java",
+    "sha256": "b6957bffd0b97b1b01e637e6475038f0756630e449102e97907209c493cf99b2"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
+    "sha256": "e4376b8e5ff4d6d8bb9e7fc817e985ea90565e27a3ab8b41d19e28f0cc244cc3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
+    "sha256": "92d192d8d15b23c206afbc99dcb58d47c2c61d0524f8f9c87a00629f3727413b"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/MovieRecommendationController.java",
+    "sha256": "18fb9cb291dce4ad38ebad8390f69c771a473f490e7b78ff77b5a50601ed451f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/NotificationController.java",
+    "sha256": "05299803d726b7eba8113f9ada60ef741df3331704edb4ef68c6c66d84081fda"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
+    "sha256": "150823ff221382aa7842b86f11cb473927ca08a47191809b58ed121ec14a78c9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/QqBotController.java",
+    "sha256": "a5e0757ad04d809a17d243a5f850f09afa5e86a29da4706babdf33a595f995a0"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
+    "sha256": "e807e490c01fae60a0b0dc1378412ac636599128f9072ff5b86816ec17a47e00"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
+    "sha256": "6d6f131efeb5fb87fa3672a93eb66ed82834c01476b519912caa1db8a5988b9e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
+    "sha256": "abf5011a6f0e7c1613f51277b930e4ba7696f2dc9d1c662f5800c15b46a5bffd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
+    "sha256": "9c28f4b717e096b92a6c1ef382fbae2440647e14dcdbb4d2df02f36394417852"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/SysConfigController.java",
+    "sha256": "c83fea6a4a9f38b79e4d7ffaa3c56e57151aaa58ff68dd6443adb323546e7077"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
+    "sha256": "4b9558a28b19054add1dca61b3efabd4e6b37d400a156eae9ae6b828a7371d68"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/controller/WebResourceSearchController.java",
+    "sha256": "f87f82537f06f684352fbf88113a4578f15bdf96343ab46f0c8d1b0e6a642f49"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/AdminCreateUserRequest.java",
+    "sha256": "fd1f4a0f981103aa77eda9f6ac387a19d03b09ad9e546eb77828c4300e5b6026"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/AdminMovieRequest.java",
+    "sha256": "458d673ed69efe3456c6e8a622f6e5aab37690b57824f1cfabd130b45ba64542"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ApiResponse.java",
+    "sha256": "44b019f6a1844ebadaecd3a260e3fdcb73482209299dfa2db2e52592afb88b1f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/AuthRequest.java",
+    "sha256": "abca3a76797fdf365ce2b83660f4dbe0d740faa9e8b6a2d4390a8d44b7de5204"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/AuthUser.java",
+    "sha256": "6cac7f01c549c4be9786a59dd579a8cafa60068e63bc8e2e3a9ffc48239c02f5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/CommentDisplayDTO.java",
+    "sha256": "9fcee6c30c03a2141b8005a62f4ee693994e7ff25a0f3222c0be3b3559b35bbd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/DiscoveredResource.java",
+    "sha256": "422f30eed361aedb0ffb7b432e069d2aa68c35fac644d610867d1d084337e149"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/GyingWeeklyTransferSchedule.java",
+    "sha256": "be47e0b19563bf74baea8f5d2bef7d861b1bf619341e27068edd7926c1532337"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/MetadataCrawlProgress.java",
+    "sha256": "2bad59be0ff0de3f0fa4efc809757974bcbb271cd8f434898371f4fbf3c6b366"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/MetadataCrawlRange.java",
+    "sha256": "f6d23649d470cc2a5ba3a99c77e329272ed2510433814a6f65365e5ef3cd0fb3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/MovieDetailDTO.java",
+    "sha256": "164a2cd38f40d5f537c08c7fb3ea4139fbdc98a4300e1d4935d12d0116a14f95"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/MovieSearchCandidate.java",
+    "sha256": "d6067b049d4d35c0b3a27608c84b4bd64b0dbbf63a81534f4d1a4020c1274f17"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/QuarkShareResult.java",
+    "sha256": "2f24193c38dfaf5c206f5013ecde4535eeed64dab20dab4e3c751a4516b915c1"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/QuarkTransferRunResult.java",
+    "sha256": "266a77bf4190f949d7bed8b6200bc0e4acba86c18d077ff4072279efa312aa16"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceAdminDTO.java",
+    "sha256": "0d58619de248226f2dcfea1e1ad9a2fabc9fdec71b9c7c7eaa7e175695cec2ce"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceDiscoveryRequest.java",
+    "sha256": "1cf386ca3d4bd1401b53e75a6d4bbffa5d6305458e588f7d21e170057c833dab"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceDiscoveryRunResult.java",
+    "sha256": "ee487e828505d7bb3cb75ce386cdd6b3ae113b728e516b96fe4c35b15d3606e4"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubConfigRequest.java",
+    "sha256": "ed0f2b53891b2dc8060c820676ee77ce028926d3a412881aa188f10243a4552c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubConfigResponse.java",
+    "sha256": "4e24034ecafde4ac24d2a801531dfc54f6b621dcf5faef4559eaa2256efb15d0"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubIngestRequest.java",
+    "sha256": "84e429607b9bc9560ec72c6437e41f724f89c3b16e56b34c3450afa24dffa8f6"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubIngestResponse.java",
+    "sha256": "6ffd4504a3834175c87322b32495d88acc79ce961769fcb6986199b00c9b29ca"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubMetadataSyncRequest.java",
+    "sha256": "16762f32760ed07b47230c1103ea0c798c33c13254ab6dcf95457368e5b3db64"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubPublishResult.java",
+    "sha256": "4137aa274ffd86cadb2a7ac00bdad160c32980ffa33abe925a61b6a7bd20cddb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceHubWorkerResult.java",
+    "sha256": "ad961f13129f8d04f45e145c36b84f6615850f57d5f5ceb87a4316737a98a1f6"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceReportAdminDTO.java",
+    "sha256": "e0038e5860165a5b22059a1a83534bb771d52fcb0f5a2be96e6051e69fde8b16"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/ResourceSubmissionDTO.java",
+    "sha256": "3bfdf65d29904849bd71cd358456cffc3be93a87a99fab318ab657caf5f0ee24"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/TmdbListItem.java",
+    "sha256": "725232323fc04bc5bce9931b8f9f2a69fcc7d5385765ec5bedadb940dc2a695c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/TmdbListPage.java",
+    "sha256": "669dada9c16db9153537d253905239d7d41da6bde96cf78f0b0d69a99d696178"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/dto/TmdbSyncResult.java",
+    "sha256": "666deccec5b398d8153e758cce188713274fde5165ddc445200513461d309be3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/Comment.java",
+    "sha256": "0a586f5d99909db03e26fcd0f2acced9034f394045085518abaa78b3d4f142e5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/CommentVote.java",
+    "sha256": "8ac83aaa0322f8da8ed9846c95098bb9a035b43e2d2572a95a40a6d2f92f295d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/MovieMetadata.java",
+    "sha256": "f1916218daa57125ff066f38af2def3c26ec1f3171f5d54e787855faffe0a2bb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/MovieSourceIdentity.java",
+    "sha256": "f636cedd0e146395cdcbae0b981bd86055b576169fa66cceb02a15a6dc6d8e59"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/QqBotSearchLog.java",
+    "sha256": "2b9a48c2a6c8dbb7715cac8fd458508def0b08a5817e5e737beb63f20bcabaa4"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/QqChannelPostLog.java",
+    "sha256": "233ba763a1a00fcea3e474e90846f578b269f5041fcf44494b20de0071a92cbf"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/QqTransferCleanupJob.java",
+    "sha256": "6a7a91b14e742af120090ba4d211951ad26e42585bb6adcd7b7fd790c8027504"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/QuarkTransferTask.java",
+    "sha256": "9f0e2e9c2f6242faeca5f4ab453e73bdc09831e83c9dd275369bf7dc874fb5b5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/ResourceDiscoveryResult.java",
+    "sha256": "51b76066b72dc670522187eca687b457a1c6b05af814fa38acae202c6405867d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/ResourceHubTask.java",
+    "sha256": "c048a01858c5cb60382ebc21a655027ace2507d80db68e8d34dea5fbf568bb93"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/ResourceLink.java",
+    "sha256": "13c9578d914e63c5e8db00d34777e3060fb19a6c3b10274293f86bb94ebbf2c7"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/ResourceReport.java",
+    "sha256": "f567a0bcb3dbcc0d2e4a63a4ca72d7616a3c80128aa6765dbd4484af9a689dab"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/SocialPostLog.java",
+    "sha256": "74accbdba9fc50a6792ededebce8885910c01ef3651dcae02963964468672f0c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/SocialPublishTarget.java",
+    "sha256": "62b75ec669d4a914962387b4276c884c61b26bf7a18c2f0be38aef3c2fe20040"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/SysConfig.java",
+    "sha256": "be8be3537228029edcdf25af71fbc4e30170fc3d2937c495a2ef79aeeb728957"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/SysUser.java",
+    "sha256": "6eea04b7d5389b0d46106511748597e686f9b9eb39286ddeaed1c3598f72fe33"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/UserFavorite.java",
+    "sha256": "8f50190415748472d478511e6a7c5c14281dfbde9a4fa29d07130b148af7cd90"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/UserNotification.java",
+    "sha256": "abd2365476fa945b38ada9103aaf79d2cf51a88de7b6c39efd76e18b1c247b00"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/entity/XunleiTransferTask.java",
+    "sha256": "60f18d794de5e1fb5a906ec8ff5c999b7cffcbc7bb51ed79e9e885a3745ad2bd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/exception/GlobalExceptionHandler.java",
+    "sha256": "dc52034a5ee947128da4d2673f7b789359187d1dfc07d71abd497a77fe96ed1e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/CommentMapper.java",
+    "sha256": "45ab283d65b74f6cc068072858de5d42a240a3cfbe457268796b401665b4aee9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/CommentVoteMapper.java",
+    "sha256": "dcd8023b9f341d06fefae64dd0e34fdd2cb7f6a4df079516ca1d00d98a491fef"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/MovieMetadataMapper.java",
+    "sha256": "7ff928073cdeaccfc96d1ba53b04a7ec63fea250d27172663a8b52b80c197ae0"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/MovieSourceIdentityMapper.java",
+    "sha256": "63d4d8be0a71e8ffca6cdcac8c168b6fc3028573218ac994cbbc6f3ac6aac6e2"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/QqBotSearchLogMapper.java",
+    "sha256": "a214c54c1a9c3de5a3868485416f6f878950a02ab47dc63bfe3277cea4b24ced"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/QqChannelPostLogMapper.java",
+    "sha256": "fe0ec5b925367410df06ee8d689c0ef280d59abe25c26c127878e8895045ef1c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/QqTransferCleanupJobMapper.java",
+    "sha256": "697e17d3b40e77da7342811b1de97703d836778036602c32f1cc24e49af48cd9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/QuarkTransferTaskMapper.java",
+    "sha256": "7f00f43165c501ba34222de77f3bf61d233949faad98b9e9dae4ba64cb95deca"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/ResourceDiscoveryResultMapper.java",
+    "sha256": "db5b454ae500fb19814b65f73674add7c3b9ffe7d99ea93f2268b8c91b9c9aa7"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/ResourceHubTaskMapper.java",
+    "sha256": "6cf7e34f2b71e349676833f34e4489542f246b89ad8e93e1dd079094b4fc2e89"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/ResourceLinkMapper.java",
+    "sha256": "986aa3c782764198f1d6423bef3de059588a22134bcb77961beda0f5d46f7222"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/ResourceReportMapper.java",
+    "sha256": "5d9191226e67c73ca734af7832073c6bd793b52c0ec1f9deeee858ef32411ea9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/SocialPostLogMapper.java",
+    "sha256": "916e1acd041c79d95cb845f721c1504d5cd7a5689d4d20aab712efe269bfc9d0"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/SocialPublishTargetMapper.java",
+    "sha256": "83a6ea74906b90bda6b8a3d88f4b384848173f03a71d8ea2fe83d71b96dcf053"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/SysConfigMapper.java",
+    "sha256": "8d368ae519f411f30b4565ef1e28e9452d4a20f4105f408050adb5d5711ad782"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/SysUserMapper.java",
+    "sha256": "b24b48142a528356a66a00068ad8c83883363d00def6e8e5e48b83b19bd5a15d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/UserFavoriteMapper.java",
+    "sha256": "628818a73b6ffb054df8aaa921ed5b0dc4c1db083237f6098290c9ec3156324a"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/UserNotificationMapper.java",
+    "sha256": "bbc248f5357d3e421a70757a8464ef7ce22c3a44301a9dff484aaea315b4ff61"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/mapper/XunleiTransferTaskMapper.java",
+    "sha256": "a378ae665da7844c134ff0408357023a5f56c309f70dc7d8cccca43c50255781"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/security/ApiSecurityFilter.java",
+    "sha256": "8026f36172efbf1c9ac0efc3ad7e7586b17e6d3ca069d74e67c8644f1bdd8554"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/security/ClientIpResolver.java",
+    "sha256": "0ffd146da8fbe7d7ebf1773e50dfcaf7944e3e6db298f5fc3ae838413dbda016"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/security/ProductionSecurityValidator.java",
+    "sha256": "bfff62ba56352c792937e0fb963f737dd99404dc560aa4e54237e64ca80ead48"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/security/RedisRateLimiter.java",
+    "sha256": "60c06d1654538096537d9a1931843c8056e49b19e36ddcca24e2fb84924b9b8f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ICommentService.java",
+    "sha256": "6632a056e46cb9408ef649d575c2ddf079935c9729e017df700979c894733a29"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IGyingMetadataSyncService.java",
+    "sha256": "6afa017c393e515013508c1892b6747cdd58246fdb924ec237569c8fbd33c682"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IMovieMetadataService.java",
+    "sha256": "6bfb9bc2cc3558895b6a0c573801b486f0ca9d8af001345b54a7aa9d63b1e4a3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IMovieSourceIdentityService.java",
+    "sha256": "262bdb2df262828e7d80af84cef6f3db4d703283cb7bd1bfc24de3aaeb211224"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQqAutomationConfigService.java",
+    "sha256": "81da2c3429652b981c13865ab6a35c5bc8ec6cb3c0bdb1e8788d6fd0bec1490e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQqBotSearchLogService.java",
+    "sha256": "3197587c2ba3707043fba8aebfb44eba26f6cc78406f0720e34728e347a6cfcd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQqBotService.java",
+    "sha256": "df7661468f5b46e50d4d30dda02bbce84ba751c84d6308aeb0b184841df80cc8"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQqChannelPostLogService.java",
+    "sha256": "8fb3ba2c9d1d4655cc5520960cf296cdd553f54e6daa29177fe89b4a413fe476"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQqTransferCleanupJobService.java",
+    "sha256": "857cc4bf00c805d4fc61e9f9369681645cfd9ef339554f3fb53c471270d0e672"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQuarkShareService.java",
+    "sha256": "bb12cd53c26ad4923c29925e47371d687486080474e16219c81f96dcea12890c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQuarkTransferRunnerService.java",
+    "sha256": "b00500a9b2119166162aebfefe6b994ce5e71772492bc75c1670796a362914c5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IQuarkTransferTaskService.java",
+    "sha256": "0437f3c522e26d2deaeeac153bac14eb6d793bdadf09914152c78180e14a9602"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceDiscoveryResultService.java",
+    "sha256": "62e19a423d88ac61bcfa6adcde222e1f964eebe7c5899a21578638071f3e590e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceDiscoveryService.java",
+    "sha256": "708bd41c2dadc688b6ebc9db1e85b834bbd628a09622f1e30f4bb39235a79f9d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceHubConfigService.java",
+    "sha256": "b2d7fb40d9020a090d68a0ab2de0aa30b4a2467eb8a8b93deb39fae4e551baa1"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceHubPublishService.java",
+    "sha256": "924ffb6baa5ff08ab16fc4112b343ed592579c013e05a0fad859807c73daef32"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceHubTaskService.java",
+    "sha256": "3362697046446c9d85c582c0564948efd0e209006c5079d2fbe8b9979b3dfb1a"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceHubWorkerService.java",
+    "sha256": "986634bd46f646d488c2f027d6458385075be073d70a7cd8c952e78f50f2b193"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceLinkService.java",
+    "sha256": "99e3dc8ae31111bc0f143799bfa88c3b187838f1d373c09eed29aa2108644daf"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IResourceReportService.java",
+    "sha256": "4fb4bbe5939f8eb4003c400155be5da7da7f4ee77ed96161a36b9be8adbb0b45"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ISocialPostLogService.java",
+    "sha256": "c16b881114774b6624f39029fa53758ea230515516f47e5e0ce01effacc636e9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ISocialPublishTargetService.java",
+    "sha256": "733da9c714720c813940dafa5e68a41887121601279bb895c6e9b982164d3bee"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ISysConfigService.java",
+    "sha256": "874da27833c9f2318c731048065490d939df17f825f5da06db46bb64b92fbd60"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ISysUserService.java",
+    "sha256": "603722b9ec4994b1dde18b7286b98a363a26af16370418aebfb55f9e773f88ec"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/ITmdbMetadataSyncService.java",
+    "sha256": "19d873f3987a27a0b12fd2afb3f10a34b677043da44807de70a8639befc800c5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IUserFavoriteService.java",
+    "sha256": "3429413c454ad5ed1789f70746504f00711188eade3ea0dfd6f03ba3368a85da"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IUserNotificationService.java",
+    "sha256": "0659591aa3ee87c83528c4ee714124ca3211ce1897d6f2dcd86972b324d13657"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IXunleiTransferRunnerService.java",
+    "sha256": "784aacbfdb5e4f4ca7026bc4ea30e1acfdbd446ed764afb1344ef3825051a7ce"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/IXunleiTransferTaskService.java",
+    "sha256": "e3dd7e434ddd081661057532a84c4ace1823780371fe85f89c73abe33a33b68f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/AiAssistantService.java",
+    "sha256": "a60a85cbdff03e3ee6aaa40e42e602df4c9bae587124778f8c3a8854cb1bb803"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogAiService.java",
+    "sha256": "28a9f8ff0d828e20f20b3e376904c228f390c40126cd30e8566cc782fcf2e5d8"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogMediaIdentity.java",
+    "sha256": "bef4ddd4fa238ad1c1b885299b9fcf6fdd07f604e878489dccf52d4a77824237"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogRecommendationEngine.java",
+    "sha256": "499f2425be76dd6f2a6ba6315844f73fbacb572c022c6b521451e816f1441253"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogResearchService.java",
+    "sha256": "c5cf92d605f98e96e01b40ded9bcbc3019bbfcbcefd242467a2b3b9e05746e65"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CatalogTextIndex.java",
+    "sha256": "11ae0840d122cb810c1ded537d9c510fa3cb9d73782a44b445d5c4ed4ece3a34"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/CommentServiceImpl.java",
+    "sha256": "b496c3168fcd3af40cba5645236a5c7ac01a6fc7d3b2446f63feca4ba35caff4"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/EmailVerificationService.java",
+    "sha256": "fbfb3c250863a11b42b63ec38afadcd68e4a95caacf1fc137086eeadb2c45bf2"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/GyingMetadataItemRetryService.java",
+    "sha256": "ea513d8e975528f21f4bc0c92376de9210e341b8ec14e3f0dbb9e671337869fb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/GyingMetadataSyncServiceImpl.java",
+    "sha256": "0683844ddbfaeda7e6a2cd38ac0bfa06b357491e5912c31536e34e84ada8dfd8"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/GyingSourceWorkflowService.java",
+    "sha256": "03b73b1b4536bbe8807a1aefc6db291db43b3e35e6641b3d54d16892a2fd2078"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/GyingWeeklyTransferService.java",
+    "sha256": "ab81587402dcfb6a7743b2a33be8f6e1197e4bbe55422d7d4fc8fbb3958f858e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/GyingWeeklyTransferSettings.java",
+    "sha256": "05d8c007826d2a266cdb44e3398e33f4dabe2a17d3284debb61ef604065faca5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/LoginDeviceService.java",
+    "sha256": "0f6d2b497b568eaa129e04dc50a2bc3b83efa5190bcd0d952bce1de988f6333e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MetadataCrawlPlanner.java",
+    "sha256": "0c9515b5c566d29e2fa4f85393c06d33ab35fca9cd34576ac24de68c66666747"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MetadataCrawlRecovery.java",
+    "sha256": "e63241f981d9cdbf53249716156da85a8e532a9391e5bca7ad84c40c02796cc8"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MonitoringService.java",
+    "sha256": "0ef1353f9396c10c3399f6acb88643d70098872a02a238cf5501dc5b1f15f47e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MovieCollectionCompletion.java",
+    "sha256": "bb0732e43e613ed5b7c63591f1e42cde694fe14f83033071f91a6fd1bdbca987"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MovieMetadataServiceImpl.java",
+    "sha256": "c90ef346c701e272b6a61633f3421e062d32f610d90a1dd86215e758c48716e6"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MovieQueryPlan.java",
+    "sha256": "e8e648939bb6e22a42e98e41faf21ecddee53abca8c3d7482289a66357568280"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/MovieSourceIdentityServiceImpl.java",
+    "sha256": "761fe4d5ceac04981e2db8a18e25699562961998bd32c35ce03ad229dd76275f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/NaturalMovieQuery.java",
+    "sha256": "59d48f25d6718cebee5f3c001789dd2acffda21dbf0ac1b29661068d6f031536"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/P2pArchiveTaskService.java",
+    "sha256": "9d65838a13b7a3a58997fade928bb2408fb1fda1c0489811b02c832fb3f8ba10"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/PosterStorageService.java",
+    "sha256": "5544f0e1faedd2877401bf50b63e1f13b9f3c556902ab8e4b19ff27a18a3d268"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqAutomationConfigServiceImpl.java",
+    "sha256": "dbe92fbfb1f21c93a08d321f8438ce53bce58d36f0648bba7c9d6b9faf87fc2f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqBotSearchLogServiceImpl.java",
+    "sha256": "fa3e24c1de0ac057e799b74f12a06b20ac78f90d47a2a1a7c5ea8aed1469031f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqBotServiceImpl.java",
+    "sha256": "cdfb4bb87b4acae1260b1e7a6667f108d8fffb4f84f6e74d11d1cbcb175ee253"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqChannelPostLogServiceImpl.java",
+    "sha256": "299df48185eb6b955f722783802c4a1f9167f655debca0945ef2a7cccb50ca35"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqDailyRecommendationScheduler.java",
+    "sha256": "eb1fa7f4818843e0409a86bf9aae4effddcb1a20ccdd1618837de5b12f195580"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqTransferCleanupJobServiceImpl.java",
+    "sha256": "6bdecf57ee72d89ba7c21e59adaf1c01220f1d6a59a91822b1d1b893aebb3333"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqTransferCleanupService.java",
+    "sha256": "ccec6e574cb5842a796c8d7d04b86b84743155eca4c5801d521eac9aff52933e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QqTransferCleanupSettings.java",
+    "sha256": "7b12e3d050fd222aa3e15b620cc2bbdfdbab9c46c261283480c734d37348afa5"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QuarkShareServiceImpl.java",
+    "sha256": "56511fac241fae5e60c91c0597fbe6b84824a1a0273fcdf93286cc22891c43e3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QuarkTransferRunnerServiceImpl.java",
+    "sha256": "68018bf3f0d01cda12ad8bd646cf6fbf9f5ee7d581610e508b9089ad114e8bb9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/QuarkTransferTaskServiceImpl.java",
+    "sha256": "872894cbfb66b541ff7a7f9517e0ff687d3b9f031119841d5b0e86ca431ac27e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/RegistrationService.java",
+    "sha256": "2683f94349bfd2e6a5f3deba6554d06f50526f198f0c8e7eff05867c4bc3fb6e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceBindingResolver.java",
+    "sha256": "07c638891f0002df2e9decc070c78958c0f106daccc87fa306be2ead84152f3f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceDiscoveryResultServiceImpl.java",
+    "sha256": "e0548dd7d51056566980cff19e20cc35fdba6706be444171cad6388f50003151"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceDiscoveryServiceImpl.java",
+    "sha256": "db317cab03f3fd3d4764055af9fe374844a51aa2993ecfa77a4c24b4607471ea"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceHubConfigServiceImpl.java",
+    "sha256": "a328f731c648448b91b14538092bd38b0d23ed9e37314ca496aba1b4c25f2188"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceHubPublishServiceImpl.java",
+    "sha256": "4f825bf16218db1e7149c8043732b1efa65588b849039b3a87818f246d0cb49d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceHubScheduler.java",
+    "sha256": "8211371f4b1bcd5db77e09a9041a7136e1e944f028e59a0ce7139f1a2d60aa53"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceHubTaskServiceImpl.java",
+    "sha256": "f0774aa50b41d2ca8582b749f109617f15b18da7cd53a7c415a4989a6b74ea2e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceHubWorkerServiceImpl.java",
+    "sha256": "a838afe8cf96690562a5bd0099b41757e2f1b1de984e697c709574ec773db024"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceLinkServiceImpl.java",
+    "sha256": "010a83f1fbba779ebdc1ec29a6cea9e8b9ed1059149a0df6a0a8b26bb9a150e7"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/ResourceReportServiceImpl.java",
+    "sha256": "3c0bcc3cf013e6766ef1d5243414951fe19663343dff421244fa4261433638a9"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SeasonMetadataCompletion.java",
+    "sha256": "329ba49580fcd09ee65865ff4e64accb32da9402dd22ed9527233996f9526284"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SocialPostLogServiceImpl.java",
+    "sha256": "15910973a77ff01b545b0d9cae1203869b4d7e47af15cfa8141c469f021118cd"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SocialPublishTargetServiceImpl.java",
+    "sha256": "3b87b4cf0fe69b4b2b36a47b16cbb7a4ae06a6b69b3b175d8ba4ad08bf069b61"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SocialPublishingScheduler.java",
+    "sha256": "96079c6437ed7d0f7ca0cf344e1574c879a46d006738a34a84c94553ec8fc171"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SocialPublishingService.java",
+    "sha256": "e26edd67f92e44aeaf37da606a722da1a82cd1ec4aa069c2cd0f0dc81ac28cdb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SysConfigServiceImpl.java",
+    "sha256": "0e9b52c76046da86a9f9a5d005a89df8789da73b9f4eb0b8d344538f01854f13"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/SysUserServiceImpl.java",
+    "sha256": "b6af775437f24d4d777d6df9a556fe8ed1fc0a594d0b625e57788ebd985d21e2"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/TmdbMetadataSyncServiceImpl.java",
+    "sha256": "8b7bd524132727c4f61025aeee2c8c28e98357d42666a7402622832f28a8ccd3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/UserFavoriteServiceImpl.java",
+    "sha256": "e183750e3139a5eeb90032ef52202fda1b418de2345f70ddfb2307b5aec712e3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/UserNotificationServiceImpl.java",
+    "sha256": "5f62ed5877a25ef82916cbda039772d7b83585b6621aa88589fb0ae43bec1e3c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/XunleiTransferRunnerServiceImpl.java",
+    "sha256": "9d51a65caaba46472b48fcc1aa9c5d8312532b9cb7620614530d3a73e7ac5d16"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/service/impl/XunleiTransferTaskServiceImpl.java",
+    "sha256": "62b431562965477f78543d364b2dca0db4fdf6dcc68c67110367b76d6b4ee48e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/util/PrivateFileWriter.java",
+    "sha256": "cc3cfde91e977e07e10ac51192c336876cf8a9f2a5c0354aeb780c589f7593ed"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/AiBridgeAuth.java",
+    "sha256": "3da75a43f795f535906dc7a908c4bef28615e958de05a6038cbba1847e46755e"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/AuthHelper.java",
+    "sha256": "536310c323fdff13dbe86c21694732b237cfdc36e19e5c378355c4af1d0d64ee"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/EncryptedAiState.java",
+    "sha256": "1fa4b5715e45756bb3d51e5c8ef6381bb959788bccd2ebe19720542fa2240ad7"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/GyingMetadataMatcher.java",
+    "sha256": "4710d81dd35b8589439d50f5988338616615c42d6b7d0f0c6965694d1f0c001b"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/GyingTorrentLinks.java",
+    "sha256": "1e5770b1d12d0fe79a8b8a37075f5a69011a9def3f85ba7093f57f18cd3552d0"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/InternalAuthHelper.java",
+    "sha256": "bf793ef9df96e5907a340ab807a85aeb6e6773030920925e65325ab2b563eb19"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/JwtUtils.java",
+    "sha256": "1fac5981abce4a5bcd6f7c2267fce784b8ad68fb248fd2020b78eefcac6d2081"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/MovieSearchCandidateUtils.java",
+    "sha256": "add0450e8b28ed099169102192ec49bee57378cb1eb5e7243899a1cd3c6a92ff"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/MovieTitleMatcher.java",
+    "sha256": "d7fa99c67faf5037d53db6275085e2757575de56dae120400689aaa3b8f11d6c"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/ObfuscatedTitleMatcher.java",
+    "sha256": "25bdab9ce154e3e98e6b8bbf9b37d74aef9675db9d53d0395f57800c780bdaeb"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/PosterUrlUtils.java",
+    "sha256": "a1ec6773c23844d89a1c214fecab045c045c084a7c7dd9fc9ffe764d49d399c3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/QqResourcePreferenceParser.java",
+    "sha256": "c810bac286fdcacae465620efe1c0183fb24976088f1eafbe6c91e19495eeab3"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/QqTransferMarker.java",
+    "sha256": "28ff1b39a4f9e1545224e6d48be3e30396460450b3f44187700d3992068840c6"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/ResourceHubHashUtils.java",
+    "sha256": "2dd192bf3f42c58027cd88eca41942629adc2f1d33aeee72595ec63ad6c7ec50"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/ResourceTitleMatcher.java",
+    "sha256": "8c513d2a4ed1603afc9ff67c947a080f5fa4436300088bde12ec7ee986beca7a"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/Sanitizer.java",
+    "sha256": "e7579da7e0d726d47411f49184884a8447a229d8b696585fb30a27c2261b3c4f"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/SearchKeywordPolicy.java",
+    "sha256": "aa87db68ee7fd0d49d859abc3561133b5ac15ef66058e22b7fd88333d3ea4e6d"
+  },
+  {
+    "path": "backend/src/main/java/com/gying/movie/utils/SeasonSearchUtils.java",
+    "sha256": "8f846c95967a74a275905a46874e6b67bcf575e0d188a97eac613f1121540fde"
+  },
+  {
+    "path": "backend/src/main/resources/application-prod.yml",
+    "sha256": "a2bea6deb314229472bce00c89a4621edf66f4cada35104fbed6dea63f0cf32e"
+  },
+  {
+    "path": "backend/src/main/resources/application.yml",
+    "sha256": "66d086b16dbc76c6e02f8e83d400e9a8274fc4af1bb06e5dfc2276a2526be85f"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_access_log_client_identity.sql",
+    "sha256": "a8f4e685cf8c0a369ff8fd50c4acb1f4058ad301ae863ef14f13cdbb59db15c2"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_comments_login_devices.sql",
+    "sha256": "a3d041f06f1d8f6e6861d80b6448d7ce91dbdaa75ef44069d6303150723a431d"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_favorites.sql",
+    "sha256": "ba48d37b2f61acc902b67dba4e509b8e9c015de817051760d8d3973391bd0319"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_fix_qq_channel_template_mojibake.sql",
+    "sha256": "fb2b55fc08ddbb5e0a99008664a90656330fd6e37320c7f7110bfa1d64983de5"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_governance.sql",
+    "sha256": "87ea2fe972d71f6f7732617ab957531f4668e783b97739af1719fcb4c7f2d5ad"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_gying_owned_share_source.sql",
+    "sha256": "2514bbd8c37a02e3aecbc600f07c3eca05c406420ae6f5628cef63037e766829"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_movie_source_identity.sql",
+    "sha256": "d729de2083a5e2c0c0340a52ea6612f5c52b5deffd960b16e17a9d3407992ee8"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_notifications.sql",
+    "sha256": "67dd1fc7f08c15da01db849e1d71ab0d97298d14694c3e2dcdd73c67de20abe0"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_qq_automation.sql",
+    "sha256": "6a659258eaea346d15b1ed3511f32e0580721417aa07f99c37739d3c3d340eb5"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_qq_channel_daily_post_config.sql",
+    "sha256": "352a43304fdb9022f6c68f59dbe3b2769437f5634a5ce335ba14512fd78f3a31"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_qq_channel_post_pending_status.sql",
+    "sha256": "873995e9f387096127cb09f839149162ca9cf613c6f363146f1a122e0a15cf45"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_qq_channel_template_year_type.sql",
+    "sha256": "46835eda2571ea84786de6b2c507538ef9d18cb495243ba2b491361cb505e1ce"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_qq_transfer_cleanup_and_settings_zh.sql",
+    "sha256": "4707aea345ab584872f14084d0e28eba78c79119637f356c2b01bb8b6d6db184"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_registration_invitation_monitoring.sql",
+    "sha256": "7eb37dc50dd63a1c0a337444f3424a8989dbe9e0cdb2a2b00b6212fdeb5ed058"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_resource_form.sql",
+    "sha256": "445f24734fb53363caca52c382788ad6ca445e8dbacab4d8984fdc87629a4c20"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_resource_hub.sql",
+    "sha256": "f85f5026c611f34dff7648a6c9990047f24684a3b31080eb19f8d1d5ba3ed549"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_resource_link_updated_at.sql",
+    "sha256": "52359cf053f9742302b8566873adc5874e1d20d9462fc063ba47fa412323dfe3"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_resource_reports.sql",
+    "sha256": "8d593835284b53d6cb91b4d0751dbcbe26bff6f378045645a92c645d385aafe9"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_social_publishing.sql",
+    "sha256": "cad4ac7328a8f341fd00cb780931ed990ca7e489484457f22b20e413a8d39f19"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_soft_delete_columns.sql",
+    "sha256": "d381d5c277dc33623946422e3651827b0428f002279b66a5308954f6c520a66a"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_source_identity_case_sensitive.sql",
+    "sha256": "924d52b10ab92aec148ac37d67a4b48adf48fd9b2916043d9f4c6f75e9f132a7"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_sys_config.sql",
+    "sha256": "476b02c1c7755339032ac093d2f78538d7bb65a6272523dcc49e101ad0863f65"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_user_email_change.sql",
+    "sha256": "a1faa7f065301f0a2139f583624b9b59447d07227bf4dd2de62311fbf196c254"
+  },
+  {
+    "path": "backend/src/main/resources/db/migration_user_nickname.sql",
+    "sha256": "cae7254b2a12e3ce9778adcf14779396b4d1f3ba019860324c57501e9663af42"
+  },
+  {
+    "path": "backend/src/main/resources/db/schema.sql",
+    "sha256": "1629eb084ed00a0a83720e975957ae8a5d0fbc4d35c86cde7170a20cbbb1e1f7"
+  },
+  {
+    "path": "backend/src/main/resources/moderation/search-blocklist.txt",
+    "sha256": "4137c40f5607eade246574cedb79a7e76230242e8e7db42e022dcced2721a39d"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/GyingSourceClientTest.java",
+    "sha256": "ccfbb6b0f7bef21001f765fd53c34a316a550e50cab3021f10ccff90656ac9f9"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/P2pCloudArchiveClientTest.java",
+    "sha256": "07ffa9ca2ac9b8087e38316327508f18c73c1876225dfe84c586e2a5225feffa"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/PanSouApiClientTest.java",
+    "sha256": "2f733704db6e96afaaff1b144a7c174cc05409bfb1969f6b0bc313f1fdd34a36"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/PanSouClientTest.java",
+    "sha256": "eaf598dff8ec729da313f085f58bdde8bfe55ce22d21f5005eb1129dab1ae49f"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/QuarkAutoSaveClientTest.java",
+    "sha256": "30e43892a3981312774de1cee7368ee7d8ff02158e68b4554223907b6412e77c"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/QuarkMovieDirectoryAiClientTest.java",
+    "sha256": "46ca41f0ef3ae911ea91ce632ab4ebdf1b7c74631b698f9d897c38fd1a414b36"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/QuarkMovieDirectorySelectionTest.java",
+    "sha256": "a16f1b220a802ead648956e17eed9bb17fea08600aa7add1dc25de77948290b5"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/QuarkShareClientTest.java",
+    "sha256": "06950d1db552aed5856c42ae8c5aeaba45e2d4c400672c621cf3925121dcfa4b"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/QuarkTransferImageTest.java",
+    "sha256": "53f1f96ed8f25deb2e399ef41b229497ea3ef54b6298cdf2b873451562922a15"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/TmdbClientTest.java",
+    "sha256": "0964190d2753e7f9090d008799d6844f76801d84b850826c3971decc5ecfa510"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/XunleiClientTest.java",
+    "sha256": "e254feae3651b906653027b0bbc5efcb50af0044c1222edd6e9efcd5894f6971"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/XunleiPlacementTest.java",
+    "sha256": "2b44b417fb26e31112cf1c5299a2d8ab4fb82796e3bad01d165dd3b4d9519c17"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/XunleiTokenPersistenceTest.java",
+    "sha256": "e7562aa4c419eb244c527beb302037218754be5aee0d468ed3ccb32154c630e2"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/client/XunleiTransferImageTest.java",
+    "sha256": "3818b705da1fd9f3ba48ba6922a0a3dda10d9889ca1353270dab4ba7c85e3a82"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/AiAssistantControllerTest.java",
+    "sha256": "c9790c21d0bfd83ea5dbbd11c7aeadb82a5c537af849a42aa9d94ec14616910b"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/AuthControllerEmailTest.java",
+    "sha256": "c194fc88eac53c469bdbf0f94448dbaeb76adcb8686c6b1272a51de6c50b9509"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/AuthControllerNicknameTest.java",
+    "sha256": "f8cfddb1d9864a7dbb0998da30760463734d49656990706df5fed1ac6dfa3eec"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/CatalogPaginationContextTest.java",
+    "sha256": "ecbaf902330d38ffacb1014ef14001d0ca4b20fe238850f2a1fe4a5583bfd777"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/CommentControllerSecurityTest.java",
+    "sha256": "b30c6db798bf3c4332f50b9bdd2b10c9913b14261ff5d17535cb26ae82850363"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/FavoriteControllerTest.java",
+    "sha256": "ceedb4ec02bdff3667eed37c223b6a18a166f1b2062728b2b9b2952e8eded045"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/MonitoringControllerTest.java",
+    "sha256": "1f08bc135d511309fc53c6ed987c1b4d9bf5d37ee76ec213901b9d33e1e1b356"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/MovieControllerReadTest.java",
+    "sha256": "38bde7dff84d53d5e22da0ff9256a6c054477c4585e76ece8110cd85c970973c"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/NotificationControllerTest.java",
+    "sha256": "70dbf47d849f70115d1b2b230d5b5d9690e9529f430a904ecae782fe83cba8d2"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/QqBotSecurityTest.java",
+    "sha256": "26c5fe173ca38e92c75be8cb5a9357fbf47202576de89f94c19e2aad6c7bc957"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/ResourceHubAdminControllerPauseTest.java",
+    "sha256": "9146befc5110286190490734dae0a127f05ad7790c984e36dc1a212e9deeb954"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/ResourceHubAdminControllerRetryTest.java",
+    "sha256": "9d89f1d48927a1ab3b9a8e3e4e83a3ae47edb4988ff4814adcd07107e2795f30"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/ResourceLinkControllerBindingTest.java",
+    "sha256": "30441a5ab9230e8739541248ff7b8ee1242c7e54a60c0b3c80874b5604d4065a"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/SocialPublishingAdminControllerTest.java",
+    "sha256": "00cb95ffd7001b2ebeb75f87fc2b3c9b40521b8c62c1e2431090ba93feb72153"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/SysConfigControllerSecurityTest.java",
+    "sha256": "abc837ea4f2cd9319f151cd7015f881b0f3ca99d10d575f653b52356dd64ac75"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/UserManagementControllerTest.java",
+    "sha256": "b44cc30d3938dc19f0aa0a773c12954c183c3baada731a6846363c168d93b375"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/controller/WebResourceSearchControllerTest.java",
+    "sha256": "ce2c6079a770b560448452505e0a52ddbd25757a2a684e944c13a5f03c4cef05"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/mapper/UserFavoriteMapperTest.java",
+    "sha256": "671ca2974b9e75422772a3492cb39390a65b2fdb63ab8f99e3fed5e961701ee5"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/ApiSecurityFilterTest.java",
+    "sha256": "fc878aa56ed8b72f1e4e08911de0c0e9f8dfa4edd00ec598df41134a7dc65408"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/ClientIpResolverTest.java",
+    "sha256": "25abfa95bab19f07ff21265cd121419d9a62c0b0ef32f851e0bf985711255eb1"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/ExceptionSafetyTest.java",
+    "sha256": "99f1b3350012bebddad57a7632db4ed90ad8b8ece975f6518bfa24d3b720752d"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/ProductionSecurityValidatorTest.java",
+    "sha256": "cdbfd95ff3802d5d8604761f764478d3c3c1f0ff23c1e3b84e336f20abc06409"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/RedisRateLimiterIntegrationTest.java",
+    "sha256": "bc7b0c65f67b0a2804ebaa6af25b9cc1d2612dd6fb1a024d79db653b6e244c11"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/security/RedisRateLimiterTest.java",
+    "sha256": "5669c04c0addabd3ad7fe5a77f33608c17f8d68f0a7d08aabcdcaee27b2c9ecc"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/AiAssistantRecoveryTest.java",
+    "sha256": "cc7eca344d33b1dbfb3fe983e0b084ff6407f3c3b80e8d83d055264fd167631b"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/AiAssistantServiceTest.java",
+    "sha256": "d18742abd1b9d4172b05568e4d274cbe9e6d607c6f59b8bcb34bd17379bd7761"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/AiConversationContextTest.java",
+    "sha256": "eb14e75ec789c972e93fa1221f2dba94cc2222c7b45ca45e41a7fdfbdc27e96d"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/AiTrustedCandidateHistoryTest.java",
+    "sha256": "98c08a82eb5329348fe4e66fa4e522caf1695b9a90c4e2b2da83d2783631d0d2"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogAiMySqlTest.java",
+    "sha256": "34225a96b4cea22a1309786cc7d418d550f09714605f9983e05e73403ba4e660"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogAiServiceTest.java",
+    "sha256": "f2bbfb2411689964d73fb0b18e5cb8dde61063405f40795f9ceacf370c3b5c5a"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogEvaluationTest.java",
+    "sha256": "e2119eaecaf12e598fe242550e7170a1003d9b643d57a6fabb07a55ede08bf20"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogMediaIdentityTest.java",
+    "sha256": "af49ae3f1ca5b9946947ca909e355ae0b122afa02545f0e418a76df7063cee78"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogRecommendationEngineTest.java",
+    "sha256": "0bdbb1d0b251de1bdcabba7765b76bf5fec232b001101f6f3ceb2425856975dd"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CatalogResearchServiceTest.java",
+    "sha256": "e3a58313a344019b13b8d44c7624e22a1508aaa92ca44a8c93ae2141251b05aa"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CommentDisplayNicknameTest.java",
+    "sha256": "ab26ec22415b5c4ea982c7bb0eaf46ac58e4677db1ad410d744956f0c667cace"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/CommentPaginationTest.java",
+    "sha256": "0a8dfbad017f816dae3d68589862d145c3e5efbc856213af2b59ed072633ebd4"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/GyingMetadataItemRetryServiceTest.java",
+    "sha256": "28c31b7297a6ddf6d6c7a06f709cd1791ae7fac806326179c4074c26d21e74af"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/GyingMetadataSyncServiceImplTest.java",
+    "sha256": "2b9e6b3b89113a974b7339b8b377025d3024732b1f6c89ad8de84c30b2c1dcef"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/GyingSourceWorkflowServiceTest.java",
+    "sha256": "f3d0976eb7b701442051d52b1d11273c9ae0e22be85c3ae4220ea6353d040b04"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/GyingWeeklyTransferServiceTest.java",
+    "sha256": "76bea9633fec1ce309e90e2a4c7ec3c32f400a01a359d18e0a0fb0fd6259ebce"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/GyingWeeklyTransferSettingsTest.java",
+    "sha256": "bd1beab2b00f28c7aba297cf5d55ce131afb424a4868d96f9b4921a84cd24cd3"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/LegacyRecommendationBaseline.java",
+    "sha256": "93076b8cbdfc65c87af77b6fac536ec0eb2367d504e9737a1b8f550778140abf"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MetadataCrawlPlannerTest.java",
+    "sha256": "8b0ba8c5f27cc0fd3ad687c532daceb77b8f1e1c2396277948577429d8f3e611"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MetadataCrawlRecoveryTest.java",
+    "sha256": "c22f9d6fbefaee0f4c1e6662d16b8a8fec6e2578c021629f0d9949949c90ca5d"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceAccessIdentityTest.java",
+    "sha256": "1068f026e6d8c72a564c6346f508d9f9bc8f61e7bd8c2cbdf34c177ec2568202"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceEventTest.java",
+    "sha256": "ff61c6e3abeaf6800e28f9f4f189638b99a3f2386bf643e3141ca81a03932107"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceHotKeywordsTest.java",
+    "sha256": "79832c0f406f7904c7f7e9c56693862e4d6a9bd9bba2df4dd53456a59b3874c3"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceLogPageTest.java",
+    "sha256": "5cf665e7ba68a62ed874bbaf5ad9f71df14aa244b0828a5b7d38d465604d2179"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceMySqlTest.java",
+    "sha256": "d4f42039c1f629231f9168c2176c072e0b380fd137a91b4eff92f0a66df60ebd"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceOverviewTest.java",
+    "sha256": "6447f70dcec7da4208c713e721a09d6194c1665de43d4470d0c07a03c546d5ef"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MonitoringServiceSocialStatusTest.java",
+    "sha256": "6d3ff39d20df8c25f77e2f89dd95f30ad0329d40be764709f89ac3c51f206b6f"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MovieCollectionCompletionTest.java",
+    "sha256": "6dec4ed022a9b443fff02f8080080ebf7cd82aa4831ed25834d513c420d5e41b"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/MovieQueryPlanTest.java",
+    "sha256": "949215af581a3921777efc4281cb6731ef4578a72d3e7f893a5c09afd18fa4bc"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/NaturalMovieQueryTest.java",
+    "sha256": "95621c819985605116499fab25fe46c132351860da8ba627a2bcba375baf66ac"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/P2pArchiveTaskServiceTest.java",
+    "sha256": "dd6bfe17e81b337ad916a5af1c732dc35883716d8ec7e329ba30dc8f95acca57"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QqAutomationConfigSecurityTest.java",
+    "sha256": "29652ac062e0540b362213c8bdbc3d3d7b0d4fd95fe6c057fe21c5d601cfb980"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QqBotServiceImplTest.java",
+    "sha256": "5a63fa13fc9f6be37ce66e018f4917f13bd6c77782cbe98843a8683668493332"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QqTransferCleanupServiceTest.java",
+    "sha256": "331de681ecd3f2452e56a821cf32e51f0626fc37935f89fade87c92a5f739c26"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QuarkShareServiceImplTest.java",
+    "sha256": "5d038ff8bfd7a84c06194f615f79e1e38b669a0cec138902ba2d5ee5fb8b6104"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QuarkTransferRunnerServiceImplTest.java",
+    "sha256": "e200d721e34ed067c134671240aa80296f3e5dbec0a08959d7cb1662d079eed7"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/QueryBoundaryMySqlTest.java",
+    "sha256": "eeea0d0a7d8a1fdc08275251e4c94775fadcb1d52c948487d23e0b0811c9d267"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/RegistrationServiceTest.java",
+    "sha256": "29132c3867c0c3d8faeeb99a09712f8d235a5e393141aaa45cb8f3f59e96c4f4"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceDiscoveryServiceImplTest.java",
+    "sha256": "6b9660dcc7af1e56b2aa53e2b9cbe026ee354886e75ede2f18b7d245b0e66190"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceHubConfigServiceImplTest.java",
+    "sha256": "0036e83188a7361d9282d1f2d06751ce958d11bdb10eec86e0a1d4ffb4178347"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceHubPublishServiceImplTest.java",
+    "sha256": "60c10a9f4cb470048e662774b2ea1e2810bf9bd67f34147d41adcc7ad579c9f6"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceHubWorkerServiceImplTest.java",
+    "sha256": "4791577ce2f9b5eab3e84c5efb280e3c6742cd645a0685904c2fb216e79fbd52"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceLinkServiceImplTest.java",
+    "sha256": "b8c1a61505b0d4ce0579817547ec1c7b92e5c633e8d6c7aaef407690973b4bfe"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/ResourceLinkVisibilityTest.java",
+    "sha256": "6d760e774dd0b7788ad0a9aed7a4c4b333b0111368c0ce7293d75cc4940d6852"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/SeasonMetadataCompletionTest.java",
+    "sha256": "c038be5d8efea1d86bb4b63f95ea227d819a3060e40cd509eea0f66758ce89ff"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/SocialPublishingServiceTest.java",
+    "sha256": "2956a0886377fbf21b8509845ce4491b0fbce4fd07f132483065b6094fce27b5"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/SysUserEmailChangeTest.java",
+    "sha256": "71f437e568983e59d4028b8333b2530d2c2adade5df4749a5de1f2b11951dc97"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/SysUserNicknameTest.java",
+    "sha256": "38548d299e87724da5dfa1c11270a6d37019f9e95038a8606aeccb2c755dfb90"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/TmdbMetadataCrawlTest.java",
+    "sha256": "77dfb0f799dd73a331dd5ec07876b0f751f8da9b197a2ff351f725de0be1928c"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/service/impl/XunleiTransferRunnerServiceImplTest.java",
+    "sha256": "d9192696c3b303be0b591905b02ce6ed874f97b3a92ea39a640dc8bc3d0559a0"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/util/PrivateFileWriterTest.java",
+    "sha256": "1a922a84e6f0e6fdb0949e19196c215c01ad5a42f784d7960fd018b4f8f69191"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/GyingMetadataMatcherTest.java",
+    "sha256": "fcb22ba8ca84f4e4c74da9319ad8af6933facde60ddb9dd7d93147b8fab567ee"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/MovieSearchCandidateUtilsTest.java",
+    "sha256": "21f8fefb6c92355db43ec56fdcfe7f72b72ab4f356d44c2ff28950ac71562921"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/MovieTitleMatcherTest.java",
+    "sha256": "ce6efeccb6832d72d6c19dbcb0ccff39120aee75312540aa16c63d53ae114f50"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/ObfuscatedTitleMatcherTest.java",
+    "sha256": "5104f71cfde11b7f0b4902bbe01912a5e0ce477b74f59ff5e46bf87230618589"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/PosterUrlUtilsTest.java",
+    "sha256": "902bd62d494a83c059419ab0a9da7c83a2d08932a5b6329b0dd44024db3d316c"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/QqResourcePreferenceParserTest.java",
+    "sha256": "38c88f527393737c8566cdc5f3969eefa0b6695ea4f24ed9118fdcfc52322380"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/ResourceTitleMatcherTest.java",
+    "sha256": "976610ce7f32fbe550487255cfd701c4860ef7633da932add3535b68da914a73"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/SanitizerTest.java",
+    "sha256": "9d98082d210ac36f5f146670256760b9309ae0af4bdfeee1520ef3d13695eb72"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/SearchKeywordPolicyTest.java",
+    "sha256": "956500aab13198badc32d35229046631dffb65d475f272c1bcd4a801d8d1bedc"
+  },
+  {
+    "path": "backend/src/test/java/com/gying/movie/utils/SeasonSearchUtilsTest.java",
+    "sha256": "733f295faba6fc6bb1834012df2c77e13aec7cfeae9fa90b6dc5c0181970c6ea"
+  },
+  {
+    "path": "backend/src/test/resources/catalog-evaluation/search-v1.json",
+    "sha256": "4f5382e78010e4f277dad2c3647d26551330995659d24454747f7f52b02fffaa"
+  }
+]

@@ -17,7 +17,7 @@ public final class MovieQueryPlan {
         if(source==null||!source.isObject()||source.toString().length()>10000)throw new IllegalArgumentException("无效的影片查询计划");
         ObjectNode out=mapper.createObjectNode();
         source.fields().forEachRemaining(e->{String k=e.getKey();JsonNode v=e.getValue();
-            if(!LISTS.contains(k)&&!TEXTS.contains(k)&&!NUMBERS.contains(k)&&!k.equals("inheritContext")&&!k.equals("replaceRanges"))throw new IllegalArgumentException("查询计划包含未知字段");
+            if(!LISTS.contains(k)&&!TEXTS.contains(k)&&!NUMBERS.contains(k)&&!k.equals("inheritContext")&&!k.equals("filmIdentityRequired")&&!k.equals("replaceRanges"))throw new IllegalArgumentException("查询计划包含未知字段");
             if(v.isNull())return;
             if(k.equals("replaceRanges")){
                 if(!v.isArray()||v.size()>RANGES.size())throw new IllegalArgumentException("无效的范围替换条件");
@@ -104,6 +104,7 @@ public final class MovieQueryPlan {
     public String text(String key){return value.path(key).asText("");}
     public int integer(String key,int fallback){return value.path(key).asInt(fallback);}
     public boolean has(String key){return value.has(key);}
+    public boolean flag(String key){return value.path(key).asBoolean();}
     public double number(String key,double fallback){return value.path(key).asDouble(fallback);}
     public ObjectNode json(){return value.deepCopy();}
 }
