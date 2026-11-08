@@ -209,9 +209,12 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                     result.put("reconcileError", trim(error.getMessage(), 500));
                 }
             }
+            List<String> runnableProviders = java.util.Arrays.stream(com.gying.movie.config.CloudDriveProvider.values())
+                    .map(Enum::name).filter(resourceHubProperties::isDriveTransferEnabled).toList();
+            if (runnableProviders.isEmpty()) return skippedRetry(result, "所有网盘转存均已关闭");
             List<ResourceDiscoveryResult> rawDiscoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
                     .eq("status", "DISCOVERED").isNull("resource_link_id")
-                    .in("provider", List.of("QUARK", "XUNLEI"))
+                    .in("provider", runnableProviders)
                     .orderByAsc("updated_at").last("LIMIT " + limit));
             Map<Long, ResourceDiscoveryResult> uniqueDiscoveries = new LinkedHashMap<>();
             if (rawDiscoveries != null) {
@@ -236,6 +239,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 item.put("discoveryResultId", discovery.getId());
                 try {
                     String provider = discovery.getProvider() == null ? "" : discovery.getProvider().toUpperCase();
+                    if (!resourceHubProperties.isDriveTransferEnabled(provider)) {
+                        skipped++; item.put("status", "SKIPPED"); item.put("reason", "该网盘转存已关闭");
+                        items.add(item); continue;
+                    }
                     boolean hasShare;
                     if ("XUNLEI".equals(provider)) {
                         if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) throw new IllegalStateException("Xunlei transfer service unavailable");

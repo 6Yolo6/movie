@@ -1,10 +1,15 @@
 {
-  "generatedDate": "2026-10-22",
-  "sourceCommit": "dc13094d79d85b8b5875e30d5462bfbbe26d9cd3",
-  "scope": "backend Spring controller literal mapping annotations; not dynamic authorization validation",
-  "controllerCount": 24,
-  "mappingAnnotationCount": 172,
-  "routeCount": 172,
+  "generatedDate": "2026-11-08",
+  "sourceCommit": "3e09a8030778b3c23965fb2fc8d59cc95b9b4ef1",
+  "sourceBranch": "codex/cloud-drive-workflows",
+  "sourceState": "working-tree",
+  "sourceWorkingTreeChanges": [
+    " M backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java"
+  ],
+  "scope": "backend Spring controller literal mapping annotations from the current working tree; sourceCommit is the Git baseline, controller SHA-256 identifies the actual source; not dynamic authorization validation or deployment evidence",
+  "controllerCount": 25,
+  "mappingAnnotationCount": 178,
+  "routeCount": 178,
   "controllers": [
     {
       "name": "AdminCommentController",
@@ -27,8 +32,8 @@
     {
       "name": "AiAssistantController",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
-      "sha256": "504f89af224573bba0915b20efc3d8d8d4302632b7cf6d975b496b257ecfebeb",
-      "mappingAnnotations": 6
+      "sha256": "96ac6259cb955268d61f132bc39b57643f4f95a2afe8bec1041d6655288265ac",
+      "mappingAnnotations": 8
     },
     {
       "name": "AuthController",
@@ -45,8 +50,14 @@
     {
       "name": "CatalogAiController",
       "source": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
-      "sha256": "29934ccefdc717044502bac5478b45881a38f690fb79bab843f604b69191828d",
+      "sha256": "78f13dd19204b3925d116faff18a93743f6a467fce3ec89667c07e6ca4882eb5",
       "mappingAnnotations": 4
+    },
+    {
+      "name": "CatalogResearchController",
+      "source": "backend/src/main/java/com/gying/movie/controller/CatalogResearchController.java",
+      "sha256": "bd88e3f9629551999ac9ffa945f9b6c9146e69964146c234f0539428fe4f010d",
+      "mappingAnnotations": 2
     },
     {
       "name": "CommentController",
@@ -111,8 +122,8 @@
     {
       "name": "ResourceHubAdminController",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "sha256": "c6fc2d827c7c4601c63739d9e0f6bc05522eede65ce34cfc6a11f38c0167ffd3",
-      "mappingAnnotations": 28
+      "sha256": "cec82e784241e9cbbdfee6cc43429f9730808222070a942e3bac649e7bf72774",
+      "mappingAnnotations": 30
     },
     {
       "name": "ResourceHubInternalController",
@@ -147,7 +158,7 @@
     {
       "name": "WebResourceSearchController",
       "source": "backend/src/main/java/com/gying/movie/controller/WebResourceSearchController.java",
-      "sha256": "71bf854eeeb209673049b5041f36395ac56799f5fb8c80a56bb181bd60397a36",
+      "sha256": "f87f82537f06f684352fbf88113a4578f15bdf96343ab46f0c8d1b0e6a642f49",
       "mappingAnnotations": 2
     }
   ],
@@ -156,1022 +167,2014 @@
       "method": "GET",
       "path": "/api/admin/comments",
       "controller": "AdminCommentController",
+      "methodName": "listComments",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminCommentController.java",
       "line": 29,
+      "methodLine": 30,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 39
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/comments/{id}/status",
       "controller": "AdminCommentController",
+      "methodName": "updateCommentStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminCommentController.java",
       "line": 69,
+      "methodLine": 70,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 74
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/config",
       "controller": "SysConfigController",
+      "methodName": "getAllConfigs",
       "source": "backend/src/main/java/com/gying/movie/controller/SysConfigController.java",
       "line": 39,
+      "methodLine": 40,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 41
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/config/{key}",
       "controller": "SysConfigController",
+      "methodName": "getConfig",
       "source": "backend/src/main/java/com/gying/movie/controller/SysConfigController.java",
       "line": 54,
+      "methodLine": 55,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 58
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/config/{key}",
       "controller": "SysConfigController",
+      "methodName": "updateConfig",
       "source": "backend/src/main/java/com/gying/movie/controller/SysConfigController.java",
       "line": 69,
+      "methodLine": 70,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 74
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/gying-source/account",
       "controller": "GyingSourceAdminController",
+      "methodName": "account",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 246,
+      "methodLine": 247,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 249
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/gying-source/account",
       "controller": "GyingSourceAdminController",
+      "methodName": "updateAccount",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 253,
+      "methodLine": 254,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 257
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/gying-source/candidates/catalog",
       "controller": "GyingSourceAdminController",
+      "methodName": "catalogCandidates",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 173,
+      "methodLine": 174,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 180
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/gying-source/candidates/recent",
       "controller": "GyingSourceAdminController",
+      "methodName": "recentCandidates",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 157,
+      "methodLine": 158,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 161
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/gying-source/candidates/trailers",
       "controller": "GyingSourceAdminController",
+      "methodName": "trailerCandidates",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 165,
+      "methodLine": 166,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 169
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/catalog/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureCatalogPage",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 184,
+      "methodLine": 185,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 191
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/ingest",
       "controller": "GyingSourceAdminController",
+      "methodName": "ingest",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 67,
+      "methodLine": 68,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 71
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/gying-source/jobs/{jobId}",
       "controller": "GyingSourceAdminController",
+      "methodName": "workflowJob",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 329,
+      "methodLine": 330,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 333
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/metadata/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureMetadata",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 83,
+      "methodLine": 84,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 87
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/movies/{movieId}/metadata/sync",
       "controller": "GyingSourceAdminController",
+      "methodName": "syncMovieMetadata",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 218,
+      "methodLine": 219,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 221
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/movies/{movieId}/poster/repair",
       "controller": "GyingSourceAdminController",
+      "methodName": "repairMoviePoster",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 227,
+      "methodLine": 228,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 231
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/movies/{movieId}/seasons/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureRemainingSeasons",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 207,
+      "methodLine": 208,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 212
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/movies/{typeCode}/{mid}/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureMovieResource",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 264,
+      "methodLine": 265,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 269
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/posters/repair",
       "controller": "GyingSourceAdminController",
+      "methodName": "repairMissingPosters",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 235,
+      "methodLine": 236,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 240
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/published-resources/check",
       "controller": "GyingSourceAdminController",
+      "methodName": "checkPublishedResources",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 286,
+      "methodLine": 287,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 290
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/published-resources/repair",
       "controller": "GyingSourceAdminController",
+      "methodName": "repairPublishedResources",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 308,
+      "methodLine": 309,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 312
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/published-resources/repair-by-ids",
       "controller": "GyingSourceAdminController",
+      "methodName": "repairPublishedResourcesByIds",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 319,
+      "methodLine": 320,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 323
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/published-resources/sync",
       "controller": "GyingSourceAdminController",
+      "methodName": "syncPublishedResources",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 297,
+      "methodLine": 298,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 301
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/recent/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureRecentMovies",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 197,
+      "methodLine": 198,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 201
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/resources/{resourceId}/publish",
       "controller": "GyingSourceAdminController",
+      "methodName": "publish",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 130,
+      "methodLine": 131,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 134
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/resources/{resourceId}/update",
       "controller": "GyingSourceAdminController",
+      "methodName": "update",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 142,
+      "methodLine": 143,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 146
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/gying-source/trailers/ensure",
       "controller": "GyingSourceAdminController",
+      "methodName": "ensureTrailerResources",
       "source": "backend/src/main/java/com/gying/movie/controller/GyingSourceAdminController.java",
       "line": 275,
+      "methodLine": 276,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 279
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/monitoring/hot-searches",
       "controller": "MonitoringController",
+      "methodName": "hot",
       "source": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
       "line": 28,
+      "methodLine": 28,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireAdmin",
+          "line": 28
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/monitoring/logs",
       "controller": "MonitoringController",
+      "methodName": "logs",
       "source": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
       "line": 19,
+      "methodLine": 20,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireAdmin",
+          "line": 24
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/monitoring/overview",
       "controller": "MonitoringController",
+      "methodName": "overview",
       "source": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
       "line": 18,
+      "methodLine": 18,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireAdmin",
+          "line": 18
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/movies",
       "controller": "AdminMovieController",
+      "methodName": "list",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 54,
+      "methodLine": 55,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 59
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/movies",
       "controller": "AdminMovieController",
+      "methodName": "create",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 83,
+      "methodLine": 84,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 86
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "DELETE",
       "path": "/api/admin/movies/{id}",
       "controller": "AdminMovieController",
+      "methodName": "delete",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 149,
+      "methodLine": 150,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 152
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/movies/{id}",
       "controller": "AdminMovieController",
+      "methodName": "get",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 73,
+      "methodLine": 74,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 76
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/movies/{id}",
       "controller": "AdminMovieController",
+      "methodName": "update",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 105,
+      "methodLine": 106,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 108
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/movies/{id}/poster",
       "controller": "AdminMovieController",
+      "methodName": "uploadPoster",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminMovieController.java",
       "line": 128,
+      "methodLine": 129,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 131
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/qq-automation/bot-searches",
       "controller": "QqAutomationAdminController",
+      "methodName": "botSearches",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 87,
+      "methodLine": 88,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 94
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/qq-automation/channel-posts",
       "controller": "QqAutomationAdminController",
+      "methodName": "channelPosts",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 108,
+      "methodLine": 109,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 116
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/qq-automation/config",
       "controller": "QqAutomationAdminController",
+      "methodName": "config",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 64,
+      "methodLine": 65,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 67
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/qq-automation/config",
       "controller": "QqAutomationAdminController",
+      "methodName": "updateConfig",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 71,
+      "methodLine": 72,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 75
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/qq-automation/daily-recommendation/run",
       "controller": "QqAutomationAdminController",
+      "methodName": "runDailyRecommendation",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 79,
+      "methodLine": 80,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 82
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/qq-automation/overview",
       "controller": "QqAutomationAdminController",
+      "methodName": "overview",
       "source": "backend/src/main/java/com/gying/movie/controller/QqAutomationAdminController.java",
       "line": 47,
+      "methodLine": 48,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 50
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/cleanup/duplicate-tmdb",
       "controller": "ResourceHubAdminController",
+      "methodName": "cleanupDuplicateTmdbMovies",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 1188,
+      "line": 1282,
+      "methodLine": 1283,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 1287
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/cleanup/mismatched-resources",
       "controller": "ResourceHubAdminController",
+      "methodName": "cleanupMismatchedResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 1240,
+      "line": 1334,
+      "methodLine": 1335,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 1339
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/config",
       "controller": "ResourceHubAdminController",
+      "methodName": "config",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 192,
+      "line": 200,
+      "methodLine": 201,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 203
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/resource-hub/config",
       "controller": "ResourceHubAdminController",
+      "methodName": "updateConfig",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 199,
+      "line": 207,
+      "methodLine": 208,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 211
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discover",
       "controller": "ResourceHubAdminController",
+      "methodName": "enqueueResourceDiscovery",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 270,
+      "line": 301,
+      "methodLine": 302,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 305
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/discover/jobs/{jobId}",
       "controller": "ResourceHubAdminController",
+      "methodName": "getDiscoveryPipelineJob",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 286,
+      "line": 317,
+      "methodLine": 318,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 321
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discover/{taskId}/run",
       "controller": "ResourceHubAdminController",
+      "methodName": "runResourceDiscovery",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 298,
+      "line": 329,
+      "methodLine": 330,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 333
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/discoveries",
       "controller": "ResourceHubAdminController",
+      "methodName": "discoveries",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 306,
+      "line": 337,
+      "methodLine": 338,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 347
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/batch/publish",
       "controller": "ResourceHubAdminController",
+      "methodName": "batchPublishDiscoveries",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 393,
+      "line": 424,
+      "methodLine": 425,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 428
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/batch/qq-channel-post",
       "controller": "ResourceHubAdminController",
+      "methodName": "batchPostDiscoveriesToQqChannel",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 419,
+      "line": 450,
+      "methodLine": 451,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 455
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/batch/retry-share-publish",
       "controller": "ResourceHubAdminController",
+      "methodName": "batchRetryShareAndPublish",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 369,
+      "line": 400,
+      "methodLine": 401,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 404
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/publish",
       "controller": "ResourceHubAdminController",
+      "methodName": "publishDiscoveries",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 345,
+      "line": 376,
+      "methodLine": 377,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 380
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/reconcile",
       "controller": "ResourceHubAdminController",
+      "methodName": "reconcileDiscoveries",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 384,
+      "line": 415,
+      "methodLine": 416,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 420
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/retry-discovered",
       "controller": "ResourceHubAdminController",
+      "methodName": "retryDiscoveredTransfers",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 377,
+      "line": 408,
+      "methodLine": 409,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 411
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/{discoveryResultId}/publish",
       "controller": "ResourceHubAdminController",
+      "methodName": "publishDiscovery",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 353,
+      "line": 384,
+      "methodLine": 385,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 388
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/{discoveryResultId}/qq-channel-post",
       "controller": "ResourceHubAdminController",
+      "methodName": "queueDiscoveryForQqChannel",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 410,
+      "line": 441,
+      "methodLine": 442,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 446
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/discoveries/{discoveryResultId}/retry-share-publish",
       "controller": "ResourceHubAdminController",
+      "methodName": "retryShareAndPublish",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 361,
+      "line": 392,
+      "methodLine": 393,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 396
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/resource-hub/gying/sources/{source}/pause",
+      "controller": "ResourceHubAdminController",
+      "methodName": "pauseGyingSource",
+      "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
+      "line": 215,
+      "methodLine": 216,
+      "directGuardCalls": [
+        "requireAdmin"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 220
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/missing-resources",
       "controller": "ResourceHubAdminController",
+      "methodName": "missingResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 521,
+      "line": 591,
+      "methodLine": 592,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 598
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/missing-resources/batch/resolve",
       "controller": "ResourceHubAdminController",
+      "methodName": "resolveMissingResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 593,
+      "line": 663,
+      "methodLine": 664,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 668
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/missing-resources/{movieId}/resolve",
       "controller": "ResourceHubAdminController",
+      "methodName": "resolveMissingResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 576,
+      "line": 646,
+      "methodLine": 647,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 651
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/overview",
       "controller": "ResourceHubAdminController",
+      "methodName": "overview",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 160,
+      "line": 168,
+      "methodLine": 169,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 171
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/quark/transfers/submit",
       "controller": "ResourceHubAdminController",
+      "methodName": "submitPendingQuarkTransfers",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 505,
+      "line": 575,
+      "methodLine": 576,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 579
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/quark/transfers/{taskId}/submit",
       "controller": "ResourceHubAdminController",
+      "methodName": "submitQuarkTransfer",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 513,
+      "line": 583,
+      "methodLine": 584,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 587
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/tasks",
       "controller": "ResourceHubAdminController",
+      "methodName": "tasks",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 222,
+      "line": 253,
+      "methodLine": 254,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 260
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/tmdb/metadata-sync",
       "controller": "ResourceHubAdminController",
+      "methodName": "enqueueTmdbMetadataSync",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 244,
+      "line": 275,
+      "methodLine": 276,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 279
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/tmdb/metadata-sync/{taskId}/run",
       "controller": "ResourceHubAdminController",
+      "methodName": "runTmdbMetadataSync",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 262,
+      "line": 293,
+      "methodLine": 294,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 297
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/resource-hub/transfers/run",
+      "controller": "ResourceHubAdminController",
+      "methodName": "runCloudDriveTransfers",
+      "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
+      "line": 536,
+      "methodLine": 537,
+      "directGuardCalls": [
+        "requireAdmin"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 540
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/resource-hub/worker/run-once",
       "controller": "ResourceHubAdminController",
+      "methodName": "runWorkerOnce",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 214,
+      "line": 245,
+      "methodLine": 246,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 249
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-hub/worker/status",
       "controller": "ResourceHubAdminController",
+      "methodName": "workerStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubAdminController.java",
-      "line": 207,
+      "line": 238,
+      "methodLine": 239,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 241
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/resource-reports",
       "controller": "AdminResourceReportController",
+      "methodName": "listReports",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminResourceReportController.java",
       "line": 59,
+      "methodLine": 60,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 68
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/resource-reports/{id}/status",
       "controller": "AdminResourceReportController",
+      "methodName": "updateReportStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/AdminResourceReportController.java",
       "line": 89,
+      "methodLine": 90,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 94
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/social-publishing/logs",
       "controller": "SocialPublishingAdminController",
+      "methodName": "logs",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 270,
+      "methodLine": 271,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 277
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/logs/{id}/retry",
       "controller": "SocialPublishingAdminController",
+      "methodName": "retry",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 262,
+      "methodLine": 263,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 266
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/social-publishing/overview",
       "controller": "SocialPublishingAdminController",
+      "methodName": "overview",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 59,
+      "methodLine": 60,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 62
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/publish-next",
       "controller": "SocialPublishingAdminController",
+      "methodName": "publishNextBatch",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 253,
+      "methodLine": 254,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 258
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/social-publishing/qq-accounts",
       "controller": "SocialPublishingAdminController",
+      "methodName": "qqAccounts",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 89,
+      "methodLine": 90,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 92
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/qq-accounts/login",
       "controller": "SocialPublishingAdminController",
+      "methodName": "startQqLogin",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 96,
+      "methodLine": 97,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 100
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "DELETE",
       "path": "/api/admin/social-publishing/qq-accounts/{accountKey}",
       "controller": "SocialPublishingAdminController",
+      "methodName": "removeQqAccount",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 115,
+      "methodLine": 116,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 119
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/social-publishing/qq-accounts/{accountKey}/login-status",
       "controller": "SocialPublishingAdminController",
+      "methodName": "qqLoginStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 107,
+      "methodLine": 108,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 111
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/targets",
       "controller": "SocialPublishingAdminController",
+      "methodName": "createTarget",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 149,
+      "methodLine": 150,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 153
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "DELETE",
       "path": "/api/admin/social-publishing/targets/{id}",
       "controller": "SocialPublishingAdminController",
+      "methodName": "deleteTarget",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 217,
+      "methodLine": 219,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 222
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/social-publishing/targets/{id}",
       "controller": "SocialPublishingAdminController",
+      "methodName": "updateTarget",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 180,
+      "methodLine": 181,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 185
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/targets/{id}/publish-next",
       "controller": "SocialPublishingAdminController",
+      "methodName": "publishNext",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 244,
+      "methodLine": 245,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 249
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/social-publishing/weibo/login",
       "controller": "SocialPublishingAdminController",
+      "methodName": "startWeiboLogin",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 135,
+      "methodLine": 136,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 138
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/social-publishing/weibo/login-status",
       "controller": "SocialPublishingAdminController",
+      "methodName": "weiboLoginStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/SocialPublishingAdminController.java",
       "line": 142,
+      "methodLine": 143,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 145
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/admin/users",
       "controller": "UserManagementController",
+      "methodName": "getUsers",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 54,
+      "methodLine": 55,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 62
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/users",
       "controller": "UserManagementController",
+      "methodName": "createUser",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 32,
+      "methodLine": 34,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 37
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/users/{id}",
       "controller": "UserManagementController",
+      "methodName": "updateUser",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 158,
+      "methodLine": 160,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 164
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/users/{id}/enabled",
       "controller": "UserManagementController",
+      "methodName": "updateUserEnabled",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 140,
+      "methodLine": 141,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 145
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/admin/users/{id}/impersonate",
       "controller": "UserManagementController",
+      "methodName": "impersonateUser",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 113,
+      "methodLine": 114,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 117
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/users/{id}/password",
       "controller": "UserManagementController",
+      "methodName": "resetUserPassword",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 236,
+      "methodLine": 237,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 241
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/admin/users/{id}/role",
       "controller": "UserManagementController",
+      "methodName": "updateUserRole",
       "source": "backend/src/main/java/com/gying/movie/controller/UserManagementController.java",
       "line": 83,
+      "methodLine": 84,
       "directGuardCalls": [
         "requireAdmin"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 88
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/ai/jobs/{id}",
+      "controller": "AiAssistantController",
+      "methodName": "cancel",
+      "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
+      "line": 38,
+      "methodLine": 39,
+      "directGuardCalls": [
+        "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 40
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1179,10 +2182,19 @@
       "method": "GET",
       "path": "/api/ai/jobs/{id}",
       "controller": "AiAssistantController",
+      "methodName": "job",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
       "line": 34,
+      "methodLine": 35,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 36
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1190,10 +2202,19 @@
       "method": "GET",
       "path": "/api/ai/natural-search",
       "controller": "CatalogAiController",
+      "methodName": "naturalSearch",
       "source": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
-      "line": 26,
+      "line": 36,
+      "methodLine": 37,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 39
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1201,10 +2222,19 @@
       "method": "POST",
       "path": "/api/ai/query",
       "controller": "AiAssistantController",
+      "methodName": "query",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
       "line": 25,
+      "methodLine": 26,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 27
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1212,10 +2242,19 @@
       "method": "GET",
       "path": "/api/ai/recommendations",
       "controller": "CatalogAiController",
+      "methodName": "recommendations",
       "source": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
-      "line": 32,
+      "line": 42,
+      "methodLine": 43,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 44
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1223,10 +2262,19 @@
       "method": "GET",
       "path": "/api/ai/search",
       "controller": "CatalogAiController",
+      "methodName": "search",
       "source": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
-      "line": 21,
+      "line": 31,
+      "methodLine": 32,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 34
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1234,10 +2282,19 @@
       "method": "GET",
       "path": "/api/ai/status",
       "controller": "AiAssistantController",
+      "methodName": "status",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
       "line": 20,
+      "methodLine": 21,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 22
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1245,10 +2302,19 @@
       "method": "POST",
       "path": "/api/ai/views",
       "controller": "CatalogAiController",
+      "methodName": "view",
       "source": "backend/src/main/java/com/gying/movie/controller/CatalogAiController.java",
-      "line": 36,
+      "line": 46,
+      "methodLine": 47,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 48
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1256,10 +2322,19 @@
       "method": "GET",
       "path": "/api/auth/devices",
       "controller": "AuthController",
+      "methodName": "devices",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 55,
+      "methodLine": 56,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 57
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1267,10 +2342,19 @@
       "method": "DELETE",
       "path": "/api/auth/devices/{id}",
       "controller": "AuthController",
+      "methodName": "revokeDevice",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 62,
+      "methodLine": 63,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 64
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1278,10 +2362,19 @@
       "method": "PUT",
       "path": "/api/auth/email",
       "controller": "AuthController",
+      "methodName": "updateEmail",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 164,
+      "methodLine": 165,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 168
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1289,19 +2382,31 @@
       "method": "POST",
       "path": "/api/auth/email-code",
       "controller": "AuthController",
+      "methodName": "sendEmailCode",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 73,
+      "methodLine": 74,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/auth/email/code",
       "controller": "AuthController",
+      "methodName": "sendEmailChangeCode",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 144,
+      "methodLine": 145,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 149
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1309,19 +2414,31 @@
       "method": "POST",
       "path": "/api/auth/login",
       "controller": "AuthController",
+      "methodName": "login",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 42,
+      "methodLine": 43,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/auth/me",
       "controller": "AuthController",
+      "methodName": "me",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 199,
+      "methodLine": 200,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 201
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1329,10 +2446,19 @@
       "method": "PUT",
       "path": "/api/auth/profile",
       "controller": "AuthController",
+      "methodName": "updateProfile",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 186,
+      "methodLine": 187,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 190
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1340,28 +2466,43 @@
       "method": "POST",
       "path": "/api/auth/register",
       "controller": "AuthController",
+      "methodName": "register",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 92,
+      "methodLine": 93,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/auth/registration-policy",
       "controller": "AuthController",
+      "methodName": "registrationPolicy",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 68,
+      "methodLine": 69,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/auth/reset-password",
       "controller": "AuthController",
+      "methodName": "resetPassword",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 122,
+      "methodLine": 123,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 126
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1369,10 +2510,19 @@
       "method": "POST",
       "path": "/api/auth/reset-password/code",
       "controller": "AuthController",
+      "methodName": "sendResetPasswordCode",
       "source": "backend/src/main/java/com/gying/movie/controller/AuthController.java",
       "line": 102,
+      "methodLine": 103,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 106
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1380,19 +2530,31 @@
       "method": "GET",
       "path": "/api/captcha/generate",
       "controller": "CaptchaController",
+      "methodName": "generate",
       "source": "backend/src/main/java/com/gying/movie/controller/CaptchaController.java",
       "line": 22,
+      "methodLine": 23,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/comments",
       "controller": "CommentController",
+      "methodName": "addComment",
       "source": "backend/src/main/java/com/gying/movie/controller/CommentController.java",
       "line": 70,
+      "methodLine": 71,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 75
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1400,10 +2562,19 @@
       "method": "DELETE",
       "path": "/api/comments/{id}",
       "controller": "CommentController",
+      "methodName": "deleteComment",
       "source": "backend/src/main/java/com/gying/movie/controller/CommentController.java",
       "line": 168,
+      "methodLine": 169,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 172
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1411,10 +2582,19 @@
       "method": "POST",
       "path": "/api/comments/{id}/upvote",
       "controller": "CommentController",
+      "methodName": "upvoteComment",
       "source": "backend/src/main/java/com/gying/movie/controller/CommentController.java",
       "line": 138,
+      "methodLine": 139,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 142
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1422,19 +2602,31 @@
       "method": "GET",
       "path": "/api/comments/{relateId}",
       "controller": "CommentController",
+      "methodName": "getCommentsByRelateId",
       "source": "backend/src/main/java/com/gying/movie/controller/CommentController.java",
       "line": 125,
+      "methodLine": 126,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/favorites/check",
       "controller": "FavoriteController",
+      "methodName": "check",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 109,
+      "methodLine": 110,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 113
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1442,28 +2634,43 @@
       "method": "GET",
       "path": "/api/favorites/count",
       "controller": "FavoriteController",
+      "methodName": "getCount",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 132,
+      "methodLine": 133,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/favorites/hot",
       "controller": "FavoriteController",
+      "methodName": "hot",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 143,
+      "methodLine": 144,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/favorites/mine",
       "controller": "FavoriteController",
+      "methodName": "mine",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 232,
+      "methodLine": 233,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 237
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1471,19 +2678,71 @@
       "method": "GET",
       "path": "/api/favorites/tmdb-hot",
       "controller": "FavoriteController",
+      "methodName": "tmdbHot",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 205,
+      "methodLine": 206,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/favorites/toggle",
       "controller": "FavoriteController",
+      "methodName": "toggle",
       "source": "backend/src/main/java/com/gying/movie/controller/FavoriteController.java",
       "line": 50,
+      "methodLine": 51,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 54
+        }
+      ],
+      "authorizationReviewRequired": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/internal/ai/catalog/documents",
+      "controller": "CatalogResearchController",
+      "methodName": "documents",
+      "source": "backend/src/main/java/com/gying/movie/controller/CatalogResearchController.java",
+      "line": 15,
+      "methodLine": 15,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "require",
+          "line": 15
+        }
+      ],
+      "authorizationReviewRequired": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/internal/ai/catalog/query",
+      "controller": "CatalogResearchController",
+      "methodName": "query",
+      "source": "backend/src/main/java/com/gying/movie/controller/CatalogResearchController.java",
+      "line": 16,
+      "methodLine": 16,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "require",
+          "line": 17
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1491,37 +2750,99 @@
       "method": "POST",
       "path": "/api/internal/ai/claim",
       "controller": "AiAssistantController",
+      "methodName": "claim",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
-      "line": 42,
-      "directGuardCalls": [],
+      "line": 51,
+      "methodLine": 52,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internal",
+          "method": "require",
+          "line": 54
+        }
+      ],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/internal/ai/heartbeat",
       "controller": "AiAssistantController",
+      "methodName": "heartbeat",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
-      "line": 38,
-      "directGuardCalls": [],
+      "line": 47,
+      "methodLine": 48,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internal",
+          "method": "require",
+          "line": 49
+        }
+      ],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/internal/ai/jobs/{id}",
       "controller": "AiAssistantController",
+      "methodName": "complete",
       "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
-      "line": 46,
-      "directGuardCalls": [],
+      "line": 57,
+      "methodLine": 58,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internal",
+          "method": "require",
+          "line": 59
+        }
+      ],
+      "authorizationReviewRequired": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/internal/ai/jobs/{id}/renew",
+      "controller": "AiAssistantController",
+      "methodName": "renew",
+      "source": "backend/src/main/java/com/gying/movie/controller/AiAssistantController.java",
+      "line": 42,
+      "methodLine": 43,
+      "directGuardCalls": [
+        "require"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internal",
+          "method": "require",
+          "line": 45
+        }
+      ],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/internal/resource-hub/discoveries/{discoveryResultId}/publish",
       "controller": "ResourceHubInternalController",
+      "methodName": "publishDiscovery",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 79,
+      "methodLine": 80,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 83
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1529,10 +2850,19 @@
       "method": "GET",
       "path": "/api/internal/resource-hub/health",
       "controller": "ResourceHubInternalController",
+      "methodName": "health",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 103,
+      "methodLine": 104,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 106
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1540,10 +2870,19 @@
       "method": "POST",
       "path": "/api/internal/resource-hub/ingest",
       "controller": "ResourceHubInternalController",
+      "methodName": "ingest",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 115,
+      "methodLine": 116,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 119
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1551,10 +2890,19 @@
       "method": "POST",
       "path": "/api/internal/resource-hub/p2p/{movieId}/sync",
       "controller": "ResourceHubInternalController",
+      "methodName": "syncP2pMetadata",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 71,
+      "methodLine": 72,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 75
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1562,10 +2910,19 @@
       "method": "POST",
       "path": "/api/internal/resource-hub/quark-transfers/{taskId}/run",
       "controller": "ResourceHubInternalController",
+      "methodName": "runQuarkTransfer",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 87,
+      "methodLine": 88,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 91
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1573,10 +2930,19 @@
       "method": "POST",
       "path": "/api/internal/resource-hub/xunlei-transfers/{taskId}/run",
       "controller": "ResourceHubInternalController",
+      "methodName": "runXunleiTransfer",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceHubInternalController.java",
       "line": 95,
+      "methodLine": 96,
       "directGuardCalls": [
         "requireInternal"
+      ],
+      "directGuards": [
+        {
+          "receiver": "internalAuthHelper",
+          "method": "requireInternal",
+          "line": 99
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1584,10 +2950,19 @@
       "method": "GET",
       "path": "/api/invitations",
       "controller": "InvitationController",
+      "methodName": "mine",
       "source": "backend/src/main/java/com/gying/movie/controller/InvitationController.java",
       "line": 35,
+      "methodLine": 36,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 37
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1595,10 +2970,19 @@
       "method": "POST",
       "path": "/api/invitations",
       "controller": "InvitationController",
+      "methodName": "create",
       "source": "backend/src/main/java/com/gying/movie/controller/InvitationController.java",
       "line": 45,
+      "methodLine": 46,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 47
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1606,10 +2990,19 @@
       "method": "DELETE",
       "path": "/api/invitations/{id}",
       "controller": "InvitationController",
+      "methodName": "revoke",
       "source": "backend/src/main/java/com/gying/movie/controller/InvitationController.java",
       "line": 61,
+      "methodLine": 62,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 63
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1617,82 +3010,115 @@
       "method": "POST",
       "path": "/api/monitoring/page-view",
       "controller": "MonitoringController",
+      "methodName": "pageView",
       "source": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
       "line": 16,
+      "methodLine": 16,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/monitoring/resource-operation",
       "controller": "MonitoringController",
+      "methodName": "resourceOperation",
       "source": "backend/src/main/java/com/gying/movie/controller/MonitoringController.java",
       "line": 17,
+      "methodLine": 17,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/filters",
       "controller": "MovieController",
+      "methodName": "getFilterOptions",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
       "line": 151,
+      "methodLine": 152,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/hot-searches",
       "controller": "MovieController",
+      "methodName": "getHotSearches",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
       "line": 43,
+      "methodLine": 44,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/list",
       "controller": "MovieController",
+      "methodName": "getMovieList",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
       "line": 50,
+      "methodLine": 51,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/series",
       "controller": "MovieController",
+      "methodName": "getSeriesList",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
       "line": 120,
+      "methodLine": 121,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/{id}",
       "controller": "MovieController",
+      "methodName": "getMovieDetail",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieController.java",
       "line": 133,
+      "methodLine": 134,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/movies/{id}/recommendations",
       "controller": "MovieRecommendationController",
+      "methodName": "recommendations",
       "source": "backend/src/main/java/com/gying/movie/controller/MovieRecommendationController.java",
       "line": 14,
+      "methodLine": 15,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/notifications",
       "controller": "NotificationController",
+      "methodName": "list",
       "source": "backend/src/main/java/com/gying/movie/controller/NotificationController.java",
       "line": 26,
+      "methodLine": 27,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 32
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1700,10 +3126,19 @@
       "method": "PUT",
       "path": "/api/notifications/read-all",
       "controller": "NotificationController",
+      "methodName": "markAllRead",
       "source": "backend/src/main/java/com/gying/movie/controller/NotificationController.java",
       "line": 68,
+      "methodLine": 69,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 71
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1711,10 +3146,19 @@
       "method": "GET",
       "path": "/api/notifications/unread-count",
       "controller": "NotificationController",
+      "methodName": "unreadCount",
       "source": "backend/src/main/java/com/gying/movie/controller/NotificationController.java",
       "line": 44,
+      "methodLine": 45,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 47
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1722,10 +3166,19 @@
       "method": "PUT",
       "path": "/api/notifications/{id}/read",
       "controller": "NotificationController",
+      "methodName": "markRead",
       "source": "backend/src/main/java/com/gying/movie/controller/NotificationController.java",
       "line": 54,
+      "methodLine": 55,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 58
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1733,19 +3186,31 @@
       "method": "GET",
       "path": "/api/qq-bot/health",
       "controller": "QqBotController",
+      "methodName": "health",
       "source": "backend/src/main/java/com/gying/movie/controller/QqBotController.java",
       "line": 35,
+      "methodLine": 36,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/qq-bot/onebot",
       "controller": "QqBotController",
+      "methodName": "oneBotWebhook",
       "source": "backend/src/main/java/com/gying/movie/controller/QqBotController.java",
       "line": 70,
+      "methodLine": 71,
       "directGuardCalls": [
         "requireWebhookToken"
+      ],
+      "directGuards": [
+        {
+          "receiver": "this",
+          "method": "requireWebhookToken",
+          "line": 75
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1753,10 +3218,19 @@
       "method": "GET",
       "path": "/api/qq-bot/search-reply",
       "controller": "QqBotController",
+      "methodName": "searchReply",
       "source": "backend/src/main/java/com/gying/movie/controller/QqBotController.java",
       "line": 40,
+      "methodLine": 41,
       "directGuardCalls": [
         "requireWebhookToken"
+      ],
+      "directGuards": [
+        {
+          "receiver": "this",
+          "method": "requireWebhookToken",
+          "line": 46
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1764,10 +3238,19 @@
       "method": "GET",
       "path": "/api/resource-search/jobs/{jobId}",
       "controller": "WebResourceSearchController",
+      "methodName": "getJob",
       "source": "backend/src/main/java/com/gying/movie/controller/WebResourceSearchController.java",
       "line": 87,
+      "methodLine": 88,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 90
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1775,10 +3258,19 @@
       "method": "POST",
       "path": "/api/resource-search/query",
       "controller": "WebResourceSearchController",
+      "methodName": "query",
       "source": "backend/src/main/java/com/gying/movie/controller/WebResourceSearchController.java",
       "line": 55,
+      "methodLine": 56,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "auth",
+          "method": "requireUser",
+          "line": 59
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1786,158 +3278,286 @@
       "method": "POST",
       "path": "/api/resources",
       "controller": "ResourceLinkController",
+      "methodName": "submitResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 197,
+      "methodLine": 198,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/resources/admin",
       "controller": "ResourceLinkController",
+      "methodName": "createAdminResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 292,
+      "methodLine": 293,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 296
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/resources/admin/all",
       "controller": "ResourceLinkController",
+      "methodName": "getAllResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 620,
+      "methodLine": 621,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 632
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "DELETE",
       "path": "/api/resources/admin/batch",
       "controller": "ResourceLinkController",
+      "methodName": "batchDeleteResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 699,
+      "methodLine": 700,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 703
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/resources/admin/invalid-checks",
       "controller": "ResourceLinkController",
+      "methodName": "listInvalidResourceChecks",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 926,
+      "methodLine": 927,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 930
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/resources/admin/invalid-checks/scan",
       "controller": "ResourceLinkController",
+      "methodName": "scanInvalidResourceChecks",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 938,
+      "methodLine": 939,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 942
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/resources/admin/repair-invalid",
       "controller": "ResourceLinkController",
+      "methodName": "repairInvalidResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 770,
+      "methodLine": 771,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 774
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/resources/admin/repair-invalid/jobs/{jobId}",
       "controller": "ResourceLinkController",
+      "methodName": "getRepairInvalidJob",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 789,
+      "methodLine": 790,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 793
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "DELETE",
       "path": "/api/resources/admin/{id}",
       "controller": "ResourceLinkController",
+      "methodName": "deleteResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 684,
+      "methodLine": 685,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 688
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/resources/admin/{id}/link-status",
       "controller": "ResourceLinkController",
+      "methodName": "updateLinkStatus",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 664,
+      "methodLine": 665,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 669
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "POST",
       "path": "/api/resources/admin/{id}/repair-invalid",
       "controller": "ResourceLinkController",
+      "methodName": "repairInvalidResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 716,
+      "methodLine": 717,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 720
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "PUT",
       "path": "/api/resources/batch/audit",
       "controller": "ResourceLinkController",
+      "methodName": "batchAuditResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 594,
+      "methodLine": 595,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 598
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/resources/bind-candidates",
       "controller": "ResourceLinkController",
+      "methodName": "getBindCandidates",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 149,
+      "methodLine": 150,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/resources/form-config",
       "controller": "ResourceLinkController",
+      "methodName": "getResourceFormConfig",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 139,
+      "methodLine": 140,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "GET",
       "path": "/api/resources/mine",
       "controller": "ResourceLinkController",
+      "methodName": "getMyResources",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 386,
+      "methodLine": 387,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 394
+        }
       ],
       "authorizationReviewRequired": true
     },
@@ -1945,48 +3565,76 @@
       "method": "DELETE",
       "path": "/api/resources/{id}",
       "controller": "ResourceLinkController",
+      "methodName": "deleteOwnResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 553,
+      "methodLine": 554,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "PUT",
       "path": "/api/resources/{id}",
       "controller": "ResourceLinkController",
+      "methodName": "updateOwnResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 445,
+      "methodLine": 447,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "PUT",
       "path": "/api/resources/{id}/audit",
       "controller": "ResourceLinkController",
+      "methodName": "auditResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 573,
+      "methodLine": 574,
       "directGuardCalls": [
         "requireAdmin"
       ],
-      "authorizationReviewRequired": true
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireAdmin",
+          "line": 579
+        }
+      ],
+      "authorizationReviewRequired": true,
+      "authorizationHint": "ADMIN (direct requireAdmin)"
     },
     {
       "method": "GET",
       "path": "/api/resources/{id}/bindings",
       "controller": "ResourceLinkController",
+      "methodName": "getResourceBindings",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 416,
+      "methodLine": 417,
       "directGuardCalls": [],
+      "directGuards": [],
       "authorizationReviewRequired": true
     },
     {
       "method": "POST",
       "path": "/api/resources/{id}/report",
       "controller": "ResourceLinkController",
+      "methodName": "reportInvalidResource",
       "source": "backend/src/main/java/com/gying/movie/controller/ResourceLinkController.java",
       "line": 353,
+      "methodLine": 354,
       "directGuardCalls": [
         "requireUser"
+      ],
+      "directGuards": [
+        {
+          "receiver": "authHelper",
+          "method": "requireUser",
+          "line": 358
+        }
       ],
       "authorizationReviewRequired": true
     }

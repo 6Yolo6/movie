@@ -3,6 +3,11 @@ package com.gying.movie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.client.XunleiClient;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.config.CloudDriveProvider;
+import com.gying.movie.dto.CloudDriveWorkflowConfig;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Locale;
 import com.gying.movie.dto.ResourceHubConfigRequest;
 import com.gying.movie.dto.ResourceHubConfigResponse;
 import com.gying.movie.entity.SysConfig;
@@ -137,6 +142,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         worker.setDiscoveredRetryDelayMs(readLong(KEY_DISCOVERED_RETRY_DELAY_MS, worker.getDiscoveredRetryDelayMs(), 0, 3600000));
         worker.setDiscoveredRetryCron(readString(KEY_DISCOVERED_RETRY_CRON, worker.getDiscoveredRetryCron()));
 
+        reloadDriveWorkflows();
         ensureDefaults();
         return fromProperties();
     }
@@ -185,6 +191,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
 
+        validateDriveWorkflows(request.getDriveWorkflows());
         if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
             weeklyTransferSettings.validate(request.getWeeklyTransferSchedules());
         }
@@ -195,6 +202,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
         var tmdbRanges = mergeRanges("TMDB", tmdb.getAutoSyncRanges(), request.getTmdbAutoSyncRanges());
         var gyingRanges = mergeRanges("GYING", gying.getAutoSyncRanges(), request.getGyingAutoSyncRanges());
+
+        persistDriveWorkflows(request.getDriveWorkflows());
 
         // Credentials are intentionally runtime-only. They are never written to sys_config.
         if (xunlei != null) {
@@ -306,6 +315,11 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             int value = clamp(request.getWorkerQuarkLimit(), 1, 20);
             worker.setQuarkLimit(value);
             upsert(KEY_WORKER_QUARK_LIMIT, Integer.toString(value), "Worker 每轮最多提交的夸克转存任务数");
+            // A legacy client must still edit the effective limit after the new page has saved it.
+            String driveLimitKey = driveKey(CloudDriveProvider.QUARK, "batch_limit");
+            if (sysConfigService.count(new QueryWrapper<SysConfig>().eq("config_key", driveLimitKey)) > 0) {
+                upsertDrive(driveLimitKey, Integer.toString(value), "夸克网盘每批转存上限");
+            }
         }
         if (request.getWorkerPublishLimit() != null) {
             int value = clamp(request.getWorkerPublishLimit(), 1, 100);
@@ -335,6 +349,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
             weeklyTransferSettings.update(request.getWeeklyTransferSchedules());
         }
+        applyDriveWorkflows(request.getDriveWorkflows());
         return fromProperties();
     }
 
@@ -359,6 +374,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setXunleiAuthorizationExpiresAt(expiresAt);
         response.setXunleiAuthorizationExpired(expired);
         response.setXunleiCaptchaConfigured(xunlei != null && hasText(xunlei.getCaptchaToken()));
+        response.setDriveWorkflows(driveWorkflowResponse(configured));
         response.setEnabled(properties.isEnabled());
         response.setAutoApprove(properties.isAutoApprove());
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));
@@ -407,6 +423,143 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         }
         if (weeklyTransferSettings != null) response.setWeeklyTransferSchedules(weeklyTransferSettings.get());
         return response;
+    }
+
+    private String driveKey(CloudDriveProvider provider, String field) {
+        return "resource.hub.drive." + provider.name().toLowerCase(Locale.ROOT) + "." + field;
+    }
+
+    private void reloadDriveWorkflows() {
+        var quark = properties.getQuark();
+        var xunlei = properties.getXunlei();
+        var worker = properties.getWorker();
+        quark.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "discovery_enabled"), quark.isDiscoveryEnabled()));
+        quark.setTransferEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "transfer_enabled"), quark.isTransferEnabled()));
+        quark.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "gying_publish_enabled"), quark.isGyingPublishEnabled()));
+        quark.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "share_enabled"), quark.isShareEnabled()));
+        quark.setSavePath(readString(driveKey(CloudDriveProvider.QUARK, "save_path"), quark.getSavePath()));
+        worker.setQuarkLimit(readInt(driveKey(CloudDriveProvider.QUARK, "batch_limit"), worker.getQuarkLimit(), 1, 20));
+        xunlei.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "discovery_enabled"), xunlei.isDiscoveryEnabled()));
+        xunlei.setEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "transfer_enabled"), xunlei.isEnabled()));
+        xunlei.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "gying_publish_enabled"), xunlei.isGyingPublishEnabled()));
+        xunlei.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "share_enabled"), xunlei.isShareEnabled()));
+        xunlei.setSavePath(readString(driveKey(CloudDriveProvider.XUNLEI, "save_path"), xunlei.getSavePath()));
+        worker.setXunleiLimit(readInt(driveKey(CloudDriveProvider.XUNLEI, "batch_limit"), worker.getXunleiLimit(), 1, 20));
+    }
+
+    private List<CloudDriveWorkflowConfig> driveWorkflowResponse(boolean xunleiCredentialConfigured) {
+        var workflows = new ArrayList<CloudDriveWorkflowConfig>();
+        for (var provider : CloudDriveProvider.values()) {
+            var workflow = new CloudDriveWorkflowConfig();
+            workflow.setProvider(provider.name());
+            workflow.setSupported(provider.isSupported());
+            workflow.setStatus(provider.status());
+            if (provider == CloudDriveProvider.QUARK) {
+                var config = properties.getQuark();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isTransferEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getQuarkLimit());
+                workflow.setCredentialConfigured(hasText(config.getToken()));
+            } else if (provider == CloudDriveProvider.XUNLEI) {
+                var config = properties.getXunlei();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getXunleiLimit());
+                workflow.setCredentialConfigured(xunleiCredentialConfigured);
+            } else {
+                workflow.setDiscoveryEnabled(false);
+                workflow.setTransferEnabled(false);
+                workflow.setGyingPublishEnabled(false);
+                workflow.setShareEnabled(false);
+                workflow.setCredentialConfigured(false);
+            }
+            workflows.add(workflow);
+        }
+        return List.copyOf(workflows);
+    }
+
+    private void validateDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        var seen = new HashSet<CloudDriveProvider>();
+        for (var workflow : workflows) {
+            var provider = workflow == null ? null : CloudDriveProvider.from(workflow.getProvider());
+            if (provider == null || !provider.isSupported() || !seen.add(provider)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "网盘类型无效、重复或尚未接入");
+            }
+            if (workflow.getBatchLimit() != null && (workflow.getBatchLimit() < 1 || workflow.getBatchLimit() > 20)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "每批转存上限须为 1–20");
+            }
+            if (workflow.getSavePath() != null) {
+                String path = workflow.getSavePath();
+                if (path.isBlank() || path.length() > 300 || !path.startsWith("/") || path.contains("\\")
+                        || path.chars().anyMatch(Character::isISOControl)
+                        || Arrays.stream(path.split("/", -1)).anyMatch(segment -> "..".equals(segment))) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "保存路径须为 1–300 字符的绝对网盘路径，不能包含 .. 或反斜杠");
+                }
+            }
+        }
+    }
+
+    private void persistDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        // Validate the complete request before this method. Persist before changing live workflow policy.
+        for (var workflow : workflows) {
+            var provider = CloudDriveProvider.from(workflow.getProvider());
+            var fields = new LinkedHashMap<String, Object>();
+            fields.put("discovery_enabled", workflow.getDiscoveryEnabled());
+            fields.put("transfer_enabled", workflow.getTransferEnabled());
+            fields.put("gying_publish_enabled", workflow.getGyingPublishEnabled());
+            fields.put("share_enabled", workflow.getShareEnabled());
+            fields.put("save_path", workflow.getSavePath());
+            fields.put("batch_limit", workflow.getBatchLimit());
+            for (var field : fields.entrySet()) {
+                if (field.getValue() != null) upsertDrive(driveKey(provider, field.getKey()),
+                        field.getValue().toString(), "网盘工作流配置 " + provider.name() + " " + field.getKey());
+            }
+        }
+    }
+
+    private void applyDriveWorkflows(List<CloudDriveWorkflowConfig> workflows) {
+        if (workflows == null) return;
+        for (var workflow : workflows) {
+            if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.QUARK) {
+                var config = properties.getQuark();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setTransferEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setQuarkLimit(workflow.getBatchLimit());
+            } else {
+                var config = properties.getXunlei();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setXunleiLimit(workflow.getBatchLimit());
+            }
+        }
+    }
+
+    private void upsertDrive(String key, String value, String description) {
+        SysConfig config = sysConfigService.getOne(new QueryWrapper<SysConfig>().eq("config_key", key));
+        boolean create = config == null;
+        if (create) {
+            config = new SysConfig();
+            config.setConfigKey(key);
+        }
+        config.setConfigValue(value);
+        config.setDescription(description);
+        if (!(create ? sysConfigService.save(config) : sysConfigService.updateById(config))) {
+            throw new IllegalStateException("Cloud drive workflow configuration was not persisted");
+        }
     }
 
     private String xunleiAuthorizationExpiresAt(String authorization) {

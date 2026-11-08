@@ -3,7 +3,7 @@ import test from 'node:test';
 import { runOfflineReact } from './helpers/offline-react.mjs';
 
 // Exercise the real admin page and range controls, without a server or real credentials.
-async function pauseSuite({ React, createRoot, loadPage, readApiError }) {
+async function pauseSuite({ React, createRoot, loadPage, loadModule, readApiError }) {
     const results = [];
     const sources = ['HITS_MOVIE', 'HITS_TV', 'HITS_ANIME', 'CSCORE_MOVIE', 'CSCORE_TV', 'CSCORE_ANIME'];
     const same = (actual, expected, label) => {
@@ -95,8 +95,10 @@ async function pauseSuite({ React, createRoot, loadPage, readApiError }) {
             'next/navigation': { useRouter: () => router },
             'react-i18next': { useTranslation: () => ({ t }) },
         };
+        mocks['@/lib/cloudDriveWorkflows'] = loadModule('driveWorkflows', mocks);
         const Ranges = loadPage('crawlRanges', mocks);
-        const Page = loadPage('resourceHub', { ...mocks, '@/components/admin/MetadataCrawlRanges': Ranges });
+        const Drives = loadPage('driveSettings', mocks);
+        const Page = loadPage('resourceHub', { ...mocks, '@/components/admin/MetadataCrawlRanges': Ranges, '@/components/admin/DriveWorkflowSettings': Drives });
         const all = name => Array.from(container.querySelectorAll('[data-fixture="' + name + '"]'), node => node.fixtureProps);
         const button = source => all('Button').find(props => props['data-testid'] === 'gying-pause-' + source);
         const last = () => calls[calls.length - 1];
@@ -291,6 +293,8 @@ test('GYING pause controls: real React, source-scoped mocked API', { timeout: 60
     const results = await runOfflineReact(pauseSuite, {
         resourceHub: 'src/app/admin/resource-hub/page.tsx',
         crawlRanges: 'src/components/admin/MetadataCrawlRanges.tsx',
+        driveSettings: 'src/components/admin/DriveWorkflowSettings.tsx',
+        driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
     assert.equal(results.length, 14);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));

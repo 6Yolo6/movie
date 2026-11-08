@@ -212,6 +212,14 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private boolean ensurePublishableShare(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
+        if (!"DISK".equalsIgnoreCase(firstText(discovery.getResourceType(), "DISK"))) {
+            return true;
+        }
+        var provider = com.gying.movie.config.CloudDriveProvider.from(discovery.getProvider());
+        if (provider == null || !provider.isSupported()) {
+            result.setSkipped(result.getSkipped() + 1);
+            return false;
+        }
         if (isXunleiDiscovery(discovery)) {
             if (hasText(discovery.getShareUrl())) {
                 return true;
@@ -222,11 +230,13 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             result.setSkipped(result.getSkipped() + 1);
             return false;
         }
-        if (!resourceHubProperties.getQuark().isShareEnabled() || !isQuarkDiscovery(discovery)) {
-            return true;
-        }
         if (hasText(discovery.getShareUrl())) {
             return true;
+        }
+        if (!resourceHubProperties.getQuark().isShareEnabled()
+                || !resourceHubProperties.isDriveTransferEnabled("QUARK") || !isQuarkDiscovery(discovery)) {
+            result.setSkipped(result.getSkipped() + 1);
+            return false;
         }
         QuarkTransferTask transfer = findTransferTask(discovery);
         if (transfer != null && hasText(transfer.getShareUrl())) {

@@ -381,7 +381,7 @@
   "yes": "是",
   "no": "否",
   "resourceHubTitle": "影视资源中心",
-  "resourceHubHint": "集中监控元数据采集、资源搜索、夸克转存和发布入库。",
+  "resourceHubHint": "集中监控元数据采集、资源搜索、网盘转存和发布入库。",
   "resourceHubLoadFailed": "加载 Resource Hub 概览失败",
   "resourceHubTasksLoadFailed": "加载 Resource Hub 任务失败",
   "resourceHubDiscoveriesLoadFailed": "加载发现结果失败",
@@ -1278,5 +1278,44 @@
   "aiExecutionTrace": "查看查询记录",
   "aiUnverifiedConditions": "尚未核实的要求",
   "aiRelevanceChecked": "已核对资料相关性",
-  "aiMinutes": "分钟"
+  "aiMinutes": "分钟",
+  "cloudDriveWorkflows": {
+    "title": "网盘工作流",
+    "providers": {
+      "QUARK": "夸克网盘",
+      "XUNLEI": "迅雷网盘",
+      "BAIDU": "百度网盘"
+    },
+    "available": "已接入",
+    "planned": "待接入",
+    "help": "按网盘分别设置资源发现、转存、自有分享和 GYING 发布。保存配置不会立即运行任务，也不会自动启动历史队列；每个网盘独立保存。",
+    "baiduPlanned": "百度网盘待接入。后续完成账号授权、发现、转存和自有分享适配后，才能启用工作流。",
+    "unavailable": "当前网盘配置不可用，请确认后端已提供网盘工作流配置。",
+    "credentialPresent": "已读取账号配置",
+    "credentialMissing": "未读取账号配置",
+    "credentialHelp": "这里只表示配置是否存在，登录有效性以实际任务结果为准。",
+    "fields": {
+      "discoveryEnabled": "发现资源",
+      "transferEnabled": "转存资源",
+      "shareEnabled": "生成自有分享",
+      "gyingPublishEnabled": "发布到 GYING",
+      "savePath": "转存目录",
+      "batchLimit": "手动转存批次上限"
+    },
+    "shareDisabledHelp": "关闭后不再生成新的自有分享。没有自有分享的资源无法入库或发布；已有自有分享仍可发布。",
+    "savePathHelp": "使用网盘内以 / 开头的路径，最长 300 字符，不能包含 .. 路径段或反斜杠。目录修改仅影响新任务，不移动已有任务。",
+    "saveProvider": "保存{{provider}}配置",
+    "runTransfers": "手动运行待转存任务",
+    "saveBeforeRun": "请先保存当前网盘的修改，再手动运行转存任务。",
+    "saved": "{{provider}}配置已保存",
+    "saveFailed": "网盘配置保存失败，修改已保留。",
+    "invalidResponse": "网盘配置响应不完整，请刷新确认。",
+    "transferDisabled": "当前网盘未启用转存。",
+    "transferFailed": "转存任务运行失败，请稍后重试。",
+    "transferResult": "转存运行完成：提交 {{submitted}} 条，跳过 {{skipped}} 条，失败 {{failed}} 条",
+    "validation": {
+      "savePath": "请输入以 / 开头、最长 300 字符的网盘路径，不包含 .. 路径段、反斜杠或控制字符。",
+      "batchLimit": "手动转存批次上限必须是 1–20 的整数。"
+    }
+  }
 }

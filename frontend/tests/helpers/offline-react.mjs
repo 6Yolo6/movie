@@ -29,10 +29,13 @@ function bootstrap(modules, suite) {
         React: load('react'),
         createRoot: load('react-dom/client').createRoot,
         readApiError: load('api').readApiError,
-        loadPage(id, mocks) {
+        loadModule(id, mocks) {
             const record = { exports: {} };
             modules[id](record, record.exports, name => Object.hasOwn(mocks, name) ? mocks[name] : load(name), process);
-            return record.exports.default;
+            return record.exports;
+        },
+        loadPage(id, mocks) {
+            return runtime.loadModule(id, mocks).default;
         },
     };
     const finish = result => {

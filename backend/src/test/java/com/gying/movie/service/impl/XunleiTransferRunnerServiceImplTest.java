@@ -32,6 +32,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void isolatesEachTransferInItsOwnFolder() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         properties.getXunlei().setSavePath("/影视剧资源分享(先转存后再查看)/GYing Resource Hub");
         XunleiTransferTask task = new XunleiTransferTask();
         task.setId(42L);
@@ -45,6 +46,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void namesTransferFolderWithMovieTitleAndResourceId() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiTransferTask task = new XunleiTransferTask();
         task.setMovieId("tmdb_tv_93088");
 
@@ -56,6 +58,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void sanitizesMovieTitleButKeepsResourceIdInTransferFolderName() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiTransferTask task = new XunleiTransferTask();
         task.setMovieId("tmdb:tv/93088");
 
@@ -67,6 +70,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void automaticRunnerSkipsCappedFailuresWithoutStarvingPendingTasks() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -102,6 +106,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void sharesStableMovieFolderAfterRestoringFilteredVideos() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -146,6 +151,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void movesRestoredTraceIdsIntoStableFolderBeforeSharing() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -187,6 +193,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void retriesMoveAndShareWithoutRestoringAgain() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -238,6 +245,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void skipsAlreadySucceededTask() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -267,6 +275,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void clearsPreviousErrorAfterWaitingShareRetrySucceeds() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -303,6 +312,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void propagatesPasswordFromFinalShareUrlToDiscoveryAndResourceLink() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -347,6 +357,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void reportsWaitingShareAsFailureWhenApiReturnsNoUrl() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -382,6 +393,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void restoresHistoricalTaskWithExtractionCodeFromDiscovery() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -419,6 +431,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void explicitRetryRunsEvenAfterAutomaticAttemptLimit() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -451,6 +464,7 @@ class XunleiTransferRunnerServiceImplTest {
     @ValueSource(booleans = {false, true})
     void retriesImageCopyBeforeSharingWithoutRestoringVideosAgain(boolean temporary) {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService taskService = mock(IXunleiTransferTaskService.class);
         when(taskService.updateById(any(XunleiTransferTask.class))).thenReturn(true);
@@ -494,6 +508,7 @@ class XunleiTransferRunnerServiceImplTest {
     @Test
     void queueFiltersExhaustedFailuresInSqlBeforeLimitAndRotatesShareFailures() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         properties.getXunlei().setShareEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
@@ -515,6 +530,7 @@ class XunleiTransferRunnerServiceImplTest {
 
     @Test void nestedPlacementRetriesExactTargetAfterRestartDespiteExistingVideos() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
         XunleiTransferTask task = new XunleiTransferTask(); task.setId(90L); task.setMovieId("fixture");
@@ -544,6 +560,7 @@ class XunleiTransferRunnerServiceImplTest {
 
     @Test void legacyRecoveryMovesExactIdsEvenWhenTargetAlreadyHasVideos() {
         ResourceHubProperties properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         XunleiClient client = mock(XunleiClient.class);
         IXunleiTransferTaskService tasks = mock(IXunleiTransferTaskService.class);
         XunleiTransferTask task = new XunleiTransferTask(); task.setId(91L); task.setStatus("WAITING_SHARE");
@@ -558,4 +575,18 @@ class XunleiTransferRunnerServiceImplTest {
         assertEquals(1, service.submitOne(91L).getSubmitted());
         verify(client).moveFiles(java.util.List.of("new-episode"), "season"); verify(client, never()).restore(any(), any());
     }
+    @Test void disabledXunleiPolicyBlocksBatchAndDirectCallsBeforeAccountOrTaskAccess() {
+        var properties = new ResourceHubProperties();
+        var client = mock(XunleiClient.class);
+        var tasks = mock(IXunleiTransferTaskService.class);
+        var discoveries = mock(IResourceDiscoveryResultService.class);
+        var links = mock(IResourceLinkService.class);
+        var service = new XunleiTransferRunnerServiceImpl(properties, client, tasks, discoveries, links);
+        assertEquals(0, service.submitPending(2).getSubmitted());
+        var error = org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.submitOne(42L));
+        assertEquals(409, error.getStatusCode().value());
+        verifyNoInteractions(client, tasks, discoveries, links);
+    }
+
 }

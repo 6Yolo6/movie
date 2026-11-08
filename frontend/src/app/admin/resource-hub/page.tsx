@@ -40,6 +40,8 @@ import { useTranslation } from 'react-i18next';
 import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
+import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
+import { canConfigureCloudDrive, cloudDriveWorkflowUpdate, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate } from '@/lib/cloudDriveWorkflows';
 
 const { Title, Text } = Typography;
 const MISSING_RESOURCE_BATCH_LIMIT = 20;
@@ -77,6 +79,7 @@ interface WeeklyTransferSchedule {
 }
 
 interface ResourceHubConfig {
+    driveWorkflows?: CloudDriveWorkflow[];
     weeklyTransferSchedules?: WeeklyTransferSchedule[];
     metadataCrawlProgress?: MetadataCrawlProgress[];
     xunleiAuthorizationConfigured: boolean;
@@ -116,7 +119,7 @@ interface ResourceHubConfig {
     discoveredRetryCron: string;
 }
 
-type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources'> & {
+type ResourceHubConfigFormValues = Omit<ResourceHubConfig, 'tmdbAutoSyncSources' | 'gyingAutoSyncSources' | 'driveWorkflows'> & {
     tmdbAutoSyncSources: string[];
     gyingAutoSyncSources: string[];
 };
@@ -359,7 +362,6 @@ export default function ResourceHubAdminPage() {
     const [missingSortOrder, setMissingSortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedMissingIds, setSelectedMissingIds] = useState<React.Key[]>([]);
     const [publishLimit, setPublishLimit] = useState(20);
-    const [quarkLimit, setQuarkLimit] = useState(5);
     const [invalidChecks, setInvalidChecks] = useState<InvalidResourceCheck[]>([]);
     const [invalidChecksLoading, setInvalidChecksLoading] = useState(false);
 
@@ -391,30 +393,34 @@ export default function ResourceHubAdminPage() {
         return unwrap<T>(await res.json());
     }, [authHeaders, t]);
 
-    const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => ({
-        ...config,
-        weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
-            typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
-        })),
-        tmdbAutoSyncEndPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
-        tmdbAutoSyncRanges: Object.fromEntries(TMDB_SOURCE_KEYS.map(source => [source,
-            config.tmdbAutoSyncRanges?.[source] || {
-                startPage: config.tmdbAutoSyncPage,
-                endPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
-            }])),
-        gyingAutoSyncEndPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
-        gyingAutoSyncRanges: Object.fromEntries(GYING_SOURCE_KEYS.map(source => [source,
-            config.gyingAutoSyncRanges?.[source] || {
-                startPage: config.gyingAutoSyncPage,
-                endPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
-            }])),
-        tmdbAutoSyncSources: config.tmdbAutoSyncSources
-            ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-            : [],
-        gyingAutoSyncSources: config.gyingAutoSyncSources
-            ? config.gyingAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
-            : [],
-    });
+    const normalizeConfigForm = (config: ResourceHubConfig): ResourceHubConfigFormValues => {
+        const fields = { ...config };
+        delete fields.driveWorkflows;
+        return {
+            ...fields,
+            weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
+                typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
+            })),
+            tmdbAutoSyncEndPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
+            tmdbAutoSyncRanges: Object.fromEntries(TMDB_SOURCE_KEYS.map(source => [source,
+                config.tmdbAutoSyncRanges?.[source] || {
+                    startPage: config.tmdbAutoSyncPage,
+                    endPage: config.tmdbAutoSyncEndPage ?? config.tmdbAutoSyncPage,
+                }])),
+            gyingAutoSyncEndPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
+            gyingAutoSyncRanges: Object.fromEntries(GYING_SOURCE_KEYS.map(source => [source,
+                config.gyingAutoSyncRanges?.[source] || {
+                    startPage: config.gyingAutoSyncPage,
+                    endPage: config.gyingAutoSyncEndPage ?? config.gyingAutoSyncPage,
+                }])),
+            tmdbAutoSyncSources: config.tmdbAutoSyncSources
+                ? config.tmdbAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+                : [],
+            gyingAutoSyncSources: config.gyingAutoSyncSources
+                ? config.gyingAutoSyncSources.split(',').map((item) => item.trim()).filter(Boolean)
+                : [],
+        };
+    };
 
     const fetchOverview = useCallback(async () => {
         if (!token) {
@@ -427,7 +433,6 @@ export default function ResourceHubAdminPage() {
             setOverview(data);
             configForm.setFieldsValue(normalizeConfigForm(data.config));
             setPublishLimit(data.worker.publishLimit || 20);
-            setQuarkLimit(data.worker.quarkLimit || 5);
         } catch (error) {
             message.error(error instanceof Error ? error.message : t('resourceHubLoadFailed'));
         } finally {
@@ -602,6 +607,30 @@ export default function ResourceHubAdminPage() {
         } finally {
             setSavingConfig(false);
         }
+    };
+
+    const saveDriveWorkflow = async (update: CloudDriveWorkflowUpdate): Promise<CloudDriveWorkflow> => {
+        const workflow = overview?.config.driveWorkflows?.find(item => item.provider === update.provider);
+        if (!workflow || !canConfigureCloudDrive(workflow)) throw new Error(t('cloudDriveWorkflows.unavailable'));
+        const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
+            method: 'PUT', body: JSON.stringify({ driveWorkflows: [cloudDriveWorkflowUpdate(update)] }),
+        });
+        const saved = config.driveWorkflows?.find(item => item.provider === update.provider);
+        if (!saved) throw new Error(t('cloudDriveWorkflows.invalidResponse'));
+        setOverview(current => current ? { ...current, config: { ...current.config,
+            driveWorkflows: current.config.driveWorkflows?.map(item => item.provider === saved.provider ? saved : item),
+        } } : current);
+        return saved;
+    };
+
+    const runDriveTransfers = async (provider: CloudDriveProvider, limit: number): Promise<CloudDriveTransferResult> => {
+        const workflow = overview?.config.driveWorkflows?.find(item => item.provider === provider);
+        if (!workflow || !canConfigureCloudDrive(workflow) || !workflow.transferEnabled) {
+            throw new Error(t('cloudDriveWorkflows.transferDisabled'));
+        }
+        return requestJson<CloudDriveTransferResult>('/api/admin/resource-hub/transfers/run', {
+            method: 'POST', body: JSON.stringify({ provider, limit }),
+        });
     };
 
     const runAction = async (key: string, path: string) => {
@@ -1332,17 +1361,6 @@ export default function ResourceHubAdminPage() {
                                                     </Button>
                                                 </Space.Compact>
                                                 <Text type="secondary">{t('resourceHubPublishPendingHelp')}</Text>
-                                                <Space.Compact block className="[&>button]:h-auto [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:whitespace-normal">
-                                                    <InputNumber min={1} max={20} value={quarkLimit} onChange={(value) => setQuarkLimit(value || 5)} />
-                                                    <Button
-                                                        icon={<CloudSyncOutlined />}
-                                                        loading={runningAction === 'quark'}
-                                                        onClick={() => runAction('quark', `/api/admin/resource-hub/quark/transfers/submit?limit=${quarkLimit}`)}
-                                                    >
-                                                        {t('resourceHubSubmitTransfers')}
-                                                    </Button>
-                                                </Space.Compact>
-                                                <Text type="secondary">{t('resourceHubSubmitTransfersHelp')}</Text>
                                                 <Button
                                                     block
                                                     icon={<SearchOutlined />}
@@ -1627,6 +1645,12 @@ export default function ResourceHubAdminPage() {
                                     </Col>
                                 </Row>
                             ),
+                        },
+                        {
+                            key: 'drive-workflows',
+                            label: t('cloudDriveWorkflows.title'),
+                            children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading}
+                                onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} />,
                         },
                         {
                             key: 'manual',

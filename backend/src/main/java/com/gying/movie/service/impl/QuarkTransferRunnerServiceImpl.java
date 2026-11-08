@@ -336,6 +336,9 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private String buildSavePath(MovieMetadata movie, QuarkTransferTask task) {
+        if (task != null && task.getSavedPath() != null && !task.getSavedPath().isBlank()) {
+            return task.getSavedPath();
+        }
         String temporaryPath = task == null ? null : QqTransferMarker.targetPath(task.getRequestPayload());
         if (QqTransferMarker.isTemporary(task == null ? null : task.getRequestPayload())
                 && temporaryPath != null && !temporaryPath.isBlank()) {
@@ -425,6 +428,9 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private void ensureEnabled() {
+        if (!resourceHubProperties.isDriveTransferEnabled("QUARK")) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "夸克转存已关闭");
+        }
         if (!resourceHubProperties.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Resource Hub is disabled");
         }

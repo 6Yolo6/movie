@@ -47,6 +47,8 @@
 
 基础 `/api/admin/resource-hub`，完整方法见[路由清单](security/api-inventory.md)。
 
+`config.driveWorkflows` 按网盘独立配置发现、转存、分享和 GYING 发布；百度为只读待接入。`POST transfers/run` 使用 provider 与可选整数 limit 手动执行一批，配置保存不执行任务。字段、兼容和回退见[网盘工作流](cloud-drive-workflows.md)。
+
 | 类别 | 主要相对路径 |
 | --- | --- |
 | 配置/调度 | GET overview/config/tasks/worker/status；PUT config；POST worker/run-once |

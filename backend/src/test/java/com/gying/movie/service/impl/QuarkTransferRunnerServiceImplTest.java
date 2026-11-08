@@ -306,4 +306,22 @@ class QuarkTransferRunnerServiceImplTest {
         if (immediate) { verify(client).runTaskNow(any()); assertEquals(1, result.getSubmitted()); }
         else { verify(client, never()).runTaskNow(any()); assertEquals(1, result.getFailed()); }
     }
+    @Test void disabledQuarkPolicyBlocksBatchAndDirectCallsBeforeTaskOrAccountAccess() {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true);
+        properties.getQuark().setTransferEnabled(false);
+        var client = mock(QuarkAutoSaveClient.class);
+        var shares = mock(IQuarkShareService.class);
+        var tasks = mock(IQuarkTransferTaskService.class);
+        var discoveries = mock(IResourceDiscoveryResultService.class);
+        var hub = mock(IResourceHubTaskService.class);
+        var movies = mock(IMovieMetadataService.class);
+        var service = new QuarkTransferRunnerServiceImpl(properties, client, shares, tasks, discoveries, hub, movies, new ObjectMapper());
+        for (boolean batch : new boolean[] {true, false}) {
+            var error = org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                    () -> { if (batch) service.submitPending(2); else service.submitOne(42L); });
+            assertEquals(409, error.getStatusCode().value());
+        }
+        org.mockito.Mockito.verifyNoInteractions(client, shares, tasks, discoveries, hub, movies);
+    }
+
 }

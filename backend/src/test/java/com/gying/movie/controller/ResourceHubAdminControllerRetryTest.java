@@ -144,7 +144,7 @@ class ResourceHubAdminControllerRetryTest {
             IResourceHubConfigService configService) {
         return new ResourceHubAdminController(
                 mock(AuthHelper.class),
-                new ResourceHubProperties(),
+                workflowProperties(),
                 null,
                 discoveryService,
                 null,
@@ -164,6 +164,10 @@ class ResourceHubAdminControllerRetryTest {
                 null,
                 null,
                 null);
+    }
+
+    private static ResourceHubProperties workflowProperties() {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true); properties.getXunlei().setEnabled(true); return properties;
     }
 
     private static ResourceDiscoveryResult discovery(Long id) {

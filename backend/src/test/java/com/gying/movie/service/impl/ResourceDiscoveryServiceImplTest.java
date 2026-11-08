@@ -35,6 +35,7 @@ import org.mockito.ArgumentCaptor;
 
 class ResourceDiscoveryServiceImplTest {
 
+    private ResourceHubProperties properties;
     private PanSouClient panSouClient;
     private GyingSourceWorkflowService gyingWorkflow;
     private IMovieMetadataService movieService;
@@ -49,7 +50,8 @@ class ResourceDiscoveryServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        ResourceHubProperties properties = new ResourceHubProperties();
+        properties = new ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
         properties.setEnabled(true);
         properties.getGying().setDiscoveryEnabled(true);
         panSouClient = mock(PanSouClient.class);
@@ -321,6 +323,66 @@ class ResourceDiscoveryServiceImplTest {
         xunlei.setProvider("XUNLEI");
         when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(xunlei));
         assertEquals(1, service.runTask(1L).getDiscovered());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledProviderDiscoveryNeverSearchesChecksOrPersistsThatProvider(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setDiscoveryEnabled(false);
+        else properties.getXunlei().setDiscoveryEnabled(false);
+        var disabled = resource("肖申克的救赎 1994", "https://example.invalid/disabled", "GYING");
+        disabled.setProvider(provider);
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(disabled));
+        var result = service.runTask(1L);
+        assertEquals(0, result.getDiscovered());
+        if ("QUARK".equals(provider)) verify(panSouClient, never()).searchQuark(anyString(), anyInt());
+        else verify(panSouClient, never()).searchClouds(anyString(), any(), anyInt());
+        verify(panSouClient, never()).checkLink(disabled);
+        verify(discoveryService, never()).save(any());
+        verify(quarkTransferTaskService, never()).save(any());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledTransfersRetainDiscoveryButNeverCreateEvenAnExplicitTask(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setTransferEnabled(false);
+        else properties.getXunlei().setEnabled(false);
+        var candidate = resource("肖申克的救赎 1994", "https://example.invalid/candidate", "GYING");
+        candidate.setProvider(provider);
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(candidate));
+        var result = service.runTask(1L);
+        assertEquals(1, result.getDiscovered()); assertEquals(0, result.getTransferTasksCreated());
+        verify(discoveryService).save(any(ResourceDiscoveryResult.class));
+        var discovered = discovery(999L, provider, candidate.getUrl());
+        when(discoveryService.getById(999L)).thenReturn(discovered);
+        org.junit.jupiter.api.Assertions.assertFalse(service.ensureTransferTask(999L));
+        verify(quarkTransferTaskService, never()).save(any());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @Test void plannedBaiduCandidateCannotCreateDiscoveryOrFallThroughToQuarkTransfer() {
+        var baidu = resource("肖申克的救赎 1994", "https://pan.baidu.com/s/candidate", "GYING");
+        baidu.setProvider("BAIDU");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of(baidu));
+        assertEquals(0, service.runTask(1L).getDiscovered());
+        when(discoveryService.getById(999L)).thenReturn(discovery(999L, "BAIDU", baidu.getUrl()));
+        org.junit.jupiter.api.Assertions.assertFalse(service.ensureTransferTask(999L));
+        verify(discoveryService, never()).save(any());
+        verify(quarkTransferTaskService, never()).save(any());
+        verify(xunleiTransferTaskService, never()).save(any());
+    }
+
+    @Test void disablingAllDiscoveryPreservesExistingMovieResourceStatus() {
+        properties.getQuark().setDiscoveryEnabled(false); properties.getXunlei().setDiscoveryEnabled(false);
+        movie.setResourceStatus("AVAILABLE");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
+        var result = service.runTask(1L);
+        assertEquals("SUCCEEDED", result.getStatus()); assertEquals(0, result.getDiscovered());
+        assertEquals("AVAILABLE", movie.getResourceStatus());
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
+        verify(panSouClient, never()).searchQuark(anyString(), anyInt());
+        verify(panSouClient, never()).searchClouds(anyString(), any(), anyInt());
     }
 
     private ResourceDiscoveryResult discovery(long id, String provider, String url) {

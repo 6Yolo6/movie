@@ -18,6 +18,46 @@ public class ResourceHubProperties {
     private Worker worker = new Worker();
     private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
 
+    public boolean isDriveDiscoveryEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isDiscoveryEnabled();
+            case XUNLEI -> xunlei.isDiscoveryEnabled();
+            case BAIDU -> false;
+        };
+    }
+
+    public boolean isDriveTransferEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isTransferEnabled();
+            case XUNLEI -> xunlei.isEnabled();
+            case BAIDU -> false;
+        };
+    }
+
+    public boolean isDriveGyingPublishEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isGyingPublishEnabled();
+            case XUNLEI -> xunlei.isGyingPublishEnabled();
+            case BAIDU -> false;
+        };
+    }
+
+    public boolean isDriveShareEnabled(String provider) {
+        CloudDriveProvider drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isShareEnabled();
+            case XUNLEI -> xunlei.isShareEnabled();
+            case BAIDU -> false;
+        };
+    }
+
     @Data
     public static class Tmdb {
         private String baseUrl = "https://api.themoviedb.org/3";
@@ -86,6 +126,9 @@ public class ResourceHubProperties {
 
     @Data
     public static class Quark {
+        private boolean discoveryEnabled = true;
+        private boolean transferEnabled = true;
+        private boolean gyingPublishEnabled = true;
         private String baseUrl = "http://localhost:5005";
         private String token;
         private String savePath = "/GYing Resource Hub";
@@ -111,6 +154,8 @@ public class ResourceHubProperties {
 
     @Data
     public static class Xunlei {
+        private boolean discoveryEnabled = true;
+        private boolean gyingPublishEnabled = true;
         private boolean enabled = false;
         private String baseUrl = "https://api-pan.xunlei.com/drive/v1";
         private String authorization;

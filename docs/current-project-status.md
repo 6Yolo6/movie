@@ -1,6 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-11-05
+更新时间：2026-11-08
+
+11月8日网盘工作流候选已完成，开发分支 `codex/cloud-drive-workflows`：Resource Hub 新网盘页签，夸克 / 迅雷独立阶段、保存目录和手动批次；百度只读待接入。后端1,038项中1,037通过/1 Redis跳过、必需真实SQL/独立Java17 compile通过；前端28项React、TS/lint/build与中英/明暗/390及1280八组模拟API浏览器检查通过。21:34只读基线安全58 PASS/11 FAIL/1 UNKNOWN仍未关闭；用户随后明确本轮“可部署”，仅backend/frontend候选替换，当前固定镜像及加密检查点准备中，尚未完成上线验收。未真实登录/转存/发布、未迁移SQL或重置历史队列。[本轮交付](evaluation/cloud-drive-workflows-20261108/README.md)。
 
 11月5日19:32–19:33微博只读复核：实际登录/发博权限接口均200/ok1；今日3条自动及19:30手动1条已在官方帖子接口查到，账号/标题一致。后台按任务创建时间排序且不轮询，积压任务成功后仍显示旧创建日期，用户确认已在后面看到帖子；未做浏览器复现或界面修复。仍保留1条旧准备失败与3条历史UNKNOWN，本轮未发博/重放/部署。[微博核查](evaluation/weibo-readonly-20261105/README.md)。
 
@@ -38,7 +40,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
 | 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
-| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离 | [周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
+| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次候选已验证，百度待接入，上线待验收 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 

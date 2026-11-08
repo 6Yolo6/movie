@@ -7,6 +7,7 @@ import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.client.XunleiClient;
+import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.QuarkTransferRunResult;
@@ -84,6 +85,9 @@ public class GyingSourceWorkflowService {
 
     @Autowired
     private P2pArchiveTaskService p2pArchiveTaskService;
+
+    @Autowired
+    private ResourceHubProperties resourceHubProperties = new ResourceHubProperties();
 
     @Autowired
     public GyingSourceWorkflowService(
@@ -193,7 +197,7 @@ public class GyingSourceWorkflowService {
             Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
             return mapList(snapshot.get("resources")).stream().anyMatch(resource -> {
                 String provider = firstText(stringValue(resource.get("provider")), "").toUpperCase(Locale.ROOT);
-                return List.of("QUARK", "XUNLEI").contains(provider)
+                return resourceHubProperties.isDriveDiscoveryEnabled(provider)
                         && hasText(stringValue(resource.get("url")));
             });
         } catch (Exception ignored) {
@@ -217,7 +221,8 @@ public class GyingSourceWorkflowService {
 
         Map<String, Object> snapshot = gyingSourceClient.get(
                 "/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
-        return selectTransferCandidates(mapList(snapshot.get("resources"))).stream()
+        return selectTransferCandidates(mapList(snapshot.get("resources")).stream()
+                .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(resourceProvider(item))).toList()).stream()
                 .map(item -> {
                     DiscoveredResource resource = new DiscoveredResource();
                     resource.setTitle(firstText(stringValue(item.get("title")), stringValue(snapshot.get("title"))));
@@ -228,6 +233,7 @@ public class GyingSourceWorkflowService {
                     resource.setSourceRef(stringValue(item.get("source_id")));
                     return resource;
                 })
+                .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(item.getProvider()))
                 .filter(item -> hasText(item.getUrl()))
                 .filter(item -> ResourceTitleMatcher.isRelevant(movie, item.getTitle(), null))
                 .limit(safeLimit)
@@ -711,8 +717,12 @@ public class GyingSourceWorkflowService {
                 break;
             }
             List<DiscoveredResource> found = new ArrayList<>();
-            found.addAll(panSouClient.searchQuark(keyword, limit));
-            found.addAll(panSouClient.searchClouds(keyword, Set.of("XUNLEI"), limit));
+            if (resourceHubProperties.isDriveDiscoveryEnabled("QUARK")) {
+                found.addAll(panSouClient.searchQuark(keyword, limit));
+            }
+            if (resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI")) {
+                found.addAll(panSouClient.searchClouds(keyword, Set.of("XUNLEI"), limit));
+            }
             for (DiscoveredResource resource : found) {
                 if (resource == null || !hasText(resource.getUrl())) {
                     continue;
@@ -1214,9 +1224,31 @@ public class GyingSourceWorkflowService {
         }
 
         ResourceLink local = findPublishableLocalResource(movie.getId());
+        if (local != null && !resourceHubProperties.isDriveGyingPublishEnabled(local.getProvider())) {
+            local = null;
+            for (var provider : com.gying.movie.config.CloudDriveProvider.values()) {
+                if (resourceHubProperties.isDriveGyingPublishEnabled(provider.name())) {
+                    local = findPublishableLocalResource(movie.getId(), provider.name());
+                    if (local != null) break;
+                }
+            }
+        }
         if (local == null) {
-            List<Map<String, Object>> candidates = selectTransferCandidates(allResources);
+            List<Map<String, Object>> candidates = selectTransferCandidates(allResources.stream()
+                    .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveTransferEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveGyingPublishEnabled(resourceProvider(item))).toList());
             if (candidates.isEmpty()) {
+                if (java.util.Arrays.stream(com.gying.movie.config.CloudDriveProvider.values())
+                        .filter(com.gying.movie.config.CloudDriveProvider::isSupported)
+                        .anyMatch(provider -> !resourceHubProperties.isDriveDiscoveryEnabled(provider.name())
+                                || !resourceHubProperties.isDriveTransferEnabled(provider.name())
+                                || !resourceHubProperties.isDriveShareEnabled(provider.name())
+                                || !resourceHubProperties.isDriveGyingPublishEnabled(provider.name()))) {
+                    result.put("status", "DISABLED");
+                    return result;
+                }
                 result.put("status", "NO_TRANSFERABLE_RESOURCE");
                 markMovieTrailer(movie);
                 return result;
@@ -1258,6 +1290,9 @@ public class GyingSourceWorkflowService {
     }
 
     private Map<String, Object> ensureVideoProvider(GyingMovieMetadata ingested, String provider) {
+        if (!resourceHubProperties.isDriveGyingPublishEnabled(provider)) {
+            return new LinkedHashMap<>(Map.of("provider", provider, "status", "DISABLED"));
+        }
         MovieMetadata movie = ingested.movie();
         List<Map<String, Object>> own = mapList(ingested.snapshot().get("ownResources")).stream()
                 .filter(item -> provider.equals(resourceProvider(item)))
@@ -1304,6 +1339,12 @@ public class GyingSourceWorkflowService {
         }
         boolean transferred = false;
         if (local == null) {
+            if (!resourceHubProperties.isDriveShareEnabled(provider)
+                    || !resourceHubProperties.isDriveTransferEnabled(provider)
+                    || !resourceHubProperties.isDriveDiscoveryEnabled(provider)) {
+                result.put("status", "DISABLED");
+                return result;
+            }
             List<Map<String, Object>> candidates = selectTransferCandidates(mapList(ingested.snapshot().get("resources")).stream()
                     .filter(item -> provider.equals(resourceProvider(item)))
                     .filter(this::isVideoResource).toList());
@@ -1516,7 +1557,7 @@ public class GyingSourceWorkflowService {
     public boolean publishResourceToGying(ResourceLink resource) {
         if (resource == null || resource.getId() == null || !hasText(resource.getUrl())
                 || !"DISK".equalsIgnoreCase(resource.getType())
-                || !Set.of("QUARK", "XUNLEI").contains(firstText(resource.getProvider(), "").toUpperCase(Locale.ROOT))) {
+                || !resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
             return false;
         }
         MovieSourceIdentity identity = findGyingIdentity(resource.getMovieId());
@@ -1909,6 +1950,14 @@ public class GyingSourceWorkflowService {
             try {
                 ResourceLink local = findLocalPublishedResource(item);
                 String provider = firstText(stringValue(item.get("provider")), local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
+                if (!resourceHubProperties.isDriveGyingPublishEnabled(provider)
+                        || !resourceHubProperties.isDriveTransferEnabled(provider)
+                        || !resourceHubProperties.isDriveShareEnabled(provider)) {
+                    skipped++;
+                    item.put("repairStatus", "SKIPPED");
+                    item.put("repairError", "该网盘转存或 GYING 发布已关闭");
+                    continue;
+                }
                 QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
                 XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider) ? findRepairXunleiTransfer(local, item) : null;
                 MovieMetadata movie = local == null ? null : movieService.getById(local.getMovieId());
@@ -2119,6 +2168,9 @@ public class GyingSourceWorkflowService {
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
         String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
+        if (!resourceHubProperties.isDriveTransferEnabled(provider)) {
+            throw new IllegalStateException("该网盘尚未接入或转存已关闭: " + provider);
+        }
         if ("XUNLEI".equals(provider)) {
             if (xunleiTransferTaskService == null || xunleiTransferRunnerService == null) {
                 throw new IllegalStateException("Xunlei transfer service unavailable");
@@ -2238,6 +2290,9 @@ public class GyingSourceWorkflowService {
             String siteMid,
             MovieMetadata movie,
             ResourceLink resource) {
+        if (!resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
+            throw new IllegalStateException("该网盘 GYING 发布已关闭");
+        }
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("resourceId", resource.getId());
         payload.put("typeCode", normalizeTypeCode(typeCode));

@@ -1,5 +1,7 @@
 package com.gying.movie.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -56,6 +58,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 class GyingSourceWorkflowServiceTest {
+    private com.gying.movie.config.ResourceHubProperties properties;
     private GyingSourceClient gyingSourceClient;
     private TmdbClient tmdbClient;
     private PosterStorageService posterStorageService;
@@ -105,6 +108,10 @@ class GyingSourceWorkflowServiceTest {
                 shareService,
                 xunleiTransferTaskService,
                 xunleiTransferRunnerService);
+        properties = new com.gying.movie.config.ResourceHubProperties();
+        properties.getXunlei().setEnabled(true);
+        properties.getXunlei().setShareEnabled(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "resourceHubProperties", properties);
     }
 
     @ParameterizedTest
@@ -1354,6 +1361,86 @@ class GyingSourceWorkflowServiceTest {
     private Map<String, Object> manualAction(String id, boolean repair) {
         if (!repair) return service.ensureMovieResource("mv", id);
         return ((List<Map<String, Object>>) service.repairPublishedResourcesByKeys(List.of("mv/" + id)).get("movieResults")).get(0);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledGyingPublishingNeverReadsOrWritesExternalSite(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setGyingPublishEnabled(false);
+        else properties.getXunlei().setGyingPublishEnabled(false);
+        var resource = new ResourceLink(); resource.setId(42L); resource.setMovieId("movie");
+        resource.setType("DISK"); resource.setProvider(provider); resource.setUrl("https://example.invalid/own");
+        org.junit.jupiter.api.Assertions.assertFalse(service.publishResourceToGying(resource));
+        verifyNoInteractions(gyingSourceClient, sourceIdentityService, transferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"BAIDU", "UNKNOWN"})
+    void unsupportedTransferCandidateCannotFallThroughToQuarkAdapter(String provider) {
+        var candidate = Map.<String, Object>of("provider", provider, "url", "https://pan.baidu.com/s/source", "title", "测试电影");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService,
+                discoveryService, resourceLinkService, gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledTransferCandidateNeverCreatesOrExecutesCloudTask(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setTransferEnabled(false);
+        else properties.getXunlei().setEnabled(false);
+        var candidate = Map.<String, Object>of("provider", provider, "url", "https://example.invalid/source", "title", "测试电影");
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService,
+                discoveryService, resourceLinkService, gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"DISCOVERY", "TRANSFER", "SHARE", "GYING"})
+    void weeklyCandidateDisabledByAnyStageIsNotTransferredOrMarkedMissing(String disabledStage) {
+        var movie = movie("WEEK-OFF", "周榜电影", "mv", "UNKNOWN");
+        if ("DISCOVERY".equals(disabledStage)) properties.getQuark().setDiscoveryEnabled(false);
+        if ("TRANSFER".equals(disabledStage)) properties.getQuark().setTransferEnabled(false);
+        if ("SHARE".equals(disabledStage)) properties.getQuark().setShareEnabled(false);
+        if ("GYING".equals(disabledStage)) properties.getQuark().setGyingPublishEnabled(false);
+        when(gyingSourceClient.get("/movie/mv/WEEK-OFF")).thenReturn(Map.of("title", movie.getTitleCn(), "ownResources", List.of(),
+                "resources", List.of(Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/source", "source_id", "Q1", "title", movie.getTitleCn()))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var result = service.ensureWeeklyMovieResource("mv", "WEEK-OFF");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService, discoveryService);
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+    }
+
+    @Test void weeklySelectionCanUseXunleiWhenHigherQualityQuarkCandidateIsDisabled() {
+        properties.getQuark().setTransferEnabled(false);
+        var movie = movie("WEEK-XL", "周榜电影", "mv", "UNKNOWN");
+        when(gyingSourceClient.get("/movie/mv/WEEK-XL")).thenReturn(Map.of("title", movie.getTitleCn(), "ownResources", List.of(),
+                "resources", List.of(
+                    Map.of("provider", "QUARK", "url", "https://pan.quark.cn/s/quark", "source_id", "Q1", "title", "周榜电影 4K"),
+                    Map.of("provider", "XUNLEI", "url", "https://pan.xunlei.com/s/xunlei", "source_id", "X1", "title", "周榜电影 720P"))));
+        when(movieService.getById(movie.getId())).thenReturn(movie);
+        var discovery = new ResourceDiscoveryResult(); discovery.setId(8L); discovery.setMovieId(movie.getId());
+        when(discoveryService.getOne(any(Wrapper.class), eq(false))).thenReturn(discovery);
+        var transfer = new XunleiTransferTask(); transfer.setId(9L); transfer.setDiscoveryResultId(8L); transfer.setStatus("PENDING");
+        when(xunleiTransferTaskService.getOne(any(Wrapper.class), eq(false))).thenReturn(transfer);
+        when(xunleiTransferTaskService.getById(9L)).thenReturn(transfer);
+        when(xunleiTransferRunnerService.submitOne(9L)).thenReturn(new QuarkTransferRunResult());
+        assertThrows(IllegalStateException.class, () -> service.ensureWeeklyMovieResource("mv", "WEEK-XL"));
+        assertEquals("XUNLEI", discovery.getProvider());
+        verify(xunleiTransferRunnerService).submitOne(9L);
+        verifyNoInteractions(transferTaskService, transferRunnerService);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"QUARK", "XUNLEI"})
+    void disabledSharingRepairNeverClearsExistingShareOrTouchesTransferTask(String provider) {
+        if ("QUARK".equals(provider)) properties.getQuark().setShareEnabled(false);
+        else properties.getXunlei().setShareEnabled(false);
+        var local = new ResourceLink(); local.setId(42L); local.setMovieId("movie"); local.setProvider(provider); local.setUrl("https://example.invalid/old-share");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(local);
+        var item = new java.util.LinkedHashMap<String, Object>(Map.of("provider", provider, "url", local.getUrl(), "source_id", "OWN1", "checkStatus", "INVALID"));
+        Map<String, Object> result = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "repairCheckedPublishedResources", Map.of("items", List.of(item)));
+        assertEquals(1, result.get("skipped")); assertEquals("https://example.invalid/old-share", local.getUrl());
+        verifyNoInteractions(transferTaskService, xunleiTransferTaskService, transferRunnerService, xunleiTransferRunnerService, shareService);
+        verify(resourceLinkService, never()).updateById(any(ResourceLink.class));
+        verifyNoInteractions(gyingSourceClient);
     }
 
     private void confirmShares() {

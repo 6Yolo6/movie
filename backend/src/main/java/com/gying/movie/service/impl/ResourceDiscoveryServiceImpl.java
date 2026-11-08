@@ -132,6 +132,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             LocalDateTime now = LocalDateTime.now();
             for (DiscoveredResource resource : resources) {
                 try {
+                    if (!resourceHubProperties.isDriveDiscoveryEnabled(resource.getProvider())) {
+                        continue;
+                    }
                     if (!ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), payload.keyword())) {
                         result.setRejected(result.getRejected() + 1);
                         continue;
@@ -166,7 +169,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     addError(result, itemError.getMessage());
                 }
             }
-            if (result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
+            boolean completeDiscovery = resourceHubProperties.isDriveDiscoveryEnabled("QUARK")
+                    && resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI");
+            if (completeDiscovery && result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
                 refreshResourceStatus(movie, now);
             }
             String status = result.getFailed() > 0 && result.getDiscovered() + result.getDuplicate() == 0
@@ -174,7 +179,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     : "SUCCEEDED";
             String error = "FAILED".equals(status)
                     ? "Resource discovery failed"
-                    : result.getDiscovered() + result.getDuplicate() == 0 ? "No resources discovered; marked as trailer" : null;
+                    : result.getDiscovered() + result.getDuplicate() == 0
+                            ? (completeDiscovery ? "No resources discovered; marked as trailer"
+                                    : "No resources discovered; disabled providers skipped") : null;
             finishTask(task, status, error);
             result.setStatus(task.getStatus());
             return result;
@@ -204,7 +211,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 : discovery.getProvider().trim().toUpperCase();
         if (discovery == null || !hasText(discovery.getMovieId())
                 || !hasText(discovery.getOriginalUrl())
-                || !Set.of("QUARK", "XUNLEI").contains(normalizedProvider)) {
+                || !resourceHubProperties.isDriveTransferEnabled(normalizedProvider)) {
             return false;
         }
         String provider = normalizedProvider;
@@ -364,13 +371,13 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             List<DiscoveredResource> quark = List.of();
             List<DiscoveredResource> xunlei = List.of();
             boolean available = !gying.isEmpty();
-            if (!hasProvider(gying, "QUARK")) {
+            if (resourceHubProperties.isDriveDiscoveryEnabled("QUARK") && !hasProvider(gying, "QUARK")) {
                 try {
                     quark = panSouClient.searchQuark(keyword, payload.maxResults());
                     available = true;
                 } catch (RuntimeException error) { failure = error; }
             }
-            if (!hasProvider(gying, "XUNLEI")) {
+            if (resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI") && !hasProvider(gying, "XUNLEI")) {
                 try {
                     xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
                     available = true;
@@ -458,7 +465,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
-        if (hasMovieTransferTask(discovery.getMovieId(), resource.getProvider())) {
+        if (!resourceHubProperties.isDriveTransferEnabled(resource.getProvider())
+                || hasMovieTransferTask(discovery.getMovieId(), resource.getProvider())) {
             return false;
         }
         if ("XUNLEI".equalsIgnoreCase(resource.getProvider())) {

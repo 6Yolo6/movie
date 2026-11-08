@@ -381,7 +381,7 @@
   "yes": "Yes",
   "no": "No",
   "resourceHubTitle": "Media Resource Center",
-  "resourceHubHint": "Monitor metadata sync, resource discovery, Quark transfer, and publishing in one place.",
+  "resourceHubHint": "Monitor metadata sync, resource discovery, cloud transfers, and publishing in one place.",
   "resourceHubLoadFailed": "Failed to load Resource Hub overview",
   "resourceHubTasksLoadFailed": "Failed to load Resource Hub tasks",
   "resourceHubDiscoveriesLoadFailed": "Failed to load discovery results",
@@ -1278,5 +1278,44 @@
   "aiExecutionTrace": "View query trace",
   "aiUnverifiedConditions": "Requirements still unverified",
   "aiRelevanceChecked": "Evidence relevance checked",
-  "aiMinutes": "min"
+  "aiMinutes": "min",
+  "cloudDriveWorkflows": {
+    "title": "Cloud drive workflows",
+    "providers": {
+      "QUARK": "Quark Drive",
+      "XUNLEI": "Xunlei Drive",
+      "BAIDU": "Baidu Drive"
+    },
+    "available": "Available",
+    "planned": "Planned",
+    "help": "Configure discovery, transfers, own shares and GYING publishing per drive. Saving does not run tasks or start historical queues. Each drive is saved separately.",
+    "baiduPlanned": "Baidu Drive support is planned. Account authorization, discovery, transfer and own-share integration must be completed before this workflow can be enabled.",
+    "unavailable": "Cloud drive settings are unavailable. Check that the backend provides workflow configuration.",
+    "credentialPresent": "Account configuration present",
+    "credentialMissing": "Account configuration missing",
+    "credentialHelp": "This indicates configuration presence only. Actual tasks determine whether the login is valid.",
+    "fields": {
+      "discoveryEnabled": "Discover resources",
+      "transferEnabled": "Transfer resources",
+      "shareEnabled": "Create own shares",
+      "gyingPublishEnabled": "Publish to GYING",
+      "savePath": "Save directory",
+      "batchLimit": "Manual transfer batch limit"
+    },
+    "shareDisabledHelp": "Disabling this stops creation of new own shares. Resources without an own share cannot enter the library or be published. Existing own shares can still be published.",
+    "savePathHelp": "Use an absolute drive path beginning with /, up to 300 characters, without .. path segments or backslashes. Directory changes affect new tasks only; existing tasks are not moved.",
+    "saveProvider": "Save {{provider}} settings",
+    "runTransfers": "Run pending transfers",
+    "saveBeforeRun": "Save this drive’s changes before manually running transfers.",
+    "saved": "{{provider}} settings saved",
+    "saveFailed": "Could not save drive settings. Your changes are retained.",
+    "invalidResponse": "The drive configuration response is incomplete. Refresh to confirm.",
+    "transferDisabled": "Transfers are disabled for this drive.",
+    "transferFailed": "Transfer execution failed. Please try again later.",
+    "transferResult": "Transfers finished: {{submitted}} submitted, {{skipped}} skipped, {{failed}} failed",
+    "validation": {
+      "savePath": "Enter a drive path beginning with /, up to 300 characters, without .. path segments, backslashes or control characters.",
+      "batchLimit": "The manual transfer batch limit must be an integer from 1 to 20."
+    }
+  }
 }
