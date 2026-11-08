@@ -48,7 +48,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
 
     @Override public QuarkTransferRunResult submitPending(int limit) {
         QuarkTransferRunResult result = new QuarkTransferRunResult();
-        if (!properties.isDriveTransferEnabled("XUNLEI")) return result;
+        if (!properties.isDriveShareTransferEnabled("XUNLEI")) return result;
         if (!client.isConfigured()) return result;
         List<String> statuses = properties.getXunlei().isShareEnabled()
                 ? List.of("PENDING", "FAILED", "WAITING_SHARE")
@@ -70,7 +70,7 @@ public class XunleiTransferRunnerServiceImpl implements IXunleiTransferRunnerSer
     }
 
     @Override public QuarkTransferRunResult submitOne(Long taskId) {
-        if (!properties.isDriveTransferEnabled("XUNLEI")) {
+        if (!properties.isDriveShareTransferEnabled("XUNLEI")) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.CONFLICT, "迅雷转存已关闭");
         }

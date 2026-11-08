@@ -4,9 +4,10 @@ import { useRef, useState } from 'react';
 import { Alert, App, Button, Card, Col, Empty, Form, Input, InputNumber, Row, Space, Switch, Tag, Typography } from 'antd';
 import { CloudSyncOutlined, SaveOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import BaiduAccountConnection from '@/components/admin/BaiduAccountConnection';
 import {
     canConfigureCloudDrive, CLOUD_DRIVE_PROVIDERS, cloudDriveValidationError, cloudDriveWorkflowUpdate,
-    type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
+    type BaiduSessionStatus, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
 } from '@/lib/cloudDriveWorkflows';
 
 interface Props {
@@ -14,9 +15,12 @@ interface Props {
     loading?: boolean;
     onSave: (update: CloudDriveWorkflowUpdate) => Promise<CloudDriveWorkflow>;
     onRunTransfers: (provider: CloudDriveProvider, limit: number) => Promise<CloudDriveTransferResult>;
+    onReadBaiduSession: (signal: AbortSignal) => Promise<BaiduSessionStatus>;
+    onStartBaiduLogin: (signal: AbortSignal) => Promise<BaiduSessionStatus>;
+    onBaiduConnected: (signal: AbortSignal) => Promise<void>;
 }
 
-function DriveWorkflowCard({ workflow, onSave, onRunTransfers }: Omit<Props, 'workflows' | 'loading'> & { workflow: CloudDriveWorkflow }) {
+function DriveWorkflowCard({ workflow, onSave, onRunTransfers, onReadBaiduSession, onStartBaiduLogin, onBaiduConnected }: Omit<Props, 'workflows' | 'loading'> & { workflow: CloudDriveWorkflow }) {
     const { t } = useTranslation();
     const { message } = App.useApp();
     const [edited, setEdited] = useState<CloudDriveWorkflowUpdate | null>(null);
@@ -26,6 +30,8 @@ function DriveWorkflowCard({ workflow, onSave, onRunTransfers }: Omit<Props, 'wo
     const draft = edited || cloudDriveWorkflowUpdate(workflow);
     const available = canConfigureCloudDrive(workflow);
     const disabled = !available || saving || running;
+    const sessionMissing = workflow.provider === 'BAIDU' && !workflow.credentialConfigured;
+    const noFilesSelected = !draft.videoEnabled && !draft.torrentEnabled;
     const providerLabel = t(`cloudDriveWorkflows.providers.${workflow.provider}`);
     const change = <K extends keyof CloudDriveWorkflowUpdate>(key: K, value: CloudDriveWorkflowUpdate[K]) => {
         if (!disabled) setEdited({ ...draft, [key]: value });
@@ -55,7 +61,7 @@ function DriveWorkflowCard({ workflow, onSave, onRunTransfers }: Omit<Props, 'wo
     };
 
     const runTransfers = async () => {
-        if (!available || !workflow.transferEnabled || busy.current || edited) return;
+        if (!available || !workflow.transferEnabled || sessionMissing || noFilesSelected || busy.current || edited) return;
         busy.current = true;
         setRunning(true);
         try {
@@ -77,13 +83,26 @@ function DriveWorkflowCard({ workflow, onSave, onRunTransfers }: Omit<Props, 'wo
         extra={<Tag color={available ? 'green' : 'default'}>{t(available ? 'cloudDriveWorkflows.available' : 'cloudDriveWorkflows.planned')}</Tag>}>
         {!available ? <Alert type="info" showIcon title={t(workflow.provider === 'BAIDU'
             ? 'cloudDriveWorkflows.baiduPlanned' : 'cloudDriveWorkflows.unavailable')} /> : <>
-            <Space wrap className="mb-4">
+            {workflow.provider === 'BAIDU' ? <BaiduAccountConnection onReadSession={onReadBaiduSession}
+                onStartLogin={onStartBaiduLogin} onConnected={onBaiduConnected} /> : <Space wrap className="mb-4">
                 <Tag color={workflow.credentialConfigured ? 'blue' : 'default'}>
                     {t(workflow.credentialConfigured ? 'cloudDriveWorkflows.credentialPresent' : 'cloudDriveWorkflows.credentialMissing')}
                 </Tag>
                 <Typography.Text type="secondary">{t('cloudDriveWorkflows.credentialHelp')}</Typography.Text>
-            </Space>
+            </Space>}
             <Form layout="vertical">
+                <Typography.Text strong>{t('cloudDriveWorkflows.fileTypes')}</Typography.Text>
+                <Row gutter={12} className="mt-3">
+                    {(['videoEnabled', 'torrentEnabled'] as const).map(key => <Col xs={12} key={key}>
+                        <Form.Item label={t(`cloudDriveWorkflows.fields.${key}`)}>
+                            <Switch checked={draft[key]} disabled={disabled}
+                                aria-label={`${providerLabel} ${t(`cloudDriveWorkflows.fields.${key}`)}`}
+                                data-testid={`drive-${workflow.provider}-${key}`} onChange={value => change(key, value)} />
+                        </Form.Item>
+                    </Col>)}
+                </Row>
+                <Typography.Paragraph type="secondary">{t('cloudDriveWorkflows.torrentHelp')}</Typography.Paragraph>
+                {noFilesSelected && <Alert className="mb-4" type="info" showIcon title={t('cloudDriveWorkflows.noFilesSelected')} />}
                 <Row gutter={12}>
                     {(['discoveryEnabled', 'transferEnabled', 'shareEnabled', 'gyingPublishEnabled'] as const).map(key =>
                         <Col xs={12} key={key}>
@@ -111,18 +130,19 @@ function DriveWorkflowCard({ workflow, onSave, onRunTransfers }: Omit<Props, 'wo
                         {t('cloudDriveWorkflows.saveProvider', { provider: providerLabel })}
                     </Button>
                     <Button className="min-h-11" icon={<CloudSyncOutlined />} loading={running}
-                        disabled={disabled || !workflow.transferEnabled || Boolean(edited)}
+                        disabled={disabled || !workflow.transferEnabled || sessionMissing || noFilesSelected || Boolean(edited)}
                         data-testid={`drive-run-${workflow.provider}`} onClick={() => void runTransfers()}>
                         {t('cloudDriveWorkflows.runTransfers')}
                     </Button>
                 </Space>
                 {edited && <div className="mt-2"><Typography.Text type="secondary">{t('cloudDriveWorkflows.saveBeforeRun')}</Typography.Text></div>}
+                {sessionMissing && <div className="mt-2"><Typography.Text type="secondary">{t('cloudDriveWorkflows.baiduAccount.loginBeforeRun')}</Typography.Text></div>}
             </Form>
         </>}
     </Card>;
 }
 
-export default function DriveWorkflowSettings({ workflows, loading, onSave, onRunTransfers }: Props) {
+export default function DriveWorkflowSettings({ workflows, loading, onSave, onRunTransfers, onReadBaiduSession, onStartBaiduLogin, onBaiduConnected }: Props) {
     const { t } = useTranslation();
     if (loading) return <Card loading />;
     if (!workflows?.length) return <Card><Empty description={t('cloudDriveWorkflows.unavailable')} /></Card>;
@@ -132,7 +152,8 @@ export default function DriveWorkflowSettings({ workflows, loading, onSave, onRu
             {CLOUD_DRIVE_PROVIDERS.map(provider => {
                 const workflow = workflows.find(item => item.provider === provider);
                 return workflow ? <Col key={provider} xs={24} lg={12} xl={8}>
-                    <DriveWorkflowCard workflow={workflow} onSave={onSave} onRunTransfers={onRunTransfers} />
+                    <DriveWorkflowCard workflow={workflow} onSave={onSave} onRunTransfers={onRunTransfers}
+                        onReadBaiduSession={onReadBaiduSession} onStartBaiduLogin={onStartBaiduLogin} onBaiduConnected={onBaiduConnected} />
                 </Col> : null;
             })}
         </Row>

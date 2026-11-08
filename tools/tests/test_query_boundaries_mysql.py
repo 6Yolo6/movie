@@ -60,7 +60,7 @@ class FixtureSafetyTest(unittest.TestCase):
         arguments = shlex.split(lines[0])
         self.assertEqual('mvn', arguments[0])
         self.assertIn('-o', arguments)
-        self.assertIn('-Dtest=MonitoringServiceMySqlTest,QueryBoundaryMySqlTest', arguments)
+        self.assertIn('-Dtest=BaiduTransferTaskMySqlTest,MonitoringServiceMySqlTest,QueryBoundaryMySqlTest', arguments)
         self.assertNotIn('-DskipTests', arguments)
         self.assertEqual('test', arguments[-1])
 
@@ -99,8 +99,8 @@ class FixtureSafetyTest(unittest.TestCase):
                 (root / ('TEST-' + name + '.xml')).write_text(
                     f'<testsuite name="example.{name}" tests="{count}" failures="1" errors="1" skipped="0"/>', encoding='utf-8')
             totals = fixture.summary(root)['totals']
-            self.assertEqual(2, totals['failures'])
-            self.assertEqual(2, totals['errors'])
+            self.assertEqual(len(fixture.REQUIRED_TESTS), totals['failures'])
+            self.assertEqual(len(fixture.REQUIRED_TESTS), totals['errors'])
             self.assertEqual(sum(fixture.REQUIRED_TESTS.values()) - 2 * len(fixture.REQUIRED_TESTS), totals['passed'])
 
 

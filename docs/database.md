@@ -36,6 +36,7 @@
 | 文件 | 主要用途 |
 | --- | --- |
 | [`migration_access_log_client_identity.sql`](../backend/src/main/resources/db/migration_access_log_client_identity.sql) | 为访问日志追加可空的客户端 IP / User-Agent；不回填历史，先预检和备份，再部署应用 |
+| [`migration_baidu_transfer_task.sql`](../backend/src/main/resources/db/migration_baidu_transfer_task.sql) | 本轮候选新增百度独立任务、内容计划、账号绑定与副作用租约；已合入 schema，尚未执行生产迁移，不重置旧队列 |
 | [`migration_comments_login_devices.sql`](../backend/src/main/resources/db/migration_comments_login_devices.sql) | 评论类型、安全约束与登录设备授权表 |
 | [`migration_favorites.sql`](../backend/src/main/resources/db/migration_favorites.sql) | 收藏表与影片热度字段 |
 | [`migration_fix_qq_channel_template_mojibake.sql`](../backend/src/main/resources/db/migration_fix_qq_channel_template_mojibake.sql) | 修正历史 QQ 频道默认模板乱码 |

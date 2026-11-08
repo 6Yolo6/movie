@@ -52,6 +52,37 @@ class CloudDrivePublishingPolicyTest {
         verifyNoInteractions(fixture.transfers, fixture.shares);
     }
 
+    @org.junit.jupiter.api.Test
+    void baiduThirdPartyShareCannotPassAutomaticPublicationWithoutVerifiedDedicatedTask() {
+        var f = new Fixture("BAIDU"); f.properties.getBaidu().setVideoEnabled(true);
+        f.discovery.setShareUrl("https://pan.baidu.com/s/1thirdparty");
+        var client = mock(com.gying.movie.client.BaiduWebClient.class);
+        var tasks = mock(IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(f.service, "baiduWebClient", client);
+        org.springframework.test.util.ReflectionTestUtils.setField(f.service, "baiduTransferTaskService", tasks);
+        assertEquals(1, f.service.publishDiscovery(11L).getSkipped());
+        verifyNoInteractions(client, f.resources, f.shares, f.transfers);
+    }
+
+    @org.junit.jupiter.api.Test
+    void verifiedBaiduSeedShareKeepsTorrentTypeAndDoesNotMarkVideoAvailable() {
+        var f = new Fixture("BAIDU"); f.properties.getBaidu().setTorrentEnabled(true);
+        f.discovery.setResourceType("TORRENT"); f.discovery.setShareUrl("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        f.discovery.setCode("abcd");
+        var client = mock(com.gying.movie.client.BaiduWebClient.class); var tasks = mock(IBaiduTransferTaskService.class);
+        var task = new com.gying.movie.entity.BaiduTransferTask(); task.setStatus("SUCCEEDED"); task.setPhase("SHARED");
+        when(tasks.getOne(any(), eq(false))).thenReturn(task); when(client.validateOwnShare(f.discovery.getShareUrl())).thenReturn(true);
+        org.springframework.test.util.ReflectionTestUtils.setField(f.service, "baiduWebClient", client);
+        org.springframework.test.util.ReflectionTestUtils.setField(f.service, "baiduTransferTaskService", tasks);
+        when(f.resources.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink) call.getArgument(0)).setId(42L); return true; });
+        var result = f.service.publishDiscovery(11L);
+        assertEquals(1, result.getPublished()); assertEquals(0, result.getFailed());
+        var saved = org.mockito.ArgumentCaptor.forClass(ResourceLink.class); verify(f.resources).save(saved.capture());
+        assertEquals("TORRENT", saved.getValue().getType()); assertEquals("BAIDU", saved.getValue().getProvider());
+        assertEquals("abcd", saved.getValue().getCode()); verify(f.movies, never()).updateById(any(com.gying.movie.entity.MovieMetadata.class));
+        verifyNoInteractions(f.shares, f.transfers);
+    }
+
     private static class Fixture {
         final ResourceHubProperties properties = new ResourceHubProperties();
         final IResourceDiscoveryResultService discoveries = mock(IResourceDiscoveryResultService.class);

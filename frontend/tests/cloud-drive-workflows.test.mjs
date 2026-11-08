@@ -74,13 +74,13 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
             metadataCrawlProgress: scenario.progress || [{ provider: 'GYING', source: 'HITS_MOVIE', startPage: 1, endPage: 50, nextPage: 7, nextItem: 11, status: 'PENDING' }],
             weeklyTransferSchedules: [{ typeCode: 'mv', enabled: true, intervalDays: 7, maxItems: 5 }],
             driveWorkflows: scenario.noWorkflows ? undefined : [
-                { provider: 'QUARK', supported: true, status: 'AVAILABLE', discoveryEnabled: true, transferEnabled: true,
+                { provider: 'QUARK', supported: true, status: 'AVAILABLE', discoveryEnabled: true, transferEnabled: true, videoEnabled: true, torrentEnabled: true,
                     shareEnabled: true, gyingPublishEnabled: true, credentialConfigured: true, savePath: '/movies/quark', batchLimit: 5 },
-                { provider: 'XUNLEI', supported: true, status: 'AVAILABLE', discoveryEnabled: true, transferEnabled: scenario.transferEnabled ?? true,
+                { provider: 'XUNLEI', supported: true, status: 'AVAILABLE', discoveryEnabled: true, transferEnabled: scenario.transferEnabled ?? true, videoEnabled: true, torrentEnabled: true,
                     shareEnabled: true, gyingPublishEnabled: true, credentialConfigured: false, savePath: '/movies/xunlei', batchLimit: 4 },
                 { provider: 'BAIDU', supported: scenario.baiduSupported ?? false, status: scenario.baiduSupported ? 'AVAILABLE' : 'PLANNED',
-                    discoveryEnabled: false, transferEnabled: false, shareEnabled: false, gyingPublishEnabled: false,
-                    credentialConfigured: false, savePath: null, batchLimit: null },
+                    discoveryEnabled: false, transferEnabled: scenario.baiduTransferEnabled ?? false, shareEnabled: false, gyingPublishEnabled: false, videoEnabled: scenario.baiduVideoEnabled ?? false, torrentEnabled: scenario.baiduTorrentEnabled ?? false,
+                    credentialConfigured: scenario.baiduConfigured ?? false, savePath: scenario.baiduSupported ? '/GYing Resource Hub' : null, batchLimit: scenario.baiduSupported ? 5 : null },
             ],
         };
         const overview = { config, enabled: true, worker: { enabled: true, publishLimit: 1, quarkLimit: 1 }, taskStatusCounts: {} };
@@ -92,8 +92,9 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
                 if (firstOverview) firstOverview = false;
                 else call.resolve(new Response(JSON.stringify({ data: overview }), { status: 200 }));
             }
+            else if (url.endsWith('/baidu/session')) call.resolve(new Response(JSON.stringify({ data: { configured: scenario.baiduConfigured ?? false, state: 'DISCONNECTED', ticketId: null, expiresAt: null, accountName: null, lastValidatedAt: null, failureCode: null } }), { status: 200 }));
             else if (url.includes('/tasks?')) call.resolve(new Response(JSON.stringify({ data: { records: scenario.tasks || [], total: scenario.tasks?.length || 0 } }), { status: 200 }));
-            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
+            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run') && !url.endsWith('/baidu/login')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
             return call.promise;
         };
         const mocks = {
@@ -105,6 +106,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
             'react-i18next': { useTranslation: () => ({ t }) },
         };
         mocks['@/lib/cloudDriveWorkflows'] = loadModule('driveWorkflows', mocks);
+        mocks['@/components/admin/BaiduAccountConnection'] = loadPage('baiduAccount', mocks);
         const Ranges = loadPage('crawlRanges', mocks);
         const Drives = loadPage('driveSettings', mocks);
         const Page = loadPage('resourceHub', { ...mocks, '@/components/admin/MetadataCrawlRanges': Ranges, '@/components/admin/DriveWorkflowSettings': Drives });
@@ -165,7 +167,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         await f.saveDrive('QUARK');
         const request = f.last();
         same(request.url, '/api/admin/resource-hub/config', 'existing config endpoint');
-        same(JSON.parse(request.options.body), { driveWorkflows: [{ provider: 'QUARK', discoveryEnabled: false,
+        same(JSON.parse(request.options.body), { driveWorkflows: [{ provider: 'QUARK', discoveryEnabled: false, videoEnabled: true, torrentEnabled: true,
             transferEnabled: true, gyingPublishEnabled: true, shareEnabled: true, savePath: '/new/quark', batchLimit: 7 }] }, 'only writable single-drive payload');
         await f.reply(request, f.updated('QUARK', { discoveryEnabled: false, savePath: '/new/quark', batchLimit: 7 }));
         same(f.forms[0].updates.length, formUpdates, 'metadata form never replaced');
@@ -242,10 +244,71 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         same(f.all('Alert').some(props => props.title === 'cloudDriveWorkflows.shareDisabledHelp'), true, 'share gating explained');
         same(f.byId('drive-QUARK-gyingPublishEnabled').checked, true, 'existing shares can still publish');
     });
-    await check('Baidu stays read-only even if API mistakenly advertises it as available', async f => {
-        same(f.byId('drive-save-BAIDU'), undefined, 'no Baidu save');
-        same(f.byId('drive-run-BAIDU'), undefined, 'no Baidu run');
+    await check('supported Baidu settings can be saved without a session while transfer stays blocked', async f => {
+        same(f.byId('drive-BAIDU-transferEnabled').disabled, false, 'supported Baidu can configure');
+        await f.change('BAIDU', 'savePath', '/baidu/new');
+        await f.change('BAIDU', 'transferEnabled', true);
+        await f.saveDrive('BAIDU');
+        const save = f.last();
+        same(JSON.parse(save.options.body).driveWorkflows[0].provider, 'BAIDU', 'Baidu-only save');
+        await f.reply(save, f.updated('BAIDU', { savePath: '/baidu/new', transferEnabled: true }));
+        same(f.byId('drive-run-BAIDU').disabled, true, 'session required to transfer');
+        await f.act(() => f.byId('drive-run-BAIDU').onClick());
+        same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'direct invoke cannot bypass session check');
+        same(f.calls.some(call => call.url.endsWith('/baidu/login')), false, 'configuration save never starts login');
     }, { baiduSupported: true });
+    await check('Baidu login starts only from its explicit button and sends no credentials', async f => {
+        await f.act(() => { f.byId('baidu-start-login').onClick(); f.byId('baidu-start-login').onClick(); });
+        const logins = f.calls.filter(call => call.url.endsWith('/baidu/login'));
+        same(logins.length, 1, 'one explicit request');
+        same([logins[0].options.method, logins[0].options.body], ['POST', '{}'], 'no password or session payload');
+        await f.reply(logins[0], { configured: false, state: 'EXPIRED', ticketId: 'fixture-ticket', expiresAt: Date.now() - 1, accountName: null, lastValidatedAt: null, failureCode: null });
+        same(f.byId('drive-BAIDU-transferEnabled').checked, false, 'login does not enable transfer');
+    }, { baiduSupported: true });
+    await check('a configured Baidu transfer still needs an explicit run action', async f => {
+        same(f.byId('drive-run-BAIDU').disabled, false, 'configured enabled provider can run');
+        same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'no automatic transfer');
+        await f.act(() => f.byId('drive-run-BAIDU').onClick());
+        same(JSON.parse(f.last().options.body), { provider: 'BAIDU', limit: 5 }, 'Baidu-specific manual action');
+        await f.reply(f.last(), { submitted: 1 });
+    }, { baiduSupported: true, baiduConfigured: true, baiduTransferEnabled: true, baiduVideoEnabled: true });
+    await check('account refresh updates only Baidu credentials while preserving newer saved file choices', async f => {
+        await f.act(() => f.forms[0].setFieldsValue({ enabled: false })); const updates = f.forms[0].updates.length;
+        await f.act(() => f.byId('baidu-start-login').onClick()); const login = f.last();
+        await f.reply(login, { configured: true, state: 'CONNECTED', ticketId: 'fixture-ticket', expiresAt: Date.now() + 600000,
+            accountName: 'f***e', lastValidatedAt: Date.now(), failureCode: null });
+        const accountRead = f.calls.find(call => call.url.endsWith('/config') && !call.options.method);
+        same(Boolean(accountRead), true, 'login refreshes persisted account configuration');
+        await f.change('BAIDU', 'videoEnabled', true); await f.change('BAIDU', 'savePath', '/new/baidu');
+        await f.saveDrive('BAIDU'); await f.reply(f.last(), f.updated('BAIDU', { videoEnabled: true, savePath: '/new/baidu' }));
+        await f.reply(accountRead, f.updated('BAIDU', { credentialConfigured: true }));
+        same(f.byId('drive-BAIDU-videoEnabled').checked, true, 'newer file type remains');
+        same(f.byId('drive-BAIDU-savePath').value, '/new/baidu', 'newer path remains');
+        same(f.byId('drive-BAIDU-transferEnabled').checked, false, 'login never enables a stage');
+        same(f.forms[0].updates.length, updates, 'unrelated form draft untouched');
+        same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'login never transfers');
+    }, { baiduSupported: true });
+    await check('per-drive file type choices persist independently and never enable workflow stages', async f => {
+        await f.change('XUNLEI', 'torrentEnabled', false);
+        await f.change('QUARK', 'videoEnabled', false);
+        await f.saveDrive('QUARK'); const request = f.last();
+        const payload = JSON.parse(request.options.body).driveWorkflows[0];
+        same([payload.videoEnabled, payload.torrentEnabled], [false, true], 'torrent-only Quark payload');
+        await f.reply(request, f.updated('QUARK', { videoEnabled: false }));
+        same(f.byId('drive-XUNLEI-torrentEnabled').checked, false, 'Xunlei draft retained');
+        same(f.byId('drive-QUARK-videoEnabled').checked, false, 'Quark saved selection');
+        same(f.byId('drive-QUARK-transferEnabled').checked, true, 'stage kept');
+        same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'type selection never transfers');
+    });
+    await check('both file types off can save but cannot run a manual cloud transfer', async f => {
+        await f.change('QUARK', 'videoEnabled', false); await f.change('QUARK', 'torrentEnabled', false);
+        same(f.all('Alert').some(props => props.title === 'cloudDriveWorkflows.noFilesSelected'), true, 'no selection explained');
+        await f.saveDrive('QUARK'); await f.reply(f.last(), f.updated('QUARK', { videoEnabled: false, torrentEnabled: false }));
+        same(f.byId('drive-run-QUARK').disabled, true, 'run disabled');
+        await f.act(() => f.byId('drive-run-QUARK').onClick());
+        same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'guard prevents direct run');
+        same(f.byId('drive-QUARK-discoveryEnabled').checked, true, 'metadata discovery settings unchanged');
+    });
     await check('older API without workflows does not invent enabled drive state', async f => {
         same(f.all('Card').some(props => String(props['data-testid']).startsWith('drive-card-')), false, 'no fabricated controls');
         same(f.all('Empty').some(props => props.description === 'cloudDriveWorkflows.unavailable'), true, 'clear unavailable state');
@@ -258,8 +321,9 @@ test('Cloud drive configuration: real React page and per-provider API', { timeou
         resourceHub: 'src/app/admin/resource-hub/page.tsx',
         crawlRanges: 'src/components/admin/MetadataCrawlRanges.tsx',
         driveSettings: 'src/components/admin/DriveWorkflowSettings.tsx',
+        baiduAccount: 'src/components/admin/BaiduAccountConnection.tsx',
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
-    assert.equal(results.length, 12);
+    assert.equal(results.length, 17);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });

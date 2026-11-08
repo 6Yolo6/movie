@@ -2,6 +2,7 @@ package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.gying.movie.client.XunleiClient;
+import com.gying.movie.client.BaiduSessionVault;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.config.CloudDriveProvider;
 import com.gying.movie.dto.CloudDriveWorkflowConfig;
@@ -75,6 +76,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
 
     @Autowired(required = false)
     private XunleiClient xunleiClient;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private BaiduSessionVault baiduSessionVault;
 
     @Autowired(required = false)
     private IResourceHubTaskService taskService;
@@ -437,14 +440,27 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         quark.setTransferEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "transfer_enabled"), quark.isTransferEnabled()));
         quark.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "gying_publish_enabled"), quark.isGyingPublishEnabled()));
         quark.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "share_enabled"), quark.isShareEnabled()));
+        quark.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "video_enabled"), quark.isVideoEnabled()));
+        quark.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.QUARK, "torrent_enabled"), quark.isTorrentEnabled()));
         quark.setSavePath(readString(driveKey(CloudDriveProvider.QUARK, "save_path"), quark.getSavePath()));
         worker.setQuarkLimit(readInt(driveKey(CloudDriveProvider.QUARK, "batch_limit"), worker.getQuarkLimit(), 1, 20));
         xunlei.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "discovery_enabled"), xunlei.isDiscoveryEnabled()));
         xunlei.setEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "transfer_enabled"), xunlei.isEnabled()));
         xunlei.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "gying_publish_enabled"), xunlei.isGyingPublishEnabled()));
         xunlei.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "share_enabled"), xunlei.isShareEnabled()));
+        xunlei.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "video_enabled"), xunlei.isVideoEnabled()));
+        xunlei.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.XUNLEI, "torrent_enabled"), xunlei.isTorrentEnabled()));
         xunlei.setSavePath(readString(driveKey(CloudDriveProvider.XUNLEI, "save_path"), xunlei.getSavePath()));
         worker.setXunleiLimit(readInt(driveKey(CloudDriveProvider.XUNLEI, "batch_limit"), worker.getXunleiLimit(), 1, 20));
+        var baidu = properties.getBaidu();
+        baidu.setDiscoveryEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "discovery_enabled"), baidu.isDiscoveryEnabled()));
+        baidu.setEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "transfer_enabled"), baidu.isEnabled()));
+        baidu.setGyingPublishEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "gying_publish_enabled"), baidu.isGyingPublishEnabled()));
+        baidu.setShareEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "share_enabled"), baidu.isShareEnabled()));
+        baidu.setVideoEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "video_enabled"), baidu.isVideoEnabled()));
+        baidu.setTorrentEnabled(readBoolean(driveKey(CloudDriveProvider.BAIDU, "torrent_enabled"), baidu.isTorrentEnabled()));
+        baidu.setSavePath(readString(driveKey(CloudDriveProvider.BAIDU, "save_path"), baidu.getSavePath()));
+        worker.setBaiduLimit(readInt(driveKey(CloudDriveProvider.BAIDU, "batch_limit"), worker.getBaiduLimit(), 1, 20));
     }
 
     private List<CloudDriveWorkflowConfig> driveWorkflowResponse(boolean xunleiCredentialConfigured) {
@@ -460,6 +476,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 workflow.setTransferEnabled(config.isTransferEnabled());
                 workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
                 workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
                 workflow.setSavePath(config.getSavePath());
                 workflow.setBatchLimit(properties.getWorker().getQuarkLimit());
                 workflow.setCredentialConfigured(hasText(config.getToken()));
@@ -469,15 +487,23 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 workflow.setTransferEnabled(config.isEnabled());
                 workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
                 workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
                 workflow.setSavePath(config.getSavePath());
                 workflow.setBatchLimit(properties.getWorker().getXunleiLimit());
                 workflow.setCredentialConfigured(xunleiCredentialConfigured);
-            } else {
-                workflow.setDiscoveryEnabled(false);
-                workflow.setTransferEnabled(false);
-                workflow.setGyingPublishEnabled(false);
-                workflow.setShareEnabled(false);
-                workflow.setCredentialConfigured(false);
+            } else if (provider == CloudDriveProvider.BAIDU) {
+                var config = properties.getBaidu();
+                workflow.setDiscoveryEnabled(config.isDiscoveryEnabled());
+                workflow.setTransferEnabled(config.isEnabled());
+                workflow.setGyingPublishEnabled(config.isGyingPublishEnabled());
+                workflow.setShareEnabled(config.isShareEnabled());
+                workflow.setVideoEnabled(config.isVideoEnabled());
+                workflow.setTorrentEnabled(config.isTorrentEnabled());
+                workflow.setSavePath(config.getSavePath());
+                workflow.setBatchLimit(properties.getWorker().getBaiduLimit());
+                // Local metadata only: reading configuration never logs in or probes the account.
+                workflow.setCredentialConfigured(baiduSessionVault != null && baiduSessionVault.metadata().configured());
             }
             workflows.add(workflow);
         }
@@ -516,6 +542,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             fields.put("transfer_enabled", workflow.getTransferEnabled());
             fields.put("gying_publish_enabled", workflow.getGyingPublishEnabled());
             fields.put("share_enabled", workflow.getShareEnabled());
+            fields.put("video_enabled", workflow.getVideoEnabled());
+            fields.put("torrent_enabled", workflow.getTorrentEnabled());
             fields.put("save_path", workflow.getSavePath());
             fields.put("batch_limit", workflow.getBatchLimit());
             for (var field : fields.entrySet()) {
@@ -534,16 +562,30 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
                 if (workflow.getTransferEnabled() != null) config.setTransferEnabled(workflow.getTransferEnabled());
                 if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
                 if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
                 if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
                 if (workflow.getBatchLimit() != null) properties.getWorker().setQuarkLimit(workflow.getBatchLimit());
-            } else {
+            } else if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.XUNLEI) {
                 var config = properties.getXunlei();
                 if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
                 if (workflow.getTransferEnabled() != null) config.setEnabled(workflow.getTransferEnabled());
                 if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
                 if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
                 if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
                 if (workflow.getBatchLimit() != null) properties.getWorker().setXunleiLimit(workflow.getBatchLimit());
+            } else if (CloudDriveProvider.from(workflow.getProvider()) == CloudDriveProvider.BAIDU) {
+                var config = properties.getBaidu();
+                if (workflow.getDiscoveryEnabled() != null) config.setDiscoveryEnabled(workflow.getDiscoveryEnabled());
+                if (workflow.getTransferEnabled() != null) config.setEnabled(workflow.getTransferEnabled());
+                if (workflow.getGyingPublishEnabled() != null) config.setGyingPublishEnabled(workflow.getGyingPublishEnabled());
+                if (workflow.getShareEnabled() != null) config.setShareEnabled(workflow.getShareEnabled());
+                if (workflow.getVideoEnabled() != null) config.setVideoEnabled(workflow.getVideoEnabled());
+                if (workflow.getTorrentEnabled() != null) config.setTorrentEnabled(workflow.getTorrentEnabled());
+                if (workflow.getSavePath() != null) config.setSavePath(workflow.getSavePath());
+                if (workflow.getBatchLimit() != null) properties.getWorker().setBaiduLimit(workflow.getBatchLimit());
             }
         }
     }

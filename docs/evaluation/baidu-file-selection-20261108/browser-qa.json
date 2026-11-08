@@ -1,0 +1,842 @@
+{
+  "actualProductionAssets": true,
+  "mockedApi": true,
+  "productionApiWrites": false,
+  "nextServerStarted": false,
+  "scenarios": [
+    {
+      "lang": "zh",
+      "width": 1280,
+      "theme": "light",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-light.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-light-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 1280,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-dark.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-dark-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-1280-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "theme": "light",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-light.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-light-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-dark.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-dark-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-1280-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 390,
+      "theme": "light",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-light.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-light-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 390,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-dark.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-dark-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\zh-390-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "theme": "light",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-light.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-light-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-dark.png",
+      "pendingScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-dark-pending.png",
+      "connectedScreenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\en-390-dark-connected.png",
+      "passed": true
+    }
+  ],
+  "observedWrites": [
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "QUARK",
+            "discoveryEnabled": true,
+            "videoEnabled": true,
+            "torrentEnabled": false,
+            "transferEnabled": true,
+            "gyingPublishEnabled": true,
+            "shareEnabled": true,
+            "savePath": "/saved/quark",
+            "batchLimit": 5
+          }
+        ]
+      }
+    },
+    {
+      "path": "/api/admin/resource-hub/baidu/login",
+      "method": "POST",
+      "body": {}
+    },
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "BAIDU",
+            "discoveryEnabled": false,
+            "videoEnabled": false,
+            "torrentEnabled": true,
+            "transferEnabled": false,
+            "gyingPublishEnabled": false,
+            "shareEnabled": false,
+            "savePath": "/fixture/baidu",
+            "batchLimit": 5
+          }
+        ]
+      }
+    },
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "XUNLEI",
+            "discoveryEnabled": true,
+            "videoEnabled": true,
+            "torrentEnabled": true,
+            "transferEnabled": true,
+            "gyingPublishEnabled": true,
+            "shareEnabled": true,
+            "savePath": "/unsaved/xunlei",
+            "batchLimit": 5
+          }
+        ]
+      }
+    }
+  ],
+  "observedReads": [
+    "/api/notifications/unread-count",
+    "/api/admin/resource-hub/overview",
+    "/api/admin/resource-hub/tasks",
+    "/api/admin/resource-hub/discoveries",
+    "/api/admin/resource-hub/missing-resources",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/config",
+    "/api/notifications/unread-count",
+    "/api/admin/resource-hub/overview",
+    "/api/admin/resource-hub/tasks",
+    "/api/admin/resource-hub/discoveries",
+    "/api/admin/resource-hub/missing-resources",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/config"
+  ],
+  "status": "passed"
+}

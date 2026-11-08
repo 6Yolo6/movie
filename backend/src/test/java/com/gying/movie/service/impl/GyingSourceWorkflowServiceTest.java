@@ -1344,6 +1344,38 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("FAILED", ((List<Map<String, Object>>) result.get("items")).get(0).get("status"));
     }
 
+    @Test void weeklyTorrentOnlyDoesNotPublishAnExistingVideoShareOrMarkMovieAvailable() {
+        MovieMetadata movie = stubManualMovie("SEEDS");
+        properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        var video = new ResourceLink(); video.setId(42L); video.setMovieId(movie.getId());
+        video.setType("DISK"); video.setProvider("QUARK"); video.setUrl("https://pan.quark.cn/s/video");
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(video);
+        var result = service.ensureWeeklyMovieResource("mv", "SEEDS");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+    }
+
+    @Test void weeklyTorrentOnlyDoesNotTreatAnExistingPublishedVideoAsAvailable() {
+        MovieMetadata movie = stubManualMovie("PUBLISHED-SEEDS", ownedVideo("QUARK", "OLD", "old"));
+        properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        var result = service.ensureWeeklyMovieResource("mv", "PUBLISHED-SEEDS");
+        assertEquals("DISABLED", result.get("status")); assertEquals("UNKNOWN", movie.getResourceStatus());
+        verify(gyingSourceClient, never()).post(eq("/publish"), any());
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, publishService, shareService);
+    }
+
+    @Test void missingProviderOnlyInfersExactKnownHostsAndCannotFallThroughToQuark() {
+        for (String url : List.of("https://pan.baidu.com.attacker.invalid/s/x", "https://example.invalid/?host=quark.cn")) {
+            var candidate = Map.<String, Object>of("url", url, "title", "测试电影");
+            assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                    service, "transferCandidate", movie("movie", "测试电影", "mv", "TRAILER"), candidate));
+        }
+        assertEquals("BAIDU", org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,
+                "resourceProvider", Map.of("url", "https://pan.baidu.com/s/1fixture")));
+        verifyNoInteractions(transferRunnerService, xunleiTransferRunnerService, transferTaskService, xunleiTransferTaskService, publishService);
+    }
+
     private MovieMetadata stubManualMovie(String id, Map<String, Object>... own) {
         MovieMetadata movie = movie(id, "测试电影", "mv", "UNKNOWN");
         when(movieService.getById(id)).thenReturn(movie);

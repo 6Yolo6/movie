@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.GyingSourceClient;
+import com.gying.movie.client.BaiduWebClient;
+import com.gying.movie.client.BaiduActionException;
 import com.gying.movie.client.P2pCloudArchiveClient;
 import com.gying.movie.client.P2pCloudArchiveClient.FileData;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.*;
 import com.gying.movie.service.*;
 import com.gying.movie.utils.ResourceHubHashUtils;
@@ -33,6 +36,7 @@ public class P2pArchiveTaskService {
     private final IMovieMetadataService movies;
     private final IQuarkTransferTaskService quarkTasks;
     private final IXunleiTransferTaskService xunleiTasks;
+    private final IBaiduTransferTaskService baiduTasks;
     private final GyingSourceClient source;
     private final P2pCloudArchiveClient cloud;
     private final ObjectMapper mapper;
@@ -40,9 +44,9 @@ public class P2pArchiveTaskService {
 
     public P2pArchiveTaskService(ResourceHubProperties properties, IResourceHubTaskService tasks,
             IResourceLinkService links, IMovieMetadataService movies, IQuarkTransferTaskService quarkTasks,
-            IXunleiTransferTaskService xunleiTasks, GyingSourceClient source, P2pCloudArchiveClient cloud, ObjectMapper mapper) {
+            IXunleiTransferTaskService xunleiTasks, IBaiduTransferTaskService baiduTasks, GyingSourceClient source, P2pCloudArchiveClient cloud, ObjectMapper mapper) {
         this.properties = properties; this.tasks = tasks; this.links = links; this.movies = movies;
-        this.quarkTasks = quarkTasks; this.xunleiTasks = xunleiTasks; this.source = source; this.cloud = cloud; this.mapper = mapper;
+        this.quarkTasks = quarkTasks; this.xunleiTasks = xunleiTasks; this.baiduTasks = baiduTasks; this.source = source; this.cloud = cloud; this.mapper = mapper;
     }
 
     public synchronized void enqueue(String movieId, String typeCode, String mid, List<ResourceLink> selected) {
@@ -51,7 +55,8 @@ public class P2pArchiveTaskService {
             throw new IllegalArgumentException("Invalid source movie identity");
         }
         String fingerprint = fingerprint(selected);
-        for (String provider : List.of("QUARK", "XUNLEI")) {
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
+            if (!properties.isDriveDiscoveryEnabled(provider) || !properties.isDriveTorrentEnabled(provider)) continue;
             if (tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId)
                     .eq("source", provider).eq("keyword", fingerprint).last("LIMIT 1"), false) != null) continue;
             ResourceHubTask task = new ResourceHubTask();
@@ -75,7 +80,9 @@ public class P2pArchiveTaskService {
     public void recoverInterruptedArchives() {
         // Single-backend deployment: only this idempotent metadata-file queue is resumed.
         // Never reset legacy discovery, cloud transfer or external publishing queues here.
-        tasks.update(new UpdateWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("status", "RUNNING")
+        List<String> providers = List.of("QUARK", "XUNLEI", "BAIDU").stream().filter(this::canRunArchive).toList();
+        if (providers.isEmpty()) return;
+        tasks.update(new UpdateWrapper<ResourceHubTask>().eq("task_type", TYPE).in("source", providers).eq("status", "RUNNING")
                 .set("status", "FAILED").set("last_error", "Interrupted P2P upload; existing files will be verified on retry")
                 .set("scheduled_at", LocalDateTime.now().plusMinutes(1)).set("updated_at", LocalDateTime.now()));
     }
@@ -84,17 +91,51 @@ public class P2pArchiveTaskService {
     public void runDue() {
         if (!properties.isEnabled() || !properties.getWorker().isEnabled() || !running.compareAndSet(false, true)) return;
         try {
+            List<String> providers = List.of("QUARK", "XUNLEI", "BAIDU").stream().filter(this::canRunArchive).toList();
+            if (providers.isEmpty()) return;
             List<ResourceHubTask> due = tasks.list(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE)
-                    .in("status", List.of("PENDING", "FAILED")).apply("attempts < max_attempts")
+                    .in("source", providers).in("status", List.of("PENDING", "FAILED")).apply("attempts < max_attempts")
                     .le("scheduled_at", LocalDateTime.now()).orderByAsc("scheduled_at").last("LIMIT 2"));
             for (ResourceHubTask task : due) runTask(task);
         } finally { running.set(false); }
     }
 
+    /** Explicit single-provider execution; worker scheduling is not required. */
+    public QuarkTransferRunResult submitPending(String provider, int limit) {
+        requireProvider(provider);
+        QuarkTransferRunResult result = new QuarkTransferRunResult();
+        if (!canRunArchive(provider) || !running.compareAndSet(false, true)) { result.setSkipped(1); return result; }
+        try {
+            List<ResourceHubTask> pending = tasks.list(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE)
+                    .eq("source", provider).in("status", List.of("PENDING", "FAILED")).apply("attempts < max_attempts")
+                    .le("scheduled_at", LocalDateTime.now()).orderByAsc("scheduled_at").last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
+            if (pending == null) return result;
+            for (ResourceHubTask task : pending) {
+                if (task == null || task.getId() == null || !TYPE.equals(task.getTaskType()) || !provider.equals(task.getSource())) {
+                    result.setSkipped(result.getSkipped() + 1); continue;
+                }
+                int before = task.getAttempts() == null ? 0 : task.getAttempts();
+                runTask(task);
+                if (task.getAttempts() == null || task.getAttempts() == before || "CANCELED".equals(task.getStatus())) {
+                    result.setSkipped(result.getSkipped() + 1);
+                } else if ("SUCCEEDED".equals(task.getStatus())) {
+                    result.setSubmitted(result.getSubmitted() + 1);
+                } else if ("FAILED".equals(task.getStatus())) {
+                    result.setFailed(result.getFailed() + 1);
+                    if (result.getErrors().size() < 10) result.getErrors().add(task.getLastError());
+                } else { result.setSkipped(result.getSkipped() + 1); }
+            }
+            return result;
+        } finally { running.set(false); }
+    }
+
     void runTask(ResourceHubTask task) {
         if (!TYPE.equals(task.getTaskType())) throw new IllegalArgumentException("Not a P2P archive task");
+        String provider = requireProvider(task.getSource());
+        // Disabled queues remain pending/failed with their checkpoints and retry budget intact.
+        if (!canRunArchive(provider)) return;
         int attempt = (task.getAttempts() == null ? 0 : task.getAttempts()) + 1;
-        if (!tasks.update(new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).eq("task_type", TYPE)
+        if (!tasks.update(new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).eq("task_type", TYPE).eq("source", provider)
                 .in("status", List.of("PENDING", "FAILED")).set("status", "RUNNING")
                 .set("attempts", attempt).set("started_at", LocalDateTime.now()).set("updated_at", LocalDateTime.now()))) return;
         task.setStatus("RUNNING"); task.setAttempts(attempt); task.setStartedAt(LocalDateTime.now());
@@ -111,9 +152,7 @@ public class P2pArchiveTaskService {
             if (movie == null || movie.getDeletedAt() != null || "DELETED".equals(movie.getStatus())) {
                 throw new IllegalStateException("Movie is not active");
             }
-            String provider = task.getSource();
-            if (("QUARK".equals(provider) && !properties.getQuark().isShareEnabled())
-                    || ("XUNLEI".equals(provider) && !properties.getXunlei().isShareEnabled())) {
+            if (!properties.isDriveShareEnabled(provider)) {
                 throw new IllegalStateException("Provider sharing is disabled");
             }
             stage = "PREPARE_METADATA_FILES";
@@ -133,13 +172,34 @@ public class P2pArchiveTaskService {
                 payload.put("uploadedFiles", uploaded); persist(task, payload);
             }
             stage = "CREATE_METADATA_SHARE";
+            if ("BAIDU".equals(provider)) cloud.verifyMetadataOnlyFolder(provider, folder);
             String shareUrl = Objects.toString(payload.get("shareUrl"), "");
             if (shareUrl.isBlank()) {
-                shareUrl = cloud.createShare(provider, folder, title(movie) + " 磁力种子（不含视频）");
-                if (!("QUARK".equals(provider) ? shareUrl.startsWith("https://pan.quark.cn/s/") : shareUrl.startsWith("https://pan.xunlei.com/s/"))) {
-                    throw new IllegalStateException("Provider did not return a usable own share");
+                if ("BAIDU".equals(provider)) {
+                    if (Boolean.TRUE.equals(payload.get("baiduShareSubmitting"))) {
+                        // A timeout may follow a successful create: reconcile, never submit twice.
+                        shareUrl = cloud.findOwnShare(provider, folder);
+                        if (shareUrl == null || shareUrl.isBlank()) throw new IllegalStateException("Baidu metadata share awaiting reconciliation");
+                    } else {
+                        payload.put("baiduShareSubmitting", true); persist(task, payload);
+                        try { shareUrl = cloud.createShare(provider, folder, title(movie) + " 磁力种子（不含视频）"); }
+                        catch (BaiduActionException rejected) {
+                            if (!rejected.uncertain()) { payload.remove("baiduShareSubmitting"); persist(task, payload); }
+                            throw rejected;
+                        }
+                    }
+                } else {
+                    shareUrl = cloud.createShare(provider, folder, title(movie) + " 磁力种子（不含视频）");
                 }
-                payload.put("shareUrl", shareUrl); persist(task, payload);
+                if (!usableOwnShare(provider, shareUrl)) throw new IllegalStateException("Provider did not return a usable own share");
+                payload.put("shareUrl", shareUrl); payload.remove("baiduShareSubmitting"); persist(task, payload);
+            }
+            if (!usableOwnShare(provider, shareUrl)) throw new IllegalStateException("Provider did not return a usable own share");
+            if ("BAIDU".equals(provider)) {
+                // Stored URLs can expire: only a live own share of this exact folder may be published.
+                String verified = cloud.findOwnShare(provider, folder);
+                if (!usableOwnShare(provider, verified)) throw new IllegalStateException("Baidu metadata share is unavailable");
+                shareUrl = verified; payload.put("shareUrl", verified); persist(task, payload);
             }
             stage = "PUBLISH_METADATA_LINK";
             ResourceLink link = links.getOne(new QueryWrapper<ResourceLink>().eq("movie_id", movie.getId())
@@ -264,30 +324,66 @@ public class P2pArchiveTaskService {
                 .sorted().toList()));
     }
     private String preferredLocation(String provider, String movieId) {
-        if ("QUARK".equals(provider)) {
-            for (QuarkTransferTask task : quarkTasks.list(new QueryWrapper<QuarkTransferTask>().eq("movie_id", movieId)
-                    .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20"))) {
-                if (!QqTransferMarker.isTemporary(task.getRequestPayload())) return task.getSavedPath();
-            }
-        } else {
-            for (XunleiTransferTask task : xunleiTasks.list(new QueryWrapper<XunleiTransferTask>().eq("movie_id", movieId)
-                    .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20"))) {
-                if (!QqTransferMarker.isTemporary(task.getRequestPayload())) return task.getSavedPath();
-            }
-        }
-        return null;
+        return switch (provider) {
+            case "QUARK" -> quarkTasks.list(new QueryWrapper<QuarkTransferTask>().eq("movie_id", movieId)
+                    .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
+                    .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
+                    .map(QuarkTransferTask::getSavedPath).findFirst().orElse(null);
+            case "XUNLEI" -> xunleiTasks.list(new QueryWrapper<XunleiTransferTask>().eq("movie_id", movieId)
+                    .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
+                    .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
+                    .map(XunleiTransferTask::getSavedPath).findFirst().orElse(null);
+            case "BAIDU" -> baiduTasks.list(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
+                    .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
+                    .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
+                    .map(BaiduTransferTask::getSavedPath).findFirst().orElse(null);
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
     }
     private String fallbackPath(String provider, MovieMetadata movie) {
-        if ("XUNLEI".equals(provider)) {
-            XunleiTransferTask task = new XunleiTransferTask(); task.setMovieId(movie.getId());
-            return XunleiTransferRunnerServiceImpl.transferPath(properties, task, title(movie));
-        }
-        String base = properties.getQuark().getSavePath();
-        if (base == null || base.isBlank()) base = "/GYing Resource Hub";
-        String category = "tv".equals(movie.getCategory()) ? "tv" : "ac".equals(movie.getCategory()) ? "anime" : "movie";
-        String path = base.replaceAll("/+$", "") + "/" + category + "/" + safe(SeasonSearchUtils.baseTitle(title(movie))) + "（" + safe(movie.getId()) + "）";
-        if (movie.getSeason() != null && movie.getSeason() > 0 && !"movie".equals(category)) path += "/" + safe(SeasonSearchUtils.seasonLabel(movie.getSeason()));
-        return path;
+        return switch (provider) {
+            case "XUNLEI" -> {
+                XunleiTransferTask task = new XunleiTransferTask(); task.setMovieId(movie.getId());
+                yield XunleiTransferRunnerServiceImpl.transferPath(properties, task, title(movie));
+            }
+            case "QUARK" -> {
+                String base = properties.getQuark().getSavePath();
+                if (base == null || base.isBlank()) base = "/GYing Resource Hub";
+                String category = "tv".equals(movie.getCategory()) ? "tv" : "ac".equals(movie.getCategory()) ? "anime" : "movie";
+                String path = base.replaceAll("/+$", "") + "/" + category + "/" + safe(SeasonSearchUtils.baseTitle(title(movie))) + "（" + safe(movie.getId()) + "）";
+                if (movie.getSeason() != null && movie.getSeason() > 0 && !"movie".equals(category)) path += "/" + safe(SeasonSearchUtils.seasonLabel(movie.getSeason()));
+                yield path;
+            }
+            case "BAIDU" -> {
+                String base = properties.getBaidu().getSavePath();
+                if (base == null || base.isBlank()) base = "/GYing Resource Hub";
+                yield base.replaceAll("/+$", "") + "/" + safe(title(movie)) + "（" + safe(movie.getId()) + "）";
+            }
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
+    }
+    private boolean canRunArchive(String provider) {
+        return properties.isEnabled() && properties.isDriveTorrentEnabled(provider) && properties.isDriveTransferEnabled(provider)
+                && properties.isDriveShareEnabled(provider) && (!"BAIDU".equals(provider) || cloud.isConfigured(provider));
+    }
+    private static String requireProvider(String provider) {
+        return switch (Objects.toString(provider, "")) {
+            case "QUARK", "XUNLEI", "BAIDU" -> provider;
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
+    }
+    private static boolean usableOwnShare(String provider, String shareUrl) {
+        if (shareUrl == null) return false;
+        try {
+            java.net.URI uri = java.net.URI.create(shareUrl);
+            if (!"https".equals(uri.getScheme()) || uri.getRawUserInfo() != null || uri.getPort() != -1 || uri.getRawFragment() != null) return false;
+            return switch (provider) {
+                case "QUARK" -> "pan.quark.cn".equals(uri.getHost()) && uri.getPath().startsWith("/s/") && uri.getPath().length() > 3;
+                case "XUNLEI" -> "pan.xunlei.com".equals(uri.getHost()) && uri.getPath().startsWith("/s/") && uri.getPath().length() > 3;
+                case "BAIDU" -> shareUrl.equals(BaiduWebClient.normalizedShareUrl(shareUrl, null));
+                default -> false;
+            };
+        } catch (IllegalArgumentException invalid) { return false; }
     }
     private void persist(ResourceHubTask task, Map<String, Object> payload) {
         task.setPayload(json(payload)); task.setUpdatedAt(LocalDateTime.now());

@@ -1,0 +1,35 @@
+{
+  "verifiedAt": "2026-11-08T15:50:41.945Z",
+  "expectedBackendImage": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+  "configExamplePath": "E:/gying-tools/releases/baidu-file-selection-20261108/host-candidate/login-config.example.json",
+  "configExampleSha256": "d20e9b3bb7531a89c243c4cdf1c399ee50bba30662c047a7363a2a7780a92567",
+  "previousConfigExampleSha256": "229a2006106e76ef8604ff083a342a53915cf87b4eced3224f225034a5dee9bd",
+  "configCredentialsPresent": false,
+  "onlyExpectedBackendImageChanged": true,
+  "scriptManifestPath": "E:/gying-tools/releases/baidu-file-selection-20261108/host-candidate/manifest.json",
+  "scriptManifestSha256": "0bbfa9aba5d65634c0e015cfe9a2f7af98b4038c78149e37fa7b7acb030d6fa9",
+  "scripts": [
+    {
+      "file": "baidu-browser-session.cjs",
+      "sha256": "3ea30d169ad2f73aa1bc0fd2429f7c2489889e9a3ef56bd5be459b64c5c7a473"
+    },
+    {
+      "file": "run-baidu-browser-login.ps1",
+      "sha256": "c3c44d590578a1a8f0321e3bd6897009a4e96bbd4e91899ad4b27597141fa73a"
+    },
+    {
+      "file": "register-baidu-login-task.ps1",
+      "sha256": "338bb5aac76a11f364a0bd56d19c0ccfb1f548ceecfe4860f7ed68f95db5b82b"
+    }
+  ],
+  "repositoryScriptHashesMatch": true,
+  "stagedScriptHashesMatch": true,
+  "scriptManifestRecomputed": true,
+  "scriptManifestChanged": false,
+  "installed": false,
+  "taskRegistered": false,
+  "taskStarted": false,
+  "browserOpened": false,
+  "realBaiduLoginPerformed": false,
+  "deployed": false
+}

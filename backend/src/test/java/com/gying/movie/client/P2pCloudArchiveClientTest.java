@@ -32,14 +32,14 @@ class P2pCloudArchiveClientTest {
     @Test void existingVerifiedFileIsNotUploadedAgain() throws Exception {
         var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var file = text();
         when(quark.p2pChildren("folder")).thenReturn(List.of(mapper.valueToTree(Map.of("fid", "file1", "file_name", file.name(), "size", file.bytes().length))));
-        var client = new P2pCloudArchiveClient(quark, xunlei, mapper);
+        var client = new P2pCloudArchiveClient(quark, xunlei, mock(BaiduWebClient.class), mapper);
         assertEquals("file1", client.upload("QUARK", "folder", file));
         verify(quark, never()).p2pRequest(anyString(), anyMap()); verifyNoInteractions(xunlei);
     }
     @Test void incompatibleExistingFileDoesNotGetOverwritten() {
         var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var file = text();
         when(quark.p2pChildren("folder")).thenReturn(List.of(mapper.valueToTree(Map.of("fid", "file1", "file_name", file.name(), "size", 1))));
-        assertThrows(IllegalStateException.class, () -> new P2pCloudArchiveClient(quark, xunlei, mapper).upload("QUARK", "folder", file));
+        assertThrows(IllegalStateException.class, () -> new P2pCloudArchiveClient(quark, xunlei, mock(BaiduWebClient.class), mapper).upload("QUARK", "folder", file));
         verify(quark, never()).p2pRequest(anyString(), anyMap());
     }
     @Test void quarkMultipartUploadChecksChecksumAndConfirmsDestination() throws Exception {
@@ -54,7 +54,7 @@ class P2pCloudArchiveClientTest {
                 .andRespond(withSuccess().header("ETag", "\"" + P2pCloudArchiveClient.digest("MD5", file.bytes()) + "\""));
         server.expect(requestTo("https://fixture-bucket.oss-cn-shenzhen.aliyuncs.com/fixture/key?uploadId=upload1"))
                 .andExpect(method(HttpMethod.POST)).andExpect(headerDoesNotExist("Cookie")).andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
-        assertEquals("file1", new P2pCloudArchiveClient(quark, xunlei, mapper, rest).upload("QUARK", "folder", file));
+        assertEquals("file1", new P2pCloudArchiveClient(quark, xunlei, mock(BaiduWebClient.class), mapper, rest).upload("QUARK", "folder", file));
         server.verify(); verify(quark).p2pRequest(eq("/1/clouddrive/file/upload/finish"), anyMap()); verifyNoInteractions(xunlei);
     }
     @Test void storageEndpointCannotPointToAnInternalOrUnrelatedHost() throws Exception {
@@ -81,12 +81,64 @@ class P2pCloudArchiveClientTest {
         var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var file = text();
         when(xunlei.p2pChildren("folder")).thenReturn(List.of(), List.of(mapper.valueToTree(Map.of("id", "file1", "name", file.name(), "size", file.bytes().length, "phase", "PHASE_TYPE_COMPLETE"))));
         when(xunlei.p2pCreateFile(anyMap())).thenReturn(mapper.readTree("{\"upload_type\":\"UPLOAD_TYPE_RESUMABLE\",\"resumable\":{\"params\":{}}}"));
-        var client = spy(new P2pCloudArchiveClient(quark, xunlei, mapper));
+        var client = spy(new P2pCloudArchiveClient(quark, xunlei, mock(BaiduWebClient.class), mapper));
         doNothing().when(client).uploadXunleiStorage(any(), eq(file));
         assertEquals("file1", client.upload("XUNLEI", "folder", file));
         var payload = org.mockito.ArgumentCaptor.forClass(Map.class); verify(xunlei).p2pCreateFile(payload.capture());
         assertEquals("UPLOAD_TYPE_RESUMABLE", payload.getValue().get("upload_type"));
         assertEquals("drive#file", payload.getValue().get("kind")); assertFalse(payload.getValue().containsKey("url"));
         verify(xunlei, never()).restore(anyString(), anyString()); verifyNoInteractions(quark);
+    }
+    @Test void baiduUsesOnlyBoundedMetadataUploadAndVerifiedOwnShare() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var file = text(); String folder = "/Baidu/Movie/磁力种子";
+        when(baidu.p2pFolder("/Baidu/Movie", "/Baidu/fallback")).thenReturn(folder);
+        when(baidu.p2pUpload(folder, file.name(), file.bytes())).thenReturn("123");
+        when(baidu.createOwnShare(folder)).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        when(baidu.findOwnShare(folder)).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        assertEquals(folder, client.ensureFolder("BAIDU", "/Baidu/Movie", "/Baidu/fallback"));
+        assertEquals("123", client.upload("BAIDU", folder, file));
+        assertEquals("https://pan.baidu.com/s/1fixture?pwd=abcd", client.createShare("BAIDU", folder, "metadata"));
+        assertEquals("https://pan.baidu.com/s/1fixture?pwd=abcd", client.findOwnShare("BAIDU", folder));
+        verify(baidu).findOwnShare(folder);
+        verify(baidu).p2pFolder("/Baidu/Movie", "/Baidu/fallback");
+        verify(baidu).p2pUpload(folder, file.name(), file.bytes()); verify(baidu).createOwnShare(folder);
+        verifyNoMoreInteractions(baidu); verifyNoInteractions(quark, xunlei);
+    }
+    @Test void unknownProviderCannotFallThroughToAnExistingDrive() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        for (String provider : java.util.Arrays.asList(null, "", "OTHER", "baidu")) {
+            assertThrows(IllegalArgumentException.class, () -> client.isConfigured(provider));
+            assertThrows(IllegalArgumentException.class, () -> client.verifyMetadataOnlyFolder(provider, "/Movie"));
+            assertThrows(IllegalArgumentException.class, () -> client.ensureFolder(provider, null, "/Movie"));
+            assertThrows(IllegalArgumentException.class, () -> client.upload(provider, "folder", text()));
+            assertThrows(IllegalArgumentException.class, () -> client.createShare(provider, "folder", "title"));
+        }
+        verifyNoInteractions(quark, xunlei, baidu);
+    }
+    @Test void baiduRejectsVideoBeforeCallingTheAccountClientAndRedactsUploadErrors() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        assertThrows(IllegalArgumentException.class, () -> client.upload("BAIDU", "/Movie/磁力种子",
+                new P2pCloudArchiveClient.FileData("video.mp4", text().bytes())));
+        verifyNoInteractions(baidu);
+        when(baidu.p2pUpload(anyString(), anyString(), any())).thenThrow(new IllegalStateException("fixture-sensitive-cookie"));
+        var failure = assertThrows(IllegalStateException.class, () -> client.upload("BAIDU", "/Movie/磁力种子", text()));
+        assertFalse(failure.getMessage().contains("fixture-sensitive-cookie")); assertNull(failure.getCause());
+        verifyNoInteractions(quark, xunlei);
+    }
+    @Test void baiduConfiguredGateReadsSessionMetadataWithoutAnyCloudAction() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        assertFalse(client.isConfigured("BAIDU")); when(baidu.isConfigured()).thenReturn(true); assertTrue(client.isConfigured("BAIDU"));
+        verify(baidu, times(2)).isConfigured(); verifyNoMoreInteractions(baidu); verifyNoInteractions(quark, xunlei);
+    }
+    @Test void baiduMetadataShareVerificationDelegatesOnlyToTheReadOnlyTreeCheck() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        client.verifyMetadataOnlyFolder("BAIDU", "/Movie/磁力种子");
+        verify(baidu).verifyMetadataOnlyFolder("/Movie/磁力种子"); verifyNoMoreInteractions(baidu); verifyNoInteractions(quark, xunlei);
     }
 }

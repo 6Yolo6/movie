@@ -22,6 +22,7 @@ class P2pArchiveTaskServiceTest {
     IMovieMetadataService movies = mock(IMovieMetadataService.class);
     IQuarkTransferTaskService quark = mock(IQuarkTransferTaskService.class);
     IXunleiTransferTaskService xunlei = mock(IXunleiTransferTaskService.class);
+    IBaiduTransferTaskService baidu = mock(IBaiduTransferTaskService.class);
     GyingSourceClient source = mock(GyingSourceClient.class);
     P2pCloudArchiveClient cloud = mock(P2pCloudArchiveClient.class);
     ObjectMapper mapper = new ObjectMapper();
@@ -29,7 +30,8 @@ class P2pArchiveTaskServiceTest {
     @BeforeEach void setup() {
         properties.setEnabled(true); properties.getWorker().setEnabled(true);
         properties.getXunlei().setShareEnabled(true);
-        service = new P2pArchiveTaskService(properties, tasks, links, movies, quark, xunlei, source, cloud, mapper);
+        when(cloud.isConfigured(anyString())).thenReturn(true);
+        service = new P2pArchiveTaskService(properties, tasks, links, movies, quark, xunlei, baidu, source, cloud, mapper);
     }
     List<ResourceLink> selection() {
         List<ResourceLink> selected = new ArrayList<>();
@@ -198,5 +200,243 @@ class P2pArchiveTaskServiceTest {
         properties.getWorker().setEnabled(false); service.runDue(); verifyNoInteractions(tasks, cloud);
         ResourceHubTask task = new ResourceHubTask(); task.setTaskType("RESOURCE_DISCOVERY");
         assertThrows(IllegalArgumentException.class, () -> service.runTask(task));
+    }
+    void enableBaidu() {
+        properties.getBaidu().setDiscoveryEnabled(true); properties.getBaidu().setTorrentEnabled(true);
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true);
+        properties.getBaidu().setSavePath("/Baidu Root");
+    }
+    @Test void allThreeDrivesCanArchiveTorrentsWithVideoCollectionDisabled() {
+        enableBaidu(); properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        when(tasks.enqueue(any())).thenAnswer(call -> { ResourceHubTask task = call.getArgument(0); task.setId(10L); return task; });
+        service.enqueue("movie1", "mv", "MID1", selection());
+        var created = ArgumentCaptor.forClass(ResourceHubTask.class); verify(tasks, times(3)).enqueue(created.capture());
+        assertEquals(List.of("QUARK", "XUNLEI", "BAIDU"), created.getAllValues().stream().map(ResourceHubTask::getSource).toList());
+        verifyNoInteractions(cloud, source, quark, xunlei, baidu);
+    }
+    @Test void enqueueHonorsEachDrivesDiscoveryAndTorrentSwitch() {
+        enableBaidu(); properties.getQuark().setTorrentEnabled(false); properties.getXunlei().setDiscoveryEnabled(false);
+        when(tasks.enqueue(any())).thenAnswer(call -> { ResourceHubTask task = call.getArgument(0); task.setId(10L); return task; });
+        service.enqueue("movie1", "mv", "MID1", selection());
+        var created = ArgumentCaptor.forClass(ResourceHubTask.class); verify(tasks).enqueue(created.capture());
+        assertEquals("BAIDU", created.getValue().getSource());
+        properties.getBaidu().setTorrentEnabled(false); clearInvocations(tasks);
+        service.enqueue("movie1", "mv", "MID1", selection()); verifyNoInteractions(tasks, cloud, source);
+    }
+    ResourceHubTask queuedTask(String provider) {
+        ResourceHubTask task = new ResourceHubTask(); task.setId(99L); task.setTaskType("P2P_ARCHIVE");
+        task.setMovieId("movie1"); task.setSource(provider); task.setStatus("FAILED"); task.setAttempts(2);
+        task.setLastError("previous upload failure"); task.setPayload("{\"folderId\":\"existing\",\"uploadedFiles\":{}}");
+        return task;
+    }
+    @Test void disabledTorrentQueuesKeepExistingCheckpointsAndRetryBudgets() {
+        enableBaidu(); properties.getXunlei().setEnabled(true);
+        properties.getQuark().setTorrentEnabled(false); properties.getXunlei().setTorrentEnabled(false);
+        properties.getBaidu().setTorrentEnabled(false);
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
+            ResourceHubTask task = queuedTask(provider); String before = task.getPayload(); service.runTask(task);
+            assertEquals("FAILED", task.getStatus()); assertEquals(2, task.getAttempts());
+            assertEquals("previous upload failure", task.getLastError()); assertEquals(before, task.getPayload());
+        }
+        service.runDue(); service.recoverInterruptedArchives(); verifyNoInteractions(tasks, links, movies, cloud, source, quark, xunlei, baidu);
+    }
+    @Test void disabledTransferQueuesKeepExistingCheckpointsAndRetryBudgets() {
+        enableBaidu(); properties.getQuark().setTransferEnabled(false); properties.getXunlei().setEnabled(false);
+        properties.getBaidu().setEnabled(false);
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
+            ResourceHubTask task = queuedTask(provider); String before = task.getPayload(); service.runTask(task);
+            assertEquals("FAILED", task.getStatus()); assertEquals(2, task.getAttempts()); assertEquals(before, task.getPayload());
+        }
+        service.runDue(); service.recoverInterruptedArchives(); verifyNoInteractions(tasks, links, movies, cloud, source, quark, xunlei, baidu);
+    }
+    @Test void schedulerFiltersClosedProvidersBeforeItsLimitSoTheyCannotStarveBaidu() {
+        enableBaidu(); properties.getQuark().setTorrentEnabled(false); properties.getXunlei().setEnabled(false);
+        service.runDue();
+        var query = ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(tasks).list(query.capture()); assertTrue(query.getValue().getSqlSegment().contains("source IN"));
+        var values = query.getValue().getParamNameValuePairs().values();
+        assertTrue(values.contains("BAIDU")); assertFalse(values.contains("QUARK")); assertFalse(values.contains("XUNLEI"));
+        verify(cloud).isConfigured("BAIDU"); verifyNoMoreInteractions(cloud); verifyNoInteractions(source, quark, xunlei, baidu);
+    }
+    @Test void unknownArchiveProviderIsRejectedBeforeClaimingTheTask() {
+        for (String provider : Arrays.asList(null, "OTHER", "baidu")) {
+            ResourceHubTask task = queuedTask(provider);
+            assertThrows(IllegalArgumentException.class, () -> service.runTask(task)); assertEquals(2, task.getAttempts());
+        }
+        verifyNoInteractions(tasks, cloud, source, quark, xunlei, baidu);
+    }
+    ResourceHubTask baiduTask() throws Exception {
+        ResourceHubTask task = versionTwoTask(); task.setSource("BAIDU"); enableBaidu();
+        String folder = "/Baidu Root/测试电影（movie1）/磁力种子";
+        when(cloud.ensureFolder(eq("BAIDU"), any(), anyString())).thenReturn(folder);
+        when(cloud.upload(eq("BAIDU"), eq(folder), any())).thenReturn("101", "102");
+        when(cloud.createShare(eq("BAIDU"), eq(folder), anyString())).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        when(cloud.findOwnShare(eq("BAIDU"), eq(folder))).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        return task;
+    }
+    @Test void baiduPublishesOnlyItsMetadataShareWithBothFileKindsAndOwnPath() throws Exception {
+        ResourceHubTask task = baiduTask(); service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
+        verify(cloud).ensureFolder("BAIDU", null, "/Baidu Root/测试电影（movie1）");
+        var files = ArgumentCaptor.forClass(P2pCloudArchiveClient.FileData.class);
+        verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), files.capture());
+        assertEquals(List.of(".txt", ".torrent"), files.getAllValues().stream()
+                .map(file -> file.name().substring(file.name().lastIndexOf('.'))).toList());
+        var saved = ArgumentCaptor.forClass(ResourceLink.class); verify(links).save(saved.capture());
+        assertEquals("BAIDU", saved.getValue().getProvider()); assertEquals("TORRENT", saved.getValue().getType());
+        assertEquals("https://pan.baidu.com/s/1fixture?pwd=abcd", saved.getValue().getUrl());
+        assertEquals("GYING_P2P_ARCHIVE", saved.getValue().getSource());
+        verifyNoInteractions(quark, xunlei); verify(baidu, never()).save(any());
+    }
+    @Test void baiduReusesItsSuccessfulMovieFolderWithoutConsultingOtherDrives() throws Exception {
+        ResourceHubTask task = baiduTask();
+        BaiduTransferTask previous = new BaiduTransferTask(); previous.setSavedPath("/Previously Saved/Movie");
+        when(baidu.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(List.of(previous));
+        service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
+        verify(cloud).ensureFolder("BAIDU", "/Previously Saved/Movie", "/Baidu Root/测试电影（movie1）");
+        verifyNoInteractions(quark, xunlei);
+    }
+    @Test void baiduCannotPublishAnotherProvidersShareIncludingPersistedCheckpoints() throws Exception {
+        ResourceHubTask task = baiduTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("shareUrl", "https://pan.xunlei.com/s/fixture"); task.setPayload(payload.toString());
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString()); verify(links, never()).save(any());
+    }
+    @Test void baiduUncertainShareSubmissionIsDurableAndNeverSubmittedTwice() throws Exception {
+        ResourceHubTask task = baiduTask();
+        when(cloud.createShare(eq("BAIDU"), anyString(), anyString()))
+                .thenThrow(new BaiduActionException("NETWORK_UNCERTAIN", false, true, true));
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenReturn(null);
+        doAnswer(call -> {
+            ResourceHubTask checkpoint = call.getArgument(0);
+            if (mapper.readTree(checkpoint.getPayload()).path("baiduShareSubmitting").asBoolean()) {
+                verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+            }
+            return true;
+        }).when(tasks).update(any(ResourceHubTask.class), any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        assertTrue(mapper.readTree(task.getPayload()).path("baiduShareSubmitting").asBoolean());
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString()); verify(links, never()).save(any());
+    }
+    @Test void baiduUncertainShareCanRecoverReadOnlyWhenTheExistingShareAppears() throws Exception {
+        ResourceHubTask task = baiduTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("baiduShareSubmitting", true); task.setPayload(payload.toString());
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(cloud, times(2)).findOwnShare(eq("BAIDU"), anyString()); verify(links).save(any());
+        assertFalse(mapper.readTree(task.getPayload()).has("baiduShareSubmitting"));
+    }
+    @Test void baiduExplicitShareRejectionClearsIntentAndAllowsASafeRetry() throws Exception {
+        ResourceHubTask task = baiduTask();
+        when(cloud.createShare(eq("BAIDU"), anyString(), anyString()))
+                .thenThrow(new BaiduActionException("SHARE_REJECTED", true, false, false))
+                .thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        assertFalse(mapper.readTree(task.getPayload()).has("baiduShareSubmitting"));
+        service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
+        verify(cloud, times(2)).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+    }
+    @Test void disabledSharingDoesNotClaimOrConsumeExistingQueues() {
+        enableBaidu(); properties.getXunlei().setEnabled(true);
+        properties.getQuark().setShareEnabled(false); properties.getXunlei().setShareEnabled(false);
+        properties.getBaidu().setShareEnabled(false);
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
+            ResourceHubTask task = queuedTask(provider); service.runTask(task);
+            assertEquals("FAILED", task.getStatus()); assertEquals(2, task.getAttempts());
+            assertEquals(1, service.submitPending(provider, 5).getSkipped());
+        }
+        service.runDue(); service.recoverInterruptedArchives();
+        verifyNoInteractions(tasks, links, movies, cloud, source, quark, xunlei, baidu);
+    }
+    @Test void recoveryFiltersClosedProvidersAndNeverResetsTheirRunningTasks() {
+        enableBaidu(); properties.getQuark().setTorrentEnabled(false); properties.getXunlei().setEnabled(false);
+        service.recoverInterruptedArchives();
+        var update = ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper.class);
+        verify(tasks).update(update.capture()); assertTrue(update.getValue().getSqlSegment().contains("source IN"));
+        var values = update.getValue().getParamNameValuePairs().values();
+        assertTrue(values.contains("BAIDU")); assertFalse(values.contains("QUARK")); assertFalse(values.contains("XUNLEI"));
+        verify(cloud).isConfigured("BAIDU"); verifyNoMoreInteractions(cloud); verifyNoInteractions(source, quark, xunlei, baidu);
+    }
+    @Test void explicitBaiduRunHonorsSingleProviderAndClampsLimitWithoutWorker() throws Exception {
+        ResourceHubTask task = baiduTask(); properties.getWorker().setEnabled(false);
+        ResourceHubTask other = queuedTask("QUARK"); when(tasks.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(List.of(other, task));
+        var result = service.submitPending("BAIDU", 100);
+        assertEquals(1, result.getSubmitted()); assertEquals(1, result.getSkipped()); assertEquals(0, result.getFailed());
+        assertEquals("FAILED", other.getStatus()); assertEquals(2, other.getAttempts());
+        var query = ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(tasks).list(query.capture()); assertTrue(query.getValue().getSqlSegment().contains("LIMIT 20"));
+        var values = query.getValue().getParamNameValuePairs().values(); assertTrue(values.contains("BAIDU"));
+        assertFalse(values.contains("QUARK")); assertFalse(values.contains("XUNLEI"));
+        verify(cloud, never()).upload(eq("QUARK"), anyString(), any()); verifyNoInteractions(quark, xunlei);
+    }
+    @Test void explicitRunReportsClaimConflictsAsSkippedAndFailuresAsFailed() throws Exception {
+        ResourceHubTask task = runnableTask(); when(tasks.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(List.of(task));
+        when(tasks.update(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(false);
+        var skipped = service.submitPending("QUARK", 0); assertEquals(1, skipped.getSkipped()); assertEquals(0, skipped.getSubmitted());
+        verifyNoInteractions(cloud, source);
+        when(tasks.update(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(true);
+        when(cloud.upload(eq("QUARK"), anyString(), any())).thenThrow(new IllegalStateException("fixture"));
+        var failed = service.submitPending("QUARK", 1); assertEquals(1, failed.getFailed()); assertEquals(0, failed.getSubmitted());
+        assertEquals(1, failed.getErrors().size()); assertTrue(failed.getErrors().get(0).contains("UPLOAD_"));
+    }
+    @Test void missingBaiduSessionPreservesPendingArchiveAndDoesNotTouchTheCloud() {
+        enableBaidu(); properties.getQuark().setTorrentEnabled(false); properties.getXunlei().setTorrentEnabled(false);
+        when(cloud.isConfigured("BAIDU")).thenReturn(false);
+        ResourceHubTask task = queuedTask("BAIDU"); task.setStatus("PENDING"); String before = task.getPayload();
+        service.runTask(task); service.runDue(); service.recoverInterruptedArchives();
+        assertEquals(1, service.submitPending("BAIDU", 5).getSkipped());
+        assertEquals("PENDING", task.getStatus()); assertEquals(2, task.getAttempts()); assertEquals(before, task.getPayload());
+        verify(cloud, times(4)).isConfigured("BAIDU"); verifyNoMoreInteractions(cloud);
+        verifyNoInteractions(tasks, links, movies, source, quark, xunlei, baidu);
+    }
+    @Test void baiduNeverCreatesAMetadataShareWhenTheFolderContainsOtherFiles() throws Exception {
+        ResourceHubTask task = baiduTask();
+        doThrow(new BaiduActionException("METADATA_FOLDER_INVALID", false, true, false))
+                .when(cloud).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        verify(cloud).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(cloud, never()).findOwnShare(anyString(), anyString()); verify(links, never()).save(any());
+        assertFalse(mapper.readTree(task.getPayload()).has("baiduShareSubmitting"));
+    }
+    @Test void baiduChecksTheMetadataTreeBeforeReusingOrReconcilingAShare() throws Exception {
+        for (boolean uncertain : List.of(false, true)) {
+            ResourceHubTask task = baiduTask();
+            var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+            if (uncertain) payload.put("baiduShareSubmitting", true);
+            else payload.put("shareUrl", "https://pan.baidu.com/s/1fixture?pwd=abcd");
+            task.setPayload(payload.toString());
+            doThrow(new BaiduActionException("METADATA_FOLDER_INVALID", false, true, false))
+                    .when(cloud).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+            service.runTask(task); assertEquals("FAILED", task.getStatus());
+            assertEquals(uncertain, mapper.readTree(task.getPayload()).path("baiduShareSubmitting").asBoolean());
+        }
+        verify(cloud, times(2)).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(cloud, never()).findOwnShare(anyString(), anyString()); verify(links, never()).save(any());
+    }
+    @Test void expiredBaiduShareCheckpointNeverPublishesOrCreatesAnotherShare() throws Exception {
+        ResourceHubTask task = baiduTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("shareUrl", "https://pan.baidu.com/s/1expired?pwd=abcd"); task.setPayload(payload.toString());
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenReturn(null);
+        service.runTask(task); assertEquals("FAILED", task.getStatus());
+        assertEquals("https://pan.baidu.com/s/1expired?pwd=abcd", mapper.readTree(task.getPayload()).path("shareUrl").asText());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString()); verify(links, never()).save(any());
+    }
+    @Test void baiduPublishesTheCurrentlyVerifiedOwnShareAndPersistsItBeforeTheResource() throws Exception {
+        ResourceHubTask task = baiduTask();
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenReturn("https://pan.baidu.com/s/1verified?pwd=wxyz");
+        service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
+        assertEquals("https://pan.baidu.com/s/1verified?pwd=wxyz", mapper.readTree(task.getPayload()).path("shareUrl").asText());
+        var saved = ArgumentCaptor.forClass(ResourceLink.class); verify(links).save(saved.capture());
+        assertEquals("https://pan.baidu.com/s/1verified?pwd=wxyz", saved.getValue().getUrl());
+        var order = inOrder(cloud, links); order.verify(cloud).findOwnShare(eq("BAIDU"), anyString()); order.verify(links).save(any());
     }
 }

@@ -1,0 +1,49 @@
+{
+  "repository": "https://github.com/qjfoidnh/BaiduPCS-Go",
+  "commit": "1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73",
+  "reads": "public source only; no account requests",
+  "files": [
+    {
+      "path": "baidupcs/prepare.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/prepare.go",
+      "sha256": "38790402b9d31f292ae67c283930728becd21ff039cf57e19c9d09b8cfa005f4",
+      "bytes": 31839
+    },
+    {
+      "path": "baidupcs/baidupcs.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/baidupcs.go",
+      "sha256": "ba1912b6a228d02191f431e2543bc49e398173bae3bd1a7d4136cb2c39dca431",
+      "bytes": 14168
+    },
+    {
+      "path": "baidupcs/share.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/share.go",
+      "sha256": "084ee34998b79cc641d393eca1c875f815a65e8b7204a07e85de16e79d172ac0",
+      "bytes": 4614
+    },
+    {
+      "path": "baidupcs/transfer.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/transfer.go",
+      "sha256": "43f19b6b13f7b95ee5702aa1c0c2a3b6d5da7fa8adebc8654f567edd7b74cc08",
+      "bytes": 9022
+    },
+    {
+      "path": "baidupcs/util.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/util.go",
+      "sha256": "71c1093ace43edcb4091f0255784bf8116284024fd2b92a05d7f9943f88e41a5",
+      "bytes": 4051
+    },
+    {
+      "path": "baidupcs/netdisksign/share_sign.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/netdisksign/share_sign.go",
+      "sha256": "558405805f0e1e8c7c48b0d735833aa4ca0277137e376a49dda40e3636e66d48",
+      "bytes": 454
+    },
+    {
+      "path": "internal/pcscommand/transfer.go",
+      "url": "https://raw.githubusercontent.com/qjfoidnh/BaiduPCS-Go/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/internal/pcscommand/transfer.go",
+      "sha256": "ac7ce068255f4ccb21c465aac4118099c080d36b2756839371eb8321b8ac6d06",
+      "bytes": 4424
+    }
+  ]
+}

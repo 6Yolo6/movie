@@ -29,15 +29,16 @@ public class P2pCloudArchiveClient {
     private static final String OSS_AGENT = "aliyun-sdk-js/6.6.1 Chrome 98.0.4758.80 on Windows 10 64-bit";
     private final QuarkShareClient quark;
     private final XunleiClient xunlei;
+    private final BaiduWebClient baidu;
     private final ObjectMapper mapper;
     private final RestTemplate storage;
 
     @Autowired
-    public P2pCloudArchiveClient(QuarkShareClient quark, XunleiClient xunlei, ObjectMapper mapper) {
-        this(quark, xunlei, mapper, storageClient());
+    public P2pCloudArchiveClient(QuarkShareClient quark, XunleiClient xunlei, BaiduWebClient baidu, ObjectMapper mapper) {
+        this(quark, xunlei, baidu, mapper, storageClient());
     }
-    P2pCloudArchiveClient(QuarkShareClient quark, XunleiClient xunlei, ObjectMapper mapper, RestTemplate storage) {
-        this.quark = quark; this.xunlei = xunlei; this.mapper = mapper; this.storage = storage;
+    P2pCloudArchiveClient(QuarkShareClient quark, XunleiClient xunlei, BaiduWebClient baidu, ObjectMapper mapper, RestTemplate storage) {
+        this.quark = quark; this.xunlei = xunlei; this.baidu = baidu; this.mapper = mapper; this.storage = storage;
     }
     private static RestTemplate storageClient() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory() {
@@ -48,23 +49,73 @@ public class P2pCloudArchiveClient {
         factory.setConnectTimeout(5000); factory.setReadTimeout(30000);
         return new RestTemplate(factory);
     }
+    /** Baidu session metadata is checked before queuing cloud-side work. */
+    public boolean isConfigured(String provider) {
+        requireProvider(provider);
+        return switch (provider) {
+            case "BAIDU" -> baidu.isConfigured();
+            // Legacy providers retain their request-time credential validation.
+            case "QUARK", "XUNLEI" -> true;
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
+    }
+    /** An own Baidu metadata share must never expose an unrelated video tree. */
+    public void verifyMetadataOnlyFolder(String provider, String folder) {
+        requireProvider(provider);
+        switch (provider) {
+            case "BAIDU" -> baidu.verifyMetadataOnlyFolder(folder);
+            case "QUARK", "XUNLEI" -> { }
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        }
+    }
     public String ensureFolder(String provider, String preferred, String fallback) {
         requireProvider(provider);
-        return "QUARK".equals(provider) ? quark.p2pFolder(preferred, fallback) : xunlei.p2pFolder(preferred, fallback);
+        return switch (provider) {
+            case "QUARK" -> quark.p2pFolder(preferred, fallback);
+            case "XUNLEI" -> xunlei.p2pFolder(preferred, fallback);
+            case "BAIDU" -> baidu.p2pFolder(preferred, fallback);
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
     }
     public String createShare(String provider, String folder, String title) {
         requireProvider(provider);
-        return "QUARK".equals(provider) ? quark.p2pShare(folder, title) : xunlei.createShare(folder);
+        return switch (provider) {
+            case "QUARK" -> quark.p2pShare(folder, title);
+            case "XUNLEI" -> xunlei.createShare(folder);
+            case "BAIDU" -> baidu.createOwnShare(folder);
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
+    }
+    /** Read-only recovery after an uncertain metadata-share submission. */
+    public String findOwnShare(String provider, String folder) {
+        requireProvider(provider);
+        return switch (provider) {
+            case "BAIDU" -> baidu.findOwnShare(folder);
+            case "QUARK", "XUNLEI" -> throw new IllegalArgumentException("Metadata share reconciliation is unavailable for this provider");
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        };
     }
     public String upload(String provider, String folder, FileData file) {
         requireProvider(provider); validateFile(file);
+        switch (provider) {
+            case "BAIDU" -> {
+                try { return baidu.p2pUpload(folder, file.name(), file.bytes()); }
+                catch (Exception error) { throw new IllegalStateException("BAIDU P2P file upload or verification failed (" + error.getClass().getSimpleName() + ")"); }
+            }
+            case "QUARK", "XUNLEI" -> { }
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        }
         if (folder == null || !folder.matches("[A-Za-z0-9_-]{1,128}") || "0".equals(folder)) {
             throw new IllegalArgumentException("Movie P2P folder required");
         }
         String existing = findFile(provider, folder, file);
         if (existing != null) return existing;
         try {
-            if ("QUARK".equals(provider)) uploadQuark(folder, file); else uploadXunlei(folder, file);
+            switch (provider) {
+                case "QUARK" -> uploadQuark(folder, file);
+                case "XUNLEI" -> uploadXunlei(folder, file);
+                default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+            }
             for (int attempt = 0; attempt < 12; attempt++) {
                 String fid = findFile(provider, folder, file);
                 if (fid != null) return fid;
@@ -79,7 +130,11 @@ public class P2pCloudArchiveClient {
         }
     }
     private String findFile(String provider, String folder, FileData file) {
-        List<JsonNode> items = "QUARK".equals(provider) ? quark.p2pChildren(folder) : xunlei.p2pChildren(folder);
+        List<JsonNode> items = switch (provider) {
+            case "QUARK" -> quark.p2pChildren(folder);
+            case "XUNLEI" -> xunlei.p2pChildren(folder);
+            default -> throw new IllegalArgumentException("Unsupported P2P archive listing provider");
+        };
         for (JsonNode item : items) {
             String name = item.path("file_name").asText(item.path("name").asText());
             if (!file.name().equals(name)) continue;
@@ -208,7 +263,10 @@ public class P2pCloudArchiveClient {
         }
     }
     private static void requireProvider(String provider) {
-        if (!"QUARK".equals(provider) && !"XUNLEI".equals(provider)) throw new IllegalArgumentException("Unsupported P2P archive provider");
+        switch (java.util.Objects.toString(provider, "")) {
+            case "QUARK", "XUNLEI", "BAIDU" -> { }
+            default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
+        }
     }
     private static String required(JsonNode node, String key) {
         String text = node.path(key).asText();

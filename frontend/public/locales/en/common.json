@@ -1300,7 +1300,9 @@
       "shareEnabled": "Create own shares",
       "gyingPublishEnabled": "Publish to GYING",
       "savePath": "Save directory",
-      "batchLimit": "Manual transfer batch limit"
+      "batchLimit": "Manual transfer batch limit",
+      "videoEnabled": "Collect video files",
+      "torrentEnabled": "Collect torrent files"
     },
     "shareDisabledHelp": "Disabling this stops creation of new own shares. Resources without an own share cannot enter the library or be published. Existing own shares can still be published.",
     "savePathHelp": "Use an absolute drive path beginning with /, up to 300 characters, without .. path segments or backslashes. Directory changes affect new tasks only; existing tasks are not moved.",
@@ -1316,6 +1318,36 @@
     "validation": {
       "savePath": "Enter a drive path beginning with /, up to 300 characters, without .. path segments, backslashes or control characters.",
       "batchLimit": "The manual transfer batch limit must be an integer from 1 to 20."
-    }
+    },
+    "baiduAccount": {
+      "scanLogin": "Sign in with QR code",
+      "refresh": "Refresh sign-in status",
+      "sessionPresent": "Account session saved",
+      "sessionMissing": "Not signed in",
+      "account": "Dedicated account: {{name}}",
+      "sessionHelp": "The account session is stored encrypted and checked again during tasks. Signing in does not enable the workflow.",
+      "waitingTitle": "Waiting for QR sign-in",
+      "waitingHelp": "Scan the QR code in the Baidu Drive window opened on the computer running this service. The window may take about a minute to open. Complete sign-in within ten minutes; this page will show the result.",
+      "readFailed": "Sign-in status is temporarily unavailable. Refresh to retry.",
+      "startFailed": "QR sign-in could not start. Please try again shortly.",
+      "refreshFailed": "Sign-in completed, but the configuration status could not refresh. Refresh sign-in status to retry.",
+      "accountChanged": "This account differs from the linked dedicated account. Sign in with the original account; its session has been kept.",
+      "sessionInvalid": "The Baidu session could not be verified. Please sign in again.",
+      "helperUnavailable": "The QR window could not open. Check the service computer and try again.",
+      "expired": "This QR sign-in request expired. Start a new request.",
+      "failed": "Sign-in did not complete. The previous session has been kept; please retry.",
+      "loginBeforeRun": "Complete QR sign-in before running Baidu transfer tasks.",
+      "states": {
+        "DISCONNECTED": "Disconnected",
+        "PENDING": "Opening sign-in window",
+        "WAITING_SCAN": "Waiting for QR scan",
+        "CONNECTED": "Connected",
+        "FAILED": "Sign-in failed",
+        "EXPIRED": "QR sign-in expired"
+      }
+    },
+    "fileTypes": "File types to collect",
+    "torrentHelp": "Torrent files are small .torrent metadata files. Saving them does not start offline video downloads.",
+    "noFilesSelected": "No video or torrent files are selected. Movie metadata can still be collected; cloud file transfers will not run."
   }
 }

@@ -2,6 +2,8 @@
 
 更新时间：2026-11-08
 
+11月8日本轮百度接入与文件类型候选代码已完成，尚未上线：每盘独立选择视频/种子，只存种子不触发视频离线下载；百度专用账号扫码、受限会话、持久化转存/分享意图及未知结果只读恢复。后端1,141项中1,140通过/1 Redis跳过、真实SQL与独立Java17 compile及固定后端395类/资源核验通过；前端58项、TS/lint/build、八组mock浏览器和固定候选375产物核验通过。23:38本轮安全仍58 PASS/11 FAIL/1 UNKNOWN、G01–G11全FAIL，就绪已为11 PASS/1既有QQ WARN/0 FAIL，按项目门禁停止生产替换。本轮未执行生产SQL、安装扫码任务、真实登录/转存/分享/GYING发布；线上保持下面22:34上一轮版本。[百度与文件选择候选](evaluation/baidu-file-selection-20261108/README.md)。
+
 11月8日网盘工作流已于22:34:28（Asia/Shanghai）按本轮“可部署”授权仅backend/frontend上线，分支 `codex/cloud-drive-workflows`，代码 `6b4104f`：夸克 / 迅雷独立阶段、目录与手动批次，百度只读待接入。后端1,038项中1,037通过/1 Redis跳过、必需真实SQL/独立Java17 compile；前端28项React、TS/lint/build及部署前八组mock浏览器通过。上线真实ADMIN只读八场景、38公网脚本SHA、375实际前端产物、独立21 PASS/0 FAIL/1 argv UNKNOWN及至22:39日志通过；六份age认证与日常覆盖dry-run完成，自然完整备份未验。安全58 PASS/11 FAIL/1 UNKNOWN和G01–G11未关闭；未真实登录/转存/发布、未迁移SQL或重置队列。[本轮交付](evaluation/cloud-drive-workflows-20261108/README.md)。
 
 11月5日19:32–19:33微博只读复核：实际登录/发博权限接口均200/ok1；今日3条自动及19:30手动1条已在官方帖子接口查到，账号/标题一致。后台按任务创建时间排序且不轮询，积压任务成功后仍显示旧创建日期，用户确认已在后面看到帖子；未做浏览器复现或界面修复。仍保留1条旧准备失败与3条历史UNKNOWN，本轮未发博/重放/部署。[微博核查](evaluation/weibo-readonly-20261105/README.md)。
@@ -40,7 +42,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
 | 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
-| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次已上线且真实只读页面验收通过，百度待接入 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
+| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次已上线且真实只读页面验收通过，线上百度待接入；本轮已测试百度与视频/种子候选，未部署 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 
@@ -83,6 +85,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 配置与安全
 
+- 11月8日百度/文件类型本轮23:38只读安全复查58 PASS/11 FAIL/1 UNKNOWN，G01–G11全FAIL；旧限定业务例外不延伸本轮。新迁移已登记，就绪11 PASS/1既有QQ WARN/0 FAIL。Backend-data已有备份规则，但本轮会话/票据及宿主private/profile尚未安装、备份/恢复验收未完成；不把旧加密检查点替代本轮。当前生产镜像和启动时间保持，候选未部署。[候选证据](evaluation/baidu-file-selection-20261108/README.md)。
+
 - 本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 普通权限前置检查因不可读进程Path与bridge.bin访问拒绝而停止；实际管理员回执确认bridge.bin归BUILTIN\Administrators所有且只有一条ACL规则，不是共享冲突。零字节.lock的真实FileLock占用与该ACL拒绝分别记录。随后Windows实际确认的受限管理员路径完成读取/空闲/身份门禁，未修改ACL或绕过state。 本轮授权只覆盖此次两后端，不延伸未来部署。
 
 - 11月3日本次QQ目录修复按当前用户“可授权部署”仅backend限定授权上线；58 PASS/11 FAIL/1 UNKNOWN保持，未加固/轮换凭据，不延伸未来授权。[本次范围](evaluation/qq-prada-transfer-20261103/validation.json)。
@@ -99,6 +103,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
+| 百度/文件选择 | 本轮候选测试完成且生产替换因安全门禁停止；上线前核本轮固定镜像、增量SQL、MySQL/backend-data与宿主private/profile加密认证、日常覆盖和回退兼容性。真实专用账号扫码、受限文件权限、同账户转存/分享、GYING与自然过期/未知恢复仍待验；不批量重置或重放旧任务。见[候选交付](evaluation/baidu-file-selection-20261108/README.md) |
 | AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。旧观测中的胶片修复、电影院核心主题、徒步ac/空及mv与电视特辑冲突已补机制上线，正式主题回答与真人验收仍待补；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
@@ -124,6 +129,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 - 任务注册与运行、HTTP与业务、程序与人工质量、mock与真实、备份与恢复分别记录，不把一次成功推广为全天保证。
 
 ## 验收
+
+11月8日本轮百度/文件选择为隔离候选验证：最终379后端源文件哈希一致，1,141项零失败、必需真实SQL（含百度8项）、独立compile、两临时夹具清理通过；前端77源文件绑定、58项及八组mock浏览器、375固定镜像产物通过。两项重试审查缺陷已修复并回归：关闭视频的旧成功任务不更新资源，旧百度种子分享须精确目录自有分享实时核验。生产真实入口只读正常、现役镜像保持，未执行本轮生产SQL/扫码/转存/分享/发帖；安全门禁阻止部署。[完整候选验证](evaluation/baidu-file-selection-20261108/README.md)。
 
 11月8日网盘工作流上线只读验收：本机和经既有7897代理公网首页/片库/详情200、匿名admin源站401/公网Access302、internal/QQ404；38公网脚本SHA一致。真实ADMIN API+本机页面中英/明暗/390与1280八组及刷新/只读百度/ARIA/无溢出通过，复用既有有效device的内存短JWT，非登录/生产写配置；drive新键0，原配置行hash/更新时间保持。独立21 PASS/0 FAIL/1普通argv UNKNOWN、375frontend产物与未改服务保持，日志至22:39 ERROR/Exception/OOM/重启0。原浏览器超时/诊断ENOENT/公网URLError保留，节奏调整后的验收另记；未转存/发布，安全G01–G11未关闭。[证据](evaluation/cloud-drive-workflows-20261108/deployment/README.md)。
 

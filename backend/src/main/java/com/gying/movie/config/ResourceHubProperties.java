@@ -15,6 +15,7 @@ public class ResourceHubProperties {
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
     private Xunlei xunlei = new Xunlei();
+    private Baidu baidu = new Baidu();
     private Worker worker = new Worker();
     private QqChannelPublisher qqChannelPublisher = new QqChannelPublisher();
 
@@ -24,7 +25,7 @@ public class ResourceHubProperties {
         return switch (drive) {
             case QUARK -> quark.isDiscoveryEnabled();
             case XUNLEI -> xunlei.isDiscoveryEnabled();
-            case BAIDU -> false;
+            case BAIDU -> baidu.isDiscoveryEnabled();
         };
     }
 
@@ -34,7 +35,7 @@ public class ResourceHubProperties {
         return switch (drive) {
             case QUARK -> quark.isTransferEnabled();
             case XUNLEI -> xunlei.isEnabled();
-            case BAIDU -> false;
+            case BAIDU -> baidu.isEnabled();
         };
     }
 
@@ -44,7 +45,7 @@ public class ResourceHubProperties {
         return switch (drive) {
             case QUARK -> quark.isGyingPublishEnabled();
             case XUNLEI -> xunlei.isGyingPublishEnabled();
-            case BAIDU -> false;
+            case BAIDU -> baidu.isGyingPublishEnabled();
         };
     }
 
@@ -54,8 +55,44 @@ public class ResourceHubProperties {
         return switch (drive) {
             case QUARK -> quark.isShareEnabled();
             case XUNLEI -> xunlei.isShareEnabled();
-            case BAIDU -> false;
+            case BAIDU -> baidu.isShareEnabled();
         };
+    }
+
+    /** File policy is independent of workflow stages; unknown providers never collect. */
+    public boolean isDriveVideoEnabled(String provider) {
+        var drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isVideoEnabled();
+            case XUNLEI -> xunlei.isVideoEnabled();
+            case BAIDU -> baidu.isVideoEnabled();
+        };
+    }
+
+    public boolean isDriveTorrentEnabled(String provider) {
+        var drive = CloudDriveProvider.from(provider);
+        if (drive == null) return false;
+        return switch (drive) {
+            case QUARK -> quark.isTorrentEnabled();
+            case XUNLEI -> xunlei.isTorrentEnabled();
+            case BAIDU -> baidu.isTorrentEnabled();
+        };
+    }
+
+    public boolean isDriveFileCollectionEnabled(String provider) {
+        return isDriveVideoEnabled(provider) || isDriveTorrentEnabled(provider);
+    }
+
+    /** Legacy Quark/Xunlei transfers restore video trees; torrents use the small-file archive. */
+    public boolean isDriveShareCollectionEnabled(String provider) {
+        return isDriveDiscoveryEnabled(provider) && ("BAIDU".equalsIgnoreCase(provider)
+                ? isDriveFileCollectionEnabled(provider) : isDriveVideoEnabled(provider));
+    }
+
+    public boolean isDriveShareTransferEnabled(String provider) {
+        return isDriveTransferEnabled(provider) && ("BAIDU".equalsIgnoreCase(provider)
+                ? isDriveFileCollectionEnabled(provider) : isDriveVideoEnabled(provider));
     }
 
     @Data
@@ -126,6 +163,8 @@ public class ResourceHubProperties {
 
     @Data
     public static class Quark {
+        private boolean videoEnabled = true;
+        private boolean torrentEnabled = true;
         private boolean discoveryEnabled = true;
         private boolean transferEnabled = true;
         private boolean gyingPublishEnabled = true;
@@ -154,6 +193,8 @@ public class ResourceHubProperties {
 
     @Data
     public static class Xunlei {
+        private boolean videoEnabled = true;
+        private boolean torrentEnabled = true;
         private boolean discoveryEnabled = true;
         private boolean gyingPublishEnabled = true;
         private boolean enabled = false;
@@ -176,12 +217,30 @@ public class ResourceHubProperties {
     }
 
     @Data
+    public static class Baidu {
+        private boolean videoEnabled = false;
+        private boolean torrentEnabled = false;
+        // New provider defaults require explicit page configuration and account login.
+        private boolean discoveryEnabled = false;
+        private boolean enabled = false;
+        private boolean gyingPublishEnabled = false;
+        private boolean shareEnabled = false;
+        private String sessionStatePath = "/app/data/baidu/session.enc";
+        private String sessionKeyPath = "/app/data/baidu/session.key";
+        private String loginRequestPath = "/app/data/baidu/login-request.json";
+        private String savePath = "/GYing Resource Hub";
+        private int pollAttempts = 20;
+        private long pollIntervalMs = 1000;
+    }
+
+    @Data
     public static class Worker {
         private boolean enabled = false;
         private long fixedDelayMs = 60000;
         private int taskLimit = 5;
         private int quarkLimit = 5;
         private int xunleiLimit = 5;
+        private int baiduLimit = 5;
         private int publishLimit = 20;
         private boolean discoveredRetryEnabled = true;
         private int discoveredRetryLimit = 20;

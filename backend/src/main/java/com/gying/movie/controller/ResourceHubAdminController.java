@@ -21,6 +21,7 @@ import com.gying.movie.dto.ResourceHubMetadataSyncRequest;
 import com.gying.movie.dto.ResourceHubWorkerResult;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.QuarkTransferTask;
+import com.gying.movie.entity.BaiduTransferTask;
 import com.gying.movie.entity.XunleiTransferTask;
 import com.gying.movie.entity.QqChannelPostLog;
 import com.gying.movie.entity.ResourceDiscoveryResult;
@@ -97,6 +98,12 @@ public class ResourceHubAdminController {
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferRunnerService baiduTransferRunnerService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferTaskService baiduTransferTaskService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.gying.movie.service.impl.P2pArchiveTaskService p2pArchiveTaskService;
     private final IResourceHubPublishService resourceHubPublishService;
     private final IResourceHubWorkerService resourceHubWorkerService;
     private final IResourceHubConfigService resourceHubConfigService;
@@ -557,19 +564,62 @@ public class ResourceHubAdminController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "每批转存数量须为 1–20");
         }
         resourceHubConfigService.reload();
-        if (!resourceHubProperties.isEnabled() || !resourceHubProperties.isDriveTransferEnabled(provider.name())) {
+        if (!resourceHubProperties.isEnabled() || !resourceHubProperties.isDriveTransferEnabled(provider.name())
+                || !resourceHubProperties.isDriveFileCollectionEnabled(provider.name())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "资源中心或该网盘转存已关闭");
         }
-        int limit = !request.has("limit")
-                ? (provider == com.gying.movie.config.CloudDriveProvider.QUARK
-                        ? resourceHubProperties.getWorker().getQuarkLimit()
-                        : resourceHubProperties.getWorker().getXunleiLimit()) : request.path("limit").intValue();
+        int limit = request.has("limit") ? request.path("limit").intValue() : switch (provider) {
+            case QUARK -> resourceHubProperties.getWorker().getQuarkLimit();
+            case XUNLEI -> resourceHubProperties.getWorker().getXunleiLimit();
+            case BAIDU -> resourceHubProperties.getWorker().getBaiduLimit();
+        };
         if (limit < 1 || limit > 20) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "每批转存数量须为 1–20");
         }
-        return ApiResponse.ok(provider == com.gying.movie.config.CloudDriveProvider.QUARK
-                ? quarkTransferRunnerService.submitPending(limit)
-                : xunleiTransferRunnerService.submitPending(limit));
+        var result = new QuarkTransferRunResult();
+        if (resourceHubProperties.isDriveShareTransferEnabled(provider.name())) {
+            var transfers = switch (provider) {
+                case QUARK -> quarkTransferRunnerService.submitPending(limit);
+                case XUNLEI -> xunleiTransferRunnerService.submitPending(limit);
+                case BAIDU -> {
+                    if (baiduTransferRunnerService == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "百度转存服务未就绪");
+                    yield baiduTransferRunnerService.submitPending(limit);
+                }
+            };
+            result.setSubmitted(transfers.getSubmitted()); result.setFailed(transfers.getFailed()); result.setSkipped(transfers.getSkipped());
+            result.getErrors().addAll(transfers.getErrors());
+        }
+        int remaining = limit - result.getSubmitted() - result.getFailed() - result.getSkipped();
+        if (remaining > 0 && resourceHubProperties.isDriveTorrentEnabled(provider.name()) && p2pArchiveTaskService != null) {
+            var archives = p2pArchiveTaskService.submitPending(provider.name(), remaining);
+            result.setSubmitted(result.getSubmitted() + archives.getSubmitted());
+            result.setFailed(result.getFailed() + archives.getFailed()); result.setSkipped(result.getSkipped() + archives.getSkipped());
+            for (String error : archives.getErrors()) if (result.getErrors().size() < 10) result.getErrors().add(error);
+        }
+        return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/baidu/transfers")
+    public ApiResponse<Page<com.gying.movie.entity.BaiduTransferTask>> baiduTransfers(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        if (baiduTransferTaskService == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        var result = baiduTransferTaskService.page(new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
+                new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().orderByDesc("updated_at", "id"));
+        // The task payload contains source provenance, not account sessions. Leases are internal.
+        result.getRecords().forEach(task -> { task.setLeaseOwner(null); task.setResponsePayload(null); task.setRequestPayload(null); });
+        return ApiResponse.ok(result);
+    }
+
+    @PostMapping("/baidu/transfers/{taskId}/submit")
+    public ApiResponse<QuarkTransferRunResult> submitBaiduTransfer(@PathVariable Long taskId,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        authHelper.requireAdmin(token);
+        resourceHubConfigService.reload();
+        if (baiduTransferRunnerService == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        return ApiResponse.ok(baiduTransferRunnerService.submitOne(taskId));
     }
 
     @PostMapping("/quark/transfers/submit")
@@ -815,7 +865,7 @@ public class ResourceHubAdminController {
                             .orderByDesc("confidence")
                             .orderByAsc("id"));
             for (ResourceDiscoveryResult row : rows) {
-                if (!resourceHubProperties.isDriveTransferEnabled(row.getProvider())) continue;
+                if (!resourceHubProperties.isDriveShareTransferEnabled(row.getProvider())) continue;
                 DiscoveryTransfer attempt = submitDiscoveryTransfer(row);
                 QuarkTransferRunResult transferResult = attempt.result();
                 errors.addAll(transferResult.getErrors());
@@ -844,10 +894,10 @@ public class ResourceHubAdminController {
         job.result.put("failed", failed);
         job.result.put("errors", errors.stream().limit(10).toList());
         if (published == 0) {
-            if (resourceHubProperties.isDriveDiscoveryEnabled("QUARK")
-                    && resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI")
-                    && resourceHubProperties.isDriveTransferEnabled("QUARK")
-                    && resourceHubProperties.isDriveTransferEnabled("XUNLEI")
+            if (resourceHubProperties.isDriveShareCollectionEnabled("QUARK")
+                    && resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI")
+                    && resourceHubProperties.isDriveShareTransferEnabled("QUARK")
+                    && resourceHubProperties.isDriveShareTransferEnabled("XUNLEI")
                     && resourceHubProperties.isDriveShareEnabled("QUARK")
                     && resourceHubProperties.isDriveShareEnabled("XUNLEI")) {
                 markMovieWithoutResource(movie);
@@ -860,7 +910,7 @@ public class ResourceHubAdminController {
     }
     private QuarkTransferTask findOrCreateTransfer(ResourceDiscoveryResult discovery) {
         if (!"QUARK".equalsIgnoreCase(discovery.getProvider())
-                || !resourceHubProperties.isDriveTransferEnabled("QUARK")) {
+                || !resourceHubProperties.isDriveShareTransferEnabled("QUARK")) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "该候选不能进入夸克转存");
         }
         QuarkTransferTask transfer = quarkTransferTaskService.getOne(
@@ -917,7 +967,7 @@ public class ResourceHubAdminController {
         if (discovery == null) {
             throw new IllegalArgumentException("Discovery result not found: " + discoveryResultId);
         }
-        if (!resourceHubProperties.isDriveTransferEnabled(discovery.getProvider())) {
+        if (!resourceHubProperties.isDriveShareTransferEnabled(discovery.getProvider())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "该网盘尚未接入或转存已关闭");
         }
         MovieMetadata movie = movieService.getById(discovery.getMovieId());
@@ -974,6 +1024,18 @@ public class ResourceHubAdminController {
                 }
             }
             return publishRetriedDiscovery(discovery, discoveryResultId, result);
+        }
+        if ("BAIDU".equalsIgnoreCase(discovery.getProvider())) {
+            var attempt = submitDiscoveryTransfer(discovery);
+            result.put("transferProvider", "BAIDU"); result.put("transferSubmitted", attempt.result().getSubmitted());
+            result.put("transferFailed", attempt.result().getFailed()); result.put("transferErrors", attempt.result().getErrors());
+            if (attempt.result().getFailed() > 0 || !attempt.hasOwnShare()) {
+                throw operationFailed(discovery, "BAIDU_SHARE_NOT_READY");
+            }
+            return publishRetriedDiscovery(discovery, discoveryResultId, result);
+        }
+        if (!"QUARK".equalsIgnoreCase(discovery.getProvider())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "网盘类型不支持");
         }
         QuarkTransferTask transfer = findOrCreateTransfer(discovery);
         if (!hasText(transfer.getShareUrl())) {
@@ -1078,7 +1140,7 @@ public class ResourceHubAdminController {
                         .eq("status", "DISCOVERED")
                         .orderByDesc("confidence"));
         for (ResourceDiscoveryResult candidate : rediscovered) {
-            if (!resourceHubProperties.isDriveTransferEnabled(candidate.getProvider())) continue;
+            if (!resourceHubProperties.isDriveShareTransferEnabled(candidate.getProvider())) continue;
             DiscoveryTransfer attempt = submitDiscoveryTransfer(candidate);
             if (attempt.result().getFailed() > 0 || !attempt.hasOwnShare()) continue;
             ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(candidate.getId());
@@ -1103,7 +1165,7 @@ public class ResourceHubAdminController {
     private record DiscoveryTransfer(QuarkTransferRunResult result, boolean hasOwnShare) {}
 
     private DiscoveryTransfer submitDiscoveryTransfer(ResourceDiscoveryResult discovery) {
-        if (!resourceHubProperties.isDriveTransferEnabled(discovery.getProvider())) {
+        if (!resourceHubProperties.isDriveShareTransferEnabled(discovery.getProvider())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "该网盘尚未接入或转存已关闭");
         }
         if ("XUNLEI".equalsIgnoreCase(discovery.getProvider())) {
@@ -1112,6 +1174,23 @@ public class ResourceHubAdminController {
                     : xunleiTransferRunnerService.submitOne(task.getId());
             task = xunleiTransferTaskService.getById(task.getId());
             return new DiscoveryTransfer(result, task != null && hasText(task.getShareUrl()));
+        }
+        if ("BAIDU".equalsIgnoreCase(discovery.getProvider())) {
+            if (baiduTransferRunnerService == null || baiduTransferTaskService == null
+                    || !resourceDiscoveryService.ensureTransferTask(discovery.getId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存任务未准备");
+            }
+            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                    .eq("movie_id", discovery.getMovieId())
+                    .eq("original_url_hash", firstText(discovery.getOriginalUrlHash(), ResourceHubHashUtils.sha256(discovery.getOriginalUrl())))
+                    .last("LIMIT 1"), false);
+            if (task == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存任务未准备");
+            var result = baiduTransferRunnerService.submitOne(task.getId());
+            task = baiduTransferTaskService.getById(task.getId());
+            return new DiscoveryTransfer(result, task != null && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl()));
+        }
+        if (!"QUARK".equalsIgnoreCase(discovery.getProvider())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "网盘类型不支持");
         }
         QuarkTransferTask task = findOrCreateTransfer(discovery);
         QuarkTransferRunResult result = hasText(task.getShareUrl()) ? new QuarkTransferRunResult()
@@ -1157,7 +1236,7 @@ public class ResourceHubAdminController {
                     continue;
                 }
             }
-            if ("DISCOVERED".equalsIgnoreCase(discovery.getStatus())) {
+            if ("DISCOVERED".equalsIgnoreCase(discovery.getStatus()) && "QUARK".equalsIgnoreCase(discovery.getProvider())) {
                 QuarkTransferTask transfer = quarkTransferTaskService.getOne(
                         new QueryWrapper<QuarkTransferTask>()
                                 .eq("discovery_result_id", discovery.getId())

@@ -41,7 +41,7 @@ import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
 import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
-import { canConfigureCloudDrive, cloudDriveWorkflowUpdate, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate } from '@/lib/cloudDriveWorkflows';
+import { baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate, type BaiduSessionStatus, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate } from '@/lib/cloudDriveWorkflows';
 
 const { Title, Text } = Typography;
 const MISSING_RESOURCE_BATCH_LIMIT = 20;
@@ -625,13 +625,35 @@ export default function ResourceHubAdminPage() {
 
     const runDriveTransfers = async (provider: CloudDriveProvider, limit: number): Promise<CloudDriveTransferResult> => {
         const workflow = overview?.config.driveWorkflows?.find(item => item.provider === provider);
-        if (!workflow || !canConfigureCloudDrive(workflow) || !workflow.transferEnabled) {
+        if (!workflow || !canConfigureCloudDrive(workflow) || !workflow.transferEnabled
+            || (provider === 'BAIDU' && !workflow.credentialConfigured)
+            || (!workflow.videoEnabled && !workflow.torrentEnabled)) {
             throw new Error(t('cloudDriveWorkflows.transferDisabled'));
         }
         return requestJson<CloudDriveTransferResult>('/api/admin/resource-hub/transfers/run', {
             method: 'POST', body: JSON.stringify({ provider, limit }),
         });
     };
+
+    const readBaiduSession = useCallback(async (signal: AbortSignal): Promise<BaiduSessionStatus> =>
+        baiduSessionStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/session', { signal })), [requestJson]);
+
+    const startBaiduLogin = useCallback(async (signal: AbortSignal): Promise<BaiduSessionStatus> =>
+        baiduSessionStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/login', {
+            method: 'POST', body: '{}', signal,
+        })), [requestJson]);
+
+    const refreshBaiduConnection = useCallback(async (signal: AbortSignal): Promise<void> => {
+        const config = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', { signal });
+        const baidu = config.driveWorkflows?.find(item => item.provider === 'BAIDU');
+        if (!baidu) throw new Error('Missing Baidu workflow');
+        if (signal.aborted) return;
+        // Account refresh must not restore an old path, stage or a different drive's saved state.
+        setOverview(current => current ? { ...current, config: { ...current.config,
+            driveWorkflows: current.config.driveWorkflows?.map(item => item.provider === 'BAIDU'
+                ? { ...item, credentialConfigured: baidu.credentialConfigured } : item),
+        } } : current);
+    }, [requestJson]);
 
     const runAction = async (key: string, path: string) => {
         setRunningAction(key);
@@ -1650,7 +1672,8 @@ export default function ResourceHubAdminPage() {
                             key: 'drive-workflows',
                             label: t('cloudDriveWorkflows.title'),
                             children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading}
-                                onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} />,
+                                onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} onReadBaiduSession={readBaiduSession}
+                                onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection} />,
                         },
                         {
                             key: 'manual',

@@ -26,6 +26,10 @@ public class CloudDriveWorkflowConfig {
     private Boolean gyingPublishEnabled;
     @JsonDeserialize(using = StrictBoolean.class)
     private Boolean shareEnabled;
+    @JsonDeserialize(using = StrictBoolean.class)
+    private Boolean videoEnabled;
+    @JsonDeserialize(using = StrictBoolean.class)
+    private Boolean torrentEnabled;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Boolean credentialConfigured;
     private String savePath;

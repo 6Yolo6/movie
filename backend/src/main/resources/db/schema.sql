@@ -589,3 +589,34 @@ CREATE TABLE `login_device` (
   UNIQUE KEY `uk_login_device_jti` (`jti`),
   KEY `idx_login_device_user_active` (`user_id`, `revoked_at`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录设备授权';
+
+-- 百度网盘独立转存任务；只新增表，不修改或重置旧网盘任务。
+CREATE TABLE IF NOT EXISTS baidu_transfer_task (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '百度转存任务ID',
+    discovery_result_id BIGINT NULL COMMENT '发现结果ID',
+    movie_id VARCHAR(100) NOT NULL COMMENT '本库影视ID',
+    original_url TEXT NOT NULL COMMENT '来源分享链接，不含账号会话',
+    original_url_hash VARCHAR(64) NOT NULL COMMENT '来源链接哈希',
+    account_uid VARCHAR(100) NULL COMMENT '执行计划绑定的百度账号ID',
+    saved_path VARCHAR(1000) NULL COMMENT '目标网盘目录',
+    share_url TEXT NULL COMMENT '已核验自有分享链接',
+    share_url_hash VARCHAR(64) NULL COMMENT '自有分享链接哈希',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' COMMENT '任务状态',
+    phase VARCHAR(30) NOT NULL DEFAULT 'NEW' COMMENT '持久化副作用阶段',
+    attempts INT NOT NULL DEFAULT 0 COMMENT '执行次数',
+    last_error VARCHAR(255) NULL COMMENT '不含会话信息的错误码',
+    request_payload LONGTEXT NULL COMMENT '执行来源上下文，不存账号凭据',
+    response_payload LONGTEXT NULL COMMENT '执行计划和内容核验，不存原始上游响应',
+    remote_task_id VARCHAR(100) NULL COMMENT '远端任务ID',
+    lease_owner VARCHAR(36) NULL COMMENT '当前执行租约标识',
+    lease_until DATETIME(6) NULL COMMENT '执行租约到期时间',
+    started_at DATETIME(6) NULL COMMENT '最近执行开始时间',
+    finished_at DATETIME(6) NULL COMMENT '最近执行结束时间',
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_baidu_movie_source (movie_id, original_url_hash),
+    KEY idx_baidu_discovery (discovery_result_id),
+    KEY idx_baidu_pending (status, updated_at, id),
+    KEY idx_baidu_lease (lease_until)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='百度网盘独立转存任务';

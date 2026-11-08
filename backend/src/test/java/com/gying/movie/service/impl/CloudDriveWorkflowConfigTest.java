@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 class CloudDriveWorkflowConfigTest {
-    @Test void exposesSupportedProvidersAndBaiduPreparationWithoutCredentialsOrNewDefaultKeys() throws Exception {
+    @Test void exposesBaiduCapabilityWithAllNewAutomationDisabledWithoutCredentialsOrDefaultKeys() throws Exception {
         var values = new HashMap<String, String>();
         var properties = new ResourceHubProperties();
         properties.getQuark().setToken("private-test-quark");
@@ -31,10 +31,14 @@ class CloudDriveWorkflowConfigTest {
         assertEquals("AVAILABLE", workflows.get(1).getStatus());
         assertTrue(workflows.get(0).getCredentialConfigured());
         assertTrue(workflows.get(1).getCredentialConfigured());
-        assertFalse(workflows.get(2).isSupported());
-        assertEquals("PLANNED", workflows.get(2).getStatus());
+        assertTrue(workflows.get(2).isSupported());
+        assertEquals("AVAILABLE", workflows.get(2).getStatus());
         assertFalse(workflows.get(2).getTransferEnabled());
-        assertNull(workflows.get(2).getSavePath());
+        assertEquals("/GYing Resource Hub", workflows.get(2).getSavePath());
+        assertFalse(workflows.get(2).getDiscoveryEnabled()); assertFalse(workflows.get(2).getShareEnabled());
+        assertFalse(workflows.get(2).getGyingPublishEnabled());
+        assertFalse(workflows.get(2).getVideoEnabled()); assertFalse(workflows.get(2).getTorrentEnabled());
+        assertTrue(workflows.get(0).getVideoEnabled()); assertTrue(workflows.get(1).getTorrentEnabled());
         String serialized = new ObjectMapper().writeValueAsString(workflows);
         assertFalse(serialized.contains("private-test"));
         assertTrue(values.keySet().stream().noneMatch(key -> key.startsWith("resource.hub.drive.")));
@@ -94,7 +98,7 @@ class CloudDriveWorkflowConfigTest {
 
     @Test void rejectsEntireInvalidRequestBeforeOtherWorkflowCredentialsOrGlobalSettingsChange() {
         var invalid = new ArrayList<CloudDriveWorkflowConfig>();
-        invalid.add(null); invalid.add(workflow("UNKNOWN")); invalid.add(workflow("BAIDU"));
+        invalid.add(null); invalid.add(workflow("UNKNOWN"));
         for (String path : List.of("", "relative", "/foo/../bar", "/foo\\bar", "/foo\nbar", "/" + "a".repeat(300))) {
             var item = workflow("XUNLEI"); item.setSavePath(path); invalid.add(item);
         }
@@ -127,8 +131,9 @@ class CloudDriveWorkflowConfigTest {
         assertThrows(com.fasterxml.jackson.core.JsonProcessingException.class,
                 () -> new ObjectMapper().readValue("{\"provider\":\"QUARK\",\"accessToken\":\"unexpected\"}", CloudDriveWorkflowConfig.class));
         var baidu = workflow("BAIDU"); baidu.setTransferEnabled(false); baidu.setSupported(true);
-        assertThrows(ResponseStatusException.class,
-                () -> new ResourceHubConfigServiceImpl(new ResourceHubProperties(), mock(ISysConfigService.class)).updateConfig(request(baidu)));
+        var baiduResponse = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage(new HashMap<>())).updateConfig(request(baidu));
+        assertTrue(baiduResponse.getDriveWorkflows().get(2).isSupported());
+        assertFalse(baiduResponse.getDriveWorkflows().get(2).getCredentialConfigured());
     }
 
     @Test void failedPersistenceDoesNotChangeLiveDrivePolicy() {
@@ -159,13 +164,37 @@ class CloudDriveWorkflowConfigTest {
 
     @Test void rejectsCoercedScalarsAndIgnoresReadonlyMetadataDuringDeserialization() throws Exception {
         var mapper = new ObjectMapper();
-        for (String fragment : List.of("\"batchLimit\":1.9", "\"batchLimit\":\"2\"", "\"discoveryEnabled\":1", "\"transferEnabled\":\"true\"", "\"shareEnabled\":0", "\"gyingPublishEnabled\":\"false\"")) {
+        for (String fragment : List.of("\"batchLimit\":1.9", "\"batchLimit\":\"2\"", "\"discoveryEnabled\":1", "\"transferEnabled\":\"true\"", "\"shareEnabled\":0", "\"gyingPublishEnabled\":\"false\"", "\"videoEnabled\":1", "\"torrentEnabled\":\"true\"")) {
             assertThrows(com.fasterxml.jackson.core.JsonProcessingException.class,
                     () -> mapper.readValue("{\"provider\":\"QUARK\"," + fragment + "}", CloudDriveWorkflowConfig.class));
         }
         var parsed = mapper.readValue("{\"provider\":\"QUARK\",\"supported\":true,\"status\":\"spoofed\",\"credentialConfigured\":true,\"batchLimit\":2,\"transferEnabled\":false}", CloudDriveWorkflowConfig.class);
         assertFalse(parsed.isSupported()); assertNull(parsed.getStatus()); assertNull(parsed.getCredentialConfigured());
         assertEquals(2, parsed.getBatchLimit()); assertFalse(parsed.getTransferEnabled());
+    }
+
+    @Test void filePoliciesPersistIndependentlyAcrossRestartWithoutEnablingStagesOrWorker() {
+        var values = new HashMap<String, String>(); var store = storage(values);
+        var properties = new ResourceHubProperties(); var service = new ResourceHubConfigServiceImpl(properties, store);
+        var quark = workflow("QUARK"); quark.setVideoEnabled(false); quark.setTorrentEnabled(true);
+        var xunlei = workflow("XUNLEI"); xunlei.setVideoEnabled(false); xunlei.setTorrentEnabled(false);
+        var baidu = workflow("BAIDU"); baidu.setVideoEnabled(false); baidu.setTorrentEnabled(true);
+        service.updateConfig(request(quark, xunlei, baidu));
+        assertFalse(properties.isDriveShareTransferEnabled("QUARK")); assertTrue(properties.isDriveTorrentEnabled("QUARK"));
+        assertFalse(properties.isDriveFileCollectionEnabled("XUNLEI"));
+        assertTrue(properties.isDriveFileCollectionEnabled("BAIDU")); assertFalse(properties.isDriveTransferEnabled("BAIDU"));
+        var partial = workflow("BAIDU"); partial.setSavePath("/百度/种子");
+        service.updateConfig(request(partial));
+        var fresh = new ResourceHubProperties(); new ResourceHubConfigServiceImpl(fresh, store).getConfig();
+        assertFalse(fresh.isDriveVideoEnabled("QUARK")); assertTrue(fresh.isDriveTorrentEnabled("QUARK"));
+        assertFalse(fresh.isDriveFileCollectionEnabled("XUNLEI"));
+        assertFalse(fresh.isDriveVideoEnabled("BAIDU")); assertTrue(fresh.isDriveTorrentEnabled("BAIDU"));
+        assertEquals("/百度/种子", fresh.getBaidu().getSavePath());
+        assertFalse(fresh.isDriveDiscoveryEnabled("BAIDU")); assertFalse(fresh.isDriveTransferEnabled("BAIDU"));
+        assertFalse(fresh.isDriveShareEnabled("BAIDU")); assertFalse(fresh.isDriveGyingPublishEnabled("BAIDU"));
+        assertFalse(fresh.getWorker().isEnabled());
+        assertEquals("false", values.get("resource.hub.drive.quark.video_enabled"));
+        assertEquals("true", values.get("resource.hub.drive.baidu.torrent_enabled"));
     }
 
     private CloudDriveWorkflowConfig workflow(String provider) {

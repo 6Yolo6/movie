@@ -3,6 +3,10 @@ package com.gying.movie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.client.BaiduWebClient;
+import com.gying.movie.entity.BaiduTransferTask;
+import com.gying.movie.service.IBaiduTransferTaskService;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.gying.movie.dto.ResourceHubPublishResult;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.entity.QuarkTransferTask;
@@ -38,6 +42,10 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     private final IQuarkTransferTaskService quarkTransferTaskService;
     private final IQuarkShareService quarkShareService;
     private final IMovieMetadataService movieService;
+    @Autowired(required = false)
+    private BaiduWebClient baiduWebClient;
+    @Autowired(required = false)
+    private IBaiduTransferTaskService baiduTransferTaskService;
 
     public ResourceHubPublishServiceImpl(
             ResourceHubProperties resourceHubProperties,
@@ -122,8 +130,8 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 urlHash = ResourceHubHashUtils.sha256(url);
             }
             String type = normalizeType(discovery.getResourceType());
-            validateUrl(type, url);
             String provider = normalizeProvider(type, discovery.getProvider());
+            validateUrl(type, url, provider);
             ResourceLink existing = findExistingResource(discovery.getMovieId(), url, urlHash, discovery.getOriginalUrl());
             LocalDateTime now = LocalDateTime.now();
             if (discovery.getResourceLinkId() != null) {
@@ -134,7 +142,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                     discovery.setFailureReason(null);
                     discovery.setUpdatedAt(now);
                     saveSuccessfulDiscovery(discovery);
-                    markResourceAvailable(movie, now);
+                    if ("DISK".equals(type)) markResourceAvailable(movie, now);
                     result.setUpdated(result.getUpdated() + 1);
                     result.getResourceIds().add(linked.getId());
                     return;
@@ -147,7 +155,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                 discovery.setFailureReason(null);
                 discovery.setUpdatedAt(now);
                 saveSuccessfulDiscovery(discovery);
-                markResourceAvailable(movie, now);
+                if ("DISK".equals(type)) markResourceAvailable(movie, now);
                 result.setUpdated(result.getUpdated() + 1);
                 result.getResourceIds().add(existing.getId());
                 return;
@@ -160,7 +168,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             link.setProvider(provider);
             link.setUrl(url);
             link.setUrlHash(urlHash);
-            link.setCode("DISK".equals(type) ? trim(discovery.getCode(), 50) : null);
+            link.setCode(("DISK".equals(type) || "TORRENT".equals(type)) ? trim(discovery.getCode(), 50) : null);
             link.setUploaderId(null);
             link.setAuditStatus(resourceHubProperties.isAutoApprove() ? 1 : 0);
             link.setStatus("ACTIVE");
@@ -187,7 +195,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             discovery.setFailureReason(null);
             discovery.setUpdatedAt(now);
             saveSuccessfulDiscovery(discovery);
-            markResourceAvailable(movie, now);
+            if ("DISK".equals(type)) markResourceAvailable(movie, now);
             result.setPublished(result.getPublished() + 1);
             result.getResourceIds().add(link.getId());
         } catch (Exception e) {
@@ -212,6 +220,24 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private boolean ensurePublishableShare(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
+        String collectionType = firstText(discovery.getResourceType(), "DISK").toUpperCase(java.util.Locale.ROOT);
+        var cloud = com.gying.movie.config.CloudDriveProvider.from(discovery.getProvider());
+        if (cloud != null && (("DISK".equals(collectionType) && !resourceHubProperties.isDriveVideoEnabled(cloud.name()))
+                || ("TORRENT".equals(collectionType) && !resourceHubProperties.isDriveTorrentEnabled(cloud.name())))) {
+            result.setSkipped(result.getSkipped() + 1); return false;
+        }
+        if (cloud == com.gying.movie.config.CloudDriveProvider.BAIDU) {
+            if (baiduWebClient == null || baiduTransferTaskService == null || !hasText(discovery.getShareUrl())) {
+                result.setSkipped(result.getSkipped() + 1); return false;
+            }
+            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                    .eq("discovery_result_id", discovery.getId()).eq("status", "SUCCEEDED").eq("phase", "SHARED")
+                    .eq("share_url", discovery.getShareUrl()).last("LIMIT 1"), false);
+            if (task == null || !baiduWebClient.validateOwnShare(discovery.getShareUrl())) {
+                result.setSkipped(result.getSkipped() + 1); return false;
+            }
+            return true;
+        }
         if (!"DISK".equalsIgnoreCase(firstText(discovery.getResourceType(), "DISK"))) {
             return true;
         }
@@ -372,7 +398,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         link.setProvider(provider);
         link.setUrl(url);
         link.setUrlHash(urlHash);
-        link.setCode("DISK".equals(type) ? trim(discovery.getCode(), 50) : null);
+        link.setCode(("DISK".equals(type) || "TORRENT".equals(type)) ? trim(discovery.getCode(), 50) : null);
         link.setAuditStatus(resourceHubProperties.isAutoApprove() ? 1 : link.getAuditStatus());
         link.setStatus("ACTIVE");
         link.setLinkStatus("NORMAL");
@@ -448,18 +474,20 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private String normalizeProvider(String type, String provider) {
-        if (!"DISK".equals(type)) {
+        if (!"DISK".equals(type) && !("TORRENT".equals(type) && "BAIDU".equalsIgnoreCase(provider))) {
             return "OTHER";
         }
         return hasText(provider) ? provider.trim().toUpperCase() : "QUARK";
     }
 
-    private void validateUrl(String type, String url) {
+    private void validateUrl(String type, String url, String provider) {
         String lowerUrl = url.trim().toLowerCase();
         if ("MAGNET".equals(type) && !lowerUrl.startsWith("magnet:?xt=urn:btih:")) {
             throw new IllegalStateException("Magnet resources must start with magnet:?xt=urn:btih:");
         }
-        if ("TORRENT".equals(type) && !(isHttpUrl(lowerUrl) && lowerUrl.contains(".torrent"))) {
+        if ("TORRENT".equals(type) && "BAIDU".equals(provider)) {
+            BaiduWebClient.normalizeShareUrl(url, null);
+        } else if ("TORRENT".equals(type) && !(isHttpUrl(lowerUrl) && lowerUrl.contains(".torrent"))) {
             throw new IllegalStateException("Torrent resources must be an http(s) .torrent URL");
         }
         if (("DISK".equals(type) || "ONLINE".equals(type)) && !isHttpUrl(lowerUrl)) {

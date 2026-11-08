@@ -373,6 +373,37 @@ class ResourceDiscoveryServiceImplTest {
         verify(xunleiTransferTaskService, never()).save(any());
     }
 
+    @Test void enabledBaiduCreatesOnlyDedicatedTaskAndValidatesItsSourceHost() {
+        properties.getBaidu().setDiscoveryEnabled(true); properties.getBaidu().setEnabled(true);
+        properties.getBaidu().setVideoEnabled(true);
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", tasks);
+        var row = discovery(999L, "BAIDU", "https://pan.baidu.com/s/1fixture");
+        row.setCode("abcd"); when(discoveryService.getById(999L)).thenReturn(row);
+        when(tasks.save(any())).thenReturn(true);
+        assertTrue(service.ensureTransferTask(999L));
+        var captured = ArgumentCaptor.forClass(com.gying.movie.entity.BaiduTransferTask.class);
+        verify(tasks).save(captured.capture());
+        assertEquals("NEW", captured.getValue().getPhase()); assertEquals("PENDING", captured.getValue().getStatus());
+        assertEquals(movie.getId(), captured.getValue().getMovieId());
+        verify(quarkTransferTaskService, never()).save(any()); verify(xunleiTransferTaskService, never()).save(any());
+        row.setOriginalUrl("https://example.invalid/s/1fixture");
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.ensureTransferTask(999L));
+        verify(tasks, org.mockito.Mockito.times(1)).save(any());
+    }
+
+    @Test void noVideoResultsWithVideoTypesDisabledDoesNotDowngradeAnAvailableMovie() {
+        properties.getQuark().setVideoEnabled(false); properties.getXunlei().setVideoEnabled(false);
+        properties.getQuark().setTorrentEnabled(true); properties.getXunlei().setTorrentEnabled(true);
+        movie.setResourceStatus("AVAILABLE");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
+        assertEquals("SUCCEEDED", service.runTask(1L).getStatus());
+        assertEquals("AVAILABLE", movie.getResourceStatus());
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
+        verify(panSouClient, never()).searchQuark(anyString(), anyInt());
+        verify(panSouClient, never()).searchClouds(anyString(), any(), anyInt());
+    }
+
     @Test void disablingAllDiscoveryPreservesExistingMovieResourceStatus() {
         properties.getQuark().setDiscoveryEnabled(false); properties.getXunlei().setDiscoveryEnabled(false);
         movie.setResourceStatus("AVAILABLE");
@@ -383,6 +414,20 @@ class ResourceDiscoveryServiceImplTest {
         verify(movieService, never()).updateById(any(MovieMetadata.class));
         verify(panSouClient, never()).searchQuark(anyString(), anyInt());
         verify(panSouClient, never()).searchClouds(anyString(), any(), anyInt());
+    }
+
+    @Test void baiduQueryFailureDoesNotTurnEmptyLegacyResultsIntoTrailer() {
+        properties.getBaidu().setDiscoveryEnabled(true); properties.getBaidu().setVideoEnabled(true);
+        movie.setResourceStatus("AVAILABLE");
+        when(gyingWorkflow.discoverResources(movie, 10)).thenReturn(List.of());
+        when(panSouClient.searchQuark(anyString(), anyInt())).thenReturn(List.of());
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenAnswer(call -> {
+            if (((java.util.Set<?>) call.getArgument(1)).contains("BAIDU")) throw new IllegalStateException("Fixture source unavailable");
+            return List.of();
+        });
+        var result = service.runTask(1L);
+        assertEquals("SUCCEEDED", result.getStatus()); assertEquals("AVAILABLE", movie.getResourceStatus());
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
     }
 
     private ResourceDiscoveryResult discovery(long id, String provider, String url) {

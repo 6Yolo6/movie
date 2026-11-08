@@ -1300,7 +1300,9 @@
       "shareEnabled": "生成自有分享",
       "gyingPublishEnabled": "发布到 GYING",
       "savePath": "转存目录",
-      "batchLimit": "手动转存批次上限"
+      "batchLimit": "手动转存批次上限",
+      "videoEnabled": "采集视频文件",
+      "torrentEnabled": "采集种子文件"
     },
     "shareDisabledHelp": "关闭后不再生成新的自有分享。没有自有分享的资源无法入库或发布；已有自有分享仍可发布。",
     "savePathHelp": "使用网盘内以 / 开头的路径，最长 300 字符，不能包含 .. 路径段或反斜杠。目录修改仅影响新任务，不移动已有任务。",
@@ -1316,6 +1318,36 @@
     "validation": {
       "savePath": "请输入以 / 开头、最长 300 字符的网盘路径，不包含 .. 路径段、反斜杠或控制字符。",
       "batchLimit": "手动转存批次上限必须是 1–20 的整数。"
-    }
+    },
+    "baiduAccount": {
+      "scanLogin": "扫码登录",
+      "refresh": "刷新登录状态",
+      "sessionPresent": "已保存账号会话",
+      "sessionMissing": "尚未登录",
+      "account": "专用账号：{{name}}",
+      "sessionHelp": "账号会话已加密保存。登录状态会在实际任务中再次校验；重新登录不会自动开启工作流。",
+      "waitingTitle": "等待扫码登录",
+      "waitingHelp": "请在运行服务的电脑上打开的百度网盘窗口中扫码。启动窗口可能需要约一分钟；本页会更新结果，请在十分钟内完成。",
+      "readFailed": "暂时无法读取登录状态，请刷新重试。",
+      "startFailed": "未能启动扫码登录，请稍后重试。",
+      "refreshFailed": "登录已完成，但配置状态刷新失败，请刷新登录状态重试。",
+      "accountChanged": "登录账号与已绑定的专用账号不同。请使用原账号扫码，原会话已保留。",
+      "sessionInvalid": "百度登录会话未通过校验，请重新扫码。",
+      "helperUnavailable": "扫码窗口暂时无法启动，请检查服务电脑后重试。",
+      "expired": "本次扫码登录已超时，请重新发起。",
+      "failed": "本次扫码登录未完成，原会话已保留，请重试。",
+      "loginBeforeRun": "完成扫码登录后才能运行百度转存任务。",
+      "states": {
+        "DISCONNECTED": "尚未连接",
+        "PENDING": "正在启动扫码窗口",
+        "WAITING_SCAN": "等待扫码",
+        "CONNECTED": "已连接",
+        "FAILED": "登录失败",
+        "EXPIRED": "扫码已超时"
+      }
+    },
+    "fileTypes": "采集文件类型",
+    "torrentHelp": "种子文件为小型 .torrent 元数据文件，保存种子不会启动离线下载视频。",
+    "noFilesSelected": "当前未选择视频或种子文件。片目资料仍可采集，网盘文件转存不会执行。"
   }
 }

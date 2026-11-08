@@ -4,7 +4,7 @@ import java.util.Locale;
 
 /** Provider catalogue. Planned providers cannot execute cloud workflows. */
 public enum CloudDriveProvider {
-    QUARK(true), XUNLEI(true), BAIDU(false);
+    QUARK(true), XUNLEI(true), BAIDU(true);
 
     private final boolean supported;
 

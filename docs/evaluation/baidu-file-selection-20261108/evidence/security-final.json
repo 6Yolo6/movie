@@ -1,0 +1,558 @@
+{
+  "collected_at": "2026-11-08T15:38:46.906413+00:00",
+  "scope": "Read-only local origin, expected production containers and attached network peers; Cloudflare policies, external reachability, DB grants, MinIO policy and restore drills require separate verification",
+  "checks": [
+    {
+      "check": "production_compose_contract",
+      "status": "PASS",
+      "detail": "Validated without printing resolved environment"
+    },
+    {
+      "check": "gying-movie-frontend-1:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-frontend-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-frontend-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-frontend-1:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-movie-frontend-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-backend-1:published_ports",
+      "status": "PASS",
+      "detail": [
+        {
+          "container_port": "8880/tcp",
+          "host_ip": "127.0.0.1",
+          "host_port": "8880"
+        }
+      ]
+    },
+    {
+      "check": "gying-movie-backend-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-backend-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-backend-1:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-movie-backend-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-backend-1:non_root_db_user",
+      "status": "PASS",
+      "detail": {
+        "configured": true,
+        "is_root": false
+      }
+    },
+    {
+      "check": "gying-movie-social-publisher-1:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-social-publisher-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-social-publisher-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-social-publisher-1:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-movie-social-publisher-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-social-publisher-1:non_root_db_user",
+      "status": "PASS",
+      "detail": {
+        "configured": true,
+        "is_root": false
+      }
+    },
+    {
+      "check": "gying-movie-social-publisher-1:internal_token",
+      "status": "PASS",
+      "detail": {
+        "key": "SOCIAL_PUBLISHER_TOKEN",
+        "meets_minimum": true
+      }
+    },
+    {
+      "check": "gying-movie-quark-auto-save-1:published_ports",
+      "status": "FAIL",
+      "detail": [
+        {
+          "container_port": "5005/tcp",
+          "host_ip": "0.0.0.0",
+          "host_port": "5005"
+        }
+      ]
+    },
+    {
+      "check": "gying-movie-quark-auto-save-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-quark-auto-save-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-quark-auto-save-1:no_new_privileges",
+      "status": "FAIL",
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "check": "gying-movie-quark-auto-save-1:root_processes",
+      "status": "FAIL",
+      "detail": [
+        "docker-init",
+        "python"
+      ]
+    },
+    {
+      "check": "gying-movie-gying-source-1:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-gying-source-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-gying-source-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-gying-source-1:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-movie-gying-source-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-gying-source-1:non_root_db_user",
+      "status": "PASS",
+      "detail": {
+        "configured": true,
+        "is_root": false
+      }
+    },
+    {
+      "check": "gying-movie-gying-source-1:internal_token",
+      "status": "PASS",
+      "detail": {
+        "key": "GYING_SOURCE_API_TOKEN",
+        "meets_minimum": true
+      }
+    },
+    {
+      "check": "gying-xunlei-path-probe-20261006:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-xunlei-path-probe-20261006:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-xunlei-path-probe-20261006:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-xunlei-path-probe-20261006:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-xunlei-path-probe-20261006:root_processes",
+      "status": "UNKNOWN",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-nginx-1:published_ports",
+      "status": "PASS",
+      "detail": [
+        {
+          "container_port": "8080/tcp",
+          "host_ip": "127.0.0.1",
+          "host_port": "80"
+        }
+      ]
+    },
+    {
+      "check": "gying-movie-nginx-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-nginx-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-nginx-1:no_new_privileges",
+      "status": "PASS",
+      "detail": {
+        "enabled": true
+      }
+    },
+    {
+      "check": "gying-movie-nginx-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "openclaw-openclaw-gateway-1:published_ports",
+      "status": "PASS",
+      "detail": [
+        {
+          "container_port": "18789/tcp",
+          "host_ip": "127.0.0.1",
+          "host_port": "18789"
+        },
+        {
+          "container_port": "18790/tcp",
+          "host_ip": "127.0.0.1",
+          "host_port": "18790"
+        },
+        {
+          "container_port": "3978/tcp",
+          "host_ip": "127.0.0.1",
+          "host_port": "3978"
+        }
+      ]
+    },
+    {
+      "check": "openclaw-openclaw-gateway-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "openclaw-openclaw-gateway-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "openclaw-openclaw-gateway-1:no_new_privileges",
+      "status": "FAIL",
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "check": "openclaw-openclaw-gateway-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-redis-1:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-redis-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-redis-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-redis-1:no_new_privileges",
+      "status": "FAIL",
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "check": "gying-movie-redis-1:root_processes",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-redis-1:cache_network_isolation",
+      "status": "FAIL",
+      "detail": [
+        {
+          "network": "gying-movie_gying-net",
+          "internal": false,
+          "cache_network": false
+        }
+      ]
+    },
+    {
+      "check": "gying-movie-redis-1:redis_anonymous_auth",
+      "status": "PASS",
+      "detail": "Unauthenticated PING denied"
+    },
+    {
+      "check": "gying-movie-pansou-1:published_ports",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "check": "gying-movie-pansou-1:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-pansou-1:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "gying-movie-pansou-1:no_new_privileges",
+      "status": "FAIL",
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "check": "gying-movie-pansou-1:root_processes",
+      "status": "FAIL",
+      "detail": [
+        "pansou"
+      ]
+    },
+    {
+      "check": "minio-server:published_ports",
+      "status": "FAIL",
+      "detail": [
+        {
+          "container_port": "9000/tcp",
+          "host_ip": "0.0.0.0",
+          "host_port": "9000"
+        },
+        {
+          "container_port": "9001/tcp",
+          "host_ip": "0.0.0.0",
+          "host_port": "9001"
+        }
+      ]
+    },
+    {
+      "check": "minio-server:docker_socket",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "minio-server:privileged",
+      "status": "PASS",
+      "detail": false
+    },
+    {
+      "check": "minio-server:no_new_privileges",
+      "status": "FAIL",
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "check": "minio-server:root_processes",
+      "status": "FAIL",
+      "detail": [
+        "minio"
+      ]
+    },
+    {
+      "check": "expected_container_inventory",
+      "status": "PASS",
+      "detail": {
+        "expected": 10,
+        "observed_expected": 10,
+        "missing": [],
+        "complete_inspection": true,
+        "additional_network_peers": [
+          "gying-xunlei-path-probe-20261006"
+        ]
+      }
+    },
+    {
+      "check": "origin:/",
+      "status": "PASS",
+      "detail": {
+        "expected": 200,
+        "observed": 200
+      }
+    },
+    {
+      "check": "origin:/api/movies/list?page=1&size=1",
+      "status": "PASS",
+      "detail": {
+        "expected": 200,
+        "observed": 200
+      }
+    },
+    {
+      "check": "origin:/api/admin/users",
+      "status": "PASS",
+      "detail": {
+        "expected": 401,
+        "observed": 401
+      }
+    },
+    {
+      "check": "origin:/api/internal/resource-hub/health",
+      "status": "PASS",
+      "detail": {
+        "expected": 404,
+        "observed": 404
+      }
+    },
+    {
+      "check": "origin:/api/qq-bot/health",
+      "status": "PASS",
+      "detail": {
+        "expected": 404,
+        "observed": 404
+      }
+    },
+    {
+      "check": "origin:/media/private.txt",
+      "status": "PASS",
+      "detail": {
+        "expected": 404,
+        "observed": 404
+      }
+    }
+  ],
+  "gate_ledger": {
+    "scope": "Historical eleven container/network gates only; not deployment approval",
+    "summary": {
+      "PASS": 0,
+      "FAIL": 11,
+      "UNKNOWN": 0
+    },
+    "items": [
+      {
+        "id": "G01",
+        "target": "gying-movie-quark-auto-save-1",
+        "check": "published_ports",
+        "status": "FAIL"
+      },
+      {
+        "id": "G02",
+        "target": "minio-server",
+        "check": "published_ports",
+        "status": "FAIL"
+      },
+      {
+        "id": "G03",
+        "target": "openclaw-openclaw-gateway-1",
+        "check": "no_new_privileges",
+        "status": "FAIL"
+      },
+      {
+        "id": "G04",
+        "target": "gying-movie-redis-1",
+        "check": "no_new_privileges",
+        "status": "FAIL"
+      },
+      {
+        "id": "G05",
+        "target": "gying-movie-quark-auto-save-1",
+        "check": "no_new_privileges",
+        "status": "FAIL"
+      },
+      {
+        "id": "G06",
+        "target": "gying-movie-pansou-1",
+        "check": "no_new_privileges",
+        "status": "FAIL"
+      },
+      {
+        "id": "G07",
+        "target": "minio-server",
+        "check": "no_new_privileges",
+        "status": "FAIL"
+      },
+      {
+        "id": "G08",
+        "target": "gying-movie-quark-auto-save-1",
+        "check": "root_processes",
+        "status": "FAIL"
+      },
+      {
+        "id": "G09",
+        "target": "gying-movie-pansou-1",
+        "check": "root_processes",
+        "status": "FAIL"
+      },
+      {
+        "id": "G10",
+        "target": "minio-server",
+        "check": "root_processes",
+        "status": "FAIL"
+      },
+      {
+        "id": "G11",
+        "target": "gying-movie-redis-1",
+        "check": "cache_network_isolation",
+        "status": "FAIL"
+      }
+    ]
+  },
+  "summary": {
+    "PASS": 58,
+    "FAIL": 11,
+    "UNKNOWN": 1
+  }
+}

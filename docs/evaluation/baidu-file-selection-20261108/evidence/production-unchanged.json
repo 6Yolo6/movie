@@ -1,0 +1,40 @@
+{
+  "collectedAt": "2026-11-08T15:42:38.074026+00:00",
+  "scope": "Read-only current production identities and bounded logs; candidate not deployed",
+  "facts": {
+    "gying-movie-backend-1": {
+      "id": "defa419359eaabb5a4cd3fd55133dba84e42d6babd7f82dff9ccb9f103687986",
+      "image": "sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4",
+      "startedAt": "2026-11-08T14:33:56.222151011Z",
+      "running": true,
+      "restarts": 0
+    },
+    "gying-movie-frontend-1": {
+      "id": "808e5bfe32d218ff8ce00292ba24feb630df48da19df7414e4e2f7177c9c9af6",
+      "image": "sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f",
+      "startedAt": "2026-11-08T14:34:20.129068821Z",
+      "running": true,
+      "restarts": 0
+    }
+  },
+  "logWindowStart": "2026-11-08T23:13:00+08:00",
+  "logMatchCounts": {
+    "gying-movie-backend-1": {
+      "ERRORLevel": 0,
+      "errorTokenCaseInsensitive": 1,
+      "Exception": 0,
+      "OOM": 0
+    },
+    "gying-movie-frontend-1": {
+      "ERRORLevel": 0,
+      "errorTokenCaseInsensitive": 0,
+      "Exception": 0,
+      "OOM": 0
+    }
+  },
+  "productionImagesUnchanged": true,
+  "deployed": false,
+  "realBaiduLoginVerified": false,
+  "realTransfersVerified": false,
+  "logCountingNote": "Case-insensitive error tokens may be payload keys and are reported separately from uppercase ERROR level; raw content not copied."
+}

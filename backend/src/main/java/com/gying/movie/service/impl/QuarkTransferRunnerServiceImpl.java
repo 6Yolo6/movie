@@ -428,7 +428,7 @@ public class QuarkTransferRunnerServiceImpl implements IQuarkTransferRunnerServi
     }
 
     private void ensureEnabled() {
-        if (!resourceHubProperties.isDriveTransferEnabled("QUARK")) {
+        if (!resourceHubProperties.isDriveShareTransferEnabled("QUARK")) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "夸克转存已关闭");
         }
         if (!resourceHubProperties.isEnabled()) {

@@ -7,6 +7,10 @@ import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.client.XunleiClient;
+import com.gying.movie.client.BaiduWebClient;
+import com.gying.movie.entity.BaiduTransferTask;
+import com.gying.movie.service.IBaiduTransferTaskService;
+import com.gying.movie.service.IBaiduTransferRunnerService;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.MovieSearchCandidate;
 import com.gying.movie.dto.DiscoveredResource;
@@ -82,6 +86,13 @@ public class GyingSourceWorkflowService {
     private final IQuarkShareService quarkShareService;
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
+
+    @Autowired(required = false)
+    private IBaiduTransferTaskService baiduTransferTaskService;
+    @Autowired(required = false)
+    private IBaiduTransferRunnerService baiduTransferRunnerService;
+    @Autowired(required = false)
+    private BaiduWebClient baiduWebClient;
 
     @Autowired
     private P2pArchiveTaskService p2pArchiveTaskService;
@@ -197,7 +208,7 @@ public class GyingSourceWorkflowService {
             Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + typeCode + "/" + mid);
             return mapList(snapshot.get("resources")).stream().anyMatch(resource -> {
                 String provider = firstText(stringValue(resource.get("provider")), "").toUpperCase(Locale.ROOT);
-                return resourceHubProperties.isDriveDiscoveryEnabled(provider)
+                return resourceHubProperties.isDriveShareCollectionEnabled(provider)
                         && hasText(stringValue(resource.get("url")));
             });
         } catch (Exception ignored) {
@@ -222,18 +233,18 @@ public class GyingSourceWorkflowService {
         Map<String, Object> snapshot = gyingSourceClient.get(
                 "/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
         return selectTransferCandidates(mapList(snapshot.get("resources")).stream()
-                .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(resourceProvider(item))).toList()).stream()
+                .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(resourceProvider(item))).toList()).stream()
                 .map(item -> {
                     DiscoveredResource resource = new DiscoveredResource();
                     resource.setTitle(firstText(stringValue(item.get("title")), stringValue(snapshot.get("title"))));
-                    resource.setProvider(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase());
+                    resource.setProvider(resourceProvider(item));
                     resource.setUrl(stringValue(item.get("url")));
                     resource.setCode(stringValue(item.get("code")));
                     resource.setSource("GYING");
                     resource.setSourceRef(stringValue(item.get("source_id")));
                     return resource;
                 })
-                .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(item.getProvider()))
+                .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(item.getProvider()))
                 .filter(item -> hasText(item.getUrl()))
                 .filter(item -> ResourceTitleMatcher.isRelevant(movie, item.getTitle(), null))
                 .limit(safeLimit)
@@ -717,11 +728,14 @@ public class GyingSourceWorkflowService {
                 break;
             }
             List<DiscoveredResource> found = new ArrayList<>();
-            if (resourceHubProperties.isDriveDiscoveryEnabled("QUARK")) {
+            if (resourceHubProperties.isDriveShareCollectionEnabled("QUARK")) {
                 found.addAll(panSouClient.searchQuark(keyword, limit));
             }
-            if (resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI")) {
+            if (resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI")) {
                 found.addAll(panSouClient.searchClouds(keyword, Set.of("XUNLEI"), limit));
+            }
+            if (resourceHubProperties.isDriveShareCollectionEnabled("BAIDU")) {
+                found.addAll(panSouClient.searchClouds(keyword, Set.of("BAIDU"), limit));
             }
             for (DiscoveredResource resource : found) {
                 if (resource == null || !hasText(resource.getUrl())) {
@@ -1127,7 +1141,7 @@ public class GyingSourceWorkflowService {
             errors.add("P2P: " + safeText(error.getMessage()));
         }
         List<Map<String, Object>> providerResults = new ArrayList<>();
-        for (String provider : List.of("QUARK", "XUNLEI")) {
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
             try {
                 providerResults.add(ensureVideoProvider(ingested, provider));
             } catch (ShareCheckUnavailableException error) {
@@ -1206,6 +1220,9 @@ public class GyingSourceWorkflowService {
         Map<String, Object> result = movieMetadataResult(ingested);
 
         if (!ownResources.isEmpty()) {
+            ownResources = ownResources.stream().filter(this::isVideoResource)
+                    .filter(item -> resourceHubProperties.isDriveVideoEnabled(resourceProvider(item))).toList();
+            if (ownResources.isEmpty()) { result.put("status", "DISABLED"); return result; }
             String ownState = ownResourceState(ownResources);
             ResourceLink own = findResourceBySourceIds(movie.getId(),
                     ownResources.stream().map(item -> stringValue(item.get("source_id"))).toList());
@@ -1224,10 +1241,11 @@ public class GyingSourceWorkflowService {
         }
 
         ResourceLink local = findPublishableLocalResource(movie.getId());
-        if (local != null && !resourceHubProperties.isDriveGyingPublishEnabled(local.getProvider())) {
+        if (local != null && (!resourceHubProperties.isDriveVideoEnabled(local.getProvider())
+                || !resourceHubProperties.isDriveGyingPublishEnabled(local.getProvider()))) {
             local = null;
             for (var provider : com.gying.movie.config.CloudDriveProvider.values()) {
-                if (resourceHubProperties.isDriveGyingPublishEnabled(provider.name())) {
+                if (resourceHubProperties.isDriveVideoEnabled(provider.name()) && resourceHubProperties.isDriveGyingPublishEnabled(provider.name())) {
                     local = findPublishableLocalResource(movie.getId(), provider.name());
                     if (local != null) break;
                 }
@@ -1235,15 +1253,16 @@ public class GyingSourceWorkflowService {
         }
         if (local == null) {
             List<Map<String, Object>> candidates = selectTransferCandidates(allResources.stream()
-                    .filter(item -> resourceHubProperties.isDriveDiscoveryEnabled(resourceProvider(item)))
-                    .filter(item -> resourceHubProperties.isDriveTransferEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveVideoEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareCollectionEnabled(resourceProvider(item)))
+                    .filter(item -> resourceHubProperties.isDriveShareTransferEnabled(resourceProvider(item)))
                     .filter(item -> resourceHubProperties.isDriveShareEnabled(resourceProvider(item)))
                     .filter(item -> resourceHubProperties.isDriveGyingPublishEnabled(resourceProvider(item))).toList());
             if (candidates.isEmpty()) {
                 if (java.util.Arrays.stream(com.gying.movie.config.CloudDriveProvider.values())
                         .filter(com.gying.movie.config.CloudDriveProvider::isSupported)
-                        .anyMatch(provider -> !resourceHubProperties.isDriveDiscoveryEnabled(provider.name())
-                                || !resourceHubProperties.isDriveTransferEnabled(provider.name())
+                        .anyMatch(provider -> !resourceHubProperties.isDriveShareCollectionEnabled(provider.name())
+                                || !resourceHubProperties.isDriveShareTransferEnabled(provider.name())
                                 || !resourceHubProperties.isDriveShareEnabled(provider.name())
                                 || !resourceHubProperties.isDriveGyingPublishEnabled(provider.name()))) {
                     result.put("status", "DISABLED");
@@ -1290,7 +1309,7 @@ public class GyingSourceWorkflowService {
     }
 
     private Map<String, Object> ensureVideoProvider(GyingMovieMetadata ingested, String provider) {
-        if (!resourceHubProperties.isDriveGyingPublishEnabled(provider)) {
+        if (!resourceHubProperties.isDriveVideoEnabled(provider) || !resourceHubProperties.isDriveGyingPublishEnabled(provider)) {
             return new LinkedHashMap<>(Map.of("provider", provider, "status", "DISABLED"));
         }
         MovieMetadata movie = ingested.movie();
@@ -1340,8 +1359,8 @@ public class GyingSourceWorkflowService {
         boolean transferred = false;
         if (local == null) {
             if (!resourceHubProperties.isDriveShareEnabled(provider)
-                    || !resourceHubProperties.isDriveTransferEnabled(provider)
-                    || !resourceHubProperties.isDriveDiscoveryEnabled(provider)) {
+                    || !resourceHubProperties.isDriveShareTransferEnabled(provider)
+                    || !resourceHubProperties.isDriveShareCollectionEnabled(provider)) {
                 result.put("status", "DISABLED");
                 return result;
             }
@@ -1395,12 +1414,24 @@ public class GyingSourceWorkflowService {
             if (hasText(url)) links.putIfAbsent(url, resourceProvider(item));
         }
         if (links.isEmpty()) return Map.of();
-        try {
-            Map<String, LinkCheckResult> checks = panSouClient.checkLinksByProvider(links);
-            return checks == null ? Map.of() : checks;
-        } catch (Exception unavailable) {
-            return Map.of();
+        var checks = new LinkedHashMap<String, LinkCheckResult>();
+        var legacy = new LinkedHashMap<String, String>();
+        for (var entry : links.entrySet()) {
+            if (!"BAIDU".equalsIgnoreCase(entry.getValue())) { legacy.put(entry.getKey(), entry.getValue()); continue; }
+            try {
+                if (baiduWebClient != null) checks.put(entry.getKey(), new LinkCheckResult(entry.getKey(), true,
+                        baiduWebClient.validateOwnShare(entry.getKey()), "Baidu own account verification"));
+            } catch (Exception unavailable) {
+                checks.put(entry.getKey(), new LinkCheckResult(entry.getKey(), false, false, "BAIDU_CHECK_UNAVAILABLE"));
+            }
         }
+        if (!legacy.isEmpty()) {
+            try {
+                var results = panSouClient.checkLinksByProvider(legacy);
+                if (results != null) checks.putAll(results);
+            } catch (Exception unavailable) { /* Other provider results remain usable. */ }
+        }
+        return checks;
     }
 
     private Map<String, Object> checkMoviePublishedResources(
@@ -1733,7 +1764,7 @@ public class GyingSourceWorkflowService {
             ResourceLink local = findLocalPublishedResource(item);
             String provider = firstText(stringValue(item.get("provider")),
                     local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
-            QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+            QuarkTransferTask transfer = "QUARK".equals(provider) ? findRepairTransfer(local, item) : null;
             XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider)
                     ? findRepairXunleiTransfer(local, item) : null;
             boolean canRetransfer = hasText(stringValue(item.get("mid")))
@@ -1950,15 +1981,15 @@ public class GyingSourceWorkflowService {
             try {
                 ResourceLink local = findLocalPublishedResource(item);
                 String provider = firstText(stringValue(item.get("provider")), local == null ? "QUARK" : local.getProvider()).toUpperCase(Locale.ROOT);
-                if (!resourceHubProperties.isDriveGyingPublishEnabled(provider)
-                        || !resourceHubProperties.isDriveTransferEnabled(provider)
+                if (!resourceHubProperties.isDriveVideoEnabled(provider) || !resourceHubProperties.isDriveGyingPublishEnabled(provider)
+                        || !resourceHubProperties.isDriveShareTransferEnabled(provider)
                         || !resourceHubProperties.isDriveShareEnabled(provider)) {
                     skipped++;
                     item.put("repairStatus", "SKIPPED");
                     item.put("repairError", "该网盘转存或 GYING 发布已关闭");
                     continue;
                 }
-                QuarkTransferTask transfer = "XUNLEI".equals(provider) ? null : findRepairTransfer(local, item);
+                QuarkTransferTask transfer = "QUARK".equals(provider) ? findRepairTransfer(local, item) : null;
                 XunleiTransferTask xunleiTransfer = "XUNLEI".equals(provider) ? findRepairXunleiTransfer(local, item) : null;
                 MovieMetadata movie = local == null ? null : movieService.getById(local.getMovieId());
                 if (movie == null && transfer != null) {
@@ -2068,7 +2099,8 @@ public class GyingSourceWorkflowService {
                         "title", title,
                         "panurl", newUrl,
                         "panpw", "XUNLEI".equalsIgnoreCase(provider)
-                                ? Objects.toString(XunleiClient.extractShareCode(newUrl), "") : "",
+                                ? Objects.toString(XunleiClient.extractShareCode(newUrl), "") : "BAIDU".equalsIgnoreCase(provider)
+                                        ? Objects.toString(BaiduWebClient.extractShareCode(newUrl), "") : "",
                         "is", integerValue(item.get("login_visible")) == null
                                 ? 0 : integerValue(item.get("login_visible"))));
                 verifyPublishedUpdate(typeCode, mid, sourceId, newUrl);
@@ -2151,6 +2183,9 @@ public class GyingSourceWorkflowService {
 
     private ResourceLink transferAndPublishLocally(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         TransferOutcome outcome = transferCandidate(movie, candidate, weekly);
+        if (outcome.discovery() == null || !"DISK".equalsIgnoreCase(outcome.discovery().getResourceType())) {
+            throw new IllegalStateException("Selected share contains metadata files only; no video resource to publish");
+        }
         if (!weekly) requireConfirmedValid(outcome.shareUrl(), resourceProvider(candidate));
         ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(outcome.discovery().getId());
         if (publishResult.getFailed() > 0 || publishResult.getResourceIds().isEmpty()) {
@@ -2167,8 +2202,8 @@ public class GyingSourceWorkflowService {
 
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate, boolean weekly) {
         String originalUrl = required(stringValue(candidate.get("url")), "GYING source URL");
-        String provider = firstText(stringValue(candidate.get("provider")), "QUARK").toUpperCase(Locale.ROOT);
-        if (!resourceHubProperties.isDriveTransferEnabled(provider)) {
+        String provider = resourceProvider(candidate);
+        if (!resourceHubProperties.isDriveShareTransferEnabled(provider)) {
             throw new IllegalStateException("该网盘尚未接入或转存已关闭: " + provider);
         }
         if ("XUNLEI".equals(provider)) {
@@ -2177,6 +2212,8 @@ public class GyingSourceWorkflowService {
             }
             return transferXunleiCandidate(movie, candidate, originalUrl);
         }
+        if ("BAIDU".equals(provider)) return transferBaiduCandidate(movie, candidate, originalUrl);
+        if (!"QUARK".equals(provider)) throw new IllegalStateException("Unsupported cloud drive provider");
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         ResourceDiscoveryResult discovery = discoveryResultService.getOne(
                 new QueryWrapper<ResourceDiscoveryResult>()
@@ -2285,6 +2322,52 @@ public class GyingSourceWorkflowService {
         return new TransferOutcome(discovery, null, transfer.getShareUrl());
     }
 
+    private TransferOutcome transferBaiduCandidate(MovieMetadata movie, Map<String, Object> candidate, String originalUrl) {
+        if (baiduTransferTaskService == null || baiduTransferRunnerService == null || baiduWebClient == null) {
+            throw new IllegalStateException("Baidu transfer service unavailable");
+        }
+        originalUrl = BaiduWebClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
+        String urlHash = ResourceHubHashUtils.sha256(originalUrl);
+        LocalDateTime now = LocalDateTime.now();
+        var discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .eq("movie_id", movie.getId()).eq("provider", "BAIDU").eq("original_url_hash", urlHash)
+                .orderByDesc("updated_at").last("LIMIT 1"), false);
+        if (discovery == null) {
+            discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource(resourceSource(candidate));
+            discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
+            discovery.setOriginalUrlHash(urlHash); discovery.setCreatedAt(now);
+            discovery.setTitle(trim(buildResourceTitle(movie, stringValue(candidate.get("title")), "BAIDU"), 255));
+            discovery.setProvider("BAIDU"); discovery.setResourceType("DISK");
+            discovery.setCode(trim(stringValue(candidate.get("code")), 50)); discovery.setStatus("DISCOVERED");
+            discovery.setUpdatedAt(now);
+            if (!discoveryResultService.save(discovery)) throw new IllegalStateException("Baidu discovery not persisted");
+        }
+        var transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
+        if (transfer == null) {
+            transfer = new BaiduTransferTask(); transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(movie.getId());
+            transfer.setOriginalUrl(originalUrl); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING");
+            transfer.setPhase("NEW"); transfer.setAttempts(0); transfer.setCreatedAt(now); transfer.setUpdatedAt(now);
+            try {
+                if (!baiduTransferTaskService.save(transfer)) throw new IllegalStateException("Baidu task not persisted");
+            } catch (org.springframework.dao.DuplicateKeyException raced) {
+                transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                        .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
+                if (transfer == null) throw raced;
+            }
+        }
+        var result = baiduTransferRunnerService.submitOne(transfer.getId());
+        if (result.getFailed() > 0) throw new IllegalStateException("Baidu transfer requires review: "
+                + (result.getErrors().isEmpty() ? "BAIDU_NOT_READY" : result.getErrors().get(0)));
+        transfer = baiduTransferTaskService.getById(transfer.getId());
+        discovery = discoveryResultService.getById(discovery.getId());
+        if (transfer == null || !"SUCCEEDED".equals(transfer.getStatus()) || !hasText(transfer.getShareUrl())
+                || !baiduWebClient.validateOwnShare(transfer.getShareUrl())) {
+            throw new IllegalStateException("Baidu own share is not ready");
+        }
+        return new TransferOutcome(discovery, null, transfer.getShareUrl());
+    }
+
     private Map<String, Object> publishLocalResource(
             String typeCode,
             String siteMid,
@@ -2310,14 +2393,14 @@ public class GyingSourceWorkflowService {
     private List<Map<String, Object>> selectTransferCandidates(List<Map<String, Object>> resources) {
         List<Map<String, Object>> ordered = resources.stream()
                 .filter(item -> !Boolean.TRUE.equals(item.get("is_own")))
-                .filter(item -> List.of("QUARK", "XUNLEI").contains(firstText(stringValue(item.get("provider")), "QUARK").toUpperCase()))
+                .filter(item -> List.of("QUARK", "XUNLEI", "BAIDU").contains(resourceProvider(item)))
                 .filter(item -> hasText(stringValue(item.get("url"))))
                 .sorted((left, right) -> qualityScore(stringValue(right.get("title")))
                         - qualityScore(stringValue(left.get("title"))))
                 .limit(20)
                 .toList();
         Map<String, String> links = new LinkedHashMap<>();
-        ordered.forEach(item -> links.put(stringValue(item.get("url")), firstText(stringValue(item.get("provider")), "QUARK")));
+        ordered.forEach(item -> links.put(stringValue(item.get("url")), resourceProvider(item)));
         Map<String, LinkCheckResult> checks;
         try {
             checks = panSouClient.checkLinksByProvider(links);
@@ -2327,8 +2410,7 @@ public class GyingSourceWorkflowService {
         Map<String, LinkCheckResult> resolvedChecks = checks;
         return ordered.stream()
                 .filter(item -> {
-                    if ("XUNLEI".equalsIgnoreCase(firstText(
-                            stringValue(item.get("provider")), "QUARK"))) {
+                    if ("XUNLEI".equals(resourceProvider(item))) {
                         return true;
                     }
                     LinkCheckResult check = resolvedChecks.get(stringValue(item.get("url")));
@@ -2433,7 +2515,7 @@ public class GyingSourceWorkflowService {
         }
         if (links.isEmpty()) return "ALREADY_PUBLISHED_CHECK_REQUIRED";
         try {
-            Map<String, LinkCheckResult> checks = panSouClient.checkLinksByProvider(links);
+            Map<String, LinkCheckResult> checks = checkShareLinks(ownResources);
             if (checks.values().stream().anyMatch(check -> check != null && check.checked() && check.valid())) {
                 return "ALREADY_PUBLISHED";
             }
@@ -2466,7 +2548,8 @@ public class GyingSourceWorkflowService {
         link.setUrl(newUrl);
         link.setUrlHash(ResourceHubHashUtils.sha256(newUrl));
         link.setCode("XUNLEI".equalsIgnoreCase(provider)
-                ? XunleiClient.extractShareCode(newUrl) : null);
+                ? XunleiClient.extractShareCode(newUrl) : "BAIDU".equalsIgnoreCase(provider)
+                    ? BaiduWebClient.extractShareCode(newUrl) : null);
         link.setAuditStatus(1);
         link.setStatus("ACTIVE");
         link.setLinkStatus("NORMAL");
@@ -2510,6 +2593,12 @@ public class GyingSourceWorkflowService {
     private void requireConfirmedValid(String url, String provider) {
         String safeUrl = required(url, "new cloud share URL");
         String safeProvider = firstText(provider, "QUARK").toUpperCase(Locale.ROOT);
+        if ("BAIDU".equals(safeProvider)) {
+            if (baiduWebClient == null || !baiduWebClient.validateOwnShare(safeUrl)) {
+                throw new ShareCheckUnavailableException("BAIDU_SHARE_UNAVAILABLE");
+            }
+            return;
+        }
         LinkCheckResult check = checkShareLinks(List.of(Map.of("url", safeUrl, "provider", safeProvider))).get(safeUrl);
         if (check == null || !check.checked()) {
             throw new ShareCheckUnavailableException("Unable to confirm new " + safeProvider + " share: "
@@ -3069,18 +3158,19 @@ public class GyingSourceWorkflowService {
     }
 
     private String resourceProvider(Map<String, Object> item) {
-        String provider = firstText(stringValue(item.get("provider")), "");
-        if (hasText(provider)) {
-            return provider.toUpperCase(Locale.ROOT);
-        }
-        String url = stringValue(item.get("url"));
-        if (hasText(url) && url.toLowerCase(Locale.ROOT).contains("xunlei.com")) {
-            return "XUNLEI";
-        }
-        if (hasText(url) && url.toLowerCase(Locale.ROOT).contains("quark.cn")) {
-            return "QUARK";
-        }
-        return "";
+        if (item == null) return "";
+        var declared = com.gying.movie.config.CloudDriveProvider.from(stringValue(item.get("provider")));
+        if (hasText(stringValue(item.get("provider")))) return declared == null ? "" : declared.name();
+        try {
+            var uri = java.net.URI.create(stringValue(item.get("url")));
+            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getUserInfo() != null || uri.getPort() != -1) return "";
+            return switch (Objects.toString(uri.getHost(), "").toLowerCase(Locale.ROOT)) {
+                case "pan.xunlei.com" -> "XUNLEI";
+                case "pan.quark.cn" -> "QUARK";
+                case "pan.baidu.com" -> "BAIDU";
+                default -> "";
+            };
+        } catch (Exception invalid) { return ""; }
     }
 
     private String siteKey(String typeCode, String mid) {

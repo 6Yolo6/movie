@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-08",
+  "sourceState": "working-tree",
+  "controllerCount": 26,
+  "mappingAnnotationCount": 184,
+  "routeCount": 184,
+  "controllerHashesMatch": true,
+  "mappingAndMethodLinesMatch": true,
+  "directGuardLinesMatch": true,
+  "uniqueHttpMethodPaths": true,
+  "literalParserChecks": {
+    "arrays": true,
+    "qualifiedHttpMethods": true,
+    "parameterlessMappings": true,
+    "commentPseudoAnnotationIgnored": true,
+    "nonliteralExpressionsRejected": 3
+  },
+  "markdownLocalLinksChecked": 47,
+  "missingLocalLinks": [],
+  "dynamicAuthorizationVerified": false
+}

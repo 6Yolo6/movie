@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.PanSouClient;
+import com.gying.movie.client.BaiduWebClient;
+import com.gying.movie.entity.BaiduTransferTask;
+import com.gying.movie.service.IBaiduTransferTaskService;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.DiscoveredResource;
@@ -53,6 +56,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private final IResourceLinkService resourceLinkService;
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final ObjectMapper objectMapper;
+    @Autowired(required = false)
+    private IBaiduTransferTaskService baiduTransferTaskService;
 
     @Autowired
     public ResourceDiscoveryServiceImpl(
@@ -128,11 +133,12 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
         markRunning(task);
         try {
-            List<DiscoveredResource> resources = discover(payload, movie);
+            DiscoveryFetch fetched = discover(payload, movie);
+            List<DiscoveredResource> resources = fetched.resources();
             LocalDateTime now = LocalDateTime.now();
             for (DiscoveredResource resource : resources) {
                 try {
-                    if (!resourceHubProperties.isDriveDiscoveryEnabled(resource.getProvider())) {
+                    if (!resourceHubProperties.isDriveShareCollectionEnabled(resource.getProvider())) {
                         continue;
                     }
                     if (!ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), payload.keyword())) {
@@ -169,8 +175,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     addError(result, itemError.getMessage());
                 }
             }
-            boolean completeDiscovery = resourceHubProperties.isDriveDiscoveryEnabled("QUARK")
-                    && resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI");
+            boolean completeDiscovery = fetched.complete() && resourceHubProperties.isDriveShareCollectionEnabled("QUARK")
+                    && resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI");
             if (completeDiscovery && result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
                 refreshResourceStatus(movie, now);
             }
@@ -181,7 +187,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     ? "Resource discovery failed"
                     : result.getDiscovered() + result.getDuplicate() == 0
                             ? (completeDiscovery ? "No resources discovered; marked as trailer"
-                                    : "No resources discovered; disabled providers skipped") : null;
+                                    : "Discovery incomplete; existing resource status retained") : null;
             finishTask(task, status, error);
             result.setStatus(task.getStatus());
             return result;
@@ -211,7 +217,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 : discovery.getProvider().trim().toUpperCase();
         if (discovery == null || !hasText(discovery.getMovieId())
                 || !hasText(discovery.getOriginalUrl())
-                || !resourceHubProperties.isDriveTransferEnabled(normalizedProvider)) {
+                || !resourceHubProperties.isDriveShareTransferEnabled(normalizedProvider)) {
             return false;
         }
         String provider = normalizedProvider;
@@ -248,6 +254,14 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             task.setUpdatedAt(now);
             return xunleiTransferTaskService.save(task);
         }
+        if ("BAIDU".equals(provider)) {
+            if (baiduTransferTaskService == null) return false;
+            BaiduTransferTask existing = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                    .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
+            if (existing != null) return true;
+            return saveBaiduTask(discovery, urlHash, now);
+        }
+        if (!"QUARK".equals(provider)) return false;
         QuarkTransferTask task = quarkTransferTaskService.getOne(new QueryWrapper<QuarkTransferTask>()
                 .eq("discovery_result_id", discoveryResultId)
                 .orderByDesc("updated_at")
@@ -284,7 +298,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         List<ResourceDiscoveryResult> candidates = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
                 .eq("status", "DISCOVERED")
                 .isNull("resource_link_id")
-                .in("provider", List.of("QUARK", "XUNLEI"))
+                .in("provider", List.of("QUARK", "XUNLEI", "BAIDU"))
                 .orderByAsc("created_at")
                 .orderByAsc("id")
                 .last("LIMIT 1000"));
@@ -303,7 +317,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 continue;
             }
             String provider = hasText(discovery.getProvider()) ? discovery.getProvider().trim().toUpperCase() : "";
-            if (!Set.of("QUARK", "XUNLEI").contains(provider)) {
+            if (!Set.of("QUARK", "XUNLEI", "BAIDU").contains(provider)) {
                 continue;
             }
             String movieProvider = discovery.getMovieId() + "|" + provider;
@@ -335,6 +349,11 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                                     .or(nested -> nested.eq("movie_id", discovery.getMovieId())
                                             .eq("original_url_hash", urlHash)))) > 0;
         }
+        if ("BAIDU".equals(provider)) {
+            return baiduTransferTaskService != null && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>()
+                    .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash)) > 0;
+        }
+        if (!"QUARK".equals(provider)) return false;
         return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .and(query -> query.eq("discovery_result_id", discovery.getId())
                         .or(nested -> nested.eq("movie_id", discovery.getMovieId())
@@ -351,10 +370,10 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID"))) > 0;
     }
 
-    private List<DiscoveredResource> discover(DiscoveryPayload payload, MovieMetadata movie) {
+    private DiscoveryFetch discover(DiscoveryPayload payload, MovieMetadata movie) {
         String source = payload.source().toUpperCase();
         if ("GYING".equals(source)) {
-            return gyingSourceWorkflowService.discoverResources(movie, payload.maxResults());
+            return new DiscoveryFetch(gyingSourceWorkflowService.discoverResources(movie, payload.maxResults()), true);
         }
         if ("AUTO".equals(source) || "QQ_BOT".equals(source) || "PANSOU".equals(source)) {
             List<DiscoveredResource> gying = List.of();
@@ -370,16 +389,23 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             String keyword = resolveKeyword(payload, movie);
             List<DiscoveredResource> quark = List.of();
             List<DiscoveredResource> xunlei = List.of();
+            List<DiscoveredResource> baidu = List.of();
             boolean available = !gying.isEmpty();
-            if (resourceHubProperties.isDriveDiscoveryEnabled("QUARK") && !hasProvider(gying, "QUARK")) {
+            if (resourceHubProperties.isDriveShareCollectionEnabled("QUARK") && !hasProvider(gying, "QUARK")) {
                 try {
                     quark = panSouClient.searchQuark(keyword, payload.maxResults());
                     available = true;
                 } catch (RuntimeException error) { failure = error; }
             }
-            if (resourceHubProperties.isDriveDiscoveryEnabled("XUNLEI") && !hasProvider(gying, "XUNLEI")) {
+            if (resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI") && !hasProvider(gying, "XUNLEI")) {
                 try {
                     xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
+                    available = true;
+                } catch (RuntimeException error) { failure = error; }
+            }
+            if (resourceHubProperties.isDriveShareCollectionEnabled("BAIDU") && !hasProvider(gying, "BAIDU")) {
+                try {
+                    baidu = panSouClient.searchClouds(keyword, Set.of("BAIDU"), payload.maxResults());
                     available = true;
                 } catch (RuntimeException error) { failure = error; }
             }
@@ -387,8 +413,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "资源来源暂时不可用，请稍后重试");
             }
             // Keep good results even when another provider's supplemental query fails.
-            return mergeProviderResults(gying,
-                    mergeProviderResults(quark, xunlei, payload.maxResults()), payload.maxResults());
+            return new DiscoveryFetch(mergeProviderResults(gying,
+                    mergeProviderResults(mergeProviderResults(quark, xunlei, payload.maxResults()), baidu, payload.maxResults()), payload.maxResults()), failure == null);
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported discovery source");
     }
@@ -428,6 +454,11 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private LinkCheckResult checkSourceLink(DiscoveredResource resource) {
         String url = resource == null ? null : resource.getUrl();
         try {
+            if (resource != null && "BAIDU".equalsIgnoreCase(resource.getProvider())) {
+                // Validate the fixed host locally; the selected file tree is checked by the account client.
+                BaiduWebClient.normalizeShareUrl(url, resource.getCode());
+                return new LinkCheckResult(url, false, false, "Baidu transfer performs authoritative validation");
+            }
             return panSouClient.checkLink(resource);
         } catch (Exception ignored) {
             return new LinkCheckResult(url, false, false, "Source link validation unavailable");
@@ -465,7 +496,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
-        if (!resourceHubProperties.isDriveTransferEnabled(resource.getProvider())
+        if (!resourceHubProperties.isDriveShareTransferEnabled(resource.getProvider())
                 || hasMovieTransferTask(discovery.getMovieId(), resource.getProvider())) {
             return false;
         }
@@ -474,6 +505,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(discovery.getMovieId());
             transfer.setOriginalUrl(resource.getUrl()); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING");
             transfer.setAttempts(0); transfer.setCreatedAt(now); transfer.setUpdatedAt(now); xunleiTransferTaskService.save(transfer); return true;
+        }
+        if ("BAIDU".equalsIgnoreCase(resource.getProvider())) {
+            return baiduTransferTaskService != null && saveBaiduTask(discovery, urlHash, now);
         }
         if (!"QUARK".equalsIgnoreCase(resource.getProvider())) return false;
         QuarkTransferTask transfer = new QuarkTransferTask();
@@ -492,11 +526,29 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private boolean hasMovieTransferTask(String movieId, String provider) {
         if ("XUNLEI".equalsIgnoreCase(provider) && xunleiTransferTaskService != null) return xunleiTransferTaskService.count(new QueryWrapper<XunleiTransferTask>()
                 .eq("movie_id", movieId).in("status", List.of("PENDING", "RUNNING", "SUBMITTED", "WAITING_SHARE"))) > 0;
+        if ("BAIDU".equalsIgnoreCase(provider)) return baiduTransferTaskService != null
+                && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
+                    .in("status", List.of("PENDING", "RUNNING", "WAITING_TRANSFER", "WAITING_SHARE", "ACTION_REQUIRED", "REVIEW_REQUIRED"))) > 0;
+        if (!"QUARK".equalsIgnoreCase(provider)) return false;
         return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
                 .eq("movie_id", movieId)
                 .in("status", List.of("PENDING", "RUNNING", "SUBMITTED"))) > 0;
     }
 
+
+    private boolean saveBaiduTask(ResourceDiscoveryResult discovery, String urlHash, LocalDateTime now) {
+        BaiduWebClient.normalizeShareUrl(discovery.getOriginalUrl(), discovery.getCode());
+        var transfer = new BaiduTransferTask();
+        transfer.setMovieId(discovery.getMovieId()); transfer.setDiscoveryResultId(discovery.getId());
+        transfer.setOriginalUrl(discovery.getOriginalUrl()); transfer.setOriginalUrlHash(urlHash);
+        transfer.setStatus("PENDING"); transfer.setPhase("NEW"); transfer.setAttempts(0);
+        transfer.setCreatedAt(now); transfer.setUpdatedAt(now);
+        try { return baiduTransferTaskService.save(transfer); }
+        catch (org.springframework.dao.DuplicateKeyException raced) {
+            return baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>()
+                    .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash)) > 0;
+        }
+    }
 
     private boolean isDuplicate(String movieId, String urlHash, String url) {
         long existingLinks = resourceLinkService.count(new QueryWrapper<ResourceLink>()
@@ -729,6 +781,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
     }
+
+    private record DiscoveryFetch(List<DiscoveredResource> resources, boolean complete) { }
 
     private record DiscoveryPayload(
             String movieId,

@@ -47,7 +47,9 @@
 
 基础 `/api/admin/resource-hub`，完整方法见[路由清单](security/api-inventory.md)。
 
-`config.driveWorkflows` 按网盘独立配置发现、转存、分享和 GYING 发布；百度为只读待接入。`POST transfers/run` 使用 provider 与可选整数 limit 手动执行一批，配置保存不执行任务。字段、兼容和回退见[网盘工作流](cloud-drive-workflows.md)。
+本轮候选实现支持 QUARK/XUNLEI/BAIDU；生产部署与真实账号验收记录另见项目状态。`config.driveWorkflows` 按网盘独立配置发现、转存、分享、GYING 发布和 `videoEnabled/torrentEnabled`。夸克、迅雷缺省沿用两类文件均开启，百度缺省两类均关闭；两类都关闭仍可保存配置和采集影片元数据。种子归档只保存小型 `.torrent` 与磁力文本，不触发离线视频下载。字段、兼容和回退见[网盘工作流](cloud-drive-workflows.md)。
+
+`POST transfers/run` 要求 ADMIN，body 为 `{provider:"QUARK"|"XUNLEI"|"BAIDU",limit?:1–20}`，按已保存的阶段与文件类型配置执行一批单盘任务；结果合并 `submitted/skipped/failed/errors`，同批数量不超过 limit。未知 provider、非整数/越界 limit、额外字段、重复键和尾随 JSON 均拒绝；资源中心或该盘转存关闭、两类文件都关闭时返回 409。配置保存、扫码登录完成均不自动执行转存或发布。
 
 | 类别 | 主要相对路径 |
 | --- | --- |
@@ -56,11 +58,22 @@
 | 发现 | POST discover、discover/{taskId}/run；GET discover/jobs/{jobId}、discoveries |
 | 发布/重跑 | POST discoveries/{id}/publish、discoveries/publish、discoveries/{id}/retry-share-publish、discoveries/batch/publish、discoveries/batch/retry-share-publish、discoveries/retry-discovered |
 | 校准/频道 | POST discoveries/reconcile（dryRun=true、limit 默认 2000）；discoveries/{id}/qq-channel-post、discoveries/batch/qq-channel-post（runNow=true） |
-| 转存 | POST quark/transfers/submit、quark/transfers/{taskId}/submit |
+| 转存 | POST transfers/run、quark/transfers/submit、quark/transfers/{taskId}/submit、baidu/transfers/{taskId}/submit；GET baidu/transfers |
+| 百度账号 | GET baidu/session；POST baidu/login（空 body 或 `{}`） |
 | 补资源 | GET missing-resources；POST missing-resources/{movieId}/resolve、missing-resources/batch/resolve；source=GYING/PANSOU，批量最多 20 部 |
 | 清理 | POST cleanup/duplicate-tmdb、cleanup/mismatched-resources；先 dryRun=true |
 
-发现筛选 `keyword/movieId/status/source/sortOrder/page/size`。内部 `/api/internal/resource-hub` 的定向 p2p sync、发现发布、双盘任务 run、ingest/health 需内部认证，公网拒绝。高频 Worker 的元数据政策与独立队列见[资源中心](resource-hub.md)，不能由旧接口字段推断自动视频消费已启用。
+发现筛选 `keyword/movieId/status/source/sortOrder/page/size`。内部 `/api/internal/resource-hub` 的定向 p2p sync、发现发布、双盘任务 run、ingest/health 需内部认证，公网拒绝；百度登录助手新增的两条内部回调使用专属一次性 ticket/nonce，见下文。高频 Worker 的元数据政策与独立队列见[资源中心](resource-hub.md)，不能由旧接口字段推断自动视频消费已启用。
+
+### 百度专用账号扫码登录（候选实现）
+
+`GET baidu/session` 和 `POST baidu/login` 要求 ADMIN，统一返回 `ApiResponse.data`：`configured`、`state`、`ticketId`、`expiresAt`、`accountName`、`lastValidatedAt`、`failureCode`。时间为毫秒时间戳，未设置字段为 null；state 为 DISCONNECTED/PENDING/WAITING_SCAN/CONNECTED/FAILED/EXPIRED。`accountName` 脱敏，返回值不含 Cookie、密码、二维码材料或 nonce。`configured` 只表示已保存会话元数据，实际云盘任务仍会校验账号和会话有效性。
+
+页面首次进入只读状态。管理员点击扫码后，由运行服务的电脑打开百度官方登录窗口；有效期 10 分钟，页面仅在 PENDING/WAITING_SCAN 且未过期时每 5 秒查询。失败、过期、离开页面后停止自动轮询；连接成功只刷新账号配置状态，不改文件类型或阶段开关。`POST baidu/login` 只接受空 body 或空对象；额外字段、重复键、尾随 JSON 均拒绝。
+
+宿主助手回调 `POST /api/internal/resource-hub/baidu/login-state` 和 `POST /api/internal/resource-hub/baidu/session`，由服务验证 ticket/nonce、时效、状态和一次性导入约束；助手不持有管理员 JWT。会话加密保存，公共接口不导出凭据。这两条路由不通过公网 nginx 暴露，不能用管理员页面的静态 guard 检查替代内部边界的动态验收。
+
+`GET baidu/transfers` 返回分页任务，隐藏 request/response payload 和 leaseOwner；`POST baidu/transfers/{taskId}/submit` 为显式单任务重试。百度转存先确认目的文件与大小、再核对自有分享可用性，之后才写入可发布的资源。百度种子归档保持 TORRENT 类型和独立目录；文件、转存、分享或账号关闭时保留任务与重试预算。分享提交结果不确定时只查询已有分享，不再次创建；没有真实百度账号、转存或发布验收时，不宣称本轮候选已通过上线验证。
 
 ### GYING 自动目录独立暂停
 

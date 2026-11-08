@@ -70,7 +70,7 @@ class ResourceHubAdminControllerTransfersTest {
 
     @ParameterizedTest @ValueSource(strings = {
         "", "null", "[]", "{}", "{\"provider\":null}", "{\"provider\":1}",
-        "{\"provider\":\"BAIDU\"}", "{\"provider\":\"UNKNOWN\"}",
+        "{\"provider\":\"UNKNOWN\"}",
         "{\"provider\":\"QUARK\",\"limit\":0}", "{\"provider\":\"QUARK\",\"limit\":21}",
         "{\"provider\":\"QUARK\",\"limit\":null}", "{\"provider\":\"QUARK\",\"limit\":1.5}",
         "{\"provider\":\"QUARK\",\"limit\":\"2\"}", "{\"provider\":\"QUARK\",\"limit\":true}",
@@ -92,6 +92,47 @@ class ResourceHubAdminControllerTransfersTest {
                 .content("{\"provider\":\"" + provider + "\",\"limit\":2}"))
                 .andExpect(status().isConflict());
         verify(config).reload(); verifyNoInteractions(quark, xunlei);
+    }
+
+    @Test void baiduDefaultsRejectExecutionAndNeverFallThroughToLegacyRunners() throws Exception {
+        mvc.perform(post("/api/admin/resource-hub/transfers/run").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"provider\":\"BAIDU\"}")).andExpect(status().isConflict());
+        verify(config).reload(); verifyNoInteractions(quark, xunlei);
+    }
+
+    @Test void torrentOnlyManualBatchExecutesOnlyThatProvidersMetadataQueue() throws Exception {
+        properties.getQuark().setVideoEnabled(false); properties.getQuark().setTorrentEnabled(true);
+        var archives = mock(com.gying.movie.service.impl.P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "p2pArchiveTaskService", archives);
+        var archived = new QuarkTransferRunResult(); archived.setSubmitted(2);
+        when(archives.submitPending("QUARK", 4)).thenReturn(archived);
+        mvc.perform(post("/api/admin/resource-hub/transfers/run").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"provider\":\"QUARK\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.data.submitted").value(2));
+        verify(archives).submitPending("QUARK", 4); verifyNoInteractions(quark, xunlei);
+        Assertions.assertFalse(properties.getWorker().isEnabled());
+    }
+
+    @Test void sharedVideoAndTorrentBudgetNeverExceedsConfiguredBatchLimit() throws Exception {
+        var archives = mock(com.gying.movie.service.impl.P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "p2pArchiveTaskService", archives);
+        var videos = new QuarkTransferRunResult(); videos.setSubmitted(3);
+        var metadata = new QuarkTransferRunResult(); metadata.setSubmitted(1);
+        when(quark.submitPending(4)).thenReturn(videos); when(archives.submitPending("QUARK", 1)).thenReturn(metadata);
+        mvc.perform(post("/api/admin/resource-hub/transfers/run").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"provider\":\"QUARK\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.data.submitted").value(4));
+        verify(archives).submitPending("QUARK", 1); verifyNoInteractions(xunlei);
+    }
+
+    @Test void baiduHasADedicatedBatchRunnerWithoutEnablingWorkerOrOtherProviders() throws Exception {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setVideoEnabled(true);
+        var baidu = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferRunnerService", baidu);
+        var result = new QuarkTransferRunResult(); result.setSubmitted(1);
+        when(baidu.submitPending(5)).thenReturn(result);
+        mvc.perform(post("/api/admin/resource-hub/transfers/run").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"provider\":\"BAIDU\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.data.submitted").value(1));
+        verify(baidu).submitPending(5); verifyNoInteractions(quark, xunlei);
+        Assertions.assertFalse(properties.getWorker().isEnabled());
     }
 
     @Test void disabledResourceHubNeverExecutesTransfer() throws Exception {

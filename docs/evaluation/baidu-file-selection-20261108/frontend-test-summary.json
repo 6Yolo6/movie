@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-08",
+  "scope": "Baidu account UI and independent per-drive file selection",
+  "frontendRuntimeSourceManifest": "source-manifest.json",
+  "offlineReactTests": {
+    "command": "node --test tests/baidu-account.test.mjs tests/cloud-drive-workflows.test.mjs tests/gying-source-pause.test.mjs tests/async-lists.test.mjs",
+    "testCount": 58,
+    "passed": 58,
+    "failed": 0,
+    "skipped": 0,
+    "testGroups": {
+      "baiduAccount": 8,
+      "cloudDriveWorkflows": 17,
+      "gyingSourcePause": 14,
+      "asyncLists": 15,
+      "suiteParents": 4
+    }
+  },
+  "typescript": {
+    "command": "npx tsc --noEmit --incremental false",
+    "exitCode": 0
+  },
+  "eslint": {
+    "command": "npx eslint src/lib/cloudDriveWorkflows.ts src/components/admin/BaiduAccountConnection.tsx src/components/admin/DriveWorkflowSettings.tsx src/app/admin/resource-hub/page.tsx tests/baidu-account.test.mjs tests/cloud-drive-workflows.test.mjs tests/gying-source-pause.test.mjs",
+    "exitCode": 0
+  },
+  "productionBuild": {
+    "result": "build-result.json",
+    "artifactBinding": "build-artifact-binding.json",
+    "buildId": "PkKhcSWV5lALygtXYFXqG",
+    "sourceFiles": 77,
+    "sourceMismatches": 0
+  },
+  "browser": {
+    "result": "browser-qa.json",
+    "scenarioCount": 8,
+    "screenshotsCommitted": false,
+    "screenshotDirectory": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection"
+  },
+  "securityBoundary": {
+    "apiResponsesMocked": true,
+    "productionApiWrites": 0,
+    "realBaiduSessionsUsed": 0,
+    "realCloudTransfers": 0,
+    "externalContentPublications": 0,
+    "productionEnvironmentLoaded": false,
+    "deploymentVerified": false,
+    "dynamicAuthorizationVerifiedByTheseChecks": false
+  },
+  "limitations": [
+    "Frontend build and mock browser checks do not establish live administrator or internal-ticket authorization.",
+    "No real Baidu login, upload, transfer or share creation was performed.",
+    "Backend compilation, SQL boundary checks and deployment gates are recorded separately."
+  ]
+}

@@ -6,6 +6,8 @@
 
 每片选 1080P、4K/2160p 各一版，磁力文本+种子一组、最多四个小文件；最终至少一版上游明确中文字幕，国语/配音不算字幕。标签不是播放验证。按影片/分辨率槽位原位更新，不批删历史资源/文件，不恢复软删除。
 
+本轮候选扩展百度及每盘 `torrentEnabled`，尚未部署；[文件选择与扫码接入](cloud-drive-workflows.md)。关闭视频可独立保存种子；种子占少量空间，不下载其关联视频。
+
 ## 文件与目录
 
 只生成 UTF-8 磁力 txt（≤16 KiB）和下载 torrent（≤2 MiB），不下载视频或 BT 离线任务。本站 HTTPS、拒跳转，bencode 原始 info 字节 BTIH 必须与磁力一致。写已确认正式影片目录的“磁力种子”子目录，拒根目录/临时 QQ/其他片；文件名含分辨率/字幕/BTIH 短标识，重试核对大小/hash，冲突不覆盖。
@@ -14,8 +16,8 @@
 
 - P2P_ARCHIVE 按影片/provider/版本指纹独立去重；每轮≤2、失败30分钟退避、最多3次，临时票据变化不改身份。
 - 新 v2 `resourceIds` 引用实际保存的公开资源，`torrentMagnetIds` 指向磁力；执行时内部稳定 BT ID 取种子。账号 /dbt/ URL/票据不入资源表/任务。v1 保留引用，新旧指纹相同；槽位改变先取消过期任务。
-- 保存目录/文件/分享检查点；单实例启动只恢复本队列中断项，不重放视频/发布。
-- 所选文件全部确认后才分享并写 resource_link：TORRENT、实际网盘 provider、GYING_P2P_ARCHIVE，明确“不含视频”；同片同 provider 原位更新。不用 DISK 冒充视频，仍受 Resource Hub/Worker/provider 分享开关。
+- 保存目录/文件/分享检查点；单实例启动只恢复已启用种子/转存/分享盘的中断项；关闭盘保留状态和预算，不重放视频/发布。
+- 所选文件全部确认后才分享并写 resource_link：TORRENT、实际网盘 provider、GYING_P2P_ARCHIVE，明确“不含视频”；同片同 provider 原位更新。不用 DISK 冒充视频，自动任务仍受 Resource Hub/Worker/provider 种子、转存和分享开关；手动单盘批次无需 Worker 开启。百度未知分享提交只查自有记录核验，不重发。
 - 内部 `POST /api/internal/resource-hub/p2p/{movieId}/sync` 需 token/已确认 GYING 身份，公网 404。
 
 ## 验证与运维
