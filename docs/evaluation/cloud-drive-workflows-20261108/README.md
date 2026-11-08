@@ -26,10 +26,10 @@ API 静态清单更新为 25 个 Controller / 178 条唯一路由，核对方法
 
 只读基线于 21:34:25（Asia/Shanghai）取得。就绪检查 11 PASS / 1 WARN / 0 FAIL，WARN 为初始 schema 未包含两张迁移创建的 QQ 日志表。实际安全检查 58 PASS / 11 FAIL / 1 UNKNOWN，G01–G11 未关闭，UNKNOWN 为已退出的旧迅雷探针身份。
 
-用户随后明确“可部署”，授权本轮仅 backend / frontend 应用替换，现有 G01–G11 风险不称关闭。候选固定、检查点与实际部署验收正在准备；此前未部署状态对应只读基线时点。
+用户随后明确“可部署”，本轮仅 backend / frontend 已于 22:34:28（Asia/Shanghai）完成上线。固定代码 `6b4104f2cabb570ebc40867162a507fdcf46532d`，实际 backend image `2925c3b1…` / JAR `21dd135c…`、frontend image `35cce07f…`、Compose 13 / 7 层和原运行参数通过。最终停机窗口六份 age 完整认证，日常备份 candidate 覆盖 CAS / 31 项 dry-run 通过；自然完整备份未验。
 
-按 [gying-project-ops](../../../.agents/skills/gying-project-ops/SKILL.md) 的[部署与恢复](../../../.agents/skills/gying-project-ops/references/deployment-recovery.md)规则，门禁 FAIL 时停止生产替换；历史业务例外不延伸本轮。**基线时尚未部署**，也未进行 SQL 迁移或生产配置写入。现役 backend 镜像仍为 `sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521`，frontend 仍为 `sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841`，原 12 / 6 层 Compose 覆盖保留。
+本机 / 公网实际页面及 API、新后台 38 份公网脚本 SHA、真实 ADMIN API 和中英 / 明暗 / 390 与 1280 八组只读浏览器验收通过。独立 21 PASS / 0 FAIL / 1 UNKNOWN（仅 Agent 普通权限 argv），实际 375 份前端产物匹配、未改服务及配置保持；至 22:39 日志 ERROR / Exception / OOM / 重启 0。原网络与浏览器失败保留，生产未写网盘配置、未转存或发布。[完整上线验收](deployment/README.md)、[固定构建](deployment/evidence/backend-build.json)、[前端实际镜像](frontend-runtime-image.json)。
 
-本机及经既有代理公网的首页 / 片库读取通过；源站匿名管理 401、nginx internal / QQ 404，公网管理入口跳到 Access 登录页。这是旧版本入口基线，不是新功能上线验收。保留旧固定镜像及当前数据库 / 状态；上线仍需本次门禁、备份认证和在途核对。回退前处理旧版本忽略新阶段开关的行为，不覆盖 SQL 或重放队列。
+21:34 的 backend `91dc9539…` / frontend `f16cb8f1…` 及 12 / 6 层是部署前基线。安全 58 / 11 / 1、G01–G11 仍未关闭，用户本轮限定部署授权不表示安全整改完成。维护 journal 在加密备份和 fresh direct 健康复核后 CAS 收尾，原失败记录保留；无 SQL 迁移或队列重置。应用回退的两次 SQL 守护与固定候选恢复限制见上线报告。
 
 本轮修改文件的密钥扫描无新增命中；全工作树扫描仍有两项基线命中，位于 11 月 4 日两份历史部署证据的第 68 行，均与本轮基线一致且未修改。本轮不处理或提交这些历史文件。

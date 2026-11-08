@@ -1,0 +1,475 @@
+{
+  "startedAt": "2026-11-08T14:37:55.259179+00:00",
+  "priorReport": "entrypoints-143539.json",
+  "priorFailureRetained": true,
+  "method": "GET",
+  "transport": "existing-loopback-proxy-7897",
+  "authenticatedAdminAccess": false,
+  "publicAdminUiVerified": false,
+  "transfersMessagesPosts": 0,
+  "assets": [
+    {
+      "path": "/_next/static/chunks/e9ab3745-cac443afb44ae135.js",
+      "expectedSha256": "d561fa79f08e377e607dd23cf0e8bc5ada1d10009aff69585af47024025f4c2c",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "d561fa79f08e377e607dd23cf0e8bc5ada1d10009aff69585af47024025f4c2c",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/2810-6f01ee164c1ca44c.js",
+      "expectedSha256": "da42eea865dfd51dd11bc9d078769bad509af753be7c466240bd905cf34fbafc",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "da42eea865dfd51dd11bc9d078769bad509af753be7c466240bd905cf34fbafc",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/main-app-638d3ef873b5cf95.js",
+      "expectedSha256": "724d54892cc153c2d250c283d82a7fa08b6e3d5f548dd91daf903e7c10a054f8",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "724d54892cc153c2d250c283d82a7fa08b6e3d5f548dd91daf903e7c10a054f8",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9500-6140be9b5f2d55d7.js",
+      "expectedSha256": "084fbd875a75b8a64a14fe950fd4b0116eca0a0626d896382b27af09e245254c",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "084fbd875a75b8a64a14fe950fd4b0116eca0a0626d896382b27af09e245254c",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/8586-b5ef9fd1c6805932.js",
+      "expectedSha256": "3c741eb2a74d589e8087a9dd9ebf25b53d3f2c1ef4421a6a56d3f40f306d3dd3",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "3c741eb2a74d589e8087a9dd9ebf25b53d3f2c1ef4421a6a56d3f40f306d3dd3",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9367-a2ca25c61344b541.js",
+      "expectedSha256": "79bab3389ae1a7a86c6b5e090723c7b45055125249bbf7dae3007984eb9fb98a",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "79bab3389ae1a7a86c6b5e090723c7b45055125249bbf7dae3007984eb9fb98a",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/722-252e4bf1ef208431.js",
+      "expectedSha256": "70374c8ae985821d8bcc1f23a9fc10feba0e86d14ae1a3ba58b287c26c43830d",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "70374c8ae985821d8bcc1f23a9fc10feba0e86d14ae1a3ba58b287c26c43830d",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/2480-ee9e5316713cb0b0.js",
+      "expectedSha256": "fca91d821791d6e8851c82b8def46426bad1625d48639a721fa4be43c1c41cde",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "fca91d821791d6e8851c82b8def46426bad1625d48639a721fa4be43c1c41cde",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9689-a01ef80a8bbe6d52.js",
+      "expectedSha256": "74f1e8a3643548b22b7650b1f77422f9929140e3ea3a0b2c2133b581a0d455b4",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "74f1e8a3643548b22b7650b1f77422f9929140e3ea3a0b2c2133b581a0d455b4",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/4092-f852eab2afda53de.js",
+      "expectedSha256": "265ce4822d992ffbb16699e632c9d9395f6fbdbfb09f7634a581904ebec70cbc",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "265ce4822d992ffbb16699e632c9d9395f6fbdbfb09f7634a581904ebec70cbc",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9570-9c4c0405cb1ff0df.js",
+      "expectedSha256": "6edc310690202ec940e83af650c585911b8d8afac93a43e70134cd490607a9e3",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "6edc310690202ec940e83af650c585911b8d8afac93a43e70134cd490607a9e3",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/5618-12dff8846e2a4fc7.js",
+      "expectedSha256": "ea6e997c054c7344b870e57d5f2ab51c4a3bf5f0c7194072d35efe9fc973481a",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "ea6e997c054c7344b870e57d5f2ab51c4a3bf5f0c7194072d35efe9fc973481a",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/942-664dd8090b8275d0.js",
+      "expectedSha256": "b2f5cf36c02af2fa33e01da329e8eed62f074c84a310fe9db180fdca1681562f",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "b2f5cf36c02af2fa33e01da329e8eed62f074c84a310fe9db180fdca1681562f",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/4161-e18202fefc18ef3d.js",
+      "expectedSha256": "73a591e6028fa9f731f34220f92f09fdf2f49e8cfbd93e5cc3eb778726fd67c6",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "73a591e6028fa9f731f34220f92f09fdf2f49e8cfbd93e5cc3eb778726fd67c6",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/6358-95d9cd24789726f0.js",
+      "expectedSha256": "cf6dd073ee87f4c982003fcfb651624e7bdde2fa39d3e256593354ddca3f6093",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "cf6dd073ee87f4c982003fcfb651624e7bdde2fa39d3e256593354ddca3f6093",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/8043-53183c3021a6ec88.js",
+      "expectedSha256": "0eab14896d6814ca12c21514ff6b41aaf3fa3a475d66e239d2b842e22fae0349",
+      "attempts": [
+        {
+          "passed": false,
+          "errorType": "URLError"
+        },
+        {
+          "httpStatus": 200,
+          "sha256": "0eab14896d6814ca12c21514ff6b41aaf3fa3a475d66e239d2b842e22fae0349",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/517-6f4e56847e1795a9.js",
+      "expectedSha256": "76d1a10e6ec49e9af8bf0301573022b985a7c555b8a8f35bbae0d50cecc7366e",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "76d1a10e6ec49e9af8bf0301573022b985a7c555b8a8f35bbae0d50cecc7366e",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/3278-1b8d2589279321fe.js",
+      "expectedSha256": "ac65cae0cb6adb5bb1dc4150798c999466856fcdea4f572cc74ab3b160f77379",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "ac65cae0cb6adb5bb1dc4150798c999466856fcdea4f572cc74ab3b160f77379",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/1797-057ef28baa01df9f.js",
+      "expectedSha256": "6c7d279269a8cbb92a723d43a43ba39dfac5729adce6634f21fc888fa41a036a",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "6c7d279269a8cbb92a723d43a43ba39dfac5729adce6634f21fc888fa41a036a",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/5374-a7f58f181fce1fca.js",
+      "expectedSha256": "27a6b7f676c0bdf18c5b4e5c6387bd73945976e48756851f30e0ec292c740c05",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "27a6b7f676c0bdf18c5b4e5c6387bd73945976e48756851f30e0ec292c740c05",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/816-17f5c2d728ea4aa5.js",
+      "expectedSha256": "fde1542631f0492a8b1a30a436385ba2778243790e9441cb26cc82746f49402f",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "fde1542631f0492a8b1a30a436385ba2778243790e9441cb26cc82746f49402f",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/2956-a0b506d04b97612b.js",
+      "expectedSha256": "18621fb5b20abd085f91d7bdc23af7316b0dcf36ce7efe72e6aca202f7aed98c",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "18621fb5b20abd085f91d7bdc23af7316b0dcf36ce7efe72e6aca202f7aed98c",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/3899-80d024793de4d670.js",
+      "expectedSha256": "bedbe2229c7d38f875fc38cdf6df1be389129f0c10e42d06ba64455681909569",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "bedbe2229c7d38f875fc38cdf6df1be389129f0c10e42d06ba64455681909569",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9745-9221150381f00681.js",
+      "expectedSha256": "54dd42ef3eaf57364c875ba5494a6002901b4ea552bba04e1ae6999f7f0448c4",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "54dd42ef3eaf57364c875ba5494a6002901b4ea552bba04e1ae6999f7f0448c4",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/1515-88eeb5c5e519f256.js",
+      "expectedSha256": "685f30a95bbffd6a7f4231db1e2f2cbb282f14920da0d4f4980e6e5486b9b624",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "685f30a95bbffd6a7f4231db1e2f2cbb282f14920da0d4f4980e6e5486b9b624",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/5929-b1fd763005b20776.js",
+      "expectedSha256": "ea0b7f4ed24b1b34a7cb3b05629092321c3b915218a26dd8c12f52e5a6f319b9",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "ea0b7f4ed24b1b34a7cb3b05629092321c3b915218a26dd8c12f52e5a6f319b9",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/5423-20ac14916aab309e.js",
+      "expectedSha256": "afeb910d8d191e0aa18edcaa30c5ea221e25a0ea71d111337a33448fd2d15fd7",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "afeb910d8d191e0aa18edcaa30c5ea221e25a0ea71d111337a33448fd2d15fd7",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/2481-1bf88ebf896c7a75.js",
+      "expectedSha256": "0b9a339fc04c4134a18d1e83725da5b0b7ea77143a805237fa17d990f0121114",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "0b9a339fc04c4134a18d1e83725da5b0b7ea77143a805237fa17d990f0121114",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/6339-db2a8d40dcc83ad9.js",
+      "expectedSha256": "d4ee22e55db48c7c99979cac8eb100a47986503dfc93d7d081d5413fb512f149",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "d4ee22e55db48c7c99979cac8eb100a47986503dfc93d7d081d5413fb512f149",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/6338-74bab47f923f0e15.js",
+      "expectedSha256": "d636310d9daff7baada697b452001d39c7f10043a55b9dcc2a383a0d40271410",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "d636310d9daff7baada697b452001d39c7f10043a55b9dcc2a383a0d40271410",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/8761-d985d489d208016d.js",
+      "expectedSha256": "024614ff34596999d838d75fe837fefd69c36386a47a5090b99671a681daa44c",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "024614ff34596999d838d75fe837fefd69c36386a47a5090b99671a681daa44c",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/8547-82957e05376c9d7a.js",
+      "expectedSha256": "e9f2c041121935295ed569d00840540431086be02bbd9ee43add5d0a468893b5",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "e9f2c041121935295ed569d00840540431086be02bbd9ee43add5d0a468893b5",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/app/layout-9525d7b2fa341f3d.js",
+      "expectedSha256": "fb0af75cb2aab3ad25c7ca831710fedc602cd4d8e71c09eade333d3cbf1de425",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "fb0af75cb2aab3ad25c7ca831710fedc602cd4d8e71c09eade333d3cbf1de425",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/9897-33f5d8febd51ccfa.js",
+      "expectedSha256": "8beeb0c722ab5f79d1c5e0965f7d31390869625ea8153b88729accd42b074724",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "8beeb0c722ab5f79d1c5e0965f7d31390869625ea8153b88729accd42b074724",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/7868-c32dd9557332ae34.js",
+      "expectedSha256": "25025037846d35390399632983dfa9b6094a4ba6d1698ae6aa2390d1a6754a13",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "25025037846d35390399632983dfa9b6094a4ba6d1698ae6aa2390d1a6754a13",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/app/admin/resource-hub/page-e2f1363cb3118db4.js",
+      "expectedSha256": "187372fb35ddf9c3e278ce2771e30fa35c8f7c0ab69fbbad432defec7f8731df",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "187372fb35ddf9c3e278ce2771e30fa35c8f7c0ab69fbbad432defec7f8731df",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+      "expectedSha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "path": "/_next/static/chunks/webpack-89c385ee06840705.js",
+      "expectedSha256": "5600aa3b2275b57dc57e22868041c63f452ce8a653442fb8afc686e3f406478f",
+      "attempts": [
+        {
+          "httpStatus": 200,
+          "sha256": "5600aa3b2275b57dc57e22868041c63f452ce8a653442fb8afc686e3f406478f",
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "status": "passed",
+  "assetCount": 38,
+  "completedAt": "2026-11-08T14:38:20.835089+00:00"
+}

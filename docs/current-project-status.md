@@ -2,7 +2,7 @@
 
 更新时间：2026-11-08
 
-11月8日网盘工作流候选已完成，开发分支 `codex/cloud-drive-workflows`：Resource Hub 新网盘页签，夸克 / 迅雷独立阶段、保存目录和手动批次；百度只读待接入。后端1,038项中1,037通过/1 Redis跳过、必需真实SQL/独立Java17 compile通过；前端28项React、TS/lint/build与中英/明暗/390及1280八组模拟API浏览器检查通过。21:34只读基线安全58 PASS/11 FAIL/1 UNKNOWN仍未关闭；用户随后明确本轮“可部署”，仅backend/frontend候选替换，当前固定镜像及加密检查点准备中，尚未完成上线验收。未真实登录/转存/发布、未迁移SQL或重置历史队列。[本轮交付](evaluation/cloud-drive-workflows-20261108/README.md)。
+11月8日网盘工作流已于22:34:28（Asia/Shanghai）按本轮“可部署”授权仅backend/frontend上线，分支 `codex/cloud-drive-workflows`，代码 `6b4104f`：夸克 / 迅雷独立阶段、目录与手动批次，百度只读待接入。后端1,038项中1,037通过/1 Redis跳过、必需真实SQL/独立Java17 compile；前端28项React、TS/lint/build及部署前八组mock浏览器通过。上线真实ADMIN只读八场景、38公网脚本SHA、375实际前端产物、独立21 PASS/0 FAIL/1 argv UNKNOWN及至22:39日志通过；六份age认证与日常覆盖dry-run完成，自然完整备份未验。安全58 PASS/11 FAIL/1 UNKNOWN和G01–G11未关闭；未真实登录/转存/发布、未迁移SQL或重置队列。[本轮交付](evaluation/cloud-drive-workflows-20261108/README.md)。
 
 11月5日19:32–19:33微博只读复核：实际登录/发博权限接口均200/ok1；今日3条自动及19:30手动1条已在官方帖子接口查到，账号/标题一致。后台按任务创建时间排序且不轮询，积压任务成功后仍显示旧创建日期，用户确认已在后面看到帖子；未做浏览器复现或界面修复。仍保留1条旧准备失败与3条历史UNKNOWN，本轮未发博/重放/部署。[微博核查](evaluation/weibo-readonly-20261105/README.md)。
 
@@ -40,7 +40,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
 | 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
-| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次候选已验证，百度待接入，上线待验收 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
+| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次已上线且真实只读页面验收通过，百度待接入 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 
@@ -48,13 +48,15 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 当前部署与恢复基线
 
-两后端已按本轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 Movie正常TERM143后完成五份age检查点 `G:\gying-backups\ai-identity-theme-backend-20261104-20261104T143825.278661Z`，Agent正常停止后完成三份age检查点 `G:\gying-backups\ai-agent-identity-theme-20261104-20261104T144159.678847Z`；manifest/size/hash/完整认证检查通过，二者是各自停止窗口检查点，非跨服务原子快照。两份静态应用/回退覆盖已纳入日常备份，dry-run30通过，自然完整备份未验。现役Compose在原11层末尾追加第12层 `E:\gying-tools\releases\ai-identity-theme-20261104\deployment-backend\candidate.json`；前11份文件及参数保持，11月3日第10层rollback和第11层candidate仍保留。有效配置、当前数据/state/key/token/模型/索引及无关容器和本机服务保持。 应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。 [本轮部署验收](evaluation/identity-theme-20261104/deployment.md)。
+11月8日22:34:28仅backend/frontend完成网盘工作流上线，固定代码6b4104f；原12/6层末尾追加 `E:/gying-tools/releases/cloud-drive-workflows-20261108/candidate.json`，实际13/7层、其余参数保持。旧两应用正常TERM143，最终停止窗口六age `G:/gying-backups/cloud-drive-workflows-20261108-20261108T143327.142120Z` 大小/SHA/完整认证及离线内容核对通过，非跨服务原子快照；SQL/data/state/key保持。日常备份新覆盖CAS及31项dry-run通过，自然完整备份未验。旧backend回退前两次fresh SQL守护，关闭/非法stage或读取失败阻断旧版并保持或恢复固定候选；本轮未实际回退。[上线与恢复](evaluation/cloud-drive-workflows-20261108/deployment/README.md)。
+
+11月4日历史：两后端已按该轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 Movie正常TERM143后完成五份age检查点 `G:\gying-backups\ai-identity-theme-backend-20261104-20261104T143825.278661Z`，Agent正常停止后完成三份age检查点 `G:\gying-backups\ai-agent-identity-theme-20261104-20261104T144159.678847Z`；manifest/size/hash/完整认证检查通过，二者是各自停止窗口检查点，非跨服务原子快照。两份静态应用/回退覆盖已纳入日常备份，dry-run30通过，自然完整备份未验。11月4日当时Compose在原11层末尾追加第12层 `E:\gying-tools\releases\ai-identity-theme-20261104\deployment-backend\candidate.json`；前11份文件及参数保持，11月3日第10层rollback和第11层candidate仍保留。有效配置、当前数据/state/key/token/模型/索引及无关容器和本机服务保持。 应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。 [本轮部署验收](evaluation/identity-theme-20261104/deployment.md)。
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:91dc95395cc5d30d589a3c5bf6c4e6053bb972e91ceb138f45cf78dd81d9f521`，代码`d6641e749a5d36d4823589a5202d7d5f9856fd26`、实际JAR `2c1301be46e97f12da16167896cd1241efbb4abc20404d4e9c7c53672a3f5054`；2026-11-04 22:39:17电影身份/主题配套上线，354源文件绑定；现役有效配置、Xmx768MiB/容器1280MiB/含swap2560MiB保持 |
-| Movie frontend | `sha256:f16cb8f1440681ef2fd2f3e2d508f7745b8c509bb6e96ce36592e9221291c841`，代码fe042692；11月2日19:08上线TMDB实测末页、范围无数据及北京时间复查提示 |
-| 本机Agent | 2026-11-04 22:42:34上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`；PID21260/instance`ff9b164c-ee6f-4620-a1d1-e972d07a634f`，不可变runtime/受管身份/ready/监听核对通过；普通权限实时argv UNKNOWN |
+| Movie backend | `sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4`，代码`6b4104f2cabb570ebc40867162a507fdcf46532d`、实际JAR `21dd135cdc9f604e0d2f2ab9a62e43e40e616e2bd64638a7f7ea7cfc465c95f6`；2026-11-08 22:34网盘工作流上线，360源文件绑定；原Xmx768MiB/容器1280MiB/含swap2560MiB与有效配置保持 |
+| Movie frontend | `sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f`，代码`6b4104f2cabb570ebc40867162a507fdcf46532d`；11月8日22:34网盘工作流页签上线，74 Git源文件加生成文件单列、375实际产物SHA一致 |
+| 本机Agent | 11月4日上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`保持；11月8日维护后当前受管记录/ready、固定runtime、创建时间与唯一5000监听、四本机health均通过；普通权限实时argv UNKNOWN。本轮未替换Agent |
 | OpenClaw QQ插件 | 11月2日22:56源/唯一运行时gateway错误回退修复上线，SHA `94922920…`；原固定镜像/config/白名单保持，其他9容器保持，真实群内端到端待验 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
 | gying-source | `gying-resource-p2p-source:20261019b` |
@@ -101,7 +103,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
 | 安全/灾备 | G01–G11、专用DB/MinIO身份、IPv6、Cookie/key轮换、WAF/origin JWT、异机/系统身份/离线私钥 |
-| 每周重启 | 10月27日20:03:15真实重启；原登录恢复失败，10月28日18:21已按原journal手动恢复，0 pending、Worker=true、原任务开关/原生启动类型还原。Ollama端口21434与维护监听校验共用私有配置，111维护测试通过；11月1日上午journal已recovered；本轮仅核投影，完整自然维护/备份/恢复验收仍待独立核对。证据/回退见[重启手册](weekly-graceful-restart.md) |
+| 每周重启 | 10月27日20:03:15真实重启；原登录恢复失败，10月28日18:21已按原journal手动恢复，0 pending、Worker=true、原任务开关/原生启动类型还原。Ollama端口21434与维护监听校验共用私有配置，111维护测试通过；11月1日上午journal已recovered；11月8日上午恢复末尾health-only失败保留；22:28原state加密认证备份及fresh direct健康复核后持锁/CAS收尾recovered、0 pending，无重启或队列变更。[本轮收尾](evaluation/cloud-drive-workflows-20261108/deployment/README.md#维护记录与边界)。完整自然维护/备份/恢复验收仍待独立核对。证据/回退见[重启手册](weekly-graceful-restart.md) |
 | QQ/周榜/发布 | 10月29日QQ生成回复5条本库链接/PanSou及GYING纯搜索通过；真实群消息/资源选择转存未测试。公网普通USER有效设备会话为0（仅1 ADMIN），登录后资源job未验，旧测试账号仍disabled。原频道多盘正文自然出站、官方主动权限、三周榜首轮及清理/去重保留 11月2日22:56 OpenClaw错误回退修复与真实helper认证搜索通过，群内端到端待验，见[证据](evaluation/qq-search-error-20261102/README.md) ；11月3日仅2177真实转存/9339本库入库及QQ生成新自有分享已验，2176只读确认保持FAILED历史；群内实发/本次自然临时清理未验。[目录修复](evaluation/qq-prada-transfer-20261103/README.md) |
 | 微博账号与QQ链路 | 11月5日19:32–19:33登录/发博权限预检均200/ok1；当日自动3条及19:30手动269已在官方接口查到，同一救星小窝账号/标题一致，visible.type=0，其他浏览者可见性未独立验。目标5原09:00/3篇/500秒保持；233 POSTED、270旧PREPARE_FAILED1条、10月12日UNKNOWN3条，未重放。后台按创建时间排序且不轮询，积压任务旧创建日期影响排序，用户确认已在后面看到帖子；未做浏览器复现或UI修复。[本次核查](evaluation/weibo-readonly-20261105/README.md)。11月2日身份限制保留为历史事实；QQ同词内部回复0.360/0.250秒仍为原验收，群内端到端未另测。[历史核查](evaluation/platform-diagnosis-20261102/README.md) |
 | TMDB高分剧集 | 11月2日17:43上游131页/2610条、所设360–500；10月23日21:05后104轮空跑历史保留。19:08 fe042692两应用已上线实测末页/24小时复查/跳过冷却榜，范围保持，电影任务17300原next252保持。19:15:57创建/19:15:59完成的自然任务17301保存EMPTY_RANGE、131页/2610条，11月3日19:15:59复查；本机/公网入口与新bundle通过，短日志无新异常。下一电影自然执行、跨重启冷却、次日复查与上游增长待发生时验。配置更新时间upsert问题另保留，未在本次修改。[修复](evaluation/tmdb-empty-range-20261102/README.md)、[历史](evaluation/platform-diagnosis-20261102/README.md) |
@@ -123,7 +125,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 验收
 
-两后端已按本轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。 [独立只读证据](evaluation/identity-theme-20261104/deployment/evidence/post-deployment-readonly.json)。
+11月8日网盘工作流上线只读验收：本机和经既有7897代理公网首页/片库/详情200、匿名admin源站401/公网Access302、internal/QQ404；38公网脚本SHA一致。真实ADMIN API+本机页面中英/明暗/390与1280八组及刷新/只读百度/ARIA/无溢出通过，复用既有有效device的内存短JWT，非登录/生产写配置；drive新键0，原配置行hash/更新时间保持。独立21 PASS/0 FAIL/1普通argv UNKNOWN、375frontend产物与未改服务保持，日志至22:39 ERROR/Exception/OOM/重启0。原浏览器超时/诊断ENOENT/公网URLError保留，节奏调整后的验收另记；未转存/发布，安全G01–G11未关闭。[证据](evaluation/cloud-drive-workflows-20261108/deployment/README.md)。
+
+11月4日历史：两后端已按该轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 原七轮仍为部署前隔离开发观测，7/7 completed不等于7条满足；模型诊断满足3/部分有用1/证据不足2/未满足1、事实null4、真人0保持。本次上线后只读GET与入口检查没有模型推理或新USER任务，网站USER、跨owner、自然TTL、真实浏览器、主题回答和真人质量仍未验。 [独立只读证据](evaluation/identity-theme-20261104/deployment/evidence/post-deployment-readonly.json)。
 
 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 候选固定JAR Movie2c1301be…/Agent1d1ad180…，来源354/50文件绑定。首轮10计划/9提交/8完成，影院WEB_TIMEOUT与后续未执行保留；最终定向三场景7/7 completed，双临时进程正常exit0、15001/18883监听清理。前后10生产容器/Agent受管身份/索引保持，四真实入口200；普通权限实时argv仍UNKNOWN，不混合为盲测提升。真人0；此处前后容器/身份保持与无生产启停仅描述21:36–21:42隔离观测，后续限定两后端上线另记。[电影身份与主题候选](evaluation/identity-theme-20261104/README.md)。
 

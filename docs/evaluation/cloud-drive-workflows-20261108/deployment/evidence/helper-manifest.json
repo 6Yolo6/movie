@@ -1,0 +1,58 @@
+{
+  "frozenAt": "2026-11-08T14:17:52.632246+00:00",
+  "sourceCommit": "6b4104f2cabb570ebc40867162a507fdcf46532d",
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\helper-offline-review.json",
+    "sha256": "3f9e21d9f4a4637889c8c78285583083d30729c3b0ebdd7ad5542fc9c4ea02cc",
+    "cases": 41,
+    "passed": true
+  },
+  "files": [
+    {
+      "path": "backup-audit/Common.py",
+      "sha256": "afb5dd66c48dbb4e0d7a4947616a5f32730a2ef3fee5a53cc51d9eec401d94e5"
+    },
+    {
+      "path": "backup-audit/ReadAiStateCounts.js",
+      "sha256": "c4612d4a51145ab0ee023dce8a2f168a149001f41576d764797ec0cf6fcbac94"
+    },
+    {
+      "path": "backup-audit/AuditCheckpoint.py",
+      "sha256": "70f246e4a046b4625618e0c951175ae1c2692889379812baf48680c62f02deeb"
+    },
+    {
+      "path": "backup-audit/AuditRollback.py",
+      "sha256": "a9d1faa244337a386929f3742200c995af83d319755156e2c2ebbae215d41a32"
+    },
+    {
+      "path": "backup-audit/CloudDriveRollbackGuard.py",
+      "sha256": "e1e523bb451260ab55af185028d44000e1f88e37d67aa0a6e6c5fdd9d28ebb8b"
+    },
+    {
+      "path": "backup-audit/BackupPath.py",
+      "sha256": "437d076bffffc0ae1539a24eeb253efe0019fdcd6133a2105283ba87fd157b80"
+    },
+    {
+      "path": "deployment/DeployCloudDrive.py",
+      "sha256": "41bf6d4f754fab3758e16062f8216db67d2afc20242b8a637af81b935bf6bf37"
+    },
+    {
+      "path": "deployment/CheckEntryPoints.py",
+      "sha256": "5c3ca61c7d31fba459e7d52fe4b1405dded3cd69614f4576df11eb92b19b1ba7"
+    },
+    {
+      "path": "deployment/VerifyCloudDriveUi.py",
+      "sha256": "aeb8514c0db0af692e2a900cadd3473caa9910a8e2880af6aca596a108f4cc9a"
+    },
+    {
+      "path": "deployment/VerifyCloudDriveUi.cjs",
+      "sha256": "b2833ee6b8c0294b99d47c459179bf19fd3c81b9bd84d0f3a8f8da5b992a52a3"
+    },
+    {
+      "path": "TestHelpers.py",
+      "sha256": "828fe6d7b0455b8b475a5feb8d06ac475b2b71cd9bbef93964029b197bec067a"
+    }
+  ],
+  "actualHelperPrepareCaptureApplyExecuteCalled": false,
+  "productionChangesPerformedByThisAgent": false
+}

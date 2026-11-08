@@ -1,0 +1,361 @@
+{
+  "checkedAt": "2026-11-08T14:34:48.630807+00:00",
+  "checks": [
+    {
+      "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+      "kind": "catalog",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 4151,
+      "bodySha256": "39f8d3b4d28b551dd0503e6ae12c236408aeb9a0aa182b0e93ddeb8210d70870",
+      "total": 14942,
+      "returned": 2,
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/",
+      "kind": "page",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 67968,
+      "bodySha256": "b74db35035f8286537eb6cd5d45b8e722f90af57cffbe9184a78624d634e4d42",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/movie/tmdb_movie_34769",
+      "kind": "page",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 189864,
+      "bodySha256": "b889888d3d4de7b5c59a36924022c0ed42b9aba6e2173780961acd8b4daf1d93",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+      "kind": "internal-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/qqbot/search?keyword=test",
+      "kind": "internal-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 54,
+      "bodySha256": "15d5c4beb1bbbbd74cb36ee53cbf8a5346dad45bddd38fd8118cf84fd18a5c2c",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/admin/resource-hub/config",
+      "kind": "admin-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "direct",
+      "httpStatus": 401,
+      "bodyBytes": 60,
+      "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true,
+      "accessLoginRedirect": false,
+      "authenticatedAdminAccess": false
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+      "kind": "catalog",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 4151,
+      "bodySha256": "39f8d3b4d28b551dd0503e6ae12c236408aeb9a0aa182b0e93ddeb8210d70870",
+      "total": 14942,
+      "returned": 2,
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "kind": "page",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 68335,
+      "bodySha256": "b71ef84021eb0616a8abb9f6b8c28997465c755c6330f32507567ed4e8ec7097",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_34769",
+      "kind": "page",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 200,
+      "bodyBytes": 190231,
+      "bodySha256": "50af38779da8189da4d1288b8a706f3cf810cfc904e07d93bb56c63cb4eee99a",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+      "kind": "internal-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qqbot/search?keyword=test",
+      "kind": "internal-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 404,
+      "bodyBytes": 54,
+      "bodySha256": "15d5c4beb1bbbbd74cb36ee53cbf8a5346dad45bddd38fd8118cf84fd18a5c2c",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/config",
+      "kind": "admin-denied",
+      "method": "GET",
+      "browserUserAgent": true,
+      "transport": "existing-configured-loopback-proxy",
+      "httpStatus": 302,
+      "bodyBytes": 510,
+      "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "accessLoginRedirect": true,
+      "authenticatedAdminAccess": false
+    },
+    {
+      "url": "http://127.0.0.1/admin/resource-hub",
+      "kind": "new-admin-static-assets",
+      "authenticatedAdminAccess": false,
+      "passed": true,
+      "httpStatus": 200,
+      "assetCount": 38,
+      "cloudDriveFieldsInAssets": true,
+      "assetHashes": [
+        {
+          "path": "/_next/static/chunks/e9ab3745-cac443afb44ae135.js",
+          "sha256": "d561fa79f08e377e607dd23cf0e8bc5ada1d10009aff69585af47024025f4c2c",
+          "bytes": 201060
+        },
+        {
+          "path": "/_next/static/chunks/2810-6f01ee164c1ca44c.js",
+          "sha256": "da42eea865dfd51dd11bc9d078769bad509af753be7c466240bd905cf34fbafc",
+          "bytes": 241330
+        },
+        {
+          "path": "/_next/static/chunks/main-app-638d3ef873b5cf95.js",
+          "sha256": "724d54892cc153c2d250c283d82a7fa08b6e3d5f548dd91daf903e7c10a054f8",
+          "bytes": 527
+        },
+        {
+          "path": "/_next/static/chunks/9500-6140be9b5f2d55d7.js",
+          "sha256": "084fbd875a75b8a64a14fe950fd4b0116eca0a0626d896382b27af09e245254c",
+          "bytes": 302231
+        },
+        {
+          "path": "/_next/static/chunks/8586-b5ef9fd1c6805932.js",
+          "sha256": "3c741eb2a74d589e8087a9dd9ebf25b53d3f2c1ef4421a6a56d3f40f306d3dd3",
+          "bytes": 52081
+        },
+        {
+          "path": "/_next/static/chunks/9367-a2ca25c61344b541.js",
+          "sha256": "79bab3389ae1a7a86c6b5e090723c7b45055125249bbf7dae3007984eb9fb98a",
+          "bytes": 32129
+        },
+        {
+          "path": "/_next/static/chunks/722-252e4bf1ef208431.js",
+          "sha256": "70374c8ae985821d8bcc1f23a9fc10feba0e86d14ae1a3ba58b287c26c43830d",
+          "bytes": 17764
+        },
+        {
+          "path": "/_next/static/chunks/2480-ee9e5316713cb0b0.js",
+          "sha256": "fca91d821791d6e8851c82b8def46426bad1625d48639a721fa4be43c1c41cde",
+          "bytes": 6476
+        },
+        {
+          "path": "/_next/static/chunks/9689-a01ef80a8bbe6d52.js",
+          "sha256": "74f1e8a3643548b22b7650b1f77422f9929140e3ea3a0b2c2133b581a0d455b4",
+          "bytes": 15134
+        },
+        {
+          "path": "/_next/static/chunks/4092-f852eab2afda53de.js",
+          "sha256": "265ce4822d992ffbb16699e632c9d9395f6fbdbfb09f7634a581904ebec70cbc",
+          "bytes": 8777
+        },
+        {
+          "path": "/_next/static/chunks/9570-9c4c0405cb1ff0df.js",
+          "sha256": "6edc310690202ec940e83af650c585911b8d8afac93a43e70134cd490607a9e3",
+          "bytes": 41117
+        },
+        {
+          "path": "/_next/static/chunks/5618-12dff8846e2a4fc7.js",
+          "sha256": "ea6e997c054c7344b870e57d5f2ab51c4a3bf5f0c7194072d35efe9fc973481a",
+          "bytes": 18916
+        },
+        {
+          "path": "/_next/static/chunks/942-664dd8090b8275d0.js",
+          "sha256": "b2f5cf36c02af2fa33e01da329e8eed62f074c84a310fe9db180fdca1681562f",
+          "bytes": 8040
+        },
+        {
+          "path": "/_next/static/chunks/4161-e18202fefc18ef3d.js",
+          "sha256": "73a591e6028fa9f731f34220f92f09fdf2f49e8cfbd93e5cc3eb778726fd67c6",
+          "bytes": 19477
+        },
+        {
+          "path": "/_next/static/chunks/6358-95d9cd24789726f0.js",
+          "sha256": "cf6dd073ee87f4c982003fcfb651624e7bdde2fa39d3e256593354ddca3f6093",
+          "bytes": 73050
+        },
+        {
+          "path": "/_next/static/chunks/8043-53183c3021a6ec88.js",
+          "sha256": "0eab14896d6814ca12c21514ff6b41aaf3fa3a475d66e239d2b842e22fae0349",
+          "bytes": 23760
+        },
+        {
+          "path": "/_next/static/chunks/517-6f4e56847e1795a9.js",
+          "sha256": "76d1a10e6ec49e9af8bf0301573022b985a7c555b8a8f35bbae0d50cecc7366e",
+          "bytes": 8661
+        },
+        {
+          "path": "/_next/static/chunks/3278-1b8d2589279321fe.js",
+          "sha256": "ac65cae0cb6adb5bb1dc4150798c999466856fcdea4f572cc74ab3b160f77379",
+          "bytes": 29580
+        },
+        {
+          "path": "/_next/static/chunks/1797-057ef28baa01df9f.js",
+          "sha256": "6c7d279269a8cbb92a723d43a43ba39dfac5729adce6634f21fc888fa41a036a",
+          "bytes": 39523
+        },
+        {
+          "path": "/_next/static/chunks/5374-a7f58f181fce1fca.js",
+          "sha256": "27a6b7f676c0bdf18c5b4e5c6387bd73945976e48756851f30e0ec292c740c05",
+          "bytes": 158557
+        },
+        {
+          "path": "/_next/static/chunks/816-17f5c2d728ea4aa5.js",
+          "sha256": "fde1542631f0492a8b1a30a436385ba2778243790e9441cb26cc82746f49402f",
+          "bytes": 24545
+        },
+        {
+          "path": "/_next/static/chunks/2956-a0b506d04b97612b.js",
+          "sha256": "18621fb5b20abd085f91d7bdc23af7316b0dcf36ce7efe72e6aca202f7aed98c",
+          "bytes": 8261
+        },
+        {
+          "path": "/_next/static/chunks/3899-80d024793de4d670.js",
+          "sha256": "bedbe2229c7d38f875fc38cdf6df1be389129f0c10e42d06ba64455681909569",
+          "bytes": 14921
+        },
+        {
+          "path": "/_next/static/chunks/9745-9221150381f00681.js",
+          "sha256": "54dd42ef3eaf57364c875ba5494a6002901b4ea552bba04e1ae6999f7f0448c4",
+          "bytes": 14027
+        },
+        {
+          "path": "/_next/static/chunks/1515-88eeb5c5e519f256.js",
+          "sha256": "685f30a95bbffd6a7f4231db1e2f2cbb282f14920da0d4f4980e6e5486b9b624",
+          "bytes": 9684
+        },
+        {
+          "path": "/_next/static/chunks/5929-b1fd763005b20776.js",
+          "sha256": "ea0b7f4ed24b1b34a7cb3b05629092321c3b915218a26dd8c12f52e5a6f319b9",
+          "bytes": 7484
+        },
+        {
+          "path": "/_next/static/chunks/5423-20ac14916aab309e.js",
+          "sha256": "afeb910d8d191e0aa18edcaa30c5ea221e25a0ea71d111337a33448fd2d15fd7",
+          "bytes": 57131
+        },
+        {
+          "path": "/_next/static/chunks/2481-1bf88ebf896c7a75.js",
+          "sha256": "0b9a339fc04c4134a18d1e83725da5b0b7ea77143a805237fa17d990f0121114",
+          "bytes": 22192
+        },
+        {
+          "path": "/_next/static/chunks/6339-db2a8d40dcc83ad9.js",
+          "sha256": "d4ee22e55db48c7c99979cac8eb100a47986503dfc93d7d081d5413fb512f149",
+          "bytes": 41846
+        },
+        {
+          "path": "/_next/static/chunks/6338-74bab47f923f0e15.js",
+          "sha256": "d636310d9daff7baada697b452001d39c7f10043a55b9dcc2a383a0d40271410",
+          "bytes": 17610
+        },
+        {
+          "path": "/_next/static/chunks/8761-d985d489d208016d.js",
+          "sha256": "024614ff34596999d838d75fe837fefd69c36386a47a5090b99671a681daa44c",
+          "bytes": 21362
+        },
+        {
+          "path": "/_next/static/chunks/8547-82957e05376c9d7a.js",
+          "sha256": "e9f2c041121935295ed569d00840540431086be02bbd9ee43add5d0a468893b5",
+          "bytes": 507409
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-9525d7b2fa341f3d.js",
+          "sha256": "fb0af75cb2aab3ad25c7ca831710fedc602cd4d8e71c09eade333d3cbf1de425",
+          "bytes": 151411
+        },
+        {
+          "path": "/_next/static/chunks/9897-33f5d8febd51ccfa.js",
+          "sha256": "8beeb0c722ab5f79d1c5e0965f7d31390869625ea8153b88729accd42b074724",
+          "bytes": 8385
+        },
+        {
+          "path": "/_next/static/chunks/7868-c32dd9557332ae34.js",
+          "sha256": "25025037846d35390399632983dfa9b6094a4ba6d1698ae6aa2390d1a6754a13",
+          "bytes": 11556
+        },
+        {
+          "path": "/_next/static/chunks/app/admin/resource-hub/page-e2f1363cb3118db4.js",
+          "sha256": "187372fb35ddf9c3e278ce2771e30fa35c8f7c0ab69fbbad432defec7f8731df",
+          "bytes": 54557
+        },
+        {
+          "path": "/_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+          "bytes": 112594
+        },
+        {
+          "path": "/_next/static/chunks/webpack-89c385ee06840705.js",
+          "sha256": "5600aa3b2275b57dc57e22868041c63f452ce8a653442fb8afc686e3f406478f",
+          "bytes": 3439
+        }
+      ]
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/_next/",
+      "kind": "same-hash-public-static-assets",
+      "authenticatedAdminAccess": false,
+      "publicAdminUiVerified": false,
+      "assetCount": 38,
+      "transport": "existing-configured-loopback-proxy",
+      "passed": false,
+      "errorType": "URLError"
+    }
+  ],
+  "realMessagesPostsTransfers": 0,
+  "authenticatedAdminAccess": false,
+  "publicAdminUiVerified": false,
+  "sampleMovieId": "tmdb_movie_34769",
+  "status": "failed"
+}

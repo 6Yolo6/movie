@@ -1,0 +1,174 @@
+{
+  "capturedAt": "2026-11-08T14:44:16.100654+00:00",
+  "sourceCommit": "6b4104f2cabb570ebc40867162a507fdcf46532d",
+  "files": [
+    {
+      "name": "agent-before-deploy-readonly.before-time-normalization.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\agent-before-deploy-readonly.before-time-normalization.json",
+      "bytes": 2198,
+      "sha256": "1017d57639675065dd2dd974dfb72ac0b62e7e312b49bbebcc86f697cbb26f85"
+    },
+    {
+      "name": "agent-before-deploy-readonly.initial-projection-failure.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\agent-before-deploy-readonly.initial-projection-failure.json",
+      "bytes": 2100,
+      "sha256": "73a7a94d79e079ac87d37e66f61f63eabc576e1d481e89d3617fb71ce9f12124"
+    },
+    {
+      "name": "agent-before-deploy-readonly.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\agent-before-deploy-readonly.json",
+      "bytes": 2619,
+      "sha256": "ca80d553a1ff0c05d10f9e5bacffefd761f982a8ea855b9cc51954192ef19e43"
+    },
+    {
+      "name": "backend-build.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\backend-build.json",
+      "bytes": 1755,
+      "sha256": "4d7dec4a46c1facc8532770f8ed45df1b8451f08f89d698290457e3c3e1a5c59"
+    },
+    {
+      "name": "cloud-stages-before-deploy.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\cloud-stages-before-deploy.json",
+      "bytes": 92,
+      "sha256": "81b2a564eec830ce9d95c4b0f13a36025adea26e05b0c1e6720890550d4db089"
+    },
+    {
+      "name": "daily-backup-plan.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\daily-backup-plan.json",
+      "bytes": 1152,
+      "sha256": "defcee60a0dc21eac1d66464b6cdf44a937b1388264fd67df6a9738701ccafd8"
+    },
+    {
+      "name": "deployment-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\deployment-result.json",
+      "bytes": 4014,
+      "sha256": "f200cdd6ebc9d3116591acf2fc637e8571756f356bb7665cc0ec484ef41e2d01"
+    },
+    {
+      "name": "dry-run-maintenance-blocked.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\dry-run-maintenance-blocked.json",
+      "bytes": 1494,
+      "sha256": "5e82125ce1648c5781322f7c5b61c6e99408f03dac620d375eb40b6fc49e56f1"
+    },
+    {
+      "name": "dry-run-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\dry-run-result.json",
+      "bytes": 1797,
+      "sha256": "5e544ae9353e9bc8db27b22ed482a08f6bbc7bf0dd07b3c2a6df4cd0ed890b20"
+    },
+    {
+      "name": "final-checkpoint-manifest.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\final-checkpoint-manifest.json",
+      "bytes": 1691,
+      "sha256": "0e258d0e2e55ff45be4bfa2ca02cddc957267e08966a52ffaac70731e0d0520d"
+    },
+    {
+      "name": "final-checkpoint.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\final-checkpoint.json",
+      "bytes": 1684,
+      "sha256": "6608efa8448282cd373ead773c81f4a579a1704e9eceded9387001d9a6df584a"
+    },
+    {
+      "name": "frontend-build.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\frontend-build.json",
+      "bytes": 2486,
+      "sha256": "e545867ca05a8e60008b022dfd4a0c8bc0b23e9efa18d49b2932cd3d8132d7b0"
+    },
+    {
+      "name": "helper-manifest.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\helper-manifest.json",
+      "bytes": 2115,
+      "sha256": "456b3796fbec03e2527d6e771b27bef5e2016f27ea1ad68deb5e70ffa87ba5f4"
+    },
+    {
+      "name": "helper-offline-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\helper-offline-review.json",
+      "bytes": 4961,
+      "sha256": "3f9e21d9f4a4637889c8c78285583083d30729c3b0ebdd7ad5542fc9c4ea02cc"
+    },
+    {
+      "name": "maintenance-health-recheck.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\maintenance-health-recheck.json",
+      "bytes": 1070,
+      "sha256": "8b15aba3bce5aa32b3af3d7fd5df5cbfa0d2f93e65e547aeaa1820113d2f91cf"
+    },
+    {
+      "name": "maintenance-journal-reconciliation.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\delivery-evidence\\maintenance-journal-reconciliation.json",
+      "bytes": 1119,
+      "sha256": "3c17e2611440b6ccf4d082f178d4f3fe46be790fd9888bfc253f2a045e5f5152"
+    },
+    {
+      "name": "entrypoints-143539.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\entrypoints-143539.json",
+      "bytes": 13445,
+      "sha256": "85d15cd94981ba6c9110bcce17fc58a58b8916b08722b8176bb55512559f6059"
+    },
+    {
+      "name": "public-static-recheck.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\public-static-recheck.json",
+      "bytes": 15449,
+      "sha256": "54a4cc07dac56f2c003a9ec4bf19c5e99a1af0c096557509d162c9080fb6e7da"
+    },
+    {
+      "name": "post-deployment-readonly.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\post-deployment-readonly.json",
+      "bytes": 9935,
+      "sha256": "ba9bffd417bfa81bde81ded68fad29f739793e9b5afea6352cbfc3107e1302c1"
+    },
+    {
+      "name": "independent-log-observation-through-1439.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\independent-log-observation-through-1439.json",
+      "bytes": 1777,
+      "sha256": "31aa79d3069f224f450851456ebf9fc259fecb4cae17e003f71f2f316d3edebd"
+    },
+    {
+      "name": "live-admin-ui.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-ui.json",
+      "bytes": 4162,
+      "sha256": "b607114d8c04a3b9a7a8db0816720161362cc8983db1d8f86744c9c51cb86ebe"
+    },
+    {
+      "name": "live-admin-verification.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-verification.json",
+      "bytes": 1273,
+      "sha256": "9bd76c8bacea4b0395355854dd014365e565e8e8cb2023e7eb2694c6af464376"
+    },
+    {
+      "name": "live-admin-ui-v2.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-ui-v2.json",
+      "bytes": 544,
+      "sha256": "c2d154db6e5b34cfcf547a1f5b4952e72a52530ec14b320681f0baa323520018"
+    },
+    {
+      "name": "live-admin-verification-v2.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-verification-v2.json",
+      "bytes": 1273,
+      "sha256": "ed91f3860889c45df9f5e1f5684faa4122c5d1048d8258c926e85eab7c33ab3b"
+    },
+    {
+      "name": "live-admin-ui-v3.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-ui-v3.json",
+      "bytes": 4693,
+      "sha256": "965261047299fcf7fead97c96c2afa085c08bfd80b49ddbfdac39df31137a0b7"
+    },
+    {
+      "name": "live-admin-verification-v3.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-verification-v3.json",
+      "bytes": 1273,
+      "sha256": "b169778a5bf9fc5656856a59ae510940a4a2fa34dfbe739473f42c0dfcd4d9af"
+    },
+    {
+      "name": "live-admin-ui-v4.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-ui-v4.json",
+      "bytes": 5704,
+      "sha256": "5fa1cf8dcf8aad8daec1d7db47d00d0aa727d890d47aa278cc67169299916a22"
+    },
+    {
+      "name": "live-admin-verification-v4.json",
+      "sourcePath": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\deployment\\live-admin-verification-v4.json",
+      "bytes": 1770,
+      "sha256": "a0f45db594a84a8898c4d51c6cd4d41fbb3e2b9f1ec1bfe153f54adf7d57ee50"
+    }
+  ]
+}

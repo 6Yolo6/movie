@@ -1,0 +1,47 @@
+{
+  "startedAt": "2026-11-08T14:36:58.007936+00:00",
+  "realApi": true,
+  "configurationWriteRequests": 0,
+  "tokensKeysOrJtiWritten": false,
+  "usersOrDevicesCreated": 0,
+  "transfersMessagesPosts": 0,
+  "providers": [
+    {
+      "provider": "QUARK",
+      "supported": true,
+      "status": "AVAILABLE",
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "XUNLEI",
+      "supported": true,
+      "status": "AVAILABLE",
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "BAIDU",
+      "supported": false,
+      "status": "PLANNED",
+      "discoveryEnabled": false,
+      "transferEnabled": false,
+      "shareEnabled": false,
+      "gyingPublishEnabled": false,
+      "credentialConfigured": false,
+      "batchLimit": null
+    }
+  ],
+  "status": "failed",
+  "errorType": "GateError",
+  "failureGate": "Live read-only browser verification",
+  "completedAt": "2026-11-08T14:37:04.456161+00:00"
+}

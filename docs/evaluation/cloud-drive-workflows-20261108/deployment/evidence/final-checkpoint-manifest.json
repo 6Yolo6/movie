@@ -1,0 +1,46 @@
+{
+  "status": "complete",
+  "createdAt": "2026-11-08T14:33:27.143120+00:00",
+  "scope": "backend/frontend fixed old images and effective configuration; gying SQL; backend data and queue key; application rollback keeps live data",
+  "consistency": "Backend remains normally stopped throughout final SQL/data/key checkpoint; unrelated writers retained; not a cross-service atomic snapshot",
+  "files": [
+    {
+      "name": "backend-image.tar.age",
+      "size": 505779448,
+      "sha256": "2d53a64bf70343a8fc78a251acd0b8245bc7ade410db90d94b9cbeded336be5b",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "frontend-image.tar.age",
+      "size": 301245432,
+      "sha256": "7dd6193117740d7ec79af1787002ad5475ef430b348c305f84b6583612f9282a",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "effective-config.tar.age",
+      "size": 215288,
+      "sha256": "174afcb9d45f62654b66eeb78d133009e7492534976438ae01004dda4b7b2773",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "mysql.sql.age",
+      "size": 105867248,
+      "sha256": "27d9ed07598971de1fce7876ae10aeec61131d97286cfa4c72abc2e794d928b0",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "backend-data.tar.age",
+      "size": 8904,
+      "sha256": "f77ba7be83329e026110d6565815c28dcf077f9966f1ad043b3185561d905792",
+      "authenticatedDecryption": true
+    },
+    {
+      "name": "ai-state-key.tar.age",
+      "size": 2760,
+      "sha256": "24cf6efed1e1ce73dcaee0e884c6ec183983f2008edfb2443e3be13db842abb1",
+      "authenticatedDecryption": true
+    }
+  ],
+  "backendStopped": true,
+  "deploymentCheckpointReady": true
+}

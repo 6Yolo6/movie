@@ -1,0 +1,225 @@
+{
+  "status": "passed",
+  "actualDeployedFrontend": true,
+  "realAdministratorApi": true,
+  "newLoginOrDevice": false,
+  "credentialMaterialWritten": false,
+  "configurationWrites": 0,
+  "transfersOrPosts": 0,
+  "viewports": [
+    {
+      "width": 1280,
+      "lang": "zh",
+      "theme": "light",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 1280,
+        "document": 1280
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\zh-1280-light.png"
+    },
+    {
+      "width": 1280,
+      "lang": "zh",
+      "theme": "dark",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 1280,
+        "document": 1280
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\zh-1280-dark.png"
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "theme": "light",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 1280,
+        "document": 1280
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\en-1280-light.png"
+    },
+    {
+      "width": 1280,
+      "lang": "en",
+      "theme": "dark",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 1280,
+        "document": 1280
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\en-1280-dark.png"
+    },
+    {
+      "width": 390,
+      "lang": "zh",
+      "theme": "light",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\zh-390-light.png"
+    },
+    {
+      "width": 390,
+      "lang": "zh",
+      "theme": "dark",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\zh-390-dark.png"
+    },
+    {
+      "width": 390,
+      "lang": "en",
+      "theme": "light",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\en-390-light.png"
+    },
+    {
+      "width": 390,
+      "lang": "en",
+      "theme": "dark",
+      "realConfigMatchesUi": true,
+      "plannedBaiduReadOnly": true,
+      "persistsOnReload": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "pageErrors": 0,
+      "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\cloud-drive-workflows\\live-v4\\en-390-dark.png"
+    }
+  ],
+  "blockedNonReadRequests": [
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    }
+  ],
+  "pageErrors": 0,
+  "configHttpStatuses": [
+    {
+      "phase": "zh-1280-light",
+      "status": 200
+    },
+    {
+      "phase": "zh-1280-dark",
+      "status": 200
+    },
+    {
+      "phase": "en-1280-light",
+      "status": 200
+    },
+    {
+      "phase": "en-1280-dark",
+      "status": 200
+    },
+    {
+      "phase": "zh-390-light",
+      "status": 200
+    },
+    {
+      "phase": "zh-390-dark",
+      "status": 200
+    },
+    {
+      "phase": "en-390-light",
+      "status": 200
+    },
+    {
+      "phase": "en-390-dark",
+      "status": 200
+    }
+  ],
+  "completedAt": "2026-11-08T14:43:58.562Z"
+}

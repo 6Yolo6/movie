@@ -1,0 +1,21 @@
+{
+  "status": "failed",
+  "actualDeployedFrontend": true,
+  "realAdministratorApi": true,
+  "newLoginOrDevice": false,
+  "credentialMaterialWritten": false,
+  "configurationWrites": 0,
+  "transfersOrPosts": 0,
+  "viewports": [],
+  "blockedNonReadRequests": [
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST"
+    }
+  ],
+  "pageErrors": 0,
+  "failedPhase": "zh-1280-light:real-config:initial-navigation:initial-tab:screenshot",
+  "errorType": "Error",
+  "errorCode": "ENOENT",
+  "completedAt": "2026-11-08T14:37:04.430Z"
+}
