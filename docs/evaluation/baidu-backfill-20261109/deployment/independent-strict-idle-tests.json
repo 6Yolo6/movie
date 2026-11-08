@@ -1,0 +1,113 @@
+{
+  "passed": 26,
+  "failed": 0,
+  "cases": [
+    {
+      "name": "terminal_CONNECTED",
+      "status": "PASS"
+    },
+    {
+      "name": "terminal_FAILED",
+      "status": "PASS"
+    },
+    {
+      "name": "terminal_EXPIRED",
+      "status": "PASS"
+    },
+    {
+      "name": "active_PENDING_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "active_WAITING_SCAN_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "expired_PENDING_idle",
+      "status": "PASS"
+    },
+    {
+      "name": "expired_WAITING_SCAN_idle",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed_ticket_7",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed_ticket_8",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed_ticket_9",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed_ticket_10",
+      "status": "PASS"
+    },
+    {
+      "name": "malformed_ticket_11",
+      "status": "PASS"
+    },
+    {
+      "name": "invalid_json",
+      "status": "PASS"
+    },
+    {
+      "name": "oversized_ticket",
+      "status": "PASS"
+    },
+    {
+      "name": "valid_terminal_probe",
+      "status": "PASS"
+    },
+    {
+      "name": "proven_absence_probe",
+      "status": "PASS"
+    },
+    {
+      "name": "read_failure_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "active_waiting_scan_probe_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "active_pending_probe_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong_numeric_user_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "backend_identity_drift_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong_backend_image_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong_backend_name_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "stopped_backend_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong_config_pin_rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "projection_contains_no_ticket_values",
+      "status": "PASS"
+    }
+  ],
+  "productionReadsPerformed": false,
+  "taskMutationsPerformed": false,
+  "remoteWritesPerformed": false
+}

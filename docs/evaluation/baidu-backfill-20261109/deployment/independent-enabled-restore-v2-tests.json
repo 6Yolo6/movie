@@ -1,0 +1,86 @@
+{
+    "passed":  19,
+    "failed":  0,
+    "cases":  [
+                  {
+                      "name":  "only_enabled_changes_normalize_identically",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "default_true_enabled_omission_allowed",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "missing_enabled_in_disabled_task_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "explicit_true_actual_disabled_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "changed_principal_not_equal",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "changed_action_not_equal",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "invalid_enabled_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "duplicate_enabled_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "missing_settings_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "duplicate_settings_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "enabled_attributes_rejected",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "known_safe_gate_preserved",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "unknown_plain_message_redacted",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "unknown_multiline_message_redacted",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "wrong_record_CAS_does_not_overwrite",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "correct_record_CAS_atomic_replace",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "stale_record_CAS_does_not_overwrite",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "CAS_temporary_files_cleaned",
+                      "status":  "PASS"
+                  },
+                  {
+                      "name":  "record_rollback_current_hash_matches",
+                      "status":  "PASS"
+                  }
+              ],
+    "actualTaskCmdletsExecuted":  false,
+    "productionFilesWritten":  false,
+    "syntheticVerificationFilesOnly":  true,
+    "helperParseErrors":  0
+}

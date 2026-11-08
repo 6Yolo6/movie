@@ -1,0 +1,34 @@
+{
+  "verifiedAt": "2026-11-08T17:37:07.116409+00:00",
+  "logValuesPrinted": false,
+  "services": [
+    {
+      "service": "gying-movie-backend-1",
+      "running": true,
+      "oomKilled": false,
+      "restarts": 0,
+      "image": "sha256:dc9fd40464ac78c9f0b691ac90e97ad313e4c69f0154b34e606569297909c3f2",
+      "windowStart": "2026-11-08T17:22:22.776504+00:00",
+      "lines": 3,
+      "errorExceptionOomMatches": 0
+    },
+    {
+      "service": "gying-movie-frontend-1",
+      "running": true,
+      "oomKilled": false,
+      "restarts": 0,
+      "image": "sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0",
+      "windowStart": "2026-11-08T17:22:22.776504+00:00",
+      "lines": 0,
+      "errorExceptionOomMatches": 0
+    }
+  ],
+  "scope": "Docker stdout/stderr since deployment verification; mounted historical log is inactive",
+  "backendMountedLog": {
+    "path": "/app/logs/gying-movie.log",
+    "lastModifiedUtc": "2026-09-22T00:03:59+00:00",
+    "size": 36526,
+    "modifiedDuringVerificationWindow": false,
+    "contentRead": false
+  }
+}

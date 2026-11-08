@@ -1,0 +1,208 @@
+{
+  "checkedAt": "2026-11-08T17:24:02.290893+00:00",
+  "phase": "after authorized backend/frontend replacement",
+  "productionWrites": false,
+  "realLoginTransferSharePublishing": false,
+  "publicAdminUiAuthenticated": false,
+  "systemProxyChanged": false,
+  "checks": [
+    {
+      "url": "http://127.0.0.1/api/movies/list?page=1&size=2",
+      "method": "GET",
+      "kind": "catalog",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 4496,
+      "bodySha256": "8dd1c9cf8b4b6a62a0a85d48e39d2c04cf8fee219cfb220d126d7044ae8d10d3",
+      "total": 14980,
+      "returned": 2,
+      "passed": true,
+      "sampleMovieId": "tmdb_movie_610253"
+    },
+    {
+      "url": "http://127.0.0.1/",
+      "method": "GET",
+      "kind": "page",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 67976,
+      "bodySha256": "9a8170ac44ad8f150a4814104aef866b2697760f0f0e96700d73ab72a3657329",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/internal/ai/catalog/documents",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/qq-bot/health",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/internal/resource-hub/baidu/session",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 548,
+      "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090",
+      "passed": true
+    },
+    {
+      "url": "http://127.0.0.1/api/admin/resource-hub/config",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 401,
+      "bodyBytes": 60,
+      "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true,
+      "accessLoginRedirect": false
+    },
+    {
+      "url": "http://127.0.0.1/api/admin/resource-hub/baidu/session",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 401,
+      "bodyBytes": 60,
+      "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true,
+      "accessLoginRedirect": false
+    },
+    {
+      "url": "http://127.0.0.1/api/admin/resource-hub/baidu/backfill",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 401,
+      "bodyBytes": 60,
+      "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "passed": true,
+      "accessLoginRedirect": false
+    },
+    {
+      "url": "http://127.0.0.1/movie/tmdb_movie_610253",
+      "method": "GET",
+      "kind": "page",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 188698,
+      "bodySha256": "51940b1c8e68bfe0ac910b62fa48672a64d5ecd426dabf5c96c6d890ddb30d5e",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/",
+      "method": "GET",
+      "kind": "page",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 68343,
+      "bodySha256": "e0ac9ce0d0ea30dda22c4127d2d1d8c61d63975fe3f29dd6dcf067509bbf694d",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/ai/catalog/documents",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/qq-bot/health",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/internal/resource-hub/baidu/session",
+      "method": "GET",
+      "kind": "denied",
+      "transport": "direct",
+      "httpStatus": 404,
+      "bodyBytes": 915,
+      "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/config",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 302,
+      "bodyBytes": 510,
+      "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "accessLoginRedirect": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/baidu/session",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 302,
+      "bodyBytes": 510,
+      "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "accessLoginRedirect": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/admin/resource-hub/baidu/backfill",
+      "method": "GET",
+      "kind": "admin",
+      "transport": "direct",
+      "httpStatus": 302,
+      "bodyBytes": 510,
+      "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "passed": true,
+      "accessLoginRedirect": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/movie/tmdb_movie_610253",
+      "method": "GET",
+      "kind": "page",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 189065,
+      "bodySha256": "b930b6fd14c888880801a2dee48cbb1b24d2363ae6ab8fd247a1dfbb189e3fa1",
+      "passed": true
+    },
+    {
+      "url": "https://gyinghub.dpdns.org/api/movies/list?page=1&size=2",
+      "method": "GET",
+      "kind": "catalog",
+      "transport": "direct",
+      "httpStatus": 200,
+      "bodyBytes": 4496,
+      "bodySha256": "8dd1c9cf8b4b6a62a0a85d48e39d2c04cf8fee219cfb220d126d7044ae8d10d3",
+      "total": 14980,
+      "returned": 2,
+      "passed": true,
+      "sampleMovieId": "tmdb_movie_610253"
+    }
+  ],
+  "summary": {
+    "PASS": 18,
+    "FAIL": 0
+  },
+  "completedAt": "2026-11-08T17:24:08.967517+00:00",
+  "status": "passed"
+}

@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "scenarios": 8,
+  "sourceFiles": 78,
+  "frontendSourceHashesMatch": true,
+  "driveAndBackfillConfigRowsPreserved": true,
+  "configRowCount": 0,
+  "backfillParentTasksCreated": 0,
+  "backfill": {
+    "taskId": null,
+    "enabled": false,
+    "status": "PAUSED",
+    "phase": "EXISTING_TASKS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 0,
+    "succeeded": 0,
+    "skipped": 0,
+    "failed": 0,
+    "nextRunAt": null
+  },
+  "account": {
+    "configured": true,
+    "state": "CONNECTED"
+  },
+  "writesSent": 0,
+  "pageErrors": 0,
+  "unexpectedWriteAttempts": 0,
+  "nonReadPageViewsBlockedLocally": 16,
+  "externalBrowserRequestsBlocked": 0,
+  "readHttpFailures": 0,
+  "allScenarioStatesConnected": true,
+  "allDefaultsOff10Minutes1Item": true,
+  "publicAndLocalAssets": {
+    "assetsPerOrigin": 97,
+    "origins": 2,
+    "assetsPassed": 194,
+    "failedAttempts": 0,
+    "htmlMatchesCandidate": true
+  },
+  "evidenceWhitelist": [
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\baidu-backfill-20261109\\frontend-admin-verification\\live-admin-verification.json",
+      "sha256": "e689cfc6d898f001810b143d9238f13f19efe6e5ada9f238b144e7a8a1c80f12"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\baidu-backfill-20261109\\frontend-admin-verification\\live-admin-ui.json",
+      "sha256": "f0fc0f989e22ba5a4bfa437512c599ac34f6975512f131f50c372db4ee4ad7da"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\baidu-backfill-20261109\\frontend-admin-verification\\public-baidu-assets.json",
+      "sha256": "cbcd4fd693ea3d91e5b7c27b5e3bd8b4a17ed941ca83fead6d1a2586abe0e2c7"
+    }
+  ]
+}

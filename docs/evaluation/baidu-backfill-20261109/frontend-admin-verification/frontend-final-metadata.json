@@ -1,0 +1,63 @@
+{
+  "startedAt": "2026-11-08T17:36:04.255122+00:00",
+  "status": "passed",
+  "httpRequests": [
+    {
+      "method": "GET",
+      "path": "/baidu/session",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/config",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/baidu/backfill",
+      "status": 200
+    }
+  ],
+  "browserScenarios": 0,
+  "configurationWrites": 0,
+  "loginSaveRunRequests": 0,
+  "tokenSecretOrJtiWritten": false,
+  "helperSha256": "6a1772176134c98ce14025341719b9a302a1c1e1cad83b94eecaaeaf1c414177",
+  "session": {
+    "configured": true,
+    "state": "CONNECTED"
+  },
+  "baiduWorkflow": {
+    "provider": "BAIDU",
+    "supported": true,
+    "status": "AVAILABLE",
+    "credentialConfigured": true,
+    "videoEnabled": false,
+    "torrentEnabled": false,
+    "discoveryEnabled": false,
+    "transferEnabled": false,
+    "shareEnabled": false,
+    "gyingPublishEnabled": false
+  },
+  "backfill": {
+    "taskId": null,
+    "enabled": false,
+    "status": "PAUSED",
+    "phase": "EXISTING_TASKS",
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 0,
+    "succeeded": 0,
+    "skipped": 0,
+    "failed": 0,
+    "nextRunAt": null
+  },
+  "configRowsPreserved": true,
+  "configRowCount": 0,
+  "backfillParentTaskCount": 0,
+  "backfillParentTasksCreated": 0,
+  "existingDeviceOnly": true,
+  "expectedBackendImage": "sha256:dc9fd40464ac78c9f0b691ac90e97ad313e4c69f0154b34e606569297909c3f2",
+  "expectedFrontendImage": "sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0",
+  "completedAt": "2026-11-08T17:36:05.293918+00:00"
+}

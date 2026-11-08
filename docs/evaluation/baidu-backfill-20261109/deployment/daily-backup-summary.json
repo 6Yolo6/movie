@@ -1,0 +1,21 @@
+{
+  "status": "applied",
+  "additions": [
+    {
+      "name": "baidu-backfill-release-20261109",
+      "path": "E:\\gying-tools\\releases\\baidu-backfill-20261109"
+    }
+  ],
+  "originalSha256": "d67fa6680b4bbfbc3668d6718f2bcb2457b651b56892dc6498716b088d639448",
+  "proposedSha256": "2245f0d806de2c602f34c05f874b2975e0c4461112833ea026f075fc1dfabde2",
+  "dryRun": {
+    "exitCode": 0,
+    "artifactCount": 37,
+    "additionsVerified": 1,
+    "pendingMissingPaths": [],
+    "backupExecuted": false,
+    "allScopedPathsVerified": true
+  },
+  "productionConfigurationWritten": true,
+  "appliedAt": "2026-11-08T17:22:21.406904+00:00"
+}

@@ -1,0 +1,1573 @@
+{
+  "checkedAt": "2026-11-08T17:25:20.939268+00:00",
+  "phase": "after authorized backend/frontend replacement",
+  "deploymentReceiptPath": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\deployment\\deployment-result.json",
+  "deploymentReceiptSha256": "91c7e0592bd79970db7fe78defea3e997914baf7e6dd4e9434e72fcf9357b7c6",
+  "sourceCommit": "1a9ff55fb6f8c573d4413a625fc00d9e964e29d0",
+  "productionWrites": false,
+  "realLoginTransferSharePublishing": false,
+  "restrictedAgentStateOrKeyRead": false,
+  "completeInspectWrittenOrPrinted": false,
+  "checks": [
+    {
+      "name": "Deployment plan retains 26-table schema inventory",
+      "status": "PASS"
+    },
+    {
+      "name": "Final seven-artifact checkpoint privately authenticated Baidu vault",
+      "status": "PASS"
+    },
+    {
+      "name": "Seven stopped-checkpoint encrypted artifacts retained unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "All unrelated container identities, starts and runtime parameters preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "backend fixed candidate image",
+      "status": "PASS"
+    },
+    {
+      "name": "backend expected replacement and running without restart/OOM",
+      "status": "PASS"
+    },
+    {
+      "name": "backend runtime environment/mount/resource parameters preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "backend exact reviewed Compose chain",
+      "status": "PASS"
+    },
+    {
+      "name": "backend all prior Compose file hashes preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "backend candidate Compose file hash",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend fixed candidate image",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend expected replacement and running without restart/OOM",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend runtime environment/mount/resource parameters preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend exact reviewed Compose chain",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend all prior Compose file hashes preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend candidate Compose file hash",
+      "status": "PASS"
+    },
+    {
+      "name": "backend complete fixed source content",
+      "status": "PASS"
+    },
+    {
+      "name": "frontend complete fixed source content",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual backend JAR matches frozen candidate",
+      "status": "PASS"
+    },
+    {
+      "name": "Backend numeric user remains 10001",
+      "status": "PASS"
+    },
+    {
+      "name": "All 375 actual frontend artifacts match frozen candidate",
+      "status": "PASS"
+    },
+    {
+      "name": "All four local managed records unchanged",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent ready and fixed JAR preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent process creation and unique recorded listener preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "Agent ordinary-permission live argv",
+      "status": "UNKNOWN"
+    },
+    {
+      "name": "All four existing health entry points remain HTTP200",
+      "status": "PASS"
+    },
+    {
+      "name": "Private live Baidu vault directory/session/key permissions retained",
+      "status": "PASS"
+    }
+  ],
+  "containers": {
+    "/gying-movie-frontend-1": {
+      "containerId": "6045bee2351b530fe21dc4a3c2cc659487aaa4bdd9353dec379a2775c39769f7",
+      "imageId": "sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0",
+      "name": "/gying-movie-frontend-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T17:22:12.616646186Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "nextjs",
+      "environmentSha256": "fcbc264057be95fcee08c83b79570d3412ffb5b8c7d835dca42b6a26de2f1b4d",
+      "environmentKeyNames": [
+        "HOSTNAME",
+        "INTERNAL_API_URL",
+        "NODE_ENV",
+        "NODE_VERSION",
+        "PATH",
+        "PORT",
+        "TZ",
+        "YARN_VERSION"
+      ],
+      "commandConfigurationSha256": "2242d32e0423496e0ba2c7ec6f1b4e231c789c6dc83e2f084a3c492c24552fec",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 805306368,
+        "MemorySwap": 1610612736,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": 128,
+        "Tmpfs": null,
+        "ExtraHosts": [],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "d59055707d5ed40cc36fb5b019f772fe6dde67a18853e77967aea067a8c3caab",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [],
+      "composeProject": "gying-movie",
+      "composeService": "frontend",
+      "composeFileCount": 9,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+          "exists": true,
+          "sha256": "4fb44b3eabfa48e0070490cc4e12661077554418fcc91546b18895d3acfff261"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+          "exists": true,
+          "sha256": "0e08ea892277b78eaefafd21b2e8e4db226de2246dd2dc6a7bb2628f6e371ec2"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+          "exists": true,
+          "sha256": "6fbe9c4e3a33570833f0499fc13ff35e3c7c9ae827628e21f51006ee60d6f5fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+          "exists": true,
+          "sha256": "9031ac16cf9bb856d509cacadfba38380784246531d3a7dd69831cda68b1e12f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+          "exists": true,
+          "sha256": "cf113c14d6242fe9f3614296f260b107c55586b139d3d602bfa1662dbaac58c0"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json",
+          "exists": true,
+          "sha256": "f10e9f59f7b93c9e91774556ce22b11f4b05ba77a8f96415c3ddd52202f27461"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\candidate.json",
+          "exists": true,
+          "sha256": "e34dc61570f95a882ae04a7ca2f48b4402ee73e3ebba0c25d7bb27cb5c195287"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\candidate.json",
+          "exists": true,
+          "sha256": "f403e153c3e3b8bf9f38d81f0f733fddb1ef1398388e72b9da4e0b6764cc6cda"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-backend-1": {
+      "containerId": "440dd7572cae86c942900295c42788ca536757174fe08c0da643b6ba10b75426",
+      "imageId": "sha256:dc9fd40464ac78c9f0b691ac90e97ad313e4c69f0154b34e606569297909c3f2",
+      "name": "/gying-movie-backend-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T17:21:51.823652644Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "gying",
+      "environmentSha256": "587d52b36146758cb0cdc88ab8a08e314402ed8985d9515f8688b19d01c853a8",
+      "environmentKeyNames": [
+        "APP_AI_BRIDGE_TOKEN",
+        "APP_AI_STATE_FILE",
+        "APP_AI_STATE_KEY_FILE",
+        "APP_INTERNAL_TOKEN",
+        "APP_PUBLIC_BASE_URL",
+        "APP_TRUSTED_PROXIES",
+        "BACKEND_PORT",
+        "CORS_ALLOWED_ORIGIN",
+        "DB_HOST",
+        "DB_NAME",
+        "DB_PASSWORD",
+        "DB_PORT",
+        "DB_USER",
+        "GYING_BASE_URL",
+        "GYING_COOKIE",
+        "GYING_DB_PASSWORD",
+        "GYING_DB_USER",
+        "GYING_PASSWORD",
+        "GYING_REQUEST_INTERVAL_MS",
+        "GYING_SOURCE_API_TOKEN",
+        "GYING_SOURCE_BASE_URL",
+        "GYING_TARGET_USER",
+        "GYING_USER",
+        "GYING_USERNAME",
+        "JAVA_HOME",
+        "JAVA_OPTS",
+        "JAVA_VERSION",
+        "JWT_EXPIRATION_MS",
+        "JWT_SECRET",
+        "LANG",
+        "LANGUAGE",
+        "LC_ALL",
+        "MAIL_FROM_ADDRESS",
+        "MAIL_FROM_NAME",
+        "MAIL_PROVIDER",
+        "MINIO_ACCESS_KEY",
+        "MINIO_BUCKET",
+        "MINIO_ENDPOINT",
+        "MINIO_SECRET_KEY",
+        "MINIO_SECURE",
+        "MINIO_URL_PREFIX",
+        "NAPCAT_ACCOUNT",
+        "PANSOU_API_BASE_URL",
+        "PANSOU_API_KEY",
+        "PANSO_API_KEY",
+        "PATH",
+        "QQ_BOT_ALLOWED_GROUPS",
+        "QQ_BOT_AUTO_TRANSFER",
+        "QQ_BOT_BLOCKED_KEYWORDS",
+        "QQ_BOT_COMMAND_PREFIXES",
+        "QQ_BOT_DAILY_RECOMMENDATION_CHECK_MS",
+        "QQ_BOT_DEFAULT_REPLY",
+        "QQ_BOT_ENABLED",
+        "QQ_BOT_MAX_RESULTS",
+        "QQ_BOT_MIN_KEYWORD_LENGTH",
+        "QQ_BOT_NAPCAT_ACCESS_TOKEN",
+        "QQ_BOT_NAPCAT_BASE_URL",
+        "QQ_BOT_QQBOT_API_BASE_URL",
+        "QQ_BOT_QQBOT_APP_ID",
+        "QQ_BOT_QQBOT_CLIENT_SECRET",
+        "QQ_BOT_QQBOT_GROUP_OPENIDS",
+        "QQ_BOT_QQBOT_TOKEN_URL",
+        "QQ_BOT_RATE_LIMIT_PER_MINUTE",
+        "QQ_BOT_REPLY_PROVIDER",
+        "QQ_BOT_WEBHOOK_TOKEN",
+        "QQ_CHANNEL_GUILD_ID",
+        "QQ_CHANNEL_ID",
+        "QQ_CHANNEL_MOVIE_ID",
+        "QQ_CHANNEL_NUMBER",
+        "QQ_CHANNEL_PUBLISHER_BASE_URL",
+        "QQ_CHANNEL_PUBLISHER_TOKEN",
+        "QQ_CHANNEL_SECONDARY_ACCOUNT",
+        "QQ_CHANNEL_SECONDARY_TOKEN",
+        "QQ_CHANNEL_TV_ID",
+        "QUARK_AUTO_SAVE_BASE_URL",
+        "QUARK_AUTO_SAVE_PATH",
+        "QUARK_AUTO_SAVE_PATTERN",
+        "QUARK_AUTO_SAVE_REPLACE",
+        "QUARK_AUTO_SAVE_RUN_IMMEDIATELY",
+        "QUARK_AUTO_SAVE_TOKEN",
+        "QUARK_COOKIE",
+        "QUARK_SHARE_ENABLED",
+        "QUARK_SHARE_EXPIRED_TYPE",
+        "QUARK_SHARE_PASSCODE",
+        "QUARK_SHARE_POLL_ATTEMPTS",
+        "QUARK_SHARE_POLL_INTERVAL_MS",
+        "QUARK_SHARE_URL_TYPE",
+        "REDIS_HOST",
+        "REDIS_PASSWORD",
+        "REDIS_PORT",
+        "RESEND_API_KEY",
+        "RESOURCE_HUB_AUTO_APPROVE",
+        "RESOURCE_HUB_DISCOVERED_RETRY_CRON",
+        "RESOURCE_HUB_DISCOVERED_RETRY_DELAY_MS",
+        "RESOURCE_HUB_DISCOVERED_RETRY_ENABLED",
+        "RESOURCE_HUB_DISCOVERED_RETRY_LIMIT",
+        "RESOURCE_HUB_ENABLED",
+        "RESOURCE_HUB_GYING_AUTO_SYNC_ENABLED",
+        "RESOURCE_HUB_GYING_AUTO_SYNC_INTERVAL_HOURS",
+        "RESOURCE_HUB_GYING_AUTO_SYNC_MAX_ITEMS",
+        "RESOURCE_HUB_GYING_AUTO_SYNC_PAGE",
+        "RESOURCE_HUB_GYING_AUTO_SYNC_SOURCES",
+        "RESOURCE_HUB_GYING_DISCOVERY_ENABLED",
+        "RESOURCE_HUB_PANSOU_BASE_URL",
+        "RESOURCE_HUB_PANSOU_TOKEN",
+        "RESOURCE_HUB_TMDB_AUTO_DISCOVERY_ENABLED",
+        "RESOURCE_HUB_TMDB_AUTO_SYNC_ENABLED",
+        "RESOURCE_HUB_TMDB_AUTO_SYNC_INTERVAL_HOURS",
+        "RESOURCE_HUB_TMDB_AUTO_SYNC_MAX_ITEMS",
+        "RESOURCE_HUB_TMDB_AUTO_SYNC_PAGE",
+        "RESOURCE_HUB_TMDB_AUTO_SYNC_SOURCES",
+        "RESOURCE_HUB_TMDB_DISCOVERY_COOLDOWN_HOURS",
+        "RESOURCE_HUB_TMDB_DISCOVERY_MAX_RESULTS",
+        "RESOURCE_HUB_WORKER_ENABLED",
+        "RESOURCE_HUB_WORKER_FIXED_DELAY_MS",
+        "RESOURCE_HUB_WORKER_PUBLISH_LIMIT",
+        "RESOURCE_HUB_WORKER_QUARK_LIMIT",
+        "RESOURCE_HUB_WORKER_TASK_LIMIT",
+        "RESOURCE_HUB_WORKER_XUNLEI_LIMIT",
+        "SOCIAL_DB_PASSWORD",
+        "SOCIAL_DB_USER",
+        "SOCIAL_PUBLISHER_BASE_URL",
+        "SOCIAL_PUBLISHER_SCHEDULER_DELAY_MS",
+        "SOCIAL_PUBLISHER_TOKEN",
+        "SPRING_PROFILES_ACTIVE",
+        "TMDB_API_BASE_URL",
+        "TMDB_API_KEY",
+        "TMDB_MAX_RETRIES",
+        "TMDB_REQUEST_INTERVAL_MS",
+        "TZ",
+        "WEIBO_CLI_TOKEN",
+        "WEIBO_WEB_CLIENT_VERSION",
+        "WEIBO_WEB_COOKIE",
+        "WEIBO_WEB_FINGERPRINT",
+        "WEIBO_WEB_USER_AGENT",
+        "WEIBO_WEB_XSRF_TOKEN",
+        "XUNLEI_ACCOUNT",
+        "XUNLEI_AUTHORIZATION",
+        "XUNLEI_BASE_URL",
+        "XUNLEI_CAPTCHA_TOKEN",
+        "XUNLEI_CLIENT_ID",
+        "XUNLEI_CLIENT_SECRET",
+        "XUNLEI_CLIENT_VERSION",
+        "XUNLEI_DEVICE_ID",
+        "XUNLEI_ENABLED",
+        "XUNLEI_PASSWORD",
+        "XUNLEI_POLL_ATTEMPTS",
+        "XUNLEI_POLL_INTERVAL_MS",
+        "XUNLEI_REFRESH_TOKEN",
+        "XUNLEI_SAVE_PATH",
+        "XUNLEI_SHARE_CREATE_PATH",
+        "XUNLEI_SHARE_ENABLED",
+        "XUNLEI_TOKEN_STATE_PATH"
+      ],
+      "commandConfigurationSha256": "488a74803aa11b7c937e7e4fbaee16f858d93a0d7ff85256910e5a5c3e09a074",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": true,
+        "Memory": 1342177280,
+        "MemorySwap": 2684354560,
+        "PortBindings": {
+          "8880/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "8880"
+            }
+          ]
+        },
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": 256,
+        "Tmpfs": {
+          "/tmp": "rw,noexec,nosuid,size=64m"
+        },
+        "ExtraHosts": [
+          "host.docker.internal:host-gateway"
+        ],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "d59055707d5ed40cc36fb5b019f772fe6dde67a18853e77967aea067a8c3caab",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "backend",
+      "composeFileCount": 15,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+          "exists": true,
+          "sha256": "4fb44b3eabfa48e0070490cc4e12661077554418fcc91546b18895d3acfff261"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+          "exists": true,
+          "sha256": "0e08ea892277b78eaefafd21b2e8e4db226de2246dd2dc6a7bb2628f6e371ec2"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+          "exists": true,
+          "sha256": "6fbe9c4e3a33570833f0499fc13ff35e3c7c9ae827628e21f51006ee60d6f5fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+          "exists": true,
+          "sha256": "9031ac16cf9bb856d509cacadfba38380784246531d3a7dd69831cda68b1e12f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json",
+          "exists": true,
+          "sha256": "b031903311c4e12d875dc078a1ac3c071280a5361c01869bff9c815c592ccd14"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+          "exists": true,
+          "sha256": "e94f089f6b70fd697c420ca6507159914493796578826e81caf44915ad7406fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+          "exists": true,
+          "sha256": "cf113c14d6242fe9f3614296f260b107c55586b139d3d602bfa1662dbaac58c0"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json",
+          "exists": true,
+          "sha256": "5d01fac0cf0371f6bcfb63d6c7a3f9c91fdf42ea629efd740396f9a5aef31f29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\backup-audit\\rollback.json",
+          "exists": true,
+          "sha256": "5d01fac0cf0371f6bcfb63d6c7a3f9c91fdf42ea629efd740396f9a5aef31f29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate.json",
+          "exists": true,
+          "sha256": "bc49585ceda4a9bae6343d608801902f60e392cf105c8153e31a10a762861b62"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\candidate.json",
+          "exists": true,
+          "sha256": "fd4cf38e7912c0f0873c6fc681ad0d46bce956a752242beceaa5d7e3e7327adb"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json",
+          "exists": true,
+          "sha256": "f10e9f59f7b93c9e91774556ce22b11f4b05ba77a8f96415c3ddd52202f27461"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\candidate.json",
+          "exists": true,
+          "sha256": "e34dc61570f95a882ae04a7ca2f48b4402ee73e3ebba0c25d7bb27cb5c195287"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\candidate.json",
+          "exists": true,
+          "sha256": "f403e153c3e3b8bf9f38d81f0f733fddb1ef1398388e72b9da4e0b6764cc6cda"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-social-publisher-1": {
+      "containerId": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+      "imageId": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+      "name": "/gying-movie-social-publisher-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:36:01.136642758Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "node",
+      "environmentSha256": "8aae7b54e99191b3a64a9b0173ee1fec01dd6abeec225c979a773834407c657f",
+      "environmentKeyNames": [
+        "DB_HOST",
+        "DB_NAME",
+        "DB_PASSWORD",
+        "DB_PORT",
+        "DB_USER",
+        "NODE_VERSION",
+        "PATH",
+        "QQ_CHANNEL_ACCOUNTS_ROOT",
+        "SOCIAL_POSTER_BASE_URL",
+        "SOCIAL_PUBLISHER_PORT",
+        "SOCIAL_PUBLISHER_TOKEN",
+        "TZ",
+        "WEIBO_PROFILE_ROOT",
+        "WEIBO_WEB_CLIENT_VERSION",
+        "WEIBO_WEB_COOKIE",
+        "WEIBO_WEB_FINGERPRINT",
+        "WEIBO_WEB_USER_AGENT",
+        "WEIBO_WEB_XSRF_TOKEN",
+        "YARN_VERSION"
+      ],
+      "commandConfigurationSha256": "ee424e3db4aad002e69bc86c4a53ec728596fea9b757f30a1676d55315d93d3a",
+      "runtime": {
+        "Init": true,
+        "ReadonlyRootfs": false,
+        "Memory": 1073741824,
+        "MemorySwap": 2147483648,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": 256,
+        "Tmpfs": null,
+        "ExtraHosts": [
+          "host.docker.internal:host-gateway"
+        ],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "d59055707d5ed40cc36fb5b019f772fe6dde67a18853e77967aea067a8c3caab",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_social-publisher-qq-accounts",
+          "Source": "/var/lib/docker/volumes/gying-movie_social-publisher-qq-accounts/_data",
+          "Destination": "/data/qq-accounts",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_social-publisher-weibo",
+          "Source": "/var/lib/docker/volumes/gying-movie_social-publisher-weibo/_data",
+          "Destination": "/data/weibo",
+          "RW": true
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "social-publisher",
+      "composeFileCount": 4,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\code-optimization-20261010\\deploy.json",
+          "exists": true,
+          "sha256": "f03b759b60b8d7e1c1d24a77b761e34c51e1e3c2f7c8ae530ccef5b73e1d6fee"
+        },
+        {
+          "path": "G:\\gying-tools\\restart-20261018\\container-init-20261026\\runtime-init.override.yml",
+          "exists": true,
+          "sha256": "104c0dbd34a86b0745aba86a041d8df7284f465c01595a5b1900d6831206d9e8"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+          "exists": true,
+          "sha256": "e94f089f6b70fd697c420ca6507159914493796578826e81caf44915ad7406fc"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-quark-auto-save-1": {
+      "containerId": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "imageId": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "name": "/gying-movie-quark-auto-save-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:35:58.882835527Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "",
+      "environmentSha256": "2cebeaf9a8c58098e455b756b29ab228de38df438503c4f7bd0a86693f06d848",
+      "environmentKeyNames": [
+        "BUILD_SHA",
+        "BUILD_TAG",
+        "GPG_KEY",
+        "PATH",
+        "PYTHON_SHA256",
+        "PYTHON_VERSION",
+        "TZ"
+      ],
+      "commandConfigurationSha256": "15cb9268f77f79a8b12a5935ed6e1a04ce346f3118d09f04b2d1c120839b9d65",
+      "runtime": {
+        "Init": true,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {
+          "5005/tcp": [
+            {
+              "HostIp": "",
+              "HostPort": "5005"
+            }
+          ]
+        },
+        "CapAdd": null,
+        "CapDrop": null,
+        "SecurityOpt": null,
+        "PidsLimit": null,
+        "Tmpfs": null,
+        "ExtraHosts": [],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_quark-auto-save-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_quark-auto-save-data/_data",
+          "Destination": "/app/config",
+          "RW": true
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "quark-auto-save",
+      "composeFileCount": 3,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\code-optimization-20261010\\deploy.json",
+          "exists": true,
+          "sha256": "f03b759b60b8d7e1c1d24a77b761e34c51e1e3c2f7c8ae530ccef5b73e1d6fee"
+        },
+        {
+          "path": "G:\\gying-tools\\restart-20261018\\container-init-20261026\\runtime-init.override.yml",
+          "exists": true,
+          "sha256": "104c0dbd34a86b0745aba86a041d8df7284f465c01595a5b1900d6831206d9e8"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-gying-source-1": {
+      "containerId": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+      "imageId": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+      "name": "/gying-movie-gying-source-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:36:00.084565673Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "gying",
+      "environmentSha256": "cf32811f473b8e19f5f2ad1ba204a1c72e4784e730b4228386193db5a5951eb3",
+      "environmentKeyNames": [
+        "GPG_KEY",
+        "GYING_BASE_URL",
+        "GYING_COOKIE",
+        "GYING_DB_HOST",
+        "GYING_DB_NAME",
+        "GYING_DB_PASSWORD",
+        "GYING_DB_PORT",
+        "GYING_DB_USER",
+        "GYING_MINIO_ACCESS_KEY",
+        "GYING_MINIO_BUCKET",
+        "GYING_MINIO_ENDPOINT",
+        "GYING_MINIO_SECRET_KEY",
+        "GYING_PASSWORD",
+        "GYING_REQUEST_INTERVAL_MS",
+        "GYING_SOURCE_API_TOKEN",
+        "GYING_TARGET_USER",
+        "GYING_USERNAME",
+        "LANG",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUNBUFFERED",
+        "PYTHON_SHA256",
+        "PYTHON_VERSION",
+        "TZ"
+      ],
+      "commandConfigurationSha256": "4cb64bbdaf9672ecf7524fc529a3c7e01ca58e5964f59a4731b83190dad6d9dd",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": true,
+        "Memory": 536870912,
+        "MemorySwap": 1073741824,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,noexec,nosuid,size=64m"
+        },
+        "ExtraHosts": [
+          "host.docker.internal:host-gateway"
+        ],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "d59055707d5ed40cc36fb5b019f772fe6dde67a18853e77967aea067a8c3caab",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [],
+      "composeProject": "gying-movie",
+      "composeService": "gying-source",
+      "composeFileCount": 2,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\resource-search-p2p-20261019\\deploy.json",
+          "exists": true,
+          "sha256": "4acd83d6a2c9f81e20ee939fd3442a142311ec99b00d66f797fba1b058f3499b"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-query-maven-c43cc988fc3e": {
+      "containerId": "cfc0b14cd143633b4e0978598add9668f86824f7fde9693fef542aa35353aa00",
+      "imageId": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+      "name": "/gying-query-maven-c43cc988fc3e",
+      "running": false,
+      "status": "exited",
+      "startedAt": "2026-10-18T02:20:04.231961268Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "10001:10001",
+      "environmentSha256": "0921a6b410acea2856753b5a52e29d364b5beea57bbeb8f9b0c43562f6a7420e",
+      "environmentKeyNames": [
+        "HOME",
+        "JAVA_HOME",
+        "JAVA_VERSION",
+        "LANG",
+        "LANGUAGE",
+        "LC_ALL",
+        "MAVEN_CONFIG",
+        "MAVEN_HOME",
+        "MAVEN_OPTS",
+        "MONITORING_TEST_MYSQL_PASSWORD",
+        "MONITORING_TEST_MYSQL_URL",
+        "PATH",
+        "QUERY_BOUNDARY_FIXTURE_ID",
+        "QUERY_BOUNDARY_MYSQL_FIXTURE",
+        "QUERY_BOUNDARY_MYSQL_URL",
+        "TZ"
+      ],
+      "commandConfigurationSha256": "8b1721aaa4ac3230fb7733d88b3be857e0f8ebb6a1dcf403fb98969502a3230e",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": true,
+        "Memory": 2147483648,
+        "MemorySwap": 4294967296,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "PidsLimit": 512,
+        "Tmpfs": {
+          "/tmp": "rw,nosuid,size=1g,mode=1777"
+        },
+        "ExtraHosts": null,
+        "RestartPolicy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [],
+      "mounts": [
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-c43cc988fc3e\\maven-settings.xml",
+          "Destination": "/fixture-settings.xml",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "C:\\Users\\ASUS\\.m2\\repository",
+          "Destination": "/m2",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-c43cc988fc3e\\backend",
+          "Destination": "/workspace",
+          "RW": true
+        }
+      ],
+      "composeProject": null,
+      "composeService": null,
+      "composeFileCount": 0,
+      "composeFiles": [],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-query-mysql-c43cc988fc3e": {
+      "containerId": "55c8e60471546616c4e2df3e3bd7eecf949043549bdd3036c8a0085d028a787a",
+      "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+      "name": "/gying-query-mysql-c43cc988fc3e",
+      "running": false,
+      "status": "exited",
+      "startedAt": "2026-10-18T02:19:47.857238091Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "999:999",
+      "environmentSha256": "50e00ead55a1405e2f8c6fadfe94cffb72c3375f344c2c2498a55ae631d1d44d",
+      "environmentKeyNames": [
+        "GOSU_VERSION",
+        "MYSQL_ALLOW_EMPTY_PASSWORD",
+        "MYSQL_DATABASE",
+        "MYSQL_INITDB_SKIP_TZINFO",
+        "MYSQL_MAJOR",
+        "MYSQL_SHELL_VERSION",
+        "MYSQL_VERSION",
+        "PATH",
+        "TZ"
+      ],
+      "commandConfigurationSha256": "f83653ba2f0f2f1f65e8392ed3aee01d778c067ef49e9513d40afb2d14adc59a",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": true,
+        "Memory": 805306368,
+        "MemorySwap": 1610612736,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges"
+        ],
+        "PidsLimit": 256,
+        "Tmpfs": {
+          "/tmp": "rw,noexec,nosuid,size=128m,mode=1777",
+          "/var/lib/mysql": "rw,noexec,nosuid,size=512m,uid=999,gid=999",
+          "/var/run/mysqld": "rw,noexec,nosuid,size=16m,uid=999,gid=999"
+        },
+        "ExtraHosts": null,
+        "RestartPolicy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "none"
+      ],
+      "mounts": [],
+      "composeProject": null,
+      "composeService": null,
+      "composeFileCount": 0,
+      "composeFiles": [],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-xunlei-path-probe-20261006": {
+      "containerId": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+      "imageId": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+      "name": "/gying-xunlei-path-probe-20261006",
+      "running": false,
+      "status": "exited",
+      "startedAt": "2026-10-06T12:51:15.863953362Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "10001:10001",
+      "environmentSha256": "d246b37ba74126aa5ac753e1d2e8dfdddecafd2e0a543fbdaa935bace0d86ff3",
+      "environmentKeyNames": [
+        "JAVA_HOME",
+        "JAVA_VERSION",
+        "LANG",
+        "LANGUAGE",
+        "LC_ALL",
+        "MAVEN_CONFIG",
+        "MAVEN_HOME",
+        "PATH"
+      ],
+      "commandConfigurationSha256": "a3c3a407dff48272e2b18b6d163d50260ba9f7f9fc3c39bda50763c1b2a73e48",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": null,
+        "Tmpfs": {
+          "/tmp": "rw,mode=1777"
+        },
+        "ExtraHosts": null,
+        "RestartPolicy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "E:/gying-tools/releases/qq-library-xunlei-20261006",
+          "Destination": "/input",
+          "RW": false
+        }
+      ],
+      "composeProject": null,
+      "composeService": null,
+      "composeFileCount": 0,
+      "composeFiles": [],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-nginx-1": {
+      "containerId": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+      "imageId": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+      "name": "/gying-movie-nginx-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:36:20.40400699Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "101:101",
+      "environmentSha256": "dfdaeb5ba086768fd6eae0b3338daa773810f8e422265ed5f8641f9c5ffb2a00",
+      "environmentKeyNames": [
+        "ACME_VERSION",
+        "DYNPKG_RELEASE",
+        "NGINX_VERSION",
+        "NJS_RELEASE",
+        "NJS_VERSION",
+        "PATH",
+        "PKG_RELEASE"
+      ],
+      "commandConfigurationSha256": "c338bf6d5e12962a30b806a5e8f580e94f8ca08cc88bbd2856da312aa74dd72e",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": true,
+        "Memory": 134217728,
+        "MemorySwap": 268435456,
+        "PortBindings": {
+          "8080/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "80"
+            }
+          ]
+        },
+        "CapAdd": null,
+        "CapDrop": [
+          "ALL"
+        ],
+        "SecurityOpt": [
+          "no-new-privileges:true"
+        ],
+        "PidsLimit": 128,
+        "Tmpfs": {
+          "/tmp": "rw,noexec,nosuid,size=64m"
+        },
+        "ExtraHosts": [],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "d59055707d5ed40cc36fb5b019f772fe6dde67a18853e77967aea067a8c3caab",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\nginx\\nginx.conf",
+          "Destination": "/etc/nginx/conf.d/default.conf",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\nginx\\nginx-main.conf",
+          "Destination": "/etc/nginx/nginx.conf",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\nginx\\proxy-headers.conf",
+          "Destination": "/etc/nginx/proxy-headers.conf",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "D:\\gying-movie\\movie\\nginx\\trusted-tunnel-peers.conf",
+          "Destination": "/etc/nginx/trusted-tunnel-peers.conf",
+          "RW": false
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "nginx",
+      "composeFileCount": 1,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/openclaw-openclaw-gateway-1": {
+      "containerId": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+      "imageId": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+      "name": "/openclaw-openclaw-gateway-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:36:21.550223793Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "node",
+      "environmentSha256": "3ed9824641e50b301e4e6071695b35a23a5d715ca16bfecb1d0339de6329bdda",
+      "environmentKeyNames": [
+        "COREPACK_HOME",
+        "HOME",
+        "NODE_ENV",
+        "NODE_VERSION",
+        "OPENCLAW_AUTH_PROFILE_SECRET_DIR",
+        "OPENCLAW_BRIDGE_PORT",
+        "OPENCLAW_CONFIG_DIR",
+        "OPENCLAW_CONFIG_PATH",
+        "OPENCLAW_DOCKER_BUILD_SKIP_DTS",
+        "OPENCLAW_DOCKER_SOCKET",
+        "OPENCLAW_GATEWAY_BIND",
+        "OPENCLAW_GATEWAY_PORT",
+        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCLAW_HOME",
+        "OPENCLAW_IMAGE",
+        "OPENCLAW_STATE_DIR",
+        "OPENCLAW_TZ",
+        "OPENCLAW_WORKSPACE_DIR",
+        "PATH",
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "TZ",
+        "YARN_VERSION"
+      ],
+      "commandConfigurationSha256": "99e5ef7445a7e55e49675a4002ba82d1fa76e249c19dcb4f7199f8b7d6bd2cd3",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {
+          "18789/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "18789"
+            }
+          ],
+          "18790/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "18790"
+            }
+          ],
+          "3978/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "3978"
+            }
+          ]
+        },
+        "CapAdd": null,
+        "CapDrop": null,
+        "SecurityOpt": null,
+        "PidsLimit": null,
+        "Tmpfs": null,
+        "ExtraHosts": [
+          "host.docker.internal:host-gateway"
+        ],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "bridge"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "openclaw_openclaw_home",
+          "Source": "/var/lib/docker/volumes/openclaw_openclaw_home/_data",
+          "Destination": "/home/node",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/run/desktop/mnt/host/e/gying-data/openclaw-auth-profile-secrets",
+          "Destination": "/home/node/.config/openclaw",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "openclaw_openclaw_state",
+          "Source": "/var/lib/docker/volumes/openclaw_openclaw_state/_data",
+          "Destination": "/home/node/.openclaw",
+          "RW": true
+        }
+      ],
+      "composeProject": null,
+      "composeService": null,
+      "composeFileCount": 0,
+      "composeFiles": [],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-redis-1": {
+      "containerId": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+      "imageId": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "name": "/gying-movie-redis-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:35:51.866370098Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "",
+      "environmentSha256": "eeaa663c4001016f46666df7ec338eab401eca90a6ee104dc3a7b140cf81a8e7",
+      "environmentKeyNames": [
+        "PATH",
+        "REDIS_VERSION"
+      ],
+      "commandConfigurationSha256": "ddc49afc634ed3a7faab282ed2d1a744d8f6ac2c7f786d52521c92454469fc3f",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": null,
+        "SecurityOpt": null,
+        "PidsLimit": null,
+        "Tmpfs": null,
+        "ExtraHosts": [],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_redis-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_redis-data/_data",
+          "Destination": "/data",
+          "RW": true
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "redis",
+      "composeFileCount": 1,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/gying-movie-pansou-1": {
+      "containerId": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+      "imageId": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+      "name": "/gying-movie-pansou-1",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:35:57.567433348Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "",
+      "environmentSha256": "0705176c402b8fd985ed9b9dda04e06a59ac31919b9e31537acc6fc50e977b0b",
+      "environmentKeyNames": [
+        "ASYNC_CACHE_TTL_HOURS",
+        "ASYNC_MAX_BACKGROUND_TASKS",
+        "ASYNC_MAX_BACKGROUND_WORKERS",
+        "ASYNC_PLUGIN_ENABLED",
+        "ASYNC_RESPONSE_TIMEOUT",
+        "AUTH_ENABLED",
+        "AUTH_TOKEN_EXPIRY",
+        "CACHE_ENABLED",
+        "CACHE_PATH",
+        "CHANNELS",
+        "ENABLED_PLUGINS",
+        "PATH",
+        "PORT",
+        "TZ"
+      ],
+      "commandConfigurationSha256": "401f6496dc261819e494622c94c443a6d8e675b4ddc11fcfedbfb55d8261e66b",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {},
+        "CapAdd": null,
+        "CapDrop": null,
+        "SecurityOpt": null,
+        "PidsLimit": null,
+        "Tmpfs": null,
+        "ExtraHosts": [],
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_pansou-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_pansou-data/_data",
+          "Destination": "/app/cache",
+          "RW": true
+        }
+      ],
+      "composeProject": "gying-movie",
+      "composeService": "pansou",
+      "composeFileCount": 1,
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "exists": true,
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        }
+      ],
+      "completeInspectWrittenOrPrinted": false
+    },
+    "/minio-server": {
+      "containerId": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+      "imageId": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "name": "/minio-server",
+      "running": true,
+      "status": "running",
+      "startedAt": "2026-11-08T01:35:55.038251537Z",
+      "restartCount": 0,
+      "oomKilled": false,
+      "configuredUser": "",
+      "environmentSha256": "0a0739ee6d31139f28e18f794fa0adcbabd97061de920afde47d43b44e57ac93",
+      "environmentKeyNames": [
+        "MC_CONFIG_DIR",
+        "MINIO_ACCESS_KEY_FILE",
+        "MINIO_CONFIG_ENV_FILE",
+        "MINIO_KMS_SECRET_KEY_FILE",
+        "MINIO_ROOT_PASSWORD",
+        "MINIO_ROOT_PASSWORD_FILE",
+        "MINIO_ROOT_USER",
+        "MINIO_ROOT_USER_FILE",
+        "MINIO_SECRET_KEY_FILE",
+        "MINIO_UPDATE_MINISIGN_PUBKEY",
+        "PATH"
+      ],
+      "commandConfigurationSha256": "557245baa61779224e30dc88be2e6355192159eeb85bd0a2c39e0d324d42cd3c",
+      "runtime": {
+        "Init": null,
+        "ReadonlyRootfs": false,
+        "Memory": 0,
+        "MemorySwap": 0,
+        "PortBindings": {
+          "9000/tcp": [
+            {
+              "HostIp": "",
+              "HostPort": "9000"
+            }
+          ],
+          "9001/tcp": [
+            {
+              "HostIp": "",
+              "HostPort": "9001"
+            }
+          ]
+        },
+        "CapAdd": null,
+        "CapDrop": null,
+        "SecurityOpt": null,
+        "PidsLimit": null,
+        "Tmpfs": null,
+        "ExtraHosts": null,
+        "RestartPolicy": {
+          "Name": "unless-stopped",
+          "MaximumRetryCount": 0
+        }
+      },
+      "logConfigurationSha256": "4685e60795e7f8795e089290e61ee248d05ed423dfedabbf4775e23502ed74ca",
+      "networks": [
+        "bridge",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "E:\\gying-data\\minio-data",
+          "Destination": "/data",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "E:\\gying-data\\minio-config",
+          "Destination": "/root/.minio",
+          "RW": true
+        }
+      ],
+      "composeProject": null,
+      "composeService": null,
+      "composeFileCount": 0,
+      "composeFiles": [],
+      "completeInspectWrittenOrPrinted": false
+    }
+  },
+  "runtime": {
+    "backend": {
+      "configurationPreserved": true,
+      "composeLayerCount": 15,
+      "composeChainMatches": true,
+      "sources": {
+        "manifestPath": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\backend-source-manifest.json",
+        "manifestSha256": "1480efe7dedd18b09ebc727ae65c15629f4d8f7ff216e87269defe0fb3b2171a",
+        "files": 385,
+        "completePinnedInventory": true,
+        "workingTreeMismatches": [],
+        "headContentMismatches": [],
+        "rawGitByteDifferences": 268,
+        "lineEndingNormalizationApplied": true,
+        "generatedOrUntrackedInputs": []
+      },
+      "actualJarSha256": "5469438057b9dc1f1455258bbc13c5ab01d47902cd85b3b44dd8184481401547"
+    },
+    "frontend": {
+      "configurationPreserved": true,
+      "composeLayerCount": 9,
+      "composeChainMatches": true,
+      "sources": {
+        "manifestPath": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\frontend-runtime-candidate-005601-3f31b2dc\\frontend-source-manifest.json",
+        "manifestSha256": "f763605a83efcd28ed5f63791b6ab79d7cf0b51e06e7410f174c36385585dba3",
+        "files": 78,
+        "completePinnedInventory": true,
+        "workingTreeMismatches": [],
+        "headContentMismatches": [],
+        "rawGitByteDifferences": 54,
+        "lineEndingNormalizationApplied": true,
+        "generatedOrUntrackedInputs": []
+      },
+      "actualArtifacts": {
+        "files": 375,
+        "mismatchCount": 0,
+        "mismatchedPaths": []
+      }
+    }
+  },
+  "sqlQueriesExecuted": false,
+  "finalCheckpoint": {
+    "directory": "G:\\gying-backups\\baidu-backfill-20261109-20261108T172112.304097Z",
+    "files": 7,
+    "artifactHashesMatched": true,
+    "freshDecryptionPerformed": false
+  },
+  "unaffectedContainers": {
+    "checked": 11,
+    "missing": [],
+    "new": [],
+    "changed": []
+  },
+  "agent": {
+    "checkedAt": "2026-11-08T17:26:04.485232+00:00",
+    "privilege": "ordinary current token",
+    "restrictedStateOrKeyRead": false,
+    "managedRecords": {
+      "backend": {
+        "recordSha256": "98bbdbc0a0ba29bcb2817ceec2c99e1ac72c6d955f88940b89eab2aee2ad25e0",
+        "processId": 4992,
+        "instanceId": "bae7404a-043e-49d0-b3e0-ff9879478b18",
+        "startedAt": "2026-11-08T01:36:49.5166714Z"
+      },
+      "frontend": {
+        "recordSha256": "f669957ff365e99e5f2631938c019d85226df52b7eac3dc3ed3557a6af98911d",
+        "processId": 17880,
+        "instanceId": "2c7e5d85-04b8-4aac-8d97-60c59f0a5222",
+        "startedAt": "2026-11-08T01:37:09.7316974Z"
+      },
+      "router": {
+        "recordSha256": "c9827089f9d80cd417f08121fb39f44b653b5782931b2719bcb075575f5bb0c4",
+        "processId": 8908,
+        "instanceId": "11e8e5da-20fe-4684-b287-de5208eeb9b2",
+        "startedAt": "2026-11-08T01:37:01.4830735Z"
+      },
+      "ollama": {
+        "recordSha256": "4cb11bd306d1ed8ca799a739a1e7bb5ca314cb86cfebe42b0598aaf65e731139",
+        "processId": 24652,
+        "instanceId": "6c9302cf-152a-464b-badb-0549a360c101",
+        "startedAt": "2026-11-08T01:36:42.8911574Z"
+      }
+    },
+    "readyMatchesStoredRecord": true,
+    "runtimeJarSha256": "1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64",
+    "runtimeJarMatchesExpected": true,
+    "freshProcess": {
+      "processExists": true,
+      "processId": 4992,
+      "creationTimeUtc": "2026-11-08T01:36:49.5166710Z",
+      "listenerCount": 1,
+      "listenerOwnedByRecordedProcess": true,
+      "executablePathAvailable": false,
+      "executableMatches": null,
+      "commandLineAvailable": false,
+      "expectedRuntimeAppears": null,
+      "commandLineSha256": null
+    },
+    "creationTimeMatchesStoredRecord": true,
+    "liveArgvStatus": "UNKNOWN",
+    "health": {
+      "agent": {
+        "httpStatus": 200,
+        "bodySha256": "292781065564cf193651ee21d3c0e96f9221b513dd5f726bf3fbe9e4cb4c33de"
+      },
+      "router": {
+        "httpStatus": 200,
+        "bodySha256": "cbbf9f816d04c5c2be65365d4539a268e741760e502d3bf0907aed26834cd0cb"
+      },
+      "agentFrontend": {
+        "httpStatus": 200,
+        "bodySha256": "ff77a2543b74428ace6feaeddf342ca6a0cf4bf4b6abc9ff49fef2fc5cd13c63"
+      },
+      "ollama": {
+        "httpStatus": 200,
+        "bodySha256": "9bf1e9079ca4d42c0cf543680b3c7a54957ddbec19d170d7e064ad9152f3d206"
+      }
+    }
+  },
+  "baiduStoragePathMetadata": [
+    {
+      "path": "/app/data/baidu",
+      "exists": true,
+      "metadata": "700|10001|10001|directory",
+      "contentRead": false
+    },
+    {
+      "path": "/app/data/baidu/session.enc",
+      "exists": true,
+      "metadata": "600|10001|10001|regular file",
+      "contentRead": false
+    },
+    {
+      "path": "/app/data/baidu/session.key",
+      "exists": true,
+      "metadata": "600|10001|10001|regular file",
+      "contentRead": false
+    },
+    {
+      "path": "/app/data/baidu/login-request.json",
+      "exists": true,
+      "metadata": "600|10001|10001|regular file",
+      "contentRead": false
+    }
+  ],
+  "summary": {
+    "PASS": 26,
+    "FAIL": 0,
+    "UNKNOWN": 1
+  },
+  "status": "passed",
+  "completedAt": "2026-11-08T17:26:07.862813+00:00"
+}

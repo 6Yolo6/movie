@@ -1,6 +1,6 @@
 # 网盘工作流配置
 
-开发分支：`codex/cloud-drive-workflows`。2026-11-09 00:32 已上线百度扫码、转存适配与每盘文件类型配置；00:48 真实专用账号已验证并加密连接。慢速补全为下一轮候选，[验收记录](evaluation/baidu-backfill-20261109/README.md)。
+开发分支：`codex/cloud-drive-workflows`。2026-11-09 00:32 已上线百度扫码、转存适配与每盘文件类型配置；00:48 真实专用账号已验证并加密连接。01:22:22 慢速存量补全已仅 backend/frontend 上线，固定代码 `1a9ff55`；默认关闭、十分钟一条，真实转存、分享和 GYING 发布待验。[验收记录](evaluation/baidu-backfill-20261109/README.md)。
 
 ## 页面与阶段
 
@@ -8,7 +8,7 @@
 
 | 配置 | 作用 |
 | --- | --- |
-| 采集视频文件 | 是否发现、转存视频；关闭后夸克/迅雷视频任务暂停，不删除已保存的视频 |
+| 采集视频文件 | 是否发现、转存视频；关闭后该盘视频任务暂停，不删除已保存的视频 |
 | 采集种子文件 | 是否采集/归档小型 `.torrent` 与配套磁力文本；不会触发 BT 离线下载视频 |
 | 发现资源 | 控制 GYING / PanSou 候选发现和种子归档入队 |
 | 转存资源 | 控制转存与小文件上传；关闭不消耗旧任务重试预算 |
@@ -73,14 +73,14 @@ ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/ad
 
 百度卡片单独保存补全开关、间隔和批次数量，默认关闭、十分钟一条。顺序为已有百度任务 → 已有百度发现和资源链接 → 已有种子/磁力引用 → 仅百度的来源搜索。存量阶段不要求打开发现；来源搜索阶段才要求发现开启。全过程遵守该盘视频/种子、转存、分享、总工作流开关；自动运行还要求 Worker 开启。
 
-读取 `GET /api/admin/resource-hub/baidu/backfill` 不创建任务。`PUT` 同路径保存 `{ "enabled": false, "intervalMinutes": 10, "batchLimit": 1 }`；间隔 1–1440 分钟、每批 1–5 条。`POST /api/admin/resource-hub/baidu/backfill/run` 仅手动一小批，可在自动补全关闭时使用，仍受该盘策略约束。页面未保存的工作流或补全草稿不能用于执行。
+读取 `GET /api/admin/resource-hub/baidu/backfill` 及无父任务时的启动调度不创建任务。`PUT` 同路径保存 `{ "enabled": false, "intervalMinutes": 10, "batchLimit": 1 }`；间隔 1–1440 分钟、每批 1–5 条。`POST /api/admin/resource-hub/baidu/backfill/run` 仅手动一小批，可在自动补全关闭时使用，仍受该盘策略约束。页面未保存的工作流或补全草稿不能用于执行。
 
 复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务和 `sys_config` 的 `resource.hub.baidu.backfill.task-id` 唯一指针，不需新增表。固定初次存量高水位，记录游标、子任务、统计和三十分钟数据库租约；重启后继续原项。UNKNOWN、账号失效、需人工核验、未知发布结果会阻塞，保留远端意图，不自动重置。旧夸克/迅雷 P2P 只复制原始小文件引用，不复制目录、分享或远端意图。普通 Worker 不消费这些补全子任务。
 
-宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。部署替换 backend 后需同步固定镜像，保留 profile 和加密会话。
+宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。本次部署已同步新 backend 固定镜像并通过实际配置回读与只读 idle，保留 profile 和加密会话；扫码任务已恢复Enabled/Ready，Limited/Interactive实际运行exit0、XML与installation一致及独立只读核验通过；idle由严格前后无handoff与exit0推定，实际stdout未捕获。首次默认Enabled节点省略造成的失败和精确CAS回disabled保留于验收记录。
 
 ## 部署与回退
 
-百度任务表由用户创建并通过生产结构核验。百度和文件类型配置已仅 backend/frontend 上线，专用账号已真实扫码连接；本轮没有测试转存、创建分享或发布 GYING。上线和宿主更新保留 MySQL、backend-data、私有配置与浏览器会话的加密备份。
+百度任务表由用户创建并通过生产结构核验。百度、文件类型配置和慢速补全已仅 backend/frontend 上线，专用账号已真实扫码连接；本轮没有测试转存、创建分享或发布 GYING。11月9日01:22停止窗口七份 age 的完整认证和内容核验通过，包含 MySQL 26 表、backend-data、私有配置与浏览器会话；百度会话 AES-GCM、同账号、当前 session/key 一致性和文件权限专验通过。日常覆盖37项 apply/dry-run通过，自然完整备份未验；新pin后三份host/会话age认证、18本机/公网入口和194份静态/语言资源SHA通过，真实ADMIN八组页面和独立运行态终验通过（26 PASS/0 FAIL/1 Agent argv UNKNOWN），扫码任务已恢复Enabled/Ready，实际Limited运行exit0与独立只读核验通过；原task_XML_rejected失败保留。
 
 旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。新增补全父任务或指针也阻断旧版回退。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。
