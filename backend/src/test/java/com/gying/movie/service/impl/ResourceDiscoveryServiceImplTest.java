@@ -448,4 +448,28 @@ class ResourceDiscoveryServiceImplTest {
         resource.setSource(source);
         return resource;
     }
+    @Test void explicitBaiduScopeQueriesAndPersistsOnlyBaiduWithoutCreatingOtherProviderTasks() {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setDiscoveryEnabled(true); properties.getBaidu().setTorrentEnabled(true);
+        task.setSource("PANSOU");
+        task.setPayload("{\"movieId\":\"" + movie.getId() + "\",\"source\":\"PANSOU\",\"providers\":[\"BAIDU\"],\"deferTransfer\":true}");
+        DiscoveredResource baidu = resource("肖申克的救赎 4K", "https://pan.baidu.com/s/1fixture", "PANSOU"); baidu.setProvider("BAIDU");
+        DiscoveredResource quark = resource("肖申克的救赎 4K", "https://pan.quark.cn/s/fixture", "PANSOU");
+        when(panSouClient.searchClouds(anyString(), any(), anyInt())).thenReturn(List.of(baidu, quark));
+        ResourceDiscoveryRunResult result = service.runTask(1L);
+        assertEquals(1, result.getDiscovered());
+        verify(panSouClient).searchClouds(anyString(), org.mockito.ArgumentMatchers.eq(java.util.Set.of("BAIDU")), anyInt());
+        verify(panSouClient, never()).searchQuark(anyString(), anyInt());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferTaskService, xunleiTransferTaskService, gyingWorkflow);
+        ArgumentCaptor<ResourceDiscoveryResult> saved = ArgumentCaptor.forClass(ResourceDiscoveryResult.class);
+        verify(discoveryService).save(saved.capture()); assertEquals("BAIDU", saved.getValue().getProvider());
+        verify(movieService, never()).updateById(any(MovieMetadata.class));
+    }
+    @Test void emptyOrUnknownExplicitProviderScopeIsRejectedBeforeEnqueue() {
+        var request = new com.gying.movie.dto.ResourceDiscoveryRequest(); request.setMovieId(movie.getId()); request.setProviders(List.of());
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.enqueue(request));
+        request.setProviders(List.of("UNKNOWN"));
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.enqueue(request));
+        org.mockito.Mockito.verifyNoInteractions(taskService);
+    }
+
 }

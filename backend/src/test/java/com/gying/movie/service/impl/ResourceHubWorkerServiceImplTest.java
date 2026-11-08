@@ -345,4 +345,47 @@ class ResourceHubWorkerServiceImplTest {
                     configService);
         }
     }
+    @ParameterizedTest
+    @ValueSource(strings = {"UNKNOWN", "ACTION_REQUIRED", "REVIEW_REQUIRED", "CANCELED"})
+    void retryRoutesBaiduSafelyAndNeverResetsReviewStatesOrCallsQuark(String state) {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true); properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true);
+        properties.getBaidu().setTorrentEnabled(true); properties.getWorker().setDiscoveredRetryDelayMs(0);
+        var discoveries = mock(com.gying.movie.service.IResourceDiscoveryResultService.class);
+        var baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var baiduRunner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        var quark = mock(IQuarkTransferRunnerService.class); var publish = mock(IResourceHubPublishService.class);
+        var service = new ResourceHubWorkerServiceImpl(properties, mock(IResourceHubTaskService.class), mock(ITmdbMetadataSyncService.class),
+                mock(IGyingMetadataSyncService.class), mock(IResourceDiscoveryService.class), quark, publish, mock(IResourceHubConfigService.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "discoveryResultService", discoveries);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferRunnerService", baiduRunner);
+        var candidate = new com.gying.movie.entity.ResourceDiscoveryResult(); candidate.setId(1L); candidate.setProvider("BAIDU"); candidate.setMovieId("movie1");
+        candidate.setOriginalUrl("https://pan.baidu.com/s/1fixture");
+        when(discoveries.list(any(Wrapper.class))).thenReturn(List.of(candidate));
+        var task = new com.gying.movie.entity.BaiduTransferTask(); task.setId(2L); task.setStatus(state); task.setAttempts(2);
+        when(baiduTasks.getOne(any(Wrapper.class), eq(false))).thenReturn(task);
+        var result = service.retryDiscoveredTransfers(true);
+        assertEquals(1, result.get("skipped")); assertEquals(state, task.getStatus()); assertEquals(2, task.getAttempts());
+        Mockito.verifyNoInteractions(baiduRunner, quark, publish); verify(baiduTasks, never()).updateById(any());
+    }
+    @Test void baiduOwnShareVerificationFailureNeverPublishesTheOldSucceededUrl() {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true); properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true);
+        properties.getBaidu().setTorrentEnabled(true); properties.getWorker().setDiscoveredRetryDelayMs(0);
+        var discoveries = mock(com.gying.movie.service.IResourceDiscoveryResultService.class);
+        var baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var baiduRunner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        var quark = mock(IQuarkTransferRunnerService.class); var publish = mock(IResourceHubPublishService.class);
+        var service = new ResourceHubWorkerServiceImpl(properties, mock(IResourceHubTaskService.class), mock(ITmdbMetadataSyncService.class),
+                mock(IGyingMetadataSyncService.class), mock(IResourceDiscoveryService.class), quark, publish, mock(IResourceHubConfigService.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "discoveryResultService", discoveries);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferRunnerService", baiduRunner);
+        var candidate = new com.gying.movie.entity.ResourceDiscoveryResult(); candidate.setId(1L); candidate.setProvider("BAIDU"); candidate.setMovieId("movie1");
+        candidate.setOriginalUrl("https://pan.baidu.com/s/1fixture"); when(discoveries.list(any(Wrapper.class))).thenReturn(List.of(candidate));
+        var task = new com.gying.movie.entity.BaiduTransferTask(); task.setId(2L); task.setStatus("SUCCEEDED"); task.setShareUrl("https://pan.baidu.com/s/1old");
+        when(baiduTasks.getOne(any(Wrapper.class), eq(false))).thenReturn(task); when(baiduTasks.getById(2L)).thenReturn(task);
+        var checked = new QuarkTransferRunResult(); checked.setFailed(1); when(baiduRunner.submitOne(2L)).thenReturn(checked);
+        assertEquals(1, service.retryDiscoveredTransfers(true).get("failed")); verify(baiduRunner).submitOne(2L); Mockito.verifyNoInteractions(quark, publish);
+    }
+
 }

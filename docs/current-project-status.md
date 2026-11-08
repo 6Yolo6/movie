@@ -1,8 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-11-08
+更新时间：2026-11-09
 
-11月8日本轮百度接入与文件类型候选代码已完成，尚未上线：每盘独立选择视频/种子，只存种子不触发视频离线下载；百度专用账号扫码、受限会话、持久化转存/分享意图及未知结果只读恢复。后端1,141项中1,140通过/1 Redis跳过、真实SQL与独立Java17 compile及固定后端395类/资源核验通过；前端58项、TS/lint/build、八组mock浏览器和固定候选375产物核验通过。23:38本轮安全仍58 PASS/11 FAIL/1 UNKNOWN、G01–G11全FAIL，就绪已为11 PASS/1既有QQ WARN/0 FAIL，按项目门禁停止生产替换。本轮未执行生产SQL、安装扫码任务、真实登录/转存/分享/GYING发布；线上保持下面22:34上一轮版本。[百度与文件选择候选](evaluation/baidu-file-selection-20261108/README.md)。
+11月9日00:32百度接入与每盘视频/种子配置已按用户本轮“可上线”限定授权，仅backend/frontend上线代码90defca。后端1,141项中1,140通过/1 Redis跳过，真实SQL8项与Java17 compile；前端58项、TS/lint/build和mock八场景通过。实际14/8层Compose、JAR和375前端产物及独立25 PASS/0 FAIL/1 argv UNKNOWN、16入口通过。真实ADMIN八场景与公网/本机41×2资源SHA通过；初次整表配置比较差异无法定位，保留UNKNOWN，后续36行复查稳定。表由用户创建且22列/5索引生产核验通过。00:48专用百度账号已真实扫码并由服务端同账号验证、AES-GCM保存，CONNECTED/configured=true；未测试转存、分享或GYING发布。宿主Limited扫码任务幂等/loopback代理修复已通过13项helper与实际任务exit0，部署准备暂保持disabled。安全仍58 PASS/11 FAIL/1 UNKNOWN、G01–G11未关闭。[原版本部署证据](evaluation/baidu-file-selection-20261108/deployment/README.md)。慢速存量补全下一轮候选正在测试，默认关闭、十分钟一条，[本轮记录](evaluation/baidu-backfill-20261109/README.md)。
 
 11月8日网盘工作流已于22:34:28（Asia/Shanghai）按本轮“可部署”授权仅backend/frontend上线，分支 `codex/cloud-drive-workflows`，代码 `6b4104f`：夸克 / 迅雷独立阶段、目录与手动批次，百度只读待接入。后端1,038项中1,037通过/1 Redis跳过、必需真实SQL/独立Java17 compile；前端28项React、TS/lint/build及部署前八组mock浏览器通过。上线真实ADMIN只读八场景、38公网脚本SHA、375实际前端产物、独立21 PASS/0 FAIL/1 argv UNKNOWN及至22:39日志通过；六份age认证与日常覆盖dry-run完成，自然完整备份未验。安全58 PASS/11 FAIL/1 UNKNOWN和G01–G11未关闭；未真实登录/转存/发布、未迁移SQL或重置队列。[本轮交付](evaluation/cloud-drive-workflows-20261108/README.md)。
 
@@ -42,7 +42,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
 | 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
-| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月8日统一网盘阶段/目录/批次已上线且真实只读页面验收通过，线上百度待接入；本轮已测试百度与视频/种子候选，未部署 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
+| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月9日百度与每盘视频/种子配置已上线，专用账号已真实扫码连接；慢速存量优先补全下一轮候选在测试 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 
@@ -50,14 +50,16 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 当前部署与恢复基线
 
-11月8日22:34:28仅backend/frontend完成网盘工作流上线，固定代码6b4104f；原12/6层末尾追加 `E:/gying-tools/releases/cloud-drive-workflows-20261108/candidate.json`，实际13/7层、其余参数保持。旧两应用正常TERM143，最终停止窗口六age `G:/gying-backups/cloud-drive-workflows-20261108-20261108T143327.142120Z` 大小/SHA/完整认证及离线内容核对通过，非跨服务原子快照；SQL/data/state/key保持。日常备份新覆盖CAS及31项dry-run通过，自然完整备份未验。旧backend回退前两次fresh SQL守护，关闭/非法stage或读取失败阻断旧版并保持或恢复固定候选；本轮未实际回退。[上线与恢复](evaluation/cloud-drive-workflows-20261108/deployment/README.md)。
+11月9日00:32仅backend/frontend完成百度与文件类型配置上线，固定代码90defca；原14/8层Compose、其它容器和Agent保持。最终停止窗口七age `G:/gying-backups/baidu-file-selection-20261109-20261108T163139.163752Z` 完整SHA、认证及配置/OCI/SQL26表/队列/host内容核验通过；登录后另有三age检查点 `G:/gying-backups/baidu-login-session-20261109-20261108T165355.091889Z`，profile/NTFS ACL、精确任务XML、backend-data与会话GCM验证通过。日常备份36项dry-run通过，自然完整备份未验。
+
+11月8日22:34:28历史网盘工作流上线，固定代码6b4104f；原12/6层末尾追加 `E:/gying-tools/releases/cloud-drive-workflows-20261108/candidate.json`，实际13/7层、其余参数保持。旧两应用正常TERM143，最终停止窗口六age `G:/gying-backups/cloud-drive-workflows-20261108-20261108T143327.142120Z` 大小/SHA/完整认证及离线内容核对通过，非跨服务原子快照；SQL/data/state/key保持。日常备份新覆盖CAS及31项dry-run通过，自然完整备份未验。旧backend回退前两次fresh SQL守护，关闭/非法stage或读取失败阻断旧版并保持或恢复固定候选；本轮未实际回退。[上线与恢复](evaluation/cloud-drive-workflows-20261108/deployment/README.md)。
 
 11月4日历史：两后端已按该轮限定授权于2026-11-04 22:39:17及2026-11-04 22:42:34（Asia/Shanghai）依次上线，独立入口与身份只读复核通过；第一阶段未完成。 Movie正常TERM143后完成五份age检查点 `G:\gying-backups\ai-identity-theme-backend-20261104-20261104T143825.278661Z`，Agent正常停止后完成三份age检查点 `G:\gying-backups\ai-agent-identity-theme-20261104-20261104T144159.678847Z`；manifest/size/hash/完整认证检查通过，二者是各自停止窗口检查点，非跨服务原子快照。两份静态应用/回退覆盖已纳入日常备份，dry-run30通过，自然完整备份未验。11月4日当时Compose在原11层末尾追加第12层 `E:\gying-tools\releases\ai-identity-theme-20261104\deployment-backend\candidate.json`；前11份文件及参数保持，11月3日第10层rollback和第11层candidate仍保留。有效配置、当前数据/state/key/token/模型/索引及无关容器和本机服务保持。 应用回退保持当前SQL/state/key；回退旧Movie前先比较持久化filmIdentityRequired历史，并在候选写入者正常停止后再次核对。新增或竞态历史阻断旧版启动，必要时恢复当前候选保持运行。这些保护由已审查助手与回归验证，不称生产竞态注入；不恢复旧dump或数据。旧Agent055f…直接拷贝queryPlan，传输能保留新字段，恢复旧Agent应用通常无需回退Movie，但会失去本轮电影身份与第二主题审查机制。 [本轮部署验收](evaluation/identity-theme-20261104/deployment.md)。
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:2925c3b129e1ddf505f0483403ae5c3eb11c4675fbb6f8cec6af96ffcb78c6d4`，代码`6b4104f2cabb570ebc40867162a507fdcf46532d`、实际JAR `21dd135cdc9f604e0d2f2ab9a62e43e40e616e2bd64638a7f7ea7cfc465c95f6`；2026-11-08 22:34网盘工作流上线，360源文件绑定；原Xmx768MiB/容器1280MiB/含swap2560MiB与有效配置保持 |
-| Movie frontend | `sha256:35cce07fe8af5dbcd6b625b96d0c6c3a83b91995766989b865d5ae282744359f`，代码`6b4104f2cabb570ebc40867162a507fdcf46532d`；11月8日22:34网盘工作流页签上线，74 Git源文件加生成文件单列、375实际产物SHA一致 |
+| Movie backend | `sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f`，代码`90defcac8f6bc4d479b2aafaaaac36dac3c51c24`、实际JAR `f140914a7bf2ee9971d5240706c96be8271de5041c9e1a60f0d70dfdd7c0fec5`；2026-11-09 00:32百度与文件类型配置上线，379源文件绑定；原Xmx768MiB/容器1280MiB/含swap2560MiB与有效配置保持 |
+| Movie frontend | `sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e`，代码`90defcac8f6bc4d479b2aafaaaac36dac3c51c24`；11月9日00:32百度与文件类型配置上线，77 Git构建源文件、375实际产物SHA一致 |
 | 本机Agent | 11月4日上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`保持；11月8日维护后当前受管记录/ready、固定runtime、创建时间与唯一5000监听、四本机health均通过；普通权限实时argv UNKNOWN。本轮未替换Agent |
 | OpenClaw QQ插件 | 11月2日22:56源/唯一运行时gateway错误回退修复上线，SHA `94922920…`；原固定镜像/config/白名单保持，其他9容器保持，真实群内端到端待验 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |

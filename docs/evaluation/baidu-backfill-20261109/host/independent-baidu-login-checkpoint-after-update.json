@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-11-08T16:58:05.669239+00:00",
+  "status": "complete",
+  "directory": "G:\\gying-backups\\baidu-login-host-updated-20261109-20261108T165805.659428Z",
+  "hostModified": false,
+  "taskEnabledOrModified": false,
+  "backendDataModified": false,
+  "plaintextArchivesWritten": false,
+  "credentialValuesPrinted": false,
+  "productionDataRestored": false,
+  "authenticated": true,
+  "artifacts": 3,
+  "manifestSha256": "d3ae0f90664256166fc62289259ae34dc15f3af938e913cfa9d35bcaaf163685",
+  "host": {
+    "regularFiles": 877,
+    "directories": 494,
+    "totalFileBytes": 143714917,
+    "allFileHashesMatched": true,
+    "allDirectoryStructureMatched": true,
+    "allNtfsAclEntriesMatched": true,
+    "inventoryUnchanged": true
+  },
+  "task": {
+    "name": "GYing Baidu QR Login",
+    "state": "Disabled",
+    "enabled": false,
+    "xmlSha256": "8009b7138889003e21af1691c2053dd4b2fc17975d3ed7285da2813eaa872f85",
+    "xmlParsed": true,
+    "unchanged": true
+  },
+  "backendData": {
+    "volume": "gying-movie_backend-data",
+    "regularFiles": 7,
+    "allFileHashesMatched": true,
+    "inventoryUnchanged": true,
+    "sessionAndKeyMode": "0600",
+    "sessionDirectoryMode": "0700",
+    "numericLinuxUid": 10001,
+    "sessionVerification": {
+      "aes256GcmAuthenticated": true,
+      "sessionSchemaValid": true,
+      "cookieEntryCount": 27,
+      "credentialValuesPrinted": false,
+      "plaintextSessionWritten": false
+    }
+  },
+  "completedAt": "2026-11-08T16:58:43.024640+00:00"
+}

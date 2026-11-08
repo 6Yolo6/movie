@@ -62,6 +62,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IXunleiTransferTaskService xunleiTransferTaskService;
     private final IResourceDiscoveryResultService discoveryResultService;
     private final XunleiClient xunleiClient;
+    @Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferTaskService baiduTransferTaskService;
+    @Autowired(required = false)
+    private com.gying.movie.service.IBaiduTransferRunnerService baiduTransferRunnerService;
 
     @Autowired
     public ResourceHubWorkerServiceImpl(
@@ -252,7 +256,35 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         xunleiTransferRunnerService.submitOne(task.getId());
                         task = xunleiTransferTaskService.getById(task.getId());
                         hasShare = task != null && hasText(task.getShareUrl());
-                    } else {
+                    } else if ("BAIDU".equals(provider)) {
+                        if (baiduTransferTaskService == null || baiduTransferRunnerService == null) {
+                            throw new IllegalStateException("Baidu transfer service unavailable");
+                        }
+                        var task = findBaiduTransferTask(discovery);
+                        if (task == null) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Baidu transfer task");
+                            items.add(item); continue;
+                        }
+                        if (java.util.Set.of("UNKNOWN", "ACTION_REQUIRED", "REVIEW_REQUIRED", "CANCELED").contains(task.getStatus())) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu task requires review or account recovery");
+                            items.add(item); continue;
+                        }
+                        if (!resourceHubProperties.isDriveShareEnabled("BAIDU") || !resourceHubProperties.isDriveShareTransferEnabled("BAIDU")) {
+                            skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu file collection or sharing disabled");
+                            items.add(item); continue;
+                        }
+                        if (hasText(task.getResponsePayload())) {
+                            var plan = CHECKPOINT_MAPPER.readValue(task.getResponsePayload(), com.gying.movie.client.BaiduWebClient.TransferPlan.class);
+                            if (!com.gying.movie.client.BaiduWebClient.matchesFilePolicy(plan, resourceHubProperties.isDriveVideoEnabled("BAIDU"),
+                                    resourceHubProperties.isDriveTorrentEnabled("BAIDU"))) {
+                                skipped++; item.put("status", "SKIPPED"); item.put("reason", "Baidu task does not match current file policy");
+                                items.add(item); continue;
+                            }
+                        }
+                        QuarkTransferRunResult checked = baiduTransferRunnerService.submitOne(task.getId());
+                        task = baiduTransferTaskService.getById(task.getId());
+                        hasShare = checked.getFailed() == 0 && task != null && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl());
+                    } else if ("QUARK".equals(provider)) {
                         if (quarkTransferTaskService == null) throw new IllegalStateException("Quark transfer service unavailable");
                         QuarkTransferTask task = findQuarkTransferTask(discovery);
                         if (task == null) { skipped++; item.put("status", "SKIPPED"); item.put("reason", "No Quark transfer task"); items.add(item); continue; }
@@ -260,6 +292,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         quarkTransferRunnerService.submitOne(task.getId());
                         task = quarkTransferTaskService.getById(task.getId());
                         hasShare = task != null && hasText(task.getShareUrl());
+                    }
+                    else {
+                        skipped++; item.put("status", "SKIPPED"); item.put("reason", "Unsupported transfer provider");
+                        items.add(item); continue;
                     }
                     if (!hasShare) throw new IllegalStateException("Transfer did not create an own share");
                     ResourceHubPublishResult published = resourceHubPublishService.publishDiscovery(discovery.getId());
@@ -286,6 +322,17 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
 
     private Map<String, Object> skippedRetry(Map<String, Object> result, String reason) {
         result.put("status", "SKIPPED"); result.put("reason", reason); return result;
+    }
+
+    private com.gying.movie.entity.BaiduTransferTask findBaiduTransferTask(ResourceDiscoveryResult discovery) {
+        String hash = hasText(discovery.getOriginalUrlHash()) ? discovery.getOriginalUrlHash()
+                : ResourceHubHashUtils.sha256(discovery.getOriginalUrl());
+        var task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+                .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
+        if (task != null || !hasText(discovery.getMovieId()) || !hasText(hash)) return task;
+        return baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+                .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", hash)
+                .orderByDesc("updated_at").last("LIMIT 1"), false);
     }
 
     private XunleiTransferTask findXunleiTransferTask(ResourceDiscoveryResult discovery) {

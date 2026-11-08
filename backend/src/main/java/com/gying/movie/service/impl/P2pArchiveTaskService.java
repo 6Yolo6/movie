@@ -76,6 +76,77 @@ public class P2pArchiveTaskService {
         }
     }
 
+    /** Reuse local immutable selection only; remote checkpoints belong to the original provider/account. */
+    public synchronized ResourceHubTask cloneExistingForProvider(Long existingId, String provider, Long parentId) {
+        requireProvider(provider);
+        if (!canRunArchive(provider)) throw new IllegalStateException("P2P_ARCHIVE_DISABLED");
+        ResourceHubTask original = tasks.getById(existingId);
+        if (original == null || !TYPE.equals(original.getTaskType())) throw new IllegalArgumentException("Invalid P2P archive reference");
+        Map<String, Object> old;
+        try { old = mapper.readValue(original.getPayload(), new TypeReference<Map<String, Object>>() {}); }
+        catch (Exception invalid) { throw new IllegalArgumentException("Invalid P2P archive selection"); }
+        List<ResourceLink> selected = loadSelection(old);
+        validateSelection(original.getMovieId(), selected);
+        String identity = fingerprint(selected);
+        if (!identity.equals(old.get("fingerprint"))) throw new IllegalArgumentException("P2P selection superseded");
+        ResourceHubTask existing = tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE)
+                .eq("movie_id", original.getMovieId()).eq("source", provider).eq("keyword", identity)
+                .orderByAsc("id").last("LIMIT 1"), false);
+        if (existing != null) return existing;
+        String typeCode = Objects.toString(old.get("typeCode"), "");
+        String mid = Objects.toString(old.get("mid"), "");
+        if (!Set.of("mv", "tv", "ac").contains(typeCode) || !mid.matches("[A-Za-z0-9]+")) throw new IllegalArgumentException("Invalid source movie identity");
+        Map<String, Object> clean = new LinkedHashMap<>();
+        for (String field : List.of("version", "typeCode", "mid", "fingerprint", "resourceIds", "torrentMagnetIds", "policy")) {
+            if (old.containsKey(field)) clean.put(field, old.get(field));
+        }
+        clean.putIfAbsent("version", 1);
+        clean.put("backfillParentId", parentId);
+        ResourceHubTask child = new ResourceHubTask();
+        child.setTaskType(TYPE); child.setSource(provider); child.setMovieId(original.getMovieId());
+        child.setKeyword(identity); child.setPriority(3); child.setMaxAttempts(3); child.setPayload(json(clean));
+        ResourceHubTask saved = tasks.enqueue(child);
+        if (saved == null || saved.getId() == null) throw new IllegalStateException("P2P archive task was not persisted");
+        return saved;
+    }
+
+    /** Exact-child entry point; never drains another movie or provider queue. */
+    public ResourceHubTask submitOne(Long id, String provider) {
+        requireProvider(provider);
+        ResourceHubTask task = tasks.getById(id);
+        if (task == null || !TYPE.equals(task.getTaskType()) || !provider.equals(task.getSource())) throw new IllegalArgumentException("Invalid P2P archive task");
+        if (!canRunArchive(provider) || !running.compareAndSet(false, true)) return task;
+        try {
+            if ("SUCCEEDED".equals(task.getStatus())) {
+                if ("BAIDU".equals(provider)) {
+                    Map<String, Object> payload;
+                    try { payload = mapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {}); }
+                    catch (Exception invalid) { throw new IllegalStateException("Invalid P2P archive checkpoint"); }
+                    String folder = Objects.toString(payload.get("folderId"), "");
+                    if (folder.isBlank()) throw new IllegalStateException("Missing P2P folder");
+                    cloud.verifyMetadataOnlyFolder(provider, folder);
+                    String verified = cloud.findOwnShare(provider, folder);
+                    if (!usableOwnShare(provider, verified)) throw new IllegalStateException("P2P own share unavailable");
+                    Object resourceId = payload.get("resourceLinkId");
+                    ResourceLink resource = resourceId == null ? null : links.getById(Long.valueOf(resourceId.toString()));
+                    if (resource == null || !provider.equals(resource.getProvider()) || !"TORRENT".equals(resource.getType())
+                            || !LINK_SOURCE.equals(resource.getSource()) || !Objects.equals(task.getMovieId(), resource.getMovieId())
+                            || resource.getDeletedAt() != null || !"ACTIVE".equals(resource.getStatus())) throw new IllegalStateException("P2P resource checkpoint invalid");
+                    if (!links.update(new UpdateWrapper<ResourceLink>().eq("id", resource.getId()).eq("provider", provider)
+                            .eq("source", LINK_SOURCE).eq("type", "TORRENT").isNull("deleted_at")
+                            .set("url", verified).set("url_hash", ResourceHubHashUtils.sha256(verified)).set("link_status", "NORMAL")
+                            .set("validated_at", LocalDateTime.now()).set("updated_at", LocalDateTime.now()))) throw new IllegalStateException("P2P own share not persisted");
+                    if (!verified.equals(payload.get("shareUrl"))) { payload.put("shareUrl", verified); persist(task, payload); }
+                }
+                return task;
+            }
+            if (!Set.of("PENDING", "FAILED").contains(task.getStatus())
+                    || (task.getAttempts() != null && task.getMaxAttempts() != null && task.getAttempts() >= task.getMaxAttempts())) return task;
+            runTask(task);
+            return task;
+        } finally { running.set(false); }
+    }
+
     @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
     public void recoverInterruptedArchives() {
         // Single-backend deployment: only this idempotent metadata-file queue is resumed.
@@ -95,6 +166,7 @@ public class P2pArchiveTaskService {
             if (providers.isEmpty()) return;
             List<ResourceHubTask> due = tasks.list(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE)
                     .in("source", providers).in("status", List.of("PENDING", "FAILED")).apply("attempts < max_attempts")
+                    .apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL")
                     .le("scheduled_at", LocalDateTime.now()).orderByAsc("scheduled_at").last("LIMIT 2"));
             for (ResourceHubTask task : due) runTask(task);
         } finally { running.set(false); }
@@ -108,6 +180,7 @@ public class P2pArchiveTaskService {
         try {
             List<ResourceHubTask> pending = tasks.list(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE)
                     .eq("source", provider).in("status", List.of("PENDING", "FAILED")).apply("attempts < max_attempts")
+                    .apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL")
                     .le("scheduled_at", LocalDateTime.now()).orderByAsc("scheduled_at").last("LIMIT " + Math.min(Math.max(limit, 1), 20)));
             if (pending == null) return result;
             for (ResourceHubTask task : pending) {
@@ -223,7 +296,11 @@ public class P2pArchiveTaskService {
             payload.put("stage", "COMPLETE"); task.setStatus("SUCCEEDED"); task.setLastError(null); task.setFinishedAt(now); persist(task, payload);
         } catch (Exception error) {
             payload.put("stage", stage); payload.put("errorCategory", error.getClass().getSimpleName());
-            task.setStatus("FAILED"); task.setLastError("P2P archive failed at " + stage + " (" + error.getClass().getSimpleName() + ")");
+            if ("BAIDU".equals(provider) && payload.get("backfillParentId") != null && error instanceof BaiduActionException action) {
+                if (action.actionRequired()) task.setAttempts(Math.max(attempt - 1, 0));
+                task.setStatus(action.uncertain() ? "UNKNOWN" : action.actionRequired() ? "ACTION_REQUIRED" : "FAILED");
+            } else { task.setStatus("FAILED"); }
+            task.setLastError("P2P archive failed at " + stage + " (" + error.getClass().getSimpleName() + ")");
             task.setScheduledAt(LocalDateTime.now().plusMinutes(30)); task.setFinishedAt(LocalDateTime.now()); persist(task, payload);
         }
     }

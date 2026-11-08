@@ -1,0 +1,71 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-08T16:44:03.874637+00:00",
+  "completedAt": "2026-11-08T16:44:19.561326+00:00",
+  "scope": "readonly drive file/stage flags and global business flags; source binding at completion of eight browser scenarios",
+  "expectedBackendImage": "sha256:ef4cdaf146d4af070968ca058fe159aa3f1ddf397d60ea6e1c2789fc8c1c002f",
+  "expectedFrontendImage": "sha256:fb2baa912bf471e40cc060b581c34bf8080200fe867573d96dd182a13e861a3e",
+  "sourceFileCount": 77,
+  "sourceHashesMatch": true,
+  "sourceProofAt": "2026-11-08T16:44:03.874637+00:00",
+  "browserScenariosPassed": 8,
+  "browserPageErrors": 0,
+  "browserConfigurationWriteRequestsSent": 0,
+  "browserUnexpectedWriteAttempts": [],
+  "drivePolicyMatchesBrowserStartAndCurrentApi": true,
+  "drivePolicyPreservedDuringFollowup": true,
+  "globalBusinessFlagsPreservedDuringFollowup": true,
+  "drivePolicy": [
+    {
+      "provider": "QUARK",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "XUNLEI",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "BAIDU",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": false,
+      "torrentEnabled": false,
+      "discoveryEnabled": false,
+      "transferEnabled": false,
+      "shareEnabled": false,
+      "gyingPublishEnabled": false,
+      "batchLimit": 5
+    }
+  ],
+  "configRowCount": 36,
+  "structuredConfigRowsPreservedDuringFollowup": true,
+  "structuredConfigurationChangesDuringFollowup": [],
+  "firstWrapperFailureRetained": {
+    "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-session-verification-20261109-003358-8fa6864d\\live-admin-verification.json",
+    "failureGate": "Resource Hub persisted configuration unchanged",
+    "baselineRowValuesWereNotRetained": true,
+    "specificInitialChangedKeysKnown": false,
+    "attribution": "unknown; this followup cannot reconstruct the original complete-table comparison"
+  },
+  "credentialOrLoginStateFieldsExcludedFromPolicyComparison": true,
+  "newDevicesCreated": 0,
+  "signingKeyTokenOrJtiWritten": false,
+  "configurationWriteRequestsSent": 0,
+  "transfersOrPublishingRequestsSent": 0
+}

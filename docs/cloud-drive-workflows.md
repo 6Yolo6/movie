@@ -1,6 +1,6 @@
 # 网盘工作流配置
 
-开发分支：`codex/cloud-drive-workflows`。2026-11-08 22:34 上线的是双盘统一配置与百度占位；本轮百度扫码、转存和文件类型配置为新增候选，尚未部署。[本轮交付](evaluation/baidu-file-selection-20261108/README.md)。
+开发分支：`codex/cloud-drive-workflows`。2026-11-09 00:32 已上线百度扫码、转存适配与每盘文件类型配置；00:48 真实专用账号已验证并加密连接。慢速补全为下一轮候选，[验收记录](evaluation/baidu-backfill-20261109/README.md)。
 
 ## 页面与阶段
 
@@ -25,7 +25,7 @@
 
 ## 配置 API
 
-ADMIN `GET /api/admin/resource-hub/config` 返回三盘 `driveWorkflows`。候选代码中百度 `supported=true / AVAILABLE` 表示实现适配；`credentialConfigured` 只表示加密会话存在，账号有效性由执行时上游核验。
+ADMIN `GET /api/admin/resource-hub/config` 返回三盘 `driveWorkflows`。百度 `supported=true / AVAILABLE` 表示实现适配；`credentialConfigured` 只表示加密会话存在，账号有效性由执行时上游核验。
 
 `PUT /api/admin/resource-hub/config` 可仅更新一个网盘：
 
@@ -69,8 +69,18 @@ ADMIN `GET /api/admin/resource-hub/baidu/session` 只返回连接状态、脱敏
 
 ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/admin/resource-hub/baidu/transfers/{id}/submit` 执行。独立 `baidu_transfer_task` 先持久化账号、内容计划和转存/分享意图；未知结果只读核验，不重复 POST。目标内容与自有分享核验通过才入库。仅种子结果为 TORRENT，不把影片标记为可播放视频。
 
+## 百度慢速补全
+
+百度卡片单独保存补全开关、间隔和批次数量，默认关闭、十分钟一条。顺序为已有百度任务 → 已有百度发现和资源链接 → 已有种子/磁力引用 → 仅百度的来源搜索。存量阶段不要求打开发现；来源搜索阶段才要求发现开启。全过程遵守该盘视频/种子、转存、分享、总工作流开关；自动运行还要求 Worker 开启。
+
+读取 `GET /api/admin/resource-hub/baidu/backfill` 不创建任务。`PUT` 同路径保存 `{ "enabled": false, "intervalMinutes": 10, "batchLimit": 1 }`；间隔 1–1440 分钟、每批 1–5 条。`POST /api/admin/resource-hub/baidu/backfill/run` 仅手动一小批，可在自动补全关闭时使用，仍受该盘策略约束。页面未保存的工作流或补全草稿不能用于执行。
+
+复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务和 `sys_config` 的 `resource.hub.baidu.backfill.task-id` 唯一指针，不需新增表。固定初次存量高水位，记录游标、子任务、统计和三十分钟数据库租约；重启后继续原项。UNKNOWN、账号失效、需人工核验、未知发布结果会阻塞，保留远端意图，不自动重置。旧夸克/迅雷 P2P 只复制原始小文件引用，不复制目录、分享或远端意图。普通 Worker 不消费这些补全子任务。
+
+宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。部署替换 backend 后需同步固定镜像，保留 profile 和加密会话。
+
 ## 部署与回退
 
-本轮仅新增表迁移，尚未运行生产 SQL、注册扫码任务或登录真实账号。上线前备份 MySQL、backend-data、宿主私有配置与浏览器会话；仅更新 backend/frontend，核验入口、镜像和 UID。
+百度任务表由用户创建并通过生产结构核验。百度和文件类型配置已仅 backend/frontend 上线，专用账号已真实扫码连接；本轮没有测试转存、创建分享或发布 GYING。上线和宿主更新保留 MySQL、backend-data、私有配置与浏览器会话的加密备份。
 
-旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。
+旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。新增补全父任务或指针也阻断旧版回退。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。

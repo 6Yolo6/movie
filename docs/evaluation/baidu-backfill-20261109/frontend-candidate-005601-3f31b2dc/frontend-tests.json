@@ -1,0 +1,37 @@
+{
+  "typescript": "passed",
+  "eslint": "passed",
+  "offlineReact": {
+    "tests": 48,
+    "pass": 48,
+    "fail": 0,
+    "baiduBackfillScenarios": 17,
+    "drivePageScenarios": 20,
+    "loginScenarios": 8
+  },
+  "nativeNextBuild": "passed",
+  "nativeBuildExitCode": 0,
+  "sourceFiles": 78,
+  "sourcesMatch": true,
+  "sourceManifestSha256": "f763605a83efcd28ed5f63791b6ab79d7cf0b51e06e7410f174c36385585dba3",
+  "productionEnvLoaded": false,
+  "deployed": false,
+  "builtAssetsBrowser": {
+    "scenarios": 8,
+    "pass": 8,
+    "fail": 0,
+    "mockedApi": true,
+    "productionApiWrites": false,
+    "newUiVisualsReviewed": [
+      "zh-390-dark-connected.png",
+      "en-1280-light-connected.png"
+    ]
+  },
+  "fixedRuntime": {
+    "imageId": "sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0",
+    "artifactsHashMatched": 375,
+    "network": "none",
+    "deployed": false
+  },
+  "sourceStillMatches": true
+}

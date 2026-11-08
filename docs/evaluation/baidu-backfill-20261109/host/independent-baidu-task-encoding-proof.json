@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-11-08T16:56:18.481898+00:00",
+  "status": "verified",
+  "originalEvidenceSha256": "30b35a1dbcd066abd63dc5427ada6f9b34ddcbbaf7ce4cb978ea64dc09108aac",
+  "checkpointDirectory": "G:\\gying-backups\\baidu-login-session-20261109-20261108T165355.091889Z",
+  "archiveXmlSha256": "8009b7138889003e21af1691c2053dd4b2fc17975d3ed7285da2813eaa872f85",
+  "archiveByteEncoding": "UTF-16LE without BOM (.NET Unicode.GetBytes)",
+  "reportedXmlSha256MatchesArchiveBytes": true,
+  "archiveXmlAuthenticated": true,
+  "currentExportUtf16leSha256": "8009b7138889003e21af1691c2053dd4b2fc17975d3ed7285da2813eaa872f85",
+  "archivedAndCurrentExportBytesEqual": true,
+  "archivedAndCurrentExportCharactersEqual": true,
+  "archivedXmlCanonicalUtf8Sha256": "c730bd6c53dd081e36556e7030c07fba94d9392ec9f3fb3af69e4ea99380046d",
+  "currentExportDirectUtf8Sha256": "c730bd6c53dd081e36556e7030c07fba94d9392ec9f3fb3af69e4ea99380046d",
+  "canonicalUtf8Bytes": 1711,
+  "canonicalUtf8HashesEqual": true,
+  "xmlParsesAndSemanticsEqual": true,
+  "archiveLineEndings": {
+    "crlf": 40,
+    "loneLf": 0,
+    "loneCr": 0
+  },
+  "taskName": "GYing Baidu QR Login",
+  "taskState": "Disabled",
+  "taskEnabled": false,
+  "originalReportOrFailedGateModified": false,
+  "credentialValuesPrinted": false,
+  "taskModified": false
+}

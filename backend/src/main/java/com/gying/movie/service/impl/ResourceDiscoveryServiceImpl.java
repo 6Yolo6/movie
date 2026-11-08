@@ -138,7 +138,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             LocalDateTime now = LocalDateTime.now();
             for (DiscoveredResource resource : resources) {
                 try {
-                    if (!resourceHubProperties.isDriveShareCollectionEnabled(resource.getProvider())) {
+                    if (!requestsProvider(payload, resource.getProvider())
+                            || !resourceHubProperties.isDriveShareCollectionEnabled(resource.getProvider())) {
                         continue;
                     }
                     if (!ResourceTitleMatcher.isRelevant(movie, resource.getTitle(), payload.keyword())) {
@@ -175,7 +176,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     addError(result, itemError.getMessage());
                 }
             }
-            boolean completeDiscovery = fetched.complete() && resourceHubProperties.isDriveShareCollectionEnabled("QUARK")
+            boolean completeDiscovery = payload.providers().isEmpty() && fetched.complete() && resourceHubProperties.isDriveShareCollectionEnabled("QUARK")
                     && resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI");
             if (completeDiscovery && result.getDiscovered() + result.getDuplicate() == 0 && result.getFailed() == 0) {
                 refreshResourceStatus(movie, now);
@@ -373,7 +374,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
     private DiscoveryFetch discover(DiscoveryPayload payload, MovieMetadata movie) {
         String source = payload.source().toUpperCase();
         if ("GYING".equals(source)) {
-            return new DiscoveryFetch(gyingSourceWorkflowService.discoverResources(movie, payload.maxResults()), true);
+            return new DiscoveryFetch(scoped(gyingSourceWorkflowService.discoverResources(movie, payload.maxResults()), payload), true);
         }
         if ("AUTO".equals(source) || "QQ_BOT".equals(source) || "PANSOU".equals(source)) {
             List<DiscoveredResource> gying = List.of();
@@ -385,25 +386,25 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     failure = error;
                 }
             }
-            if (gying == null) gying = List.of();
+            gying = scoped(gying, payload);
             String keyword = resolveKeyword(payload, movie);
             List<DiscoveredResource> quark = List.of();
             List<DiscoveredResource> xunlei = List.of();
             List<DiscoveredResource> baidu = List.of();
             boolean available = !gying.isEmpty();
-            if (resourceHubProperties.isDriveShareCollectionEnabled("QUARK") && !hasProvider(gying, "QUARK")) {
+            if (requestsProvider(payload, "QUARK") && resourceHubProperties.isDriveShareCollectionEnabled("QUARK") && !hasProvider(gying, "QUARK")) {
                 try {
                     quark = panSouClient.searchQuark(keyword, payload.maxResults());
                     available = true;
                 } catch (RuntimeException error) { failure = error; }
             }
-            if (resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI") && !hasProvider(gying, "XUNLEI")) {
+            if (requestsProvider(payload, "XUNLEI") && resourceHubProperties.isDriveShareCollectionEnabled("XUNLEI") && !hasProvider(gying, "XUNLEI")) {
                 try {
                     xunlei = panSouClient.searchClouds(keyword, Set.of("XUNLEI"), payload.maxResults());
                     available = true;
                 } catch (RuntimeException error) { failure = error; }
             }
-            if (resourceHubProperties.isDriveShareCollectionEnabled("BAIDU") && !hasProvider(gying, "BAIDU")) {
+            if (requestsProvider(payload, "BAIDU") && resourceHubProperties.isDriveShareCollectionEnabled("BAIDU") && !hasProvider(gying, "BAIDU")) {
                 try {
                     baidu = panSouClient.searchClouds(keyword, Set.of("BAIDU"), payload.maxResults());
                     available = true;
@@ -603,7 +604,30 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                 keyword,
                 source,
                 maxResults,
-                Boolean.TRUE.equals(request.getDeferTransfer()));
+                Boolean.TRUE.equals(request.getDeferTransfer()),
+                normalizeProviders(request.getProviders()));
+    }
+
+    private List<String> normalizeProviders(List<String> values) {
+        if (values == null) return List.of();
+        if (values.isEmpty() || values.size() > 3 || values.stream().anyMatch(value -> value == null || value.isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid provider scope");
+        }
+        List<String> normalized = values.stream().map(value -> value.trim().toUpperCase(java.util.Locale.ROOT)).distinct().toList();
+        if (normalized.stream().anyMatch(value -> !Set.of("QUARK", "XUNLEI", "BAIDU").contains(value))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported provider scope");
+        }
+        return normalized;
+    }
+
+    private boolean requestsProvider(DiscoveryPayload payload, String provider) {
+        return payload.providers().isEmpty() || payload.providers().contains(
+                provider == null ? "" : provider.trim().toUpperCase(java.util.Locale.ROOT));
+    }
+
+    private List<DiscoveredResource> scoped(List<DiscoveredResource> resources, DiscoveryPayload payload) {
+        return resources == null ? List.of() : resources.stream().filter(
+                resource -> resource != null && requestsProvider(payload, resource.getProvider())).toList();
     }
 
     private String resolveMovieId(ResourceDiscoveryRequest request) {
@@ -665,7 +689,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                     task.getKeyword(),
                     task.getSource(),
                     DEFAULT_MAX_RESULTS,
-                    false);
+                    false, List.of());
         }
         try {
             Map<String, Object> payload = objectMapper.readValue(task.getPayload(),
@@ -685,6 +709,13 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             request.setSource(source);
             request.setMaxResults(maxResults);
             request.setDeferTransfer(Boolean.TRUE.equals(payload.get("deferTransfer")));
+            if (payload.containsKey("providers")) {
+                if (!(payload.get("providers") instanceof List<?> values)
+                        || values.stream().anyMatch(value -> !(value instanceof String))) {
+                    throw new IllegalArgumentException("Invalid provider scope");
+                }
+                request.setProviders(values.stream().map(String.class::cast).toList());
+            }
             return normalizePayload(request);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid discovery task payload");
@@ -699,6 +730,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             value.put("source", payload.source());
             value.put("maxResults", payload.maxResults());
             value.put("deferTransfer", payload.deferTransfer());
+            if (!payload.providers().isEmpty()) value.put("providers", payload.providers());
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to serialize task payload", e);
@@ -789,6 +821,6 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             String keyword,
             String source,
             int maxResults,
-            boolean deferTransfer) {
+            boolean deferTransfer, List<String> providers) {
     }
 }

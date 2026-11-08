@@ -9,6 +9,8 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
     const same = (actual, expected, label) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(label + ': ' + JSON.stringify(actual));
     };
+    const backfill = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'EXISTING_TASKS', intervalMinutes: 10, batchLimit: 1,
+        processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null, ...patch });
     const deferred = () => {
         let resolve, reject;
         const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
@@ -79,7 +81,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
                 { provider: 'XUNLEI', supported: true, status: 'AVAILABLE', discoveryEnabled: true, transferEnabled: scenario.transferEnabled ?? true, videoEnabled: true, torrentEnabled: true,
                     shareEnabled: true, gyingPublishEnabled: true, credentialConfigured: false, savePath: '/movies/xunlei', batchLimit: 4 },
                 { provider: 'BAIDU', supported: scenario.baiduSupported ?? false, status: scenario.baiduSupported ? 'AVAILABLE' : 'PLANNED',
-                    discoveryEnabled: false, transferEnabled: scenario.baiduTransferEnabled ?? false, shareEnabled: false, gyingPublishEnabled: false, videoEnabled: scenario.baiduVideoEnabled ?? false, torrentEnabled: scenario.baiduTorrentEnabled ?? false,
+                    discoveryEnabled: false, transferEnabled: scenario.baiduTransferEnabled ?? false, shareEnabled: scenario.baiduShareEnabled ?? false, gyingPublishEnabled: false, videoEnabled: scenario.baiduVideoEnabled ?? false, torrentEnabled: scenario.baiduTorrentEnabled ?? false,
                     credentialConfigured: scenario.baiduConfigured ?? false, savePath: scenario.baiduSupported ? '/GYing Resource Hub' : null, batchLimit: scenario.baiduSupported ? 5 : null },
             ],
         };
@@ -93,8 +95,9 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
                 else call.resolve(new Response(JSON.stringify({ data: overview }), { status: 200 }));
             }
             else if (url.endsWith('/baidu/session')) call.resolve(new Response(JSON.stringify({ data: { configured: scenario.baiduConfigured ?? false, state: 'DISCONNECTED', ticketId: null, expiresAt: null, accountName: null, lastValidatedAt: null, failureCode: null } }), { status: 200 }));
+            else if (url.endsWith('/baidu/backfill') && !options.method) call.resolve(new Response(JSON.stringify({ data: backfill() }), { status: 200 }));
             else if (url.includes('/tasks?')) call.resolve(new Response(JSON.stringify({ data: { records: scenario.tasks || [], total: scenario.tasks?.length || 0 } }), { status: 200 }));
-            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run') && !url.endsWith('/baidu/login')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
+            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run') && !url.endsWith('/baidu/login') && !url.endsWith('/baidu/backfill') && !url.endsWith('/baidu/backfill/run')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
             return call.promise;
         };
         const mocks = {
@@ -107,6 +110,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         };
         mocks['@/lib/cloudDriveWorkflows'] = loadModule('driveWorkflows', mocks);
         mocks['@/components/admin/BaiduAccountConnection'] = loadPage('baiduAccount', mocks);
+        mocks['@/components/admin/BaiduBackfillControls'] = loadPage('baiduBackfill', mocks);
         const Ranges = loadPage('crawlRanges', mocks);
         const Drives = loadPage('driveSettings', mocks);
         const Page = loadPage('resourceHub', { ...mocks, '@/components/admin/MetadataCrawlRanges': Ranges, '@/components/admin/DriveWorkflowSettings': Drives });
@@ -309,6 +313,44 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         same(f.calls.some(call => call.url.endsWith('/transfers/run')), false, 'guard prevents direct run');
         same(f.byId('drive-QUARK-discoveryEnabled').checked, true, 'metadata discovery settings unchanged');
     });
+    await check('backfill reads stay idle and schedule writes use an isolated strict payload', async f => {
+        same(f.calls.filter(call => call.url.endsWith('/baidu/backfill')).length, 1, 'one initial GET');
+        same(f.byId('baidu-backfill-enabled').checked, false, 'off by default');
+        same(f.calls.some(call => ['PUT', 'POST'].includes(call.options.method)), false, 'view is read only');
+        await f.act(() => f.byId('baidu-backfill-intervalMinutes').onChange(30));
+        await f.act(() => f.byId('baidu-backfill-batchLimit').onChange(2));
+        await f.act(() => f.byId('baidu-backfill-save').onClick());
+        const request = f.last();
+        same([request.url, request.options.method, JSON.parse(request.options.body)],
+            ['/api/admin/resource-hub/baidu/backfill', 'PUT', { enabled: false, intervalMinutes: 30, batchLimit: 2 }], 'isolated scheduling API');
+        await f.reply(request, backfill({ taskId: 9, intervalMinutes: 30, batchLimit: 2 }));
+        same(f.byId('drive-BAIDU-videoEnabled').checked, false, 'schedule keeps videos off');
+        same(f.byId('drive-BAIDU-transferEnabled').checked, false, 'schedule keeps transfer stage off');
+        same(f.calls.some(call => call.url.endsWith('/baidu/backfill/run')), false, 'saving paused schedule does not run');
+    }, { baiduSupported: true });
+    await check('manual backfill is explicit and its page callback sends only an empty POST', async f => {
+        same(f.byId('baidu-backfill-run').disabled, false, 'saved torrent workflow can backfill without discovery');
+        same(f.calls.some(call => call.url.endsWith('/baidu/backfill/run')), false, 'no auto run');
+        await f.act(() => { f.byId('baidu-backfill-run').onClick(); f.byId('baidu-backfill-run').onClick(); });
+        const runs = f.calls.filter(call => call.url.endsWith('/baidu/backfill/run'));
+        same(runs.length, 1, 'one manual batch');
+        same([runs[0].options.method, runs[0].options.body], ['POST', '{}'], 'no credential or workflow payload');
+        await f.reply(runs[0], backfill({ taskId: 9, processed: 1, succeeded: 1 }));
+        same(f.byId('drive-BAIDU-videoEnabled').checked, false, 'torrent-only workflow kept');
+    }, { baiduSupported: true, baiduConfigured: true, baiduTransferEnabled: true, baiduShareEnabled: true, baiduTorrentEnabled: true });
+    await check('workflow drafts prevent manual backfill and malformed API errors stay fixed', async f => {
+        await f.change('BAIDU', 'videoEnabled', true);
+        same(f.byId('baidu-backfill-run').disabled, true, 'unsaved file selection blocks backfill');
+        await f.act(() => f.byId('baidu-backfill-run').onClick());
+        same(f.calls.some(call => call.url.endsWith('/baidu/backfill/run')), false, 'direct click guarded');
+        await f.act(() => f.byId('baidu-backfill-refresh').onClick());
+        // The GET fixture resolves immediately with safe metadata, so exercise the strict decoder via a write response.
+        await f.act(() => f.byId('baidu-backfill-intervalMinutes').onChange(20));
+        await f.act(() => f.byId('baidu-backfill-save').onClick());
+        await f.reply(f.last(), { ...backfill(), status: 'BDUSS=raw-cookie' });
+        same(f.all('Alert').some(props => props.title === 'cloudDriveWorkflows.baiduBackfill.saveFailed'), true, 'fixed invalid response error');
+        same(f.all('Alert').some(props => String(props.title).includes('raw-cookie')), false, 'no raw response exposed');
+    }, { baiduSupported: true, baiduConfigured: true, baiduTransferEnabled: true, baiduShareEnabled: true, baiduTorrentEnabled: true });
     await check('older API without workflows does not invent enabled drive state', async f => {
         same(f.all('Card').some(props => String(props['data-testid']).startsWith('drive-card-')), false, 'no fabricated controls');
         same(f.all('Empty').some(props => props.description === 'cloudDriveWorkflows.unavailable'), true, 'clear unavailable state');
@@ -322,8 +364,9 @@ test('Cloud drive configuration: real React page and per-provider API', { timeou
         crawlRanges: 'src/components/admin/MetadataCrawlRanges.tsx',
         driveSettings: 'src/components/admin/DriveWorkflowSettings.tsx',
         baiduAccount: 'src/components/admin/BaiduAccountConnection.tsx',
+        baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
-    assert.equal(results.length, 17);
+    assert.equal(results.length, 20);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });

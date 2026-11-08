@@ -167,3 +167,61 @@ test('application replacement during a scan blocks credential import and closes 
         fs.rmSync(root, { recursive: true, force: true });
     }
 });
+
+
+test('browser proxy is optional and limited to the explicit loopback port', () => {
+    assert.equal(helper.browserArguments({}).some(arg => arg.startsWith('--proxy-server=')), false);
+    assert(helper.browserArguments({ proxyServer: 'http://127.0.0.1:7897' }).includes('--proxy-server=http://127.0.0.1:7897'));
+    for (const proxyServer of [null, '', 'http://evil.example:7897', 'http://localhost:7897', 'https://127.0.0.1:7897',
+        'http://user@127.0.0.1:7897', 'http://127.0.0.1:0', 'http://127.0.0.1:65536', 'http://127.0.0.1:7897/path',
+        'http://127.0.0.1:7897 --unsafe', 'http://127.0.0.1:07897']) {
+        assert.throws(() => helper.browserArguments({ proxyServer }), /proxy_rejected/);
+    }
+});
+
+
+test('Windows limited wrapper validates existing private directories without mutating ACLs', { skip: process.platform !== 'win32' }, () => {
+    const fs = require('node:fs'); const os = require('node:os'); const path = require('node:path');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gying-baidu-acl-test-'));
+    const script = `
+$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'
+$ast=[Management.Automation.Language.Parser]::ParseFile($env:GYING_BAIDU_RUNNER,[ref]$null,[ref]$null)
+foreach($name in @('Assert-BaiduPlainPath','New-BaiduPrivateDirectory')) {
+ $definition=$ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name},$false)
+ if(-not $definition){throw 'missing_function'}
+ . ([ScriptBlock]::Create($definition.Extent.Text))
+}
+$private=Join-Path $env:GYING_BAIDU_TEST_ROOT 'private'
+New-BaiduPrivateDirectory $private
+$before=(Get-Acl -LiteralPath $private).Sddl
+function Set-Acl { throw 'must_not_mutate_existing_acl' }
+New-BaiduPrivateDirectory $private
+New-BaiduPrivateDirectory $private
+if((Get-Acl -LiteralPath $private).Sddl -cne $before){throw 'acl_changed'}
+$file=Join-Path $private 'not-directory'; [IO.File]::WriteAllText($file,'fixture')
+$rejected=$false;try{New-BaiduPrivateDirectory $file}catch{$rejected=$_.Exception.Message -eq 'private_path_rejected'}
+if(-not $rejected){throw 'file_not_rejected'}
+Remove-Item Function:Set-Acl
+$unsafe=Join-Path $env:GYING_BAIDU_TEST_ROOT 'unsafe'; [void][IO.Directory]::CreateDirectory($unsafe)
+$acl=New-Object Security.AccessControl.DirectorySecurity
+$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User
+$acl.SetOwner($sid); $acl.SetAccessRuleProtection($true,$false)
+foreach($identity in @($sid,(New-Object Security.Principal.SecurityIdentifier('S-1-5-18')))) { $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($identity,'FullControl','ContainerInherit,ObjectInherit','None','Allow'))) }
+$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule((New-Object Security.Principal.SecurityIdentifier('S-1-1-0')),'Read','ContainerInherit,ObjectInherit','None','Allow')))
+Set-Acl -LiteralPath $unsafe -AclObject $acl
+function Set-Acl { throw 'must_not_repair_unsafe_acl' }
+$rejected=$false;try{New-BaiduPrivateDirectory $unsafe}catch{$rejected=$_.Exception.Message -eq 'private_acl_rejected'}
+if(-not $rejected){throw 'public_acl_not_rejected'}
+Write-Output 'existing-idempotent-file-and-public-acl-rejected'
+`;
+    try {
+        const output = require('node:child_process').execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden',
+            '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { windowsHide: true, timeout: 20000,
+            env: { ...process.env, PSModulePath: path.join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'Modules'),
+                GYING_BAIDU_RUNNER: path.resolve(__dirname, '../run-baidu-browser-login.ps1'), GYING_BAIDU_TEST_ROOT: root }, encoding: 'utf8' });
+        assert.equal(output.trim(), 'existing-idempotent-file-and-public-acl-rejected');
+    } finally {
+        assert.equal(path.dirname(root), path.resolve(os.tmpdir())); assert(path.basename(root).startsWith('gying-baidu-acl-test-'));
+        fs.rmSync(root, { recursive: true, force: true });
+    }
+});

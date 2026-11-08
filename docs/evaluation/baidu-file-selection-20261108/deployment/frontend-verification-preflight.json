@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-11-08T16:16:49.625774+00:00",
+  "candidateArtifactsRechecked": 375,
+  "candidateArtifactHashesMatch": true,
+  "candidateRuntimeUid": 1001,
+  "sourceFilesRechecked": 77,
+  "sourceHashesMatch": true,
+  "existingValidAdministratorDevices": 1,
+  "readinessSigningKeyRead": false,
+  "newDevicesCreated": false,
+  "businessSourceFilesModified": false,
+  "productionWritesSent": 0,
+  "actualDeployedBrowserVerificationExecuted": false,
+  "offlineCandidateHelperPreflight": {
+    "status": "passed",
+    "scenarios": 8,
+    "realProductionRequests": 0,
+    "configurationReadVia": "overview.data.config",
+    "mutatingRequestsBlocked": true,
+    "priorFailedHelperAttemptRetained": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-verification-20261109-000916-3e53b4b5\\mock-helper-ui-attempt-1.json"
+  },
+  "helpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-verification-20261109-000916-3e53b4b5\\VerifyBaiduAdminUi.py",
+      "sha256": "f3f0347cd3517a59d8244c70d9f56803c1ff57443c0517cec2a4066fa1ab29d0"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-verification-20261109-000916-3e53b4b5\\VerifyBaiduAdminUi.cjs",
+      "sha256": "d966049c78d32a0d042438c9c48391f617de1aad3b0969486b063a1221f80e64"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-verification-20261109-000916-3e53b4b5\\VerifyBaiduPublicAssets.py",
+      "sha256": "4a4e8094c70b25024ba7843d6bc7bd9c5c87d9268aefcb610c35b55902c53d56"
+    }
+  ]
+}

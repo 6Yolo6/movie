@@ -1,0 +1,18 @@
+[
+  {
+    "path": "frontend/tests/baidu-backfill.test.mjs",
+    "sha256": "e0750299ebbdf6ff41d96679461449b393167831c8dc7187dd8c9b329523e17e"
+  },
+  {
+    "path": "frontend/tests/cloud-drive-workflows.test.mjs",
+    "sha256": "85ad799df2c4aef41fda9059259b3ad8bd46b0830ba730961f70576ec4938d3e"
+  },
+  {
+    "path": "frontend/tests/baidu-account.test.mjs",
+    "sha256": "8e71f174131c7145a9853c38a84f4ef965d89ad6dd1b9a225ae466190fc419ca"
+  },
+  {
+    "path": "frontend/tests/helpers/offline-react.mjs",
+    "sha256": "b0cd2d6c164991168eb64498e8788085a1faee83f7064739a16f0a7233c3d454"
+  }
+]

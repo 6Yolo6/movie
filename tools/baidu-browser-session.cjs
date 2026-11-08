@@ -41,7 +41,7 @@ function configuration(file) {
     try { value = JSON.parse(fs.readFileSync(source, 'utf8').replace(/^\uFEFF/, '')); }
     catch { throw new SafeFailure('configuration_rejected'); }
     const allowed = new Set(['version', 'backendContainer', 'expectedBackendImage', 'requestPath', 'backendOrigin',
-        'dockerPath', 'puppeteerPath', 'edgePath', 'profilePath']);
+        'dockerPath', 'puppeteerPath', 'edgePath', 'profilePath', 'proxyServer']);
     if (!value || Array.isArray(value) || Object.keys(value).some(key => !allowed.has(key))
             || value.version !== 1 || value.backendContainer !== CONTAINER_NAME
             || !/^sha256:[a-f0-9]{64}$/.test(value.expectedBackendImage || '')
@@ -53,7 +53,19 @@ function configuration(file) {
     if (value.profilePath !== path.resolve(path.dirname(source), 'baidu-qr-profile')) {
         throw new SafeFailure('private_profile_rejected');
     }
+    validateProxy(value.proxyServer);
     return value;
+}
+function validateProxy(proxy) {
+    if (proxy === undefined) return;
+    if (typeof proxy !== 'string' || !/^http:\/\/127\.0\.0\.1:[1-9][0-9]{0,4}$/.test(proxy)
+            || Number(proxy.split(':').at(-1)) > 65535) throw new SafeFailure('proxy_rejected');
+}
+function browserArguments(options) {
+    validateProxy(options.proxyServer);
+    return ['--no-first-run', '--no-default-browser-check', '--disable-save-password-bubble',
+        '--disable-features=PasswordManagerOnboarding,PasswordLeakDetection,AutofillServerCommunication',
+        ...(options.proxyServer ? ['--proxy-server=' + options.proxyServer] : [])];
 }
 function docker(options, args) {
     return new Promise((resolve, reject) => execFile(options.dockerPath, args,
@@ -164,8 +176,7 @@ async function run(options, dependencies = {}) {
         if (!fs.existsSync(profile)) throw new SafeFailure('private_profile_missing');
         const puppeteer = dependencies.puppeteer || require(options.puppeteerPath);
         browser = await puppeteer.launch({ executablePath: options.edgePath, userDataDir: profile, headless: false,
-            args: ['--no-first-run', '--no-default-browser-check', '--disable-save-password-bubble',
-                '--disable-features=PasswordManagerOnboarding,PasswordLeakDetection,AutofillServerCommunication'],
+            args: browserArguments(options),
             dumpio: false });
         const pages = await browser.pages(); const page = pages[0] || await browser.newPage();
         await page.setRequestInterception(true);
@@ -205,7 +216,7 @@ async function run(options, dependencies = {}) {
     } finally { ticket.nonce = null; if (browser) await browser.close().catch(() => {}); }
 }
 module.exports = { SafeFailure, configuration, validateBackend, parseTicket, pendingRequest, post, trustedPage,
-    blockedRequest, browserCookies, run };
+    blockedRequest, browserCookies, browserArguments, run };
 if (require.main === module) {
     (async () => {
         try {

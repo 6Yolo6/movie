@@ -60,7 +60,7 @@ class FixtureSafetyTest(unittest.TestCase):
         arguments = shlex.split(lines[0])
         self.assertEqual('mvn', arguments[0])
         self.assertIn('-o', arguments)
-        self.assertIn('-Dtest=BaiduTransferTaskMySqlTest,MonitoringServiceMySqlTest,QueryBoundaryMySqlTest', arguments)
+        self.assertIn('-Dtest=' + ','.join(sorted(fixture.REQUIRED_TESTS)), arguments)
         self.assertNotIn('-DskipTests', arguments)
         self.assertEqual('test', arguments[-1])
 

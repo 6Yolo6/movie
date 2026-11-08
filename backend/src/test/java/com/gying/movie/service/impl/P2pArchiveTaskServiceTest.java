@@ -439,4 +439,52 @@ class P2pArchiveTaskServiceTest {
         assertEquals("https://pan.baidu.com/s/1verified?pwd=wxyz", saved.getValue().getUrl());
         var order = inOrder(cloud, links); order.verify(cloud).findOwnShare(eq("BAIDU"), anyString()); order.verify(links).save(any());
     }
+    @Test void backfillCloneIgnoresDiscoverySwitchAndDropsAllRemoteCheckpoints() throws Exception {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true); properties.getBaidu().setDiscoveryEnabled(false); properties.getBaidu().setTorrentEnabled(true);
+        ResourceHubTask original = runnableTask(); original.setStatus("SUCCEEDED");
+        var old = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(original.getPayload());
+        old.put("folderId", "quark-folder"); old.put("shareUrl", "https://pan.quark.cn/s/old");
+        old.put("baiduShareSubmitting", true); old.putObject("uploadedFiles").put("file", "quark-fid");
+        original.setPayload(old.toString()); when(tasks.getById(11L)).thenReturn(original);
+        when(tasks.enqueue(any())).thenAnswer(call -> { ResourceHubTask task = call.getArgument(0); task.setId(22L); return task; });
+        ResourceHubTask clone = service.cloneExistingForProvider(11L, "BAIDU", 100L);
+        var clean = mapper.readTree(clone.getPayload());
+        assertEquals("BAIDU", clone.getSource()); assertEquals(100, clean.path("backfillParentId").asLong());
+        assertFalse(clean.has("folderId")); assertFalse(clean.has("shareUrl")); assertFalse(clean.has("uploadedFiles")); assertFalse(clean.has("baiduShareSubmitting"));
+        assertEquals(old.path("resourceIds"), clean.path("resourceIds")); verifyNoInteractions(quark, xunlei, baidu); verify(cloud, never()).upload(anyString(), anyString(), any()); verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+    }
+    @Test void existingUnknownBaiduArchiveIsReusedWithoutResetOrRemoteWork() throws Exception {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true); properties.getBaidu().setTorrentEnabled(true);
+        ResourceHubTask original = runnableTask(); when(tasks.getById(11L)).thenReturn(original);
+        ResourceHubTask unknown = new ResourceHubTask(); unknown.setId(22L); unknown.setStatus("UNKNOWN");
+        when(tasks.getOne(any(), eq(false))).thenReturn(unknown);
+        assertSame(unknown, service.cloneExistingForProvider(11L, "BAIDU", 100L));
+        assertEquals("UNKNOWN", unknown.getStatus()); verify(tasks, never()).enqueue(any()); verify(cloud, never()).upload(anyString(), anyString(), any()); verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+    }
+    @Test void exactSuccessfulBaiduChildVerifiesOnlyItsOwnMetadataFolderAndShare() throws Exception {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true); properties.getBaidu().setTorrentEnabled(true);
+        ResourceHubTask child = new ResourceHubTask(); child.setId(22L); child.setTaskType("P2P_ARCHIVE"); child.setSource("BAIDU"); child.setStatus("SUCCEEDED");
+        child.setMovieId("movie1"); child.setPayload("{\"folderId\":\"/fixture/metadata\",\"resourceLinkId\":50}"); when(tasks.getById(22L)).thenReturn(child);
+        ResourceLink resource = new ResourceLink(); resource.setId(50L); resource.setMovieId("movie1"); resource.setProvider("BAIDU"); resource.setType("TORRENT");
+        resource.setSource("GYING_P2P_ARCHIVE"); resource.setStatus("ACTIVE"); when(links.getById(50L)).thenReturn(resource);
+        when(links.update(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(true);
+        when(tasks.update(any(ResourceHubTask.class), any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenReturn(true);
+        when(cloud.findOwnShare("BAIDU", "/fixture/metadata")).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
+        assertSame(child, service.submitOne(22L, "BAIDU"));
+        verify(cloud).verifyMetadataOnlyFolder("BAIDU", "/fixture/metadata"); verify(cloud).findOwnShare("BAIDU", "/fixture/metadata");
+        verify(cloud, never()).upload(anyString(), anyString(), any()); verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(tasks, never()).list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class));
+        assertThrows(IllegalArgumentException.class, () -> service.submitOne(22L, "QUARK"));
+    }
+
+    @Test void expiredBaiduAccountStopsBackfillArchiveWithoutSpendingRetryBudget() throws Exception {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true); properties.getBaidu().setTorrentEnabled(true);
+        ResourceHubTask task = runnableTask(); task.setSource("BAIDU");
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload()); payload.put("backfillParentId", 100L); task.setPayload(payload.toString());
+        doThrow(new BaiduActionException("SESSION_EXPIRED", false, true, false)).when(cloud).ensureFolder(eq("BAIDU"), any(), anyString());
+        service.runTask(task);
+        assertEquals("ACTION_REQUIRED", task.getStatus()); assertEquals(0, task.getAttempts());
+        verify(cloud, never()).upload(anyString(), anyString(), any()); verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+    }
+
 }

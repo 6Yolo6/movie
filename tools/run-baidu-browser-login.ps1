@@ -1,6 +1,6 @@
 param(
     [string]$HelperRoot = 'E:\gying-tools\baidu-login',
-    [string]$NodePath = 'D:\nvm\nodejs\node.exe',
+    [string]$NodePath = 'D:\nvm\nvm\v24.22.1\node.exe',
     [string]$ConfigPath = 'E:\gying-tools\baidu-login\private\login-config.json'
 )
 $ErrorActionPreference = 'Stop'
@@ -19,8 +19,18 @@ function Assert-BaiduPlainPath([string]$Path) {
 }
 function New-BaiduPrivateDirectory([string]$Path) {
     Assert-BaiduPlainPath $Path
-    [void][IO.Directory]::CreateDirectory($Path)
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    if (Test-Path -LiteralPath $Path) {
+        if (-not (Test-Path -LiteralPath $Path -PathType Container)) { throw 'private_path_rejected' }
+        $existing = Get-Acl -LiteralPath $Path
+        if ($existing.GetOwner([Security.Principal.SecurityIdentifier]).Value -cne $identity.Value -or -not $existing.AreAccessRulesProtected) { throw 'private_acl_rejected' }
+        foreach ($rule in $existing.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+            if ($rule.AccessControlType -eq 'Allow' -and $rule.IdentityReference.Value -notin @($identity.Value, 'S-1-5-18')) { throw 'private_acl_rejected' }
+        }
+        # Existing private directories are checked, never re-owned by a limited task.
+        return
+    }
+    [void][IO.Directory]::CreateDirectory($Path)
     $system = New-Object Security.Principal.SecurityIdentifier('S-1-5-18')
     $acl = New-Object Security.AccessControl.DirectorySecurity
     $acl.SetOwner($identity); $acl.SetAccessRuleProtection($true, $false)

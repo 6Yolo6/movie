@@ -41,7 +41,11 @@ import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
 import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
-import { baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate, type BaiduSessionStatus, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate } from '@/lib/cloudDriveWorkflows';
+import {
+    baiduBackfillSettings, baiduBackfillStatus, baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate,
+    type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider,
+    type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
+} from '@/lib/cloudDriveWorkflows';
 
 const { Title, Text } = Typography;
 const MISSING_RESOURCE_BATCH_LIMIT = 20;
@@ -640,6 +644,19 @@ export default function ResourceHubAdminPage() {
 
     const startBaiduLogin = useCallback(async (signal: AbortSignal): Promise<BaiduSessionStatus> =>
         baiduSessionStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/login', {
+            method: 'POST', body: '{}', signal,
+        })), [requestJson]);
+
+    const readBaiduBackfill = useCallback(async (signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill', { signal })), [requestJson]);
+
+    const saveBaiduBackfill = useCallback(async (settings: BaiduBackfillSettings, signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill', {
+            method: 'PUT', body: JSON.stringify(baiduBackfillSettings(settings)), signal,
+        })), [requestJson]);
+
+    const runBaiduBackfill = useCallback(async (signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill/run', {
             method: 'POST', body: '{}', signal,
         })), [requestJson]);
 
@@ -1671,9 +1688,10 @@ export default function ResourceHubAdminPage() {
                         {
                             key: 'drive-workflows',
                             label: t('cloudDriveWorkflows.title'),
-                            children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading}
+                            children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading} hubEnabled={overview?.config.enabled === true}
                                 onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} onReadBaiduSession={readBaiduSession}
-                                onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection} />,
+                                onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection}
+                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} />,
                         },
                         {
                             key: 'manual',

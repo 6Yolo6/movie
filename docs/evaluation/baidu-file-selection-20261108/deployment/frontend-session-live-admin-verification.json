@@ -1,0 +1,1048 @@
+{
+  "startedAt": "2026-11-08T16:35:40.354160+00:00",
+  "realApi": true,
+  "configurationWriteRequestsSent": 0,
+  "tokensKeysOrJtiWritten": false,
+  "usersOrDevicesCreated": 0,
+  "transfersMessagesPostsSent": 0,
+  "browserHelper": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\deployment\\frontend-admin-session-verification-20261109-003358-8fa6864d\\VerifyBaiduAdminUi.cjs",
+  "browserHelperSha256": "8a1c2c12ed7c2852a7732406c009088aa675df6770e26684817e5f24f5a9ec60",
+  "baiduSessionAtStart": {
+    "configured": false,
+    "state": "PENDING"
+  },
+  "providers": [
+    {
+      "provider": "QUARK",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "XUNLEI",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "discoveryEnabled": true,
+      "transferEnabled": true,
+      "shareEnabled": true,
+      "gyingPublishEnabled": true,
+      "credentialConfigured": true,
+      "batchLimit": 5
+    },
+    {
+      "provider": "BAIDU",
+      "supported": true,
+      "status": "AVAILABLE",
+      "videoEnabled": false,
+      "torrentEnabled": false,
+      "discoveryEnabled": false,
+      "transferEnabled": false,
+      "shareEnabled": false,
+      "gyingPublishEnabled": false,
+      "credentialConfigured": false,
+      "batchLimit": 5
+    }
+  ],
+  "browser": {
+    "status": "passed",
+    "actualDeployedFrontend": true,
+    "realAdministratorApi": true,
+    "newLoginOrDevice": false,
+    "credentialMaterialWritten": false,
+    "configurationWriteRequestsSent": 0,
+    "transfersOrPostsSent": 0,
+    "viewports": [
+      {
+        "width": 1280,
+        "lang": "zh",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\zh-1280-light.png"
+      },
+      {
+        "width": 1280,
+        "lang": "zh",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\zh-1280-dark.png"
+      },
+      {
+        "width": 1280,
+        "lang": "en",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\en-1280-light.png"
+      },
+      {
+        "width": 1280,
+        "lang": "en",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 1280,
+          "document": 1280
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\en-1280-dark.png"
+      },
+      {
+        "width": 390,
+        "lang": "zh",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\zh-390-light.png"
+      },
+      {
+        "width": 390,
+        "lang": "zh",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "WAITING_SCAN",
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "WAITING_SCAN",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\zh-390-dark.png"
+      },
+      {
+        "width": 390,
+        "lang": "en",
+        "theme": "light",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\en-390-light.png"
+      },
+      {
+        "width": 390,
+        "lang": "en",
+        "theme": "dark",
+        "realConfigMatchesUi": true,
+        "realSessionHttp200": true,
+        "baiduFileAndWorkflowDefaultsDisabled": true,
+        "baiduSessionMatchesActualApi": true,
+        "sessionStatesObserved": [
+          "FAILED"
+        ],
+        "initialSessionUi": {
+          "state": "FAILED",
+          "configured": false
+        },
+        "videoAndTorrentControlsIndependent": true,
+        "draftSwitchesDiscardedOnReload": true,
+        "configurationWriteRequestsSent": 0,
+        "transfersOrPostsSent": 0,
+        "persistsOnReload": true,
+        "overflow": {
+          "viewport": 390,
+          "document": 390
+        },
+        "pageErrors": 0,
+        "screenshot": "C:\\Users\\ASUS\\.codex\\visualizations\\2026\\11\\08\\01a1bb5c-cb39-7832-9b3a-af6825e4686a\\baidu-file-selection\\frontend-admin-session-verification-20261109-003358-8fa6864d\\en-390-dark.png"
+      }
+    ],
+    "blockedNonReadRequests": [
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST"
+      }
+    ],
+    "unexpectedWriteAttempts": [],
+    "externalRequestsBlocked": [],
+    "readHttpStatuses": [
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-1280-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "zh-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-light",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "status": 200
+      },
+      {
+        "phase": "en-390-dark",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "status": 200
+      }
+    ],
+    "pageErrors": 0,
+    "completedAt": "2026-11-08T16:39:55.371Z"
+  },
+  "status": "failed",
+  "errorType": "GateError",
+  "failureGate": "Resource Hub persisted configuration unchanged",
+  "resourceHubConfigRowsPreserved": false,
+  "completedAt": "2026-11-08T16:39:55.513814+00:00"
+}

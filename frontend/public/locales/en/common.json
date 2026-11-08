@@ -1348,6 +1348,67 @@
     },
     "fileTypes": "File types to collect",
     "torrentHelp": "Torrent files are small .torrent metadata files. Saving them does not start offline video downloads.",
-    "noFilesSelected": "No video or torrent files are selected. Movie metadata can still be collected; cloud file transfers will not run."
+    "noFilesSelected": "No video or torrent files are selected. Movie metadata can still be collected; cloud file transfers will not run.",
+    "baiduBackfill": {
+      "title": "Gradual Baidu resource backfill",
+      "help": "Complete existing Baidu tasks, discovered resources and torrent records before searching sources. Off by default, with 1 item every 10 minutes. Uses saved file type choices only. Schedule settings are saved separately; automatic runs also need Resource Hub and its worker enabled.",
+      "enabled": "Automatic gradual backfill",
+      "intervalMinutes": "Run interval (minutes)",
+      "batchLimit": "Items per run",
+      "save": "Save backfill settings",
+      "run": "Backfill a small batch",
+      "refresh": "Refresh backfill status",
+      "saved": "Backfill settings saved",
+      "runFinished": "Backfill check finished. Review progress and any blocking reason.",
+      "readFailed": "Cannot read backfill status. Refresh to try again.",
+      "saveFailed": "Cannot save backfill settings. Your changes are kept.",
+      "runFailed": "This backfill did not finish. Refresh its status before retrying.",
+      "saveBeforeRun": "Save your Baidu workflow and backfill changes before running or enabling automatic backfill.",
+      "nextRun": "Next automatic run: {{time}}",
+      "noNextRun": "Not scheduled",
+      "states": {
+        "NOT_STARTED": "Not started",
+        "PAUSED": "Paused",
+        "PENDING": "Pending",
+        "RUNNING": "Running",
+        "BLOCKED": "Needs attention",
+        "COMPLETE": "Complete"
+      },
+      "phases": {
+        "EXISTING_TASKS": "Existing Baidu tasks",
+        "EXISTING_DISCOVERIES": "Discovered Baidu resources",
+        "EXISTING_P2P": "Existing torrent resources",
+        "SOURCE_SEARCH": "Source search backfill",
+        "COMPLETE": "Backfill complete"
+      },
+      "counts": {
+        "processed": "Processed: {{count}}",
+        "succeeded": "Succeeded: {{count}}",
+        "skipped": "Skipped: {{count}}",
+        "failed": "Failed: {{count}}"
+      },
+      "validation": {
+        "intervalMinutes": "Run interval must be an integer from 1 to 1440 minutes.",
+        "batchLimit": "Items per run must be an integer from 1 to 5."
+      },
+      "blocked": {
+        "HUB_DISABLED": "Enable Resource Hub first.",
+        "WORKER_DISABLED": "Enable the Resource Hub worker for automatic backfill.",
+        "TRANSFER_DISABLED": "Enable and save Baidu transfers first.",
+        "SHARE_DISABLED": "Enable and save Baidu sharing first.",
+        "FILE_TYPES_DISABLED": "Select and save at least one file type: video or torrent.",
+        "SESSION_REQUIRED": "Scan the QR code to connect the dedicated Baidu account first.",
+        "DISCOVERY_DISABLED": "Backfill has reached source search. Enable and save Baidu discovery.",
+        "CHILD_ACTION_REQUIRED": "This resource needs your action. Check its Baidu task before continuing.",
+        "CHILD_UNKNOWN": "The transfer result needs verification. Check its Baidu task first.",
+        "CHILD_REVIEW_REQUIRED": "This resource needs review. Check its Baidu task before continuing.",
+        "CHILD_RUNNING": "The current resource is still running. Backfill will wait for it.",
+        "CHILD_RETRY_WAIT": "The current resource is waiting to retry. Backfill progress is kept.",
+        "CHILD_FAILED": "The current resource failed. Check its task first.",
+        "LEASE_BUSY": "Another backfill is running. Refresh shortly.",
+        "PROCESSING_ERROR": "Backfill encountered a problem. Check the task before retrying.",
+        "UNKNOWN": "Backfill cannot continue yet. Check Baidu tasks or refresh its status."
+      }
+    }
   }
 }
