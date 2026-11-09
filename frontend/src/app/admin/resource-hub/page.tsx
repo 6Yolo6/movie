@@ -41,6 +41,7 @@ import { api, readApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import MetadataCrawlRanges from '@/components/admin/MetadataCrawlRanges';
 import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
+import DuplicateMovieScanner from '@/components/admin/DuplicateMovieScanner';
 import {
     baiduBackfillSettings, baiduBackfillStatus, baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate,
     type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider,
@@ -1428,33 +1429,7 @@ export default function ResourceHubAdminPage() {
                                                         scroll={{ x: 1200 }}
                                                     />
                                                 )}
-                                                <Space.Compact block className="[&>button]:h-auto [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:whitespace-normal">
-                                                    <Button
-                                                        icon={<SearchOutlined />}
-                                                        loading={runningAction === 'cleanup-dry'}
-                                                        onClick={() => runResultAction(
-                                                            'cleanup-dry',
-                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=true&limit=100',
-                                                            (data) => t('resourceHubCleanupDryRunDone', { count: data.candidates || 0 }),
-                                                        )}
-                                                    >
-                                                        {t('resourceHubCleanupDryRun')}
-                                                    </Button>
-                                                    <Button
-                                                        danger
-                                                        loading={runningAction === 'cleanup-execute'}
-                                                        onClick={() => runResultAction(
-                                                            'cleanup-execute',
-                                                            '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=false&limit=100',
-                                                            (data) => t('resourceHubCleanupDone', {
-                                                                merged: data.merged || 0,
-                                                                resources: data.movedResources || 0,
-                                                            }),
-                                                        )}
-                                                    >
-                                                        {t('resourceHubCleanupExecute')}
-                                                    </Button>
-                                                </Space.Compact>
+                                                <DuplicateMovieScanner />
                                                 <Space.Compact block className="[&>button]:h-auto [&>button]:min-h-11 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:whitespace-normal">
                                                     <Button
                                                         icon={<SearchOutlined />}

@@ -112,6 +112,8 @@ public class ResourceHubAdminController {
     private final IQqAutomationConfigService qqAutomationConfigService;
     private final IQqChannelPostLogService qqChannelPostLogService;
     private final IMovieMetadataService movieService;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.gying.movie.service.impl.MovieDuplicateScannerService duplicateScannerService;
     private final IUserFavoriteService favoriteService;
     private final ICommentService commentService;
     private final QqChannelPublisherClient qqChannelPublisherClient;
@@ -1405,54 +1407,15 @@ public class ResourceHubAdminController {
     @PostMapping("/cleanup/duplicate-tmdb")
     public ApiResponse<Map<String, Object>> cleanupDuplicateTmdbMovies(
             @RequestParam(defaultValue = "true") boolean dryRun,
-            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(defaultValue = "100") int limit,
+            @RequestParam(defaultValue = "1") int page,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        int safeLimit = Math.min(Math.max(limit, 1), 200);
-        List<MovieMetadata> tmdbMovies = movieService.list(new QueryWrapper<MovieMetadata>()
-                .likeRight("id", "tmdb_")
-                .ne("status", "DELETED")
-                .orderByDesc("created_at")
-                .last("LIMIT " + safeLimit));
-        int candidates = 0;
-        int merged = 0;
-        long movedResources = 0;
-        List<Map<String, Object>> items = new ArrayList<>();
-        for (MovieMetadata tmdbMovie : tmdbMovies) {
-            MovieMetadata canonical = findCanonicalMovie(tmdbMovie);
-            if (canonical == null) {
-                continue;
-            }
-            candidates++;
-            long resources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
-                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
-                    .eq("movie_id", tmdbMovie.getId())
-                    .ne("status", "DELETED"));
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("fromMovieId", tmdbMovie.getId());
-            item.put("fromTitle", firstText(tmdbMovie.getTitleCn(), tmdbMovie.getTitleEn(), tmdbMovie.getId()));
-            item.put("toMovieId", canonical.getId());
-            item.put("toTitle", firstText(canonical.getTitleCn(), canonical.getTitleEn(), canonical.getId()));
-            item.put("resources", resources);
-            items.add(item);
-            if (dryRun) {
-                continue;
-            }
-            moveMovieReferences(tmdbMovie.getId(), canonical.getId());
-            tmdbMovie.setStatus("DELETED");
-            tmdbMovie.setDeletedAt(LocalDateTime.now());
-            tmdbMovie.setUpdatedAt(LocalDateTime.now());
-            movieService.updateById(tmdbMovie);
-            merged++;
-            movedResources += resources;
+        if (!dryRun) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Bulk duplicate merging is disabled; candidates require review and complete reference migration");
         }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("dryRun", dryRun);
-        result.put("candidates", candidates);
-        result.put("merged", merged);
-        result.put("movedResources", movedResources);
-        result.put("items", items);
-        return ApiResponse.ok(result);
+        return ApiResponse.ok(duplicateScannerService.scan(page, limit));
     }
 
     @PostMapping("/cleanup/mismatched-resources")
@@ -1565,72 +1528,6 @@ public class ResourceHubAdminController {
             throw new IllegalStateException("QQ channel board is not configured for type " + channelType);
         }
         return channelId;
-    }
-
-    private MovieMetadata findCanonicalMovie(MovieMetadata tmdbMovie) {
-        if (tmdbMovie == null) {
-            return null;
-        }
-        String title = firstText(tmdbMovie.getTitleCn(), tmdbMovie.getSeriesName(), tmdbMovie.getTitleEn());
-        if (!hasText(title)) {
-            return null;
-        }
-        QueryWrapper<MovieMetadata> query = new QueryWrapper<MovieMetadata>()
-                .notLikeRight("id", "tmdb_")
-                .ne("status", "DELETED")
-                .and(w -> w.eq("title_cn", title)
-                        .or().eq("title_en", title)
-                        .or().eq("series_name", title)
-                        .or().like("aliases", title));
-        if (tmdbMovie.getYear() != null) {
-            query.and(w -> w.eq("year", tmdbMovie.getYear()).or().isNull("year"));
-        }
-        query.last("LIMIT 1");
-        return movieService.getOne(query, false);
-    }
-
-    private void moveMovieReferences(String fromMovieId, String toMovieId) {
-        List<ResourceLink> resources = resourceLinkService.list(new QueryWrapper<ResourceLink>()
-                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE)).eq("movie_id", fromMovieId));
-        for (ResourceLink resource : resources) {
-            if (isTemporaryResource(resource)) continue;
-            resource.setMovieId(toMovieId);
-            resourceLinkService.updateById(resource);
-        }
-        List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
-                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX)).eq("movie_id", fromMovieId));
-        for (ResourceDiscoveryResult discovery : discoveries) {
-            if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) continue;
-            discovery.setMovieId(toMovieId);
-            discoveryResultService.updateById(discovery);
-        }
-        List<QuarkTransferTask> transfers = quarkTransferTaskService.list(new QueryWrapper<QuarkTransferTask>().eq("movie_id", fromMovieId));
-        for (QuarkTransferTask transfer : transfers) {
-            transfer.setMovieId(toMovieId);
-            quarkTransferTaskService.updateById(transfer);
-        }
-        List<ResourceHubTask> tasks = taskService.list(new QueryWrapper<ResourceHubTask>().eq("movie_id", fromMovieId));
-        for (ResourceHubTask task : tasks) {
-            task.setMovieId(toMovieId);
-            taskService.updateById(task);
-        }
-        List<UserFavorite> favorites = favoriteService.list(new QueryWrapper<UserFavorite>().eq("movie_id", fromMovieId));
-        for (UserFavorite favorite : favorites) {
-            long existing = favoriteService.count(new QueryWrapper<UserFavorite>()
-                    .eq("user_id", favorite.getUserId())
-                    .eq("movie_id", toMovieId));
-            if (existing > 0) {
-                favoriteService.removeById(favorite.getId());
-                continue;
-            }
-            favorite.setMovieId(toMovieId);
-            favoriteService.updateById(favorite);
-        }
-        List<Comment> comments = commentService.list(new QueryWrapper<Comment>().eq("relate_id", fromMovieId));
-        for (Comment comment : comments) {
-            comment.setRelateId(toMovieId);
-            commentService.updateById(comment);
-        }
     }
 
     private void refreshMovieResourceStatus(MovieMetadata movie, LocalDateTime now) {

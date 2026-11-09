@@ -95,6 +95,7 @@ async function pauseSuite({ React, createRoot, loadPage, loadModule, readApiErro
             'next/navigation': { useRouter: () => router },
             'react-i18next': { useTranslation: () => ({ t }) },
         };
+        mocks['@/components/admin/DuplicateMovieScanner'] = () => null;
         mocks['@/lib/cloudDriveWorkflows'] = loadModule('driveWorkflows', mocks);
         const Ranges = loadPage('crawlRanges', mocks);
         mocks['@/components/admin/BaiduAccountConnection'] = loadPage('baiduAccount', mocks);

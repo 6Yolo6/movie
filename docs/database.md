@@ -36,7 +36,9 @@
 | 文件 | 主要用途 |
 | --- | --- |
 | [`migration_access_log_client_identity.sql`](../backend/src/main/resources/db/migration_access_log_client_identity.sql) | 为访问日志追加可空的客户端 IP / User-Agent；不回填历史，先预检和备份，再部署应用 |
-| [`migration_baidu_transfer_task.sql`](../backend/src/main/resources/db/migration_baidu_transfer_task.sql) | 本轮候选新增百度独立任务、内容计划、账号绑定与副作用租约；已合入 schema，尚未执行生产迁移，不重置旧队列 |
+| [`migration_baidu_transfer_task.sql`](../backend/src/main/resources/db/migration_baidu_transfer_task.sql) | 百度独立任务、内容计划、账号绑定与副作用租约；已合入 schema，11月9日既有生产表验收见当前状态，其他环境按实际结构核对，不重置旧队列 |
+| [`migration_baidu_search_temporary_scope.sql`](../backend/src/main/resources/db/migration_baidu_search_temporary_scope.sql) | 百度搜索临时范围候选：新增 scope、请求摘要、分享确认与清理证据列；来源唯一约束改为影片/来源/scope，保留历史 PERMANENT 行。生产执行情况见当前状态，旧消费者不可消费新临时任务 |
+| [`migration_baidu_temporary_cleanup.sql`](../backend/src/main/resources/db/migration_baidu_temporary_cleanup.sql) | 百度精确临时清理任务候选与根目录/彻底删除模式默认配置；保留已有配置值，不回填、清理或重放历史任务。生产执行情况见当前状态 |
 | [`migration_comments_login_devices.sql`](../backend/src/main/resources/db/migration_comments_login_devices.sql) | 评论类型、安全约束与登录设备授权表 |
 | [`migration_favorites.sql`](../backend/src/main/resources/db/migration_favorites.sql) | 收藏表与影片热度字段 |
 | [`migration_fix_qq_channel_template_mojibake.sql`](../backend/src/main/resources/db/migration_fix_qq_channel_template_mojibake.sql) | 修正历史 QQ 频道默认模板乱码 |

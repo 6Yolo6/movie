@@ -444,9 +444,9 @@
   "resourceHubRepairInvalidStarted": "失效资源修复已开始，正在后台处理",
   "resourceHubRepairInvalidFailed": "失效资源修复任务失败",
   "resourceHubRepairInvalidDone": "已检查 {{checked}} 条，重新分享 {{reshared}} 条，恢复 {{restored}} 条，重新搜索 {{rediscovered}} 条，标记失效 {{invalid}} 条",
-  "resourceHubCleanupDryRun": "扫描重复影片",
+  "resourceHubCleanupDryRun": "扫描全库重复影片",
   "resourceHubCleanupExecute": "执行重复清洗",
-  "resourceHubCleanupDryRunDone": "发现 {{count}} 个可合并的 TMDB 重复条目",
+  "resourceHubCleanupDryRunDone": "发现 {{count}} 组待审核的疑似重复影片",
   "resourceHubCleanupDone": "已合并 {{merged}} 部重复影片，迁移 {{resources}} 条资源",
   "resourceHubPollutionDryRun": "扫描标题污染资源",
   "resourceHubPollutionExecute": "执行污染软清理",
@@ -1462,6 +1462,25 @@
         "PROCESSING_ERROR": "种子补全遇到问题，请查看当前条目和动作后重试。",
         "UNKNOWN": "补全暂时无法继续，请刷新确认当前条目和步骤。"
       }
+    }
+  },
+  "resourceHubDuplicates": {
+    "help": "扫描全库的疑似重复影片，统一中英文季数后缀；结果仅供审核，不会合并或删除影片。",
+    "records": "两条影片记录",
+    "identity": "类别 / 年份 / 季",
+    "resources": "正常资源（上 / 下）",
+    "evidence": "匹配依据",
+    "season": "第{{season}}季",
+    "peopleMatch": "同名且演员或导演一致",
+    "nameMatch": "名称一致，需人工核实",
+    "summary": "已扫描全库 {{scanned}} 条影片，发现 {{count}} 组疑似重复",
+    "partial": "已扫描 {{scanned}} 条影片，发现 {{count}} 组候选；达到扫描上限，结果不完整",
+    "excluded": "隔离 {{conflicts}} 组版本或人员冲突；{{excluded}} 条记录缺少可靠类别、年份或季数。",
+    "failed": "重复影片扫描失败，请重试。",
+    "categories": {
+      "mv": "电影",
+      "tv": "剧集",
+      "ac": "动漫"
     }
   }
 }

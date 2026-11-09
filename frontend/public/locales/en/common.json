@@ -444,9 +444,9 @@
   "resourceHubRepairInvalidStarted": "Invalid resource repair started in the background",
   "resourceHubRepairInvalidFailed": "Invalid resource repair job failed",
   "resourceHubRepairInvalidDone": "Checked {{checked}}, re-shared {{reshared}}, restored {{restored}}, re-discovered {{rediscovered}}, marked invalid {{invalid}}",
-  "resourceHubCleanupDryRun": "Scan duplicate movies",
+  "resourceHubCleanupDryRun": "Scan the full library for duplicates",
   "resourceHubCleanupExecute": "Run duplicate cleanup",
-  "resourceHubCleanupDryRunDone": "Found {{count}} mergeable duplicate TMDB records",
+  "resourceHubCleanupDryRunDone": "Found {{count}} possible duplicates for review",
   "resourceHubCleanupDone": "Merged {{merged}} duplicate movies and moved {{resources}} resources",
   "resourceHubPollutionDryRun": "Scan mismatched resources",
   "resourceHubPollutionExecute": "Soft-clean mismatched resources",
@@ -1462,6 +1462,25 @@
         "PROCESSING_ERROR": "This torrent backfill encountered a problem. Check the current entry and action before retrying.",
         "UNKNOWN": "Backfill cannot continue yet. Refresh to confirm the current entry and step."
       }
+    }
+  },
+  "resourceHubDuplicates": {
+    "help": "Scan the full library for possible duplicates, including Chinese and English season suffixes. Results require review; no movies are merged or deleted.",
+    "records": "Movie records",
+    "identity": "Category / year / season",
+    "resources": "Normal resources (top / bottom)",
+    "evidence": "Matching evidence",
+    "season": "Season {{season}}",
+    "peopleMatch": "Same name with shared cast or director",
+    "nameMatch": "Same name; review required",
+    "summary": "Scanned all {{scanned}} movies; found {{count}} possible duplicate pairs",
+    "partial": "Scanned {{scanned}} movies and found {{count}} pairs; a scan limit was reached, so results are incomplete",
+    "excluded": "Isolated {{conflicts}} version or people conflicts; {{excluded}} records lack reliable category, year or season metadata.",
+    "failed": "Duplicate scan failed. Please retry.",
+    "categories": {
+      "mv": "Movie",
+      "tv": "TV",
+      "ac": "Anime"
     }
   }
 }
