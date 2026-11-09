@@ -24,7 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnabledIfEnvironmentVariable(named="QUERY_BOUNDARY_MYSQL_FIXTURE",matches="network-none-tmpfs")
 class MovieDuplicateMergeMySqlTest {
     static JdbcTemplate jdbc; static DriverManagerDataSource source;
-    static MovieDuplicateMergeService service;
+    static MovieDuplicateMergeService service,limitedService;
+    static JdbcTemplate limited; static String applicationUser,database;
     static final ObjectMapper json=new ObjectMapper();
     static final List<String> DIRECT=List.of("resource_link","resource_discovery_result","quark_transfer_task","xunlei_transfer_task",
         "baidu_transfer_task","resource_hub_task","movie_source_identity","qq_bot_search_log","qq_channel_post_log","social_post_log","resource_operation_log");
@@ -35,7 +36,7 @@ class MovieDuplicateMergeMySqlTest {
         assertEquals("gying-query-fixture",base.queryForObject("SELECT @@hostname",String.class));
         assertEquals(runId,base.queryForObject("SELECT run_id FROM fixture_marker",String.class));
         assertTrue(base.queryForObject("SELECT VERSION()",String.class).startsWith("8.0."));
-        String database="duplicate_merge_fixture_"+runId;
+        database="duplicate_merge_fixture_"+runId;
         assertEquals(0,base.queryForObject("SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME=?",Integer.class,database));
         base.execute("CREATE DATABASE "+database+" CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
         source=dataSource("jdbc:mysql://127.0.0.1:3306/"+database); jdbc=new JdbcTemplate(source);
@@ -54,9 +55,18 @@ class MovieDuplicateMergeMySqlTest {
         for(var definition:MovieDuplicateMergeService.triggerDefinitions()) jdbc.execute(definition.statement());
         assertEquals(34,jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE()",Integer.class));
         service=new MovieDuplicateMergeService(jdbc,json,new DataSourceTransactionManager(source));
+        jdbc.execute(MovieDuplicateMergeService.guardMetadataDefinition().statement());
+        applicationUser="merge_app_"+runId;
+        jdbc.execute("CREATE USER '"+applicationUser+"'@'%' IDENTIFIED BY ''");
+        jdbc.execute("GRANT SELECT,INSERT,UPDATE,DELETE ON "+database+".* TO '"+applicationUser+"'@'%'");
+        jdbc.execute("GRANT EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata TO '"+applicationUser+"'@'%'");
+        jdbc.execute("GRANT SHOW_ROUTINE ON *.* TO '"+applicationUser+"'@'%'");
+        var applicationSource=dataSource(source.getUrl(),applicationUser); limited=new JdbcTemplate(applicationSource);
+        limitedService=new MovieDuplicateMergeService(limited,json,new DataSourceTransactionManager(applicationSource));
     }
-    static DriverManagerDataSource dataSource(String url) {
-        var data=new DriverManagerDataSource(url,"root",""); var properties=new Properties();
+    static DriverManagerDataSource dataSource(String url) { return dataSource(url,"root"); }
+    static DriverManagerDataSource dataSource(String url,String user) {
+        var data=new DriverManagerDataSource(url,user,""); var properties=new Properties();
         properties.setProperty("connectTimeout","3000"); properties.setProperty("socketTimeout","25000"); properties.setProperty("connectionTimeZone","Asia/Shanghai"); properties.setProperty("useSSL","false"); data.setConnectionProperties(properties); return data;
     }
     static MovieDuplicateMergeService.Pair pair() {
@@ -104,6 +114,7 @@ class MovieDuplicateMergeMySqlTest {
             if(table.equals("resource_hub_task")) { row.put("task_type","DISCOVER"); row.put("payload","{\"movieId\":\""+pair.fromMovieId()+"\",\"keyword\":\"unchanged\"}"); }
             if(table.equals("baidu_transfer_task")) { row.put("phase","SHARED"); row.put("original_url_hash",UUID.randomUUID().toString().replace("-","")); }
             if(table.equals("resource_discovery_result")) row.put("source","TEST");
+            if(table.equals("social_post_log")) { row.put("target_id",ids.get("resource_link")); row.put("resource_link_id",ids.get("resource_link")); }
             if(table.equals("movie_source_identity")) { row.put("source","TMDB"); row.put("source_type","movie"); row.put("external_id",UUID.randomUUID().toString()); }
             if(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME='status'",Integer.class,table)>0) row.put("status",table.equals("resource_link")?"DELETED":table.equals("social_post_log")||table.equals("qq_channel_post_log")?"POSTED":"SUCCEEDED");
             if(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME='updated_at'",Integer.class,table)>0) row.put("updated_at","2020-01-02 03:04:05");
@@ -309,6 +320,95 @@ class MovieDuplicateMergeMySqlTest {
         long id=insert("resource_hub_task",Map.of("task_type","DISCOVER","status","SUCCEEDED","movie_id",pair.fromMovieId(),"payload","{\"movieId\":\""+pair.fromMovieId()+"\",\"keyword\":\"preserved\"}"));
         var row=jdbc.queryForMap("SELECT movie_id,payload FROM resource_hub_task WHERE id=?",id); assertEquals(pair.toMovieId(),row.get("movie_id")); assertEquals(pair.toMovieId(),readJson(String.valueOf(row.get("payload"))).path("movieId").asText());
         assertThrows(DataAccessException.class,()->insert("resource_hub_task",Map.of("task_type","MOVIE_VIDEO_BACKFILL","status","UNKNOWN","payload","{\"currentMovieId\":\""+pair.fromMovieId()+"\"}")));
+    }
+    static Map<String,Object> limitedPreview(MovieDuplicateMergeService.Pair pair) {
+        return limitedService.preview(new MovieDuplicateMergeService.PreviewRequest(List.of(pair)),7L);
+    }
+    static void restoreMetadataRoutine() {
+        jdbc.execute("DROP PROCEDURE IF EXISTS movie_merge_guard_metadata");
+        jdbc.execute(MovieDuplicateMergeService.guardMetadataDefinition().statement());
+        jdbc.execute("GRANT EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata TO '"+applicationUser+"'@'%'");
+    }
+    @Test void limitedApplicationReadsLiveGuardsAndMergesWithoutTriggerOrDdlAuthority() {
+        assertEquals(0,limited.queryForObject("SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE()",Integer.class));
+        assertEquals(34,limited.queryForList("CALL movie_merge_guard_metadata()").size());
+        assertEquals(MovieDuplicateMergeService.guardMetadataDefinition().body(),limited.queryForObject("SELECT ROUTINE_DEFINITION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=DATABASE() AND ROUTINE_NAME='movie_merge_guard_metadata'",String.class));
+        assertEquals(0,limited.queryForObject("SELECT COUNT(*) FROM information_schema.PARAMETERS WHERE SPECIFIC_SCHEMA=DATABASE() AND SPECIFIC_NAME='movie_merge_guard_metadata'",Integer.class));
+        String grants=limited.queryForList("SHOW GRANTS").toString().toUpperCase(Locale.ROOT);
+        for(String forbidden:List.of("ALL PRIVILEGES","TRIGGER","CREATE","ALTER","DROP","GRANT OPTION")) assertFalse(grants.contains(forbidden),forbidden);
+        assertTrue(grants.contains("SHOW_ROUTINE")); assertTrue(grants.contains("EXECUTE"));
+        for(String forbidden:List.of("CREATE TABLE forbidden_fixture_ddl(id INT)","CREATE TRIGGER forbidden_fixture_trigger BEFORE INSERT ON movie_metadata FOR EACH ROW SET NEW.id=NEW.id",
+            "DROP TRIGGER "+MovieDuplicateMergeService.triggerDefinitions().get(0).name(),"ALTER PROCEDURE movie_merge_guard_metadata SQL SECURITY INVOKER",
+            "DROP PROCEDURE movie_merge_guard_metadata","CREATE PROCEDURE forbidden_fixture_routine() SELECT 1"))
+            assertThrows(DataAccessException.class,()->limited.execute(forbidden));
+        var pair=pair(); var rows=seed(pair); var reviewed=limitedPreview(pair); assertEquals(true,reviewed.get("canMerge"));
+        assertEquals("SUCCEEDED",limitedService.merge(request(reviewed),7L).get("status"));
+        assertEquals(pair.toMovieId(),jdbc.queryForObject("SELECT movie_id FROM resource_link WHERE id=?",String.class,rows.get("resource_link")));
+    }
+    @Test void missingMetadataRoutineOrUnreadableBodyOrMissingExecutePermissionBlocks() {
+        var pair=pair(); jdbc.execute("DROP PROCEDURE movie_merge_guard_metadata");
+        try { assertTrue(blocked(limitedPreview(pair),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+        jdbc.execute("REVOKE SHOW_ROUTINE ON *.* FROM '"+applicationUser+"'@'%'");
+        try {
+            assertNull(limited.queryForObject("SELECT ROUTINE_DEFINITION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=DATABASE() AND ROUTINE_NAME='movie_merge_guard_metadata'",String.class));
+            assertEquals(34,limited.queryForList("CALL movie_merge_guard_metadata()").size());
+            assertTrue(blocked(limitedPreview(pair),"SCHEMA_NOT_READY"));
+        } finally { jdbc.execute("GRANT SHOW_ROUTINE ON *.* TO '"+applicationUser+"'@'%'"); }
+        jdbc.execute("REVOKE EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata FROM '"+applicationUser+"'@'%'");
+        try { assertTrue(blocked(limitedPreview(pair),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+    }
+    @Test void invokerModifiedBodyOrNonzeroParametersNeverExecuteUntrustedMetadataRoutine() {
+        int[] calls={0};
+        JdbcTemplate observed=new JdbcTemplate(limited.getDataSource()) {
+            @Override public List<Map<String,Object>> queryForList(String sql) {
+                if(sql.startsWith("CALL ")) calls[0]++;
+                return super.queryForList(sql);
+            }
+        };
+        var observedService=new MovieDuplicateMergeService(observed,json,new DataSourceTransactionManager(limited.getDataSource()));
+        var pair=pair(); var selected=new MovieDuplicateMergeService.PreviewRequest(List.of(pair));
+        jdbc.execute("ALTER PROCEDURE movie_merge_guard_metadata SQL SECURITY INVOKER");
+        try { assertTrue(blocked(observedService.preview(selected,7L),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+        jdbc.execute("CREATE TABLE guard_call_marker(calls INT NOT NULL)"); jdbc.update("INSERT INTO guard_call_marker VALUES(0)");
+        try {
+            jdbc.execute("DROP PROCEDURE movie_merge_guard_metadata");
+            jdbc.execute("CREATE PROCEDURE movie_merge_guard_metadata() READS SQL DATA SQL SECURITY DEFINER UPDATE guard_call_marker SET calls=calls+1");
+            jdbc.execute("GRANT EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata TO '"+applicationUser+"'@'%'");
+            assertTrue(blocked(observedService.preview(selected,7L),"SCHEMA_NOT_READY"));
+            assertEquals(0,jdbc.queryForObject("SELECT calls FROM guard_call_marker",Integer.class));
+        } finally { restoreMetadataRoutine(); jdbc.execute("DROP TABLE guard_call_marker"); }
+        jdbc.execute("DROP PROCEDURE movie_merge_guard_metadata");
+        jdbc.execute("CREATE PROCEDURE movie_merge_guard_metadata(IN unexpected INT) READS SQL DATA SQL SECURITY DEFINER "+MovieDuplicateMergeService.guardMetadataDefinition().body());
+        jdbc.execute("GRANT EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata TO '"+applicationUser+"'@'%'");
+        try { assertTrue(blocked(observedService.preview(selected,7L),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+        jdbc.execute("ALTER PROCEDURE movie_merge_guard_metadata CONTAINS SQL");
+        try { assertTrue(blocked(observedService.preview(selected,7L),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+        jdbc.execute("DROP PROCEDURE movie_merge_guard_metadata");
+        jdbc.execute("CREATE PROCEDURE movie_merge_guard_metadata() DETERMINISTIC READS SQL DATA SQL SECURITY DEFINER "+MovieDuplicateMergeService.guardMetadataDefinition().body());
+        jdbc.execute("GRANT EXECUTE ON PROCEDURE "+database+".movie_merge_guard_metadata TO '"+applicationUser+"'@'%'");
+        try { assertTrue(blocked(observedService.preview(selected,7L),"SCHEMA_NOT_READY")); } finally { restoreMetadataRoutine(); }
+        assertEquals(0,calls[0],"Invalid metadata must be rejected before CALL");
+    }
+    @Test void limitedApplicationRejectsTamperedGuardAndUnknownBeforeTriggerOnHistoryTable() {
+        var pair=pair(); var definition=MovieDuplicateMergeService.triggerDefinitions().get(0);
+        jdbc.execute("DROP TRIGGER "+definition.name());
+        jdbc.execute("CREATE TRIGGER "+definition.name()+" BEFORE "+definition.event()+" ON "+definition.table()+" FOR EACH ROW SET NEW.id=NEW.id");
+        try { assertTrue(blocked(limitedPreview(pair),"SCHEMA_NOT_READY")); }
+        finally { jdbc.execute("DROP TRIGGER "+definition.name()); jdbc.execute(definition.statement()); }
+        jdbc.execute("CREATE TRIGGER unexpected_history_before BEFORE INSERT ON movie_merge_favorite_history FOR EACH ROW SET NEW.user_id=NEW.user_id");
+        try {
+            assertEquals(35,limited.queryForList("CALL movie_merge_guard_metadata()").size());
+            assertTrue(blocked(limitedPreview(pair),"UNKNOWN_REFERENCE"));
+        } finally { jdbc.execute("DROP TRIGGER unexpected_history_before"); }
+    }
+    @Test void validRoutineMetadataChangeInvalidatesExistingAdministratorReview() {
+        var pair=pair(); var reviewed=limitedPreview(pair); assertEquals(true,reviewed.get("canMerge"));
+        jdbc.execute("ALTER PROCEDURE movie_merge_guard_metadata COMMENT 'fixture metadata changed after review'");
+        try {
+            assertEquals(true,limitedPreview(pair).get("canMerge"));
+            assertEquals(409,assertThrows(ResponseStatusException.class,()->limitedService.merge(request(reviewed),7L)).getStatusCode().value());
+            assertEquals("ACTIVE",jdbc.queryForObject("SELECT status FROM movie_metadata WHERE id=?",String.class,pair.fromMovieId()));
+        } finally { restoreMetadataRoutine(); }
     }
     static com.fasterxml.jackson.databind.JsonNode readJson(String value) { try { return json.readTree(value); } catch(Exception error) { throw new IllegalStateException(error); } }
 }

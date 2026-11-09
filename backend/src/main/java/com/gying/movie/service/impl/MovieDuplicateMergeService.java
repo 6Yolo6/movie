@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -31,6 +32,9 @@ public class MovieDuplicateMergeService {
     private record Snapshot(Map<String,Object> view, Map<String,List<Map<String,Object>>> rows, String fingerprint) { }
     private record Schema(Map<String,Set<String>> columns, List<Map<String,Object>> blockers, String fingerprint) { }
     public record TriggerDefinition(String name, String table, String event, String statement, String body) { }
+    public record GuardMetadataDefinition(String statement, String body) { }
+    private record GuardMetadata(List<Map<String,Object>> triggers, List<Map<String,Object>> routine) { }
+    private static final String GUARD_METADATA_ROUTINE = "movie_merge_guard_metadata";
     private static final int MAX_PAIRS = 20;
     private static final int MAX_REFERENCE_ROWS = 10000;
     private static final List<Reference> REFERENCES = List.of(
@@ -131,7 +135,8 @@ public class MovieDuplicateMergeService {
         for(var row:jdbc.queryForList("SELECT TABLE_NAME,ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE()"))
             if(required.containsKey(text(row.get("TABLE_NAME"))) && !"InnoDB".equalsIgnoreCase(text(row.get("ENGINE")))) blockers.add(block("SCHEMA_NOT_READY",text(row.get("TABLE_NAME")),1));
         validateReviewSchema(data,blockers);
-        var triggers=jdbc.queryForList("SELECT TRIGGER_NAME,EVENT_OBJECT_TABLE,EVENT_MANIPULATION,ACTION_TIMING,ACTION_STATEMENT FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() ORDER BY TRIGGER_NAME");
+        GuardMetadata metadata=guardMetadata(blockers);
+        var triggers=metadata.triggers();
         Map<String,Map<String,Object>> actual=new HashMap<>(); for(var trigger:triggers) actual.put(text(trigger.get("TRIGGER_NAME")),trigger);
         List<TriggerDefinition> expected=triggerDefinitions(); Set<String> names=new HashSet<>();
         for(var definition:expected) {
@@ -142,7 +147,29 @@ public class MovieDuplicateMergeService {
         }
         for(var trigger:triggers) if(required.containsKey(text(trigger.get("EVENT_OBJECT_TABLE"))) && "BEFORE".equals(trigger.get("ACTION_TIMING")) && !names.contains(text(trigger.get("TRIGGER_NAME"))))
             blockers.add(block("UNKNOWN_REFERENCE",text(trigger.get("TRIGGER_NAME")),1));
-        return new Schema(columns,blockers,hash(List.of(data,triggers)));
+        return new Schema(columns,blockers,hash(List.of(data,triggers,metadata.routine())));
+    }
+
+    private GuardMetadata guardMetadata(List<Map<String,Object>> blockers) {
+        List<Map<String,Object>> routine=List.of();
+        try {
+            routine=jdbc.queryForList("SELECT ROUTINE_NAME,ROUTINE_TYPE,SQL_DATA_ACCESS,SECURITY_TYPE,IS_DETERMINISTIC,DEFINER,ROUTINE_DEFINITION,ROUTINE_COMMENT,SQL_MODE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION,DATABASE_COLLATION FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA=DATABASE() AND ROUTINE_NAME=?",GUARD_METADATA_ROUTINE);
+            Long parameters=jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.PARAMETERS WHERE SPECIFIC_SCHEMA=DATABASE() AND SPECIFIC_NAME=?",Long.class,GUARD_METADATA_ROUTINE);
+            var found=routine.size()==1?routine.get(0):Map.<String,Object>of();
+            String definer=text(found.get("DEFINER")); int separator=definer.lastIndexOf('@');
+            boolean validDefiner=separator>0 && separator<definer.length()-1 && definer.codePoints().noneMatch(Character::isISOControl);
+            // Reject an already modified routine before CALL. DBA routine DDL must be serialized with merge operations.
+            if(!"PROCEDURE".equals(found.get("ROUTINE_TYPE")) || !"READS SQL DATA".equals(found.get("SQL_DATA_ACCESS"))
+                || !"DEFINER".equals(found.get("SECURITY_TYPE")) || !"NO".equals(found.get("IS_DETERMINISTIC")) || !validDefiner
+                || !Long.valueOf(0).equals(parameters) || !guardMetadataDefinition().body().equals(found.get("ROUTINE_DEFINITION"))) {
+                blockers.add(block("SCHEMA_NOT_READY",GUARD_METADATA_ROUTINE,1));
+                return new GuardMetadata(List.of(),routine);
+            }
+            return new GuardMetadata(jdbc.queryForList("CALL "+GUARD_METADATA_ROUTINE+"()"),routine);
+        } catch(DataAccessException error) {
+            blockers.add(block("SCHEMA_NOT_READY",GUARD_METADATA_ROUTINE,1));
+            return new GuardMetadata(List.of(),routine);
+        }
     }
 
     private void validateReviewSchema(List<Map<String,Object>> data,List<Map<String,Object>> blockers) {
@@ -354,6 +381,14 @@ public class MovieDuplicateMergeService {
             for(String part:sql.split("\\$\\$")) { String statement=part.trim(); var matcher=pattern.matcher(statement); if(matcher.matches()) result.add(new TriggerDefinition(matcher.group(1),matcher.group(3),matcher.group(2),statement,matcher.group(4))); }
             if(result.size()!=34) throw new IllegalStateException("Incomplete canonical write guards"); return List.copyOf(result);
         } catch(java.io.IOException error) { throw new IllegalStateException("Missing canonical write guards",error); }
+    }
+    public static GuardMetadataDefinition guardMetadataDefinition() {
+        try {
+            String sql=new ClassPathResource("db/migration_movie_duplicate_merge_guard_metadata.sql").getContentAsString(StandardCharsets.UTF_8);
+            var matcher=Pattern.compile("CREATE PROCEDURE movie_merge_guard_metadata\\(\\)\\s+READS SQL DATA\\s+SQL SECURITY DEFINER\\s+(SELECT[^\\r\\n]+);\\s*$").matcher(sql);
+            if(!matcher.find()) throw new IllegalStateException("Incomplete canonical guard metadata routine");
+            return new GuardMetadataDefinition(matcher.group(),matcher.group(1));
+        } catch(java.io.IOException error) { throw new IllegalStateException("Missing canonical guard metadata routine",error); }
     }
     public static String normalize(String value) { return value.replace("`","").replaceAll("\\s+"," ").trim(); }
     private static List<Pair> validatePairs(List<Pair> pairs) {

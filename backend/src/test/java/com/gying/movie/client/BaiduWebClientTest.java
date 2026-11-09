@@ -298,14 +298,88 @@ class BaiduWebClientTest {
         error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
         assertEquals("UPLOAD_COMMIT_NETWORK_UNAVAILABLE",error.code()); assertTrue(error.uncertain());
     }
-    @Test void invalidPrecreateTicketCannotTriggerBlockOrCommit() {
-        byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
-        for (String response:List.of("{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0]}","{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[1],\"return_type\":1}")) {
-            transport.precreateResponse=response;
-            var error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
-            assertEquals("UPLOAD_PRECREATE_RESPONSE_INVALID",error.code()); assertTrue(error.uncertain());
+    @Test void precreateReturnTypeFailuresRemainUncertainWithoutBlockOrCommit() {
+        assertInvalidPrecreate("{\"errno\":0}", "RETURN_TYPE_MISSING");
+        for (String value : List.of("null", "\"1\"", "\"2\"", "true", "1.0", "1e0", "[]", "{}"))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":" + value + "}", "RETURN_TYPE_TYPE_INVALID");
+        for (String value : List.of("4294967297", "4294967298", "-4294967295", "9223372036854775808"))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":" + value + "}", "RETURN_TYPE_RANGE_INVALID");
+        for (String value : List.of("0", "3", "-1", "2147483647"))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":" + value + "}", "RETURN_TYPE_VALUE_INVALID");
+    }
+    @Test void precreateUploadIdFailuresExposeOnlyFixedLocalCodes() {
+        assertInvalidPrecreate("{\"errno\":0,\"return_type\":1}", "UPLOAD_ID_MISSING");
+        for (String value : List.of("null", "1", "true", "[]", "{}"))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":" + value + "}", "UPLOAD_ID_TYPE_INVALID");
+        for (String value : List.of("", "u".repeat(201), " " + "u".repeat(200) + " "))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + value + "\"}", "UPLOAD_ID_LENGTH_INVALID");
+        for (String value : List.of(" ", " up1 ", "up1\\r\\n", "private/up1", "private up1", "up.1", "编号", "private\\nvalue"))
+            assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + value + "\"}", "UPLOAD_ID_CHARACTERS_INVALID");
+    }
+    @Test void precreateBlockListFailuresRejectNoncanonicalIndexesAndOverflow() {
+        String prefix = "{\"errno\":0,\"return_type\":1,\"uploadid\":\"up1\"";
+        assertInvalidPrecreate(prefix + "}", "BLOCK_LIST_MISSING");
+        for (String value : List.of("null", "\"[]\"", "0", "{}"))
+            assertInvalidPrecreate(prefix + ",\"block_list\":" + value + "}", "BLOCK_LIST_TYPE_INVALID");
+        for (String value : List.of("[0,0]", "[0,1]", "[0,0,0]"))
+            assertInvalidPrecreate(prefix + ",\"block_list\":" + value + "}", "BLOCK_LIST_SIZE_INVALID");
+        for (String value : List.of("null", "\"0\"", "true", "0.0", "0e0", "[]", "{}"))
+            assertInvalidPrecreate(prefix + ",\"block_list\":[" + value + "]}", "BLOCK_INDEX_TYPE_INVALID");
+        for (String value : List.of("4294967296", "-4294967296", "9223372036854775808"))
+            assertInvalidPrecreate(prefix + ",\"block_list\":[" + value + "]}", "BLOCK_INDEX_RANGE_INVALID");
+        for (String value : List.of("1", "-1", "2147483647"))
+            assertInvalidPrecreate(prefix + ",\"block_list\":[" + value + "]}", "BLOCK_INDEX_VALUE_INVALID");
+    }
+    @Test void precreateParsingFailuresDoNotPersistPrivateResponseText() {
+        assertInvalidPrecreateRaw(null, "RESPONSE_MISSING");
+        assertInvalidPrecreateRaw(new BaiduWebClient.WebResponse(200, Map.of(), null), "BODY_MISSING");
+        assertInvalidPrecreateRaw(new BaiduWebClient.WebResponse(200, Map.of(), new byte[4 * 1024 * 1024 + 1]), "BODY_TOO_LARGE");
+        transport.precreateBodyTooLarge = true;
+        assertInvalidPrecreateAttempt("BODY_TOO_LARGE");
+        transport.precreateBodyTooLarge = false;
+        assertInvalidPrecreate("{broken private upstream response", "JSON_INVALID");
+        for (String value : List.of("", "null", "[]", "\"private-cookie\""))
+            assertInvalidPrecreate(value, "ROOT_INVALID");
+        assertInvalidPrecreate("{}", "ERRNO_MISSING");
+        for (String field : List.of("errno", "error_code")) {
+            String prefix = field.equals("errno") ? "{" : "{\"errno\":0,";
+            for (String value : List.of("null", "\"0\"", "true", "0.0", "[]", "{}"))
+                assertInvalidPrecreate(prefix + "\"" + field + "\":" + value + "}", field.toUpperCase(Locale.ROOT) + "_TYPE_INVALID");
+            for (String value : List.of("4294967296", "-4294967296", "9223372036854775808"))
+                assertInvalidPrecreate(prefix + "\"" + field + "\":" + value + "}", field.toUpperCase(Locale.ROOT) + "_RANGE_INVALID");
         }
-        assertEquals(0,transport.count("POST","/rest/2.0/pcs/superfile2")); assertEquals(0,transport.count("POST","/api/create"));
+    }
+    @Test void validTypeOneCanReuseKnownBlocksWithoutSendingTheBlockAgain() {
+        byte[] bytes = magnetBytes(); transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
+        for (String uploadId : List.of("u", "up-1_2", "u".repeat(200))) {
+            transport.owned.put("/target", "[]"); transport.requests.clear();
+            transport.precreateResponse = "{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + uploadId + "\",\"block_list\":[]}";
+            assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
+            assertEquals(1, transport.count("POST", "/api/precreate"));
+            assertEquals(0, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+            assertEquals(1, transport.count("POST", "/api/create"));
+            assertEquals(uploadId, query(transport.createBody).get("uploadid"));
+        }
+    }
+    private void assertInvalidPrecreate(String response, String detail) {
+        transport.precreateResponse = response; transport.precreateRawResponse = null; transport.nullPrecreateResponse = false;
+        assertInvalidPrecreateAttempt(detail);
+    }
+    private void assertInvalidPrecreateRaw(BaiduWebClient.WebResponse response, String detail) {
+        transport.precreateRawResponse = response; transport.nullPrecreateResponse = response == null;
+        assertInvalidPrecreateAttempt(detail);
+    }
+    private void assertInvalidPrecreateAttempt(String detail) {
+        byte[] bytes = magnetBytes(); transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
+        transport.requests.clear();
+        var error = assertThrows(BaiduActionException.class, () -> client.p2pUpload("/target", "magnet.txt", bytes));
+        assertEquals("UPLOAD_PRECREATE_" + detail, error.code());
+        assertTrue(error.uncertain()); assertFalse(error.retryable()); assertFalse(error.actionRequired());
+        assertFalse(error.getMessage().contains("private")); assertFalse(error.getMessage().contains("fixture-session"));
+        assertFalse(error.getMessage().contains("/target")); assertFalse(error.getMessage().contains("magnet:?"));
+        assertEquals(1, transport.count("POST", "/api/precreate"));
+        assertEquals(0, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+        assertEquals(0, transport.count("POST", "/api/create"));
     }
     private static byte[] magnetBytes() { return ("magnet:?xt=urn:btih:"+"a".repeat(40)+"\n").getBytes(StandardCharsets.UTF_8); }
     @Test void uploadBoundsAndContentRejectBeforeAnyNetwork() {
@@ -419,7 +493,8 @@ class BaiduWebClientTest {
         boolean failAfterShare,shareCreated,needsCode,verified;
         byte[] uploadBytes; String uploadName, ownedUploadMd5, precreateOwnedContents, ownShareDetails;
         String precreateResponse="{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}",commitResponse;
-        BaiduWebClient.WebResponse uploadResponse;
+        BaiduWebClient.WebResponse uploadResponse, precreateRawResponse;
+        boolean nullPrecreateResponse, precreateBodyTooLarge;
         long count(String method,String path){return requests.stream().filter(r->r.method().equals(method)&&r.uri().getPath().equals(path)).count();}
         public BaiduWebClient.WebResponse exchange(HttpRequest request) throws IOException {
             requests.add(request); String path=request.uri().getPath(); var q=query(request.uri().getRawQuery());
@@ -435,7 +510,7 @@ class BaiduWebClientTest {
                 case "/share/pset" -> {shareCreated=true;yield ok("{\"errno\":0,\"link\":\"https://pan.baidu.com/s/1owned\"}");}
                 case "/share/verify" -> {verified=true;yield ok("{\"errno\":0,\"randsk\":\"fixture-secret\"}");}
                 case "/share/surlinfoinrecord" -> ownShareDetails==null?ok("{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}"):ok(ownShareDetails);
-                case "/api/precreate" -> {if(precreateOwnedContents!=null)owned.put("/target",precreateOwnedContents);yield ok(precreateResponse);}
+                case "/api/precreate" -> {if(precreateBodyTooLarge)throw new BaiduWebClient.ResponseBodyTooLargeException();if(precreateOwnedContents!=null)owned.put("/target",precreateOwnedContents);yield nullPrecreateResponse ? null : precreateRawResponse == null ? ok(precreateResponse) : precreateRawResponse;}
                 case "/rest/2.0/pcs/superfile2" -> {if(uploadResponse!=null)yield uploadResponse;try{yield ok("{\"md5\":\""+java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes))+"\"}");}catch(Exception e){throw new AssertionError(e);}}
                 case "/api/create" -> {createBody=body(request);if(commitResponse!=null)yield ok(commitResponse);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,ownedUploadMd5==null?java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)):ownedUploadMd5)+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}
                 default -> throw new AssertionError("Unexpected fixture endpoint "+path);

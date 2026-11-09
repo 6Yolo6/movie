@@ -32,7 +32,7 @@
 
 ## 3. 增量文件清单
 
-以下 **29 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
+以下 **30 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
 
 | 文件 | 主要用途 |
 | --- | --- |
@@ -46,6 +46,7 @@
 | [`migration_governance.sql`](../backend/src/main/resources/db/migration_governance.sql) | 资源/用户/影片治理字段与评论投票表 |
 | [`migration_gying_owned_share_source.sql`](../backend/src/main/resources/db/migration_gying_owned_share_source.sql) | 依据保存目录和自有分享证据校准资源来源（数据更新） |
 | [`migration_movie_duplicate_merge.sql`](../backend/src/main/resources/db/migration_movie_duplicate_merge.sql) | 四张审核/别名/关联历史表，新增而不删除原记录；先加密备份和精确结构核对，生产执行事实见当前状态 |
+| [`migration_movie_duplicate_merge_guard_metadata.sql`](../backend/src/main/resources/db/migration_movie_duplicate_merge_guard_metadata.sql) | 零参数 DEFINER 只读 procedure，实时返回固定 21 表的全部 trigger 元数据；应用先精确核验 routine body、安全属性、definer 及零参数，再调用。由 DBA 创建并单独审查对象级 EXECUTE 与全局只读 SHOW_ROUTINE；后者暴露所有数据库的 routine 定义，不授 TRIGGER/DDL/额外 DML。routine DDL 维护须停止新合并请求并等待在途事务结束；校验与 CALL 不是原子 DDL 锁，生产执行事实见当前状态 |
 | [`migration_movie_duplicate_merge_triggers.sql`](../backend/src/main/resources/db/migration_movie_duplicate_merge_triggers.sql) | 34 个迟到写入保护 trigger；MySQL 8.0.28 使用普通 CREATE TRIGGER，仅执行确认缺失的定义，已有同名必须逐项匹配；保留旧影片 ID 与历史引用 |
 | [`migration_movie_source_identity.sql`](../backend/src/main/resources/db/migration_movie_source_identity.sql) | 外部来源与本地 canonical 影片身份表 |
 | [`migration_notifications.sql`](../backend/src/main/resources/db/migration_notifications.sql) | 站内通知表 |

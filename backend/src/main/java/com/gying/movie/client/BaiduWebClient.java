@@ -67,13 +67,16 @@ public class BaiduWebClient {
         @Override public String toString() { return "BaiduWebResponse[redacted]"; }
     }
     @FunctionalInterface public interface Transport { WebResponse exchange(HttpRequest request) throws IOException, InterruptedException; }
+    static final class ResponseBodyTooLargeException extends IOException {
+        ResponseBodyTooLargeException() { super("Baidu response exceeds bound"); }
+    }
     private static final class JdkTransport implements Transport {
         private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).followRedirects(HttpClient.Redirect.NEVER).build();
         @Override public WebResponse exchange(HttpRequest request) throws IOException, InterruptedException {
             HttpResponse<java.io.InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
             try (var input = response.body()) {
                 byte[] body = input.readNBytes(MAX_RESPONSE + 1);
-                if (body.length > MAX_RESPONSE) throw new IOException("Baidu response exceeds bound");
+                if (body.length > MAX_RESPONSE) throw new ResponseBodyTooLargeException();
                 return new WebResponse(response.statusCode(), response.headers().map(), body);
             }
         }
@@ -521,16 +524,32 @@ public class BaiduWebClient {
                     "path", path, "size", Integer.toString(bytes.length), "isdir", "0", "block_list", encodeJson(List.of(digest)),
                     "autoinit", "1", "content-md5", digest, "slice-md5", slice, "contentCrc32", Long.toString(crc.getValue()), "rtype", "2"), auth.cookies());
             // Precreate may complete a known block immediately. Always validate the actual entry.
-            if (!pre.path("return_type").isIntegralNumber() || !Set.of(1, 2).contains(pre.path("return_type").asInt())) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
-            if (pre.path("return_type").asInt() == 2) {
+            JsonNode returnType = pre.path("return_type");
+            if (returnType.isMissingNode()) throw precreateInvalid("RETURN_TYPE_MISSING");
+            if (!returnType.isIntegralNumber()) throw precreateInvalid("RETURN_TYPE_TYPE_INVALID");
+            if (!returnType.canConvertToInt()) throw precreateInvalid("RETURN_TYPE_RANGE_INVALID");
+            if (!Set.of(1, 2).contains(returnType.intValue())) throw precreateInvalid("RETURN_TYPE_VALUE_INVALID");
+            if (returnType.intValue() == 2) {
                 RemoteFile rapid = findOwnedEntry(path, auth);
                 if (rapid == null) throw action("UPLOAD_PRECREATE_UNCONFIRMED", true, false, true);
                 return requireMetadata(rapid, path, bytes.length, digest);
             }
-            String uploadId = firstText(pre.path("uploadid"));
-            if (uploadId == null || !uploadId.matches("[A-Za-z0-9_-]{1,200}")) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
+            JsonNode ticket = pre.path("uploadid");
+            if (ticket.isMissingNode()) throw precreateInvalid("UPLOAD_ID_MISSING");
+            if (!ticket.isTextual()) throw precreateInvalid("UPLOAD_ID_TYPE_INVALID");
+            String uploadId = ticket.textValue();
+            if (uploadId.isEmpty() || uploadId.length() > 200) throw precreateInvalid("UPLOAD_ID_LENGTH_INVALID");
+            if (!uploadId.matches("[A-Za-z0-9_-]{1,200}")) throw precreateInvalid("UPLOAD_ID_CHARACTERS_INVALID");
             JsonNode blocks = pre.path("block_list");
-            if (!blocks.isArray() || blocks.size() > 1 || blocks.size() == 1 && (!blocks.path(0).isIntegralNumber() || blocks.path(0).asInt() != 0)) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
+            if (blocks.isMissingNode()) throw precreateInvalid("BLOCK_LIST_MISSING");
+            if (!blocks.isArray()) throw precreateInvalid("BLOCK_LIST_TYPE_INVALID");
+            if (blocks.size() > 1) throw precreateInvalid("BLOCK_LIST_SIZE_INVALID");
+            if (blocks.size() == 1) {
+                JsonNode index = blocks.path(0);
+                if (!index.isIntegralNumber()) throw precreateInvalid("BLOCK_INDEX_TYPE_INVALID");
+                if (!index.canConvertToInt()) throw precreateInvalid("BLOCK_INDEX_RANGE_INVALID");
+                if (index.intValue() != 0) throw precreateInvalid("BLOCK_INDEX_VALUE_INVALID");
+            }
             if (blocks.size() == 1) uploadBlock(auth, uploadId, path, name, bytes, digest);
             // The web upload protocol uses rtype=2 to skip an existing path (Open API uses a different mapping).
             uploadJson("UPLOAD_COMMIT", "/api/create", Map.of("a", "commit", "bdstoken", auth.bdstoken()), Map.of(
@@ -569,26 +588,38 @@ public class BaiduWebClient {
     }
     private JsonNode uploadJson(String stage, String path, Map<String, String> query, Map<String, String> values, List<BaiduSessionVault.Cookie> cookies) {
         try {
-            return parseUploadResponse(exchange("POST", uri(path, query), values, cookies, ORIGIN + "/disk/main", true), stage, true);
+            return parseUploadResponse(exchange("POST", uri(path, query), values, cookies, ORIGIN + "/disk/main", true, stage), stage, true);
         } catch (BaiduActionException error) { throw uploadFailure(stage, error, error.uncertain()); }
     }
     private JsonNode parseUploadResponse(WebResponse response, String stage, boolean requireErrno) {
-        if (response == null || response.body() == null || response.body().length > MAX_RESPONSE) throw action(stage + "_RESPONSE_INVALID", false, false, true);
+        if (response == null) throw invalidUploadResponse(stage, "RESPONSE_MISSING");
+        if (response.body() == null) throw invalidUploadResponse(stage, "BODY_MISSING");
+        if (response.body().length > MAX_RESPONSE) throw invalidUploadResponse(stage, "BODY_TOO_LARGE");
         try { requireHttp(response, true); }
         catch (BaiduActionException error) { throw action(stage + "_HTTP_" + response.status(), error.retryable(), error.actionRequired(), error.uncertain()); }
         JsonNode json;
         try { json = mapper.readTree(response.body()); }
-        catch (IOException ignored) { throw action(stage + "_RESPONSE_INVALID", false, false, true); }
-        if (json == null || !json.isObject() || requireErrno && !json.has("errno")) throw action(stage + "_RESPONSE_INVALID", false, false, true);
+        catch (IOException ignored) { throw invalidUploadResponse(stage, "JSON_INVALID"); }
+        if (json == null || !json.isObject()) throw invalidUploadResponse(stage, "ROOT_INVALID");
+        if (requireErrno && !json.has("errno")) throw invalidUploadResponse(stage, "ERRNO_MISSING");
         for (String field : List.of("errno", "error_code")) if (json.has(field)) {
-            if (!json.path(field).isIntegralNumber() || !json.path(field).canConvertToInt()) throw action(stage + "_RESPONSE_INVALID", false, false, true);
-            int errno = json.path(field).asInt();
+            if (!json.path(field).isIntegralNumber()) throw invalidUploadResponse(stage, field.toUpperCase(Locale.ROOT) + "_TYPE_INVALID");
+            if (!json.path(field).canConvertToInt()) throw invalidUploadResponse(stage, field.toUpperCase(Locale.ROOT) + "_RANGE_INVALID");
+            int errno = json.path(field).intValue();
             if (errno != 0) {
                 BaiduActionException error = apiError(errno, true);
                 throw action(stage + "_API_" + (errno < 0 ? "NEG_" + -(long) errno : errno), error.retryable(), error.actionRequired(), error.uncertain());
             }
         }
         return json;
+    }
+    private static BaiduActionException precreateInvalid(String detail) {
+        return action("UPLOAD_PRECREATE_" + detail, false, false, true);
+    }
+    private static BaiduActionException invalidUploadResponse(String stage, String detail) {
+        // These fixed local labels carry no upstream values or response text.
+        return "UPLOAD_PRECREATE".equals(stage) ? precreateInvalid(detail)
+                : action(stage + "_RESPONSE_INVALID", false, false, true);
     }
     private static BaiduActionException uploadFailure(String stage, BaiduActionException error, boolean uncertain) {
         // Only locally generated stage labels and integers are persisted, never upstream text or URLs.
@@ -832,6 +863,9 @@ public class BaiduWebClient {
         catch (Exception ignored) { throw action("RESPONSE_INVALID", !write, false, write); }
     }
     private WebResponse exchange(String method, URI uri, Map<String, String> form, List<BaiduSessionVault.Cookie> cookies, String referer, boolean write) {
+        return exchange(method, uri, form, cookies, referer, write, null);
+    }
+    private WebResponse exchange(String method, URI uri, Map<String, String> form, List<BaiduSessionVault.Cookie> cookies, String referer, boolean write, String uploadStage) {
         requireFixedOrigin(uri);
         HttpRequest.Builder request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(30))
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36")
@@ -843,10 +877,18 @@ public class BaiduWebClient {
         else request.GET();
         try {
             WebResponse response = transport.exchange(request.build());
-            if (response == null || response.body() == null || response.body().length > MAX_RESPONSE) throw action("RESPONSE_INVALID", !write, false, write);
+            if (response == null || response.body() == null || response.body().length > MAX_RESPONSE) {
+                if ("UPLOAD_PRECREATE".equals(uploadStage)) throw precreateInvalid(response == null ? "RESPONSE_MISSING"
+                        : response.body() == null ? "BODY_MISSING" : "BODY_TOO_LARGE");
+                throw action("RESPONSE_INVALID", !write, false, write);
+            }
             return response;
         } catch (BaiduActionException error) { throw error; }
         catch (InterruptedException ignored) { Thread.currentThread().interrupt(); throw action("INTERRUPTED", !write, false, write); }
+        catch (ResponseBodyTooLargeException ignored) {
+            if ("UPLOAD_PRECREATE".equals(uploadStage)) throw precreateInvalid("BODY_TOO_LARGE");
+            throw action("NETWORK_UNAVAILABLE", true, false, write);
+        }
         catch (Exception ignored) { throw action("NETWORK_UNAVAILABLE", true, false, write); }
     }
     private static void requireHttp(WebResponse response, boolean write) {
