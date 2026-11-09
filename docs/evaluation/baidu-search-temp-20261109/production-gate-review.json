@@ -1,0 +1,212 @@
+{
+  "at": "2026-11-09T12:29:40.897632+00:00",
+  "type": "sanitized review derived from preserved fresh read-only observations; no additional live calls",
+  "freshObservation": {
+    "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ops\\production-gate-readonly-20261109T122724.854700Z.json",
+    "sha256": "57a093b44dab6ce6130821c02c13d6f4f3efe94f93c06c54ea4a9ef790088d8a",
+    "at": "2026-11-09T12:27:20.032685+00:00",
+    "completedAt": "2026-11-09T12:27:24.854700+00:00"
+  },
+  "result": "DEPLOYMENT_BLOCKED",
+  "gates": {
+    "idle": "FAIL",
+    "oldConsumerCompatibility": "FAIL",
+    "basis": [
+      "Retained P2P BAIDU child 17584 has an unconfirmed upstream upload result",
+      "Original parent 17583 is BLOCKED with retained child and v2 intent",
+      "Retained legacy/v2 pointer and Baidu task require compatible consumer; existing reviewed gate rejects an old consumer",
+      "Fresh targeted reads confirm unchanged history and running original service identity; no full gate scanner was rerun"
+    ],
+    "automaticBackfillEnabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "deploymentAllowed": false
+  },
+  "observedServices": {
+    "backend": {
+      "image": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+      "id": "afabe73f4f908a03e7f5f986b779e64364d1d92b970f767a0dfcb558d17fcc04",
+      "startedAt": "2026-11-09T05:54:18.575508574Z",
+      "restarts": 0,
+      "composeFileCount": 16,
+      "composeSyntaxPassed": true,
+      "effectiveImageMatched": true,
+      "allIdentityAndComposeHashesUnchanged": true
+    },
+    "frontend": {
+      "image": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+      "id": "770da6d02da3a28da48735eb261ce7ce35cc99471482cfee5bb34b82c203e7c0",
+      "startedAt": "2026-11-09T05:54:41.318167928Z",
+      "restarts": 0,
+      "composeFileCount": 10,
+      "composeSyntaxPassed": true,
+      "effectiveImageMatched": true,
+      "allIdentityAndComposeHashesUnchanged": true
+    }
+  },
+  "runtimeJarBinding": {
+    "actualJarSha256": "90e4a3f936390caa1737343a06ba59ec48acce8f41ab316f338713409eb60519",
+    "expectedJarSha256": "90e4a3f936390caa1737343a06ba59ec48acce8f41ab316f338713409eb60519",
+    "matched": true,
+    "sourceCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+    "buildReport": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\backend-build-raw.json",
+      "sha256": "b157e59b2bc188d7b526f799952ce0aa0c090ae12eaf5c15ec27decd90c34a38"
+    },
+    "independentPriorRuntimeReport": {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\independent-resume-ops-20261109\\post-deployment-runtime.json",
+      "sha256": "8d7583b3f66c839939da48e0745d72b86a4eb1bab0f29d44593b2b9542ff0e28"
+    }
+  },
+  "hostPinMatched": true,
+  "hostPinHashUnchanged": true,
+  "historicalTaskProjectionUnchanged": true,
+  "historicalTasks": [
+    {
+      "id": 17580,
+      "phase": "EXISTING_DISCOVERIES",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 1,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_ACTION_REQUIRED",
+      "currentAction": null,
+      "errorCategory": null,
+      "currentChildId": 1,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "05ffd7007014f0a27742c809a575cbae46479c39c4bfe857185b11964f237fd9",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17583,
+      "phase": "GYING_TORRENTS",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 2,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_UNKNOWN",
+      "currentAction": "UPLOAD_MAGNET_TEXT",
+      "errorCategory": null,
+      "currentChildId": 17584,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "40eb156de08986bc6e517624fd2966a323b4987f2da8ef43d27c1824122737d1",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17584,
+      "phase": null,
+      "stage": "UPLOAD_MAGNET_TEXT",
+      "source": "BAIDU",
+      "status": "UNKNOWN",
+      "enabled": null,
+      "version": 2,
+      "attempts": 1,
+      "taskType": "P2P_ARCHIVE",
+      "batchLimit": null,
+      "payloadValid": 1,
+      "blockedReason": null,
+      "currentAction": null,
+      "errorCategory": "BaiduActionException",
+      "currentChildId": null,
+      "intervalMinutes": null,
+      "backfillParentId": 17583,
+      "payloadRawSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": false,
+      "leaseUntilJsonNodePresent": false
+    }
+  ],
+  "priorTaskEvidence": [
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\verification\\torrent-acceptance-20261109T050556.296587Z\\attempt-20261109T063235.599305Z\\result.json",
+      "sha256": "203c896db369dd52b7665e19e113c145efbecc707645b68b9bb925cc4f184b34"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\current-upload-readonly.json",
+      "sha256": "87f19e7726f1f0e8d0b3772dce221fb00bd89b6b90e7c92f23a9dd25c49db911"
+    }
+  ],
+  "oldConsumerStaticEvidence": [
+    {
+      "sourceCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+      "path": "backend/src/main/java/com/gying/movie/entity/BaiduTransferTask.java",
+      "sourceSha256": "de368625fb315fc1d6cddb34a320c4168b4f2ffdcba77ac511c13bef0c000238",
+      "scopeFieldOrPredicatePresent": false
+    },
+    {
+      "sourceCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+      "path": "backend/src/main/java/com/gying/movie/service/impl/BaiduTransferRunnerServiceImpl.java",
+      "sourceSha256": "ab6979cbde671f820c1b822e21fe99fc2771396552acc3917ca56c43cac28f0c",
+      "scopeFieldOrPredicatePresent": false
+    }
+  ],
+  "oldConsumerRisk": "The running b55080d8 generation has no task scope field or scope predicate; it must not consume newly scoped temporary tasks. Existing reviewed guard also blocks old-generation rollback over retained Baidu/P2P and legacy/v2 backfill intent. This is a source/build identity compatibility finding, not a real consumer execution test.",
+  "newTemporarySchema": {
+    "scopeFieldCount": 0,
+    "cleanupTableCount": 0,
+    "productionMigrationPerformed": false
+  },
+  "realEntryPoints": [
+    {
+      "uri": "http://127.0.0.1/",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "bc7ab91cc0d26fcf3670ad2020116ef7b9a3ae9e0c10384a891594a118b59d24"
+    },
+    {
+      "uri": "http://127.0.0.1/resource-search",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "7c19f5881190a3969e9aa97f493a023e06dad35c2775aea238b83a5f245b2e1d"
+    },
+    {
+      "uri": "http://127.0.0.1:8880/api/qq-bot/health",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+    }
+  ],
+  "snapshot": {
+    "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ops\\ops-snapshot-20261109-readonly.md",
+    "sha256": "a78fd3a5040fc335bf4500c54b1909483851db7998545f7abf560f7a7a8f1148"
+  },
+  "auditScript": {
+    "path": "E:\\gying-tools\\releases\\baidu-search-temp-20261109\\ops\\AuditProductionGate.py",
+    "sha256": "92d6be856fd449571382f63d40220bc33874b478cde82aa86c03d4c5b23614e1"
+  },
+  "productionMutationPerformed": false,
+  "productionSqlWriteStatements": 0,
+  "externalCloudRequests": 0,
+  "schedulerChanges": 0,
+  "historicalTaskReplayPerformed": false,
+  "servicesStoppedOrReplaced": false,
+  "sourceOrDocsMutatedByThisAudit": false,
+  "credentialValuesPrintedOrSaved": false,
+  "fullSlowScannerRerun": false,
+  "wordingCorrection": "Removed the unsupported adjective irreversible from the upload-result description in the earlier raw observation basis; underlying observations and gate values are unchanged.",
+  "leaseProjectionNote": "JSON_EXTRACT(...) IS NOT NULL also includes explicit JSON null; these fields mean JSON-node presence and are not evidence of an active lease.",
+  "leaseActiveStateEvaluated": false,
+  "originalExternalReportPreserved": true
+}

@@ -1,0 +1,423 @@
+{
+  "at": "2026-11-09T12:51:56.465274+00:00",
+  "scope": "targeted read-only production deployment gate and running service identity; no full security/queue scan",
+  "productionMutationPerformed": false,
+  "sourceOrDocsMutatedByThisAudit": false,
+  "credentialValuesPrintedOrSaved": false,
+  "externalCloudRequests": 0,
+  "sourceCommit": "bd16a9ac9c51f057daeeec3a9a4cf94f7719fe3e",
+  "existingBaseline": {
+    "path": "E:\\gying-tools\\releases\\baidu-upload-fix-20261109\\ops\\baseline-20261109T101821.300443Z.json",
+    "sha256": "81acfffe18e89d2ec821d169d3060e4c9f671d2973388c375c21fac337020a47",
+    "at": "2026-11-09T10:18:16.121143+00:00",
+    "cloudIdleGatePassed": false,
+    "oldBackendCompatible": false
+  },
+  "guardSource": {
+    "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\backup-audit\\CloudDriveRollbackGuard.py",
+    "sha256": "7e2d8fec52eab285b5cea11a18b6a96430e7f3ced13f774da5f39826acf1bec0"
+  },
+  "historicalTasksBefore": [
+    {
+      "id": 17580,
+      "phase": "EXISTING_DISCOVERIES",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 1,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_ACTION_REQUIRED",
+      "currentAction": null,
+      "errorCategory": null,
+      "currentChildId": 1,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "05ffd7007014f0a27742c809a575cbae46479c39c4bfe857185b11964f237fd9",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17583,
+      "phase": "GYING_TORRENTS",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 2,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_UNKNOWN",
+      "currentAction": "UPLOAD_MAGNET_TEXT",
+      "errorCategory": null,
+      "currentChildId": 17584,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "40eb156de08986bc6e517624fd2966a323b4987f2da8ef43d27c1824122737d1",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17584,
+      "phase": null,
+      "stage": "UPLOAD_MAGNET_TEXT",
+      "source": "BAIDU",
+      "status": "UNKNOWN",
+      "enabled": null,
+      "version": 2,
+      "attempts": 1,
+      "taskType": "P2P_ARCHIVE",
+      "batchLimit": null,
+      "payloadValid": 1,
+      "blockedReason": null,
+      "currentAction": null,
+      "errorCategory": "BaiduActionException",
+      "currentChildId": null,
+      "intervalMinutes": null,
+      "backfillParentId": 17583,
+      "payloadRawSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": false,
+      "leaseUntilJsonNodePresent": false
+    }
+  ],
+  "services": {
+    "backend": {
+      "id": "afabe73f4f908a03e7f5f986b779e64364d1d92b970f767a0dfcb558d17fcc04",
+      "image": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+      "running": true,
+      "startedAt": "2026-11-09T05:54:18.575508574Z",
+      "restarts": 0,
+      "oomKilled": false,
+      "user": "gying",
+      "workingDir": "/app",
+      "composeProject": "gying-movie",
+      "composeWorkingDir": "D:\\gying-movie\\movie",
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+          "sha256": "4fb44b3eabfa48e0070490cc4e12661077554418fcc91546b18895d3acfff261"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+          "sha256": "0e08ea892277b78eaefafd21b2e8e4db226de2246dd2dc6a7bb2628f6e371ec2"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+          "sha256": "6fbe9c4e3a33570833f0499fc13ff35e3c7c9ae827628e21f51006ee60d6f5fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+          "sha256": "9031ac16cf9bb856d509cacadfba38380784246531d3a7dd69831cda68b1e12f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-quality-improvement-20261031\\backend-quality-final.json",
+          "sha256": "b031903311c4e12d875dc078a1ac3c071280a5361c01869bff9c815c592ccd14"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\publishing-recovery-20261101\\candidate.json",
+          "sha256": "e94f089f6b70fd697c420ca6507159914493796578826e81caf44915ad7406fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+          "sha256": "cf113c14d6242fe9f3614296f260b107c55586b139d3d602bfa1662dbaac58c0"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-quality-20261103\\backend-candidate.json",
+          "sha256": "5d01fac0cf0371f6bcfb63d6c7a3f9c91fdf42ea629efd740396f9a5aef31f29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\backup-audit\\rollback.json",
+          "sha256": "5d01fac0cf0371f6bcfb63d6c7a3f9c91fdf42ea629efd740396f9a5aef31f29"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\qq-prada-transfer-20261103\\candidate.json",
+          "sha256": "bc49585ceda4a9bae6343d608801902f60e392cf105c8153e31a10a762861b62"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-identity-theme-20261104\\deployment-backend\\candidate.json",
+          "sha256": "fd4cf38e7912c0f0873c6fc681ad0d46bce956a752242beceaa5d7e3e7327adb"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json",
+          "sha256": "f10e9f59f7b93c9e91774556ce22b11f4b05ba77a8f96415c3ddd52202f27461"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\candidate.json",
+          "sha256": "e34dc61570f95a882ae04a7ca2f48b4402ee73e3ebba0c25d7bb27cb5c195287"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\candidate.json",
+          "sha256": "f403e153c3e3b8bf9f38d81f0f733fddb1ef1398388e72b9da4e0b6764cc6cda"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\candidate.json",
+          "sha256": "e9db9532af426b14e35f966504fcc82365ec0aa8bc41f8817eaed895f1bdbc74"
+        }
+      ],
+      "composeFileCount": 16,
+      "composeSyntaxPassed": true,
+      "composeEffectiveImageMatched": true,
+      "environmentSha256": "cdf4fa51afc2fede1850bb0d3009d9d5ff990c18c3e8c24a6b34fdb10a522fd1",
+      "unchangedFromExistingBaseline": {
+        "id": true,
+        "image": true,
+        "running": true,
+        "startedAt": true,
+        "restarts": true,
+        "environmentSha256": true,
+        "composeFiles": true,
+        "composeFileCount": true
+      },
+      "runtimeJarSha256": "90e4a3f936390caa1737343a06ba59ec48acce8f41ab316f338713409eb60519"
+    },
+    "frontend": {
+      "id": "770da6d02da3a28da48735eb261ce7ce35cc99471482cfee5bb34b82c203e7c0",
+      "image": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+      "running": true,
+      "startedAt": "2026-11-09T05:54:41.318167928Z",
+      "restarts": 0,
+      "oomKilled": false,
+      "user": "nextjs",
+      "workingDir": "/app",
+      "composeProject": "gying-movie",
+      "composeWorkingDir": "D:\\gying-movie\\movie",
+      "composeFiles": [
+        {
+          "path": "D:\\gying-movie\\movie\\docker-compose.prod.yml",
+          "sha256": "c8d02d1aa8b9675058310630e50d42b98fcb0416f785bf2170cb97d4a4e7b665"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-query-plan-v2-20261025\\deploy.json",
+          "sha256": "4fb44b3eabfa48e0070490cc4e12661077554418fcc91546b18895d3acfff261"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\rescue.json",
+          "sha256": "0e08ea892277b78eaefafd21b2e8e4db226de2246dd2dc6a7bb2628f6e371ec2"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\ai-recovery-20261029-1750\\backend-candidate.json",
+          "sha256": "6fbe9c4e3a33570833f0499fc13ff35e3c7c9ae827628e21f51006ee60d6f5fc"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\candidate.json",
+          "sha256": "9031ac16cf9bb856d509cacadfba38380784246531d3a7dd69831cda68b1e12f"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\tmdb-empty-range-20261102\\candidate.json",
+          "sha256": "cf113c14d6242fe9f3614296f260b107c55586b139d3d602bfa1662dbaac58c0"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\cloud-drive-workflows-20261108\\candidate.json",
+          "sha256": "f10e9f59f7b93c9e91774556ce22b11f4b05ba77a8f96415c3ddd52202f27461"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-file-selection-20261108\\candidate.json",
+          "sha256": "e34dc61570f95a882ae04a7ca2f48b4402ee73e3ebba0c25d7bb27cb5c195287"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-backfill-20261109\\candidate.json",
+          "sha256": "f403e153c3e3b8bf9f38d81f0f733fddb1ef1398388e72b9da4e0b6764cc6cda"
+        },
+        {
+          "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\candidate.json",
+          "sha256": "e9db9532af426b14e35f966504fcc82365ec0aa8bc41f8817eaed895f1bdbc74"
+        }
+      ],
+      "composeFileCount": 10,
+      "composeSyntaxPassed": true,
+      "composeEffectiveImageMatched": true,
+      "environmentSha256": "a4455c4d8e1de68a872ebd5a46551a7d91be8f362a033768bfc337ab4586aa3b",
+      "unchangedFromExistingBaseline": {
+        "id": true,
+        "image": true,
+        "running": true,
+        "startedAt": true,
+        "restarts": true,
+        "environmentSha256": true,
+        "composeFiles": true,
+        "composeFileCount": true
+      }
+    }
+  },
+  "hostPin": {
+    "path": "E:\\gying-tools\\baidu-login\\private\\login-config.json",
+    "sha256": "a6d4e70a3e305b691108571d911f8b06010448835cc19d173a7e3081fc8d5908",
+    "expectedBackendImage": "sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6",
+    "imageMatchedLive": true,
+    "hashUnchangedFromExistingBaseline": true
+  },
+  "policiesAndPointers": [
+    {
+      "key": "resource.hub.baidu.backfill.task-id",
+      "value": "17580"
+    },
+    {
+      "key": "resource.hub.baidu.torrent-backfill.task-id",
+      "value": "17583"
+    },
+    {
+      "key": "resource.hub.drive.baidu.discovery_enabled",
+      "value": "true"
+    },
+    {
+      "key": "resource.hub.drive.baidu.gying_publish_enabled",
+      "value": "true"
+    },
+    {
+      "key": "resource.hub.drive.baidu.share_enabled",
+      "value": "true"
+    },
+    {
+      "key": "resource.hub.drive.baidu.torrent_enabled",
+      "value": "true"
+    },
+    {
+      "key": "resource.hub.drive.baidu.transfer_enabled",
+      "value": "true"
+    },
+    {
+      "key": "resource.hub.drive.baidu.video_enabled",
+      "value": "false"
+    }
+  ],
+  "retainedBaiduTaskCount": 1,
+  "newTemporarySchema": {
+    "scopeFieldCount": 0,
+    "cleanupTableCount": 0,
+    "productionMigrationPerformed": false
+  },
+  "realLoopbackEntryPoints": [
+    {
+      "uri": "http://127.0.0.1/",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "bc7ab91cc0d26fcf3670ad2020116ef7b9a3ae9e0c10384a891594a118b59d24"
+    },
+    {
+      "uri": "http://127.0.0.1/resource-search",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "7c19f5881190a3969e9aa97f493a023e06dad35c2775aea238b83a5f245b2e1d"
+    },
+    {
+      "uri": "http://127.0.0.1:8880/api/qq-bot/health",
+      "method": "GET",
+      "httpStatus": 200,
+      "bodySha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+    }
+  ],
+  "historicalTasksAfter": [
+    {
+      "id": 17580,
+      "phase": "EXISTING_DISCOVERIES",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 1,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_ACTION_REQUIRED",
+      "currentAction": null,
+      "errorCategory": null,
+      "currentChildId": 1,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "05ffd7007014f0a27742c809a575cbae46479c39c4bfe857185b11964f237fd9",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17583,
+      "phase": "GYING_TORRENTS",
+      "stage": null,
+      "source": "BAIDU",
+      "status": "BLOCKED",
+      "enabled": false,
+      "version": 2,
+      "attempts": 0,
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "batchLimit": 1,
+      "payloadValid": 1,
+      "blockedReason": "CHILD_UNKNOWN",
+      "currentAction": "UPLOAD_MAGNET_TEXT",
+      "errorCategory": null,
+      "currentChildId": 17584,
+      "intervalMinutes": 10,
+      "backfillParentId": null,
+      "payloadRawSha256": "40eb156de08986bc6e517624fd2966a323b4987f2da8ef43d27c1824122737d1",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": true,
+      "leaseUntilJsonNodePresent": true
+    },
+    {
+      "id": 17584,
+      "phase": null,
+      "stage": "UPLOAD_MAGNET_TEXT",
+      "source": "BAIDU",
+      "status": "UNKNOWN",
+      "enabled": null,
+      "version": 2,
+      "attempts": 1,
+      "taskType": "P2P_ARCHIVE",
+      "batchLimit": null,
+      "payloadValid": 1,
+      "blockedReason": null,
+      "currentAction": null,
+      "errorCategory": "BaiduActionException",
+      "currentChildId": null,
+      "intervalMinutes": null,
+      "backfillParentId": 17583,
+      "payloadRawSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5",
+      "shareSubmitIntent": null,
+      "uploadedFileCount": 0,
+      "upstreamCodeRetained": false,
+      "leaseOwnerJsonNodePresent": false,
+      "leaseUntilJsonNodePresent": false
+    }
+  ],
+  "historicalTaskProjectionUnchanged": true,
+  "gates": {
+    "idle": "FAIL",
+    "oldConsumerCompatibility": "FAIL",
+    "basis": [
+      "Retained P2P BAIDU child 17584 has unconfirmed upstream upload result",
+      "Original parent 17583 is BLOCKED with retained child and v2 intent",
+      "Retained legacy/v2 pointer and Baidu task require compatible consumer; existing reviewed gate rejects an old consumer",
+      "Fresh targeted reads confirm unchanged history and running original service identity; no full gate scanner was rerun"
+    ],
+    "automaticBackfillEnabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "deploymentAllowed": false
+  },
+  "completedAt": "2026-11-09T12:51:58.844692+00:00",
+  "leaseProjectionNote": "JSON_EXTRACT(...) IS NOT NULL also includes explicit JSON null; these fields mean JSON-node presence and are not evidence of an active lease.",
+  "leaseActiveStateEvaluated": false,
+  "originalExternalReportPreserved": true
+}

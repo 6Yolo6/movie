@@ -2,7 +2,11 @@
 
 更新时间：2026-11-09
 
-11月9日百度上传修复候选已提交并推送 `e9d0ebf`，正确处理分块 error_code0、保存逐文件上传意图/回执并保护 UNKNOWN；新永久目录按 mv/tv/ac 分类，历史路径保持。最终1,242项中1,241通过/1既有Redis跳过、真实SQL21/独立Java17 compile、386源/405产物及固定候选绑定通过。18:18只读生产镜像/Compose16/10/宿主pin保持，idle与旧消费者兼容门禁仍失败，未部署、未真实上传/分享；QQ/网站百度搜索和十分钟临时清理待真实链路验证后推进。[候选与边界](evaluation/baidu-upload-fix-20261109/README.md)。
+11月9日百度QQ/网站搜索临时清理候选已完成，源代码`bd16a9ac`；默认10分钟、精确临时目录彻底删除、不可延长期限与UNKNOWN只读对账。后端1360项中1359通过/1既有Redis跳过，必需真实SQL/Java17 compile；前端93项、TS/lint/build、7组mock浏览器和固定镜像产物通过。生产idle/旧消费者兼容门禁FAIL，保持b55080d8原镜像，未生产SQL/部署/转存删除，配额释放未实测。[候选与边界](evaluation/baidu-search-temp-20261109/README.md)。
+
+11月9日百度上传与分享兼容修复已提交推送 `e6370cb`；61字节合成文本真实上传及同目录一次period=0分享经精确只读核验，原STOPPED历史保留。网页混淆MD5、共享isdir字符串与自有记录raw短码已兼容；新永久mv/tv/ac分类保持。最终1254项中1253通过/1既有Redis跳过、真实MySQL/独立Java17 compile、386源码与固定候选产物绑定通过。生产仍原镜像，idle/旧消费者兼容门禁FAIL，未部署，历史17583/17584未重放。QQ/网站百度临时搜索和十分钟清理另见本轮候选；用户选择精确临时目录彻底删除，尚未执行清理或更改生产开关。[验证与边界](evaluation/baidu-share-compat-fix-20261109/README.md)。
+
+11月9日本机黑窗只读调查：GYing Baidu QR Login计划任务每分钟启动powershell.exe执行百度扫码登录脚本，窗口时间与任务/进程链匹配；已有Hidden参数但仍观察到WindowsTerminal闪现。未停用或修改宿主任务。[证据](evaluation/console-windows-20261109/README.md)。
 
 11月9日重复影片只读审计：有效15,293条，92组待核名称候选/184记录（mv51/tv41），6组版本/同名冲突隔离，严格来源身份同季重复0；MobLand的1YKW有8条正常资源，tmdb_tv_247718无资源。现有最新100/200扫描均0，MobLand排7989/8702且Season后缀匹配失败。未合并、删除或修改扫描器。[审计](evaluation/duplicate-audit-20261109/README.md)。
 
@@ -121,7 +125,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| 百度/文件选择 | 上传与mv/tv/ac分类候选e9d0ebf已提交/完整测试/固定构建通过，18:18生产仍原镜像；idle/旧消费者兼容门禁失败，未部署。原17583/17584保持BLOCKED/UNKNOWN、自动关闭10分钟1条，17:27远端仍0文件；历史无原错误码/回执，不能据空目录重放。独立一次小文本上传/可选分享探针仅离线准备，真实归档成功、视频转存、GYING发布及十分钟搜索清理待验。旧17580/视频子1、原配置/扫码/门禁UNKNOWN和自然完整备份边界保留。见[本次候选](evaluation/baidu-upload-fix-20261109/README.md)、[历史实跑](evaluation/baidu-torrent-backfill-20261109/README.md) |
+| 百度/文件选择 | 上传与分享兼容e6370cb及搜索清理bd16a9ac候选完整测试/固定构建通过；合成文本及同目录分享已精确只读核验，真实影视归档、视频转存和GYING发布未验。原17583/17584保持BLOCKED/UNKNOWN，idle/旧消费者门禁FAIL、未部署、自动补全关闭/10分钟1条。QQ/网站百度临时搜索和成功后十分钟精确清理候选已完成；自然清理及配额变化未实测，未删探针、历史或永久目录。见[搜索清理](evaluation/baidu-search-temp-20261109/README.md)、[上传分享](evaluation/baidu-share-compat-fix-20261109/README.md)、[历史实跑](evaluation/baidu-torrent-backfill-20261109/README.md) |
 | 片库重复 | 只读审计92组名称候选/184记录，MobLand8/0资源漏检已确认；严格身份重复0不等于无重复。扫描只取最近100/200 TMDB记录、标题不规范Season，现有合并未覆盖来源身份/百度/迅雷等关联，后续修复需逐组审核与完整关联保护，未改数据。见[审计](evaluation/duplicate-audit-20261109/README.md) |
 | AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。旧观测中的胶片修复、电影院核心主题、徒步ac/空及mv与电视特辑冲突已补机制上线，正式主题回答与真人验收仍待补；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
