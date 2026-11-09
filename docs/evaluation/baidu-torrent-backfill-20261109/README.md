@@ -14,6 +14,6 @@
 
 发布目录为 `E:/gying-tools/releases/baidu-torrent-backfill-20261109/`。停止窗口七份 age 与 pin 后三份 age 完整认证/内容/会话权限及原 XML/ACL 独立闭环通过，日常备份新增覆盖 CAS/dry-run 38 项通过，自然完整备份未验。回退保留当前 SQL、会话、密钥、父任务和 P2P 意图，禁止直接启动不识别新状态的旧消费者。
 
-当前剩余工作是确认未知上传及其接口原因；现有记录只保留 BaiduActionException 类别，未保存原接口错误码或逐文件上传票据。确认前不启用自动补全、不重建或重放 UNKNOWN，不把 HTTP 200、来源采集成功或排队当作百度归档成功。视频转存及 GYING 网站发布仍未测试。
+后续上传保护与 mv/tv/ac 分类修复已完成测试/固定候选，尚未部署或真实上传，见[新候选](../baidu-upload-fix-20261109/README.md)。当前剩余工作是确认未知上传及其接口原因；现有记录只保留 BaiduActionException 类别，未保存原接口错误码或逐文件上传票据。确认前不启用自动补全、不重建或重放 UNKNOWN，不把 HTTP 200、来源采集成功或排队当作百度归档成功。视频转存及 GYING 网站发布仍未测试。
 
 所有历史失败原件保留，包括前端首次启动探针、运维脚本首次语法检查、后端早先编译/断言失败、第一次部署 dry-run 在途阻断、post attempt01 原因 UNKNOWN 与验收脚本的 native JSON TypeError。新路径通过不会覆盖旧失败。安全 58 PASS / 11 FAIL / 1 UNKNOWN 及 G01–G11 未关闭；原两项摘要误报以独立客观证明记录，扫描器与原报告不改。

@@ -2,6 +2,8 @@
 
 开发分支：`codex/cloud-drive-workflows`。2026-11-09 13:54:51 已仅 backend/frontend 上线按库内 GYING ID 补种子，固定代码 `b55080d8`；视频/种子与阶段独立配置、专用百度会话保持有效。14:24 单影片实跑在首个磁力文本上传遇到 UNKNOWN，自动补全保持关闭、十分钟一条，尚未验证真实归档成功。[本轮验收](evaluation/baidu-torrent-backfill-20261109/README.md)。00:32 接入与 01:22 旧存量补全结果保留于[历史记录](evaluation/baidu-backfill-20261109/README.md)。
 
+后续百度上传修复与新目录分类候选 `e9d0ebf` 已完成全套测试和固定构建，尚未部署；真实上传/分享仍待独立诊断。QQ/网站百度搜索与转存后十分钟清理尚未接入。[最新候选与生产边界](evaluation/baidu-upload-fix-20261109/README.md)。
+
 ## 页面与阶段
 
 后台 `/admin/resource-hub` 的“网盘工作流”页签按网盘独立保存，不覆盖元数据采集范围或其它网盘草稿。
@@ -84,6 +86,12 @@ ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/ad
 旧 `resource.hub.baidu.backfill.task-id` 及父任务、游标、转存子任务和 UNKNOWN/远端意图原样保留，新补全不读取它们。旧视频分享的审核或源链接错误不会阻塞种子补全。若同片百度种子已有未知提交或待核验 P2P 任务，则保留其原选择及远端检查点，显示该种子任务的具体状态；不重置、重建或重放未知提交。
 
 宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。13:54 本轮仅同步新 backend 固定镜像并核对实际配置、严格前后 idle、原任务 XML/ACL，保持 Enabled/Ready、profile 和加密会话。01:34 历史任务恢复 Enabled/Ready、Limited/Interactive 实际运行 exit0 与独立核验保留；当时 stdout 未捕获，idle 由严格前后无 handoff 与 exit0 推定。首次默认 Enabled 节点省略造成的失败和精确 CAS 回 disabled 保留于历史验收记录。
+
+## 百度新永久目录候选
+
+上传修复候选的新视频计划与种子归档统一按影片类别写到保存根下的 `mv/tv/ac`：默认 `/GYing Resource Hub/mv`、`tv`、`ac`；movie/anime 别名映射到 mv/ac。未知类别在百度云写入前停止。只复用同类别目录，历史保存计划、路径与 UNKNOWN 检查点保持原位，未搬迁生产文件。该候选仍未上线。
+
+用户要求 QQ 群与网站共享百度搜索链路，并对这类临时转存设置十分钟自动清理；将先验证上传/分享，再实现独立临时任务、精确账号/目录/文件证据和清理状态。永久 mv/tv/ac 归档不纳入临时清理。当前只有方案，未修改搜索业务或清理迁移。
 
 ## 部署与回退
 
