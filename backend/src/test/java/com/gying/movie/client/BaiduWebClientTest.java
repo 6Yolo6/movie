@@ -62,6 +62,41 @@ class BaiduWebClientTest {
         var plan=client.planTransfer("https://pan.baidu.com/s/1source",null,"/target");
         assertEquals(List.of(new BaiduWebClient.ExpectedFile("Season",0,true),new BaiduWebClient.ExpectedFile("Season/one.mkv",50,false)),plan.expectedFiles());
     }
+    @Test void sharedDirectoryLiteralFlagsPreserveTheExactHierarchy() {
+        transport.shared.put("root", "[{\"fs_id\":11,\"server_filename\":\"Season\",\"path\":\"/Season\",\"size\":\"0\",\"isdir\":\"1\"}]");
+        transport.shared.put("/Season", "[{\"fs_id\":12,\"server_filename\":\"one.mkv\",\"path\":\"/Season/one.mkv\",\"size\":100,\"isdir\":\"0\"}]");
+        var plan = client.planTransfer("https://pan.baidu.com/s/1source", null, "/target");
+        assertEquals(List.of(new BaiduWebClient.ExpectedFile("Season", 0, true),
+                new BaiduWebClient.ExpectedFile("Season/one.mkv", 100, false)), plan.expectedFiles());
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void sharedDirectoryFlagsRejectNonCanonicalStringsAndIntegerOverflow() {
+        for (String flag : List.of("2", "-1", "4294967296", "4294967297", "\"00\"", "\"01\"", "\"+1\"",
+                "\"-0\"", "\" 1\"", "\"1 \"", "\"1.0\"", "\"1e0\"", "\"１\"", "true", "null", "1.0", "1e0")) {
+            transport.shared.put("root", "[{\"fs_id\":11,\"server_filename\":\"Movie.mkv\",\"path\":\"/Movie.mkv\",\"size\":100,\"isdir\":" + flag + "}]");
+            assertEquals("SOURCE_INVALID", assertThrows(BaiduActionException.class,
+                    () -> client.planTransfer("https://pan.baidu.com/s/1source", null, "/target")).code());
+        }
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void ownedDirectoryFlagsRemainStrictJsonIntegers() {
+        for (String flag : List.of("\"0\"", "\"1\"", "4294967296", "4294967297")) {
+            transport.owned.put("/target", "[{\"fs_id\":30,\"server_filename\":\"Movie.mkv\",\"path\":\"/target/Movie.mkv\",\"size\":100,\"isdir\":" + flag + "}]");
+            assertEquals("DESTINATION_INVALID", assertThrows(BaiduActionException.class,
+                    () -> client.verifyDestination(plan())).code());
+        }
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void sharedFileSizeRemainsABoundedJsonInteger() {
+        transport.shared.put("root", "[{\"fs_id\":11,\"server_filename\":\"Movie.mkv\",\"path\":\"/Movie.mkv\",\"size\":9223372036854775807,\"isdir\":\"0\"}]");
+        assertEquals(Long.MAX_VALUE, client.planTransfer("https://pan.baidu.com/s/1source", null, "/target").expectedFiles().get(0).size());
+        for (String size : List.of("\"100\"", "100.0", "1e2", "-1", "true", "null", "9223372036854775808")) {
+            transport.shared.put("root", "[{\"fs_id\":11,\"server_filename\":\"Movie.mkv\",\"path\":\"/Movie.mkv\",\"size\":" + size + ",\"isdir\":\"0\"}]");
+            assertEquals("SOURCE_INVALID", assertThrows(BaiduActionException.class,
+                    () -> client.planTransfer("https://pan.baidu.com/s/1source", null, "/target")).code());
+        }
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
     @Test void pathTraversalAndWrongOwnedParentAreRejected() {
         transport.shared.put("root","["+file("11","..","/..",100,false,null)+"]");
         assertEquals("PATH_INVALID",assertThrows(BaiduActionException.class,()->client.planTransfer("https://pan.baidu.com/s/1source",null,"/target")).code());
@@ -300,6 +335,49 @@ class BaiduWebClientTest {
         assertEquals(0,transport.count("POST","/share/pset"));
         transport.owner="200"; assertNull(client.findOwnShare("/target"));
     }
+    @Test void ownRecordShortCodeMustMatchItsCanonicalLinkWithOrWithoutPrefix() {
+        transport.owner = "100";
+        transport.records = ownRecord("https://pan.baidu.com/s/1owned");
+        transport.shared.put("root", "[{\"fs_id\":20,\"server_filename\":\"target\",\"path\":\"/target\",\"size\":\"0\",\"isdir\":\"1\"}]");
+        for (String shorturl : List.of("owned", "1owned")) {
+            transport.ownShareDetails = "{\"errno\":0,\"shorturl\":\"" + shorturl + "\",\"pwd\":\"abcd\"}";
+            assertEquals("https://pan.baidu.com/s/1owned?pwd=abcd", client.findOwnShare("/target"));
+        }
+        assertEquals(0, transport.count("POST", "/share/pset"));
+        assertTrue(transport.requests.stream().allMatch(r -> r.uri().getHost().equals("pan.baidu.com")));
+        assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizedShareUrl("owned", "abcd"));
+        assertThrows(IllegalArgumentException.class, () -> BaiduWebClient.normalizedShareUrl("1owned", "abcd"));
+    }
+    @Test void ownRecordDetailMismatchOrUnsafeUrlNeverGetsDereferencedOrCreatesShare() {
+        transport.owner = "100";
+        transport.records = ownRecord("https://pan.baidu.com/s/1owned");
+        for (String shorturl : List.of("other", "1other", "Owned", "https://pan.baidu.com/s/1other",
+                "https://evil.example/s/1owned", "owned?pwd=abcd", " owned ")) {
+            transport.ownShareDetails = "{\"errno\":0,\"shorturl\":\"" + shorturl + "\",\"pwd\":\"abcd\"}";
+            assertEquals("SHARE_RECORD_INVALID", assertThrows(BaiduActionException.class,
+                    () -> client.findOwnShare("/target")).code());
+        }
+        assertEquals(0, transport.count("GET", "/s/1owned"));
+        assertEquals(0, transport.count("POST", "/share/pset"));
+        assertTrue(transport.requests.stream().allMatch(r -> r.uri().getHost().equals("pan.baidu.com")));
+    }
+    @Test void ownRecordRawShortCodeRequiresFullRecordUrlWhileFullDetailUrlRemainsSupported() {
+        transport.owner = "100";
+        transport.records = ownRecord(null);
+        transport.ownShareDetails = "{\"errno\":0,\"shorturl\":\"owned\",\"pwd\":\"abcd\"}";
+        assertEquals("SHARE_RECORD_INVALID", assertThrows(BaiduActionException.class,
+                () -> client.findOwnShare("/target")).code());
+        transport.ownShareDetails = "{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}";
+        assertEquals("https://pan.baidu.com/s/1owned?pwd=abcd", client.findOwnShare("/target"));
+        transport.records = ownRecord("1owned");
+        assertEquals("SHARE_RECORD_INVALID", assertThrows(BaiduActionException.class,
+                () -> client.findOwnShare("/target")).code());
+        assertEquals(0, transport.count("POST", "/share/pset"));
+    }
+    private static String ownRecord(String url) {
+        return "{\"errno\":0,\"list\":[{\"shareId\":1,\"fsIds\":[20],\"typicalPath\":\"/target\",\"status\":0,\"expiredTime\":0,\"uk\":100"
+                + (url == null ? "" : ",\"shortlink\":\"" + url + "\"") + "}]}";
+    }
     @Test void expiredOwnRecordIsSkippedWithoutDereferencingItsUrl() {
         transport.records="{\"errno\":0,\"list\":[{\"shareId\":1,\"fsIds\":[20],\"typicalPath\":\"/target\",\"status\":0,\"expiredTime\":1,\"shortlink\":\"https://evil.example/x\"}]}";
         assertNull(client.findOwnShare("/target"));assertEquals(0,transport.count("GET","/share/surlinfoinrecord"));
@@ -339,7 +417,7 @@ class BaiduWebClientTest {
         final Map<String,String> shared=new HashMap<>(),owned=new HashMap<>();
         String failurePath,redirect,owner="200",records="{\"errno\":0,\"list\":[]}",transfer="{\"errno\":0,\"taskid\":\"task1\"}",createBody;
         boolean failAfterShare,shareCreated,needsCode,verified;
-        byte[] uploadBytes; String uploadName, ownedUploadMd5, precreateOwnedContents;
+        byte[] uploadBytes; String uploadName, ownedUploadMd5, precreateOwnedContents, ownShareDetails;
         String precreateResponse="{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}",commitResponse;
         BaiduWebClient.WebResponse uploadResponse;
         long count(String method,String path){return requests.stream().filter(r->r.method().equals(method)&&r.uri().getPath().equals(path)).count();}
@@ -356,7 +434,7 @@ class BaiduWebClientTest {
                 case "/share/record" -> ok(records);
                 case "/share/pset" -> {shareCreated=true;yield ok("{\"errno\":0,\"link\":\"https://pan.baidu.com/s/1owned\"}");}
                 case "/share/verify" -> {verified=true;yield ok("{\"errno\":0,\"randsk\":\"fixture-secret\"}");}
-                case "/share/surlinfoinrecord" -> ok("{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}");
+                case "/share/surlinfoinrecord" -> ownShareDetails==null?ok("{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}"):ok(ownShareDetails);
                 case "/api/precreate" -> {if(precreateOwnedContents!=null)owned.put("/target",precreateOwnedContents);yield ok(precreateResponse);}
                 case "/rest/2.0/pcs/superfile2" -> {if(uploadResponse!=null)yield uploadResponse;try{yield ok("{\"md5\":\""+java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes))+"\"}");}catch(Exception e){throw new AssertionError(e);}}
                 case "/api/create" -> {createBody=body(request);if(commitResponse!=null)yield ok(commitResponse);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,ownedUploadMd5==null?java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)):ownedUploadMd5)+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}

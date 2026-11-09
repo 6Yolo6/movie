@@ -186,16 +186,45 @@ public class BaiduWebClient {
                 if (directory == null || !directory.directory() || !directory.fsid().equals(fsids.path(0).asText())) continue;
                 String shareId = numeric(first(record.path("shareId"), record.path("shareid")), "SHARE_RECORD_INVALID");
                 JsonNode details = json("GET", "/share/surlinfoinrecord", Map.of("shareid", shareId, "sign", shareInfoSign(shareId)), null, auth.cookies(), null, false);
-                String url = firstText(details.path("shorturl"), record.path("shortlink"));
-                String pwd = firstText(details.path("pwd"));
-                if ("0".equals(pwd)) pwd = null;
-                String normalized = normalizedShareUrl(url, pwd);
+                String normalized = ownRecordShareUrl(record, details);
                 if (validateOwnShare(normalized, shareId)) return normalized;
                 // Definitively expired/inaccessible own records do not prevent a replacement share.
             }
             if (list.size() < PAGE_SIZE) return null;
         }
         throw action("SHARE_RECORD_SCAN_INCOMPLETE", true, false, false);
+    }
+
+    /** Short codes are accepted only from this own-record API and must match its canonical link. */
+    private static String ownRecordShareUrl(JsonNode record, JsonNode details) {
+        JsonNode recordLink = record.path("shortlink");
+        JsonNode detailLink = details.path("shorturl");
+        if ((!recordLink.isMissingNode() && !recordLink.isNull() && !recordLink.isTextual())
+                || (!detailLink.isMissingNode() && !detailLink.isNull() && !detailLink.isTextual())) {
+            throw action("SHARE_RECORD_INVALID", false, true, false);
+        }
+        String pwd = firstText(details.path("pwd"));
+        if ("0".equals(pwd)) pwd = null;
+        try {
+            String canonical = recordLink.isMissingNode() || recordLink.isNull()
+                    ? null : normalizedShareUrl(recordLink.textValue(), pwd);
+            if (detailLink.isMissingNode() || detailLink.isNull()) {
+                if (canonical == null) throw new IllegalArgumentException();
+                return canonical;
+            }
+            String value = detailLink.textValue();
+            if (value.matches("[A-Za-z0-9_-]{1,81}")) {
+                if (canonical == null) throw new IllegalArgumentException();
+                String id = URI.create(canonical).getPath().substring(3);
+                if (!value.equals(id) && !value.equals(id.substring(1))) throw new IllegalArgumentException();
+                return canonical;
+            }
+            String detailed = normalizedShareUrl(value, pwd);
+            if (canonical != null && !canonical.equals(detailed)) throw new IllegalArgumentException();
+            return detailed;
+        } catch (IllegalArgumentException ignored) {
+            throw action("SHARE_RECORD_INVALID", false, true, false);
+        }
     }
 
     public String createOwnShare(String path) {
@@ -510,8 +539,17 @@ public class BaiduWebClient {
                 String path = item.path("path").asText(null);
                 if (path == null || !path.startsWith("/") || hasControl(path) || path.length() > 2000) throw action(code, false, true, false);
                 if ("/api/list".equals(endpoint) && !path.equals(("/".equals(query.get("dir")) ? "" : query.get("dir")) + "/" + name)) throw action(code, false, true, false);
-                if (!item.path("isdir").isIntegralNumber() || !Set.of(0, 1).contains(item.path("isdir").asInt())) throw action(code, false, true, false);
-                boolean directory = item.path("isdir").asInt() == 1;
+                JsonNode directoryFlag = item.path("isdir");
+                boolean directory;
+                if (directoryFlag.isIntegralNumber() && directoryFlag.canConvertToInt()
+                        && Set.of(0, 1).contains(directoryFlag.asInt())) {
+                    directory = directoryFlag.asInt() == 1;
+                } else if ("/share/list".equals(endpoint) && directoryFlag.isTextual()
+                        && Set.of("0", "1").contains(directoryFlag.textValue())) {
+                    directory = "1".equals(directoryFlag.textValue());
+                } else {
+                    throw action(code, false, true, false);
+                }
                 if (!directory && (!item.path("size").isIntegralNumber() || !item.path("size").canConvertToLong() || item.path("size").asLong() < 0)) throw action(code, false, true, false);
                 result.add(new RemoteFile(id, name, path, directory ? 0 : item.path("size").asLong(), directory, firstText(item.path("md5"))));
                 if (result.size() > MAX_ITEMS) throw action("TREE_LIMIT", false, true, false);
