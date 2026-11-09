@@ -55,7 +55,7 @@ export default function DuplicateMovieScanner() {
         setLoading(true); setError(false);
         try {
             const response = await api(`/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=true&limit=100&page=${page}`,
-                { method: 'POST', signal: request.signal }, token || undefined);
+                { method: 'POST', signal: request.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
             if (!response.ok) throw new Error('scan failed');
             const body = await response.json();
             if (!validScan(body.data)) throw new Error('invalid scan');

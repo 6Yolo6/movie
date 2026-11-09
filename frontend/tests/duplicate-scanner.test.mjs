@@ -13,9 +13,10 @@ async function duplicateSuite({ React, createRoot, loadPage }) {
         const capture = name => props => React.createElement('div', { 'data-fixture': name,
             ref: node => { if (node) node.fixtureProps = props; } }, props.children);
         const t = (key, values) => { translations.push({ key, values }); return key; };
-        const api = (url, options, token) => {
+        const api = (url, options, ...unexpected) => {
+            if (unexpected.length > 0) throw new Error('API accepts path and RequestInit only');
             let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
-            calls.push({ url, options, token, resolve, reject }); return promise;
+            calls.push({ url, options, resolve, reject }); return promise;
         };
         const Page = loadPage('scanner', {
             antd: { ...Object.fromEntries(['Alert', 'Button', 'Space', 'Table', 'Tag'].map(name => [name, capture(name)])),
@@ -49,7 +50,8 @@ async function duplicateSuite({ React, createRoot, loadPage }) {
         await f.act(() => { f.button().onClick(); f.button().onClick(); });
         same(f.calls.length, 1, 'double clicks are deduplicated');
         same(f.calls[0].url, '/api/admin/resource-hub/cleanup/duplicate-tmdb?dryRun=true&limit=100&page=1', 'full scan with result page');
-        same(f.calls[0].options.method, 'POST', 'request'); same(f.calls[0].token, 'fixture-admin', 'admin auth');
+        same(f.calls[0].options.method, 'POST', 'request');
+        same(new Headers(f.calls[0].options.headers).get('Authorization'), 'Bearer fixture-admin', 'admin auth header');
         same(f.all('Button').length, 1, 'no merge button');
     });
     await check('MobLand candidates show both IDs and resource counts without a merge action', async f => {

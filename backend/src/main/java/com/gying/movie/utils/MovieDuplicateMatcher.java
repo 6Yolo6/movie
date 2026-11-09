@@ -79,7 +79,7 @@ public final class MovieDuplicateMatcher {
                         || names.stream().anyMatch(name -> SEASON.matcher(name.trim()).matches())));
         if ("ac".equals(category) && type == null && !serial) return null;
         if ("ac".equals(category) && "mv".equals(type) && serial) return null;
-        Integer season = serial ? movie.getSeason() : 0;
+        Integer season = serial ? movie.getSeason() : Integer.valueOf(0);
         Set<String> titles = new LinkedHashSet<>();
         for (String name : names) {
             String normalized = Normalizer.normalize(name, Normalizer.Form.NFKC).trim();
