@@ -263,6 +263,15 @@ public class BaiduWebClient {
         synchronized (vault) { ensureDirectory(safeDirectory(folder), currentAuth()); }
         return folder;
     }
+    /** Read-only recovery check. Missing content never authorizes replaying an uncertain upload. */
+    public String p2pFindUploadedFile(String folder, String name, byte[] bytes) {
+        safeDirectory(folder); safeName(name);
+        if (bytes == null || bytes.length == 0 || !metadataFile(name, bytes)) throw action("METADATA_INVALID", false, true, false);
+        synchronized (vault) {
+            RemoteFile file = findOwnedEntry(folder + "/" + name, currentAuth());
+            return file == null ? null : requireMetadata(file, folder + "/" + name, bytes.length, md5(bytes));
+        }
+    }
     public String p2pUpload(String folder, String name, byte[] bytes) {
         safeDirectory(folder); safeName(name);
         if (bytes == null || bytes.length == 0 || !metadataFile(name, bytes)) throw action("METADATA_INVALID", false, true, false);
@@ -275,29 +284,30 @@ public class BaiduWebClient {
             ensureDirectory(folder, auth);
             var crc = new java.util.zip.CRC32(); crc.update(bytes);
             String slice = md5(java.util.Arrays.copyOf(bytes, Math.min(bytes.length, 256 * 1024)));
-            JsonNode pre = json("POST", "/api/precreate", Map.of("bdstoken", auth.bdstoken()), Map.of(
+            JsonNode pre = uploadJson("UPLOAD_PRECREATE", "/api/precreate", Map.of("bdstoken", auth.bdstoken()), Map.of(
                     "path", path, "size", Integer.toString(bytes.length), "isdir", "0", "block_list", encodeJson(List.of(digest)),
-                    "autoinit", "1", "content-md5", digest, "slice-md5", slice, "contentCrc32", Long.toString(crc.getValue()), "rtype", "2"), auth.cookies(), ORIGIN + "/disk/main", true);
+                    "autoinit", "1", "content-md5", digest, "slice-md5", slice, "contentCrc32", Long.toString(crc.getValue()), "rtype", "2"), auth.cookies());
             // Precreate may complete a known block immediately. Always validate the actual entry.
+            if (!pre.path("return_type").isIntegralNumber() || !Set.of(1, 2).contains(pre.path("return_type").asInt())) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
             if (pre.path("return_type").asInt() == 2) {
                 RemoteFile rapid = findOwnedEntry(path, auth);
-                if (rapid == null) throw action("UPLOAD_UNCONFIRMED", true, false, true);
+                if (rapid == null) throw action("UPLOAD_PRECREATE_UNCONFIRMED", true, false, true);
                 return requireMetadata(rapid, path, bytes.length, digest);
             }
             String uploadId = firstText(pre.path("uploadid"));
-            if (uploadId == null || !uploadId.matches("[A-Za-z0-9_-]{1,200}")) throw action("UPLOAD_RESPONSE_INVALID", false, false, true);
+            if (uploadId == null || !uploadId.matches("[A-Za-z0-9_-]{1,200}")) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
             JsonNode blocks = pre.path("block_list");
-            if (!blocks.isArray() || blocks.size() > 1 || blocks.size() == 1 && (!blocks.path(0).isIntegralNumber() || blocks.path(0).asInt() != 0)) throw action("UPLOAD_RESPONSE_INVALID", false, false, true);
+            if (!blocks.isArray() || blocks.size() > 1 || blocks.size() == 1 && (!blocks.path(0).isIntegralNumber() || blocks.path(0).asInt() != 0)) throw action("UPLOAD_PRECREATE_RESPONSE_INVALID", false, false, true);
             if (blocks.size() == 1) uploadBlock(auth, uploadId, path, name, bytes, digest);
-            // rtype=2 skips/rejects an existing path; it never overwrites or renames it.
-            json("POST", "/api/create", Map.of("a", "commit", "bdstoken", auth.bdstoken()), Map.of(
+            // The web upload protocol uses rtype=2 to skip an existing path (Open API uses a different mapping).
+            uploadJson("UPLOAD_COMMIT", "/api/create", Map.of("a", "commit", "bdstoken", auth.bdstoken()), Map.of(
                     "uploadid", uploadId, "path", path, "size", Integer.toString(bytes.length), "isdir", "0", "rtype", "2",
-                    "block_list", encodeJson(List.of(digest)), "target_path", folder), auth.cookies(), ORIGIN + "/disk/main", true);
+                    "block_list", encodeJson(List.of(digest)), "target_path", folder), auth.cookies());
             try {
                 RemoteFile after = findOwnedEntry(path, auth);
-                if (after == null) throw action("UPLOAD_UNCONFIRMED", true, false, true);
+                if (after == null) throw action("UPLOAD_COMMIT_UNCONFIRMED", true, false, true);
                 return requireMetadata(after, path, bytes.length, digest);
-            } catch (BaiduActionException error) { throw action(error.code(), error.retryable(), error.actionRequired(), true); }
+            } catch (BaiduActionException error) { throw uploadFailure("UPLOAD_VERIFY", error, true); }
         }
     }
     private void uploadBlock(Auth auth, String uploadId, String path, String name, byte[] bytes, String digest) {
@@ -316,16 +326,41 @@ public class BaiduWebClient {
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary).POST(HttpRequest.BodyPublishers.ofByteArray(payload)).build();
         try {
             WebResponse response = transport.exchange(request);
-            if (response == null || response.body() == null || response.body().length > MAX_RESPONSE) throw action("UPLOAD_RESPONSE_INVALID", false, false, true);
-            requireHttp(response, true);
-            JsonNode json = mapper.readTree(response.body());
-            if (json == null || !json.isObject()) throw action("UPLOAD_RESPONSE_INVALID", false, false, true);
-            if (json.has("error_code")) throw apiError(json.path("error_code").asInt(-1), true);
-            if (json.has("errno") && json.path("errno").asInt(-1) != 0) throw apiError(json.path("errno").asInt(-1), true);
-            if (!digest.equalsIgnoreCase(json.path("md5").asText())) throw action("UPLOAD_DIGEST_MISMATCH", false, true, true);
-        } catch (BaiduActionException error) { throw error; }
-        catch (InterruptedException ignored) { Thread.currentThread().interrupt(); throw action("INTERRUPTED", false, false, true); }
-        catch (Exception ignored) { throw action("NETWORK_UNAVAILABLE", true, false, true); }
+            JsonNode json = parseUploadResponse(response, "UPLOAD_BLOCK", false);
+            if (!digest.equalsIgnoreCase(json.path("md5").asText())) throw action("UPLOAD_BLOCK_DIGEST_MISMATCH", false, true, true);
+        } catch (BaiduActionException error) { throw uploadFailure("UPLOAD_BLOCK", error, error.uncertain()); }
+        catch (InterruptedException ignored) { Thread.currentThread().interrupt(); throw action("UPLOAD_BLOCK_INTERRUPTED", false, false, true); }
+        catch (javax.net.ssl.SSLException ignored) { throw action("UPLOAD_BLOCK_TLS_UNAVAILABLE", true, false, true); }
+        catch (java.net.http.HttpTimeoutException ignored) { throw action("UPLOAD_BLOCK_TIMEOUT", true, false, true); }
+        catch (IOException ignored) { throw action("UPLOAD_BLOCK_NETWORK_UNAVAILABLE", true, false, true); }
+    }
+    private JsonNode uploadJson(String stage, String path, Map<String, String> query, Map<String, String> values, List<BaiduSessionVault.Cookie> cookies) {
+        try {
+            return parseUploadResponse(exchange("POST", uri(path, query), values, cookies, ORIGIN + "/disk/main", true), stage, true);
+        } catch (BaiduActionException error) { throw uploadFailure(stage, error, error.uncertain()); }
+    }
+    private JsonNode parseUploadResponse(WebResponse response, String stage, boolean requireErrno) {
+        if (response == null || response.body() == null || response.body().length > MAX_RESPONSE) throw action(stage + "_RESPONSE_INVALID", false, false, true);
+        try { requireHttp(response, true); }
+        catch (BaiduActionException error) { throw action(stage + "_HTTP_" + response.status(), error.retryable(), error.actionRequired(), error.uncertain()); }
+        JsonNode json;
+        try { json = mapper.readTree(response.body()); }
+        catch (IOException ignored) { throw action(stage + "_RESPONSE_INVALID", false, false, true); }
+        if (json == null || !json.isObject() || requireErrno && !json.has("errno")) throw action(stage + "_RESPONSE_INVALID", false, false, true);
+        for (String field : List.of("errno", "error_code")) if (json.has(field)) {
+            if (!json.path(field).isIntegralNumber() || !json.path(field).canConvertToInt()) throw action(stage + "_RESPONSE_INVALID", false, false, true);
+            int errno = json.path(field).asInt();
+            if (errno != 0) {
+                BaiduActionException error = apiError(errno, true);
+                throw action(stage + "_API_" + (errno < 0 ? "NEG_" + -(long) errno : errno), error.retryable(), error.actionRequired(), error.uncertain());
+            }
+        }
+        return json;
+    }
+    private static BaiduActionException uploadFailure(String stage, BaiduActionException error, boolean uncertain) {
+        // Only locally generated stage labels and integers are persisted, never upstream text or URLs.
+        String code = error.code().startsWith("UPLOAD_") ? error.code() : stage + "_" + error.code();
+        return action(code, error.retryable(), error.actionRequired(), uncertain);
     }
     private static String requireMetadata(RemoteFile file, String path, long size, String digest) {
         if (file.directory() || !path.equals(file.path()) || file.size() != size || file.md5() == null || !digest.equalsIgnoreCase(file.md5())) throw action("DESTINATION_CONFLICT", false, true, false);

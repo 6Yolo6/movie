@@ -9,14 +9,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.*;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.entity.BaiduTransferTask;
+import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.service.*;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class BaiduTransferRunnerServiceImplTest {
     ResourceHubProperties props; BaiduWebClient client; BaiduSessionVault vault;
-    IBaiduTransferTaskService tasks; BaiduTransferTask task; BaiduTransferRunnerServiceImpl runner;
+    IBaiduTransferTaskService tasks; BaiduTransferTask task; BaiduTransferRunnerServiceImpl runner; IMovieMetadataService movies;
     ObjectMapper mapper=new ObjectMapper(); List<String> persisted;
     @BeforeEach void setup() throws Exception {
         props=new ResourceHubProperties(); props.setEnabled(true); props.getBaidu().setEnabled(true); props.getBaidu().setShareEnabled(true); props.getBaidu().setVideoEnabled(true); props.getBaidu().setPollAttempts(1); props.getBaidu().setPollIntervalMs(0);
@@ -29,7 +32,8 @@ class BaiduTransferRunnerServiceImplTest {
             update.getParamNameValuePairs().values().stream().filter(v->v instanceof String && v.toString().matches("[0-9a-f-]{36}")).findFirst().ifPresent(v->task.setLeaseOwner(v.toString()));
             persisted.add(task.getPhase()); return true;
         });
-        runner=new BaiduTransferRunnerServiceImpl(props,client,vault,tasks,mock(IResourceDiscoveryResultService.class),mock(IResourceLinkService.class),mock(IMovieMetadataService.class),mapper);
+        movies=mock(IMovieMetadataService.class);
+        runner=new BaiduTransferRunnerServiceImpl(props,client,vault,tasks,mock(IResourceDiscoveryResultService.class),mock(IResourceLinkService.class),movies,mapper);
     }
     @Test void intentIsPersistedBeforeTransferAndShare() {
         when(client.verifyDestination(any())).thenReturn(false,true);
@@ -90,5 +94,44 @@ class BaiduTransferRunnerServiceImplTest {
     @Test void unknownPhaseNeverPosts() {
         task.setPhase("UNKNOWN");runner.submitOne(1L);verify(client,never()).transfer(any());verify(client,never()).createOwnShare(any());assertEquals("FAILED",task.getStatus());
     }
+
+    @ParameterizedTest
+    @CsvSource({"mv,mv", "tv,tv", "ac,ac", "movie,mv", "anime,ac"})
+    void newBaiduVideoPlansUseTheSamePermanentCategoryRootsAsTorrentFolders(String category, String expected) {
+        MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setTitleCn("分类作品"); movie.setCategory(category);
+        when(movies.getById("movie1")).thenReturn(movie); task.setMovieId("movie1");
+        task.setPhase("NEW"); task.setSavedPath(null); task.setResponsePayload(null); props.getBaidu().setShareEnabled(false);
+        props.getBaidu().setSavePath("/GYing Resource Hub/");
+        String destination = "/GYing Resource Hub/" + expected + "/分类作品（movie1）";
+        when(client.planTransfer(anyString(), any(), eq(destination), eq(true), eq(false))).thenReturn(
+                new BaiduWebClient.TransferPlan(task.getOriginalUrl(), null, destination, "1", "200", List.of("11"), List.of(new BaiduWebClient.ExpectedFile("Movie.mkv", 100, false))));
+        when(client.verifyDestination(any())).thenReturn(true);
+        runner.submitOne(1L); assertEquals(destination, task.getSavedPath()); assertEquals("TRANSFERRED", task.getPhase());
+        assertTrue(task.getResponsePayload().contains(destination));
+        verify(client).planTransfer(anyString(), any(), eq(destination), eq(true), eq(false));
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    @Test void unknownCategoryStopsANewVideoPlanBeforeAnyTransferRequest() {
+        MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setCategory("music");
+        when(movies.getById("movie1")).thenReturn(movie); task.setMovieId("movie1");
+        task.setPhase("NEW"); task.setSavedPath(null); task.setResponsePayload(null);
+        runner.submitOne(1L); assertEquals("ACTION_REQUIRED", task.getStatus()); assertEquals("CATEGORY_REQUIRED", task.getLastError());
+        verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    @Test void historicalSubmittingVideoPlanRetainsItsDestinationWhenCurrentCategoryChanges() {
+        MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setCategory("tv");
+        when(movies.getById("movie1")).thenReturn(movie); task.setMovieId("movie1"); props.getBaidu().setSavePath("/GYing Resource Hub");
+        task.setPhase("TRANSFER_SUBMITTING"); task.setStatus("WAITING_TRANSFER");
+        String original = task.getResponsePayload(); when(client.verifyDestination(any())).thenReturn(false);
+        runner.submitOne(1L);
+        assertEquals("/target", task.getSavedPath()); assertEquals(original, task.getResponsePayload()); assertEquals("TRANSFER_SUBMITTING", task.getPhase());
+        verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+        verifyNoInteractions(movies);
+    }
+
     private static BaiduWebClient.TransferPlan plan(){return new BaiduWebClient.TransferPlan("https://pan.baidu.com/s/1source",null,"/target","1","200",List.of("11"),List.of(new BaiduWebClient.ExpectedFile("Movie.mkv",100,false)));}
 }

@@ -14,6 +14,7 @@ import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.*;
 import com.gying.movie.service.*;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduArchivePaths;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.QqTransferMarker;
 import java.nio.charset.StandardCharsets;
@@ -120,7 +121,8 @@ public class P2pArchiveTaskService {
         requireProvider(provider);
         return tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId).eq("source", provider)
                 .and(query -> query.in("status", List.of("UNKNOWN", "ACTION_REQUIRED", "REVIEW_REQUIRED", "RUNNING"))
-                        .or().apply("JSON_EXTRACT(payload, '$.baiduShareSubmitting')=true"))
+                        .or().apply("JSON_EXTRACT(payload, '$.baiduShareSubmitting')=true")
+                        .or().apply("source='BAIDU' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.baiduUploadIntent.status')) IN ('SUBMITTING','UNKNOWN')"))
                 .orderByAsc("id").last("LIMIT 1"), false);
     }
 
@@ -220,7 +222,8 @@ public class P2pArchiveTaskService {
         if (providers.isEmpty()) return;
         tasks.update(new UpdateWrapper<ResourceHubTask>().eq("task_type", TYPE).in("source", providers).eq("status", "RUNNING")
                 .apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL")
-                .set("status", "FAILED").set("last_error", "Interrupted P2P upload; existing files will be verified on retry")
+                .setSql("status=CASE WHEN source='BAIDU' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.baiduUploadIntent.status')) IN ('SUBMITTING','UNKNOWN') THEN 'UNKNOWN' ELSE 'FAILED' END")
+                .setSql("last_error=CASE WHEN source='BAIDU' AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.baiduUploadIntent.status')) IN ('SUBMITTING','UNKNOWN') THEN 'Interrupted Baidu upload; read-only reconciliation required' ELSE 'Interrupted P2P upload; existing files will be verified on retry' END")
                 .set("scheduled_at", LocalDateTime.now().plusMinutes(1)).set("updated_at", LocalDateTime.now()));
     }
 
@@ -303,10 +306,12 @@ public class P2pArchiveTaskService {
         task.setStatus("RUNNING"); task.setAttempts(attempt); task.setStartedAt(LocalDateTime.now());
         Map<String, Object> payload = new LinkedHashMap<>();
         String stage = "LOAD_SELECTION";
+        boolean freshBaiduUpload = false;
         try {
             payload = mapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {});
             List<ResourceLink> selected = loadSelection(payload);
             if (!Objects.equals(payload.get("fingerprint"), fingerprint(selected))) {
+                if (unconfirmedBaiduUpload(provider, payload)) throw invalidUploadCheckpoint();
                 task.setStatus("CANCELED"); task.setLastError("Selected P2P release was superseded"); persist(task, payload); return;
             }
             validateSelection(task.getMovieId(), selected);
@@ -323,16 +328,47 @@ public class P2pArchiveTaskService {
             stage = "RESOLVE_MOVIE_FOLDER";
             String folder = Objects.toString(payload.get("folderId"), "");
             if (folder.isBlank()) {
-                String preferred = preferredLocation(provider, movie.getId());
+                String preferred = preferredLocation(provider, movie);
                 folder = cloud.ensureFolder(provider, preferred, fallbackPath(provider, movie));
                 payload.put("folderId", folder); persist(task, payload);
             }
-            Map<String, String> uploaded = new LinkedHashMap<>();
+            Map<String, String> uploaded = "BAIDU".equals(provider) ? baiduUploadedFiles(payload, files) : new LinkedHashMap<>();
+            if ("BAIDU".equals(provider)) {
+                if (payload.get("baiduUploadIntent") instanceof Map<?, ?> intent && intent.get("name") instanceof String name) {
+                    stage = "UPLOAD_" + (name.endsWith(".torrent") ? "TORRENT" : "MAGNET_TEXT");
+                }
+                reconcileBaiduUploadIntent(task, payload, files, folder, uploaded);
+            }
             for (FileData file : files) {
                 stage = "UPLOAD_" + (file.name().endsWith(".torrent") ? "TORRENT" : "MAGNET_TEXT");
-                uploaded.put(file.name(), cloud.upload(provider, folder, file));
+                if ("BAIDU".equals(provider)) {
+                    payload.put("stage", stage);
+                    String confirmed = uploaded.get(file.name());
+                    if (confirmed != null) {
+                        // An earlier receipt is not permission to upload a deleted/replaced file again.
+                        if (!confirmed.equals(cloud.findUploadedFile(provider, folder, file))) {
+                            throw new BaiduActionException("UPLOAD_CHECKPOINT_MISMATCH", false, true, false);
+                        }
+                        continue;
+                    }
+                    payload.put("baiduUploadIntent", new LinkedHashMap<>(Map.of("name", file.name(), "size", file.bytes().length,
+                            "sha256", sha256(file.bytes()), "status", "SUBMITTING")));
+                    persist(task, payload);
+                    freshBaiduUpload = true;
+                }
+                String uploadedId = cloud.upload(provider, folder, file);
+                if ("BAIDU".equals(provider) && (uploadedId == null || uploadedId.isBlank())) {
+                    throw new BaiduActionException("UPLOAD_RESPONSE_INVALID", false, false, true);
+                }
+                uploaded.put(file.name(), uploadedId);
+                if ("BAIDU".equals(provider)) {
+                    @SuppressWarnings("unchecked") var intent = (Map<String, Object>) payload.get("baiduUploadIntent");
+                    intent.put("status", "CONFIRMED"); intent.put("fileId", uploadedId);
+                }
                 payload.put("uploadedFiles", uploaded); persist(task, payload);
+                freshBaiduUpload = false;
             }
+            if ("BAIDU".equals(provider)) payload.remove("baiduUploadIntent");
             stage = "CREATE_METADATA_SHARE";
             if ("BAIDU".equals(provider)) cloud.verifyMetadataOnlyFolder(provider, folder);
             String shareUrl = Objects.toString(payload.get("shareUrl"), "");
@@ -382,16 +418,78 @@ public class P2pArchiveTaskService {
             payload.put("resourceLinkId", link.getId()); payload.put("fileCount", files.size());
             payload.put("totalBytes", files.stream().mapToLong(file -> file.bytes().length).sum());
             payload.remove("errorCategory");
+            payload.remove("errorCode");
             payload.put("stage", "COMPLETE"); task.setStatus("SUCCEEDED"); task.setLastError(null); task.setFinishedAt(now); persist(task, payload);
         } catch (Exception error) {
             payload.put("stage", stage); payload.put("errorCategory", error.getClass().getSimpleName());
-            if ("BAIDU".equals(provider) && payload.get("backfillParentId") != null && error instanceof BaiduActionException action) {
+            if ("BAIDU".equals(provider)) payload.remove("errorCode");
+            String errorCode = null;
+            if ("BAIDU".equals(provider) && error instanceof BaiduActionException action) {
+                errorCode = action.code(); payload.put("errorCode", errorCode);
+                if (payload.get("baiduUploadIntent") instanceof Map<?, ?> raw && "SUBMITTING".equals(raw.get("status"))) {
+                    @SuppressWarnings("unchecked") var intent = (Map<String, Object>) raw;
+                    // A failed recovery GET says nothing about the original remote write.
+                    intent.put("status", freshBaiduUpload && !action.uncertain() ? "REJECTED" : "UNKNOWN");
+                    intent.put("errorCode", errorCode);
+                }
+            }
+            boolean unconfirmedUpload = unconfirmedBaiduUpload(provider, payload);
+            if (unconfirmedUpload && !(error instanceof BaiduActionException)) {
+                errorCode = "UPLOAD_STATE_OR_STORAGE_FAILURE"; payload.put("errorCode", errorCode);
+                @SuppressWarnings("unchecked") var intent = (Map<String, Object>) payload.get("baiduUploadIntent");
+                intent.put("status", "UNKNOWN"); intent.put("errorCode", errorCode);
+                task.setStatus("UNKNOWN");
+            } else if (unconfirmedUpload && error instanceof BaiduActionException action) {
+                if (action.actionRequired()) task.setAttempts(Math.max(attempt - 1, 0));
+                task.setStatus("UPLOAD_CHECKPOINT_INVALID".equals(action.code()) ? "ACTION_REQUIRED" : "UNKNOWN");
+            } else if ("BAIDU".equals(provider) && error instanceof BaiduActionException action
+                    && (payload.get("backfillParentId") != null || "CATEGORY_REQUIRED".equals(action.code()))) {
                 if (action.actionRequired()) task.setAttempts(Math.max(attempt - 1, 0));
                 task.setStatus(action.uncertain() ? "UNKNOWN" : action.actionRequired() ? "ACTION_REQUIRED" : "FAILED");
             } else { task.setStatus("FAILED"); }
-            task.setLastError("P2P archive failed at " + stage + " (" + error.getClass().getSimpleName() + ")");
+            task.setLastError("P2P archive failed at " + stage + " (" + (errorCode == null ? error.getClass().getSimpleName() : errorCode) + ")");
             task.setScheduledAt(LocalDateTime.now().plusMinutes(30)); task.setFinishedAt(LocalDateTime.now()); persist(task, payload);
         }
+    }
+
+    private Map<String, String> baiduUploadedFiles(Map<String, Object> payload, List<FileData> files) {
+        Map<String, String> uploaded = new LinkedHashMap<>();
+        Object previous = payload.get("uploadedFiles");
+        if (previous == null) return uploaded;
+        if (!(previous instanceof Map<?, ?> checkpoints) || checkpoints.size() > files.size()) throw invalidUploadCheckpoint();
+        for (var entry : checkpoints.entrySet()) {
+            if (!(entry.getKey() instanceof String name) || files.stream().noneMatch(file -> name.equals(file.name()))
+                    || !(entry.getValue() instanceof String id) || !id.matches("[A-Za-z0-9_-]{1,200}")) throw invalidUploadCheckpoint();
+            uploaded.put(name, id);
+        }
+        return uploaded;
+    }
+
+    private void reconcileBaiduUploadIntent(ResourceHubTask task, Map<String, Object> payload, List<FileData> files,
+            String folder, Map<String, String> uploaded) {
+        Object pending = payload.get("baiduUploadIntent");
+        if (pending == null) return;
+        if (!(pending instanceof Map<?, ?> intent) || !(intent.get("name") instanceof String name)) throw invalidUploadCheckpoint();
+        FileData file = files.stream().filter(candidate -> name.equals(candidate.name())).findFirst().orElseThrow(this::invalidUploadCheckpoint);
+        if (!(intent.get("size") instanceof Number size) || !(size instanceof Integer || size instanceof Long) || size.longValue() != file.bytes().length
+                || !sha256(file.bytes()).equals(intent.get("sha256")) || !(intent.get("status") instanceof String status)
+                || !Set.of("SUBMITTING", "UNKNOWN", "REJECTED", "CONFIRMED").contains(status)) throw invalidUploadCheckpoint();
+        if ("CONFIRMED".equals(status)) {
+            if (!(intent.get("fileId") instanceof String id) || !id.equals(uploaded.get(name))) throw invalidUploadCheckpoint();
+            return;
+        }
+        if ("REJECTED".equals(status)) return; // Only a definite rejection permits a fresh attempt.
+        String existing = cloud.findUploadedFile("BAIDU", folder, file);
+        if (existing == null || existing.isBlank()) throw new BaiduActionException("UPLOAD_OUTCOME_UNKNOWN", false, false, true);
+        uploaded.put(name, existing); payload.put("uploadedFiles", uploaded); payload.remove("baiduUploadIntent");
+        persist(task, payload);
+    }
+
+    private BaiduActionException invalidUploadCheckpoint() { return new BaiduActionException("UPLOAD_CHECKPOINT_INVALID", false, true, false); }
+
+    private static boolean unconfirmedBaiduUpload(String provider, Map<String, Object> payload) {
+        return "BAIDU".equals(provider) && payload.get("baiduUploadIntent") instanceof Map<?, ?> intent
+                && (!(intent.get("status") instanceof String status) || !Set.of("REJECTED", "CONFIRMED").contains(status));
     }
 
     List<ResourceLink> loadSelection(Map<String, Object> payload) {
@@ -489,7 +587,8 @@ public class P2pArchiveTaskService {
                 + ":" + link.getSourceRef() + ":" + ("MAGNET".equals(link.getType()) ? magnetHash(link.getUrl()) : "torrent"))
                 .sorted().toList()));
     }
-    private String preferredLocation(String provider, String movieId) {
+    private String preferredLocation(String provider, MovieMetadata movie) {
+        String movieId = movie.getId();
         return switch (provider) {
             case "QUARK" -> quarkTasks.list(new QueryWrapper<QuarkTransferTask>().eq("movie_id", movieId)
                     .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
@@ -499,10 +598,15 @@ public class P2pArchiveTaskService {
                     .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
                     .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
                     .map(XunleiTransferTask::getSavedPath).findFirst().orElse(null);
-            case "BAIDU" -> baiduTasks.list(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
+            case "BAIDU" -> {
+                BaiduArchivePaths.categoryRoot(properties.getBaidu().getSavePath(), movie.getCategory());
+                yield baiduTasks.list(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
                     .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
                     .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
-                    .map(BaiduTransferTask::getSavedPath).findFirst().orElse(null);
+                    .map(BaiduTransferTask::getSavedPath)
+                    .filter(path -> BaiduArchivePaths.belongsToCategory(properties.getBaidu().getSavePath(), movie.getCategory(), path))
+                    .findFirst().orElse(null);
+            }
             default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
         };
     }
@@ -521,9 +625,8 @@ public class P2pArchiveTaskService {
                 yield path;
             }
             case "BAIDU" -> {
-                String base = properties.getBaidu().getSavePath();
-                if (base == null || base.isBlank()) base = "/GYing Resource Hub";
-                yield base.replaceAll("/+$", "") + "/" + safe(title(movie)) + "（" + safe(movie.getId()) + "）";
+                String base = BaiduArchivePaths.categoryRoot(properties.getBaidu().getSavePath(), movie.getCategory());
+                yield base + "/" + safe(title(movie)) + "（" + safe(movie.getId()) + "）";
             }
             default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
         };

@@ -18,6 +18,7 @@ import com.gying.movie.service.IMovieMetadataService;
 import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduArchivePaths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -272,7 +273,7 @@ public class BaiduTransferRunnerServiceImpl implements IBaiduTransferRunnerServi
         String title = movie == null ? null : hasText(movie.getTitleCn()) ? movie.getTitleCn() : movie.getTitleEn();
         if (!hasText(title) && discovery != null) title = discovery.getTitle();
         String id = safeSegment(task.getMovieId() == null ? "unknown" : task.getMovieId());
-        String base = properties.getBaidu().getSavePath().replaceAll("/+$", "");
+        String base = BaiduArchivePaths.categoryRoot(properties.getBaidu().getSavePath(), movie == null ? null : movie.getCategory());
         return base + "/" + (hasText(title) ? safeSegment(title) + "（" + id + "）" : id);
     }
 

@@ -95,6 +95,14 @@ public class P2pCloudArchiveClient {
             default -> throw new IllegalArgumentException("Unsupported P2P archive provider");
         };
     }
+    /** Verify a previously submitted Baidu file without creating another upload. */
+    public String findUploadedFile(String provider, String folder, FileData file) {
+        requireProvider(provider); validateFile(file);
+        if (!"BAIDU".equals(provider)) throw new IllegalArgumentException("Upload reconciliation is unavailable for this provider");
+        try { return baidu.p2pFindUploadedFile(folder, file.name(), file.bytes()); }
+        catch (BaiduActionException error) { throw error; }
+        catch (Exception error) { throw new IllegalStateException("BAIDU P2P upload reconciliation failed (" + error.getClass().getSimpleName() + ")"); }
+    }
     public String upload(String provider, String folder, FileData file) {
         requireProvider(provider); validateFile(file);
         switch (provider) {

@@ -123,7 +123,68 @@ class BaiduWebClientTest {
         assertTrue(transport.requests.stream().allMatch(r -> Set.of("pan.baidu.com","pcs.baidu.com").contains(r.uri().getHost())));
         assertTrue(transport.requests.stream().noneMatch(r -> r.uri().toString().contains("cloud_dl")));
         assertEquals("2",query(transport.createBody).get("rtype"));
+        var pre=transport.requests.stream().filter(r->r.uri().getPath().equals("/api/precreate")).findFirst().orElseThrow();
+        assertEquals("2",query(body(pre)).get("rtype"));
     }
+    @Test void readOnlyUploadRecoveryRequiresExactContentAndNeverSubmits() throws Exception {
+        byte[] bytes=magnetBytes();
+        assertNull(client.p2pFindUploadedFile("/target","magnet.txt",bytes));
+        String digest=java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(bytes));
+        transport.owned.put("/target","["+file("30","magnet.txt","/target/magnet.txt",bytes.length,false,digest)+"]");
+        assertEquals("30",client.p2pFindUploadedFile("/target","magnet.txt",bytes));
+        transport.owned.put("/target","["+file("30","magnet.txt","/target/magnet.txt",bytes.length,false,"0".repeat(32))+"]");
+        assertEquals("DESTINATION_CONFLICT",assertThrows(BaiduActionException.class,()->client.p2pFindUploadedFile("/target","magnet.txt",bytes)).code());
+        assertTrue(transport.requests.stream().allMatch(r->r.method().equals("GET")));
+    }
+    @Test void pcsZeroErrorCodeIsSuccessAndNonzeroCodePreventsCommit() throws Exception {
+        byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
+        String digest=java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(bytes));
+        transport.uploadResponse=ok("{\"error_code\":0,\"md5\":\""+digest+"\"}");
+        assertEquals("30",client.p2pUpload("/target","magnet.txt",bytes));
+        transport.owned.put("/target","[]"); transport.requests.clear();
+        transport.uploadResponse=ok("{\"error_code\":31024,\"error_msg\":\"fixture-session must never be persisted\"}");
+        var error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_BLOCK_API_31024",error.code()); assertFalse(error.uncertain());
+        assertFalse(error.getMessage().contains("fixture-session"));
+        assertEquals(0,transport.count("POST","/api/create"));
+    }
+    @Test void uploadFailuresRetainStageAndHttpStatusWithoutRemoteText() {
+        byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
+        transport.uploadResponse=new BaiduWebClient.WebResponse(403,Map.of("location",List.of("https://evil.example/private")),"private upstream body".getBytes(StandardCharsets.UTF_8));
+        var error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_BLOCK_HTTP_403",error.code()); assertTrue(error.actionRequired()); assertTrue(error.uncertain());
+        assertEquals(0,transport.count("POST","/api/create"));
+        assertTrue(transport.requests.stream().allMatch(r->Set.of("pan.baidu.com","pcs.baidu.com").contains(r.uri().getHost())));
+        transport.uploadResponse=ok("{broken private upstream response"); transport.requests.clear();
+        error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_BLOCK_RESPONSE_INVALID",error.code()); assertTrue(error.uncertain());
+        assertEquals(1,transport.count("POST","/rest/2.0/pcs/superfile2")); assertEquals(0,transport.count("POST","/api/create"));
+        assertFalse(error.getMessage().contains("private"));
+    }
+    @Test void precreateAndCommitFailuresAreSeparatelyDiagnosable() {
+        byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
+        transport.precreateResponse="{\"errno\":-6}";
+        var error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_PRECREATE_API_NEG_6",error.code()); assertTrue(error.actionRequired()); assertFalse(error.uncertain());
+        assertEquals(0,transport.count("POST","/rest/2.0/pcs/superfile2"));
+        transport.precreateResponse="{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}";
+        transport.commitResponse="{\"errno\":12}";
+        error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_COMMIT_API_12",error.code()); assertTrue(error.actionRequired()); assertFalse(error.uncertain());
+        transport.commitResponse=null; transport.failurePath="/api/create";
+        error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+        assertEquals("UPLOAD_COMMIT_NETWORK_UNAVAILABLE",error.code()); assertTrue(error.uncertain());
+    }
+    @Test void invalidPrecreateTicketCannotTriggerBlockOrCommit() {
+        byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
+        for (String response:List.of("{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0]}","{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[1],\"return_type\":1}")) {
+            transport.precreateResponse=response;
+            var error=assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","magnet.txt",bytes));
+            assertEquals("UPLOAD_PRECREATE_RESPONSE_INVALID",error.code()); assertTrue(error.uncertain());
+        }
+        assertEquals(0,transport.count("POST","/rest/2.0/pcs/superfile2")); assertEquals(0,transport.count("POST","/api/create"));
+    }
+    private static byte[] magnetBytes() { return ("magnet:?xt=urn:btih:"+"a".repeat(40)+"\n").getBytes(StandardCharsets.UTF_8); }
     @Test void uploadBoundsAndContentRejectBeforeAnyNetwork() {
         int before=transport.requests.size();
         assertThrows(BaiduActionException.class,()->client.p2pUpload("/target","bad.mp4",new byte[3]));
@@ -191,6 +252,8 @@ class BaiduWebClientTest {
         String failurePath,redirect,owner="200",records="{\"errno\":0,\"list\":[]}",transfer="{\"errno\":0,\"taskid\":\"task1\"}",createBody;
         boolean failAfterShare,shareCreated,needsCode,verified;
         byte[] uploadBytes; String uploadName;
+        String precreateResponse="{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}",commitResponse;
+        BaiduWebClient.WebResponse uploadResponse;
         long count(String method,String path){return requests.stream().filter(r->r.method().equals(method)&&r.uri().getPath().equals(path)).count();}
         public BaiduWebClient.WebResponse exchange(HttpRequest request) throws IOException {
             requests.add(request); String path=request.uri().getPath(); var q=query(request.uri().getRawQuery());
@@ -206,9 +269,9 @@ class BaiduWebClientTest {
                 case "/share/pset" -> {shareCreated=true;yield ok("{\"errno\":0,\"link\":\"https://pan.baidu.com/s/1owned\"}");}
                 case "/share/verify" -> {verified=true;yield ok("{\"errno\":0,\"randsk\":\"fixture-secret\"}");}
                 case "/share/surlinfoinrecord" -> ok("{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}");
-                case "/api/precreate" -> ok("{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}");
-                case "/rest/2.0/pcs/superfile2" -> {try{yield ok("{\"md5\":\""+java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes))+"\"}");}catch(Exception e){throw new AssertionError(e);}}
-                case "/api/create" -> {createBody=body(request);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)))+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}
+                case "/api/precreate" -> ok(precreateResponse);
+                case "/rest/2.0/pcs/superfile2" -> {if(uploadResponse!=null)yield uploadResponse;try{yield ok("{\"md5\":\""+java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes))+"\"}");}catch(Exception e){throw new AssertionError(e);}}
+                case "/api/create" -> {createBody=body(request);if(commitResponse!=null)yield ok(commitResponse);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)))+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}
                 default -> throw new AssertionError("Unexpected fixture endpoint "+path);
             };
         }

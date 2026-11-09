@@ -284,4 +284,39 @@ class BaiduBackfillTaskStoreMySqlTest {
         assertEquals(0, taskService.getById(ordinary.getId()).getAttempts()); assertEquals("PENDING", taskService.getById(ordinary.getId()).getStatus());
     }
 
+
+    @Test void startupPreservesUnknownBaiduUploadIntentsWithRealJsonCaseUpdates() throws Exception {
+        var cloud = mock(P2pCloudArchiveClient.class); var archive = archives(mock(IResourceLinkService.class), cloud);
+        for (String state : List.of("SUBMITTING", "UNKNOWN", "CONFIRMED", "REJECTED", "NONE")) {
+            ResourceHubTask child = ordinary("movie-" + state, "BAIDU");
+            var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(child.getPayload());
+            if (!"NONE".equals(state)) payload.putObject("baiduUploadIntent").put("status", state);
+            jdbc.update("UPDATE resource_hub_task SET status='RUNNING',payload=? WHERE id=?", payload.toString(), child.getId());
+        }
+        ResourceHubTask quark = ordinary("quark-movie", "QUARK");
+        jdbc.update("UPDATE resource_hub_task SET status='RUNNING',payload=JSON_SET(payload,'$.baiduUploadIntent',JSON_OBJECT('status','SUBMITTING')) WHERE id=?", quark.getId());
+        archive.recoverInterruptedArchives();
+        for (String state : List.of("SUBMITTING", "UNKNOWN", "CONFIRMED", "REJECTED", "NONE")) {
+            assertEquals(List.of("SUBMITTING", "UNKNOWN").contains(state) ? "UNKNOWN" : "FAILED",
+                    jdbc.queryForObject("SELECT status FROM resource_hub_task WHERE movie_id=?", String.class, "movie-" + state));
+        }
+        assertEquals("FAILED", taskService.getById(quark.getId()).getStatus());
+        verify(cloud, never()).upload(anyString(), anyString(), any()); verify(cloud, never()).findUploadedFile(anyString(), anyString(), any());
+    }
+
+    @Test void failedBaiduRowsWithUnresolvedUploadIntentsAreProtectedBeforeSourceCollection() throws Exception {
+        var cloud = mock(P2pCloudArchiveClient.class); var archive = archives(mock(IResourceLinkService.class), cloud);
+        ResourceHubTask child = ordinary("movie1", "BAIDU");
+        for (String status : List.of("SUBMITTING", "UNKNOWN", "CONFIRMED", "REJECTED")) {
+            jdbc.update("UPDATE resource_hub_task SET status='FAILED',payload=JSON_SET(payload,'$.baiduUploadIntent',JSON_OBJECT('status',?)) WHERE id=?", status, child.getId());
+            ResourceHubTask protectedChild = archive.protectedArchive("movie1", "BAIDU");
+            if (List.of("SUBMITTING", "UNKNOWN").contains(status)) assertEquals(child.getId(), protectedChild.getId());
+            else assertNull(protectedChild);
+        }
+        ResourceHubTask quark = ordinary("movie2", "QUARK");
+        jdbc.update("UPDATE resource_hub_task SET status='FAILED',payload=JSON_SET(payload,'$.baiduUploadIntent',JSON_OBJECT('status','UNKNOWN')) WHERE id=?", quark.getId());
+        assertNull(archive.protectedArchive("movie2", "QUARK"));
+        verify(cloud, never()).upload(anyString(), anyString(), any());
+    }
+
 }

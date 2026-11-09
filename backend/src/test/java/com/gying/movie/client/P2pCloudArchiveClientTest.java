@@ -114,6 +114,7 @@ class P2pCloudArchiveClientTest {
             assertThrows(IllegalArgumentException.class, () -> client.verifyMetadataOnlyFolder(provider, "/Movie"));
             assertThrows(IllegalArgumentException.class, () -> client.ensureFolder(provider, null, "/Movie"));
             assertThrows(IllegalArgumentException.class, () -> client.upload(provider, "folder", text()));
+            assertThrows(IllegalArgumentException.class, () -> client.findUploadedFile(provider, "folder", text()));
             assertThrows(IllegalArgumentException.class, () -> client.createShare(provider, "folder", "title"));
         }
         verifyNoInteractions(quark, xunlei, baidu);
@@ -157,5 +158,32 @@ class P2pCloudArchiveClientTest {
         var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
         client.verifyMetadataOnlyFolder("BAIDU", "/Movie/磁力种子");
         verify(baidu).verifyMetadataOnlyFolder("/Movie/磁力种子"); verifyNoMoreInteractions(baidu); verifyNoInteractions(quark, xunlei);
+    }
+    @Test void baiduUploadReconciliationIsReadOnlyForBothConfirmedAndMissingFiles() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper); var file = text(); String folder = "/Movie/磁力种子";
+        when(baidu.p2pFindUploadedFile(folder, file.name(), file.bytes())).thenReturn("123", (String) null);
+        assertEquals("123", client.findUploadedFile("BAIDU", folder, file)); assertNull(client.findUploadedFile("BAIDU", folder, file));
+        verify(baidu, times(2)).p2pFindUploadedFile(folder, file.name(), file.bytes()); verifyNoMoreInteractions(baidu); verifyNoInteractions(quark, xunlei);
+    }
+    @Test void baiduUploadReconciliationRejectsUnsupportedProvidersAndVideoBeforeReadingTheAccount() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
+        for (String provider : List.of("QUARK", "XUNLEI")) assertThrows(IllegalArgumentException.class,
+                () -> client.findUploadedFile(provider, "folder", text()));
+        assertThrows(IllegalArgumentException.class, () -> client.findUploadedFile("BAIDU", "/Movie/磁力种子",
+                new P2pCloudArchiveClient.FileData("video.mp4", text().bytes())));
+        verifyNoInteractions(quark, xunlei, baidu);
+    }
+    @Test void baiduUploadReconciliationPreservesFixedErrorsAndRedactsUnexpectedFailures() {
+        var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+        var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper); var file = text();
+        var expected = new BaiduActionException("UPLOAD_CHECKPOINT_MISMATCH", false, true, false);
+        when(baidu.p2pFindUploadedFile(anyString(), anyString(), any())).thenThrow(expected)
+                .thenThrow(new IllegalStateException("fixture-sensitive-cookie"));
+        assertSame(expected, assertThrows(BaiduActionException.class, () -> client.findUploadedFile("BAIDU", "/Movie/磁力种子", file)));
+        var actual = assertThrows(IllegalStateException.class, () -> client.findUploadedFile("BAIDU", "/Movie/磁力种子", file));
+        assertFalse(actual.getMessage().contains("fixture-sensitive-cookie")); assertNull(actual.getCause());
+        verifyNoInteractions(quark, xunlei);
     }
 }

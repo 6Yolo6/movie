@@ -53,7 +53,7 @@ class BaiduBackfillServiceTest {
             state = call.getArgument(0); state.status = "COMPLETE".equals(state.phase) ? "COMPLETE" : state.blockedReason != null ? "BLOCKED" : state.enabled ? "PENDING" : "PAUSED";
             return state;
         });
-        MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setStatus("ACTIVE"); when(movies.getById("movie1")).thenReturn(movie);
+        MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setStatus("ACTIVE"); movie.setCategory("mv"); when(movies.getById("movie1")).thenReturn(movie);
         identity = new MovieSourceIdentity(); identity.setId(2L); identity.setMovieId("movie1"); identity.setSource("GYING");
         identity.setSourceType("mv"); identity.setExternalId("CASE1"); identity.setMatchStatus("CONFIRMED"); when(identities.getById(2L)).thenReturn(identity);
         ResourceLink magnet = new ResourceLink(); magnet.setId(31L); magnet.setMovieId("movie1"); magnet.setType("MAGNET");
@@ -135,6 +135,7 @@ class BaiduBackfillServiceTest {
         assertEquals(1, mapper.readTree(persisted).path("uploadedFiles").size());
         assertEquals(reason, service.runOnce().blockedReason()); assertEquals(persisted, child.getPayload());
         assertEquals(uncertain ? 1 : 0, child.getAttempts()); verify(archives, times(1)).submitOne(4L, "BAIDU", 100L);
+        verify(client).p2pFolder(isNull(), eq("/GYing Resource Hub/mv/movie1（movie1）"));
         verify(client, times(2)).p2pUpload(eq("/fixture/metadata"), anyString(), any()); verify(client, never()).createOwnShare(anyString());
         verify(client, never()).findOwnShare(anyString()); verify(source, times(1)).get("/torrent-file/mv/CASE1/BT1");
         verify(links, never()).save(any()); verifyNoInteractions(gying, identities, jdbc);
