@@ -1,5 +1,8 @@
 package com.gying.movie.service.impl;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -470,6 +473,63 @@ class ResourceDiscoveryServiceImplTest {
         request.setProviders(List.of("UNKNOWN"));
         org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.enqueue(request));
         org.mockito.Mockito.verifyNoInteractions(taskService);
+    }
+
+
+    @Test void selectedTemporaryCloneCannotCreateOrReuseAPermanentTask() {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setVideoEnabled(true);
+        var baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+        var clone = discovery(990L, "BAIDU", "https://pan.baidu.com/s/1fixture");
+        clone.setSource("QQ_BOT"); clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        when(discoveryService.getById(990L)).thenReturn(clone);
+        assertFalse(service.ensureTransferTask(990L));
+        org.mockito.Mockito.verifyNoInteractions(baiduTasks);
+        assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
+    }
+
+    @Test void reconciliationSkipsScopedClonesAndCreatesASeparatePermanentBaiduTask() {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setVideoEnabled(true);
+        var baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+        var clone = discovery(990L, "BAIDU", "https://pan.baidu.com/s/1fixture");
+        clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        var permanent = discovery(991L, "BAIDU", clone.getOriginalUrl());
+        when(discoveryService.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class)))
+                .thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(0)); return List.of(clone, permanent); });
+        when(discoveryService.getById(991L)).thenReturn(permanent);
+        when(baiduTasks.count(any())).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return 0L; });
+        when(baiduTasks.getOne(any(), org.mockito.ArgumentMatchers.eq(false)))
+                .thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return null; });
+        when(baiduTasks.save(any())).thenReturn(true);
+        assertEquals(1, service.reconcileDiscoveredTransferTasks(1));
+        var saved = ArgumentCaptor.forClass(com.gying.movie.entity.BaiduTransferTask.class);
+        verify(baiduTasks).save(saved.capture());
+        assertEquals("PERMANENT", saved.getValue().getScopeKey());
+        assertEquals(991L, saved.getValue().getDiscoveryResultId());
+        verify(discoveryService, never()).getById(990L);
+    }
+
+    @Test void permanentInsertRaceOnlyChecksThePermanentScope() {
+        properties.getBaidu().setEnabled(true); properties.getBaidu().setVideoEnabled(true);
+        var baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+        var row = discovery(991L, "BAIDU", "https://pan.baidu.com/s/1fixture");
+        when(discoveryService.getById(991L)).thenReturn(row);
+        when(baiduTasks.getOne(any(), org.mockito.ArgumentMatchers.eq(false)))
+                .thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return null; });
+        when(baiduTasks.save(any())).thenThrow(new org.springframework.dao.DuplicateKeyException("fixture race"));
+        when(baiduTasks.count(any())).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return 1L; });
+        assertTrue(service.ensureTransferTask(991L));
+        var saved = ArgumentCaptor.forClass(com.gying.movie.entity.BaiduTransferTask.class);
+        verify(baiduTasks).save(saved.capture()); assertEquals("PERMANENT", saved.getValue().getScopeKey());
+    }
+
+    @Test void temporaryLinksCannotBlockPermanentDiscoveryAsDuplicates() {
+        when(resourceLinkService.count(any())).thenAnswer(call -> { permanentResourceQuery(call.getArgument(0)); return 0L; });
+        Boolean duplicate = org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "isDuplicate", movie.getId(), "fixture-hash", "https://pan.baidu.com/s/1fixture");
+        assertFalse(duplicate);
     }
 
 }

@@ -16,6 +16,10 @@ public class BaiduTransferTask {
     private String movieId;
     private String originalUrl;
     private String originalUrlHash;
+    private String scopeKey = "PERMANENT";
+    private String searchRequestHash;
+    private LocalDateTime shareConfirmedAt;
+    private String cleanupEvidence;
     private String accountUid;
     private String savedPath;
     private String shareUrl;

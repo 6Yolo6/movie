@@ -31,7 +31,7 @@ function ResourceLinks({ links }: { links: SearchLink[] }) {
                 <div className="grid gap-3 sm:grid-cols-2">
                     {items.map(link => {
                         const url = new URL(link.url);
-                        const app = url.hostname === 'pan.quark.cn' ? '夸克 App' : url.hostname === 'pan.xunlei.com' ? '迅雷 App' : '对应手机 App';
+                        const app = url.hostname === 'pan.quark.cn' ? '夸克 App' : url.hostname === 'pan.xunlei.com' ? '迅雷 App' : url.hostname === 'pan.baidu.com' ? '百度网盘 App' : '对应手机 App';
                         const magnet = url.protocol === 'magnet:';
                         return <div key={link.url} data-testid="resource-qr-card" className="flex min-w-0 flex-col items-center rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-center dark:border-blue-950 dark:bg-blue-950/20">
                             <div className="mb-3 flex max-w-full items-center gap-2"><QrcodeOutlined className="shrink-0 text-blue-500" /><Typography.Text strong className="break-words">{stripSearchUrls(link.name) || group.title}</Typography.Text></div>
@@ -46,7 +46,7 @@ function ResourceLinks({ links }: { links: SearchLink[] }) {
                 </div>
             </section>;
         })}
-        {links.some(link => link.type === 'DISK') && <p className="text-xs text-slate-500">网盘分享请及时保存；临时分享会按系统设置清理，链接以实际访问结果为准。</p>}
+        {links.some(link => link.type === 'DISK') && <p className="text-xs text-slate-500">请及时转存到自己的网盘；临时资源会按回复中的期限清理，链接以实际访问结果为准。</p>}
     </div>;
 }
 
@@ -65,7 +65,7 @@ function SearchReply({ turn, active, busy, onAction }: {
                     className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors enabled:hover:border-blue-400 enabled:hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:enabled:hover:bg-blue-950/30">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-xs font-semibold text-blue-600 dark:bg-blue-950">{part.command}</span>
                     <span className="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">{part.title}</span>
-                    {part.badge && <Tag className="!m-0 shrink-0" color={part.badge === '夸克' ? 'blue' : part.badge === '迅雷' ? 'cyan' : 'default'}>{part.badge}</Tag>}
+                    {part.badge && <Tag className="!m-0 shrink-0" color={part.badge === '夸克' ? 'blue' : part.badge === '迅雷' ? 'cyan' : part.badge === '百度' ? 'geekblue' : 'default'}>{part.badge}</Tag>}
                     <ArrowRightOutlined className="shrink-0 text-slate-400" />
                 </button>)}
         </div>
@@ -77,6 +77,11 @@ function SearchReply({ turn, active, busy, onAction }: {
                 <span className="px-1 text-xs text-slate-500">第 {reply.page.current} / {reply.page.total} 页</span>
                 <Button size="small" data-command="下一页" icon={<ArrowRightOutlined />} disabled={!active || busy || reply.page.current >= reply.page.total} onClick={() => onAction('下一页', '下一页资源')}>下一页</Button>
             </>}
+        </div>}
+        {(reply.hasMoreResources || reply.parts.some(part => part.type === 'choice' && part.kind === 'resource')) && <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="按网盘筛选资源">
+            <span className="text-xs text-slate-500">筛选网盘：</span>
+            {['夸克', '迅雷', '百度'].map(provider => <Button key={provider} size="small" data-command={provider} disabled={!active || busy}
+                onClick={() => onAction(provider, `筛选${provider}资源`)}>{provider}</Button>)}
         </div>}
         {(reply.hasChoices || reply.hasMoreResources) && <p className="mt-3 text-xs text-slate-500">{active ? '点击候选即可继续，也可以在下方输入序号或新片名。' : '历史候选仅供查看，请使用最新回复；刷新后可重新搜索片名。'}</p>}
     </div>;

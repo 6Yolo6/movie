@@ -6,6 +6,7 @@ import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.mapper.ResourceLinkMapper;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.GyingTorrentLinks;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -17,11 +18,14 @@ public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, Res
     public List<ResourceLink> getResourcesByMovieId(String movieId) {
         return list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId)
+                .and(query -> query.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at")
                 .and(query -> query.isNull("link_status").or().ne("link_status", "INVALID")))
-                .stream().filter(link -> !GyingTorrentLinks.isAccountDownload(link.getUrl())).toList();
+                .stream()
+                .filter(link -> link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource()))
+                .filter(link -> !GyingTorrentLinks.isAccountDownload(link.getUrl())).toList();
     }
 
     @Override

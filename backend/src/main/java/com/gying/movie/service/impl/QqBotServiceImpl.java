@@ -39,6 +39,8 @@ import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.QqResourcePreferenceParser;
 import com.gying.movie.utils.QqResourcePreferenceParser.ResourcePreference;
 import com.gying.movie.utils.ResourceTitleMatcher;
+import com.gying.movie.utils.BaiduTemporaryScope;
+import com.gying.movie.client.BaiduWebClient;
 import com.gying.movie.utils.SeasonSearchUtils;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -78,7 +80,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private static final int PREFERRED_QUARK_RESOURCE_COUNT = 7;
     private static final int MAX_CANDIDATE_SUGGESTIONS = 10;
     private static final int MAX_GYING_CANDIDATE_SUGGESTIONS = 4;
-    private static final Set<String> OWNED_SHARE_PROVIDERS = Set.of("QUARK", "XUNLEI");
+    private static final Set<String> OWNED_SHARE_PROVIDERS = Set.of("QUARK", "XUNLEI", "BAIDU");
     private static final long CANDIDATE_TTL_SECONDS = 300;
     private static final long RESOURCE_CONTEXT_TTL_SECONDS = 300;
     private static final String PERMANENT_LINK_INVALID_REASON = "Re-shared link is still invalid; possible policy violation";
@@ -106,6 +108,13 @@ public class QqBotServiceImpl implements IQqBotService {
     private com.gying.movie.service.ISysConfigService searchLimitConfig;
     private final ThreadLocal<String> searchKeywordSnapshot = new ThreadLocal<>();
     private final ThreadLocal<SearchTiming> searchTiming = new ThreadLocal<>();
+    private final ThreadLocal<Map<String, Boolean>> baiduValidation = new ThreadLocal<>();
+    private BaiduTemporaryTransferService baiduTransfers;
+
+    @Autowired
+    public void configureBaiduSearch(BaiduTemporaryTransferService service) {
+        this.baiduTransfers = service;
+    }
 
     @Autowired
     public void configureSearchLimits(com.gying.movie.service.ISysConfigService config) {
@@ -293,6 +302,7 @@ public class QqBotServiceImpl implements IQqBotService {
         searchKeywordSnapshot.set(configured == null ? fallback : configured);
         SearchTiming timing = new SearchTiming();
         searchTiming.set(timing);
+        baiduValidation.set(new java.util.HashMap<>());
         try {
             return buildSearchReplyWithPolicy(keyword, userKey);
         } finally {
@@ -300,6 +310,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     timing.status, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - timing.started), timing.stages);
             searchTiming.remove();
             searchKeywordSnapshot.remove();
+            baiduValidation.remove();
         }
     }
 
@@ -581,6 +592,7 @@ public class QqBotServiceImpl implements IQqBotService {
     private List<ResourceLink> loadLibraryResources(String movieId, boolean cloudDiskOnly) {
         List<ResourceLink> stored = resourceLinkService.list(new QueryWrapper<ResourceLink>()
                 .eq("movie_id", movieId).eq("audit_status", 1).eq("status", "ACTIVE")
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq(cloudDiskOnly, "type", "DISK")
                 .apply("LOWER(url) NOT REGEXP {0}", "^https?://[^/]+/dbt(/|[?#]|$)")
                 .isNull("deleted_at")
@@ -593,7 +605,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || link.getDeletedAt() != null
                     || !isNormalLink(link) || !hasText(link.getUrl()) || blocked(link.getName())
                     || com.gying.movie.utils.GyingTorrentLinks.isAccountDownload(link.getUrl())
+                    || BaiduTemporaryScope.RESOURCE_SOURCE.equals(link.getSource())
                     || cloudDiskOnly && !isCloudDiskResource(link)) continue;
+            if ("BAIDU".equalsIgnoreCase(link.getProvider()) && !validateBaiduLink(link)) continue;
             try {
                 java.net.URI uri = java.net.URI.create(link.getUrl().trim());
                 String scheme = firstText(uri.getScheme(), "").toLowerCase(Locale.ROOT);
@@ -668,13 +682,9 @@ public class QqBotServiceImpl implements IQqBotService {
         }
 
         boolean allProviders = QqResourcePreferenceParser.ALL.equals(preference.provider());
-        if ("BAIDU".equals(preference.provider())) {
-            return finishSearch(userKey, requestedCommand, "UNSUPPORTED_PROVIDER", movie.getId(), 0,
-                    "暂不支持百度网盘服务，请使用夸克或迅雷。", "baidu provider is not supported");
-        }
         if (!allProviders && !OWNED_SHARE_PROVIDERS.contains(preference.provider())) {
             return finishSearch(userKey, requestedCommand, "UNSUPPORTED_PROVIDER", movie.getId(), 0,
-                    "目前仅支持夸克和迅雷自有分享链接。", "unsupported cloud provider");
+                    "目前支持夸克、迅雷和百度自有分享链接。", "unsupported cloud provider");
         }
         List<String> searchNotes = new ArrayList<>();
         // An explicit follow-up must not loop back to the library reply. A current
@@ -692,7 +702,7 @@ public class QqBotServiceImpl implements IQqBotService {
         }
         if (candidates == null || candidates.allResources().isEmpty()) {
             String detail = searchNotes.isEmpty()
-                    ? "暂未找到可用的夸克或迅雷资源；已完成多次搜索，请稍后再试。"
+                    ? "暂未找到可用的夸克、迅雷或百度资源；已完成多次搜索，请稍后再试。"
                     : String.join("；", searchNotes);
             return finishSearch(userKey, requestedCommand, "NO_RESOURCE", movie.getId(), 0,
                     "没有找到可供选择的资源：" + detail, detail);
@@ -742,6 +752,7 @@ public class QqBotServiceImpl implements IQqBotService {
                     new QueryWrapper<ResourceDiscoveryResult>()
                             .eq("movie_id", movie.getId())
                             .in("provider", OWNED_SHARE_PROVIDERS)
+                            .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                             .in("status", List.of("DISCOVERED", "FAILED"))
                             .orderByDesc("confidence")
                             .orderByDesc("created_at")
@@ -752,6 +763,7 @@ public class QqBotServiceImpl implements IQqBotService {
             Set<String> identities = new LinkedHashSet<>();
             choices.forEach(choice -> identities.add(choice.identity()));
             for (ResourceDiscoveryResult discovery : discoveries) {
+                if (discovery == null || BaiduTemporaryScope.isTemporaryDiscovery(discovery)) continue;
                 ResourceChoice choice = ResourceChoice.discovery(discovery);
                 if (hasText(choice.name()) && identities.add(choice.identity())) {
                     choices.add(choice);
@@ -817,6 +829,9 @@ public class QqBotServiceImpl implements IQqBotService {
                     buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), ready)
                             + (remaining == null ? "" : continuationReply(remaining)), null);
         }
+        if ("BAIDU".equalsIgnoreCase(choice.provider())) {
+            return completeBaiduResourceSelection(userKey, requestedKeyword, candidates, choice);
+        }
         List<String> transferNotes = new ArrayList<>();
         ResourceLink transferred = transferSelectedDiscovery(choice.discoveryId(), transferNotes);
         if (transferred != null) {
@@ -842,6 +857,36 @@ public class QqBotServiceImpl implements IQqBotService {
                 : "所选资源处理失败：" + detail + "\n请继续回复其他资源序号（1-"
                         + candidates.resources().size() + "），无需重新搜索。";
         return finishSearch(userKey, requestedKeyword, "NO_RESOURCE", candidates.movieId(), 0, reply, String.join("；", transferNotes));
+    }
+
+    private String completeBaiduResourceSelection(String userKey, String keyword, ResourceCandidates candidates, ResourceChoice choice) {
+        BaiduTemporaryTransferService.SelectionResult selected = baiduTransfers == null
+                ? new BaiduTemporaryTransferService.SelectionResult(null, "BAIDU_NOT_READY", null, null)
+                : baiduTransfers.select(choice.discoveryId(), userKey);
+        if (selected.resource() != null && selected.expiresAt() != null) {
+            ResourceCandidates remaining = removeSelectedResource(candidates, choice);
+            if (remaining == null) resourceCandidates.remove(candidateUserKey(userKey));
+            else resourceCandidates.put(candidateUserKey(userKey), remaining);
+            String expiry = selected.expiresAt().format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm"));
+            String cleanupNotice = baiduTransfers != null && baiduTransfers.automaticCleanupEnabled()
+                    ? "百度临时分享预计于 " + expiry + " 自动清理，请及时转存到自己的网盘。"
+                    : "百度临时分享预计于 " + expiry + " 到期；自动清理当前关闭，请及时转存到自己的网盘。";
+            return finishSearch(userKey, keyword, "SUCCEEDED", candidates.movieId(), 1,
+                    buildSelectedResourceReply(candidates.movieId(), candidates.movieTitle(), selected.resource())
+                    + "\n\n" + cleanupNotice
+                    + (remaining == null ? "" : continuationReply(remaining)), null);
+        }
+        rememberFailedResourceSelection(userKey, candidates);
+        String status = firstText(selected.status(), "WAITING_SHARE");
+        String reply = switch (status) {
+            case "WAITING_TRANSFER", "WAITING_SHARE", "RUNNING", "PENDING" ->
+                    "已提交，正在确认百度转存或分享。请稍后回复同一资源序号查询进度，无需重新搜索。";
+            case "EXPIRED" -> "本次百度临时分享已到期，清理确认完成后可重新选择同一资源。";
+            case "BAIDU_NOT_READY" -> "百度转存暂不可用，请检查百度网盘登录和转存设置。";
+            case "ACTION_REQUIRED", "REVIEW_REQUIRED" -> "百度任务需要检查账号或资源，请稍后查询，避免重复转存。";
+            default -> "当前百度资源暂不可用，请继续选择其他资源序号。";
+        };
+        return finishSearch(userKey, keyword, status, candidates.movieId(), 0, reply, status);
     }
 
     private void rememberFailedResourceSelection(String userKey, ResourceCandidates candidates) {
@@ -879,7 +924,7 @@ public class QqBotServiceImpl implements IQqBotService {
                 XunleiTransferTask completed = xunleiTransferTaskService.getById(task.getId());
                 if (completed == null || !hasText(completed.getShareUrl())) return null;
                 syncTaskShareToDiscovery(discovery, completed);
-            } else {
+            } else if ("QUARK".equalsIgnoreCase(discovery.getProvider())) {
                 QuarkTransferTask task = findOrCreateQqQuarkTask(discovery);
                 if (task == null) {
                     transferNotes.add("未创建夸克临时转存任务，请稍后重试");
@@ -889,6 +934,9 @@ public class QqBotServiceImpl implements IQqBotService {
                 QuarkTransferTask completed = quarkTransferTaskService.getById(task.getId());
                 if (completed == null || !hasText(completed.getShareUrl())) return null;
                 syncTaskShareToDiscovery(discovery, completed);
+            } else {
+                transferNotes.add("该网盘需使用专属转存通道");
+                return null;
             }
             ResourceHubPublishResult publishResult = resourceHubPublishService.publishDiscovery(discoveryId);
             if (publishResult != null && publishResult.getFailed() > 0
@@ -1677,7 +1725,7 @@ public class QqBotServiceImpl implements IQqBotService {
             Set<String> providers,
             int limit) {
         List<ResourceLink> result = new ArrayList<>();
-        for (String provider : List.of("QUARK", "XUNLEI")) {
+        for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
             if (!providers.contains(provider)) {
                 continue;
             }
@@ -1708,7 +1756,7 @@ public class QqBotServiceImpl implements IQqBotService {
         Map<String, ResourceChoice> unique = new LinkedHashMap<>();
         for (ResourceChoice candidate : candidates) {
             if (candidate != null && hasText(candidate.identity())) {
-                unique.putIfAbsent(candidate.identity().trim().toLowerCase(Locale.ROOT), candidate);
+                unique.putIfAbsent(resourceIdentity(candidate.provider(), candidate.identity()), candidate);
             }
         }
         List<ResourceChoice> quark = unique.values().stream()
@@ -1730,9 +1778,17 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private String resourceIdentity(ResourceLink link) {
         if (link != null && hasText(link.getUrl())) {
-            return link.getUrl().trim().toLowerCase();
+            return resourceIdentity(link.getProvider(), link.getUrl());
         }
         return link != null && link.getId() != null ? "id:" + link.getId() : "missing";
+    }
+
+    private String resourceIdentity(String provider, String value) {
+        if ("BAIDU".equalsIgnoreCase(provider)) {
+            try { return BaiduWebClient.normalizeShareUrl(value, null); }
+            catch (Exception invalid) { return value.trim(); }
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
     }
 
     private List<ResourceLink> loadResources(
@@ -1785,6 +1841,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private boolean isOwnedShare(ResourceLink link) {
+        if (link != null && "BAIDU".equalsIgnoreCase(link.getProvider())) return validateBaiduLink(link);
         if (!isCloudDiskResource(link) || !OWNED_SHARE_PROVIDERS.contains(
                 firstText(link.getProvider(), "").toUpperCase(Locale.ROOT))) {
             return false;
@@ -1852,7 +1909,23 @@ public class QqBotServiceImpl implements IQqBotService {
         return requestedSeason ? 2 : 4;
     }
 
+    private boolean validateBaiduLink(ResourceLink link) {
+        if (link == null || baiduTransfers == null || BaiduTemporaryScope.RESOURCE_SOURCE.equals(link.getSource())
+                || link.getDeletedAt() != null || !"ACTIVE".equalsIgnoreCase(link.getStatus()) || !hasText(link.getUrl())) return false;
+        String key = java.util.Objects.toString(link.getId(), "") + ":" + link.getUrl();
+        Map<String, Boolean> cached = baiduValidation.get();
+        if (cached != null && cached.containsKey(key)) return cached.get(key);
+        boolean valid;
+        try { valid = baiduTransfers.validateOwnedResource(link); }
+        catch (Exception unavailable) { valid = false; }
+        if (cached != null) cached.put(key, valid);
+        return valid;
+    }
+
     private ResourceLink prepareResourceForReply(ResourceLink link) {
+        if (link != null && "BAIDU".equalsIgnoreCase(link.getProvider())) {
+            return isCloudDiskResource(link) && validateBaiduLink(link) ? link : null;
+        }
         if (!isCloudDiskResource(link)) {
             return null;
         }
@@ -1953,6 +2026,7 @@ public class QqBotServiceImpl implements IQqBotService {
 
     private void retireTransferForRediscovery(ResourceLink link, String reason) {
         LocalDateTime now = LocalDateTime.now();
+        if ("BAIDU".equalsIgnoreCase(link.getProvider())) return;
         if ("XUNLEI".equalsIgnoreCase(link.getProvider())) {
             XunleiTransferTask task = findXunleiTransferTask(link);
             if (task != null) {
@@ -2162,7 +2236,7 @@ public class QqBotServiceImpl implements IQqBotService {
         appendLine(reply, "地区", join(movie.getRegions()));
         appendLine(reply, "评分", rating(movie));
         appendLine(reply, "简介", trim(movie.getSummary(), 180));
-        reply.append("\n\n多次搜索后仍未找到可供选择的夸克或迅雷资源。");
+        reply.append("\n\n多次搜索后仍未找到可供选择的夸克、迅雷或百度资源。");
         if (searchNotes != null && !searchNotes.isEmpty()) {
             reply.append("\n处理提示：").append(String.join("；", searchNotes));
         }
@@ -2283,7 +2357,7 @@ public class QqBotServiceImpl implements IQqBotService {
     }
 
     private void appendResourcePreferenceHint(StringBuilder reply) {
-        reply.append("\n\n需要筛选网盘，可在 5 分钟内回复“夸克”或“迅雷”；不再支持按数量批量转存，请从资源候选中回复序号。");
+        reply.append("\n\n需要筛选网盘，可在 5 分钟内回复“夸克”、“迅雷”或“百度”；不再支持按数量批量转存，请从资源候选中回复序号。");
     }
 
     private void addSavedPathNote(QuarkTransferTask task, List<String> transferNotes) {
@@ -2570,7 +2644,7 @@ public class QqBotServiceImpl implements IQqBotService {
         return firstText(
                 qqBotProperties.getDefaultReply(),
                 "机器人使用方法：@机器人 搜/找 影片名\n"
-                        + "影片和资源候选保留 5 分钟；先选影片，再按资源名称回复序号，确认后才转存。可回复“夸克”或“迅雷”筛选，百度网盘暂不支持。");
+                        + "影片和资源候选保留 5 分钟；先选影片，再按资源名称回复序号，确认后才转存。可回复“夸克”、“迅雷”或“百度”筛选；临时分享按清理设置处理，请及时转存自己的网盘。");
     }
 
     private String trim(String value, int maxLength) {

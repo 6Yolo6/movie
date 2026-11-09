@@ -38,6 +38,7 @@ import com.gying.movie.utils.MovieTitleMatcher;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import com.gying.movie.utils.GyingTorrentLinks;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -534,26 +535,29 @@ public class GyingSourceWorkflowService {
                 archiveTorrentRefs.add(sourceRef);
             }
             String urlHash = ResourceHubHashUtils.sha256(url);
-            ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+            ResourceLink link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("movie_id", movieId)
                     .eq(ownedOnly, "source", "GYING").eq(ownedOnly, "provider", "P2P").eq(ownedOnly, "auto_collected", true)
                     .and(query -> query.eq("url_hash", urlHash).or().eq("url", url))
                     .isNull("deleted_at")
-                    .last("LIMIT 1"), false);
+                    .last("LIMIT 1"), false));
             if (link == null && "TORRENT".equals(type) && hasText(sourceRef)) {
                 // Public torrent mirrors can rotate: reuse the stable BT identity.
-                link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                         .eq("movie_id", movieId).eq("source", "GYING").eq("source_ref", sourceRef)
                         .eq("type", "TORRENT").eq("provider", "P2P").eq(ownedOnly, "auto_collected", true).isNull("deleted_at")
-                        .orderByDesc("updated_at").last("LIMIT 1"), false);
+                        .orderByDesc("updated_at").last("LIMIT 1"), false));
             }
             String collectionSlot = stringValue(item.get("collection_slot"));
             if (link == null && collectionSlot != null && Set.of("1080P", "4K").contains(collectionSlot)) {
                 // A new release replaces this resolution slot instead of growing the catalog forever.
-                link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                link = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                        .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                         .eq("movie_id", movieId).eq("source", "GYING").eq("auto_collected", true)
                         .eq("type", type).eq("provider", "P2P").eq("quality", collectionSlot)
-                        .isNull("deleted_at").orderByDesc("updated_at").last("LIMIT 1"), false);
+                        .isNull("deleted_at").orderByDesc("updated_at").last("LIMIT 1"), false));
             }
             if (ownedOnly && link != null && (!"GYING".equals(link.getSource()) || !"P2P".equals(link.getProvider()) || !Boolean.TRUE.equals(link.getAutoCollected()))) {
                 link = null;
@@ -627,6 +631,7 @@ public class GyingSourceWorkflowService {
 
     private boolean hasActiveDiskResource(String movieId) {
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("type", "DISK")
                 .eq("status", "ACTIVE")
@@ -1623,7 +1628,8 @@ public class GyingSourceWorkflowService {
 
     /** Publishes an already stored Resource Hub share to its mapped GYING movie. */
     public boolean publishResourceToGying(ResourceLink resource) {
-        if (resource == null || resource.getId() == null || !hasText(resource.getUrl())
+        if (resource == null || isTemporaryResource(resource)
+                || resource.getId() == null || !hasText(resource.getUrl())
                 || !"DISK".equalsIgnoreCase(resource.getType())
                 || !resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
             return false;
@@ -2230,7 +2236,7 @@ public class GyingSourceWorkflowService {
                     publishResult.getErrors().isEmpty() ? null : publishResult.getErrors().get(0),
                     "Local resource publish failed"));
         }
-        return resourceLinkService.getById(publishResult.getResourceIds().get(0));
+        return permanentResource(resourceLinkService.getById(publishResult.getResourceIds().get(0)));
     }
 
     private TransferOutcome transferCandidate(MovieMetadata movie, Map<String, Object> candidate) {
@@ -2252,13 +2258,14 @@ public class GyingSourceWorkflowService {
         if ("BAIDU".equals(provider)) return transferBaiduCandidate(movie, candidate, originalUrl);
         if (!"QUARK".equals(provider)) throw new IllegalStateException("Unsupported cloud drive provider");
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
-        ResourceDiscoveryResult discovery = discoveryResultService.getOne(
+        ResourceDiscoveryResult discovery = permanentDiscovery(discoveryResultService.getOne(
                 new QueryWrapper<ResourceDiscoveryResult>()
+                        .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                         .eq("movie_id", movie.getId())
                         .eq("original_url_hash", urlHash)
                         .orderByDesc("updated_at")
                         .last("LIMIT 1"),
-                false);
+                false));
         LocalDateTime now = LocalDateTime.now();
         String title = buildResourceTitle(movie, stringValue(candidate.get("title")),
                 stringValue(candidate.get("provider")));
@@ -2335,8 +2342,9 @@ public class GyingSourceWorkflowService {
         originalUrl = XunleiClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         LocalDateTime now = LocalDateTime.now();
-        ResourceDiscoveryResult discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
-                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).orderByDesc("updated_at").last("LIMIT 1"), false);
+        ResourceDiscoveryResult discovery = permanentDiscovery(discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
+                .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).orderByDesc("updated_at").last("LIMIT 1"), false));
         if (discovery == null) {
             discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource(resourceSource(candidate));
             discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
@@ -2366,9 +2374,10 @@ public class GyingSourceWorkflowService {
         originalUrl = BaiduWebClient.normalizeShareUrl(originalUrl, stringValue(candidate.get("code")));
         String urlHash = ResourceHubHashUtils.sha256(originalUrl);
         LocalDateTime now = LocalDateTime.now();
-        var discovery = discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+        var discovery = permanentDiscovery(discoveryResultService.getOne(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .eq("movie_id", movie.getId()).eq("provider", "BAIDU").eq("original_url_hash", urlHash)
-                .orderByDesc("updated_at").last("LIMIT 1"), false);
+                .orderByDesc("updated_at").last("LIMIT 1"), false));
         if (discovery == null) {
             discovery = new ResourceDiscoveryResult(); discovery.setMovieId(movie.getId()); discovery.setSource(resourceSource(candidate));
             discovery.setSourceRef(trim(stringValue(candidate.get("source_id")), 100)); discovery.setOriginalUrl(originalUrl);
@@ -2379,26 +2388,33 @@ public class GyingSourceWorkflowService {
             discovery.setUpdatedAt(now);
             if (!discoveryResultService.save(discovery)) throw new IllegalStateException("Baidu discovery not persisted");
         }
-        var transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+        var transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                 .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
         if (transfer == null) {
-            transfer = new BaiduTransferTask(); transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(movie.getId());
+            transfer = new BaiduTransferTask(); transfer.setScopeKey(BaiduTemporaryScope.PERMANENT);
+            transfer.setDiscoveryResultId(discovery.getId()); transfer.setMovieId(movie.getId());
             transfer.setOriginalUrl(originalUrl); transfer.setOriginalUrlHash(urlHash); transfer.setStatus("PENDING");
             transfer.setPhase("NEW"); transfer.setAttempts(0); transfer.setCreatedAt(now); transfer.setUpdatedAt(now);
             try {
                 if (!baiduTransferTaskService.save(transfer)) throw new IllegalStateException("Baidu task not persisted");
             } catch (org.springframework.dao.DuplicateKeyException raced) {
-                transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                         .eq("movie_id", movie.getId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
-                if (transfer == null) throw raced;
+                if (!BaiduTemporaryScope.isPermanent(transfer)) throw raced;
             }
+        }
+        if (!BaiduTemporaryScope.isPermanent(transfer)) {
+            throw new IllegalStateException("BAIDU_TEMPORARY_TASK_NOT_ARCHIVABLE");
         }
         var result = baiduTransferRunnerService.submitOne(transfer.getId());
         if (result.getFailed() > 0) throw new IllegalStateException("Baidu transfer requires review: "
                 + (result.getErrors().isEmpty() ? "BAIDU_NOT_READY" : result.getErrors().get(0)));
-        transfer = baiduTransferTaskService.getById(transfer.getId());
+        transfer = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", transfer.getId()), false);
         discovery = discoveryResultService.getById(discovery.getId());
-        if (transfer == null || !"SUCCEEDED".equals(transfer.getStatus()) || !hasText(transfer.getShareUrl())
+        if (!BaiduTemporaryScope.isPermanent(transfer) || discovery == null
+                || BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                || !"SUCCEEDED".equals(transfer.getStatus()) || !hasText(transfer.getShareUrl())
                 || !baiduWebClient.validateOwnShare(transfer.getShareUrl())) {
             throw new IllegalStateException("Baidu own share is not ready");
         }
@@ -2410,6 +2426,9 @@ public class GyingSourceWorkflowService {
             String siteMid,
             MovieMetadata movie,
             ResourceLink resource) {
+        if (isTemporaryResource(resource)) {
+            throw new IllegalStateException("BAIDU_TEMPORARY_RESOURCE_NOT_PUBLISHABLE");
+        }
         if (!resourceHubProperties.isDriveGyingPublishEnabled(resource.getProvider())) {
             throw new IllegalStateException("该网盘 GYING 发布已关闭");
         }
@@ -2425,6 +2444,18 @@ public class GyingSourceWorkflowService {
                 : firstText(resource.getCode(), ""));
         payload.put("is", 0);
         return gyingSourceClient.post("/publish", payload);
+    }
+
+    private boolean isTemporaryResource(ResourceLink resource) {
+        return resource != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(resource.getSource());
+    }
+
+    private ResourceLink permanentResource(ResourceLink resource) {
+        return isTemporaryResource(resource) ? null : resource;
+    }
+
+    private ResourceDiscoveryResult permanentDiscovery(ResourceDiscoveryResult discovery) {
+        return BaiduTemporaryScope.isTemporaryDiscovery(discovery) ? null : discovery;
     }
 
     private List<Map<String, Object>> selectTransferCandidates(List<Map<String, Object>> resources) {
@@ -2463,6 +2494,7 @@ public class GyingSourceWorkflowService {
 
     private ResourceLink findPublishableLocalResource(String movieId, String preferredProvider) {
         QueryWrapper<ResourceLink> wrapper = new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .eq("audit_status", 1)
@@ -2474,8 +2506,8 @@ public class GyingSourceWorkflowService {
         if (hasText(preferredProvider)) {
             wrapper.eq("provider", preferredProvider.toUpperCase(Locale.ROOT));
         }
-        return resourceLinkService.getOne(wrapper
-                .last("ORDER BY CASE WHEN provider='QUARK' THEN 0 WHEN provider='XUNLEI' THEN 1 ELSE 2 END, updated_at DESC LIMIT 1"), false);
+        return permanentResource(resourceLinkService.getOne(wrapper
+                .last("ORDER BY CASE WHEN provider='QUARK' THEN 0 WHEN provider='XUNLEI' THEN 1 ELSE 2 END, updated_at DESC LIMIT 1"), false));
     }
 
     private ResourceLink findResourceBySourceIds(String movieId, List<String> sourceIds) {
@@ -2483,29 +2515,32 @@ public class GyingSourceWorkflowService {
         if (ids.isEmpty()) {
             return null;
         }
-        return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        return permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .in("source_ref", ids)
                 .eq("status", "ACTIVE")
-                .last("LIMIT 1"), false);
+                .last("LIMIT 1"), false));
     }
 
     private ResourceLink findLocalPublishedResource(Map<String, Object> item) {
         String sourceId = stringValue(item.get("source_id"));
         if (hasText(sourceId)) {
-            ResourceLink bySource = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+            ResourceLink bySource = permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("source_ref", sourceId)
                     .orderByDesc("updated_at")
-                    .last("LIMIT 1"), false);
+                    .last("LIMIT 1"), false));
             if (bySource != null) {
                 return bySource;
             }
         }
         String url = stringValue(item.get("url"));
-        return hasText(url) ? resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        return hasText(url) ? permanentResource(resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("url", url)
                 .orderByDesc("updated_at")
-                .last("LIMIT 1"), false) : null;
+                .last("LIMIT 1"), false)) : null;
     }
 
     private QuarkTransferTask findRepairTransfer(ResourceLink local, Map<String, Object> item) {
@@ -3062,6 +3097,7 @@ public class GyingSourceWorkflowService {
     }
     private long activeResourceCount(String movieId) {
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at"));

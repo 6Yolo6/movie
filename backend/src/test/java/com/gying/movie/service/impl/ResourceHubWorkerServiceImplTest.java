@@ -1,5 +1,8 @@
 package com.gying.movie.service.impl;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -386,6 +389,65 @@ class ResourceHubWorkerServiceImplTest {
         when(baiduTasks.getOne(any(Wrapper.class), eq(false))).thenReturn(task); when(baiduTasks.getById(2L)).thenReturn(task);
         var checked = new QuarkTransferRunResult(); checked.setFailed(1); when(baiduRunner.submitOne(2L)).thenReturn(checked);
         assertEquals(1, service.retryDiscoveredTransfers(true).get("failed")); verify(baiduRunner).submitOne(2L); Mockito.verifyNoInteractions(quark, publish);
+    }
+
+
+    @Test void discoveredRetryExcludesTemporaryClonesBeforeTransferAndPublication() {
+        var f = new BaiduRetryFixture(); var clone = f.candidate(); clone.setSource("QQ_BOT");
+        clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        when(f.discoveries.list(any(Wrapper.class))).thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(0)); return List.of(clone); });
+        f.service.retryDiscoveredTransfers(true);
+        Mockito.verifyNoInteractions(f.baiduTasks, f.baiduRunner, f.publish);
+        assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
+    }
+
+    @ParameterizedTest @ValueSource(strings = {TEMP_SCOPE, "UNKNOWN_SCOPE"})
+    void discoveredRetryCannotConsumeTemporaryTasksThroughEitherLookup(String scope) {
+        var f = new BaiduRetryFixture(); var task = new com.gying.movie.entity.BaiduTransferTask();
+        task.setId(88L); task.setScopeKey(scope); task.setStatus("SUCCEEDED"); task.setShareUrl("https://pan.baidu.com/s/1temp");
+        when(f.discoveries.list(any(Wrapper.class))).thenReturn(List.of(f.candidate()));
+        when(f.baiduTasks.getOne(any(), eq(false))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return task; });
+        assertEquals(1, f.service.retryDiscoveredTransfers(true).get("skipped"));
+        verify(f.baiduTasks, Mockito.times(2)).getOne(any(), eq(false));
+        Mockito.verifyNoInteractions(f.baiduRunner, f.publish); verify(f.baiduTasks, never()).updateById(any());
+    }
+
+    @Test void permanentFallbackStillTransfersAndPublishesItsOwnShare() {
+        var f = new BaiduRetryFixture(); var task = new com.gying.movie.entity.BaiduTransferTask(); task.setId(88L);
+        task.setStatus("SUCCEEDED"); task.setShareUrl("https://pan.baidu.com/s/1owned");
+        when(f.discoveries.list(any(Wrapper.class))).thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(0)); return List.of(f.candidate()); });
+        when(f.baiduTasks.getOne(any(), eq(false))).thenAnswer(call -> {
+            Wrapper<?> query = call.getArgument(0); permanentTaskQuery(query);
+            return query.getSqlSegment().contains("discovery_result_id") ? null : task;
+        });
+        when(f.baiduRunner.submitOne(88L)).thenReturn(new QuarkTransferRunResult());
+        var published = new ResourceHubPublishResult(); published.setPublished(1);
+        when(f.publish.publishDiscovery(99L)).thenReturn(published);
+        assertEquals(1, f.service.retryDiscoveredTransfers(true).get("succeeded"));
+        verify(f.baiduRunner).submitOne(88L); verify(f.publish).publishDiscovery(99L);
+    }
+
+    private static class BaiduRetryFixture {
+        final ResourceHubProperties properties = new ResourceHubProperties();
+        final com.gying.movie.service.IResourceDiscoveryResultService discoveries = mock(com.gying.movie.service.IResourceDiscoveryResultService.class);
+        final com.gying.movie.service.IBaiduTransferTaskService baiduTasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        final com.gying.movie.service.IBaiduTransferRunnerService baiduRunner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        final IResourceHubPublishService publish = mock(IResourceHubPublishService.class);
+        final ResourceHubWorkerServiceImpl service;
+        BaiduRetryFixture() {
+            properties.setEnabled(true); properties.getBaidu().setEnabled(true); properties.getBaidu().setShareEnabled(true);
+            properties.getBaidu().setVideoEnabled(true); properties.getWorker().setDiscoveredRetryDelayMs(0);
+            service = new ResourceHubWorkerServiceImpl(properties, mock(IResourceHubTaskService.class), mock(ITmdbMetadataSyncService.class),
+                    mock(IGyingMetadataSyncService.class), mock(IResourceDiscoveryService.class), mock(IQuarkTransferRunnerService.class), publish,
+                    mock(IResourceHubConfigService.class));
+            org.springframework.test.util.ReflectionTestUtils.setField(service, "discoveryResultService", discoveries);
+            org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", baiduTasks);
+            org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferRunnerService", baiduRunner);
+        }
+        com.gying.movie.entity.ResourceDiscoveryResult candidate() {
+            var row = new com.gying.movie.entity.ResourceDiscoveryResult(); row.setId(99L); row.setMovieId("movie1"); row.setProvider("BAIDU");
+            row.setOriginalUrl("https://pan.baidu.com/s/1source"); return row;
+        }
     }
 
 }

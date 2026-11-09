@@ -29,6 +29,7 @@ import com.gying.movie.service.IResourceHubWorkerService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.ITmdbMetadataSyncService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -217,13 +218,15 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                     .map(Enum::name).filter(resourceHubProperties::isDriveTransferEnabled).toList();
             if (runnableProviders.isEmpty()) return skippedRetry(result, "所有网盘转存均已关闭");
             List<ResourceDiscoveryResult> rawDiscoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                    .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                     .eq("status", "DISCOVERED").isNull("resource_link_id")
                     .in("provider", runnableProviders)
                     .orderByAsc("updated_at").last("LIMIT " + limit));
             Map<Long, ResourceDiscoveryResult> uniqueDiscoveries = new LinkedHashMap<>();
             if (rawDiscoveries != null) {
                 for (ResourceDiscoveryResult discovery : rawDiscoveries) {
-                    if (discovery != null && discovery.getId() != null) {
+                    if (discovery != null && !BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                            && discovery.getId() != null) {
                         uniqueDiscoveries.putIfAbsent(discovery.getId(), discovery);
                     }
                 }
@@ -282,8 +285,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                             }
                         }
                         QuarkTransferRunResult checked = baiduTransferRunnerService.submitOne(task.getId());
-                        task = baiduTransferTaskService.getById(task.getId());
-                        hasShare = checked.getFailed() == 0 && task != null && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl());
+                        task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+                                .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", task.getId()), false);
+                        hasShare = checked.getFailed() == 0 && BaiduTemporaryScope.isPermanent(task)
+                                && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl());
                     } else if ("QUARK".equals(provider)) {
                         if (quarkTransferTaskService == null) throw new IllegalStateException("Quark transfer service unavailable");
                         QuarkTransferTask task = findQuarkTransferTask(discovery);
@@ -304,7 +309,10 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                             published.getErrors().isEmpty() ? "Discovery publish failed" : published.getErrors().get(0));
                     if (gyingSourceWorkflowService != null && resourceLinkService != null) {
                         for (Long resourceId : published.getResourceIds()) {
-                            gyingSourceWorkflowService.publishResourceToGying(resourceLinkService.getById(resourceId));
+                            ResourceLink link = resourceLinkService.getById(resourceId);
+                            if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                                gyingSourceWorkflowService.publishResourceToGying(link);
+                            }
                         }
                     }
                     item.put("status", "SUCCEEDED"); item.put("published", saved); succeeded++;
@@ -325,14 +333,17 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private com.gying.movie.entity.BaiduTransferTask findBaiduTransferTask(ResourceDiscoveryResult discovery) {
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) return null;
         String hash = hasText(discovery.getOriginalUrlHash()) ? discovery.getOriginalUrlHash()
                 : ResourceHubHashUtils.sha256(discovery.getOriginalUrl());
-        var task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+        var task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                 .eq("discovery_result_id", discovery.getId()).orderByDesc("updated_at").last("LIMIT 1"), false);
-        if (task != null || !hasText(discovery.getMovieId()) || !hasText(hash)) return task;
-        return baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>()
+        if (BaiduTemporaryScope.isPermanent(task)) return task;
+        if (!hasText(discovery.getMovieId()) || !hasText(hash)) return null;
+        task = baiduTransferTaskService.getOne(new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                 .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", hash)
                 .orderByDesc("updated_at").last("LIMIT 1"), false);
+        return BaiduTemporaryScope.isPermanent(task) ? task : null;
     }
 
     private XunleiTransferTask findXunleiTransferTask(ResourceDiscoveryResult discovery) {
@@ -613,6 +624,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         for (Long resourceId : publishResult.getResourceIds()) {
             try {
                 ResourceLink link = resourceLinkService.getById(resourceId);
+                if (link != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) continue;
                 if (link != null && com.gying.movie.utils.SeasonSearchUtils.collectionSeasons(link.getName()).size() > 1) {
                     try {
                         gyingSourceWorkflowService.ensureRemainingSeasons(link.getMovieId(), 5);
@@ -620,7 +632,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                         // Metadata enrichment is best-effort; the usable local share remains successful.
                     }
                 }
-                gyingSourceWorkflowService.publishResourceToGying(link);
+                if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                    gyingSourceWorkflowService.publishResourceToGying(link);
+                }
             } catch (Exception ignored) {
                 // Local publication remains successful; next worker cycle can retry GYING.
             }
@@ -632,6 +646,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             return;
         }
         List<ResourceLink> links = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("source", "RESOURCE_HUB")
                 .eq("type", "DISK")
                 .eq("status", "ACTIVE")
@@ -642,7 +657,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .last("LIMIT " + result.getPublishLimit()));
         for (ResourceLink link : links) {
             try {
-                gyingSourceWorkflowService.publishResourceToGying(link);
+                if (link != null && !BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                    gyingSourceWorkflowService.publishResourceToGying(link);
+                }
             } catch (Exception e) {
                 addError(result, "GYING publish resource " + link.getId() + ": " + e.getMessage());
             }

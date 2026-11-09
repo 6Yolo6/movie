@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class BaiduTransferRunnerServiceImplTest {
     ResourceHubProperties props; BaiduWebClient client; BaiduSessionVault vault;
@@ -40,6 +41,13 @@ class BaiduTransferRunnerServiceImplTest {
         when(client.transfer(any())).thenAnswer(invocation->{assertEquals("TRANSFER_SUBMITTING",task.getPhase());assertEquals("WAITING_TRANSFER",task.getStatus());assertTrue(persisted.contains("TRANSFER_SUBMITTING"));return new BaiduWebClient.Submission("task1","PENDING");});
         when(client.findOwnShare("/target")).thenReturn(null);when(client.createOwnShare("/target")).thenAnswer(invocation->{assertEquals("SHARE_SUBMITTING",task.getPhase());assertTrue(persisted.contains("SHARE_SUBMITTING"));return "https://pan.baidu.com/s/1owned?pwd=abcd";});when(client.validateOwnShare(any())).thenReturn(true);
         var result=runner.submitOne(1L);assertEquals(1,result.getSubmitted());assertEquals("SUCCEEDED",task.getStatus());assertEquals("SHARED",task.getPhase());
+        var writes = org.mockito.ArgumentCaptor.forClass(UpdateWrapper.class);
+        verify(tasks, atLeastOnce()).update(writes.capture());
+        for (var write : writes.getAllValues()) {
+            assertTrue(write.getSqlSegment().contains("BINARY scope_key"));
+            assertTrue(write.getSqlSegment().contains("request_payload IS NULL"));
+            assertTrue(write.getParamNameValuePairs().containsValue("PERMANENT"));
+        }
     }
     @Test void ambiguousTransferRecoveryOnlyReadsAndNeverPostsAgain() {
         task.setPhase("TRANSFER_SUBMITTING");task.setStatus("WAITING_TRANSFER");when(client.verifyDestination(any())).thenReturn(false);
@@ -131,6 +139,138 @@ class BaiduTransferRunnerServiceImplTest {
         verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
         verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
         verifyNoInteractions(movies);
+    }
+
+
+    @Test void temporaryPlanUsesTheExactTaskDirectoryAndNeverThePermanentMovieFolder() throws Exception {
+        configureTemporary();
+        task.setPhase("NEW"); task.setSavedPath(null); task.setResponsePayload(null); props.getBaidu().setShareEnabled(false);
+        String target = "/GYing QQ Temp/baidu-1";
+        when(client.planTransfer(anyString(), any(), eq(target), eq(true), eq(false))).thenReturn(temporaryPlan());
+        when(client.verifyDestination(any())).thenReturn(true);
+        runner.submitOne(1L);
+        assertEquals(target, task.getSavedPath()); assertEquals("TRANSFERRED", task.getPhase());
+        verify(client).planTransfer(anyString(), any(), eq(target), eq(true), eq(false));
+        verifyNoInteractions(movies);
+    }
+
+    @Test void malformedTemporaryMarkerStopsBeforeAnyCloudRequest() throws Exception {
+        configureTemporary();
+        task.setRequestPayload(task.getRequestPayload().replace("baidu-1", "baidu-2"));
+        runner.submitOne(1L);
+        verify(client, never()).planTransfer(anyString(), any(), anyString(), anyBoolean(), anyBoolean());
+        verify(client, never()).verifyDestination(any()); verify(client, never()).findOwnShare(any());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    @Test void firstConfirmedSharePersistsItsSnapshotAndClockDespiteALocalSchedulingFailure() throws Exception {
+        BaiduTemporaryCleanupService cleanup = configureTemporary();
+        when(client.verifyDestination(any())).thenReturn(true);
+        when(client.findOwnShare(task.getSavedPath())).thenReturn("https://pan.baidu.com/s/1owned?pwd=abcd");
+        when(client.validateOwnShare(any())).thenReturn(true);
+        var evidence = new BaiduWebClient.DestinationEvidence("100", task.getSavedPath(), "55",
+                List.of(new BaiduWebClient.DestinationFile("Movie.mkv", "56", 100, false, null)));
+        when(client.captureDestinationEvidence(any())).thenReturn(evidence);
+        when(client.inspectTemporaryDirectory(any())).thenReturn(BaiduWebClient.DestinationState.MATCHING);
+        doThrow(new IllegalStateException("fixture scheduling storage failure")).when(cleanup).scheduleConfirmed(any());
+        runner.submitOne(1L);
+        assertEquals("SUCCEEDED", task.getStatus()); assertEquals("SHARED", task.getPhase());
+        assertNotNull(task.getShareConfirmedAt()); assertEquals(task.getShareConfirmedAt(), task.getFinishedAt());
+        var first = task.getShareConfirmedAt(); String snapshot = task.getCleanupEvidence();
+        assertEquals(evidence, mapper.readValue(snapshot, BaiduWebClient.DestinationEvidence.class));
+        runner.submitOne(1L);
+        assertEquals(first, task.getShareConfirmedAt()); assertEquals(first, task.getFinishedAt()); assertEquals(snapshot, task.getCleanupEvidence());
+        verify(client, times(1)).captureDestinationEvidence(any());
+        verify(cleanup, times(2)).scheduleConfirmed(any());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    @Test void expiredTemporaryTaskNeverRecreatesOrResynchronizesItsShare() throws Exception {
+        BaiduTemporaryCleanupService cleanup = configureTemporary();
+        when(cleanup.isExpired(1L)).thenReturn(true);
+        assertEquals(1, runner.submitOne(1L).getSkipped());
+        verify(client, never()).verifyDestination(any()); verify(client, never()).findOwnShare(any());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    @Test void permanentPendingLaneDoesNotConsumeATemporaryTaskEvenFromAMalformedQueryResult() throws Exception {
+        configureTemporary();
+        when(tasks.list(any(Wrapper.class))).thenReturn(List.of(task));
+        assertEquals(1, runner.submitPending(5).getSkipped());
+        verify(client, never()).verifyDestination(any()); verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+        var query = org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(tasks).list(query.capture()); assertTrue(query.getValue().getSqlSegment().contains("scope_key"));
+        assertTrue(query.getValue().getParamNameValuePairs().containsValue("PERMANENT"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"scope", "payload"})
+    void changedScopeOrMarkerBetweenCandidateAndClaimedReadNeverExecutes(String changed) throws Exception {
+        configureTemporary(); String originalScope = task.getScopeKey(); String originalPayload = task.getRequestPayload();
+        when(tasks.update(any(Wrapper.class))).thenAnswer(invocation -> {
+            var update = (UpdateWrapper<BaiduTransferTask>) invocation.getArgument(0); update.getSqlSet();
+            update.getParamNameValuePairs().values().stream()
+                    .filter(v -> v instanceof String && v.toString().matches("[0-9a-f-]{36}"))
+                    .findFirst().ifPresent(v -> task.setLeaseOwner(v.toString()));
+            if ("scope".equals(changed)) task.setScopeKey("PERMANENT");
+            else task.setRequestPayload(originalPayload.replace("\"retentionMinutes\":10", "\"retentionMinutes\":60"));
+            return true;
+        });
+        var result = runner.submitOne(1L);
+        assertEquals(1, result.getFailed()); assertTrue(result.getErrors().contains("BAIDU_SCOPE_CHANGED"));
+        verify(client, never()).verifyDestination(any()); verify(client, never()).inspectTemporaryDirectory(any());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+        var writes = org.mockito.ArgumentCaptor.forClass(UpdateWrapper.class); verify(tasks, atLeastOnce()).update(writes.capture());
+        for (var write : writes.getAllValues()) {
+            write.getSqlSegment();
+            assertTrue(write.getParamNameValuePairs().containsValue(originalScope));
+            assertTrue(write.getParamNameValuePairs().containsValue(originalPayload));
+        }
+    }
+
+    @Test void succeededTemporaryTaskRejectsAReplacedTreeWithoutRecapturingOrResynchronizing() throws Exception {
+        var cleanup = configureTemporary();
+        task.setStatus("SUCCEEDED"); task.setPhase("SHARED"); task.setShareConfirmedAt(java.time.LocalDateTime.now());
+        task.setShareUrl("https://pan.baidu.com/s/1owned?pwd=abcd");
+        var evidence = new BaiduWebClient.DestinationEvidence("100", task.getSavedPath(), "55",
+                List.of(new BaiduWebClient.DestinationFile("Movie.mkv", "56", 100, false, null)));
+        task.setCleanupEvidence(mapper.writeValueAsString(evidence));
+        when(client.validateOwnShare(any())).thenReturn(true);
+        when(client.inspectTemporaryDirectory(evidence)).thenReturn(BaiduWebClient.DestinationState.CHANGED);
+        assertEquals(1, runner.submitOne(1L).getFailed());
+        verify(client).inspectTemporaryDirectory(evidence); verify(cleanup, never()).scheduleConfirmed(any());
+        verify(client, never()).captureDestinationEvidence(any()); verify(client, never()).transfer(any());
+        verify(client, never()).createOwnShare(any()); assertEquals("SUCCEEDED", task.getStatus());
+    }
+
+    @Test void succeededPermanentTaskRequiresItsOriginalDestinationBeforeResynchronizing() {
+        task.setStatus("SUCCEEDED"); task.setPhase("SHARED"); task.setShareUrl("https://pan.baidu.com/s/1owned?pwd=abcd");
+        when(client.validateOwnShare(any())).thenReturn(true); when(client.verifyDestination(any())).thenReturn(false);
+        assertEquals(1, runner.submitOne(1L).getFailed()); verify(client).verifyDestination(any());
+        verify(client, never()).transfer(any()); verify(client, never()).createOwnShare(any());
+    }
+
+    private BaiduTemporaryCleanupService configureTemporary() throws Exception {
+        task.setScopeKey("QQ_BOT:11111111-1111-1111-1111-111111111111"); task.setSearchRequestHash("a".repeat(64));
+        task.setMovieId("movie1"); task.setOriginalUrlHash(com.gying.movie.utils.ResourceHubHashUtils.sha256(task.getOriginalUrl()));
+        task.setSavedPath("/GYing QQ Temp/baidu-1"); task.setDiscoveryResultId(42L);
+        task.setRequestPayload(com.gying.movie.utils.BaiduTemporaryScope.payload(task.getScopeKey(), task.getSearchRequestHash(), 40L, task.getSavedPath()));
+        task.setResponsePayload(mapper.writeValueAsString(temporaryPlan()));
+        var discovery = new com.gying.movie.entity.ResourceDiscoveryResult();
+        discovery.setId(42L); discovery.setMovieId("movie1"); discovery.setProvider("BAIDU"); discovery.setSource("QQ_BOT");
+        discovery.setSourceRef(com.gying.movie.utils.BaiduTemporaryScope.DISCOVERY_PREFIX + task.getScopeKey());
+        discovery.setOriginalUrl(task.getOriginalUrl()); discovery.setOriginalUrlHash(task.getOriginalUrlHash());
+        var discoveries = mock(IResourceDiscoveryResultService.class);
+        when(discoveries.getById(42L)).thenReturn(discovery); when(discoveries.update(any(Wrapper.class))).thenReturn(true);
+        runner = new BaiduTransferRunnerServiceImpl(props, client, vault, tasks, discoveries, mock(IResourceLinkService.class), movies, mapper);
+        var settings = mock(QqTransferCleanupSettings.class); when(settings.baiduTarget(1L)).thenReturn(task.getSavedPath());
+        var cleanup = mock(BaiduTemporaryCleanupService.class); runner.configureTemporaryTransfers(settings, cleanup);
+        return cleanup;
+    }
+
+    private static BaiduWebClient.TransferPlan temporaryPlan() {
+        return new BaiduWebClient.TransferPlan("https://pan.baidu.com/s/1source", null, "/GYing QQ Temp/baidu-1", "1", "200",
+                List.of("11"), List.of(new BaiduWebClient.ExpectedFile("Movie.mkv", 100, false)));
     }
 
     private static BaiduWebClient.TransferPlan plan(){return new BaiduWebClient.TransferPlan("https://pan.baidu.com/s/1source",null,"/target","1","200",List.of("11"),List.of(new BaiduWebClient.ExpectedFile("Movie.mkv",100,false)));}

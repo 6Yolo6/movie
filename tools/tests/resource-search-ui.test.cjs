@@ -70,3 +70,17 @@ test('classifies magnets by protocol and preserves torrent archive metadata acro
     const history = readSearchHistory(JSON.stringify([{id:'mixed',command:'片名',label:'片名',status:'done',reply:'回复',links,createdAt:1}]));
     assert.equal(history[0].links[1].type, 'TORRENT');
 });
+
+test('Baidu resources preserve case-sensitive short codes, archive type and provider badge', () => {
+    const url = 'https://pan.baidu.com/s/1CaseSensitiveFixture?pwd=a1B2';
+    const links = safeSearchLinks([{url, name:'资源链接 1', type:'TORRENT'}]);
+    assert.equal(links[0].name, '百度网盘分享');
+    assert.equal(links[0].url, url);
+    assert.equal(links[0].type, 'TORRENT');
+    const choices = parseSearchReply('请选择资源（回复当前页序号）：\n1. 测试影片 1080P [百度]').parts.filter(x => x.type === 'choice');
+    assert.equal(choices[0].command, '1');
+    assert.equal(choices[0].badge, '百度');
+    const history = readSearchHistory(JSON.stringify([{id:'baidu',command:'百度',label:'百度资源',status:'done',reply:'约10分钟后清理',links,createdAt:1}]));
+    assert.equal(history[0].links[0].url, url);
+    assert.equal(history[0].links[0].type, 'TORRENT');
+});

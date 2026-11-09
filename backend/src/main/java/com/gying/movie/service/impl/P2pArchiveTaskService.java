@@ -14,6 +14,7 @@ import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.entity.*;
 import com.gying.movie.service.*;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import com.gying.movie.utils.BaiduArchivePaths;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.QqTransferMarker;
@@ -400,8 +401,12 @@ public class P2pArchiveTaskService {
                 shareUrl = verified; payload.put("shareUrl", verified); persist(task, payload);
             }
             stage = "PUBLISH_METADATA_LINK";
-            ResourceLink link = links.getOne(new QueryWrapper<ResourceLink>().eq("movie_id", movie.getId())
+            ResourceLink link = links.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE)).eq("movie_id", movie.getId())
                     .eq("source", LINK_SOURCE).eq("provider", provider).isNull("deleted_at").last("LIMIT 1"), false);
+            if (link != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(link.getSource())) {
+                throw new IllegalStateException("BAIDU_TEMPORARY_RESOURCE_NOT_ARCHIVABLE");
+            }
             LocalDateTime now = LocalDateTime.now();
             if (link == null) { link = new ResourceLink(); link.setMovieId(movie.getId()); link.setCreatedAt(now); }
             String quality = String.join(" / ", selected.stream().map(ResourceLink::getQuality).distinct().sorted().toList());
@@ -600,8 +605,9 @@ public class P2pArchiveTaskService {
                     .map(XunleiTransferTask::getSavedPath).findFirst().orElse(null);
             case "BAIDU" -> {
                 BaiduArchivePaths.categoryRoot(properties.getBaidu().getSavePath(), movie.getCategory());
-                yield baiduTasks.list(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
+                yield baiduTasks.list(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("movie_id", movieId)
                     .eq("status", "SUCCEEDED").isNotNull("saved_path").orderByDesc("updated_at").last("LIMIT 20")).stream()
+                    .filter(BaiduTemporaryScope::isPermanent)
                     .filter(task -> !QqTransferMarker.isTemporary(task.getRequestPayload()))
                     .map(BaiduTransferTask::getSavedPath)
                     .filter(path -> BaiduArchivePaths.belongsToCategory(properties.getBaidu().getSavePath(), movie.getCategory(), path))

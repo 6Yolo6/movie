@@ -62,6 +62,7 @@ class BaiduTransferTaskMySqlTest {
         assertTrue(jdbc.queryForObject("SELECT VERSION()", String.class).startsWith("8.0."));
         try (Connection connection = source.getConnection()) {
             ScriptUtils.executeSqlScript(connection, new ClassPathResource("db/migration_baidu_transfer_task.sql"));
+            ScriptUtils.executeSqlScript(connection, new ClassPathResource("db/migration_baidu_search_temporary_scope.sql"));
         }
         var configuration = new MybatisConfiguration();
         GlobalConfigUtils.getGlobalConfig(configuration).setIdentifierGenerator(new DefaultIdentifierGenerator(0L, 0L));
@@ -160,6 +161,39 @@ class BaiduTransferTaskMySqlTest {
         var table = jdbc.queryForMap("SELECT TABLE_COMMENT,TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='baidu_transfer_task'");
         assertEquals("百度网盘独立转存任务", table.get("TABLE_COMMENT")); assertEquals("utf8mb4_unicode_ci", table.get("TABLE_COLLATION"));
         assertEquals("执行计划和内容核验，不存原始上游响应", jdbc.queryForObject("SELECT COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='baidu_transfer_task' AND COLUMN_NAME='response_payload'", String.class));
+    }
+
+
+    @Test void permanentAndIndependentTemporaryScopesCoexistForTheSameMovieSource() {
+        String movie = "scoped-" + UUID.randomUUID(); String source = "d".repeat(64);
+        BaiduTransferTask permanent = newTask(movie, source); assertTrue(tasks.save(permanent));
+        BaiduTransferTask first = newTask(movie, source); first.setScopeKey("QQ_BOT:" + UUID.randomUUID()); assertTrue(tasks.save(first));
+        BaiduTransferTask second = newTask(movie, source); second.setScopeKey("QQ_BOT:" + UUID.randomUUID()); assertTrue(tasks.save(second));
+        assertEquals("PERMANENT", tasks.getById(permanent.getId()).getScopeKey());
+        assertEquals(3L, jdbc.queryForObject("SELECT COUNT(*) FROM baidu_transfer_task WHERE movie_id=? AND original_url_hash=?", Long.class, movie, source));
+        BaiduTransferTask duplicate = newTask(movie, source); duplicate.setScopeKey(first.getScopeKey());
+        assertThrows(DataIntegrityViolationException.class, () -> tasks.save(duplicate));
+    }
+
+    @Test void confirmationClockAndFullTreeEvidenceSurviveAMapperRoundTrip() {
+        BaiduTransferTask task = newTask("confirmed-" + UUID.randomUUID(), "e".repeat(64));
+        task.setScopeKey("QQ_BOT:" + UUID.randomUUID()); task.setSearchRequestHash("a".repeat(64));
+        task.setShareConfirmedAt(LocalDateTime.of(2026, 11, 9, 20, 0));
+        task.setCleanupEvidence("{\"accountUid\":\"100\",\"destination\":\"/GYing QQ Temp/baidu-1\",\"directoryId\":\"55\",\"files\":[]}");
+        assertTrue(tasks.save(task));
+        BaiduTransferTask restored = tasks.getById(task.getId());
+        assertEquals(task.getScopeKey(), restored.getScopeKey()); assertEquals(task.getSearchRequestHash(), restored.getSearchRequestHash());
+        assertEquals(task.getShareConfirmedAt(), restored.getShareConfirmedAt()); assertEquals(task.getCleanupEvidence(), restored.getCleanupEvidence());
+    }
+
+    @Test void scopeMigrationIsRepeatableAndRetainsTheLegacyPermanentRows() throws Exception {
+        String movie = "migration-legacy-" + UUID.randomUUID();
+        jdbc.update("INSERT INTO baidu_transfer_task(movie_id,original_url,original_url_hash) VALUES(?,?,?)", movie, "https://pan.baidu.com/s/1legacy", "f".repeat(64));
+        try (Connection connection = jdbc.getDataSource().getConnection()) {
+            ScriptUtils.executeSqlScript(connection, new ClassPathResource("db/migration_baidu_search_temporary_scope.sql"));
+        }
+        assertEquals("PERMANENT", jdbc.queryForObject("SELECT scope_key FROM baidu_transfer_task WHERE movie_id=?", String.class, movie));
+        assertEquals("永久归档或独立临时搜索范围", jdbc.queryForObject("SELECT COLUMN_COMMENT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='baidu_transfer_task' AND COLUMN_NAME='scope_key'", String.class));
     }
 
     private static BaiduTransferTask newTask(String movie, String hash) {

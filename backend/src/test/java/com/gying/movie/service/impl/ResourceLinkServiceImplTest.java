@@ -50,10 +50,10 @@ class ResourceLinkServiceImplTest {
         BoundSql bound = configuration.getMappedStatement(ResourceLinkMapper.class.getName() + ".selectList")
                 .getBoundSql(params);
         String sql = bound.getSql().replaceAll("\\s+", " ").trim();
-        assertEquals("WHERE (movie_id = ? AND audit_status = ? AND status = ? AND deleted_at IS NULL "
+        assertEquals("WHERE (movie_id = ? AND (source IS NULL OR source <> ?) AND audit_status = ? AND status = ? AND deleted_at IS NULL "
                 + "AND (link_status IS NULL OR link_status <> ?))", sql.substring(sql.indexOf("WHERE")));
         assertFalse(sql.contains(movieId));
-        assertEquals(List.of(movieId, 1, "ACTIVE", "INVALID"), bound.getParameterMappings().stream()
+        assertEquals(List.of(movieId, "BAIDU_TEMP", 1, "ACTIVE", "INVALID"), bound.getParameterMappings().stream()
                 .map(parameter -> configuration.newMetaObject(params).getValue(parameter.getProperty())).toList());
         verifyNoMoreInteractions(mapper);
     }
@@ -65,4 +65,22 @@ class ResourceLinkServiceImplTest {
         verify(mapper).selectList(any(Wrapper.class));
         verifyNoMoreInteractions(mapper);
     }
+
+    @Test
+    void temporaryBaiduLinksStayPrivateWhileLegacyAndPermanentResourcesRemainVisible() {
+        ResourceLink legacy = new ResourceLink(); legacy.setId(1L); legacy.setMovieId("movie-a");
+        ResourceLink permanent = new ResourceLink(); permanent.setId(2L); permanent.setMovieId("movie-a"); permanent.setSource("RESOURCE_HUB");
+        ResourceLink manual = new ResourceLink(); manual.setId(3L); manual.setMovieId("movie-a"); manual.setSource("MANUAL");
+        ResourceLink temporary = new ResourceLink(); temporary.setId(4L); temporary.setMovieId("movie-a");
+        temporary.setSource("BAIDU_TEMP"); temporary.setSourceRef("QQ_BOT:11111111-1111-1111-1111-111111111111");
+        temporary.setUrl("https://pan.baidu.com/s/1temporary");
+        when(mapper.selectList(any(Wrapper.class))).thenReturn(List.of(temporary, legacy, permanent, manual));
+
+        assertEquals(List.of(legacy, permanent, manual), service.getResourcesByMovieId("movie-a"));
+        assertEquals("BAIDU_TEMP", temporary.getSource());
+        assertEquals("QQ_BOT:11111111-1111-1111-1111-111111111111", temporary.getSourceRef());
+        verify(mapper).selectList(any(Wrapper.class));
+        verifyNoMoreInteractions(mapper);
+    }
+
 }

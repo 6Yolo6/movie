@@ -1,6 +1,7 @@
 package com.gying.movie.service.impl;
 
 import com.gying.movie.service.ISysConfigService;
+import com.gying.movie.utils.BaiduTemporaryPaths;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -9,6 +10,8 @@ public class QqTransferCleanupSettings {
     public static final String KEY_DELAY_MINUTES = "qq.bot.transfer_cleanup.delay_minutes";
     public static final String KEY_QUARK_ROOT = "qq.bot.transfer_cleanup.quark_root";
     public static final String KEY_XUNLEI_ROOT = "qq.bot.transfer_cleanup.xunlei_root";
+    public static final String KEY_BAIDU_ROOT = "qq.bot.transfer_cleanup.baidu_root";
+    public static final String KEY_BAIDU_MODE = "qq.bot.transfer_cleanup.baidu_mode";
 
     private final ISysConfigService config;
 
@@ -36,6 +39,18 @@ public class QqTransferCleanupSettings {
         return normalizeRoot(config.getConfigValue(KEY_XUNLEI_ROOT,
                 "/影视剧资源分享(先转存后再查看)/GYing QQ Temp"),
                 "/影视剧资源分享(先转存后再查看)/GYing QQ Temp");
+    }
+
+    public String baiduRoot() {
+        return BaiduTemporaryPaths.requireRoot(config.getConfigValue(KEY_BAIDU_ROOT, BaiduTemporaryPaths.DEFAULT_ROOT));
+    }
+
+    public String baiduTarget(Long taskId) {
+        return BaiduTemporaryPaths.target(baiduRoot(), taskId);
+    }
+
+    public boolean baiduPermanentDeleteEnabled() {
+        return "PERMANENT".equals(config.getConfigValue(KEY_BAIDU_MODE, "PERMANENT"));
     }
 
     public String quarkTarget(Long taskId) {

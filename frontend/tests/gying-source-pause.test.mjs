@@ -98,6 +98,7 @@ async function pauseSuite({ React, createRoot, loadPage, loadModule, readApiErro
         mocks['@/lib/cloudDriveWorkflows'] = loadModule('driveWorkflows', mocks);
         const Ranges = loadPage('crawlRanges', mocks);
         mocks['@/components/admin/BaiduAccountConnection'] = loadPage('baiduAccount', mocks);
+        mocks['@/components/admin/BaiduBackfillControls'] = loadPage('baiduBackfill', mocks);
         const Drives = loadPage('driveSettings', mocks);
         const Page = loadPage('resourceHub', { ...mocks, '@/components/admin/MetadataCrawlRanges': Ranges, '@/components/admin/DriveWorkflowSettings': Drives });
         const all = name => Array.from(container.querySelectorAll('[data-fixture="' + name + '"]'), node => node.fixtureProps);
@@ -296,6 +297,7 @@ test('GYING pause controls: real React, source-scoped mocked API', { timeout: 60
         crawlRanges: 'src/components/admin/MetadataCrawlRanges.tsx',
         driveSettings: 'src/components/admin/DriveWorkflowSettings.tsx',
         baiduAccount: 'src/components/admin/BaiduAccountConnection.tsx',
+        baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
     assert.equal(results.length, 14);

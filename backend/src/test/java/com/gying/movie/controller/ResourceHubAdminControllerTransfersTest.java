@@ -1,5 +1,8 @@
 package com.gying.movie.controller;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -142,4 +145,70 @@ class ResourceHubAdminControllerTransfersTest {
                 .andExpect(status().isConflict());
         verify(config).reload(); verifyNoInteractions(quark, xunlei);
     }
+
+    @ParameterizedTest @ValueSource(strings = {TEMP_SCOPE, "UNKNOWN_SCOPE"})
+    void ordinaryBaiduSubmitRejectsTemporaryAndUnknownScopeBeforeReloadOrRemoteAction(String scope) throws Exception {
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var runner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferTaskService", tasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferRunnerService", runner);
+        var row = new com.gying.movie.entity.BaiduTransferTask(); row.setId(88L); row.setScopeKey(scope);
+        when(tasks.getOne(any(), eq(false))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return row; });
+        mvc.perform(post("/api/admin/resource-hub/baidu/transfers/88/submit")).andExpect(status().isConflict());
+        verifyNoInteractions(runner); verify(config, never()).reload();
+    }
+
+    @Test void ordinaryBaiduSubmitStillAllowsAnExplicitPermanentTask() throws Exception {
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var runner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferTaskService", tasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferRunnerService", runner);
+        var row = new com.gying.movie.entity.BaiduTransferTask(); row.setId(88L);
+        when(tasks.getOne(any(), eq(false))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return row; });
+        when(runner.submitOne(88L)).thenReturn(new QuarkTransferRunResult());
+        mvc.perform(post("/api/admin/resource-hub/baidu/transfers/88/submit")).andExpect(status().isOk());
+        verify(runner).submitOne(88L); verify(config).reload();
+    }
+
+    @Test void ordinaryBaiduListIsScopedAndDoesNotExposeTemporaryTaskHistory() throws Exception {
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "baiduTransferTaskService", tasks);
+        var permanent = new com.gying.movie.entity.BaiduTransferTask(); permanent.setId(88L);
+        var temporary = new com.gying.movie.entity.BaiduTransferTask(); temporary.setId(89L); temporary.setScopeKey(TEMP_SCOPE);
+        var page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.gying.movie.entity.BaiduTransferTask>();
+        page.setRecords(java.util.List.of(temporary, permanent)); page.setTotal(1);
+        when(tasks.page(any(), any())).thenAnswer(call -> { permanentTaskQuery(call.getArgument(1)); return page; });
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/resource-hub/baidu/transfers"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.records.length()").value(1))
+                .andExpect(jsonPath("$.data.records[0].id").value(88));
+        assertEquals(TEMP_SCOPE, temporary.getScopeKey());
+    }
+
+    @Test void temporaryCloneCannotBePublishedOrRetriedThroughOrdinaryAdminEndpoints() throws Exception {
+        var discoveries = mock(com.gying.movie.service.IResourceDiscoveryResultService.class);
+        var publish = mock(com.gying.movie.service.IResourceHubPublishService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "discoveryResultService", discoveries);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "resourceHubPublishService", publish);
+        var clone = new com.gying.movie.entity.ResourceDiscoveryResult(); clone.setId(99L); clone.setStatus("SAVED");
+        clone.setSource("QQ_BOT"); clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE); clone.setResourceLinkId(88L);
+        when(discoveries.getById(99L)).thenReturn(clone);
+        mvc.perform(post("/api/admin/resource-hub/discoveries/99/publish")).andExpect(status().isConflict());
+        mvc.perform(post("/api/admin/resource-hub/discoveries/99/retry-share-publish")).andExpect(status().isConflict());
+        verifyNoInteractions(publish, quark, xunlei); verify(discoveries, never()).updateById(any());
+        assertEquals("QQ_BOT", clone.getSource()); assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
+    }
+
+    @Test void ordinaryDiscoveryListExcludesScopedClonesAndAllowsNullSourceRefs() throws Exception {
+        var discoveries = mock(com.gying.movie.service.IResourceDiscoveryResultService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "discoveryResultService", discoveries);
+        var permanent = new com.gying.movie.entity.ResourceDiscoveryResult(); permanent.setId(88L);
+        var temporary = new com.gying.movie.entity.ResourceDiscoveryResult(); temporary.setId(89L); temporary.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        var page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.gying.movie.entity.ResourceDiscoveryResult>();
+        page.setRecords(java.util.List.of(temporary, permanent)); page.setTotal(1);
+        when(discoveries.page(any(), any())).thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(1)); return page; });
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/admin/resource-hub/discoveries"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.records.length()").value(1))
+                .andExpect(jsonPath("$.data.records[0].id").value(88));
+    }
+
 }

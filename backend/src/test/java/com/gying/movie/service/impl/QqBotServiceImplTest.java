@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 class QqBotServiceImplTest {
@@ -357,7 +359,7 @@ class QqBotServiceImplTest {
     }
 
     @Test
-    void rejectsBaiduProviderWithoutSearchingOrReturningThirdPartyLinks() {
+    void baiduProviderWithNoCandidateDoesNotReturnThirdPartyLinks() {
         MovieMetadata movie = movie("tv_112732", "哈哈哈哈哈", 2020);
         when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(movie));
         when(movieService.getById(movie.getId())).thenReturn(movie);
@@ -373,7 +375,8 @@ class QqBotServiceImplTest {
         service.buildSearchReply("哈哈哈哈哈", "user-3");
         String reply = service.buildSearchReply("百度 1", "user-3");
 
-        assertTrue(reply.contains("暂不支持百度网盘服务"));
+        assertTrue(reply.contains("百度"));
+        assertFalse(reply.contains("暂不支持百度网盘服务"));
         assertFalse(reply.contains("https://pan.baidu.com"));
         verify(panSouClient, org.mockito.Mockito.never())
                 .searchClouds(anyString(), eq(Set.of("BAIDU")), anyInt());
@@ -871,8 +874,8 @@ class QqBotServiceImplTest {
         String initial = service.buildSearchReply("没有夸克的影片", "no-quark-user");
         String requested = service.buildSearchReply("百度 1", "no-quark-user");
 
-        assertTrue(initial.contains("多次搜索后仍未找到可供选择的夸克或迅雷资源"));
-        assertTrue(requested.contains("暂不支持百度网盘服务"));
+        assertTrue(initial.contains("多次搜索后仍未找到可供选择的夸克、迅雷或百度资源"));
+        assertTrue(requested.contains("没有找到可供选择的资源"));
         assertFalse(initial.contains(baidu.getUrl()));
         assertFalse(requested.contains(baidu.getUrl()));
         verify(panSouClient, org.mockito.Mockito.never())
@@ -1427,12 +1430,15 @@ class QqBotServiceImplTest {
         List<ResourceLink> links = List.of(quark, xunlei, baidu);
         links.forEach(link -> { link.setMovieId(local.getId()); link.setSource("ADMIN_MANUAL"); });
         baidu.setSource("USER");
+        var baiduTransfers = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baiduTransfers);
+        when(baiduTransfers.validateOwnedResource(baidu)).thenReturn(true);
         when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(links);
 
         String reply = service.buildSearchReply("疯狂动物城", "qq:released-library");
 
         assertTrue(reply.contains("资源库已有资源"));
         links.forEach(link -> assertTrue(reply.contains(link.getUrl())));
+        verify(baiduTransfers).validateOwnedResource(baidu);
         assertTrue(reply.contains("发送“资源”继续"));
         assertFalse(reply.contains("请选择资源"));
         org.mockito.Mockito.verifyNoInteractions(tmdbMetadataSyncService, gyingSourceWorkflowService,
@@ -1664,6 +1670,93 @@ class QqBotServiceImplTest {
         assertTrue(reply.indexOf(torrent.getUrl()) > reply.indexOf("种子资源（"));
         assertFalse(reply.contains("原始磁力 [网盘]"));
         org.mockito.Mockito.verifyNoInteractions(resourceDiscoveryService, tmdbMetadataSyncService, panSouClient);
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void baiduFilterOnlyListsCandidatesUntilASingleResourceIsSelected(boolean cleanupEnabled) {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("baidu-filter", "百度筛选测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local));
+        when(movieService.getById(local.getId())).thenReturn(local);
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(11001L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(11001L); found.setDiscovered(1);
+        when(resourceDiscoveryService.runTask(11001L)).thenReturn(found);
+        ResourceDiscoveryResult original = discovery(11002L, local.getId(), "BAIDU", "百度筛选测试 4K", "https://pan.baidu.com/s/1SourceCase");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(original));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.automaticCleanupEnabled()).thenReturn(cleanupEnabled);
+        ResourceLink owned = link("BAIDU", original.getTitle(), "https://pan.baidu.com/s/1OwnCase?pwd=abcd");
+        owned.setSource("BAIDU_TEMP");
+        when(baidu.select(original.getId(), "web:baidu-filter")).thenReturn(
+                new BaiduTemporaryTransferService.SelectionResult(owned, "SUCCEEDED", 11003L, java.time.LocalDateTime.of(2026, 11, 9, 21, 10)));
+        String initial = service.buildSearchReply(local.getTitleCn(), "web:baidu-filter");
+        String filtered = service.buildSearchReply("百度", "web:baidu-filter");
+        assertTrue(initial.contains(original.getTitle())); assertTrue(filtered.contains(original.getTitle()));
+        assertFalse(filtered.contains(original.getOriginalUrl()));
+        verify(baidu, never()).select(any(), anyString());
+        String selected = service.buildSearchReply("1", "web:baidu-filter");
+        assertTrue(selected.contains(owned.getUrl())); assertTrue(selected.contains("11-09 21:10"));
+        assertTrue(selected.contains("及时转存到自己的网盘"));
+        assertEquals(!cleanupEnabled, selected.contains("自动清理当前关闭"));
+        assertEquals(cleanupEnabled, selected.contains("11-09 21:10 自动清理"));
+        verify(baidu).select(original.getId(), "web:baidu-filter");
+        verify(resourceHubPublishService, never()).publishDiscovery(any());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test void waitingBaiduSelectionKeepsTheSameCandidateAndDoesNotReturnTheThirdPartySource() {
+        resourceHubProperties.setEnabled(true);
+        MovieMetadata local = movie("baidu-wait", "百度等待测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        when(resourceDiscoveryService.enqueue(any())).thenReturn(task(11011L));
+        ResourceDiscoveryRunResult found = emptyDiscovery(11011L); found.setDiscovered(1); when(resourceDiscoveryService.runTask(11011L)).thenReturn(found);
+        ResourceDiscoveryResult original = discovery(11012L, local.getId(), "BAIDU", "百度等待测试 1080P", "https://pan.baidu.com/s/1waitingSource");
+        when(discoveryResultService.list(any(QueryWrapper.class))).thenReturn(List.of(original));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.select(original.getId(), "qq:baidu-wait")).thenReturn(
+                new BaiduTemporaryTransferService.SelectionResult(null, "WAITING_SHARE", 11013L, null));
+        service.buildSearchReply(local.getTitleCn(), "qq:baidu-wait");
+        for (int i = 0; i < 2; i++) {
+            String reply = service.buildSearchReply("1", "qq:baidu-wait");
+            assertTrue(reply.contains("已提交，正在确认百度转存或分享")); assertFalse(reply.contains(original.getOriginalUrl()));
+            assertFalse(reply.contains("没有找到"));
+        }
+        verify(baidu, times(2)).select(original.getId(), "qq:baidu-wait");
+        verify(resourceHubPublishService, never()).publishDiscovery(any());
+    }
+
+    @Test void normalLibraryBaiduRequiresCurrentValidationAndNeverTrustsPublishedSourceOnFailure() {
+        MovieMetadata local = movie("baidu-library", "百度本库测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink stored = link("BAIDU", "百度本库测试 全季", "https://pan.baidu.com/s/1LibraryCase");
+        stored.setId(11101L); stored.setMovieId(local.getId()); stored.setSource("GYING_PUBLISHED");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(stored));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        when(baidu.validateOwnedResource(stored)).thenReturn(true);
+        assertTrue(service.buildSearchReply(local.getTitleCn(), "web:baidu-library").contains(stored.getUrl()));
+        when(baidu.validateOwnedResource(stored)).thenThrow(new IllegalStateException("NETWORK_UNAVAILABLE"));
+        assertFalse(service.buildSearchReply(local.getTitleCn(), "web:baidu-library").contains(stored.getUrl()));
+        verify(panSouClient, never()).checkLink(stored.getUrl());
+        org.mockito.Mockito.verifyNoInteractions(quarkTransferTaskService, quarkTransferRunnerService, xunleiTransferRunnerService);
+    }
+
+    @Test void baiduShareShortCodeCaseIsPreservedWhenDeduplicating() {
+        String first = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "resourceIdentity", "BAIDU", "https://pan.baidu.com/s/1AbC");
+        String second = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "resourceIdentity", "BAIDU", "https://pan.baidu.com/s/1abc");
+        assertFalse(first.equals(second));
+    }
+
+    @Test void temporaryBaiduLinksCannotEnterTheFormalLibraryOrOwnedCandidateList() {
+        MovieMetadata local = movie("baidu-hidden", "百度临时隔离测试", 2025);
+        when(movieService.list(any(QueryWrapper.class))).thenReturn(List.of(local)); when(movieService.getById(local.getId())).thenReturn(local);
+        ResourceLink temporary = link("BAIDU", local.getTitleCn(), "https://pan.baidu.com/s/1TempHidden");
+        temporary.setId(11201L); temporary.setMovieId(local.getId()); temporary.setSource("BAIDU_TEMP");
+        when(resourceLinkService.list(any(QueryWrapper.class))).thenReturn(List.of(temporary));
+        var baidu = mock(BaiduTemporaryTransferService.class); service.configureBaiduSearch(baidu);
+        assertFalse(service.buildSearchReply(local.getTitleCn(), "web:baidu-hidden").contains(temporary.getUrl()));
+        verify(baidu, never()).validateOwnedResource(any());
     }
 
 }

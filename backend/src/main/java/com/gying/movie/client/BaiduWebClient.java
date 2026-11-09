@@ -3,6 +3,7 @@ package com.gying.movie.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
+import com.gying.movie.utils.BaiduTemporaryPaths;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -55,6 +56,13 @@ public class BaiduWebClient {
     public record TransferPlan(String sourceUrl, String code, String destination, String shareId, String fromUid,
             List<String> sourceRootFsids, List<ExpectedFile> expectedFiles) { }
     public record Submission(String remoteTaskId, String status) { }
+    /** MD5 is a bounded opaque upstream identifier; fsid and the entire tree are compared as well. */
+    public record DestinationFile(String relativePath, String fsId, long size, boolean directory, String md5) { }
+    public record DestinationEvidence(String accountUid, String destination, String directoryId, List<DestinationFile> files) {
+        public DestinationEvidence { if (files != null) files = List.copyOf(files); }
+    }
+    public record RecycleEvidence(String accountUid, String destination, String directoryId) { }
+    public enum DestinationState { MATCHING, MISSING, CHANGED }
     public record WebResponse(int status, Map<String, List<String>> headers, byte[] body) {
         @Override public String toString() { return "BaiduWebResponse[redacted]"; }
     }
@@ -163,6 +171,192 @@ public class BaiduWebClient {
         return sorted(actual).equals(sorted(plan.expectedFiles()));
     }
 
+    /** Read only, under the same account lock as transfer/share/delete. */
+    public DestinationEvidence captureDestinationEvidence(TransferPlan plan) {
+        validatePlan(plan);
+        synchronized (vault) {
+            Auth auth = currentAuth();
+            DestinationEvidence evidence = readDestinationEvidence(plan.destination(), auth);
+            if (evidence == null || !geometry(evidence).equals(sorted(plan.expectedFiles()))) {
+                throw action("DESTINATION_CHANGED", false, true, false);
+            }
+            requireAccount(currentAuth(), auth.uid());
+            return evidence;
+        }
+    }
+
+    public static boolean matchesDestinationEvidence(TransferPlan plan, DestinationEvidence evidence) {
+        try {
+            validatePlan(plan); validateEvidence(evidence);
+            return plan.destination().equals(evidence.destination()) && sorted(plan.expectedFiles()).equals(geometry(evidence));
+        } catch (RuntimeException ignored) { return false; }
+    }
+
+    /** Recovery after either delete intent only performs bounded GETs. */
+    public DestinationState inspectTemporaryDirectory(DestinationEvidence expected) {
+        requireTemporaryEvidence(expected);
+        synchronized (vault) {
+            Auth auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            return inspectTemporaryDirectory(expected, auth);
+        }
+    }
+
+    /** Null requires a complete recycle scan; a new object with the same path is never adopted. */
+    public RecycleEvidence findTemporaryRecycle(DestinationEvidence expected) {
+        requireTemporaryEvidence(expected);
+        synchronized (vault) {
+            Auth auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            if (findOwnedEntry(expected.destination(), auth) != null) throw action("TEMP_DIRECTORY_STILL_PRESENT", false, true, false);
+            return findTemporaryRecycle(expected, auth);
+        }
+    }
+
+    /** Caller must durably persist TRASH_SUBMITTING before this single POST. */
+    public void trashTemporaryDirectory(DestinationEvidence expected) {
+        requireTemporaryEvidence(expected);
+        synchronized (vault) {
+            Auth auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            if (inspectTemporaryDirectory(expected, auth) != DestinationState.MATCHING) throw action("DESTINATION_CHANGED", false, true, false);
+            // The web API accepts a path, without an atomic expected-fsid predicate. The lock and
+            // final full GET reduce this window; this is not a server-side compare-and-set.
+            auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            if (inspectTemporaryDirectory(expected, auth) != DestinationState.MATCHING) throw action("DESTINATION_CHANGED", false, true, false);
+            try {
+                json("POST", "/api/filemanager", Map.of("opera", "delete", "bdstoken", auth.bdstoken()),
+                        Map.of("filelist", encodeJson(List.of(expected.destination()))), auth.cookies(), ORIGIN + "/disk/main", true);
+                if (inspectTemporaryDirectory(expected, auth) != DestinationState.MISSING) throw action("TRASH_UNCONFIRMED", true, false, true);
+            } catch (BaiduActionException error) { throw action(error.code(), error.retryable(), error.actionRequired(), true); }
+        }
+    }
+
+    /** Caller must persist this exact recycle ID and PURGE_SUBMITTING before this single POST. */
+    public void purgeTemporaryDirectory(DestinationEvidence expected, RecycleEvidence recycle) {
+        requireRecycleEvidence(expected, recycle);
+        synchronized (vault) {
+            Auth auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            requireRecyclePresent(expected, recycle, auth);
+            auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            requireRecyclePresent(expected, recycle, auth);
+            try {
+                // Only this one directory ID is supplied. No clear/all/recycle wildcard API exists here.
+                json("POST", "/api/recycle/delete", Map.of("bdstoken", auth.bdstoken()),
+                        Map.of("fidlist", encodeJson(List.of(new BigInteger(recycle.directoryId())))), auth.cookies(), ORIGIN + "/disk/recycle", true);
+                if (!isTemporaryDirectoryPurged(expected, recycle, auth)) throw action("PURGE_UNCONFIRMED", true, false, true);
+            } catch (BaiduActionException error) { throw action(error.code(), error.retryable(), error.actionRequired(), true); }
+        }
+    }
+
+    public boolean isTemporaryDirectoryPurged(DestinationEvidence expected, RecycleEvidence recycle) {
+        requireRecycleEvidence(expected, recycle);
+        synchronized (vault) {
+            Auth auth = currentAuth(); requireAccount(auth, expected.accountUid());
+            return isTemporaryDirectoryPurged(expected, recycle, auth);
+        }
+    }
+
+    private boolean isTemporaryDirectoryPurged(DestinationEvidence expected, RecycleEvidence recycle, Auth auth) {
+        if (findOwnedEntry(expected.destination(), auth) != null) return false;
+        return findTemporaryRecycle(expected, auth) == null;
+    }
+    private void requireRecyclePresent(DestinationEvidence expected, RecycleEvidence recycle, Auth auth) {
+        if (findOwnedEntry(expected.destination(), auth) != null) throw action("TEMP_DIRECTORY_STILL_PRESENT", false, true, false);
+        if (!recycle.equals(findTemporaryRecycle(expected, auth))) throw action("RECYCLE_CHANGED", false, true, false);
+    }
+    private RecycleEvidence findTemporaryRecycle(DestinationEvidence expected, Auth auth) {
+        Set<String> ids = new LinkedHashSet<>();
+        RecycleEvidence found = null;
+        int count = 0;
+        for (int page = 1; page <= MAX_PAGES; page++) {
+            JsonNode response = json("GET", "/api/recycle/list", Map.of("num", Integer.toString(PAGE_SIZE), "page", Integer.toString(page),
+                    "bdstoken", auth.bdstoken()), null, auth.cookies(), null, false);
+            JsonNode list = response.path("list");
+            if (!list.isArray()) throw action("RECYCLE_INVALID", false, true, false);
+            for (JsonNode item : list) {
+                String id = numeric(item.path("fs_id"), "RECYCLE_INVALID");
+                if (!ids.add(id) || ++count > MAX_ITEMS) throw action("RECYCLE_SCAN_INCOMPLETE", true, false, false);
+                String path = item.path("path").asText(null);
+                if (!expected.destination().equals(path) && !expected.directoryId().equals(id)) continue;
+                if (found != null || !expected.destination().equals(path) || !expected.directoryId().equals(id)
+                        || !item.path("isdir").isIntegralNumber() || item.path("isdir").asInt() != 1
+                        || !expected.destination().substring(expected.destination().lastIndexOf('/') + 1).equals(item.path("server_filename").asText(null))) {
+                    throw action("RECYCLE_CHANGED", false, true, false);
+                }
+                // No trusted old-id/new-id mapping is documented. Changed IDs are refused.
+                found = new RecycleEvidence(auth.uid(), path, id);
+            }
+            if (list.size() < PAGE_SIZE) { requireAccount(currentAuth(), expected.accountUid()); return found; }
+        }
+        throw action("RECYCLE_SCAN_INCOMPLETE", true, false, false);
+    }
+    private DestinationState inspectTemporaryDirectory(DestinationEvidence expected, Auth auth) {
+        DestinationEvidence actual = readDestinationEvidence(expected.destination(), auth);
+        requireAccount(currentAuth(), expected.accountUid());
+        return actual == null ? DestinationState.MISSING : expected.equals(actual) ? DestinationState.MATCHING : DestinationState.CHANGED;
+    }
+    private DestinationEvidence readDestinationEvidence(String destination, Auth auth) {
+        RemoteFile directory = findOwnedEntry(destination, auth);
+        if (directory == null) return null;
+        if (!directory.directory()) throw action("DESTINATION_CHANGED", false, true, false);
+        List<DestinationFile> files = new ArrayList<>();
+        Set<String> ids = new LinkedHashSet<>(); ids.add(directory.fsid());
+        for (RemoteFile root : listOwned(destination, auth, false)) walkDestination(auth, root, root.name(), files, ids, 0);
+        RemoteFile finalDirectory = findOwnedEntry(destination, auth);
+        if (finalDirectory == null || !finalDirectory.directory() || !directory.fsid().equals(finalDirectory.fsid())) throw action("DESTINATION_CHANGED", false, true, false);
+        return new DestinationEvidence(auth.uid(), destination, directory.fsid(), files.stream().sorted(Comparator.comparing(DestinationFile::relativePath)).toList());
+    }
+    private void walkDestination(Auth auth, RemoteFile file, String relative, List<DestinationFile> files, Set<String> ids, int depth) {
+        if (depth > MAX_DEPTH || files.size() >= MAX_ITEMS || !ids.add(file.fsid())
+                || files.stream().anyMatch(f -> f.relativePath().equals(relative))) throw action("TREE_AMBIGUOUS", false, true, false);
+        String digest = file.md5();
+        if (digest != null && (digest.length() > 256 || hasControl(digest))) throw action("DESTINATION_INVALID", false, true, false);
+        files.add(new DestinationFile(relative, file.fsid(), file.size(), file.directory(), digest));
+        if (file.directory()) for (RemoteFile child : listOwned(file.path(), auth, false)) {
+            walkDestination(auth, child, relative + "/" + child.name(), files, ids, depth + 1);
+        }
+    }
+    private static List<ExpectedFile> geometry(DestinationEvidence evidence) {
+        return sorted(evidence.files().stream().map(f -> new ExpectedFile(f.relativePath(), f.size(), f.directory())).toList());
+    }
+    private static void validateEvidence(DestinationEvidence evidence) {
+        if (evidence == null || evidence.accountUid() == null || !evidence.accountUid().matches("[0-9]{1,30}")
+                || evidence.directoryId() == null || !evidence.directoryId().matches("[1-9][0-9]{0,29}") || evidence.files() == null
+                || evidence.files().isEmpty() || evidence.files().size() > MAX_ITEMS) throw action("CLEANUP_EVIDENCE_INVALID", false, true, false);
+        safeDirectory(evidence.destination());
+        Set<String> ids = new LinkedHashSet<>(); ids.add(evidence.directoryId());
+        Map<String, DestinationFile> paths = new LinkedHashMap<>();
+        for (DestinationFile file : evidence.files()) {
+            if (file == null || file.fsId() == null || !file.fsId().matches("[1-9][0-9]{0,29}") || !ids.add(file.fsId())
+                    || file.relativePath() == null || file.relativePath().startsWith("/") || file.size() < 0 || file.directory() && file.size() != 0
+                    || file.md5() != null && (file.md5().length() > 256 || hasControl(file.md5())) || paths.putIfAbsent(file.relativePath(), file) != null) {
+                throw action("CLEANUP_EVIDENCE_INVALID", false, true, false);
+            }
+            for (String segment : file.relativePath().split("/", -1)) safeName(segment);
+            if (file.relativePath().split("/").length > MAX_DEPTH + 1 || file.relativePath().length() > 2000) throw action("CLEANUP_EVIDENCE_INVALID", false, true, false);
+        }
+        for (DestinationFile file : evidence.files()) {
+            int slash = file.relativePath().lastIndexOf('/');
+            if (slash >= 0) { DestinationFile parent = paths.get(file.relativePath().substring(0, slash)); if (parent == null || !parent.directory()) throw action("CLEANUP_EVIDENCE_INVALID", false, true, false); }
+        }
+        if (!evidence.files().equals(evidence.files().stream().sorted(Comparator.comparing(DestinationFile::relativePath)).toList())) throw action("CLEANUP_EVIDENCE_INVALID", false, true, false);
+    }
+    private void requireTemporaryEvidence(DestinationEvidence expected) {
+        validateEvidence(expected);
+        try { BaiduTemporaryPaths.requireTarget(expected.destination()); }
+        catch (IllegalArgumentException ignored) { throw action("TEMP_PATH_INVALID", false, true, false); }
+        String archive = properties.getBaidu().getSavePath();
+        if (archive != null && !archive.isBlank() && (expected.destination().equals(archive) || expected.destination().startsWith(archive + "/"))) {
+            throw action("TEMP_PATH_INVALID", false, true, false);
+        }
+    }
+    private void requireRecycleEvidence(DestinationEvidence expected, RecycleEvidence recycle) {
+        requireTemporaryEvidence(expected);
+        if (recycle == null || !expected.accountUid().equals(recycle.accountUid()) || !expected.destination().equals(recycle.destination())
+                || !expected.directoryId().equals(recycle.directoryId())) throw action("RECYCLE_CHANGED", false, true, false);
+    }
+    private static void requireAccount(Auth auth, String expectedUid) {
+        if (!auth.uid().equals(expectedUid)) throw action("ACCOUNT_CHANGED", false, true, false);
+    }
+
     /** Null only after a complete bounded own-record search proves no active matching share. */
     public String findOwnShare(String path) {
         String destination = safeDirectory(path);
@@ -251,14 +445,24 @@ public class BaiduWebClient {
     }
 
     public boolean validateOwnShare(String url) { return validateOwnShare(url, null); }
-    private boolean validateOwnShare(String url, String expectedShareId) {
+    public boolean validateOwnVideoShare(String url) { return validateOwnShareContent(url, null, true); }
+    private boolean validateOwnShare(String url, String expectedShareId) { return validateOwnShareContent(url, expectedShareId, false); }
+    private boolean validateOwnShareContent(String url, String expectedShareId, boolean requireVideo) {
+        synchronized (vault) { return validateOwnShareContentLocked(url, expectedShareId, requireVideo); }
+    }
+    private boolean validateOwnShareContentLocked(String url, String expectedShareId, boolean requireVideo) {
         String normalized = normalizedShareUrl(url, null);
         Auth auth = currentAuth();
         try {
             ShareContext share = openShare(normalized, extractShareCode(normalized), auth);
             if (!auth.uid().equals(share.fromUid())) return false;
             if (expectedShareId != null && !expectedShareId.equals(share.shareId())) throw action("SHARE_RECORD_INVALID", false, true, false);
-            return !listShared(share, null, auth).isEmpty();
+            List<RemoteFile> roots = listShared(share, null, auth);
+            if (!requireVideo) { requireAccount(currentAuth(), auth.uid()); return !roots.isEmpty(); }
+            List<ExpectedFile> files = new ArrayList<>();
+            for (RemoteFile root : roots) walkShared(share, auth, root, root.name(), files, new LinkedHashSet<>(), 0);
+            requireAccount(currentAuth(), auth.uid());
+            return files.stream().anyMatch(f -> !f.directory() && isVideo(f.relativePath()));
         } catch (BaiduActionException error) {
             if (Set.of("SHARE_EXPIRED", "EXTRACTION_CODE_INVALID", "SOURCE_EMPTY").contains(error.code())) return false;
             throw error;

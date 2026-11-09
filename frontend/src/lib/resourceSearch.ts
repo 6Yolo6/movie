@@ -25,7 +25,7 @@ export function safeSearchLinks(value: unknown): SearchLink[] {
             if (!['https:', 'http:', 'magnet:'].includes(url.protocol)) return [];
             seen.add(item.url);
             const provider = url.hostname === 'pan.quark.cn' ? '夸克分享'
-                : url.hostname === 'pan.xunlei.com' ? '迅雷分享' : url.protocol === 'magnet:' ? '磁力链接' : '资源链接';
+                : url.hostname === 'pan.xunlei.com' ? '迅雷分享' : url.hostname === 'pan.baidu.com' ? '百度网盘分享' : url.protocol === 'magnet:' ? '磁力链接' : '资源链接';
             const name = typeof item.name === 'string' && !/^资源链接\s*\d+$/.test(item.name)
                 ? item.name.slice(0, 160) : provider;
             const type: SearchLinkType = url.protocol === 'magnet:' ? 'MAGNET'

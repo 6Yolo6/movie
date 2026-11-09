@@ -26,6 +26,7 @@ import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.service.IXunleiTransferTaskService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.math.BigDecimal;
@@ -216,7 +217,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         String normalizedProvider = discovery == null || !hasText(discovery.getProvider())
                 ? ""
                 : discovery.getProvider().trim().toUpperCase();
-        if (discovery == null || !hasText(discovery.getMovieId())
+        if (discovery == null || BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                || !hasText(discovery.getMovieId())
                 || !hasText(discovery.getOriginalUrl())
                 || !resourceHubProperties.isDriveShareTransferEnabled(normalizedProvider)) {
             return false;
@@ -257,9 +259,9 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         }
         if ("BAIDU".equals(provider)) {
             if (baiduTransferTaskService == null) return false;
-            BaiduTransferTask existing = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+            BaiduTransferTask existing = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                     .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash).last("LIMIT 1"), false);
-            if (existing != null) return true;
+            if (existing != null) return BaiduTemporaryScope.isPermanent(existing);
             return saveBaiduTask(discovery, urlHash, now);
         }
         if (!"QUARK".equals(provider)) return false;
@@ -297,6 +299,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         }
         int effectiveLimit = Math.min(Math.max(limit, 1), 200);
         List<ResourceDiscoveryResult> candidates = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .eq("status", "DISCOVERED")
                 .isNull("resource_link_id")
                 .in("provider", List.of("QUARK", "XUNLEI", "BAIDU"))
@@ -309,7 +312,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         int created = 0;
         Set<String> scheduledMovies = new LinkedHashSet<>();
         for (ResourceDiscoveryResult discovery : candidates) {
-            if (discovery == null || discovery.getId() == null || !hasText(discovery.getMovieId())
+            if (discovery == null || BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                    || discovery.getId() == null || !hasText(discovery.getMovieId())
                     || !hasText(discovery.getOriginalUrl())) {
                 continue;
             }
@@ -351,7 +355,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
                                             .eq("original_url_hash", urlHash)))) > 0;
         }
         if ("BAIDU".equals(provider)) {
-            return baiduTransferTaskService != null && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>()
+            return baiduTransferTaskService != null && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                     .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash)) > 0;
         }
         if (!"QUARK".equals(provider)) return false;
@@ -363,6 +367,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
     private boolean hasMovieProviderResource(String movieId, String provider) {
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("provider", provider)
                 .eq("type", "DISK")
@@ -497,7 +502,8 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             DiscoveredResource resource,
             String urlHash,
             LocalDateTime now) {
-        if (!resourceHubProperties.isDriveShareTransferEnabled(resource.getProvider())
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)
+                || !resourceHubProperties.isDriveShareTransferEnabled(resource.getProvider())
                 || hasMovieTransferTask(discovery.getMovieId(), resource.getProvider())) {
             return false;
         }
@@ -528,7 +534,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
         if ("XUNLEI".equalsIgnoreCase(provider) && xunleiTransferTaskService != null) return xunleiTransferTaskService.count(new QueryWrapper<XunleiTransferTask>()
                 .eq("movie_id", movieId).in("status", List.of("PENDING", "RUNNING", "SUBMITTED", "WAITING_SHARE"))) > 0;
         if ("BAIDU".equalsIgnoreCase(provider)) return baiduTransferTaskService != null
-                && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>().eq("movie_id", movieId)
+                && baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("movie_id", movieId)
                     .in("status", List.of("PENDING", "RUNNING", "WAITING_TRANSFER", "WAITING_SHARE", "ACTION_REQUIRED", "REVIEW_REQUIRED"))) > 0;
         if (!"QUARK".equalsIgnoreCase(provider)) return false;
         return quarkTransferTaskService.count(new QueryWrapper<QuarkTransferTask>()
@@ -538,21 +544,24 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
 
     private boolean saveBaiduTask(ResourceDiscoveryResult discovery, String urlHash, LocalDateTime now) {
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) return false;
         BaiduWebClient.normalizeShareUrl(discovery.getOriginalUrl(), discovery.getCode());
         var transfer = new BaiduTransferTask();
+        transfer.setScopeKey(BaiduTemporaryScope.PERMANENT);
         transfer.setMovieId(discovery.getMovieId()); transfer.setDiscoveryResultId(discovery.getId());
         transfer.setOriginalUrl(discovery.getOriginalUrl()); transfer.setOriginalUrlHash(urlHash);
         transfer.setStatus("PENDING"); transfer.setPhase("NEW"); transfer.setAttempts(0);
         transfer.setCreatedAt(now); transfer.setUpdatedAt(now);
         try { return baiduTransferTaskService.save(transfer); }
         catch (org.springframework.dao.DuplicateKeyException raced) {
-            return baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>()
+            return baiduTransferTaskService.count(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                     .eq("movie_id", discovery.getMovieId()).eq("original_url_hash", urlHash)) > 0;
         }
     }
 
     private boolean isDuplicate(String movieId, String urlHash, String url) {
         long existingLinks = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
                 .isNull("deleted_at")
@@ -561,6 +570,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
             return true;
         }
         return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url", url)
                 .isNull("deleted_at")
@@ -578,6 +588,7 @@ public class ResourceDiscoveryServiceImpl implements IResourceDiscoveryService {
 
     private void refreshResourceStatus(MovieMetadata movie, LocalDateTime now) {
         long activeResources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movie.getId())
                 .eq("status", "ACTIVE")
                 .eq("type", "DISK")

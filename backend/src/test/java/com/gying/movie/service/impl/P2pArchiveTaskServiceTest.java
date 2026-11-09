@@ -1,5 +1,8 @@
 package com.gying.movie.service.impl;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -807,6 +810,32 @@ class P2pArchiveTaskServiceTest {
         verify(cloud, never()).ensureFolder(anyString(), any(), anyString());
         verify(cloud, never()).findUploadedFile(anyString(), anyString(), any());
         verify(cloud, never()).upload(anyString(), anyString(), any()); verifyNoInteractions(baidu);
+    }
+
+
+    @Test void baiduPreferredFolderRequiresPermanentScopeAndStillRejectsQqMarkers() {
+        properties.getBaidu().setSavePath("/Baidu Root");
+        var movie = new MovieMetadata(); movie.setId("movie1"); movie.setCategory("mv");
+        var temporary = new BaiduTransferTask(); temporary.setScopeKey(TEMP_SCOPE); temporary.setSavedPath("/Baidu Root/mv/Temporary");
+        var unknown = new BaiduTransferTask(); unknown.setScopeKey("UNKNOWN_SCOPE"); unknown.setSavedPath("/Baidu Root/mv/Unknown");
+        var marked = new BaiduTransferTask(); marked.setSavedPath("/Baidu Root/mv/Marked");
+        marked.setRequestPayload(com.gying.movie.utils.QqTransferMarker.payload(marked.getSavedPath()));
+        var permanent = new BaiduTransferTask(); permanent.setSavedPath("/Baidu Root/mv/Permanent");
+        when(baidu.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenAnswer(call -> {
+            permanentTaskQuery(call.getArgument(0)); return List.of(temporary, unknown, marked, permanent);
+        });
+        String preferred = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "preferredLocation", "BAIDU", movie);
+        assertEquals(permanent.getSavedPath(), preferred); verifyNoInteractions(cloud);
+    }
+
+    @Test void permanentBaiduScopeDoesNotBypassCategoryRootValidation() {
+        properties.getBaidu().setSavePath("/Baidu Root");
+        var movie = new MovieMetadata(); movie.setId("movie1"); movie.setCategory("mv");
+        var differentCategory = new BaiduTransferTask(); differentCategory.setSavedPath("/Baidu Root/tv/Other");
+        var traversal = new BaiduTransferTask(); traversal.setSavedPath("/Baidu Root/mv/../tv/Other");
+        when(baidu.list(any(com.baomidou.mybatisplus.core.conditions.Wrapper.class))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return List.of(differentCategory, traversal); });
+        String preferred = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "preferredLocation", "BAIDU", movie);
+        assertNull(preferred); verifyNoInteractions(cloud);
     }
 
 }

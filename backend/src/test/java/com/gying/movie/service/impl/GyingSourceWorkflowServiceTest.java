@@ -1,5 +1,8 @@
 package com.gying.movie.service.impl;
 
+import static com.gying.movie.service.impl.BaiduScopeTestAssertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1525,6 +1528,71 @@ class GyingSourceWorkflowServiceTest {
         when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(knownSeed())));
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.collectMovieP2pResources("movie1", 100L));
         verifyNoInteractions(resourceLinkService, discoveryService, transferTaskService, transferRunnerService, publishService);
+    }
+
+
+    @Test void temporaryBaiduResourcesCannotBePublishedToGyingThroughEitherEntry() {
+        properties.getBaidu().setGyingPublishEnabled(true);
+        var temporary = new ResourceLink(); temporary.setId(88L); temporary.setMovieId("movie1");
+        temporary.setSource("BAIDU_TEMP"); temporary.setSourceRef(TEMP_SCOPE); temporary.setType("DISK"); temporary.setProvider("BAIDU");
+        temporary.setUrl("https://pan.baidu.com/s/1temp");
+        assertFalse(service.publishResourceToGying(temporary));
+        assertThrows(IllegalStateException.class, () -> org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                service, "publishLocalResource", "mv", "MID1", new MovieMetadata(), temporary));
+        verifyNoInteractions(gyingSourceClient);
+        verify(sourceIdentityService, never()).getOne(any(), anyBoolean());
+        assertEquals(TEMP_SCOPE, temporary.getSourceRef());
+    }
+
+    @Test void gyingLocalPublicationFallbacksCannotSelectOrRepairTemporaryLinks() {
+        var temporary = new ResourceLink(); temporary.setId(88L); temporary.setSource("BAIDU_TEMP"); temporary.setSourceRef(TEMP_SCOPE);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            permanentResourceQuery(call.getArgument(0)); return temporary;
+        });
+        Object local = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findPublishableLocalResource", "movie1", "BAIDU");
+        Object bySource = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findResourceBySourceIds", "movie1", List.of(TEMP_SCOPE));
+        Object published = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "findLocalPublishedResource",
+                Map.of("source_id", "SOURCE1", "url", "https://pan.baidu.com/s/1temp"));
+        assertNull(local); assertNull(bySource); assertNull(published);
+        verify(resourceLinkService, times(4)).getOne(any(Wrapper.class), eq(false));
+        verify(resourceLinkService, never()).updateById(any()); verifyNoInteractions(gyingSourceClient);
+    }
+
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void gyingBaiduTransferKeepsCloneHistoryAndPersistsItsOwnPermanentScope(boolean insertRace) {
+        var tasks = mock(com.gying.movie.service.IBaiduTransferTaskService.class);
+        var runner = mock(com.gying.movie.service.IBaiduTransferRunnerService.class);
+        var client = mock(com.gying.movie.client.BaiduWebClient.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferTaskService", tasks);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduTransferRunnerService", runner);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "baiduWebClient", client);
+        var movie = new MovieMetadata(); movie.setId("movie1"); movie.setTitleEn("Known movie"); movie.setCategory("mv");
+        var clone = new com.gying.movie.entity.ResourceDiscoveryResult(); clone.setId(990L); clone.setMovieId("movie1");
+        clone.setProvider("BAIDU"); clone.setSource("QQ_BOT"); clone.setSourceRef("BAIDU_TEMP:" + TEMP_SCOPE);
+        var persistedDiscovery = new java.util.concurrent.atomic.AtomicReference<com.gying.movie.entity.ResourceDiscoveryResult>();
+        var persistedTask = new java.util.concurrent.atomic.AtomicReference<com.gying.movie.entity.BaiduTransferTask>();
+        when(discoveryService.getOne(any(), eq(false))).thenAnswer(call -> { permanentDiscoveryQuery(call.getArgument(0)); return clone; });
+        when(discoveryService.save(any())).thenAnswer(call -> {
+            com.gying.movie.entity.ResourceDiscoveryResult row = call.getArgument(0); row.setId(991L); persistedDiscovery.set(row); return true;
+        });
+        when(discoveryService.getById(991L)).thenAnswer(call -> persistedDiscovery.get());
+        when(tasks.getOne(any(), eq(false))).thenAnswer(call -> { permanentTaskQuery(call.getArgument(0)); return persistedTask.get(); });
+        when(tasks.save(any())).thenAnswer(call -> {
+            com.gying.movie.entity.BaiduTransferTask task = call.getArgument(0); task.setId(992L); persistedTask.set(task);
+            if (insertRace) throw new org.springframework.dao.DuplicateKeyException("fixture race"); return true;
+        });
+        when(runner.submitOne(992L)).thenAnswer(call -> {
+            var task = persistedTask.get(); task.setStatus("SUCCEEDED"); task.setShareUrl("https://pan.baidu.com/s/1owned");
+            return new QuarkTransferRunResult();
+        });
+        when(client.validateOwnShare("https://pan.baidu.com/s/1owned")).thenReturn(true);
+        Object outcome = org.springframework.test.util.ReflectionTestUtils.invokeMethod(service, "transferBaiduCandidate", movie,
+                Map.of("provider", "BAIDU", "title", "Known movie", "source_id", "SOURCE1"), "https://pan.baidu.com/s/1source");
+        assertNotNull(outcome); assertEquals("PERMANENT", persistedTask.get().getScopeKey());
+        assertEquals(991L, persistedTask.get().getDiscoveryResultId()); assertEquals("SOURCE1", persistedDiscovery.get().getSourceRef());
+        assertEquals("QQ_BOT", clone.getSource()); assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
+        verify(discoveryService, never()).updateById(any()); verify(runner).submitOne(992L);
+        verifyNoInteractions(gyingSourceClient, transferRunnerService, xunleiTransferRunnerService);
     }
 
 }

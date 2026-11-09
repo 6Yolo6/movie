@@ -50,6 +50,7 @@ import com.gying.movie.service.ITmdbMetadataSyncService;
 import com.gying.movie.service.impl.GyingSourceWorkflowService;
 import com.gying.movie.utils.AuthHelper;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.util.Locale;
@@ -193,8 +194,10 @@ public class ResourceHubAdminController {
         result.put("worker", workerStatusMap());
         result.put("taskStatusCounts", taskService.countByStatus());
         result.put("discoveredCount", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .eq("status", "DISCOVERED")));
         result.put("savedDiscoveryCount", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .eq("status", "DISCOVERED")
                 .isNotNull("share_url")
                 .isNull("resource_link_id")));
@@ -352,7 +355,8 @@ public class ResourceHubAdminController {
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
-        QueryWrapper<ResourceDiscoveryResult> query = new QueryWrapper<>();
+        QueryWrapper<ResourceDiscoveryResult> query = new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX));
         if (hasText(movieId)) {
             query.eq("movie_id", movieId.trim());
         }
@@ -377,6 +381,8 @@ public class ResourceHubAdminController {
         Page<ResourceDiscoveryResult> result = discoveryResultService.page(
                 new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
                 query);
+        result.setRecords(result.getRecords().stream()
+                .filter(discovery -> !BaiduTemporaryScope.isTemporaryDiscovery(discovery)).toList());
         return ApiResponse.ok(result);
     }
 
@@ -393,6 +399,7 @@ public class ResourceHubAdminController {
             @PathVariable Long discoveryResultId,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         return ApiResponse.ok(resourceHubPublishService.publishDiscovery(discoveryResultId));
     }
 
@@ -475,18 +482,18 @@ public class ResourceHubAdminController {
     }
 
     private Map<String, Object> queueDiscoveryForQqChannel(Long discoveryResultId, boolean runNow) {
-        ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryResultId);
+        ResourceDiscoveryResult discovery = requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         if (discovery == null) {
             throw new IllegalArgumentException("Discovery result not found");
         }
         if (discovery.getResourceLinkId() == null) {
             resourceHubPublishService.publishDiscovery(discoveryResultId);
-            discovery = discoveryResultService.getById(discoveryResultId);
+            discovery = requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         }
         if (discovery == null || discovery.getResourceLinkId() == null) {
             throw new IllegalStateException("Discovery result has not produced a publishable resource link");
         }
-        ResourceLink resource = resourceLinkService.getById(discovery.getResourceLinkId());
+        ResourceLink resource = permanentResource(resourceLinkService.getById(discovery.getResourceLinkId()));
         if (resource == null || !"ACTIVE".equalsIgnoreCase(resource.getStatus())) {
             throw new IllegalStateException("Resource link is not active");
         }
@@ -607,7 +614,8 @@ public class ResourceHubAdminController {
         authHelper.requireAdmin(token);
         if (baiduTransferTaskService == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
         var result = baiduTransferTaskService.page(new Page<>(Math.max(page, 1), Math.min(Math.max(size, 1), 100)),
-                new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().orderByDesc("updated_at", "id"));
+                new QueryWrapper<com.gying.movie.entity.BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT).orderByDesc("updated_at", "id"));
+        result.setRecords(result.getRecords().stream().filter(BaiduTemporaryScope::isPermanent).toList());
         // The task payload contains source provenance, not account sessions. Leases are internal.
         result.getRecords().forEach(task -> { task.setLeaseOwner(null); task.setResponsePayload(null); task.setRequestPayload(null); });
         return ApiResponse.ok(result);
@@ -617,8 +625,15 @@ public class ResourceHubAdminController {
     public ApiResponse<QuarkTransferRunResult> submitBaiduTransfer(@PathVariable Long taskId,
             @RequestHeader(value = "Authorization", required = false) String token) {
         authHelper.requireAdmin(token);
+        if (baiduTransferRunnerService == null || baiduTransferTaskService == null) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", taskId), false);
+        if (!BaiduTemporaryScope.isPermanent(task)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "BAIDU_TEMPORARY_TASK_REQUIRES_DEDICATED_RECOVERY");
+        }
         resourceHubConfigService.reload();
-        if (baiduTransferRunnerService == null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
         return ApiResponse.ok(baiduTransferRunnerService.submitOne(taskId));
     }
 
@@ -860,11 +875,13 @@ public class ResourceHubAdminController {
 
             List<ResourceDiscoveryResult> rows = discoveryResultService.list(
                     new QueryWrapper<ResourceDiscoveryResult>()
+                            .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                             .eq("task_id", task.getId())
                             .eq("status", "DISCOVERED")
                             .orderByDesc("confidence")
                             .orderByAsc("id"));
             for (ResourceDiscoveryResult row : rows) {
+                if (BaiduTemporaryScope.isTemporaryDiscovery(row)) continue;
                 if (!resourceHubProperties.isDriveShareTransferEnabled(row.getProvider())) continue;
                 DiscoveryTransfer attempt = submitDiscoveryTransfer(row);
                 QuarkTransferRunResult transferResult = attempt.result();
@@ -941,8 +958,28 @@ public class ResourceHubAdminController {
         return transfer;
     }
 
+    private boolean isTemporaryResource(ResourceLink resource) {
+        return resource != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(resource.getSource());
+    }
+
+    private ResourceLink permanentResource(ResourceLink resource) {
+        return isTemporaryResource(resource) ? null : resource;
+    }
+
+    private ResourceDiscoveryResult permanentDiscovery(ResourceDiscoveryResult discovery) {
+        return BaiduTemporaryScope.isTemporaryDiscovery(discovery) ? null : discovery;
+    }
+
+    private ResourceDiscoveryResult requirePermanentDiscovery(ResourceDiscoveryResult discovery) {
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "BAIDU_TEMPORARY_DISCOVERY_REQUIRES_DEDICATED_RECOVERY");
+        }
+        return discovery;
+    }
+
     private void requirePublishedResource(String movieId) {
         long count = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("status", "ACTIVE")
                 .eq("type", "DISK")
@@ -963,7 +1000,7 @@ public class ResourceHubAdminController {
     }
 
     private Map<String, Object> retryShareAndPublishOne(Long discoveryResultId) {
-        ResourceDiscoveryResult discovery = discoveryResultService.getById(discoveryResultId);
+        ResourceDiscoveryResult discovery = requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         if (discovery == null) {
             throw new IllegalArgumentException("Discovery result not found: " + discoveryResultId);
         }
@@ -1071,9 +1108,9 @@ public class ResourceHubAdminController {
                     : publishResult.getErrors().get(0));
         }
         requirePublishedResource(discovery.getMovieId());
-        ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryResultId);
+        ResourceDiscoveryResult refreshed = requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         if (refreshed != null && refreshed.getResourceLinkId() != null && gyingSourceWorkflowService != null) {
-            ResourceLink link = resourceLinkService.getById(refreshed.getResourceLinkId());
+            ResourceLink link = permanentResource(resourceLinkService.getById(refreshed.getResourceLinkId()));
             result.put("gyingPublished", link != null && gyingSourceWorkflowService.publishResourceToGying(link));
         }
         return result;
@@ -1092,9 +1129,9 @@ public class ResourceHubAdminController {
                     ? "Discovery publish failed" : publishResult.getErrors().get(0));
         }
         requirePublishedResource(discovery.getMovieId());
-        ResourceDiscoveryResult refreshed = discoveryResultService.getById(discoveryResultId);
+        ResourceDiscoveryResult refreshed = requirePermanentDiscovery(discoveryResultService.getById(discoveryResultId));
         if (refreshed != null && refreshed.getResourceLinkId() != null && gyingSourceWorkflowService != null) {
-            ResourceLink link = resourceLinkService.getById(refreshed.getResourceLinkId());
+            ResourceLink link = permanentResource(resourceLinkService.getById(refreshed.getResourceLinkId()));
             result.put("gyingPublished", link != null && gyingSourceWorkflowService.publishResourceToGying(link));
         }
         return result;
@@ -1136,10 +1173,12 @@ public class ResourceHubAdminController {
 
         List<ResourceDiscoveryResult> rediscovered = discoveryResultService.list(
                 new QueryWrapper<ResourceDiscoveryResult>()
+                        .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                         .eq("task_id", task.getId())
                         .eq("status", "DISCOVERED")
                         .orderByDesc("confidence"));
         for (ResourceDiscoveryResult candidate : rediscovered) {
+            if (BaiduTemporaryScope.isTemporaryDiscovery(candidate)) continue;
             if (!resourceHubProperties.isDriveShareTransferEnabled(candidate.getProvider())) continue;
             DiscoveryTransfer attempt = submitDiscoveryTransfer(candidate);
             if (attempt.result().getFailed() > 0 || !attempt.hasOwnShare()) continue;
@@ -1165,6 +1204,7 @@ public class ResourceHubAdminController {
     private record DiscoveryTransfer(QuarkTransferRunResult result, boolean hasOwnShare) {}
 
     private DiscoveryTransfer submitDiscoveryTransfer(ResourceDiscoveryResult discovery) {
+        requirePermanentDiscovery(discovery);
         if (!resourceHubProperties.isDriveShareTransferEnabled(discovery.getProvider())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "该网盘尚未接入或转存已关闭");
         }
@@ -1180,14 +1220,16 @@ public class ResourceHubAdminController {
                     || !resourceDiscoveryService.ensureTransferTask(discovery.getId())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存任务未准备");
             }
-            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                     .eq("movie_id", discovery.getMovieId())
                     .eq("original_url_hash", firstText(discovery.getOriginalUrlHash(), ResourceHubHashUtils.sha256(discovery.getOriginalUrl())))
                     .last("LIMIT 1"), false);
-            if (task == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存任务未准备");
+            if (!BaiduTemporaryScope.isPermanent(task)) throw new ResponseStatusException(HttpStatus.CONFLICT, "百度转存任务未准备");
             var result = baiduTransferRunnerService.submitOne(task.getId());
-            task = baiduTransferTaskService.getById(task.getId());
-            return new DiscoveryTransfer(result, task != null && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl()));
+            task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+                    .eq("scope_key", BaiduTemporaryScope.PERMANENT).eq("id", task.getId()), false);
+            return new DiscoveryTransfer(result, BaiduTemporaryScope.isPermanent(task)
+                    && "SUCCEEDED".equals(task.getStatus()) && hasText(task.getShareUrl()));
         }
         if (!"QUARK".equalsIgnoreCase(discovery.getProvider())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "网盘类型不支持");
@@ -1203,6 +1245,7 @@ public class ResourceHubAdminController {
         int safeLimit = Math.min(Math.max(limit, 1), 5000);
         List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(
                 new QueryWrapper<ResourceDiscoveryResult>()
+                        .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                         .in("status", List.of("IGNORED", "DISCOVERED"))
                         .orderByDesc("updated_at")
                         .last("LIMIT " + safeLimit));
@@ -1213,6 +1256,7 @@ public class ResourceHubAdminController {
         int unchanged = 0;
         LocalDateTime now = LocalDateTime.now();
         for (ResourceDiscoveryResult discovery : discoveries) {
+            if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) continue;
             boolean titleMismatch = "Resource title does not match movie title".equals(discovery.getFailureReason());
             boolean taskConflict = "Movie already has a Quark transfer task".equals(discovery.getFailureReason());
             if ("IGNORED".equalsIgnoreCase(discovery.getStatus()) && (titleMismatch || taskConflict)) {
@@ -1381,6 +1425,7 @@ public class ResourceHubAdminController {
             }
             candidates++;
             long resources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("movie_id", tmdbMovie.getId())
                     .ne("status", "DELETED"));
             Map<String, Object> item = new LinkedHashMap<>();
@@ -1418,6 +1463,7 @@ public class ResourceHubAdminController {
         authHelper.requireAdmin(token);
         int safeLimit = Math.min(Math.max(limit, 1), 500);
         List<ResourceLink> resources = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("source", "RESOURCE_HUB")
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at")
@@ -1427,16 +1473,18 @@ public class ResourceHubAdminController {
         List<Map<String, Object>> items = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         for (ResourceLink resource : resources) {
+            if (isTemporaryResource(resource)) continue;
             MovieMetadata movie = movieService.getById(resource.getMovieId());
             if (movie == null || ResourceTitleMatcher.isRelevant(movie, resource.getName(), null)) {
                 continue;
             }
-            ResourceDiscoveryResult discovery = discoveryResultService.getOne(
+            ResourceDiscoveryResult discovery = permanentDiscovery(discoveryResultService.getOne(
                     new QueryWrapper<ResourceDiscoveryResult>()
+                            .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                             .eq("resource_link_id", resource.getId())
                             .orderByDesc("updated_at")
                             .last("LIMIT 1"),
-                    false);
+                    false));
             QuarkTransferTask transfer = discovery == null ? null : quarkTransferTaskService.getOne(
                     new QueryWrapper<QuarkTransferTask>()
                             .eq("discovery_result_id", discovery.getId())
@@ -1542,13 +1590,17 @@ public class ResourceHubAdminController {
     }
 
     private void moveMovieReferences(String fromMovieId, String toMovieId) {
-        List<ResourceLink> resources = resourceLinkService.list(new QueryWrapper<ResourceLink>().eq("movie_id", fromMovieId));
+        List<ResourceLink> resources = resourceLinkService.list(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE)).eq("movie_id", fromMovieId));
         for (ResourceLink resource : resources) {
+            if (isTemporaryResource(resource)) continue;
             resource.setMovieId(toMovieId);
             resourceLinkService.updateById(resource);
         }
-        List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>().eq("movie_id", fromMovieId));
+        List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX)).eq("movie_id", fromMovieId));
         for (ResourceDiscoveryResult discovery : discoveries) {
+            if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) continue;
             discovery.setMovieId(toMovieId);
             discoveryResultService.updateById(discovery);
         }
@@ -1586,6 +1638,7 @@ public class ResourceHubAdminController {
             return;
         }
         long activeResources = resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movie.getId())
                 .eq("status", "ACTIVE")
                 .eq("type", "DISK")
@@ -1735,11 +1788,14 @@ public class ResourceHubAdminController {
                 .eq("status", "FAILED")
                 .ge("created_at", since)));
         result.put("discoveriesLast24Hours", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .ge("created_at", since)));
         result.put("savedDiscoveriesLast24Hours", discoveryResultService.count(new QueryWrapper<ResourceDiscoveryResult>()
+                .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                 .eq("status", "SAVED")
                 .ge("updated_at", since)));
         result.put("resourcesSavedLast24Hours", resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("source", "RESOURCE_HUB")
                 .eq("status", "ACTIVE")
                 .isNull("deleted_at")

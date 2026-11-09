@@ -24,7 +24,7 @@ RUN_LABEL = 'com.gying.fixture.run'
 KIND = 'query-boundaries-mysql'
 MYSQL_HOSTNAME = 'gying-query-fixture'
 IMAGES = {'mysql': 'mysql:8.0', 'maven': 'maven:3.9-eclipse-temurin-17'}
-REQUIRED_TESTS = {'QueryBoundaryMySqlTest': 7, 'MonitoringServiceMySqlTest': 7, 'BaiduTransferTaskMySqlTest': 8, 'BaiduBackfillTaskStoreMySqlTest': 19}
+REQUIRED_TESTS = {'QueryBoundaryMySqlTest': 7, 'MonitoringServiceMySqlTest': 7, 'BaiduTransferTaskMySqlTest': 11, 'BaiduBackfillTaskStoreMySqlTest': 19, 'BaiduTemporaryCleanupMySqlTest': 9, 'BaiduTemporaryTransferMySqlTest': 6}
 INSPECT = ('{"id":{{json .Id}},"labels":{{json .Config.Labels}},'
            '"network":{{json .HostConfig.NetworkMode}},"ports":{{json .HostConfig.PortBindings}},'
            '"mounts":{{json .Mounts}},"tmpfs":{{json .HostConfig.Tmpfs}},'
@@ -171,6 +171,7 @@ def main():
     database = 'query_boundary_fixture_' + run_id
     monitoring = 'monitoring_fixture_' + str(int(run_id, 16))
     baidu = 'baidu_transfer_fixture_' + run_id
+    baidu_cleanup = 'baidu_cleanup_fixture_' + run_id
     common = ['--label', LABEL + '=' + KIND, '--label', RUN_LABEL + '=' + run_id,
               '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--pull', 'never']
     created = []
@@ -205,7 +206,9 @@ def main():
         initialization = ('CREATE TABLE fixture_marker(run_id CHAR(12) PRIMARY KEY);'
                           "INSERT INTO fixture_marker VALUES ('" + run_id + "');CREATE DATABASE " + monitoring + ';'
                           + 'CREATE DATABASE ' + baidu + ';CREATE TABLE ' + baidu + '.fixture_marker(run_id CHAR(12) PRIMARY KEY);'
-                          + "INSERT INTO " + baidu + ".fixture_marker VALUES ('" + run_id + "');")
+                          + "INSERT INTO " + baidu + ".fixture_marker VALUES ('" + run_id + "');"
+                          + 'CREATE DATABASE ' + baidu_cleanup + ';CREATE TABLE ' + baidu_cleanup + '.fixture_marker(run_id CHAR(12) PRIMARY KEY);'
+                          + "INSERT INTO " + baidu_cleanup + ".fixture_marker VALUES ('" + run_id + "');")
         docker.call(['exec', '-i', mysql, 'mysql', '--protocol=tcp', '--host=127.0.0.1', '--user=root', database], input_text=initialization)
         runner = docker.create([*common, '--name', 'gying-query-maven-' + run_id,
             '--network', 'container:' + mysql, '--user', '10001:10001', '--memory', '2g', '--cpus', '2', '--pids-limit', '512',
@@ -219,6 +222,7 @@ def main():
             '--env', 'QUERY_BOUNDARY_MYSQL_URL=jdbc:mysql://127.0.0.1:3306/' + database,
             '--env', 'MONITORING_TEST_MYSQL_URL=jdbc:mysql://127.0.0.1:3306/' + monitoring,
             '--env', 'BAIDU_TEST_MYSQL_URL=jdbc:mysql://127.0.0.1:3306/' + baidu,
+            '--env', 'BAIDU_CLEANUP_TEST_MYSQL_URL=jdbc:mysql://127.0.0.1:3306/' + baidu_cleanup,
             '--env', 'MONITORING_TEST_MYSQL_PASSWORD=', '--entrypoint', 'sh', images['maven'],
             '-ec', maven_script(args.full_suite)])
         created.append(runner)

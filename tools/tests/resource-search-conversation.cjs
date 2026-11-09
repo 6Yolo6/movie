@@ -12,7 +12,7 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
         const page = await browser.newPage(); await page.setViewport({width:1280,height:1000});
         const errors=[]; page.on('pageerror', e=>errors.push(e.message));
         await page.evaluateOnNewDocument(() => localStorage.setItem('auth-storage',JSON.stringify({state:{token:'fixture-only',user:{id:1,username:'fixture',role:'USER'}},version:0})));
-        const requests=[]; const jobs=new Map(); let releaseFirst=false;
+        const requests=[]; const jobs=new Map(); let releaseFirst=false; let baiduMode=false;
         await page.setRequestInterception(true);
         page.on('request', request => {
             const url=new URL(request.url());
@@ -21,11 +21,12 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
             const respond=(body,status=200)=>void request.respond({status,contentType:'application/json',body:JSON.stringify(body)});
             if(url.pathname==='/api/resource-search/query'){
                 const command=JSON.parse(request.postData()).keyword;requests.push(command);
+                if(command==='百度')baiduMode=true;
                 if(command==='失败保留')return respond({message:'暂时繁忙，请稍后再试'},503);
                 const id=`job-${requests.length}`;
-                const reply=command==='库内影片'?'片名：库内影片\n资源库已有资源（优先展示，无需重新搜索或转存）：\n- 库内影片 4K [夸克]\nhttps://pan.quark.cn/s/library-fixture\n提取码：1234\n需要其他版本或网盘，可点击“搜索其他资源”继续。':requests.length===1?movieReply:command==='下一页'?resources(2):command==='1'?
+                const reply=baiduMode?(command==='1'?'片名：测试影片\n已选择资源：种子归档 [百度]\nhttps://pan.baidu.com/s/1CaseSensitiveFixture?pwd=a1B2\n临时转存成功后约10分钟自动清理，请及时保存到自己的网盘。':'请选择资源（回复当前页序号）：\n1. 测试影片 种子归档 [百度]'):command==='库内影片'?'片名：库内影片\n资源库已有资源（优先展示，无需重新搜索或转存）：\n- 库内影片 4K [夸克]\nhttps://pan.quark.cn/s/library-fixture\n提取码：1234\n需要其他版本或网盘，可点击“搜索其他资源”继续。':requests.length===1?movieReply:command==='下一页'?resources(2):command==='1'?
                     '片名：测试影片 第二季\n已选择资源：1080P 中英双字幕 完整版\nhttps://pan.quark.cn/s/fixture\n\n还可以继续选择其他资源：回复当前页序号 1-2':resources(1);
-                jobs.set(id,{jobId:id,status:'SUCCEEDED',reply,links:command==='库内影片'?[{name:'库内影片 4K',url:'https://pan.quark.cn/s/library-fixture'}]:command==='1'?[{name:'资源链接 1',url:'https://pan.quark.cn/s/fixture'}]:[]});
+                jobs.set(id,{jobId:id,status:'SUCCEEDED',reply,links:baiduMode&&command==='1'?[{name:'种子归档',url:'https://pan.baidu.com/s/1CaseSensitiveFixture?pwd=a1B2',type:'TORRENT'}]:command==='库内影片'?[{name:'库内影片 4K',url:'https://pan.quark.cn/s/library-fixture'}]:command==='1'?[{name:'资源链接 1',url:'https://pan.quark.cn/s/fixture'}]:[]});
                 return respond({jobId:id,status:'QUEUED'},202);
             }
             if(url.pathname.startsWith('/api/resource-search/jobs/')){
@@ -51,6 +52,7 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
         assert.equal(requests.length,1,'busy Enter must not duplicate a job');
         releaseFirst=true;
         await page.waitForSelector('button[data-command="2"]:not([disabled])');
+        assert.equal(await page.$$eval('[data-testid="search-turn"]:last-child button[data-command="百度"]',buttons=>buttons.length),0,'provider filtering waits for a selected movie');
         assert.equal(await page.$eval(input,el=>el.value),'下一部想找','in-flight draft is preserved');
         console.log('PASS auto-clear, IME, next draft and duplicate-submit guard');
         await clickChoice('2');await page.waitForSelector('button[data-command="下一页"]:not([disabled])');
@@ -97,6 +99,17 @@ const resources = page => `片名：测试影片 第二季 (2025)\n类型：剧�
             await page.screenshot({path:path.join(process.env.WEB_TEST_SCREENSHOT_DIR,'resource-search-qr-desktop.png'),fullPage:true});
         }
         console.log('PASS library-first QR reply with explicit search-more action');
+        await clickChoice('百度');
+        await page.waitForFunction(()=>[...document.querySelectorAll('button[data-command="1"]:not([disabled])')].some(el=>el.textContent.includes('种子归档')&&el.textContent.includes('百度')));
+        await clickChoice('1');
+        await page.waitForSelector('[data-testid="resource-links-torrent"] a[href="https://pan.baidu.com/s/1CaseSensitiveFixture?pwd=a1B2"]');
+        assert.deepEqual(requests.slice(-2),['百度','1']);
+        assert.ok(await page.evaluate(()=>document.body.textContent.includes('百度网盘 App')&&document.body.textContent.includes('约10分钟自动清理')));
+        assert.ok(await page.$$eval('[data-testid="search-turn"]:not(:last-child) button[data-command]',buttons=>buttons.every(button=>button.disabled)));
+        await page.setViewport({width:390,height:844});
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+        if(process.env.WEB_TEST_SCREENSHOT_DIR)await page.screenshot({path:path.join(process.env.WEB_TEST_SCREENSHOT_DIR,'resource-search-baidu-mobile.png'),fullPage:true});
+        console.log('PASS Baidu filter, exact single selection, case-sensitive torrent link and expiry hint');
         assert.deepEqual(errors,[]);
         console.log('PASS failure preserves input, history survives reload, stale choices disabled');
     } finally {await browser.close();}

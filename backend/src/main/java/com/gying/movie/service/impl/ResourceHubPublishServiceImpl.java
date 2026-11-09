@@ -19,6 +19,7 @@ import com.gying.movie.service.IResourceDiscoveryResultService;
 import com.gying.movie.service.IResourceHubPublishService;
 import com.gying.movie.service.IResourceLinkService;
 import com.gying.movie.utils.ResourceHubHashUtils;
+import com.gying.movie.utils.BaiduTemporaryScope;
 import com.gying.movie.utils.SeasonSearchUtils;
 import com.gying.movie.utils.ResourceTitleMatcher;
 import java.time.LocalDateTime;
@@ -81,6 +82,7 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
         int safeLimit = Math.min(Math.max(limit <= 0 ? DEFAULT_LIMIT : limit, 1), MAX_LIMIT);
         List<ResourceDiscoveryResult> discoveries = discoveryResultService.list(
                 new QueryWrapper<ResourceDiscoveryResult>()
+                        .and(q -> q.isNull("source_ref").or().notLikeRight("source_ref", BaiduTemporaryScope.DISCOVERY_PREFIX))
                         .eq("status", "DISCOVERED")
                         .isNotNull("share_url")
                         .isNull("resource_link_id")
@@ -95,6 +97,11 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
     }
 
     private void publishOne(ResourceDiscoveryResult discovery, ResourceHubPublishResult result) {
+        if (BaiduTemporaryScope.isTemporaryDiscovery(discovery)) {
+            result.setFailed(result.getFailed() + 1);
+            addError(result, "discovery " + discovery.getId() + ": BAIDU_TEMPORARY_DISCOVERY_NOT_PUBLISHABLE");
+            return;
+        }
         try {
             boolean shareRecovery = "FAILED".equalsIgnoreCase(discovery.getStatus())
                     && isQuarkDiscovery(discovery);
@@ -136,6 +143,9 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             LocalDateTime now = LocalDateTime.now();
             if (discovery.getResourceLinkId() != null) {
                 ResourceLink linked = resourceLinkService.getById(discovery.getResourceLinkId());
+                if (isTemporaryResource(linked)) {
+                    throw new IllegalStateException("BAIDU_TEMPORARY_RESOURCE_NOT_PUBLISHABLE");
+                }
                 if (linked != null) {
                     updateResourceLink(linked, discovery, movie, type, provider, url, urlHash, now);
                     discovery.setStatus("SAVED");
@@ -230,10 +240,10 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             if (baiduWebClient == null || baiduTransferTaskService == null || !hasText(discovery.getShareUrl())) {
                 result.setSkipped(result.getSkipped() + 1); return false;
             }
-            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>()
+            var task = baiduTransferTaskService.getOne(new QueryWrapper<BaiduTransferTask>().eq("scope_key", BaiduTemporaryScope.PERMANENT)
                     .eq("discovery_result_id", discovery.getId()).eq("status", "SUCCEEDED").eq("phase", "SHARED")
                     .eq("share_url", discovery.getShareUrl()).last("LIMIT 1"), false);
-            if (task == null || !baiduWebClient.validateOwnShare(discovery.getShareUrl())) {
+            if (!BaiduTemporaryScope.isPermanent(task) || !baiduWebClient.validateOwnShare(discovery.getShareUrl())) {
                 result.setSkipped(result.getSkipped() + 1); return false;
             }
             return true;
@@ -336,32 +346,36 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
 
     private ResourceLink findExistingResource(String movieId, String url, String urlHash, String sourceUrl) {
         ResourceLink existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
                 .isNull("deleted_at")
                 .last("LIMIT 1"));
-        if (existing != null) {
+        if (existing != null && !isTemporaryResource(existing)) {
             return existing;
         }
         existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url", url)
                 .isNull("deleted_at")
                 .last("LIMIT 1"));
-        if (existing != null) {
+        if (existing != null && !isTemporaryResource(existing)) {
             return existing;
         }
         if (hasText(sourceUrl)) {
             existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                    .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                     .eq("movie_id", movieId)
                     .eq("source_url", sourceUrl)
                     .orderByDesc("updated_at")
                     .last("LIMIT 1"), false);
-            if (existing != null) {
+            if (existing != null && !isTemporaryResource(existing)) {
                 return existing;
             }
         }
         existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("source", "RESOURCE_HUB")
                 .eq("provider", "QUARK")
@@ -369,21 +383,29 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
                         .or().in("link_status", List.of("INVALID", "SUSPECTED_INVALID")))
                 .orderByDesc("updated_at")
                 .last("LIMIT 1"), false);
-        if (existing != null) {
+        if (existing != null && !isTemporaryResource(existing)) {
             return existing;
         }
         existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url_hash", urlHash)
                 .last("LIMIT 1"));
-        if (existing != null) {
+        if (existing != null && !isTemporaryResource(existing)) {
             return existing;
         }
-        return resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+        existing = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
+                .and(q -> q.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("movie_id", movieId)
                 .eq("url", url)
                 .last("LIMIT 1"));
+        return isTemporaryResource(existing) ? null : existing;
     }
+
+    private boolean isTemporaryResource(ResourceLink resource) {
+        return resource != null && BaiduTemporaryScope.RESOURCE_SOURCE.equalsIgnoreCase(resource.getSource());
+    }
+
     private void updateResourceLink(ResourceLink link,
             ResourceDiscoveryResult discovery,
             MovieMetadata movie,
@@ -392,6 +414,9 @@ public class ResourceHubPublishServiceImpl implements IResourceHubPublishService
             String url,
             String urlHash,
             LocalDateTime now) {
+        if (isTemporaryResource(link)) {
+            throw new IllegalStateException("BAIDU_TEMPORARY_RESOURCE_NOT_PUBLISHABLE");
+        }
         link.setMovieId(discovery.getMovieId());
         link.setName(trim(resourceTitle(movie, discovery), 255));
         link.setType(type);
