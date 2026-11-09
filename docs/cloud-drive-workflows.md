@@ -1,8 +1,8 @@
 # 网盘工作流配置
 
-开发分支：`codex/cloud-drive-workflows`。2026-11-09 13:54:51 已仅 backend/frontend 上线按库内 GYING ID 补种子，固定代码 `b55080d8`；视频/种子与阶段独立配置、专用百度会话保持有效。14:24 单影片实跑在首个磁力文本上传遇到 UNKNOWN，自动补全保持关闭、十分钟一条，尚未验证真实归档成功。[本轮验收](evaluation/baidu-torrent-backfill-20261109/README.md)。00:32 接入与 01:22 旧存量补全结果保留于[历史记录](evaluation/baidu-backfill-20261109/README.md)。
+开发分支：`codex/cloud-drive-workflows`。2026-11-09 backend于22:39:17、frontend于22:48:50启动固定`048795f`，22:49:07完成两服务上线：百度上传/分享兼容、QQ/网站独立临时搜索与默认十分钟精确清理、全有效片库重复候选扫描。实际Compose17/11、固定image/JAR/375产物与本机公网资产核验通过；部署类+实库只读快照15366有效/144待审候选/完整、MobLand0/8和分页通过；用户实际新登录后23:05真实ADMIN四次dryRun API扫描15366/144候选、完整/MobLand0/8/144对资源数和分页通过；原22:53无设备FAIL保留，真实归档/转存清理/配额和已认证浏览器UI待验。[本轮上线与边界](evaluation/baidu-search-duplicate-20261109/README.md)。
 
-后续百度上传/分享兼容与分类候选 `e6370cb` 已完成全套1254项测试及固定构建；真实61字节合成文本上传和同目录一次分享已精确核验。生产idle/旧消费者兼容门禁FAIL，尚未部署。QQ/网站百度搜索与成功后十分钟清理候选已完成，用户选择只彻底删除本系统新建临时任务目录；最终测试、镜像和生产边界另见[搜索清理候选](evaluation/baidu-search-temp-20261109/README.md)。[验证与生产边界](evaluation/baidu-share-compat-fix-20261109/README.md)。
+早先13:54:51按GYING ID补种子上线b55080d8；14:24单影片首个磁力文本上传为UNKNOWN，自动补全保持关闭、十分钟一条。后续e6370cb上传/分享兼容候选1254项及真实61字节合成文本/同目录一次分享核验通过，当时idle/旧consumer门禁FAIL、未部署；兼容代码现随048795f上线，原17583/17584与意图保留，尚未证明真实影视归档成功。[原种子验收](evaluation/baidu-torrent-backfill-20261109/README.md)、[上传实测](evaluation/baidu-share-compat-fix-20261109/README.md)。
 
 ## 页面与阶段
 
@@ -89,12 +89,12 @@ ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/ad
 
 ## 百度新永久目录候选
 
-上传修复候选的新视频计划与种子归档统一按影片类别写到保存根下的 `mv/tv/ac`：默认 `/GYing Resource Hub/mv`、`tv`、`ac`；movie/anime 别名映射到 mv/ac。未知类别在百度云写入前停止。只复用同类别目录，历史保存计划、路径与 UNKNOWN 检查点保持原位，未搬迁生产文件。该候选仍未上线。
+上传兼容修复的新视频计划与种子归档已随048795f上线，按影片类别写到保存根下的 `mv/tv/ac`：默认 `/GYing Resource Hub/mv`、`tv`、`ac`；movie/anime 别名映射到 mv/ac。未知类别在百度云写入前停止。只复用同类别目录；仅用于新计划，历史保存计划、路径与 UNKNOWN 检查点保持原位，未搬迁生产文件。
 
-QQ群与网站共用百度搜索链路、成功后默认十分钟清理候选已完成；使用独立临时scope及精确账号/目录/完整树证据，与永久mv/tv/ac归档隔离。用户已选择彻底删除本系统新建的临时任务目录，必须逐对象回收站核验与持久意图，不清空整个回收站；首次分享确认时固定清理时钟，创建任务时固定保留分钟数；重复请求和补偿不延期。当前未部署、未执行真实转存清理或更改生产开关，配额变化未实测。[实现与验收](evaluation/baidu-search-temp-20261109/README.md)。
+QQ群与网站共用百度搜索链路、成功后默认十分钟清理已随048795f上线；使用独立临时scope及精确账号/目录/完整树证据，与永久mv/tv/ac归档隔离。用户已选择彻底删除本系统新建临时任务目录，逐对象回收站核验和持久意图，不清空整个回收站；首次分享确认固定时钟，任务创建时固定保留分钟数，重复/补偿不延期。自然真实转存清理与配额变化未实测，历史UNKNOWN/探针/永久目录未删除或重放。[本轮上线](evaluation/baidu-search-duplicate-20261109/README.md)、[原候选与删除边界](evaluation/baidu-search-temp-20261109/README.md)。
 
 ## 部署与回退
 
-百度任务表由用户创建并通过生产结构核验。13:54:51 本轮仅 backend/frontend 上线按 ID 种子补全；真实 ADMIN 八场景、194 份公网/本机资产 SHA 与独立应用 25 PASS / 0 FAIL / 0 UNKNOWN 通过。停止窗口七份 age 与 pin 后三份 age 的完整认证、内容、会话及原任务 XML/ACL 独立前后绑定通过；日常新增覆盖 CAS/dry-run 38 项通过，自然完整备份未验。扫码助手仅更新 backend 固定镜像，保持 Enabled/Ready、profile 与会话；原 post attempt01 原因 UNKNOWN 保留，新 attempt02 通过。14:24 实跑已采到合法 GYING 来源，但百度首个磁力文本上传为 UNKNOWN；保持新父暂停，真实归档成功、视频转存和网站 GYING 发布尚未验证。详见[部署](evaluation/baidu-torrent-backfill-20261109/deployment/README.md)与[真实验收](evaluation/baidu-torrent-backfill-20261109/torrent-acceptance/summary.json)。
+百度任务表由用户创建；本轮旧写入者正常停止后由用户执行临时scope/清理增量SQL，助手只读完整契约通过。22:49:07仅backend/frontend完成048795f上线，独立运行17/0、Compose17/11、408/90源码、375产物、20本机公网入口和194资产SHA闭环（管理Access302、Insights精确归一化，原失败保留）。用户实际新登录后23:05真实ADMIN四次POST200/dryRun、全库15366/144候选及资源数/分页通过，登录后新基线业务/授权/历史保持、常规last_seen更新；原22:53无设备FAIL保留，已认证浏览器UI未独立验。停机七age与pin后三age完整认证/会话/原XML和ACL保持，独立post27/0通过（原两次HostCheckpoint RuntimeError保留、原因未定），hostpin仅改预期backend image、Enabled/Ready/profile与会话保持；日常40项CAS/dry-run通过，自然完整备份未验。旧idle/consumer/严格零在途FAIL仍保留，新精确历史与activity守护通过；自动补全关闭10分钟1条，不恢复旧SQL或重放UNKNOWN。[当前部署与备份](evaluation/baidu-search-duplicate-20261109/README.md)。
 
 旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。新增补全父任务或指针也阻断旧版回退。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。
