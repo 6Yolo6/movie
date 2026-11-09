@@ -2,7 +2,11 @@
 
 更新时间：2026-11-09
 
-11月9日01:22:22百度慢速存量补全仅backend/frontend上线固定代码`1a9ff55`，默认关闭、十分钟一条，读取状态和启动调度不创建补全父任务。后端1,180项中1,179通过/1 Redis跳过、必需真实SQL与Java17 compile，385源文件绑定；前端48项React、TS/lint/build、八组mock浏览器、78源文件和375实际运行产物通过。实际Compose15/9、image/JAR/配置、11无关容器保持及独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过；本机/公网18入口、194份资产SHA和真实ADMIN八场景通过，配置保持且0生产写入。停止窗口七age和新pin后三age的完整认证/内容/会话GCM/当前pair/UID权限专验通过，日常覆盖37项apply/dry-run通过，自然完整备份未验。01:34扫码任务已恢复Enabled/Ready，Limited/Interactive实际运行exit0与独立只读核验通过；首次task_XML_rejected、默认Enabled节点省略实证及精确CAS恢复disabled历史保留，实际stdout未捕获，idle由严格前后无handoff与exit0推定。未测试真实转存、分享或GYING发布；安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11保持。[本轮上线与边界](evaluation/baidu-backfill-20261109/README.md)。
+11月9日13:54:51按库内 GYING ID 的百度种子补全仅 backend/frontend 上线固定代码 `b55080d8`，独立 v2 指针隔离旧视频分享。后端 1,204 项中 1,203 通过/1 Redis 跳过、必需真实 SQL/Java17 compile；前端 52 React/TS/lint/build/八组 mock 浏览器、385/78 源文件及 375 实际产物绑定通过。实际 Compose16/10、image/JAR、11 无关容器保持、独立应用25 PASS/0 FAIL/0 UNKNOWN、真实 ADMIN 八场景及194份公网/本机资产SHA通过；停止窗口七age和新pin后三age完整认证/内容/会话权限/原XML与1371ACL独立闭环、日常覆盖38项CAS/dry-run通过，自然完整备份未验。[上线与边界](evaluation/baidu-torrent-backfill-20261109/README.md)。
+
+14:24唯一单影片实跑以 GYING 身份41选中1080P/4K两条来源资源，新父17583/专属子17584在首个磁力文本上传变为UNKNOWN，父BLOCKED/CHILD_UNKNOWN；上传文件ID和分享提交意图均未保存，归档成功未验。14:29官方只读目录为0文件、同一专用账号与加密会话保持，14:32只读续查仍阻塞；目录为空不能排除上传临时块。自动补全保持关闭、10分钟/1条，旧父17580和视频子1业务行保持，未重放UNKNOWN、视频转存、来源搜索或GYING发布。上传原因未确认，原接口错误码/逐文件票据未留存；启用助手只完成离线验证。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11保持。[实际验收](evaluation/baidu-torrent-backfill-20261109/torrent-acceptance/summary.json)。
+
+11月9日01:22:22历史百度慢速存量补全仅backend/frontend上线固定代码`1a9ff55`，默认关闭、十分钟一条，读取状态和启动调度不创建补全父任务。后端1,180项中1,179通过/1 Redis跳过、必需真实SQL与Java17 compile，385源文件绑定；前端48项React、TS/lint/build、八组mock浏览器、78源文件和375实际运行产物通过。实际Compose15/9、image/JAR/配置、11无关容器保持及独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过；本机/公网18入口、194份资产SHA和真实ADMIN八场景通过，配置保持且0生产写入。停止窗口七age和新pin后三age的完整认证/内容/会话GCM/当前pair/UID权限专验通过，日常覆盖37项apply/dry-run通过，自然完整备份未验。01:34扫码任务已恢复Enabled/Ready，Limited/Interactive实际运行exit0与独立只读核验通过；首次task_XML_rejected、默认Enabled节点省略实证及精确CAS恢复disabled历史保留，实际stdout未捕获，idle由严格前后无handoff与exit0推定。未测试真实转存、分享或GYING发布；安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11保持。[本轮上线与边界](evaluation/baidu-backfill-20261109/README.md)。
 
 11月9日00:32历史百度接入与每盘视频/种子配置已按用户本轮“可上线”限定授权，仅backend/frontend上线代码90defca。后端1,141项中1,140通过/1 Redis跳过，真实SQL8项与Java17 compile；前端58项、TS/lint/build和mock八场景通过。实际14/8层Compose、JAR和375前端产物及独立25 PASS/0 FAIL/1 argv UNKNOWN、16入口通过。真实ADMIN八场景与公网/本机41×2资源SHA通过；初次整表配置比较差异无法定位，保留UNKNOWN，后续36行复查稳定。表由用户创建且22列/5索引生产核验通过。00:48专用百度账号已真实扫码并由服务端同账号验证、AES-GCM保存，CONNECTED/configured=true；未测试转存、分享或GYING发布。宿主Limited扫码任务幂等/loopback代理修复已通过13项helper与实际任务exit0，部署准备暂保持disabled。安全仍58 PASS/11 FAIL/1 UNKNOWN、G01–G11未关闭。[原版本部署证据](evaluation/baidu-file-selection-20261108/deployment/README.md)。00:48时慢速存量补全仍为候选、默认关闭且十分钟一条，01:22上线结果另见[本轮记录](evaluation/baidu-backfill-20261109/README.md)。
 
@@ -44,7 +48,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | 推荐 | 收藏+衰减浏览、稀疏内容特征/共同收藏/评分热度/多样性与理由，暂无点击收益结论 | [架构](ai-architecture.md#5-推荐如何利用用户行为) |
 | 可靠性 | 加密任务/回执、requestKey、45秒可续期lease、有限attempt/取消/幂等；本机独立后台启动与30秒有界片库读取 | [恢复契约](ai-architecture.md#7-租约回执与恢复) |
 | 采集和治理 | TMDB/GYING独立范围/页内游标、GYING六目录独立暂停；TMDB实测末页/空范围24小时复查/其他榜轮转；范围调整保进度、失败项目隔离、季/合集消歧 | [Resource Hub](resource-hub.md) |
-| 网盘与P2P | 三个独立GYING周榜、手动补齐/按id修复、双盘原位分享与有效性判断；P2P小文件归档，账号/dbt隔离。11月9日百度与每盘视频/种子配置及慢速存量优先补全已上线，专用账号已真实扫码连接；补全默认关闭、十分钟一条，真实转存/分享/发布待验 | [网盘配置](cloud-drive-workflows.md)、[周榜](metadata-weekly-transfer.md)、[P2P](p2p-cloud-archive.md) |
+| 网盘与P2P | 三个独立GYING周榜、按id修复、双盘原位分享与有效性判断；P2P小文件归档。11月9日按库内GYING来源ID的百度种子补全上线，视频/种子与阶段独立配置，专用会话有效；新父17583实跑上传UNKNOWN，自动保持关闭10分钟/1条，真实百度归档成功与视频/网站发布未验 | [网盘配置](cloud-drive-workflows.md)、[本轮验收](evaluation/baidu-torrent-backfill-20261109/README.md)、[P2P](p2p-cloud-archive.md) |
 | 账号与监控 | 注册/邀请、昵称/邮箱登录、验证码与设备吊销、原IP/UA、API日志和分类资源计数 | [API](api.md)、[数据库](database.md) |
 | 主机维护 | 迅雷独立Edge自动续期/同账户验证/非root原子写回；每周优雅重启和登录恢复任务已注册 | [迅雷](xunlei-token-sync.md)、[重启](weekly-graceful-restart.md) |
 
@@ -52,7 +56,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 当前部署与恢复基线
 
-11月9日01:22:22仅backend/frontend上线百度慢速补全，固定代码`1a9ff55fb6f8c573d4413a625fc00d9e964e29d0`；实际image/JAR、完整385/78源码、375前端产物0差异、Compose15/9层/原参数与11无关容器/Agent保持，独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过。现有百度表只读结构preflight，`schemaChanged=false`；原两应用正常TERM143。backend停止窗口七age `G:/gying-backups/baidu-backfill-20261109-20261108T172112.304097Z` 完整认证、配置/OCI/SQL26表/队列/host内容及百度会话AES-GCM/同账户/同volume/当前pair/0600与0700/UID10001专验通过；不称跨服务原子快照，未导入SQL或恢复生产数据。新pin后01:24检查点 `G:/gying-backups/baidu-backfill-post-login-20261109-20261108T172410.983433Z` 三age完整认证、877host文件/494目录/ACL、当时精确disabled任务XML、7backend-data文件和会话专验通过。整个release纳入日常备份，37项apply/dry-run通过，自然完整备份未验。宿主pin已CAS同步新backend并回读实际配置、profile/会话保持；01:34任务Enabled/Ready、Limited/Interactive实际运行exit0及独立只读核验通过，XML与installation匹配、三次strict无handoff通过。首次缺省Enabled XML验证失败及认证XML精确CAS恢复disabled保留历史，实际stdout未捕获。18本机/公网入口、194份资产SHA及真实ADMIN八场景通过。[本轮记录](evaluation/baidu-backfill-20261109/README.md)。
+11月9日13:54:51当前仅backend/frontend上线代码 `b55080d8c0449f6dc6852beff0356d7350cce570`，实际Compose16/10及原运行约束/11无关容器保持。停止窗口七age `G:/gying-backups/baidu-torrent-backfill-20261109-20261109T055331.438299Z` 与新pin后三age `G:/gying-backups/baidu-torrent-post-pin-20261109-20261109T060747.706533Z` 完整认证/内容/会话GCM/UID权限及原XML/ACL独立前后核验通过；不称跨服务原子快照，未导入SQL或恢复生产数据。日常新覆盖CAS/dry-run38项通过，自然完整备份未验；首post wrapper原因UNKNOWN及新路径复验保留。扫码助手固定pin已同步新backend且任务Enabled/Ready、profile/会话保持。当前新子17584 UNKNOWN，保留其原检查点与唯一发送意图，不能启用自动调度或启动不兼容旧consumer来绕过未知状态。[当前部署](evaluation/baidu-torrent-backfill-20261109/deployment/README.md)。
+
+11月9日01:22:22历史仅backend/frontend上线百度慢速补全，固定代码`1a9ff55fb6f8c573d4413a625fc00d9e964e29d0`；实际image/JAR、完整385/78源码、375前端产物0差异、Compose15/9层/原参数与11无关容器/Agent保持，独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过。现有百度表只读结构preflight，`schemaChanged=false`；原两应用正常TERM143。backend停止窗口七age `G:/gying-backups/baidu-backfill-20261109-20261108T172112.304097Z` 完整认证、配置/OCI/SQL26表/队列/host内容及百度会话AES-GCM/同账户/同volume/当前pair/0600与0700/UID10001专验通过；不称跨服务原子快照，未导入SQL或恢复生产数据。新pin后01:24检查点 `G:/gying-backups/baidu-backfill-post-login-20261109-20261108T172410.983433Z` 三age完整认证、877host文件/494目录/ACL、当时精确disabled任务XML、7backend-data文件和会话专验通过。整个release纳入日常备份，37项apply/dry-run通过，自然完整备份未验。宿主pin已CAS同步新backend并回读实际配置、profile/会话保持；01:34任务Enabled/Ready、Limited/Interactive实际运行exit0及独立只读核验通过，XML与installation匹配、三次strict无handoff通过。首次缺省Enabled XML验证失败及认证XML精确CAS恢复disabled保留历史，实际stdout未捕获。18本机/公网入口、194份资产SHA及真实ADMIN八场景通过。[本轮记录](evaluation/baidu-backfill-20261109/README.md)。
 
 11月9日00:32历史仅backend/frontend完成百度与文件类型配置上线，固定代码90defca；原14/8层Compose、其它容器和Agent保持。最终停止窗口七age `G:/gying-backups/baidu-file-selection-20261109-20261108T163139.163752Z` 完整SHA、认证及配置/OCI/SQL26表/队列/host内容核验通过；登录后另有三age检查点 `G:/gying-backups/baidu-login-session-20261109-20261108T165355.091889Z`，profile/NTFS ACL、精确任务XML、backend-data与会话GCM验证通过。日常备份36项dry-run通过，自然完整备份未验。
 
@@ -62,8 +68,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | `sha256:dc9fd40464ac78c9f0b691ac90e97ad313e4c69f0154b34e606569297909c3f2`，代码`1a9ff55fb6f8c573d4413a625fc00d9e964e29d0`、实际JAR `5469438057b9dc1f1455258bbc13c5ab01d47902cd85b3b44dd8184481401547`；2026-11-09 01:22:22百度慢速补全上线，385源文件绑定；原Xmx768MiB/容器1280MiB/含swap2560MiB与有效配置保持 |
-| Movie frontend | `sha256:4b40a2912d93a1b53abb53383a99d71c7fb6f041ef3cb9d8d6d85386534463b0`，代码`1a9ff55fb6f8c573d4413a625fc00d9e964e29d0`；11月9日01:22:22百度慢速补全上线，78 Git构建源文件、375固定运行产物验证通过 |
+| Movie backend | `sha256:adfd0dfad9dd63a8d0996848b7b13745f1af15669f45c800ae04ecde0cd2a4e6`，代码`b55080d8c0449f6dc6852beff0356d7350cce570`、实际JAR `90e4a3f936390caa1737343a06ba59ec48acce8f41ab316f338713409eb60519`；2026-11-09 13:54:51百度按ID补种子上线，385源文件绑定；原Xmx768MiB/容器1280MiB/含swap2560MiB与有效配置保持 |
+| Movie frontend | `sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54`，代码`b55080d8c0449f6dc6852beff0356d7350cce570`；11月9日13:54:51百度按ID补种子上线，78 Git构建源文件/375固定运行产物与真实ADMIN八场景通过 |
 | 本机Agent | 11月4日上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`保持；11月8日维护后当前受管记录/ready、固定runtime、创建时间与唯一5000监听、四本机health均通过；普通权限实时argv UNKNOWN。本轮未替换Agent |
 | OpenClaw QQ插件 | 11月2日22:56源/唯一运行时gateway错误回退修复上线，SHA `94922920…`；原固定镜像/config/白名单保持，其他9容器保持，真实群内端到端待验 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
@@ -111,7 +117,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| 百度/文件选择 | 11月9日百度/文件类型/慢速补全已上线、专用账号真实扫码连接、会话权限与本轮七/三age认证、日常覆盖37项、18入口/194资产SHA/真实ADMIN八场景及宿主Enabled/Ready实际Limited exit0通过；补全默认关闭、十分钟一条，阶段/类型未开启。仍待同账户真实转存/分享、GYING发布、自然过期/UNKNOWN恢复与自然完整备份；不批量重置或重放旧任务。保留独立Agent实时argv UNKNOWN、初次配置比较UNKNOWN、原安全门禁停止/扫码请求失败与初次Enabled XML兼容失败，见[历史候选](evaluation/baidu-file-selection-20261108/README.md)及[本轮交付](evaluation/baidu-backfill-20261109/README.md) |
+| 百度/文件选择 | 13:54:51按库内GYING ID补种子上线，专用账号/会话有效，七/三age认证、原XML/1371ACL、日常覆盖38项及真实ADMIN八场景/194资产SHA通过。14:24新父17583/子17584在首个磁力文本上传UNKNOWN，14:29远端0文件，14:32只读续查仍阻塞；自动关闭10分钟/1条，旧17580/视频子1保持。待确认未知上传及接口原因，现有记录缺原错误码/逐文件票据；不得据目录为空重放。真实归档成功、视频转存、GYING发布、自然过期/UNKNOWN恢复和自然完整备份仍待验。历史配置比较UNKNOWN/原扫码兼容与post01门禁UNKNOWN保留，见[当前验收](evaluation/baidu-torrent-backfill-20261109/README.md) |
 | AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。旧观测中的胶片修复、电影院核心主题、徒步ac/空及mv与电视特辑冲突已补机制上线，正式主题回答与真人验收仍待补；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
 | 片库内存观察 | 10月29日18:02缓存修复上线；768MiB heap/1280MiB容器，实机硬条件、语义、人物及超过60秒刷新通过，测得容器约461–944MiB，短窗口无新OOM。仍有全库快照和跨服务独立索引，持续观察刷新/并发峰值；[本次恢复](evaluation/resource-recovery-20261029/README.md)及[早先诊断](evaluation/quality-fix-20261029/memory-diagnosis.md) |
 | AI服务与求职 | 10月28日本机1.7B读取/Router与4B片库查询通过，一次简短历史追问未正确利用上下文；网站登录条件/点击本次未复验；工具中间步骤、长期usage/成本审计、定期增量索引、文档RAG/API Key/影视MCP待补，[路线](ai-career-roadmap.md) |
@@ -138,7 +144,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 验收
 
-11月9日百度慢速补全本轮：385后端/78前端源码、固定提交/image/JAR绑定一致；后端1,180项中1,179通过/1 Redis跳过、真实SQL/独立Java17 compile，前端48 React/TS/lint/build/八组mock浏览器通过。01:22实际两应用Compose15/9、375运行产物0差异与11无关容器0变化，独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过。停止窗口七age/新pin后三age完整认证与会话专验、37项日常覆盖apply/dry-run通过。01:24–01:28本机/公网18入口、194份资产SHA与真实ADMIN八组（中英/明暗/390与1280）通过：CONNECTED/百度阶段与类型全关/补全关闭10分钟1条/无父任务/零计数/草稿刷新丢弃/配置保持，16统计POST本地拦截、0生产写入/页面HTTP错误。01:34扫码任务Enabled/Ready，实际Limited/Interactive exit0、固定pin/installation/XML一致、strict前后无handoff及独立post只读核验通过；stdout未捕获，idle为上述门禁和exit0推定。原task_XML_rejected/默认true节点省略实证/精确CAS回disabled保留历史；01:22–01:37 Docker stdout/stderr限定日志ERROR/Exception/OOM匹配0、两应用restarts0，未执行真实转存/分享/发布。[本轮范围与证据](evaluation/baidu-backfill-20261109/README.md)。
+本轮按ID种子补全的测试、真实ADMIN/公网资源与部署/备份通过，但真实单影片百度上传为UNKNOWN，不能计归档成功。原单POST意图、新子17584检查点和旧父/视频子业务行保持；官方只读目录/会话核对及后续只读poll通过，自动关闭10/1。助手native SQL JSON兼容20Python/5Node及独审通过，启用/观测27/5离线通过但未执行启用。[本轮测试与真实边界](evaluation/baidu-torrent-backfill-20261109/README.md)。
+
+11月9日01:22历史百度慢速补全：385后端/78前端源码、固定提交/image/JAR绑定一致；后端1,180项中1,179通过/1 Redis跳过、真实SQL/独立Java17 compile，前端48 React/TS/lint/build/八组mock浏览器通过。01:22实际两应用Compose15/9、375运行产物0差异与11无关容器0变化，独立26 PASS/0 FAIL/1 Agent argv UNKNOWN通过。停止窗口七age/新pin后三age完整认证与会话专验、37项日常覆盖apply/dry-run通过。01:24–01:28本机/公网18入口、194份资产SHA与真实ADMIN八组（中英/明暗/390与1280）通过：CONNECTED/百度阶段与类型全关/补全关闭10分钟1条/无父任务/零计数/草稿刷新丢弃/配置保持，16统计POST本地拦截、0生产写入/页面HTTP错误。01:34扫码任务Enabled/Ready，实际Limited/Interactive exit0、固定pin/installation/XML一致、strict前后无handoff及独立post只读核验通过；stdout未捕获，idle为上述门禁和exit0推定。原task_XML_rejected/默认true节点省略实证/精确CAS回disabled保留历史；01:22–01:37 Docker stdout/stderr限定日志ERROR/Exception/OOM匹配0、两应用restarts0，未执行真实转存/分享/发布。[本轮范围与证据](evaluation/baidu-backfill-20261109/README.md)。
 
 11月8日历史百度/文件选择隔离候选验证：最终379后端源文件哈希一致，1,141项零失败、必需真实SQL（含百度8项）、独立compile、两临时夹具清理通过；前端77源文件绑定、58项及八组mock浏览器、375固定镜像产物通过。两项重试审查缺陷已修复并回归：关闭视频的旧成功任务不更新资源，旧百度种子分享须精确目录自有分享实时核验。当时生产真实入口只读正常、现役镜像保持，未执行该阶段生产SQL/扫码/转存/分享/发帖；当时安全门禁阻止部署。后续11月9日00:32限定授权上线与00:48扫码结果另记，不改写本阶段原验证范围。[完整历史候选验证](evaluation/baidu-file-selection-20261108/README.md)。
 

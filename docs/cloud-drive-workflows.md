@@ -1,6 +1,6 @@
 # 网盘工作流配置
 
-开发分支：`codex/cloud-drive-workflows`。2026-11-09 00:32 已上线百度扫码、转存适配与每盘文件类型配置；00:48 真实专用账号已验证并加密连接。01:22:22 慢速存量补全已仅 backend/frontend 上线，固定代码 `1a9ff55`；默认关闭、十分钟一条，真实转存、分享和 GYING 发布待验。[验收记录](evaluation/baidu-backfill-20261109/README.md)。
+开发分支：`codex/cloud-drive-workflows`。2026-11-09 13:54:51 已仅 backend/frontend 上线按库内 GYING ID 补种子，固定代码 `b55080d8`；视频/种子与阶段独立配置、专用百度会话保持有效。14:24 单影片实跑在首个磁力文本上传遇到 UNKNOWN，自动补全保持关闭、十分钟一条，尚未验证真实归档成功。[本轮验收](evaluation/baidu-torrent-backfill-20261109/README.md)。00:32 接入与 01:22 旧存量补全结果保留于[历史记录](evaluation/baidu-backfill-20261109/README.md)。
 
 ## 页面与阶段
 
@@ -17,7 +17,7 @@
 | 保存目录 | 1–300 字符绝对路径，禁止反斜杠、控制字符、`..` 段；不移动既有任务目录 |
 | 手动批次上限 | 1–20；执行时处理该盘视频/种子队列，总数量不超过上限 |
 
-空间不足可选择“视频关闭、种子开启”，并开启需要的发现、转存和分享阶段。种子和磁力文本占用少量空间；不会清理已有视频。两类都关允许保存并暂停新文件采集。阶段与文件类型互相独立。
+空间不足可选择“视频关闭、种子开启”，并开启需要的转存和分享阶段。百度“种子补全”按库内 GYING ID 运行，独立于发现开关；其它采集入口仍遵守各自发现配置。种子和磁力文本占用少量空间；不会清理已有视频。两类都关允许保存并暂停新文件采集。阶段与文件类型互相独立。
 
 夸克/迅雷缺少新类型键时保持两类开启，百度两类和四阶段默认全部关闭。保存和扫码不自动启用阶段。夸克/迅雷分享转存器恢复整个视频目录，因此仅种子模式走小文件归档队列；百度只选择所有叶子都符合策略的完整根文件/目录，混合含禁用/未知类型的目录整体跳过，不连带转存视频。
 
@@ -79,12 +79,14 @@ ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/ad
 
 复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务，以新的 `resource.hub.baidu.torrent-backfill.task-id` 独立指针保存 v2 进度，不需新增表。固定初次来源身份高水位，记录 GYING 游标、百度 P2P 子任务、统计和三十分钟数据库租约；重启后继续原项。普通 Worker 不消费补全专属子任务。页面显示当前 GYING ID、种子选择、归档步骤和具体错误类别；种子开关关闭会明确提示。
 
+当前实际新父任务为 17583，专属子任务 17584 在 `UPLOAD_MAGNET_TEXT` 为 UNKNOWN，父状态 BLOCKED/CHILD_UNKNOWN、自动开关关闭。2026-11-09 14:29 官方只读目录检查为 0 文件、同一账号且会话保持；未保存上传文件 ID 或分享提交意图，不能将目录为空推定为可以重放。确认未知结果与接口原因前保持暂停。
+
 旧 `resource.hub.baidu.backfill.task-id` 及父任务、游标、转存子任务和 UNKNOWN/远端意图原样保留，新补全不读取它们。旧视频分享的审核或源链接错误不会阻塞种子补全。若同片百度种子已有未知提交或待核验 P2P 任务，则保留其原选择及远端检查点，显示该种子任务的具体状态；不重置、重建或重放未知提交。
 
-宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。本次部署已同步新 backend 固定镜像并通过实际配置回读与只读 idle，保留 profile 和加密会话；扫码任务已恢复Enabled/Ready，Limited/Interactive实际运行exit0、XML与installation一致及独立只读核验通过；idle由严格前后无handoff与exit0推定，实际stdout未捕获。首次默认Enabled节点省略造成的失败和精确CAS回disabled保留于验收记录。
+宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。13:54 本轮仅同步新 backend 固定镜像并核对实际配置、严格前后 idle、原任务 XML/ACL，保持 Enabled/Ready、profile 和加密会话。01:34 历史任务恢复 Enabled/Ready、Limited/Interactive 实际运行 exit0 与独立核验保留；当时 stdout 未捕获，idle 由严格前后无 handoff 与 exit0 推定。首次默认 Enabled 节点省略造成的失败和精确 CAS 回 disabled 保留于历史验收记录。
 
 ## 部署与回退
 
-百度任务表由用户创建并通过生产结构核验。百度、文件类型配置和慢速补全已仅 backend/frontend 上线，专用账号已真实扫码连接；本轮没有测试转存、创建分享或发布 GYING。11月9日01:22停止窗口七份 age 的完整认证和内容核验通过，包含 MySQL 26 表、backend-data、私有配置与浏览器会话；百度会话 AES-GCM、同账号、当前 session/key 一致性和文件权限专验通过。日常覆盖37项 apply/dry-run通过，自然完整备份未验；新pin后三份host/会话age认证、18本机/公网入口和194份静态/语言资源SHA通过，真实ADMIN八组页面和独立运行态终验通过（26 PASS/0 FAIL/1 Agent argv UNKNOWN），扫码任务已恢复Enabled/Ready，实际Limited运行exit0与独立只读核验通过；原task_XML_rejected失败保留。
+百度任务表由用户创建并通过生产结构核验。13:54:51 本轮仅 backend/frontend 上线按 ID 种子补全；真实 ADMIN 八场景、194 份公网/本机资产 SHA 与独立应用 25 PASS / 0 FAIL / 0 UNKNOWN 通过。停止窗口七份 age 与 pin 后三份 age 的完整认证、内容、会话及原任务 XML/ACL 独立前后绑定通过；日常新增覆盖 CAS/dry-run 38 项通过，自然完整备份未验。扫码助手仅更新 backend 固定镜像，保持 Enabled/Ready、profile 与会话；原 post attempt01 原因 UNKNOWN 保留，新 attempt02 通过。14:24 实跑已采到合法 GYING 来源，但百度首个磁力文本上传为 UNKNOWN；保持新父暂停，真实归档成功、视频转存和网站 GYING 发布尚未验证。详见[部署](evaluation/baidu-torrent-backfill-20261109/deployment/README.md)与[真实验收](evaluation/baidu-torrent-backfill-20261109/torrent-acceptance/summary.json)。
 
 旧后端忽略文件类型开关并不能识别百度任务，不能直接自动回退。回退前停止新写入者，读取新配置、百度副作用阶段和 P2P 检查点；有类型关闭、百度在途/未知意图或读取失败时阻断旧消费者，保留当前 SQL/会话/计划与候选版本。新增补全父任务或指针也阻断旧版回退。不能用旧 SQL 覆盖在线数据，不重置/重放队列。真实转存、发帖和删除不作默认健康探针。

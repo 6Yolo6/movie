@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-09T05:10:22.985562+00:00",
+  "reviewedCommit": "b55080d8c0449f6dc6852beff0356d7350cce570",
+  "tree": "6b55629aba965f2db1c36192c0c459cd4f4fa61f",
+  "branch": "codex/cloud-drive-workflows",
+  "frontendImageId": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+  "candidateTag": "gying-baidu-torrent-backfill-frontend-candidate:20261109-123542-10de06a0",
+  "buildId": "q5wwVUB40SraMiAz1xwR0",
+  "sources": 78,
+  "tests": 8,
+  "sourceManifestSha256": "f5b4d8b55a81c67bdc2a4b92547df09d9d429d137475c16cf2fdcee02f3e0a8f",
+  "testManifestSha256": "63885e7bcdd26b19514beb68e7ad4362037258cd08b46fbcf115090c2db459c6",
+  "artifactManifestSha256": "14fb5126fc8ad7b8b44f7053d8b7ff574320ddcb2082b39e5722490af62265da",
+  "runtimeReportSha256": "6a61390a16481bc7dfd8ca50fbd36ac15deca1c919a9d00e44b30cd67760ed8e",
+  "frozenSourceAndImageMatchReviewedCommit": true,
+  "productionExecution": false
+}
