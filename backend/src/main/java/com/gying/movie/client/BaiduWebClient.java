@@ -363,8 +363,22 @@ public class BaiduWebClient {
         return action(code, error.retryable(), error.actionRequired(), uncertain);
     }
     private static String requireMetadata(RemoteFile file, String path, long size, String digest) {
-        if (file.directory() || !path.equals(file.path()) || file.size() != size || file.md5() == null || !digest.equalsIgnoreCase(file.md5())) throw action("DESTINATION_CONFLICT", false, true, false);
+        if (file.directory() || !path.equals(file.path()) || file.size() != size || file.md5() == null || !digest.equals(normalizeWebMd5(file.md5()))) throw action("DESTINATION_CONFLICT", false, true, false);
         return file.fsid();
+    }
+    /** Baidu web listings encode MD5 with a g-v marker at index 9; PCS blocks remain plain MD5. */
+    static String normalizeWebMd5(String value) {
+        if (value == null || value.length() != 32) return null;
+        if (value.matches("[0-9a-fA-F]{32}")) return value.toLowerCase(Locale.ROOT);
+        if (!value.matches("[0-9a-fA-F]{9}[g-vG-V][0-9a-fA-F]{22}")) return null;
+        String encoded = value.toLowerCase(Locale.ROOT);
+        char[] decoded = new char[32];
+        for (int i = 0; i < decoded.length; i++) {
+            int nibble = i == 9 ? encoded.charAt(i) - 'g' : Character.digit(encoded.charAt(i), 16);
+            decoded[i] = Character.forDigit(nibble ^ (i & 15), 16);
+        }
+        return new String(decoded, 8, 8) + new String(decoded, 0, 8)
+                + new String(decoded, 24, 8) + new String(decoded, 16, 8);
     }
     private static boolean metadataFile(String name, byte[] bytes) {
         String lower = name.toLowerCase(Locale.ROOT);

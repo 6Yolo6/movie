@@ -136,6 +136,94 @@ class BaiduWebClientTest {
         assertEquals("DESTINATION_CONFLICT",assertThrows(BaiduActionException.class,()->client.p2pFindUploadedFile("/target","magnet.txt",bytes)).code());
         assertTrue(transport.requests.stream().allMatch(r->r.method().equals("GET")));
     }
+    @Test void webMd5AcceptsKnownEncodingAndAllSixteenMarkerValues() {
+        // Fixed vectors from the independently verified Baidu web encoding, never from a production response.
+        String[][] vectors = {
+            {"09000000000000000000000000000000", "012345678gabcdef0123456789abcdef"},
+            {"08000000000000000000000000000000", "012345678habcdef0123456789abcdef"},
+            {"0b000000000000000000000000000000", "012345678iabcdef0123456789abcdef"},
+            {"0a000000000000000000000000000000", "012345678jabcdef0123456789abcdef"},
+            {"0d000000000000000000000000000000", "012345678kabcdef0123456789abcdef"},
+            {"0c000000000000000000000000000000", "012345678labcdef0123456789abcdef"},
+            {"0f000000000000000000000000000000", "012345678mabcdef0123456789abcdef"},
+            {"0e000000000000000000000000000000", "012345678nabcdef0123456789abcdef"},
+            {"01000000000000000000000000000000", "012345678oabcdef0123456789abcdef"},
+            {"00000000000000000000000000000000", "012345678pabcdef0123456789abcdef"},
+            {"03000000000000000000000000000000", "012345678qabcdef0123456789abcdef"},
+            {"02000000000000000000000000000000", "012345678rabcdef0123456789abcdef"},
+            {"05000000000000000000000000000000", "012345678sabcdef0123456789abcdef"},
+            {"04000000000000000000000000000000", "012345678tabcdef0123456789abcdef"},
+            {"07000000000000000000000000000000", "012345678uabcdef0123456789abcdef"},
+            {"06000000000000000000000000000000", "012345678vabcdef0123456789abcdef"}
+        };
+        for (String[] vector : vectors) {
+            assertEquals(vector[0], BaiduWebClient.normalizeWebMd5(vector[1]));
+            assertEquals(vector[0], BaiduWebClient.normalizeWebMd5(vector[1].toUpperCase(Locale.ROOT)));
+        }
+        assertEquals("d41d8cd98f00b204e9800998ecf8427e", BaiduWebClient.normalizeWebMd5("D41D8CD98F00B204E9800998ECF8427E"));
+        assertNull(BaiduWebClient.normalizeWebMd5(null));
+        for (String invalid : List.of("", "0".repeat(31), "0".repeat(33), "012345678wabcdef0123456789abcdef",
+                "01234567g9abcdef0123456789abcdef", "012345678gabcdef0123456789abcdez",
+                " 012345678gabcdef0123456789abcdef", "012345678gabcdef0123456789abcdef ", "012345678Kabcdef0123456789abcdef")) {
+            assertNull(BaiduWebClient.normalizeWebMd5(invalid));
+        }
+    }
+    @Test void encodedMd5CompletesUploadAndSubsequentRecoveryAndReuseNeverPost() {
+        byte[] bytes = magnetBytes();
+        transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
+        transport.ownedUploadMd5 = "0f16aef0dp887b74dd26c61ef87f995e";
+        assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
+        assertEquals(1, transport.count("POST", "/api/precreate"));
+        assertEquals(1, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+        assertEquals(1, transport.count("POST", "/api/create"));
+        transport.requests.clear();
+        assertEquals("30", client.p2pFindUploadedFile("/target", "magnet.txt", bytes));
+        assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void readOnlyRecoveryAcceptsPlainAndEncodedDigestButRejectsUnknownOrWrongContent() {
+        byte[] bytes = magnetBytes();
+        for (String digest : List.of("5023B69B0E35EB9771D454B1DC058379", "0f16aef0dp887b74dd26c61ef87f995e",
+                "0F16AEF0DP887B74DD26C61EF87F995E")) {
+            transport.owned.put("/target", "[" + file("30", "magnet.txt", "/target/magnet.txt", bytes.length, false, digest) + "]");
+            assertEquals("30", client.p2pFindUploadedFile("/target", "magnet.txt", bytes));
+        }
+        for (String digest : Arrays.asList(null, "", "0".repeat(31), "0".repeat(33), "0".repeat(32),
+                "012345678pabcdef0123456789abcdef", "0f16aef0dw887b74dd26c61ef87f995e",
+                "gf16aef0dp887b74dd26c61ef87f995e", "0f16aef0dK887b74dd26c61ef87f995e")) {
+            transport.owned.put("/target", "[" + file("30", "magnet.txt", "/target/magnet.txt", bytes.length, false, digest) + "]");
+            assertEquals("DESTINATION_CONFLICT", assertThrows(BaiduActionException.class,
+                    () -> client.p2pFindUploadedFile("/target", "magnet.txt", bytes)).code());
+            assertEquals("DESTINATION_CONFLICT", assertThrows(BaiduActionException.class,
+                    () -> client.p2pUpload("/target", "magnet.txt", bytes)).code());
+        }
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void postCommitWrongEncodedDigestStaysUncertainWithoutRetryOrShare() {
+        byte[] bytes = magnetBytes();
+        transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
+        transport.ownedUploadMd5 = "012345678pabcdef0123456789abcdef";
+        var error = assertThrows(BaiduActionException.class, () -> client.p2pUpload("/target", "magnet.txt", bytes));
+        assertEquals("UPLOAD_VERIFY_DESTINATION_CONFLICT", error.code()); assertTrue(error.uncertain());
+        assertEquals(1, transport.count("POST", "/api/precreate"));
+        assertEquals(1, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+        assertEquals(1, transport.count("POST", "/api/create"));
+        transport.requests.clear();
+        assertThrows(BaiduActionException.class, () -> client.p2pFindUploadedFile("/target", "magnet.txt", bytes));
+        assertThrows(BaiduActionException.class, () -> client.p2pUpload("/target", "magnet.txt", bytes));
+        assertTrue(transport.requests.stream().allMatch(r -> r.method().equals("GET")));
+    }
+    @Test void rapidUploadEncodedDigestIsVerifiedWithoutBlockOrCommit() {
+        byte[] bytes = magnetBytes();
+        transport.precreateResponse = "{\"errno\":0,\"return_type\":2}";
+        transport.precreateOwnedContents = "[" + file("30", "magnet.txt", "/target/magnet.txt", bytes.length, false,
+                "0f16aef0dp887b74dd26c61ef87f995e") + "]";
+        assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
+        assertEquals(1, transport.count("POST", "/api/precreate"));
+        assertEquals(0, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+        assertEquals(0, transport.count("POST", "/api/create"));
+        assertEquals(0, transport.count("POST", "/share/pset"));
+    }
     @Test void pcsZeroErrorCodeIsSuccessAndNonzeroCodePreventsCommit() throws Exception {
         byte[] bytes=magnetBytes(); transport.uploadBytes=bytes; transport.uploadName="magnet.txt";
         String digest=java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(bytes));
@@ -251,7 +339,7 @@ class BaiduWebClientTest {
         final Map<String,String> shared=new HashMap<>(),owned=new HashMap<>();
         String failurePath,redirect,owner="200",records="{\"errno\":0,\"list\":[]}",transfer="{\"errno\":0,\"taskid\":\"task1\"}",createBody;
         boolean failAfterShare,shareCreated,needsCode,verified;
-        byte[] uploadBytes; String uploadName;
+        byte[] uploadBytes; String uploadName, ownedUploadMd5, precreateOwnedContents;
         String precreateResponse="{\"errno\":0,\"uploadid\":\"up1\",\"block_list\":[0],\"return_type\":1}",commitResponse;
         BaiduWebClient.WebResponse uploadResponse;
         long count(String method,String path){return requests.stream().filter(r->r.method().equals(method)&&r.uri().getPath().equals(path)).count();}
@@ -269,9 +357,9 @@ class BaiduWebClientTest {
                 case "/share/pset" -> {shareCreated=true;yield ok("{\"errno\":0,\"link\":\"https://pan.baidu.com/s/1owned\"}");}
                 case "/share/verify" -> {verified=true;yield ok("{\"errno\":0,\"randsk\":\"fixture-secret\"}");}
                 case "/share/surlinfoinrecord" -> ok("{\"errno\":0,\"shorturl\":\"https://pan.baidu.com/s/1owned\",\"pwd\":\"abcd\"}");
-                case "/api/precreate" -> ok(precreateResponse);
+                case "/api/precreate" -> {if(precreateOwnedContents!=null)owned.put("/target",precreateOwnedContents);yield ok(precreateResponse);}
                 case "/rest/2.0/pcs/superfile2" -> {if(uploadResponse!=null)yield uploadResponse;try{yield ok("{\"md5\":\""+java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes))+"\"}");}catch(Exception e){throw new AssertionError(e);}}
-                case "/api/create" -> {createBody=body(request);if(commitResponse!=null)yield ok(commitResponse);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)))+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}
+                case "/api/create" -> {createBody=body(request);if(commitResponse!=null)yield ok(commitResponse);try{owned.put("/target","["+file("30",uploadName,"/target/"+uploadName,uploadBytes.length,false,ownedUploadMd5==null?java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("MD5").digest(uploadBytes)):ownedUploadMd5)+"]");}catch(Exception e){throw new AssertionError(e);}yield ok("{\"errno\":0}");}
                 default -> throw new AssertionError("Unexpected fixture endpoint "+path);
             };
         }
