@@ -7,7 +7,7 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
     const same = (actual, expected, label) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(label + ': ' + JSON.stringify(actual));
     };
-    const initial = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
+    const initial = patch => ({ revision: 0, deferredCount: 0, deferredItems: [], taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
         processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null,
         currentIdentityId: null, currentMovieId: null, currentGyingType: null, currentGyingId: null, currentChildId: null,
         currentResourceIds: [], currentSeedNames: [], currentSeedCount: 0, currentAction: 'IDLE',
@@ -23,16 +23,17 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
         window.setTimeout = (callback, delay) => { const id = ++timerId; timers.set(id, { callback, delay }); return id; };
         window.clearTimeout = id => timers.delete(id);
         const container = document.createElement('div'); document.body.append(container);
-        const root = createRoot(container); const reads = [], saves = [], runs = [], errors = [], successes = [];
+        const root = createRoot(container); const reads = [], saves = [], runs = [], defers = [], errors = [], successes = [];
         const read = signal => { const call = { signal, ...deferred() }; reads.push(call); return call.promise; };
         const save = (settings, signal) => { const call = { settings, signal, ...deferred() }; saves.push(call); return call.promise; };
         const run = signal => { const call = { signal, ...deferred() }; runs.push(call); return call.promise; };
+        const deferUnknown = (request, signal) => { const call = { request, signal, ...deferred() }; defers.push(call); return call.promise; };
         const capture = name => function Fixture(props) {
             return React.createElement('div', { 'data-fixture': name, ref: node => { if (node) node.fixtureProps = props; } }, props.children);
         };
         const Form = capture('Form'); Form.Item = capture('Form.Item');
         const mocks = {
-            antd: { Form, ...Object.fromEntries(['Alert', 'Button', 'Col', 'InputNumber', 'Row', 'Space', 'Switch', 'Tag'].map(name => [name, capture(name)])),
+            antd: { Form, ...Object.fromEntries(['Alert', 'Button', 'Col', 'InputNumber', 'Row', 'Space', 'Switch', 'Tag', 'Modal'].map(name => [name, capture(name)])),
                 App: { useApp: () => ({ message: { error: value => errors.push(value), success: value => successes.push(value) } }) },
                 Typography: { Text: capture('Text'), Paragraph: capture('Paragraph') } },
             '@ant-design/icons': { CloudSyncOutlined: () => null, ReloadOutlined: () => null, SaveOutlined: () => null },
@@ -44,14 +45,16 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
         let props = { workflow: { provider: 'BAIDU', supported: true, status: 'AVAILABLE', discoveryEnabled: false,
             videoEnabled: false, torrentEnabled: true, transferEnabled: true, gyingPublishEnabled: false, shareEnabled: true,
             credentialConfigured: true, savePath: '/Baidu', batchLimit: 5 },
-            workflowEdited: false, workflowBusy: false, hubEnabled: true, onReadStatus: read, onSaveSettings: save, onRun: run };
+            workflowEdited: false, workflowBusy: false, hubEnabled: true, onReadStatus: read, onSaveSettings: save, onRun: run, onDeferUnknown: deferUnknown };
         const act = async action => { await React.act(async () => { action(); }); };
         const all = name => Array.from(container.querySelectorAll('[data-fixture="' + name + '"]'), node => node.fixtureProps);
-        const byId = id => ['Button', 'Switch', 'InputNumber', 'Text', 'Alert'].flatMap(all).find(row => row['data-testid'] === 'baidu-backfill-' + id);
-        const f = { reads, saves, runs, timers, errors, successes, all, byId, act, library,
+        const byId = id => ['Button', 'Switch', 'InputNumber', 'Text', 'Alert', 'Modal'].flatMap(all).find(row => row['data-testid'] === 'baidu-backfill-' + id);
+        const f = { reads, saves, runs, defers, timers, errors, successes, all, byId, act, library,
             change: (key, value) => act(() => byId(key).onChange(value)),
             save: () => act(() => byId('save').onClick()), run: () => act(() => byId('run').onClick()),
             refresh: () => act(() => byId('refresh').onClick()),
+            openDefer: () => act(() => byId('defer-unknown').onClick()),
+            confirmDefer: () => act(() => byId('defer-confirm').onOk()),
             reply: (call, value) => act(() => call.resolve(value)),
             fail: call => act(() => call.reject(new Error('BDUSS=raw-cookie-never-display'))),
             rerender: patch => act(() => { props = { ...props, ...patch, workflow: { ...props.workflow, ...patch.workflow } }; root.render(React.createElement(Controls, props)); }),
@@ -242,6 +245,89 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
         await f.reply(pending, initial({ enabled: true, status: 'PENDING' }));
         same(f.successes.length, 0, 'no late success'); same(f.timers.size, 0, 'no late polling');
     });
+    const unknown = patch => initial({ taskId: 72, revision: 4, status: 'BLOCKED', blockedReason: 'CHILD_UNKNOWN',
+        currentIdentityId: 14, currentMovieId: 'movie-100', currentGyingType: 'mv', currentGyingId: 'G100',
+        currentChildId: 481, currentChildStatus: 'UNKNOWN', currentAction: 'UPLOAD_MAGNET_TEXT', ...patch });
+    const receipt = patch => ({ identityId: 14, movieId: 'movie-100', gyingType: 'mv', gyingId: 'G100', childId: 481,
+        reason: 'CHILD_UNKNOWN', action: 'UPLOAD_MAGNET_TEXT', resourceIds: [610], seedNames: ['1080P_sub_123.txt'],
+        seedCount: 1, childPayloadSha256: 'a'.repeat(64), deferredAt: '2026-11-10T00:15:30.123456',
+        origin: 'ADMINISTRATOR', administratorId: 2, ...patch });
+    await check('unknown isolation requires explicit confirmation and submits the exact fresh parent revision', async f => {
+        await f.reply(f.reads[0], unknown());
+        same(f.byId('defer-unknown').disabled, false, 'unknown can be preserved');
+        await f.openDefer(); same(f.defers.length, 0, 'opening confirmation has no write');
+        same(f.byId('defer-confirm').open, true, 'confirmation visible');
+        await f.act(() => { f.byId('defer-confirm').onOk(); f.byId('defer-confirm').onOk(); });
+        same(f.defers.length, 1, 'one CAS request');
+        same(f.defers[0].request, { taskId: 72, childId: 481, revision: 4 }, 'exact safe request');
+        await f.run(); await f.save(); same([f.runs.length, f.saves.length], [0, 0], 'other writes locked');
+        await f.reply(f.defers[0], initial({ taskId: 72, revision: 5, processed: 1, skipped: 1, deferredCount: 1,
+            deferredItems: [receipt()], lastResult: 'UNKNOWN_DEFERRED', status: 'PENDING' }));
+        same(f.byId('defer-confirm').open, false, 'confirmation closed');
+        same(f.successes, ['cloudDriveWorkflows.baiduBackfill.deferredSaved'], 'preservation confirmed');
+        same(f.text().includes('481'), true, 'original task visible in review list');
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.results.UNKNOWN_DEFERRED'), true, 'not archive success');
+        same(f.defers.length, 1, 'no repeat');
+    });
+    await check('paused unknown archive remains preservable with hub and upload stages disabled', async f => {
+        await f.reply(f.reads[0], unknown({ status: 'PAUSED', blockedReason: null, enabled: false, revision: 6 }));
+        await f.rerender({ hubEnabled: false, workflow: { transferEnabled: false, shareEnabled: false, torrentEnabled: false } });
+        same(f.byId('defer-unknown').disabled, false, 'local preservation is available after pause');
+        same(f.byId('run').disabled, true, 'external archive work remains gated');
+        await f.openDefer(); await f.confirmDefer();
+        same(f.defers[0].request, { taskId: 72, childId: 481, revision: 6 }, 'paused current revision');
+        same([f.runs.length, f.saves.length], [0, 0], 'no scheduler activation or cloud submission');
+        await f.reply(f.defers[0], initial({ taskId: 72, revision: 7, status: 'PAUSED', enabled: false,
+            processed: 1, skipped: 1, deferredCount: 1, deferredItems: [receipt()], lastResult: 'UNKNOWN_DEFERRED' }));
+        same(f.byId('enabled').checked, false, 'pause remains saved');
+        same(f.byId('defer-confirm').open, false, 'confirmed preservation completes');
+    });
+    await check('running and action-required children cannot be isolated through the UI', async f => {
+        for (const state of ['RUNNING', 'ACTION_REQUIRED']) {
+            if (f.reads.length === 1) await f.reply(f.reads[0], unknown({ currentChildStatus: state, blockedReason: state === 'RUNNING' ? 'CHILD_RUNNING' : 'CHILD_ACTION_REQUIRED' }));
+            else await f.reply(f.reads.at(-1), unknown({ currentChildStatus: state, blockedReason: 'CHILD_ACTION_REQUIRED' }));
+            same(Boolean(f.byId('defer-unknown')), false, 'no isolation action for ' + state);
+            await f.confirmDefer(); same(f.defers.length, 0, 'handler guarded');
+            await f.refresh();
+        }
+    });
+    await check('changed status revision invalidates an open isolation confirmation', async f => {
+        await f.reply(f.reads[0], unknown()); await f.openDefer();
+        await f.refresh(); await f.reply(f.reads[1], unknown({ revision: 5 }));
+        same(f.byId('defer-confirm').okButtonProps.disabled, true, 'stale confirmation disabled');
+        await f.confirmDefer(); same(f.defers.length, 0, 'stale handler cannot write');
+        same(f.all('Alert').some(row => row.title === 'cloudDriveWorkflows.baiduBackfill.deferChanged'), true, 'fresh status required');
+    });
+    await check('uncertain isolation failure requires a fresh status read before another confirmation', async f => {
+        await f.reply(f.reads[0], unknown()); await f.openDefer(); await f.confirmDefer(); await f.fail(f.defers[0]);
+        same(f.byId('defer-confirm').open, false, 'unknown response closes confirmation');
+        same(f.byId('defer-unknown').disabled, true, 'cannot replay');
+        await f.openDefer(); await f.confirmDefer(); same(f.defers.length, 1, 'direct retry blocked');
+        same(f.text().includes('raw-cookie'), false, 'fixed error only');
+        await f.refresh(); await f.reply(f.reads[1], unknown({ revision: 8 })); await f.openDefer(); await f.confirmDefer();
+        same(f.defers[1].request.revision, 8, 'fresh CAS revision');
+    });
+    await check('bounded deferred receipts preserve useful metadata while dropping raw upstream fields', async f => {
+        const decoded = f.library.baiduBackfillStatus(initial({ deferredCount: 1, deferredItems: [receipt({ cookie: 'raw-cookie', action: 'raw-cookie' })] }));
+        same(decoded.deferredItems[0].action, 'UNKNOWN', 'fixed action fallback');
+        same(Object.hasOwn(decoded.deferredItems[0], 'cookie'), false, 'secret fields omitted');
+        for (const patch of [{ revision: -1 }, { revision: null }, { deferredCount: 2001 }, { deferredCount: 0, deferredItems: [receipt()] },
+            { deferredCount: 21, deferredItems: Array.from({ length: 21 }, () => receipt()) },
+            { deferredCount: 1, deferredItems: [receipt({ childId: 0 })] }, { deferredCount: 1, deferredItems: [receipt({ reason: 'FAILED' })] },
+            { deferredCount: 1, deferredItems: [receipt({ childPayloadSha256: 'not-a-hash' })] },
+            { deferredCount: 1, deferredItems: [receipt({ resourceIds: [610, 610] })] },
+            { deferredCount: 1, deferredItems: [receipt({ deferredAt: 'invalid' })] }]) {
+            let rejected = false; try { f.library.baiduBackfillStatus(initial(patch)); } catch { rejected = true; }
+            same(rejected, true, 'invalid receipt rejected ' + Object.keys(patch)[0]);
+        }
+        same(f.defers.length, 0, 'parser never changes task state');
+    });
+    await check('unmount aborts isolation and suppresses late status or success', async f => {
+        await f.reply(f.reads[0], unknown()); await f.openDefer(); await f.confirmDefer();
+        const pending = f.defers[0]; await f.unmount(); same(pending.signal.aborted, true, 'request aborted');
+        await f.reply(pending, initial({ taskId: 72, revision: 5, deferredCount: 1, deferredItems: [receipt()] }));
+        same(f.successes.length, 0, 'no late message'); same(f.timers.size, 0, 'no late poll');
+    });
     return results;
 }
 
@@ -250,6 +336,6 @@ test('Baidu backfill UI: real React scheduling, saved choices and request lifecy
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
         baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
     });
-    assert.equal(results.length, 21);
+    assert.equal(results.length, 28);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });

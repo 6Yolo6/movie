@@ -53,6 +53,18 @@ class BaiduBackfillServiceTest {
             state = call.getArgument(0); state.status = "COMPLETE".equals(state.phase) ? "COMPLETE" : state.blockedReason != null ? "BLOCKED" : state.enabled ? "PENDING" : "PAUSED";
             return state;
         });
+        when(store.deferUnknown(any(BaiduBackfillTaskStore.State.class), anyString(), anyString(), isNull())).thenAnswer(call -> {
+            state = call.getArgument(0);
+            var item = new BaiduBackfillTaskStore.DeferredItem(state.currentIdentityId, state.currentMovieId, state.currentGyingType,
+                    state.currentGyingId, state.currentChildId, "CHILD_UNKNOWN", state.currentAction, state.currentResourceIds,
+                    state.currentSeedNames, state.currentSeedCount, "a".repeat(64), LocalDateTime.now().toString(), call.getArgument(2), null);
+            var items = new java.util.ArrayList<>(state.deferredItems); items.add(item); state.deferredItems = List.copyOf(items);
+            state.processed++; state.skipped++; state.identityCursor = state.currentIdentityId;
+            state.currentIdentityId = null; state.currentChildId = null; state.currentMovieId = null;
+            state.currentGyingType = null; state.currentGyingId = null; state.currentResourceIds = List.of();
+            state.currentSeedNames = List.of(); state.currentSeedCount = 0; state.currentAction = "IDLE";
+            state.lastResult = "UNKNOWN_DEFERRED"; state.blockedReason = null; return state;
+        });
         MovieMetadata movie = new MovieMetadata(); movie.setId("movie1"); movie.setStatus("ACTIVE"); movie.setCategory("mv"); when(movies.getById("movie1")).thenReturn(movie);
         identity = new MovieSourceIdentity(); identity.setId(2L); identity.setMovieId("movie1"); identity.setSource("GYING");
         identity.setSourceType("mv"); identity.setExternalId("CASE1"); identity.setMatchStatus("CONFIRMED"); when(identities.getById(2L)).thenReturn(identity);
@@ -96,11 +108,15 @@ class BaiduBackfillServiceTest {
         var result = service.runOnce(); assertEquals(1, result.succeeded()); assertEquals(17580L, result.legacyTaskId());
         assertEquals("TORRENTS_ARCHIVED", result.lastResult()); verify(gying, never()).publishResourceToGying(any());
     }
-    @Test void protectedUnknownSeedKeepsItsReferencesWithoutCollectionOrReplaying() {
+    @Test void protectedUnknownSeedIsDeferredWithItsReferencesWithoutCollectionOrReplaying() {
         restoreIdentity(); child.setStatus("UNKNOWN"); child.setAttempts(2); String original = child.getPayload();
         when(archives.protectedArchive("movie1", "BAIDU")).thenReturn(child);
-        var result = service.runOnce(); assertEquals("CHILD_UNKNOWN", result.blockedReason()); assertEquals(4L, result.currentChildId());
-        assertEquals(List.of(31L), result.currentResourceIds()); assertEquals(1, result.currentSeedCount()); assertEquals("UPLOAD_TORRENT", result.currentAction());
+        var result = service.runOnce(); assertNull(result.blockedReason()); assertNull(result.currentChildId());
+        assertEquals(1, result.deferredCount()); assertEquals(1, result.skipped()); assertEquals("UNKNOWN_DEFERRED", result.lastResult());
+        var deferred = result.deferredItems().get(0);
+        assertEquals(4L, deferred.childId()); assertEquals(List.of(31L), deferred.resourceIds());
+        assertEquals(1, deferred.seedCount()); assertEquals("UPLOAD_TORRENT", deferred.action());
+        verify(store).deferUnknown(state, original, "MANUAL_RUN", null);
         assertEquals(original, child.getPayload()); assertEquals(2, child.getAttempts()); verifyNoInteractions(gying);
         verify(archives, never()).submitOne(anyLong(), anyString(), any()); verify(archives, never()).enqueueForProvider(any(), any(), any(), any(), any(), any());
     }
@@ -127,6 +143,19 @@ class BaiduBackfillServiceTest {
         service = new BaiduBackfillService(store, jdbc, properties, config, tasks, gying, movies, identities, archives, client, mapper);
         var first = service.runOnce();
         String reason = uncertain ? "CHILD_UNKNOWN" : "CHILD_ACTION_REQUIRED";
+        if (uncertain) {
+            assertNull(first.blockedReason()); assertEquals("PENDING", first.status()); assertEquals(1, first.deferredCount());
+            assertEquals("CHILD_UNKNOWN", first.deferredItems().get(0).reason()); assertEquals(4L, first.deferredItems().get(0).childId());
+            assertEquals("UPLOAD_TORRENT", first.deferredItems().get(0).action()); assertEquals(2, state.identityCursor);
+            assertEquals("UNKNOWN", child.getStatus()); assertEquals(1, child.getAttempts());
+            String persisted = child.getPayload(); service.runOnce();
+            assertEquals(persisted, child.getPayload()); assertEquals(1, child.getAttempts());
+            verify(archives, times(1)).submitOne(4L, "BAIDU", 100L);
+            verify(client, times(2)).p2pUpload(eq("/fixture/metadata"), anyString(), any());
+            verify(client, never()).createOwnShare(anyString()); verify(client, never()).findOwnShare(anyString());
+            verify(links, never()).save(any()); verifyNoInteractions(gying, identities);
+            verify(archives, never()).enqueueForProvider(any(), any(), any(), any(), any(), any()); return;
+        }
         assertEquals(reason, first.blockedReason()); assertEquals(uncertain ? "UNKNOWN" : "ACTION_REQUIRED", first.currentChildStatus());
         assertEquals("BaiduActionException", first.currentChildError()); assertEquals("UPLOAD_TORRENT", first.currentAction());
         assertEquals(4L, first.currentChildId()); assertEquals(List.of(31L), first.currentResourceIds()); assertEquals(1, first.currentSeedCount());
@@ -144,7 +173,7 @@ class BaiduBackfillServiceTest {
     @Test void realAdapterUploadSessionFailureKeepsParentAndOwnedChildBlockedWithoutReplay() throws Exception {
         assertRealUploadFailureStopsParentWithoutRecollectingOrResubmitting(false);
     }
-    @Test void realAdapterUncertainUploadKeepsParentAndOwnedChildBlockedWithoutReplay() throws Exception {
+    @Test void realAdapterUncertainUploadDefersTheItemAndKeepsOwnedChildWithoutReplay() throws Exception {
         assertRealUploadFailureStopsParentWithoutRecollectingOrResubmitting(true);
     }
 
@@ -198,8 +227,32 @@ class BaiduBackfillServiceTest {
         assertEquals(1, service.runOnce().processed()); verifyNoInteractions(jdbc); verify(archives, times(1)).submitOne(4L, "BAIDU", 100L);
     }
     @Test void publicErrorsAndActionsExposeOnlyBoundedCategories() {
-        restoreChild(); child.setStatus("UNKNOWN"); child.setPayload("{\"stage\":\"secret-payload\",\"errorCategory\":\"cookie-ticket-url\"}");
+        restoreChild(); child.setStatus("REVIEW_REQUIRED"); child.setPayload("{\"stage\":\"secret-payload\",\"errorCategory\":\"cookie-ticket-url\"}");
         var result = service.runOnce(); assertEquals("OTHER", result.currentChildError()); assertEquals("ARCHIVE_METADATA_FILES", result.currentAction());
+    }
+
+    @Test void automaticUnknownConsumesOneBatchItemAndDoesNotStarveTheFollowingIdentity() {
+        restoreChild(); child.setStatus("UNKNOWN");
+        service.runDue(); assertEquals(1, state.processed); assertEquals("AUTOMATIC", state.deferredItems.get(0).origin());
+        verifyNoInteractions(gying, jdbc); verify(archives, never()).submitOne(anyLong(), anyString(), any());
+        when(jdbc.queryForList(eq(BaiduBackfillService.NEXT_IDENTITY_SQL), any(Object[].class)))
+                .thenReturn(List.of(Map.of("id", 3L, "movie_id", "movie2", "source_type", "tv", "external_id", "CASE2")));
+        MovieMetadata next = new MovieMetadata(); next.setId("movie2"); next.setStatus("ACTIVE"); when(movies.getById("movie2")).thenReturn(next);
+        MovieSourceIdentity nextIdentity = new MovieSourceIdentity(); nextIdentity.setId(3L); nextIdentity.setMovieId("movie2");
+        nextIdentity.setSource("GYING"); nextIdentity.setSourceType("tv"); nextIdentity.setExternalId("CASE2"); nextIdentity.setMatchStatus("AUTO");
+        when(identities.getById(3L)).thenReturn(nextIdentity);
+        when(gying.collectMovieP2pResources("movie2", 3L)).thenReturn(new GyingSourceWorkflowService.P2pCollection("movie2", 3L, "tv", "CASE2", 0, List.of()));
+        service.runDue(); assertEquals(2, state.processed); assertEquals(3, state.identityCursor); assertEquals(1, state.deferredItems.size());
+        verify(gying).collectMovieP2pResources("movie2", 3L); verify(gying, never()).publishResourceToGying(any());
+        verify(gying, never()).collectMovieP2pResources("movie1", 2L); assertEquals("UNKNOWN", child.getStatus());
+    }
+
+    @Test void uncertainRowChangeDuringDeferralFailsClosedWithoutLosingItsPointer() {
+        restoreChild(); child.setStatus("UNKNOWN");
+        when(store.deferUnknown(any(BaiduBackfillTaskStore.State.class), anyString(), anyString(), isNull()))
+                .thenThrow(new IllegalStateException("BACKFILL_RECOVERY_CONFLICT"));
+        assertEquals("PROCESSING_ERROR", service.runOnce().blockedReason()); assertEquals(4L, state.currentChildId);
+        assertEquals(0, state.processed); verify(archives, never()).submitOne(anyLong(), anyString(), any());
     }
     @Test void nullableDatabaseChildStatusMapsToUnknownAndNeverRunsIt() {
         restoreChild(); child.setStatus(null);

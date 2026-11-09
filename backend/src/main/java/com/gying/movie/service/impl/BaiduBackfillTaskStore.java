@@ -3,7 +3,11 @@ package com.gying.movie.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.Statement;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -45,6 +49,83 @@ public class BaiduBackfillTaskStore {
         public long processed, succeeded, skipped, failed;
         public boolean currentFailureCounted;
         public String blockedReason, nextRunAt, leaseOwner, leaseUntil;
+        public List<DeferredItem> deferredItems = List.of();
+    }
+
+    /** A local review receipt, never a claim that the uncertain remote write failed. */
+    public record DeferredItem(Long identityId, String movieId, String gyingType, String gyingId, Long childId,
+            String reason, String action, List<Long> resourceIds, List<String> seedNames, int seedCount,
+            String childPayloadSha256, String deferredAt, String origin, Long administratorId) { }
+    private static final int MAX_DEFERRED_ITEMS = 2000;
+
+    /** Retain the exact UNKNOWN child and release only this parent's catalog cursor. No network call occurs. */
+    public State deferUnknown(State progress, String expectedChildPayload, String origin, Long administratorId) {
+        return transactions.execute(tx -> {
+            State latest = readTask(progress.taskId, true); assertOwned(latest, progress);
+            State saved = copy(progress);
+            saved.enabled = latest.enabled; saved.intervalMinutes = latest.intervalMinutes;
+            saved.batchLimit = latest.batchLimit; saved.settingsRevision = latest.settingsRevision;
+            deferLocked(saved, expectedChildPayload, origin, administratorId);
+            saved.revision++; saved.leaseUntil = now().plusMinutes(30).toString();
+            write(saved); return saved;
+        });
+    }
+
+    /** Explicit administrator recovery uses the same row locks but never acquires a remote-work lease. */
+    public State deferUnknown(long taskId, long revision, long childId, Long administratorId) {
+        return transactions.execute(tx -> {
+            State state = readLockedIfPresent();
+            if (state == null || state.taskId != taskId || state.revision != revision
+                    || !Long.valueOf(childId).equals(state.currentChildId) || "COMPLETE".equals(state.phase)
+                    || (state.leaseUntil != null && LocalDateTime.parse(state.leaseUntil).isAfter(now()))) {
+                throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT");
+            }
+            deferLocked(state, null, "ADMINISTRATOR", administratorId);
+            state.revision++; state.leaseOwner = null; state.leaseUntil = null;
+            state.status = state.enabled ? "PENDING" : "PAUSED";
+            state.nextRunAt = state.enabled ? now().toString() : null;
+            write(state); return state;
+        });
+    }
+
+    private void deferLocked(State state, String expectedChildPayload, String origin, Long administratorId) {
+        if (state.currentIdentityId == null || state.currentChildId == null || state.deferredItems.size() >= MAX_DEFERRED_ITEMS
+                || !Set.of("AUTOMATIC", "MANUAL_RUN", "ADMINISTRATOR").contains(origin)
+                || ("ADMINISTRATOR".equals(origin) && (administratorId == null || administratorId <= 0))) {
+            throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT");
+        }
+        List<String> found = jdbc.queryForList("SELECT payload FROM resource_hub_task WHERE id=? AND task_type='P2P_ARCHIVE' "
+                + "AND source='BAIDU' AND movie_id=? AND status='UNKNOWN' FOR UPDATE", String.class, state.currentChildId, state.currentMovieId);
+        if (found.size() != 1 || (expectedChildPayload != null && !sameJson(expectedChildPayload, found.get(0)))) {
+            throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT");
+        }
+        JsonNode payload;
+        try { payload = mapper.readTree(found.get(0)); } catch (Exception invalid) { throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT"); }
+        if (payload == null || !payload.isObject() || !state.currentGyingType.equals(payload.path("typeCode").asText())
+                || !state.currentGyingId.equals(payload.path("mid").asText())
+                || (payload.has("backfillParentId") && (!payload.path("backfillParentId").isIntegralNumber()
+                    || payload.path("backfillParentId").asLong() != state.taskId))) throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT");
+        String action = payload.path("stage").asText("ARCHIVE_METADATA_FILES");
+        if (!ACTIONS.contains(action)) action = "ARCHIVE_METADATA_FILES";
+        List<DeferredItem> items = new ArrayList<>(state.deferredItems);
+        items.add(new DeferredItem(state.currentIdentityId, state.currentMovieId, state.currentGyingType, state.currentGyingId,
+                state.currentChildId, "CHILD_UNKNOWN", action, List.copyOf(state.currentResourceIds), List.copyOf(state.currentSeedNames),
+                state.currentSeedCount, hash(found.get(0)), now().toString(), origin, administratorId));
+        state.deferredItems = List.copyOf(items);
+        state.processed++; state.skipped++; state.identityCursor = state.currentIdentityId;
+        state.currentIdentityId = null; state.currentChildId = null; state.currentMovieId = null;
+        state.currentGyingType = null; state.currentGyingId = null; state.currentResourceIds = List.of();
+        state.currentSeedNames = List.of(); state.currentSeedCount = 0; state.currentAction = "IDLE";
+        state.lastResult = "UNKNOWN_DEFERRED"; state.blockedReason = null; state.currentFailureCounted = false;
+    }
+
+    private static String hash(String value) {
+        try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8))); }
+        catch (Exception unavailable) { throw new IllegalStateException("BACKFILL_RECOVERY_CONFLICT"); }
+    }
+    private boolean sameJson(String first, String second) {
+        try { return mapper.readTree(first).equals(mapper.readTree(second)); }
+        catch (Exception invalid) { return false; }
     }
 
     /** Historical parents are retained verbatim and never gate the torrent workflow. */
@@ -210,7 +291,7 @@ public class BaiduBackfillTaskStore {
     static final Set<String> ACTIONS = Set.of("IDLE", "COLLECT_GYING_TORRENTS", "ARCHIVE_METADATA_FILES", "LOAD_SELECTION",
             "PREPARE_METADATA_FILES", "RESOLVE_MOVIE_FOLDER", "UPLOAD_TORRENT", "UPLOAD_MAGNET_TEXT",
             "CREATE_METADATA_SHARE", "PUBLISH_METADATA_LINK", "COMPLETE");
-    private static final Set<String> RESULTS = Set.of("TORRENTS_ARCHIVED", "NO_ELIGIBLE_GYING_TORRENTS", "MOVIE_INACTIVE", "SELECTION_SUPERSEDED");
+    private static final Set<String> RESULTS = Set.of("TORRENTS_ARCHIVED", "NO_ELIGIBLE_GYING_TORRENTS", "MOVIE_INACTIVE", "SELECTION_SUPERSEDED", "UNKNOWN_DEFERRED");
     private static void validateShape(JsonNode raw) {
         if (raw == null || !raw.isObject()) invalid();
         for (String field : List.of("version", "taskId", "revision", "settingsRevision", "intervalMinutes", "batchLimit",
@@ -234,6 +315,25 @@ public class BaiduBackfillTaskStore {
         if (ids == null || !ids.isArray() || ids.size() > 4 || names == null || !names.isArray() || names.size() > 4) invalid();
         for (JsonNode id : ids) if (!id.isIntegralNumber() || !id.canConvertToLong()) invalid();
         for (JsonNode name : names) if (!name.isTextual()) invalid();
+        // Existing v2 parents predate deferredItems; their missing field maps to the empty default.
+        if (raw.has("deferredItems")) {
+            JsonNode deferred = raw.get("deferredItems");
+            if (!deferred.isArray() || deferred.size() > MAX_DEFERRED_ITEMS) invalid();
+            for (JsonNode item : deferred) {
+                if (!item.isObject()) invalid();
+                for (String field : List.of("identityId", "childId", "seedCount")) {
+                    if (!item.path(field).isIntegralNumber() || !item.path(field).canConvertToLong()) invalid();
+                }
+                for (String field : List.of("movieId", "gyingType", "gyingId", "reason", "action", "childPayloadSha256", "deferredAt", "origin")) {
+                    if (!item.path(field).isTextual()) invalid();
+                }
+                if (!item.path("resourceIds").isArray() || !item.path("seedNames").isArray()) invalid();
+                for (JsonNode id : item.path("resourceIds")) if (!id.isIntegralNumber() || !id.canConvertToLong()) invalid();
+                for (JsonNode name : item.path("seedNames")) if (!name.isTextual()) invalid();
+                JsonNode administrator = item.get("administratorId");
+                if (administrator == null || !(administrator.isNull() || administrator.isIntegralNumber() && administrator.canConvertToLong())) invalid();
+            }
+        }
     }
     private static void validate(State state) {
         if (state.version != 2 || state.taskId == null || state.taskId <= 0 || state.revision < 0 || state.settingsRevision < 0
@@ -244,9 +344,28 @@ public class BaiduBackfillTaskStore {
                 || state.succeeded > state.processed || state.skipped != state.processed - state.succeeded
                 || state.currentSeedCount < 0 || state.currentSeedCount > 2 || state.currentResourceIds == null || state.currentResourceIds.size() > 4
                 || state.currentSeedNames == null || state.currentSeedNames.size() > 4
+                || state.deferredItems == null || state.deferredItems.size() > MAX_DEFERRED_ITEMS
                 || (state.lastResult != null && !RESULTS.contains(state.lastResult))) invalid();
         for (Long id : state.currentResourceIds) if (id == null || id <= 0) invalid();
         for (String name : state.currentSeedNames) if (!safeText(name, 255)) invalid();
+        var deferredIds = new java.util.HashSet<Long>();
+        for (DeferredItem item : state.deferredItems) {
+            if (item == null || item.identityId() == null || item.identityId() <= 0 || item.identityId() > state.identityCursor
+                    || item.childId() == null || item.childId() <= 0 || !deferredIds.add(item.identityId())
+                    || !safeText(item.movieId(), 64) || !Set.of("mv", "tv", "ac").contains(item.gyingType())
+                    || item.gyingId() == null || !item.gyingId().matches("[A-Za-z0-9]{1,100}")
+                    || !"CHILD_UNKNOWN".equals(item.reason()) || !ACTIONS.contains(item.action())
+                    || item.resourceIds() == null || item.resourceIds().size() > 4 || item.seedNames() == null || item.seedNames().size() > 4
+                    || item.seedCount() < 0 || item.seedCount() > 2 || item.childPayloadSha256() == null
+                    || !item.childPayloadSha256().matches("[a-f0-9]{64}")
+                    || !Set.of("AUTOMATIC", "MANUAL_RUN", "ADMINISTRATOR").contains(item.origin())
+                    || ("ADMINISTRATOR".equals(item.origin()) && (item.administratorId() == null || item.administratorId() <= 0))
+                    || (item.administratorId() != null && item.administratorId() <= 0)) invalid();
+            for (Long id : item.resourceIds()) if (id == null || id <= 0) invalid();
+            for (String name : item.seedNames()) if (!safeText(name, 255)) invalid();
+            iso(item.deferredAt(), false);
+        }
+        if (state.deferredItems.size() > state.skipped) invalid();
         iso(state.movieCutoff, false); iso(state.nextRunAt, true); iso(state.leaseUntil, true);
         if ((state.leaseOwner == null) != (state.leaseUntil == null)
                 || (state.leaseOwner != null && !state.leaseOwner.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))

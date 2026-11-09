@@ -59,6 +59,7 @@ public class P2pArchiveTaskService {
         String fingerprint = fingerprint(selected);
         for (String provider : List.of("QUARK", "XUNLEI", "BAIDU")) {
             if (!properties.isDriveDiscoveryEnabled(provider) || !properties.isDriveTorrentEnabled(provider)) continue;
+            if ("BAIDU".equals(provider) && protectedArchive(movieId, provider) != null) continue;
             if (tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId)
                     .eq("source", provider).eq("keyword", fingerprint).last("LIMIT 1"), false) != null) continue;
             ResourceHubTask task = new ResourceHubTask();
@@ -85,6 +86,10 @@ public class P2pArchiveTaskService {
         if (!canRunArchive(provider)) throw new IllegalStateException("P2P_ARCHIVE_DISABLED");
         if (parentId == null || parentId <= 0 || !Set.of("mv", "tv", "ac").contains(typeCode)
                 || mid == null || !mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid backfill identity");
+        if ("BAIDU".equals(provider)) {
+            ResourceHubTask protectedChild = protectedArchive(movieId, provider);
+            if (protectedChild != null) return protectedChild;
+        }
         String identity = fingerprint(selected);
         ResourceHubTask existing = tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId)
                 .eq("source", provider).eq("keyword", identity).orderByAsc("id").last("LIMIT 1"), false);
@@ -144,6 +149,10 @@ public class P2pArchiveTaskService {
         if (!canRunArchive(provider)) throw new IllegalStateException("P2P_ARCHIVE_DISABLED");
         ResourceHubTask original = tasks.getById(existingId);
         if (original == null || !TYPE.equals(original.getTaskType())) throw new IllegalArgumentException("Invalid P2P archive reference");
+        if ("BAIDU".equals(provider)) {
+            ResourceHubTask protectedChild = protectedArchive(original.getMovieId(), provider);
+            if (protectedChild != null) return protectedChild;
+        }
         Map<String, Object> old;
         try { old = mapper.readValue(original.getPayload(), new TypeReference<Map<String, Object>>() {}); }
         catch (Exception invalid) { throw new IllegalArgumentException("Invalid P2P archive selection"); }
@@ -281,6 +290,12 @@ public class P2pArchiveTaskService {
             + "AND JSON_TYPE(JSON_EXTRACT(parent.payload,'$.leaseOwner'))='STRING' "
             + "AND CAST(REPLACE(JSON_UNQUOTE(JSON_EXTRACT(parent.payload,'$.leaseUntil')),'T',' ') AS DATETIME(6))>CURRENT_TIMESTAMP(6) "
             + "LIMIT 1) protected_parent WHERE protected_parent.protected_movie={0})";
+    static final String NO_UNRESOLVED_BAIDU_SIBLING = "NOT EXISTS(SELECT 1 FROM (SELECT id FROM resource_hub_task "
+            + "WHERE task_type='P2P_ARCHIVE' AND source='BAIDU' AND id<>{0} AND movie_id={1} "
+            + "AND (status IN('UNKNOWN','ACTION_REQUIRED','REVIEW_REQUIRED','RUNNING') "
+            + "OR JSON_EXTRACT(payload,'$.baiduShareSubmitting')=true "
+            + "OR JSON_UNQUOTE(JSON_EXTRACT(payload,'$.baiduUploadIntent.status')) IN('SUBMITTING','UNKNOWN')) "
+            + "LIMIT 1) protected_archive)";
 
     void runTask(ResourceHubTask task) { runTask(task, null); }
 
@@ -297,6 +312,7 @@ public class P2pArchiveTaskService {
         int attempt = (task.getAttempts() == null ? 0 : task.getAttempts()) + 1;
         UpdateWrapper<ResourceHubTask> claim = new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).eq("task_type", TYPE).eq("source", provider)
                 .in("status", List.of("PENDING", "FAILED"));
+        if ("BAIDU".equals(provider)) claim.apply(NO_UNRESOLVED_BAIDU_SIBLING, task.getId(), task.getMovieId());
         if (parentId == null) {
             claim.apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL");
             if ("BAIDU".equals(provider)) claim.apply(NO_ACTIVE_TORRENT_PARENT, task.getMovieId());

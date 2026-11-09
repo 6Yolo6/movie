@@ -199,6 +199,108 @@ class BaiduBackfillTaskStoreMySqlTest {
         assertFalse(store.recoverInterruptedArchive(state)); assertEquals("RUNNING", jdbc.queryForObject("SELECT status FROM resource_hub_task WHERE id=2000", String.class));
         assertEquals(before, jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class));
     }
+    static BaiduBackfillTaskStore.State unknownChild(boolean uploadIntent) {
+        var state = interruptedChild(false, null);
+        jdbc.update("UPDATE resource_hub_task SET status='UNKNOWN',last_error='Original uncertain upload' WHERE id=2000");
+        if (uploadIntent) jdbc.update("UPDATE resource_hub_task SET payload=JSON_SET(payload,'$.baiduUploadIntent',JSON_OBJECT('name','a.torrent','size',10,'sha256',?,'status','UNKNOWN')) WHERE id=2000", "a".repeat(64));
+        state.blockedReason = "CHILD_UNKNOWN"; state = store.checkpoint(state, null); return state;
+    }
+    @Test void administratorDeferralKeepsTheLegacyUnknownRowAndAuditsItsExactPayload() throws Exception {
+        var state = store.finish(unknownChild(false));
+        var before = jdbc.queryForMap("SELECT * FROM resource_hub_task WHERE id=2000");
+        String payload = (String)before.get("payload");
+        var saved = store.deferUnknown(state.taskId, state.revision, 2000L, 7L);
+        assertEquals(before, jdbc.queryForMap("SELECT * FROM resource_hub_task WHERE id=2000"));
+        assertEquals("PENDING", saved.status); assertEquals(2, saved.identityCursor); assertNull(saved.currentChildId);
+        assertEquals(1, saved.processed); assertEquals(1, saved.skipped); assertEquals(0, saved.succeeded);
+        var receipt = store.read().deferredItems.get(0);
+        assertEquals(2000L, receipt.childId()); assertEquals(2L, receipt.identityId()); assertEquals("movie1", receipt.movieId());
+        assertEquals("CHILD_UNKNOWN", receipt.reason()); assertEquals("UPLOAD_TORRENT", receipt.action());
+        assertEquals(List.of(31L), receipt.resourceIds()); assertEquals(List.of("Movie seed"), receipt.seedNames());
+        assertEquals(java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(payload.getBytes(StandardCharsets.UTF_8))), receipt.childPayloadSha256());
+        assertEquals("ADMINISTRATOR", receipt.origin()); assertEquals(7L, receipt.administratorId());
+        assertEquals(state.settingsRevision, saved.settingsRevision); assertTrue(saved.enabled);
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(state.taskId, state.revision, 2000L, 7L));
+        assertEquals(1, store.read().deferredItems.size());
+    }
+    @Test void automaticDeferralRetainsBothUnknownIntentAndCurrentSettingsWithoutAChildWrite() throws Exception {
+        var state = unknownChild(true); String payload = jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class);
+        store.settings(false, 25, 2);
+        var saved = store.deferUnknown(state, mapper.readTree(payload).toString(), "AUTOMATIC", null);
+        assertEquals(payload, jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class));
+        assertEquals("UNKNOWN", jdbc.queryForObject("SELECT status FROM resource_hub_task WHERE id=2000", String.class));
+        assertEquals(2, jdbc.queryForObject("SELECT attempts FROM resource_hub_task WHERE id=2000", Integer.class));
+        assertEquals("UNKNOWN", jdbc.queryForObject("SELECT JSON_UNQUOTE(JSON_EXTRACT(payload,'$.baiduUploadIntent.status')) FROM resource_hub_task WHERE id=2000", String.class));
+        assertFalse(saved.enabled); assertEquals(25, saved.intervalMinutes); assertEquals(2, saved.batchLimit);
+        assertEquals("PAUSED", store.finish(saved).status); assertEquals("AUTOMATIC", store.read().deferredItems.get(0).origin());
+    }
+    @Test void deferralRejectsActiveLeaseStaleRevisionWrongChildAndForeignParentWithoutWrites() {
+        var leased = unknownChild(false);
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(leased.taskId, leased.revision, 2000L, 7L));
+        final var state = store.finish(leased); final var finished = state;
+        String parentBefore = jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=?", String.class, state.taskId);
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(finished.taskId, finished.revision - 1, 2000L, 7L));
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(finished.taskId, finished.revision, 2001L, 7L));
+        jdbc.update("UPDATE resource_hub_task SET payload=JSON_SET(payload,'$.backfillParentId',99999) WHERE id=2000");
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(finished.taskId, finished.revision, 2000L, 7L));
+        assertEquals(parentBefore, jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=?", String.class, finished.taskId));
+        assertEquals("UNKNOWN", jdbc.queryForObject("SELECT status FROM resource_hub_task WHERE id=2000", String.class));
+    }
+    @Test void deferralNeverSkipsRunningAccountRequiredOrChangedPayloadTasks() {
+        var state = unknownChild(false); String original = jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class);
+        for (String status : List.of("RUNNING", "ACTION_REQUIRED", "FAILED", "SUCCEEDED", "REVIEW_REQUIRED")) {
+            jdbc.update("UPDATE resource_hub_task SET status=? WHERE id=2000", status);
+            assertThrows(IllegalStateException.class, () -> store.deferUnknown(state, original, "AUTOMATIC", null));
+            assertEquals(2000L, store.read().currentChildId); assertEquals(0, store.read().deferredItems.size());
+        }
+        jdbc.update("UPDATE resource_hub_task SET status='UNKNOWN',payload=JSON_SET(payload,'$.stage','CREATE_METADATA_SHARE') WHERE id=2000");
+        assertThrows(IllegalStateException.class, () -> store.deferUnknown(state, original, "AUTOMATIC", null));
+        assertEquals(2000L, store.read().currentChildId);
+    }
+    @Test void concurrentRecoveryRequestsProduceExactlyOneReviewReceipt() throws Exception {
+        final var state = store.finish(unknownChild(false)); var pool = Executors.newFixedThreadPool(2);
+        try {
+            var attempts = List.of(pool.submit(() -> { try { store.deferUnknown(state.taskId, state.revision, 2000L, 7L); return true; } catch (IllegalStateException conflict) { return false; } }),
+                    pool.submit(() -> { try { store.deferUnknown(state.taskId, state.revision, 2000L, 8L); return true; } catch (IllegalStateException conflict) { return false; } }));
+            int succeeded = 0; for (var attempt : attempts) if (attempt.get(10, TimeUnit.SECONDS)) succeeded++;
+            assertEquals(1, succeeded); assertEquals(1, store.read().deferredItems.size()); assertEquals(1, store.read().processed);
+            assertEquals("UNKNOWN", jdbc.queryForObject("SELECT status FROM resource_hub_task WHERE id=2000", String.class));
+        } finally { pool.shutdownNow(); assertTrue(pool.awaitTermination(10, TimeUnit.SECONDS)); }
+    }
+    @Test void oldV2ParentWithoutTheNewFieldIsReadWithoutLosingAnyHistory() {
+        var state = store.settings(false, 10, 1);
+        jdbc.update("UPDATE resource_hub_task SET payload=JSON_REMOVE(payload,'$.deferredItems') WHERE id=?", state.taskId);
+        assertEquals(List.of(), store.read().deferredItems); assertNotNull(store.claim(true));
+    }
+    @Test void deferringAnUnknownBlocksEveryOtherBaiduFingerprintButAllowsOtherMoviesAndProviders() throws Exception {
+        var state = store.finish(unknownChild(false));
+        String before = jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class);
+        store.deferUnknown(state.taskId, state.revision, 2000L, 7L);
+        var links = mock(IResourceLinkService.class); var cloud = mock(P2pCloudArchiveClient.class); var archive = archives(links, cloud);
+        ResourceHubTask alternate = ordinary("movie1", "BAIDU");
+        archive.runTask(alternate); assertEquals(0, taskService.getById(alternate.getId()).getAttempts());
+        assertEquals("PENDING", taskService.getById(alternate.getId()).getStatus());
+        assertEquals(2000L, archive.enqueueForProvider("movie1", "mv", "CASE1", selection(), "BAIDU", state.taskId).getId());
+        assertEquals(2000L, archive.cloneExistingForProvider(alternate.getId(), "BAIDU", state.taskId).getId());
+        ResourceHubTask otherMovie = ordinary("movie2", "BAIDU"); archive.runTask(otherMovie);
+        ResourceHubTask otherProvider = ordinary("movie1", "QUARK"); archive.runTask(otherProvider);
+        assertEquals(1, taskService.getById(otherMovie.getId()).getAttempts());
+        assertEquals(1, taskService.getById(otherProvider.getId()).getAttempts());
+        assertEquals(before, jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=2000", String.class));
+        assertEquals("UNKNOWN", taskService.getById(2000L).getStatus());
+        verify(cloud, never()).upload(anyString(), anyString(), any());
+    }
+    @Test void genericMetadataCollectionCannotAllocateAReplacementBaiduArchiveForAnUnknownMovie() {
+        var state = store.finish(unknownChild(false)); store.deferUnknown(state.taskId, state.revision, 2000L, 7L);
+        var properties = new ResourceHubProperties(); properties.setEnabled(true); properties.getBaidu().setEnabled(true);
+        properties.getBaidu().setTorrentEnabled(true); properties.getBaidu().setDiscoveryEnabled(true);
+        properties.getQuark().setDiscoveryEnabled(false); properties.getXunlei().setEnabled(false);
+        var archive = new P2pArchiveTaskService(properties, taskService, mock(IResourceLinkService.class), mock(IMovieMetadataService.class),
+                mock(IQuarkTransferTaskService.class), mock(IXunleiTransferTaskService.class), mock(IBaiduTransferTaskService.class),
+                mock(GyingSourceClient.class), mock(P2pCloudArchiveClient.class), mapper);
+        archive.enqueue("movie1", "mv", "CASE1", selection());
+        assertEquals(1L, jdbc.queryForObject("SELECT COUNT(*) FROM resource_hub_task WHERE task_type='P2P_ARCHIVE' AND source='BAIDU' AND movie_id='movie1'", Long.class));
+    }
     @Test void recoveryRejectsForeignOwnerAndEveryStaleOrExpiredParentLease() {
         var state = interruptedChild(false, 99999L); assertFalse(store.recoverInterruptedArchive(state));
         jdbc.update("UPDATE resource_hub_task SET payload=JSON_SET(payload,'$.backfillParentId',?) WHERE id=2000", state.taskId);

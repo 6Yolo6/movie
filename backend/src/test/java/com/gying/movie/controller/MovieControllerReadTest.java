@@ -127,6 +127,16 @@ class MovieControllerReadTest {
         verifyNoInteractions(resources, jdbc, redis);
     }
 
+    @Test
+    void oldMovieLinkReturnsCanonicalDetailAndItsResources() {
+        ResourceLink link=new ResourceLink(); link.setId(42L);
+        when(movies.getById("old-movie-id")).thenReturn(movie);
+        when(resources.getResourcesByMovieId("fixture")).thenReturn(List.of(link));
+        var result=controller.getMovieDetail("old-movie-id",request);
+        assertEquals("fixture",result.getMovie().getId()); assertEquals(List.of(link),result.getResources());
+        verify(resources,never()).getResourcesByMovieId("old-movie-id");
+    }
+
     private Page<MovieMetadata> list(int page, int size, String keyword) {
         return controller.getMovieList(page, size, null, keyword, null, null, null, null, null, request);
     }

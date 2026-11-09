@@ -125,9 +125,35 @@ export const BAIDU_BACKFILL_CHILD_STATUSES = ['PENDING', 'RUNNING', 'FAILED', 'S
 export const BAIDU_BACKFILL_CHILD_ERRORS = ['BaiduActionException', 'IllegalStateException', 'IllegalArgumentException',
     'ResponseStatusException', 'OTHER', 'UNKNOWN'] as const;
 export const BAIDU_BACKFILL_RESULTS = ['TORRENTS_ARCHIVED', 'NO_ELIGIBLE_GYING_TORRENTS', 'MOVIE_INACTIVE',
-    'SELECTION_SUPERSEDED', 'UNKNOWN'] as const;
+    'SELECTION_SUPERSEDED', 'UNKNOWN_DEFERRED', 'UNKNOWN'] as const;
+
+export interface BaiduBackfillDeferRequest {
+    taskId: number;
+    childId: number;
+    revision: number;
+}
+
+export interface BaiduBackfillDeferredItem {
+    identityId: number;
+    movieId: string;
+    gyingType: 'mv' | 'tv' | 'ac';
+    gyingId: string;
+    childId: number;
+    reason: 'CHILD_UNKNOWN';
+    action: typeof BAIDU_BACKFILL_ACTIONS[number];
+    resourceIds: number[];
+    seedNames: string[];
+    seedCount: number;
+    childPayloadSha256: string;
+    deferredAt: string;
+    origin: 'AUTOMATIC' | 'MANUAL_RUN' | 'ADMINISTRATOR';
+    administratorId: number | null;
+}
 
 export interface BaiduBackfillStatus extends BaiduBackfillSettings {
+    revision: number;
+    deferredCount: number;
+    deferredItems: BaiduBackfillDeferredItem[];
     taskId: number | null;
     status: typeof BAIDU_BACKFILL_STATUSES[number];
     phase: typeof BAIDU_BACKFILL_PHASES[number];
@@ -210,8 +236,45 @@ export function baiduBackfillStatus(value: unknown): BaiduBackfillStatus {
     if (nextRunAt != null && (typeof nextRunAt !== 'string'
         || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?$/.test(nextRunAt)
         || !Number.isFinite(new Date(nextRunAt).getTime()))) throw new Error('Invalid Baidu backfill status');
+    const revision = count(item.revision);
+    const deferredCount = count(item.deferredCount);
+    if (deferredCount > 2000) throw new Error('Invalid Baidu backfill status');
+    if (!Array.isArray(item.deferredItems) || item.deferredItems.length > 20 || item.deferredItems.length > deferredCount) {
+        throw new Error('Invalid Baidu backfill status');
+    }
+    const deferredItems = item.deferredItems.map((entry): BaiduBackfillDeferredItem => {
+        if (!entry || typeof entry !== 'object') throw new Error('Invalid Baidu backfill status');
+        const deferred = entry as Record<string, unknown>;
+        const identityId = id(deferred.identityId), childId = id(deferred.childId);
+        const movieId = text(deferred.movieId, 64), gyingId = text(deferred.gyingId, 100);
+        const deferredAt = text(deferred.deferredAt, 40);
+        if (!identityId || !childId || !movieId || !gyingId || !/^[A-Za-z0-9]+$/.test(gyingId)
+            || !['mv', 'tv', 'ac'].includes(deferred.gyingType as string) || deferred.reason !== 'CHILD_UNKNOWN'
+            || !['AUTOMATIC', 'MANUAL_RUN', 'ADMINISTRATOR'].includes(deferred.origin as string)
+            || !deferredAt || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?$/.test(deferredAt)
+            || !Number.isFinite(new Date(deferredAt).getTime())
+            || typeof deferred.childPayloadSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(deferred.childPayloadSha256)) {
+            throw new Error('Invalid Baidu backfill status');
+        }
+        if (!Array.isArray(deferred.resourceIds) || deferred.resourceIds.length > 4
+            || !Array.isArray(deferred.seedNames) || deferred.seedNames.length > 4) throw new Error('Invalid Baidu backfill status');
+        const ids = deferred.resourceIds.map(value => id(value));
+        const names = deferred.seedNames.map(value => text(value, 255));
+        const seedCount = count(deferred.seedCount);
+        if (ids.some(value => value === null) || new Set(ids).size !== ids.length || names.some(value => value === null) || seedCount > 2) {
+            throw new Error('Invalid Baidu backfill status');
+        }
+        return {
+            identityId, movieId, gyingType: deferred.gyingType as BaiduBackfillDeferredItem['gyingType'], gyingId,
+            childId, reason: 'CHILD_UNKNOWN', action: fixed(deferred.action, BAIDU_BACKFILL_ACTIONS) ?? 'UNKNOWN',
+            resourceIds: ids as number[], seedNames: names as string[], seedCount,
+            childPayloadSha256: deferred.childPayloadSha256, deferredAt,
+            origin: deferred.origin as BaiduBackfillDeferredItem['origin'], administratorId: id(deferred.administratorId),
+        };
+    });
     return {
-        ...settings, taskId: id(item.taskId), status: item.status as BaiduBackfillStatus['status'], phase: item.phase as BaiduBackfillStatus['phase'],
+        ...settings, revision, deferredCount, deferredItems,
+        taskId: id(item.taskId), status: item.status as BaiduBackfillStatus['status'], phase: item.phase as BaiduBackfillStatus['phase'],
         processed: count(item.processed), succeeded: count(item.succeeded), skipped: count(item.skipped), failed: count(item.failed),
         nextRunAt: nextRunAt == null ? null : nextRunAt as string,
         blockedReason: fixed(item.blockedReason, BAIDU_BACKFILL_BLOCKS),

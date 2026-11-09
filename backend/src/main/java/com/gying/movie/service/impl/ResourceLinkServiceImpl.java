@@ -14,10 +14,14 @@ import java.util.List;
 public class ResourceLinkServiceImpl extends ServiceImpl<ResourceLinkMapper, ResourceLink>
         implements IResourceLinkService {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private MovieMergeAliasResolver mergeAliases;
+
     @Override
     public List<ResourceLink> getResourcesByMovieId(String movieId) {
+        String canonical = mergeAliases == null ? movieId : mergeAliases.resolve(movieId);
         return list(new QueryWrapper<ResourceLink>()
-                .eq("movie_id", movieId)
+                .eq("movie_id", canonical)
                 .and(query -> query.isNull("source").or().ne("source", BaiduTemporaryScope.RESOURCE_SOURCE))
                 .eq("audit_status", 1)
                 .eq("status", "ACTIVE")

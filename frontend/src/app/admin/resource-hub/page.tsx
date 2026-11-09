@@ -44,7 +44,7 @@ import DriveWorkflowSettings from '@/components/admin/DriveWorkflowSettings';
 import DuplicateMovieScanner from '@/components/admin/DuplicateMovieScanner';
 import {
     baiduBackfillSettings, baiduBackfillStatus, baiduSessionStatus, canConfigureCloudDrive, cloudDriveWorkflowUpdate,
-    type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider,
+    type BaiduBackfillDeferRequest, type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider,
     type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
 } from '@/lib/cloudDriveWorkflows';
 
@@ -659,6 +659,11 @@ export default function ResourceHubAdminPage() {
     const runBaiduBackfill = useCallback(async (signal: AbortSignal): Promise<BaiduBackfillStatus> =>
         baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill/run', {
             method: 'POST', body: '{}', signal,
+        })), [requestJson]);
+
+    const deferBaiduUnknown = useCallback(async (request: BaiduBackfillDeferRequest, signal: AbortSignal): Promise<BaiduBackfillStatus> =>
+        baiduBackfillStatus(await requestJson<unknown>('/api/admin/resource-hub/baidu/backfill/defer-unknown', {
+            method: 'POST', body: JSON.stringify({ taskId: request.taskId, childId: request.childId, revision: request.revision }), signal,
         })), [requestJson]);
 
     const refreshBaiduConnection = useCallback(async (signal: AbortSignal): Promise<void> => {
@@ -1666,7 +1671,7 @@ export default function ResourceHubAdminPage() {
                             children: <DriveWorkflowSettings workflows={overview?.config.driveWorkflows} loading={loading} hubEnabled={overview?.config.enabled === true}
                                 onSave={saveDriveWorkflow} onRunTransfers={runDriveTransfers} onReadBaiduSession={readBaiduSession}
                                 onStartBaiduLogin={startBaiduLogin} onBaiduConnected={refreshBaiduConnection}
-                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} />,
+                                onReadBaiduBackfill={readBaiduBackfill} onSaveBaiduBackfill={saveBaiduBackfill} onRunBaiduBackfill={runBaiduBackfill} onDeferBaiduUnknown={deferBaiduUnknown} />,
                         },
                         {
                             key: 'manual',

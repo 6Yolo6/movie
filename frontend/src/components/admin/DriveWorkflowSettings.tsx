@@ -8,7 +8,7 @@ import BaiduAccountConnection from '@/components/admin/BaiduAccountConnection';
 import BaiduBackfillControls from '@/components/admin/BaiduBackfillControls';
 import {
     canConfigureCloudDrive, CLOUD_DRIVE_PROVIDERS, cloudDriveValidationError, cloudDriveWorkflowUpdate,
-    type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
+    type BaiduBackfillDeferRequest, type BaiduBackfillSettings, type BaiduBackfillStatus, type BaiduSessionStatus, type CloudDriveProvider, type CloudDriveTransferResult, type CloudDriveWorkflow, type CloudDriveWorkflowUpdate,
 } from '@/lib/cloudDriveWorkflows';
 
 interface Props {
@@ -23,10 +23,11 @@ interface Props {
     onReadBaiduBackfill: (signal: AbortSignal) => Promise<BaiduBackfillStatus>;
     onSaveBaiduBackfill: (settings: BaiduBackfillSettings, signal: AbortSignal) => Promise<BaiduBackfillStatus>;
     onRunBaiduBackfill: (signal: AbortSignal) => Promise<BaiduBackfillStatus>;
+    onDeferBaiduUnknown: (request: BaiduBackfillDeferRequest, signal: AbortSignal) => Promise<BaiduBackfillStatus>;
 }
 
 function DriveWorkflowCard({ workflow, hubEnabled, onSave, onRunTransfers, onReadBaiduSession, onStartBaiduLogin, onBaiduConnected,
-    onReadBaiduBackfill, onSaveBaiduBackfill, onRunBaiduBackfill }: Omit<Props, 'workflows' | 'loading'> & { workflow: CloudDriveWorkflow }) {
+    onReadBaiduBackfill, onSaveBaiduBackfill, onRunBaiduBackfill, onDeferBaiduUnknown }: Omit<Props, 'workflows' | 'loading'> & { workflow: CloudDriveWorkflow }) {
     const { t } = useTranslation();
     const { message } = App.useApp();
     const [edited, setEdited] = useState<CloudDriveWorkflowUpdate | null>(null);
@@ -146,13 +147,13 @@ function DriveWorkflowCard({ workflow, hubEnabled, onSave, onRunTransfers, onRea
             </Form>
             {workflow.provider === 'BAIDU' && <BaiduBackfillControls workflow={workflow} workflowEdited={Boolean(edited)}
                 workflowBusy={saving || running} hubEnabled={hubEnabled} onReadStatus={onReadBaiduBackfill}
-                onSaveSettings={onSaveBaiduBackfill} onRun={onRunBaiduBackfill} />}
+                onSaveSettings={onSaveBaiduBackfill} onRun={onRunBaiduBackfill} onDeferUnknown={onDeferBaiduUnknown} />}
         </>}
     </Card>;
 }
 
 export default function DriveWorkflowSettings({ workflows, loading, hubEnabled, onSave, onRunTransfers, onReadBaiduSession, onStartBaiduLogin, onBaiduConnected,
-    onReadBaiduBackfill, onSaveBaiduBackfill, onRunBaiduBackfill }: Props) {
+    onReadBaiduBackfill, onSaveBaiduBackfill, onRunBaiduBackfill, onDeferBaiduUnknown }: Props) {
     const { t } = useTranslation();
     if (loading) return <Card loading />;
     if (!workflows?.length) return <Card><Empty description={t('cloudDriveWorkflows.unavailable')} /></Card>;
@@ -164,7 +165,7 @@ export default function DriveWorkflowSettings({ workflows, loading, hubEnabled, 
                 return workflow ? <Col key={provider} xs={24} lg={12} xl={8}>
                     <DriveWorkflowCard workflow={workflow} hubEnabled={hubEnabled} onSave={onSave} onRunTransfers={onRunTransfers}
                         onReadBaiduSession={onReadBaiduSession} onStartBaiduLogin={onStartBaiduLogin} onBaiduConnected={onBaiduConnected}
-                        onReadBaiduBackfill={onReadBaiduBackfill} onSaveBaiduBackfill={onSaveBaiduBackfill} onRunBaiduBackfill={onRunBaiduBackfill} />
+                        onReadBaiduBackfill={onReadBaiduBackfill} onSaveBaiduBackfill={onSaveBaiduBackfill} onRunBaiduBackfill={onRunBaiduBackfill} onDeferBaiduUnknown={onDeferBaiduUnknown} />
                 </Col> : null;
             })}
         </Row>

@@ -28,7 +28,7 @@ class BaiduBackfillControllerTest {
         when(auth.requireAdmin("Bearer fixture-user")).thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
     @Test void getPutAndRunRequireAnAdministratorBeforeReadingOrMutatingAnything() throws Exception {
-        for (var request : List.of(get(BASE), put(BASE).contentType(MediaType.APPLICATION_JSON).content("{}"), post(BASE + "/run"))) {
+        for (var request : List.of(get(BASE), put(BASE).contentType(MediaType.APPLICATION_JSON).content("{}"), post(BASE + "/run"), post(BASE + "/defer-unknown"))) {
             mvc.perform(request).andExpect(status().isUnauthorized());
             mvc.perform(request.header("Authorization", "Bearer fixture-user")).andExpect(status().isForbidden());
         }
@@ -57,7 +57,7 @@ class BaiduBackfillControllerTest {
         verifyNoInteractions(service);
     }
     @Test void validBasePutAndEmptyRunReturnTheSamePublicStateShape() throws Exception {
-        var state = new BaiduBackfillService.Status(7L, false, "PAUSED", "GYING_TORRENTS", 10, 1, 0, 0, 0, 0, null, null, null, null, null, null, null, List.of(), "IDLE", List.of(), 0, null, null, null, 17580L);
+        var state = new BaiduBackfillService.Status(7L, false, "PAUSED", "GYING_TORRENTS", 10, 1, 0, 0, 0, 0, null, null, null, null, null, null, null, List.of(), "IDLE", List.of(), 0, null, null, null, 17580L, 0, 0, List.of());
         when(service.settings(false, 10, 1)).thenReturn(state); when(service.runOnce()).thenReturn(state); when(service.status()).thenReturn(state);
         mvc.perform(put(BASE).header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"enabled\":false,\"intervalMinutes\":10,\"batchLimit\":1}"))
@@ -67,5 +67,20 @@ class BaiduBackfillControllerTest {
         mvc.perform(post(BASE + "/run").header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("PAUSED"));
         verify(service).settings(false, 10, 1); verify(service).runOnce(); verify(service).status();
+    }
+    @Test void deferralAcceptsOnlyExactNonCoercedParentChildAndRevisionAndUsesTheAuthenticatedAdministrator() throws Exception {
+        for (String body : List.of("{}", "null", "[]", "{} {}", "{\"taskId\":7,\"childId\":4}",
+                "{\"taskId\":\"7\",\"childId\":4,\"revision\":0}", "{\"taskId\":7,\"childId\":4.0,\"revision\":0}",
+                "{\"taskId\":0,\"childId\":4,\"revision\":0}", "{\"taskId\":7,\"childId\":4,\"revision\":-1}",
+                "{\"taskId\":7,\"childId\":4,\"revision\":0,\"force\":true}",
+                "{\"taskId\":7,\"childId\":4,\"revision\":0,\"revision\":1}")) {
+            mvc.perform(post(BASE + "/defer-unknown").header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isBadRequest());
+        }
+        verifyNoInteractions(service);
+        mvc.perform(post(BASE + "/defer-unknown").header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"taskId\":7,\"childId\":4,\"revision\":0}"))
+                .andExpect(status().isOk());
+        verify(service).deferUnknown(7L, 4L, 0L, 1L);
     }
 }

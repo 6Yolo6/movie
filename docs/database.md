@@ -16,22 +16,23 @@
 
 ## 2. 仓库结构与生产证据
 
-本次文档核对的 `schema.sql` 声明 **23 张表**：
+本次文档核对的 `schema.sql` 声明 **29 张表**：
 
 | 领域 | 表 |
 | --- | --- |
 | 片库与资源 | `movie_metadata`、`resource_link`、`movie_source_identity`、`resource_report` |
 | 用户与设置 | `sys_user`、`sys_config`、`login_device`、`user_invitation_code`、`user_invitation_use` |
 | 互动与通知 | `comment`、`comment_vote`、`user_favorite`、`user_notification` |
-| 资源任务 | `resource_hub_task`、`resource_discovery_result`、`quark_transfer_task`、`xunlei_transfer_task`、`qq_transfer_cleanup_job` |
+| 资源任务 | `resource_hub_task`、`resource_discovery_result`、`quark_transfer_task`、`xunlei_transfer_task`、`qq_transfer_cleanup_job`、`baidu_transfer_task`、`baidu_temporary_cleanup_job` |
 | 多平台发布 | `social_publish_target`、`social_post_log` |
+| 重复审核与合并 | `movie_duplicate_review`、`movie_merge_alias`、`movie_merge_favorite_history`、`movie_merge_reference_history` |
 | 监控 | `site_access_log`、`site_search_log`、`resource_operation_log` |
 
 **新库覆盖缺口仍存在：** `qq_bot_search_log`、`qq_channel_post_log` 由 `migration_qq_automation.sql` 创建，尚未合入 schema。新库不能只导入 schema 就宣称完整；还需按功能核对其他迁移中的配置默认值。2026-10-22发布检查点曾核验25表，见[历史证据](history/releases.md#earlier-releases)；不是本次文档整理重新查询。
 
 ## 3. 增量文件清单
 
-以下 **24 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
+以下 **29 个文件按名称排序，仅作库存，不是执行顺序或执行授权**。即使脚本含幂等保护，也必须审查数据更新、依赖表和自定义配置影响。
 
 | 文件 | 主要用途 |
 | --- | --- |
@@ -44,6 +45,8 @@
 | [`migration_fix_qq_channel_template_mojibake.sql`](../backend/src/main/resources/db/migration_fix_qq_channel_template_mojibake.sql) | 修正历史 QQ 频道默认模板乱码 |
 | [`migration_governance.sql`](../backend/src/main/resources/db/migration_governance.sql) | 资源/用户/影片治理字段与评论投票表 |
 | [`migration_gying_owned_share_source.sql`](../backend/src/main/resources/db/migration_gying_owned_share_source.sql) | 依据保存目录和自有分享证据校准资源来源（数据更新） |
+| [`migration_movie_duplicate_merge.sql`](../backend/src/main/resources/db/migration_movie_duplicate_merge.sql) | 四张审核/别名/关联历史表，新增而不删除原记录；先加密备份和精确结构核对，生产执行事实见当前状态 |
+| [`migration_movie_duplicate_merge_triggers.sql`](../backend/src/main/resources/db/migration_movie_duplicate_merge_triggers.sql) | 34 个迟到写入保护 trigger；MySQL 8.0.28 使用普通 CREATE TRIGGER，仅执行确认缺失的定义，已有同名必须逐项匹配；保留旧影片 ID 与历史引用 |
 | [`migration_movie_source_identity.sql`](../backend/src/main/resources/db/migration_movie_source_identity.sql) | 外部来源与本地 canonical 影片身份表 |
 | [`migration_notifications.sql`](../backend/src/main/resources/db/migration_notifications.sql) | 站内通知表 |
 | [`migration_qq_automation.sql`](../backend/src/main/resources/db/migration_qq_automation.sql) | QQ 搜索、频道日志表及默认配置；补齐 schema 的两张缺表 |

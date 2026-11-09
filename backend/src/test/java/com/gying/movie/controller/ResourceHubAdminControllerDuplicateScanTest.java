@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ResourceHubAdminControllerDuplicateScanTest {
     final AuthHelper auth = mock(AuthHelper.class);
+    final com.gying.movie.service.impl.MovieDuplicateMergeService merges = mock(com.gying.movie.service.impl.MovieDuplicateMergeService.class);
     final MovieDuplicateScannerService scanner = mock(MovieDuplicateScannerService.class);
     ResourceHubAdminController controller;
     MockMvc mvc;
@@ -25,6 +26,7 @@ class ResourceHubAdminControllerDuplicateScanTest {
         controller = new ResourceHubAdminController(auth, new ResourceHubProperties(), null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null, null, null, null, null);
         ReflectionTestUtils.setField(controller, "duplicateScannerService", scanner);
+        ReflectionTestUtils.setField(controller, "duplicateMergeService", merges);
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
     @AfterEach void close() { controller.shutdownDiscoveryPipelineExecutor(); }
@@ -47,5 +49,19 @@ class ResourceHubAdminControllerDuplicateScanTest {
         when(auth.requireAdmin(null)).thenThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
         mvc.perform(post("/api/admin/resource-hub/cleanup/duplicate-tmdb"))
                 .andExpect(status().isForbidden()); verifyNoInteractions(scanner);
+    }
+    @Test void reviewedEndpointsBindExplicitPairsAndRequireAnAdministrator() throws Exception {
+        when(auth.requireAdmin("Bearer fixture")).thenReturn(new com.gying.movie.dto.AuthUser(7L,"fixture-admin","ADMIN"));
+        when(merges.preview(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.eq(7L))).thenReturn(Map.of("reviewId","fixture-review","canMerge",true));
+        mvc.perform(post("/api/admin/resource-hub/duplicates/preview").header("Authorization","Bearer fixture")
+            .contentType("application/json").content("{\"pairs\":[{\"fromMovieId\":\"Source\",\"toMovieId\":\"Keep\"}]}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.canMerge").value(true));
+        verify(merges).preview(new com.gying.movie.service.impl.MovieDuplicateMergeService.PreviewRequest(
+            java.util.List.of(new com.gying.movie.service.impl.MovieDuplicateMergeService.Pair("Source","Keep"))),7L);
+        when(auth.requireAdmin(null)).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized"));
+        mvc.perform(post("/api/admin/resource-hub/duplicates/merge").contentType("application/json")
+            .content("{\"reviewId\":\"r\",\"idempotencyKey\":\"k\",\"confirmed\":true}"))
+            .andExpect(status().isUnauthorized());
+        verify(merges,never()).merge(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
     }
 }

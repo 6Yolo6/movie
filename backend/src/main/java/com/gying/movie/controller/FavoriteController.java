@@ -59,6 +59,7 @@ public class FavoriteController {
 
         // Check if movie exists
         MovieMetadata movie = movieService.getById(movieId);
+        if (movie != null) movieId = movie.getId();
         if (movie == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found");
         }
@@ -112,6 +113,9 @@ public class FavoriteController {
             @RequestParam String movieId) {
         AuthUser user = authHelper.requireUser(token);
 
+        MovieMetadata canonical = movieService.getById(movieId);
+        if (canonical != null) movieId = canonical.getId();
+
         boolean isFavorited = favoriteService.count(new LambdaQueryWrapper<UserFavorite>()
                 .eq(UserFavorite::getUserId, user.getId())
                 .eq(UserFavorite::getMovieId, movieId)) > 0;
@@ -131,6 +135,8 @@ public class FavoriteController {
      */
     @GetMapping("/count")
     public Map<String, Object> getCount(@RequestParam String movieId) {
+        MovieMetadata canonical = movieService.getById(movieId);
+        if (canonical != null) movieId = canonical.getId();
         long count = favoriteService.count(new LambdaQueryWrapper<UserFavorite>()
                 .eq(UserFavorite::getMovieId, movieId));
         return Map.of("count", count);
@@ -206,6 +212,8 @@ public class FavoriteController {
     public List<Map<String, Object>> tmdbHot(@RequestParam(defaultValue = "30") int limit) {
         int maxLimit = Math.min(Math.max(limit, 1), 60);
         List<MovieMetadata> movies = movieService.list(new LambdaQueryWrapper<MovieMetadata>()
+                .eq(MovieMetadata::getStatus, "ACTIVE")
+                .isNull(MovieMetadata::getDeletedAt)
                 .isNotNull(MovieMetadata::getTmdbPopularity)
                 .orderByDesc(MovieMetadata::getTmdbPopularity)
                 .orderByDesc(MovieMetadata::getTmdbLastSyncAt)

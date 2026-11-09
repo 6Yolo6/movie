@@ -108,6 +108,7 @@ public class AdminMovieController {
         authHelper.requireAdmin(token);
         MovieMetadata target = movieService.getById(id);
         if (target == null) return ResponseEntity.notFound().build();
+        if (!id.equals(target.getId())) return ResponseEntity.status(409).body("Movie was merged; use retained movie id: " + target.getId());
         String validationError = validateRequest(request, false);
         if (validationError != null) return ResponseEntity.badRequest().body(validationError);
 
@@ -131,6 +132,7 @@ public class AdminMovieController {
         authHelper.requireAdmin(token);
         MovieMetadata movie = movieService.getById(id);
         if (movie == null) return ResponseEntity.notFound().build();
+        if (!id.equals(movie.getId())) return ResponseEntity.status(409).body("Movie was merged; use retained movie id: " + movie.getId());
         try {
             String posterObject = posterStorageService.storeUploadedPoster(id, file);
             movieService.lambdaUpdate()
@@ -152,6 +154,7 @@ public class AdminMovieController {
         authHelper.requireAdmin(token);
         MovieMetadata movie = movieService.getById(id);
         if (movie == null) return ResponseEntity.notFound().build();
+        if (!id.equals(movie.getId())) return ResponseEntity.status(409).body("Movie was merged; use retained movie id: " + movie.getId());
         movie.setStatus("DELETED");
         movie.setDeletedAt(LocalDateTime.now());
         movie.setUpdatedAt(movie.getDeletedAt());

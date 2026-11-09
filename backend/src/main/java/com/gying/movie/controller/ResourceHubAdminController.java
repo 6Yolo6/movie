@@ -114,6 +114,8 @@ public class ResourceHubAdminController {
     private final IMovieMetadataService movieService;
     @org.springframework.beans.factory.annotation.Autowired
     private com.gying.movie.service.impl.MovieDuplicateScannerService duplicateScannerService;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.gying.movie.service.impl.MovieDuplicateMergeService duplicateMergeService;
     private final IUserFavoriteService favoriteService;
     private final ICommentService commentService;
     private final QqChannelPublisherClient qqChannelPublisherClient;
@@ -1416,6 +1418,30 @@ public class ResourceHubAdminController {
                     "Bulk duplicate merging is disabled; candidates require review and complete reference migration");
         }
         return ApiResponse.ok(duplicateScannerService.scan(page, limit));
+    }
+
+    @PostMapping("/duplicates/preview")
+    public ApiResponse<Map<String, Object>> previewDuplicateMovies(
+            @RequestBody com.gying.movie.service.impl.MovieDuplicateMergeService.PreviewRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        var admin = authHelper.requireAdmin(token);
+        return ApiResponse.ok(duplicateMergeService.preview(request, admin.getId()));
+    }
+
+    @PostMapping("/duplicates/merge")
+    public ApiResponse<Map<String, Object>> mergeReviewedDuplicateMovies(
+            @RequestBody com.gying.movie.service.impl.MovieDuplicateMergeService.MergeRequest request,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        var admin = authHelper.requireAdmin(token);
+        return ApiResponse.ok(duplicateMergeService.merge(request, admin.getId()));
+    }
+
+    @GetMapping("/duplicates/history")
+    public ApiResponse<List<Map<String, Object>>> duplicateMergeHistory(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        var admin = authHelper.requireAdmin(token);
+        return ApiResponse.ok(duplicateMergeService.history(limit, admin.getId()));
     }
 
     @PostMapping("/cleanup/mismatched-resources")

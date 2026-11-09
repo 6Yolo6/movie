@@ -41,6 +41,14 @@ public class BaiduBackfillController {
         if (body != null && !body.isBlank()) object(body, Set.of());
         return ApiResponse.ok(service.runOnce());
     }
+    @PostMapping("/defer-unknown")
+    public ApiResponse<BaiduBackfillService.Status> deferUnknown(@RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody(required = false) String body) {
+        var administrator = auth.requireAdmin(authorization);
+        JsonNode request = object(body, Set.of("taskId", "childId", "revision"));
+        return ApiResponse.ok(service.deferUnknown(longInteger(request, "taskId", 1), longInteger(request, "childId", 1),
+                longInteger(request, "revision", 0), administrator.getId()));
+    }
     private static JsonNode object(String body, Set<String> allowed) {
         if (body == null || body.length() > 2048) throw invalid();
         try {
@@ -54,6 +62,11 @@ public class BaiduBackfillController {
         JsonNode number = value.get(field);
         if (number == null || !number.isIntegralNumber() || !number.canConvertToInt() || number.intValue() < minimum || number.intValue() > maximum) throw invalid();
         return number.intValue();
+    }
+    private static long longInteger(JsonNode value, String field, long minimum) {
+        JsonNode number = value.get(field);
+        if (number == null || !number.isIntegralNumber() || !number.canConvertToLong() || number.longValue() < minimum) throw invalid();
+        return number.longValue();
     }
     private static ResponseStatusException invalid() { return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Baidu backfill request"); }
 }

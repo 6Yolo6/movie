@@ -124,6 +124,8 @@ public class MovieController {
 
         List<MovieMetadata> list = movieService.lambdaQuery()
                 .eq(MovieMetadata::getSeriesName, name)
+                .eq(MovieMetadata::getStatus, "ACTIVE")
+                .isNull(MovieMetadata::getDeletedAt)
                 .orderByAsc(MovieMetadata::getSeason)
                 .list();
         list.forEach(this::processMovieUrl);
@@ -138,12 +140,12 @@ public class MovieController {
         }
         processMovieUrl(movie);
 
-        List<ResourceLink> links = resourceService.getResourcesByMovieId(id);
+        List<ResourceLink> links = resourceService.getResourcesByMovieId(movie.getId());
 
         MovieDetailDTO dto = new MovieDetailDTO();
         dto.setMovie(movie);
         dto.setResources(links);
-        monitoringService.resourceOperation(id, null, "VIEW", null, "SUCCESS", null, request);
+        monitoringService.resourceOperation(movie.getId(), null, "VIEW", null, "SUCCESS", null, request);
 
         return dto;
     }

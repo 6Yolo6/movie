@@ -15,6 +15,8 @@ import java.util.Set;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 /** Slowly collects torrent metadata from exact GYING identities already linked to this catalog. */
 @Service
@@ -42,13 +44,18 @@ public class BaiduBackfillService {
             long processed, long succeeded, long skipped, long failed, String nextRunAt, String blockedReason, String currentMovieId,
             Long currentIdentityId, String currentGyingType, String currentGyingId, Long currentChildId,
             List<Long> currentResourceIds, String currentAction, List<String> currentSeedNames, int currentSeedCount,
-            String currentChildStatus, String currentChildError, String lastResult, Long legacyTaskId) { }
+            String currentChildStatus, String currentChildError, String lastResult, Long legacyTaskId, long revision,
+            int deferredCount, List<BaiduBackfillTaskStore.DeferredItem> deferredItems) { }
 
     public Status status() { config.reload(); return view(store.read()); }
     public Status settings(boolean enabled, int intervalMinutes, int batchLimit) {
         config.reload(); return view(store.settings(enabled, intervalMinutes, batchLimit));
     }
     public Status runOnce() { return run(true); }
+    public Status deferUnknown(long taskId, long childId, long revision, Long administratorId) {
+        try { return view(store.deferUnknown(taskId, revision, childId, administratorId)); }
+        catch (IllegalStateException conflict) { throw new ResponseStatusException(HttpStatus.CONFLICT, "Baidu backfill changed; refresh before recovery"); }
+    }
     @Scheduled(fixedDelay = 30000, initialDelay = 60000)
     public void runDue() { run(false); }
 
@@ -68,7 +75,7 @@ public class BaiduBackfillService {
                     if (state.currentIdentityId == null) continue;
                 }
                 long before = state.processed;
-                state = process(state);
+                state = process(state, manual ? "MANUAL_RUN" : "AUTOMATIC");
                 if (state.blockedReason != null) break;
                 if (state.processed > before) completed++;
                 // A manual run may start paused; edits made during an item still take effect at its boundary.
@@ -106,16 +113,16 @@ public class BaiduBackfillService {
         return store.checkpoint(state, null);
     }
 
-    private BaiduBackfillTaskStore.State process(BaiduBackfillTaskStore.State state) {
+    private BaiduBackfillTaskStore.State process(BaiduBackfillTaskStore.State state, String origin) {
         MovieMetadata movie = movies.getById(state.currentMovieId);
         if (movie == null || movie.getDeletedAt() != null || !"ACTIVE".equals(movie.getStatus())) return complete(state, false, "MOVIE_INACTIVE");
-        if (state.currentChildId != null) return processArchive(state);
+        if (state.currentChildId != null) return processArchive(state, origin);
         MovieSourceIdentity identity = identities.getById(state.currentIdentityId);
         if (!matchesIdentity(state, identity)) { state.blockedReason = "GYING_IDENTITY_CHANGED"; return store.checkpoint(state, null); }
         ResourceHubTask protectedChild = archives.protectedArchive(state.currentMovieId, "BAIDU");
         if (protectedChild != null) {
             state = attach(state, protectedChild);
-            return processArchive(state);
+            return processArchive(state, origin);
         }
         GyingSourceWorkflowService.P2pCollection collected;
         try { collected = gying.collectMovieP2pResources(state.currentMovieId, state.currentIdentityId); }
@@ -139,7 +146,7 @@ public class BaiduBackfillService {
                     selected, "BAIDU", saved.taskId);
             saved.currentChildId = child.getId(); manifest(saved, archives.selectionForTask(child)); saved.currentAction = "ARCHIVE_METADATA_FILES";
         });
-        return processArchive(state);
+        return processArchive(state, origin);
     }
 
     private BaiduBackfillTaskStore.State attach(BaiduBackfillTaskStore.State state, ResourceHubTask child) {
@@ -156,11 +163,12 @@ public class BaiduBackfillService {
         }).toList();
         state.currentSeedCount = state.currentSeedNames.size();
     }
-    private BaiduBackfillTaskStore.State processArchive(BaiduBackfillTaskStore.State state) {
+    private BaiduBackfillTaskStore.State processArchive(BaiduBackfillTaskStore.State state, String origin) {
         ResourceHubTask child = tasks.getById(state.currentChildId);
         if (child == null || !"BAIDU".equals(child.getSource()) || !P2pArchiveTaskService.TYPE.equals(child.getTaskType())
                 || !Objects.equals(state.currentMovieId, child.getMovieId())) throw new IllegalStateException("BACKFILL_CHILD_INVALID");
         state.currentAction = action(child);
+        if ("UNKNOWN".equals(child.getStatus())) return store.deferUnknown(state, child.getPayload(), origin, null);
         String stop = childBlock(child.getStatus());
         if (stop != null) { state.blockedReason = stop; return store.checkpoint(state, null); }
         JsonNode payload = payload(child);
@@ -191,6 +199,7 @@ public class BaiduBackfillService {
         } catch (Exception invalidCheckpoint) { state.blockedReason = "CHILD_REVIEW_REQUIRED"; return store.checkpoint(state, null); }
         state.currentAction = action(after);
         if ("SUCCEEDED".equals(after.getStatus())) return complete(state, true, "TORRENTS_ARCHIVED");
+        if ("UNKNOWN".equals(after.getStatus())) return store.deferUnknown(state, after.getPayload(), origin, null);
         if ("FAILED".equals(after.getStatus()) && !state.currentFailureCounted) { state.failed++; state.currentFailureCounted = true; }
         state.blockedReason = childBlock(after.getStatus());
         if (state.blockedReason == null) state.blockedReason = "FAILED".equals(after.getStatus()) ? "CHILD_FAILED" : "CHILD_RUNNING";
@@ -233,7 +242,8 @@ public class BaiduBackfillService {
                 state.processed, state.succeeded, state.skipped, state.failed, state.nextRunAt, reason, state.currentMovieId,
                 state.currentIdentityId, state.currentGyingType, state.currentGyingId, state.currentChildId,
                 state.currentResourceIds, child == null ? state.currentAction : action(child), state.currentSeedNames,
-                state.currentSeedCount, childStatus, childError, state.lastResult, store.legacyTaskId());
+                state.currentSeedCount, childStatus, childError, state.lastResult, store.legacyTaskId(), state.revision,
+                state.deferredItems.size(), state.deferredItems.stream().skip(Math.max(0, state.deferredItems.size() - 20)).toList());
     }
     private JsonNode payload(ResourceHubTask child) {
         try { JsonNode result = mapper.readTree(child.getPayload()); return result != null && result.isObject() ? result : mapper.createObjectNode(); }

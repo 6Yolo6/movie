@@ -65,6 +65,22 @@
 
 发现筛选 `keyword/movieId/status/source/sortOrder/page/size`。内部 `/api/internal/resource-hub` 的定向 p2p sync、发现发布、双盘任务 run、ingest/health 需内部认证，公网拒绝；百度登录助手新增的两条内部回调使用专属一次性 ticket/nonce，见下文。高频 Worker 的元数据政策与独立队列见[资源中心](resource-hub.md)，不能由旧接口字段推断自动视频消费已启用。
 
+### 重复候选审核与合并
+
+ADMIN 全库扫描仍使用 `POST cleanup/duplicate-tmdb?dryRun=true&limit=100&page=1`，候选不等于已确认重复。旧扫描接口拒绝 `dryRun=false`。审核流程见[重复影片合并](duplicate-movie-merge.md)。
+
+| 方法 | 请求与结果 |
+| --- | --- |
+| POST duplicates/preview | `{pairs:[{fromMovieId,toMovieId}]}`，1–20 对且每个 ID 批次只出现一次；返回 `reviewId/expiresAt/canMerge/items`，逐组列出阻断原因和关联迁移数量 |
+| POST duplicates/merge | `{reviewId,idempotencyKey,confirmed:true}`，UUID key；同一管理员、十分钟有效审核和最新快照校验；全批事务，成功返回 `status/merged/items/replayed` |
+| GET duplicates/history?limit=20 | 仅当前管理员审核历史，包含审核 ID、状态和创建/完成时间 |
+
+`fromMovieId` 是归并后软删除的记录，`toMovieId` 是保留记录。已成功审核可用同 key 幂等回读；超时、状态变化或关联变化须重新预览。响应未知时保留原 review/key，不创建另一批重复提交。
+
+### 百度未知种子任务待审
+
+ADMIN `POST baidu/backfill/defer-unknown` 接受精确 `{taskId,childId,revision}`。仅将当前 UNKNOWN 子任务的来源身份、资源选择、原 payload SHA、操作者和时间记入父任务待审历史并推进游标，原子任务保持。状态或租约已变返回 409。状态接口追加 `revision/deferredCount/deferredItems`，列表最多返回最近 20 条；可在自动补全暂停时执行，操作保持原自动开关。同片未决提交仍阻止新上传。
+
 ### 百度专用账号扫码登录（候选实现）
 
 `GET baidu/session` 和 `POST baidu/login` 要求 ADMIN，统一返回 `ApiResponse.data`：`configured`、`state`、`ticketId`、`expiresAt`、`accountName`、`lastValidatedAt`、`failureCode`。时间为毫秒时间戳，未设置字段为 null；state 为 DISCONNECTED/PENDING/WAITING_SCAN/CONNECTED/FAILED/EXPIRED。`accountName` 脱敏，返回值不含 Cookie、密码、二维码材料或 nonce。`configured` 只表示已保存会话元数据，实际云盘任务仍会校验账号和会话有效性。

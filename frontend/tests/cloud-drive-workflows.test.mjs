@@ -9,7 +9,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
     const same = (actual, expected, label) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(label + ': ' + JSON.stringify(actual));
     };
-    const backfill = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
+    const backfill = patch => ({ revision: 0, deferredCount: 0, deferredItems: [], taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
         processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null, ...patch });
     const deferred = () => {
         let resolve, reject;
@@ -58,7 +58,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         };
         Form.Item = capture('Form.Item');
         Form.List = props => props.children([]);
-        const components = Object.fromEntries(['Alert', 'Button', 'Card', 'Col', 'Descriptions', 'Empty', 'Input', 'InputNumber', 'Row', 'Select', 'Space', 'Statistic', 'Switch', 'Table', 'Tabs', 'Tag', 'Tooltip'].map(name => [name, capture(name)]));
+        const components = Object.fromEntries(['Alert', 'Button', 'Card', 'Col', 'Descriptions', 'Empty', 'Input', 'InputNumber', 'Row', 'Select', 'Space', 'Statistic', 'Switch', 'Table', 'Tabs', 'Tag', 'Tooltip', 'Modal'].map(name => [name, capture(name)]));
         components.Space.Compact = capture('Space.Compact');
         components.Descriptions.Item = capture('Descriptions.Item');
         components.Input.Password = capture('Input.Password');
@@ -95,9 +95,9 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
                 else call.resolve(new Response(JSON.stringify({ data: overview }), { status: 200 }));
             }
             else if (url.endsWith('/baidu/session')) call.resolve(new Response(JSON.stringify({ data: { configured: scenario.baiduConfigured ?? false, state: 'DISCONNECTED', ticketId: null, expiresAt: null, accountName: null, lastValidatedAt: null, failureCode: null } }), { status: 200 }));
-            else if (url.endsWith('/baidu/backfill') && !options.method) call.resolve(new Response(JSON.stringify({ data: backfill() }), { status: 200 }));
+            else if (url.endsWith('/baidu/backfill') && !options.method) call.resolve(new Response(JSON.stringify({ data: scenario.backfill || backfill() }), { status: 200 }));
             else if (url.includes('/tasks?')) call.resolve(new Response(JSON.stringify({ data: { records: scenario.tasks || [], total: scenario.tasks?.length || 0 } }), { status: 200 }));
-            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run') && !url.endsWith('/baidu/login') && !url.endsWith('/baidu/backfill') && !url.endsWith('/baidu/backfill/run')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
+            else if (!url.endsWith('/config') && !url.endsWith('/pause') && !url.endsWith('/transfers/run') && !url.endsWith('/baidu/login') && !url.endsWith('/baidu/backfill') && !url.endsWith('/baidu/backfill/run') && !url.endsWith('/baidu/backfill/defer-unknown')) call.resolve(new Response(JSON.stringify({ data: { records: [], total: 0 } }), { status: 200 }));
             return call.promise;
         };
         const mocks = {
@@ -124,7 +124,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
             metadataCrawlProgress: config.metadataCrawlProgress.map(row => ({ ...row, status: paused ? 'PAUSED' : 'PENDING' })) });
         await act(() => root.render(React.createElement(Page)));
         await reply(calls.find(call => call.url.endsWith('/overview')), overview);
-        const byId = id => ['Button', 'Switch', 'Input', 'InputNumber'].flatMap(all).find(props => props['data-testid'] === id);
+        const byId = id => ['Button', 'Switch', 'Input', 'InputNumber', 'Modal'].flatMap(all).find(props => props['data-testid'] === id);
         const change = (provider, key, value) => act(() => byId('drive-' + provider + '-' + key).onChange(key === 'savePath' ? { target: { value } } : value));
         const saveDrive = provider => act(() => byId('drive-save-' + provider).onClick());
         const updated = (provider, patch) => ({ ...config, driveWorkflows: config.driveWorkflows.map(row => row.provider === provider ? { ...row, ...patch } : row) });
@@ -352,6 +352,37 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
         same(f.all('Alert').some(props => props.title === 'cloudDriveWorkflows.baiduBackfill.saveFailed'), true, 'fixed invalid response error');
         same(f.all('Alert').some(props => String(props.title).includes('raw-cookie')), false, 'no raw response exposed');
     }, { baiduSupported: true, baiduConfigured: true, baiduTransferEnabled: true, baiduShareEnabled: true, baiduTorrentEnabled: true });
+    const unknownBackfill = backfill({ taskId: 72, revision: 4, status: 'BLOCKED', blockedReason: 'CHILD_UNKNOWN',
+        currentIdentityId: 14, currentMovieId: 'movie-100', currentGyingType: 'mv', currentGyingId: 'G100',
+        currentChildId: 481, currentChildStatus: 'UNKNOWN', currentAction: 'UPLOAD_MAGNET_TEXT' });
+    await check('confirmed unknown isolation uses the authenticated page callback with only CAS identifiers', async f => {
+        same(f.calls.some(call => call.url.endsWith('/defer-unknown')), false, 'view does not isolate');
+        await f.act(() => f.byId('baidu-backfill-defer-unknown').onClick());
+        same(f.calls.some(call => call.url.endsWith('/defer-unknown')), false, 'confirmation opens without write');
+        await f.act(() => { f.byId('baidu-backfill-defer-confirm').onOk(); f.byId('baidu-backfill-defer-confirm').onOk(); });
+        const request = f.last();
+        same([request.url, request.options.method, JSON.parse(request.options.body)],
+            ['/api/admin/resource-hub/baidu/backfill/defer-unknown', 'POST', { taskId: 72, childId: 481, revision: 4 }], 'strict CAS API');
+        same(new Headers(request.options.headers).get('Authorization'), 'Bearer fixture-admin-token', 'admin header');
+        await f.reply(request, backfill({ taskId: 72, revision: 5, processed: 1, skipped: 1, deferredCount: 1,
+            deferredItems: [{ identityId: 14, movieId: 'movie-100', gyingType: 'mv', gyingId: 'G100', childId: 481,
+                reason: 'CHILD_UNKNOWN', action: 'UPLOAD_MAGNET_TEXT', resourceIds: [], seedNames: [], seedCount: 0,
+                childPayloadSha256: 'a'.repeat(64), deferredAt: '2026-11-10T00:15:30', origin: 'ADMINISTRATOR', administratorId: 1 }],
+            lastResult: 'UNKNOWN_DEFERRED' }));
+        same(f.byId('baidu-backfill-defer-confirm').open, false, 'success closes dialog');
+        same(f.calls.some(call => call.url.endsWith('/baidu/backfill/run') || call.url.endsWith('/transfers/run')), false, 'isolation does not request external work');
+    }, { baiduSupported: true, backfill: unknownBackfill });
+    await check('HTTP409 isolation response cannot be blindly resubmitted from the page', async f => {
+        await f.act(() => f.byId('baidu-backfill-defer-unknown').onClick());
+        await f.act(() => f.byId('baidu-backfill-defer-confirm').onOk());
+        const request = f.last(); await f.reply(request, { message: 'raw-cookie-never-display' }, 409);
+        same(f.byId('baidu-backfill-defer-unknown').disabled, true, 'refresh required');
+        await f.act(() => f.byId('baidu-backfill-defer-unknown').onClick());
+        await f.act(() => f.byId('baidu-backfill-defer-confirm').onOk());
+        same(f.calls.filter(call => call.url.endsWith('/defer-unknown')).length, 1, 'no direct retry');
+        same(f.all('Alert').some(props => props.title === 'cloudDriveWorkflows.baiduBackfill.deferFailed'), true, 'fixed failure');
+        same(f.all('Alert').some(props => String(props.title).includes('raw-cookie')), false, 'no raw provider error');
+    }, { baiduSupported: true, backfill: unknownBackfill });
     await check('older API without workflows does not invent enabled drive state', async f => {
         same(f.all('Card').some(props => String(props['data-testid']).startsWith('drive-card-')), false, 'no fabricated controls');
         same(f.all('Empty').some(props => props.description === 'cloudDriveWorkflows.unavailable'), true, 'clear unavailable state');
@@ -368,6 +399,6 @@ test('Cloud drive configuration: real React page and per-provider API', { timeou
         baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
-    assert.equal(results.length, 20);
+    assert.equal(results.length, 22);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });
