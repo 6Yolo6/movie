@@ -1,0 +1,44 @@
+{
+  "originalRelease": "E:\\gying-tools\\releases\\baidu-gying-torrents-20261109\\frontend-runtime-candidate-123542-10de06a0",
+  "currentRelease": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0",
+  "originalPreserved": true,
+  "copiedFrozenValidation": [
+    {
+      "file": "source-manifest.json",
+      "sha256": "f5b4d8b55a81c67bdc2a4b92547df09d9d429d137475c16cf2fdcee02f3e0a8f",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "test-manifest.json",
+      "sha256": "63885e7bcdd26b19514beb68e7ad4362037258cd08b46fbcf115090c2db459c6",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "typegen.log",
+      "sha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "tsc.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "react-tests.log",
+      "sha256": "f5613cf6addaaa6127ab76bfd60e7ceb0257ac8b1d1260ec268cecc3c28b4cdc",
+      "identicalToFirstCandidate": true
+    },
+    {
+      "file": "validation-result.json",
+      "sha256": "da2460e255ce56c0727f11419ee7d0a53f3385b1a74851542e68248a8f757a6b",
+      "identicalToFirstCandidate": true
+    }
+  ],
+  "isolatedBuildUnchanged": "D:\\gying-movie\\movie\\tmp\\bgt-123542-10de06a0\\frontend",
+  "runtimeImageBuilt": false
+}

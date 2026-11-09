@@ -76,6 +76,65 @@ public class P2pArchiveTaskService {
         }
     }
 
+    /** A torrent backfill allocates exactly one provider child inside the parent's transaction. */
+    public synchronized ResourceHubTask enqueueForProvider(String movieId, String typeCode, String mid,
+            List<ResourceLink> selected, String provider, Long parentId) {
+        requireProvider(provider); validateSelection(movieId, selected);
+        if (!canRunArchive(provider)) throw new IllegalStateException("P2P_ARCHIVE_DISABLED");
+        if (parentId == null || parentId <= 0 || !Set.of("mv", "tv", "ac").contains(typeCode)
+                || mid == null || !mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid backfill identity");
+        String identity = fingerprint(selected);
+        ResourceHubTask existing = tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId)
+                .eq("source", provider).eq("keyword", identity).orderByAsc("id").last("LIMIT 1"), false);
+        if (existing != null) {
+            Map<String, Object> payload = readPayload(existing);
+            Object owner = payload.get("backfillParentId");
+            if (owner != null && !parentId.toString().equals(owner.toString())) throw new IllegalStateException("P2P_PARENT_CONFLICT");
+            // Unknown or terminal checkpoints remain byte-for-byte intact. Only an idle generic child is adopted.
+            if (owner == null && Set.of("PENDING", "FAILED").contains(existing.getStatus()) && !Boolean.TRUE.equals(payload.get("baiduShareSubmitting"))) {
+                String originalPayload = existing.getPayload(); payload.put("backfillParentId", parentId);
+                if (!tasks.update(new UpdateWrapper<ResourceHubTask>().eq("id", existing.getId()).eq("task_type", TYPE).eq("source", provider)
+                        .in("status", List.of("PENDING", "FAILED")).apply("payload=CAST({0} AS JSON)", originalPayload)
+                        .apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL").set("payload", json(payload)))) {
+                    throw new IllegalStateException("P2P_CHILD_BUSY");
+                }
+                existing.setPayload(json(payload));
+            }
+            return existing;
+        }
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("version", 2); payload.put("typeCode", typeCode); payload.put("mid", mid); payload.put("fingerprint", identity);
+        payload.put("resourceIds", selected.stream().map(ResourceLink::getId).filter(Objects::nonNull).toList());
+        payload.put("torrentMagnetIds", selected.stream().filter(link -> link.getId() == null)
+                .map(torrent -> pairedMagnet(torrent, selected).getId()).toList());
+        payload.put("policy", "1080P_4K_AT_LEAST_ONE_CHINESE_SUBTITLE_METADATA_FILES_ONLY"); payload.put("backfillParentId", parentId);
+        ResourceHubTask child = new ResourceHubTask(); child.setTaskType(TYPE); child.setSource(provider); child.setMovieId(movieId);
+        child.setKeyword(identity); child.setPriority(3); child.setMaxAttempts(3); child.setPayload(json(payload));
+        ResourceHubTask saved = tasks.enqueue(child);
+        if (saved == null || saved.getId() == null) throw new IllegalStateException("P2P archive task was not persisted");
+        return saved;
+    }
+
+    /** Reconcile an existing remote intent before collection can replace any of its source references. */
+    public ResourceHubTask protectedArchive(String movieId, String provider) {
+        requireProvider(provider);
+        return tasks.getOne(new QueryWrapper<ResourceHubTask>().eq("task_type", TYPE).eq("movie_id", movieId).eq("source", provider)
+                .and(query -> query.in("status", List.of("UNKNOWN", "ACTION_REQUIRED", "REVIEW_REQUIRED", "RUNNING"))
+                        .or().apply("JSON_EXTRACT(payload, '$.baiduShareSubmitting')=true"))
+                .orderByAsc("id").last("LIMIT 1"), false);
+    }
+
+    List<ResourceLink> selectionForTask(ResourceHubTask task) {
+        Map<String, Object> payload = readPayload(task); List<ResourceLink> selected = loadSelection(payload);
+        validateSelection(task.getMovieId(), selected);
+        if (!fingerprint(selected).equals(payload.get("fingerprint"))) throw new IllegalArgumentException("P2P selection superseded");
+        return selected;
+    }
+    private Map<String, Object> readPayload(ResourceHubTask task) {
+        try { return mapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {}); }
+        catch (Exception invalid) { throw new IllegalArgumentException("Invalid P2P archive checkpoint"); }
+    }
+
     /** Reuse local immutable selection only; remote checkpoints belong to the original provider/account. */
     public synchronized ResourceHubTask cloneExistingForProvider(Long existingId, String provider, Long parentId) {
         requireProvider(provider);
@@ -111,10 +170,16 @@ public class P2pArchiveTaskService {
     }
 
     /** Exact-child entry point; never drains another movie or provider queue. */
-    public ResourceHubTask submitOne(Long id, String provider) {
+    public ResourceHubTask submitOne(Long id, String provider) { return submitOne(id, provider, null); }
+
+    public ResourceHubTask submitOne(Long id, String provider, Long parentId) {
         requireProvider(provider);
         ResourceHubTask task = tasks.getById(id);
         if (task == null || !TYPE.equals(task.getTaskType()) || !provider.equals(task.getSource())) throw new IllegalArgumentException("Invalid P2P archive task");
+        Map<String, Object> checkpoint = readPayload(task);
+        Object owner = checkpoint.get("backfillParentId");
+        if (owner != null && (parentId == null || !parentId.toString().equals(owner.toString()))) return task;
+        if (parentId != null && owner == null && Set.of("PENDING", "FAILED").contains(task.getStatus())) return task;
         if (!canRunArchive(provider) || !running.compareAndSet(false, true)) return task;
         try {
             if ("SUCCEEDED".equals(task.getStatus())) {
@@ -142,7 +207,7 @@ public class P2pArchiveTaskService {
             }
             if (!Set.of("PENDING", "FAILED").contains(task.getStatus())
                     || (task.getAttempts() != null && task.getMaxAttempts() != null && task.getAttempts() >= task.getMaxAttempts())) return task;
-            runTask(task);
+            runTask(task, parentId);
             return task;
         } finally { running.set(false); }
     }
@@ -154,6 +219,7 @@ public class P2pArchiveTaskService {
         List<String> providers = List.of("QUARK", "XUNLEI", "BAIDU").stream().filter(this::canRunArchive).toList();
         if (providers.isEmpty()) return;
         tasks.update(new UpdateWrapper<ResourceHubTask>().eq("task_type", TYPE).in("source", providers).eq("status", "RUNNING")
+                .apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL")
                 .set("status", "FAILED").set("last_error", "Interrupted P2P upload; existing files will be verified on retry")
                 .set("scheduled_at", LocalDateTime.now().plusMinutes(1)).set("updated_at", LocalDateTime.now()));
     }
@@ -202,15 +268,38 @@ public class P2pArchiveTaskService {
         } finally { running.set(false); }
     }
 
-    void runTask(ResourceHubTask task) {
+    // LIMIT prevents derived-table merging, so this same-table UPDATE guard is legal on MySQL 8.
+    static final String NO_ACTIVE_TORRENT_PARENT = "NOT EXISTS(SELECT 1 FROM (SELECT JSON_UNQUOTE(JSON_EXTRACT(parent.payload,'$.currentMovieId')) AS protected_movie "
+            + "FROM resource_hub_task parent JOIN sys_config pointer ON pointer.config_key='resource.hub.baidu.torrent-backfill.task-id' "
+            + "AND parent.id=CAST(pointer.config_value AS UNSIGNED) WHERE parent.task_type='CLOUD_DRIVE_BACKFILL' AND parent.source='BAIDU' "
+            + "AND parent.status='RUNNING' AND JSON_EXTRACT(parent.payload,'$.version')=2 "
+            + "AND JSON_UNQUOTE(JSON_EXTRACT(parent.payload,'$.phase'))='GYING_TORRENTS' "
+            + "AND JSON_TYPE(JSON_EXTRACT(parent.payload,'$.leaseOwner'))='STRING' "
+            + "AND CAST(REPLACE(JSON_UNQUOTE(JSON_EXTRACT(parent.payload,'$.leaseUntil')),'T',' ') AS DATETIME(6))>CURRENT_TIMESTAMP(6) "
+            + "LIMIT 1) protected_parent WHERE protected_parent.protected_movie={0})";
+
+    void runTask(ResourceHubTask task) { runTask(task, null); }
+
+    private void runTask(ResourceHubTask task, Long parentId) {
         if (!TYPE.equals(task.getTaskType())) throw new IllegalArgumentException("Not a P2P archive task");
         String provider = requireProvider(task.getSource());
+        Object owner;
+        try { owner = readPayload(task).get("backfillParentId"); }
+        catch (Exception invalid) { if (parentId != null) return; owner = null; }
+        if (owner != null && (parentId == null || !parentId.toString().equals(owner.toString()))) return;
+        if (parentId != null && owner == null) return;
         // Disabled queues remain pending/failed with their checkpoints and retry budget intact.
         if (!canRunArchive(provider)) return;
         int attempt = (task.getAttempts() == null ? 0 : task.getAttempts()) + 1;
-        if (!tasks.update(new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).eq("task_type", TYPE).eq("source", provider)
-                .in("status", List.of("PENDING", "FAILED")).set("status", "RUNNING")
-                .set("attempts", attempt).set("started_at", LocalDateTime.now()).set("updated_at", LocalDateTime.now()))) return;
+        UpdateWrapper<ResourceHubTask> claim = new UpdateWrapper<ResourceHubTask>().eq("id", task.getId()).eq("task_type", TYPE).eq("source", provider)
+                .in("status", List.of("PENDING", "FAILED"));
+        if (parentId == null) {
+            claim.apply("JSON_EXTRACT(payload, '$.backfillParentId') IS NULL");
+            if ("BAIDU".equals(provider)) claim.apply(NO_ACTIVE_TORRENT_PARENT, task.getMovieId());
+        }
+        else claim.apply("JSON_EXTRACT(payload, '$.backfillParentId')={0}", parentId);
+        if (!tasks.update(claim.set("status", "RUNNING").set("attempts", attempt).set("started_at", LocalDateTime.now())
+                .set("updated_at", LocalDateTime.now()))) return;
         task.setStatus("RUNNING"); task.setAttempts(attempt); task.setStartedAt(LocalDateTime.now());
         Map<String, Object> payload = new LinkedHashMap<>();
         String stage = "LOAD_SELECTION";
@@ -332,7 +421,7 @@ public class P2pArchiveTaskService {
 
     static ResourceLink torrentDescriptor(ResourceLink magnet) {
         ResourceLink torrent = new ResourceLink();
-        torrent.setMovieId(magnet.getMovieId()); torrent.setType("TORRENT");
+        torrent.setMovieId(magnet.getMovieId()); torrent.setType("TORRENT"); torrent.setName(magnet.getName());
         torrent.setProvider(magnet.getProvider()); torrent.setSource(magnet.getSource());
         torrent.setSourceRef(magnet.getSourceRef()); torrent.setQuality(magnet.getQuality());
         torrent.setSubtitle(magnet.getSubtitle()); torrent.setStatus(magnet.getStatus());

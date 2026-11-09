@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "localeChecks": {
+    "zh": {
+      "outsideBackfillUnchanged": true,
+      "newPhaseLabels": true,
+      "currentItemFields": 13,
+      "actionLabels": 12,
+      "reasonLabels": 17
+    },
+    "en": {
+      "outsideBackfillUnchanged": true,
+      "newPhaseLabels": true,
+      "currentItemFields": 13,
+      "actionLabels": 12,
+      "reasonLabels": 17
+    }
+  },
+  "allFixedCodeLabelsPresent": true,
+  "productionOperations": false
+}

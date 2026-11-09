@@ -17,7 +17,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class BaiduBackfillTaskStore {
     static final String TYPE = "CLOUD_DRIVE_BACKFILL";
-    static final String KEY = "resource.hub.baidu.backfill.task-id";
+    static final String LEGACY_KEY = "resource.hub.baidu.backfill.task-id";
+    static final String KEY = "resource.hub.baidu.torrent-backfill.task-id";
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final ObjectMapper mapper;
@@ -27,27 +28,31 @@ public class BaiduBackfillTaskStore {
     }
 
     public static class State {
-        public int version = 1;
+        public int version = 2;
         public Long taskId;
-        public long revision;
-        public long settingsRevision;
+        public long revision, settingsRevision;
         public boolean enabled;
-        public int intervalMinutes = 10;
-        public int batchLimit = 1;
-        public String status = "PAUSED";
-        public String phase = "EXISTING_TASKS";
-        public long taskMaxId, discoveryMaxId, linkMaxId, p2pMaxId;
-        public long taskCursor, discoveryCursor, linkCursor, p2pCursor;
-        public String movieCursor = "";
+        public int intervalMinutes = 10, batchLimit = 1;
+        public String status = "PAUSED", phase = "GYING_TORRENTS";
+        public long identityMaxId, identityCursor;
         public String movieCutoff;
-        public String currentKind, currentMovieId;
-        public Long currentId, currentChildId, currentDiscoveryTaskId;
-        public long sourceDiscoveryCursor;
+        public Long currentIdentityId, currentChildId;
+        public String currentMovieId, currentGyingType, currentGyingId;
+        public List<Long> currentResourceIds = List.of();
+        public List<String> currentSeedNames = List.of();
+        public int currentSeedCount;
+        public String currentAction = "IDLE", lastResult;
         public long processed, succeeded, skipped, failed;
         public boolean currentFailureCounted;
-        public Long currentResourceLinkId;
-        public boolean currentGyingSubmitting;
         public String blockedReason, nextRunAt, leaseOwner, leaseUntil;
+    }
+
+    /** Historical parents are retained verbatim and never gate the torrent workflow. */
+    public Long legacyTaskId() {
+        List<String> pointers = jdbc.queryForList("SELECT config_value FROM sys_config WHERE config_key=?", String.class, LEGACY_KEY);
+        if (pointers.isEmpty()) return null;
+        try { long id = pointer(pointers.get(0)); return id > 0 ? id : null; }
+        catch (IllegalStateException invalid) { return null; }
     }
 
     public State read() {
@@ -112,6 +117,29 @@ public class BaiduBackfillTaskStore {
         });
     }
 
+    /** Only a freshly claimed v2 parent can resume its exact interrupted metadata upload. */
+    public boolean recoverInterruptedArchive(State progress) {
+        if (progress.currentChildId == null) return false;
+        return Boolean.TRUE.equals(transactions.execute(tx -> {
+            State latest = readTask(progress.taskId, true); assertOwned(latest, progress);
+            if (!"GYING_TORRENTS".equals(latest.phase) || !progress.currentChildId.equals(latest.currentChildId)) return false;
+            List<String> payloads = jdbc.queryForList("SELECT payload FROM resource_hub_task WHERE id=? AND task_type='P2P_ARCHIVE' AND source='BAIDU' AND status='RUNNING' AND movie_id=? FOR UPDATE",
+                    String.class, progress.currentChildId, latest.currentMovieId);
+            if (payloads.size() != 1) return false;
+            JsonNode payload;
+            try { payload = mapper.readTree(payloads.get(0)); } catch (Exception invalid) { return false; }
+            if (payload == null || !payload.isObject() || !payload.path("backfillParentId").isIntegralNumber()
+                    || payload.path("backfillParentId").asLong() != latest.taskId
+                    || !latest.currentGyingType.equals(payload.path("typeCode").asText()) || !latest.currentGyingId.equals(payload.path("mid").asText())
+                    || (payload.has("baiduShareSubmitting") && (!payload.path("baiduShareSubmitting").isBoolean() || payload.path("baiduShareSubmitting").asBoolean()))) return false;
+            // Row locks protect both pointers, and the lease is checked again immediately before the write.
+            assertOwned(readTask(progress.taskId, true), progress);
+            return jdbc.update("UPDATE resource_hub_task SET status='FAILED',last_error='Interrupted metadata upload; verifying saved files on retry',scheduled_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP "
+                    + "WHERE id=? AND task_type='P2P_ARCHIVE' AND source='BAIDU' AND status='RUNNING' AND payload=CAST(? AS JSON) AND JSON_EXTRACT(payload,'$.backfillParentId')=?",
+                    progress.currentChildId, payloads.get(0), latest.taskId) == 1;
+        }));
+    }
+
     public State finish(State progress) {
         return transactions.execute(tx -> {
             State latest = readTask(progress.taskId, true);
@@ -128,15 +156,12 @@ public class BaiduBackfillTaskStore {
     }
 
     private State ensureLocked() {
-        jdbc.update("INSERT INTO sys_config(config_key,config_value,description) VALUES(?,'0','百度慢速补全父任务指针') ON DUPLICATE KEY UPDATE config_key=config_key", KEY);
+        jdbc.update("INSERT INTO sys_config(config_key,config_value,description) VALUES(?,'0','百度种子补全父任务指针') ON DUPLICATE KEY UPDATE config_key=config_key", KEY);
         String value = jdbc.queryForObject("SELECT config_value FROM sys_config WHERE config_key=? FOR UPDATE", String.class, KEY);
         long id = pointer(value);
         if (id > 0) return readTask(id, true);
         State state = new State();
-        state.taskMaxId = maximum("baidu_transfer_task", "");
-        state.discoveryMaxId = maximum("resource_discovery_result", " WHERE provider='BAIDU'");
-        state.linkMaxId = maximum("resource_link", " WHERE provider='BAIDU'");
-        state.p2pMaxId = maximum("resource_hub_task", " WHERE task_type='P2P_ARCHIVE'");
+        state.identityMaxId = maximum("movie_source_identity", " WHERE source='GYING'");
         state.movieCutoff = now().toString();
         GeneratedKeyHolder key = new GeneratedKeyHolder();
         jdbc.update(connection -> {
@@ -180,57 +205,65 @@ public class BaiduBackfillTaskStore {
             throw new IllegalStateException("BACKFILL_CHECKPOINT_NOT_PERSISTED");
         }
     }
-    private static final Set<String> PHASES = Set.of("EXISTING_TASKS", "EXISTING_DISCOVERIES", "EXISTING_P2P", "SOURCE_SEARCH", "COMPLETE");
+    private static final Set<String> PHASES = Set.of("GYING_TORRENTS", "COMPLETE");
     private static final Set<String> STATUSES = Set.of("PAUSED", "PENDING", "RUNNING", "BLOCKED", "COMPLETE");
-    private static final Set<String> KINDS = Set.of("BAIDU_TASK", "DISCOVERY", "RESOURCE_LINK", "P2P_REFERENCE", "SOURCE_MOVIE");
+    static final Set<String> ACTIONS = Set.of("IDLE", "COLLECT_GYING_TORRENTS", "ARCHIVE_METADATA_FILES", "LOAD_SELECTION",
+            "PREPARE_METADATA_FILES", "RESOLVE_MOVIE_FOLDER", "UPLOAD_TORRENT", "UPLOAD_MAGNET_TEXT",
+            "CREATE_METADATA_SHARE", "PUBLISH_METADATA_LINK", "COMPLETE");
+    private static final Set<String> RESULTS = Set.of("TORRENTS_ARCHIVED", "NO_ELIGIBLE_GYING_TORRENTS", "MOVIE_INACTIVE", "SELECTION_SUPERSEDED");
     private static void validateShape(JsonNode raw) {
-        if (raw == null || !raw.isObject()) throw new IllegalStateException("BACKFILL_STATE_INVALID");
-        for (String field : List.of("version", "taskId", "revision", "settingsRevision", "intervalMinutes", "batchLimit", "taskMaxId", "discoveryMaxId", "linkMaxId", "p2pMaxId", "taskCursor", "discoveryCursor", "linkCursor", "p2pCursor", "sourceDiscoveryCursor", "processed", "succeeded", "skipped", "failed")) {
+        if (raw == null || !raw.isObject()) invalid();
+        for (String field : List.of("version", "taskId", "revision", "settingsRevision", "intervalMinutes", "batchLimit",
+                "identityMaxId", "identityCursor", "currentSeedCount", "processed", "succeeded", "skipped", "failed")) {
             JsonNode value = raw.get(field);
-            if (value == null || !value.isIntegralNumber() || !value.canConvertToLong()) throw new IllegalStateException("BACKFILL_STATE_INVALID");
+            if (value == null || !value.isIntegralNumber() || !value.canConvertToLong()) invalid();
         }
-        for (String field : List.of("enabled", "currentFailureCounted", "currentGyingSubmitting")) {
-            if (!raw.has(field) || !raw.get(field).isBoolean()) throw new IllegalStateException("BACKFILL_STATE_INVALID");
+        for (String field : List.of("enabled", "currentFailureCounted")) {
+            if (!raw.has(field) || !raw.get(field).isBoolean()) invalid();
         }
-        for (String field : List.of("status", "phase", "movieCursor", "movieCutoff")) {
-            if (!raw.has(field) || !raw.get(field).isTextual()) throw new IllegalStateException("BACKFILL_STATE_INVALID");
+        for (String field : List.of("status", "phase", "movieCutoff", "currentAction")) {
+            if (!raw.has(field) || !raw.get(field).isTextual()) invalid();
         }
-        for (String field : List.of("currentKind", "currentMovieId", "blockedReason", "nextRunAt", "leaseOwner", "leaseUntil")) {
-            if (!raw.has(field) || !(raw.get(field).isNull() || raw.get(field).isTextual())) throw new IllegalStateException("BACKFILL_STATE_INVALID");
+        for (String field : List.of("currentMovieId", "currentGyingType", "currentGyingId", "lastResult", "blockedReason", "nextRunAt", "leaseOwner", "leaseUntil")) {
+            if (!raw.has(field) || !(raw.get(field).isNull() || raw.get(field).isTextual())) invalid();
         }
-        for (String field : List.of("currentId", "currentChildId", "currentDiscoveryTaskId", "currentResourceLinkId")) {
-            if (!raw.has(field) || !(raw.get(field).isNull() || (raw.get(field).isIntegralNumber() && raw.get(field).canConvertToLong()))) throw new IllegalStateException("BACKFILL_STATE_INVALID");
+        for (String field : List.of("currentIdentityId", "currentChildId")) {
+            if (!raw.has(field) || !(raw.get(field).isNull() || (raw.get(field).isIntegralNumber() && raw.get(field).canConvertToLong()))) invalid();
         }
+        JsonNode ids = raw.get("currentResourceIds"), names = raw.get("currentSeedNames");
+        if (ids == null || !ids.isArray() || ids.size() > 4 || names == null || !names.isArray() || names.size() > 4) invalid();
+        for (JsonNode id : ids) if (!id.isIntegralNumber() || !id.canConvertToLong()) invalid();
+        for (JsonNode name : names) if (!name.isTextual()) invalid();
     }
     private static void validate(State state) {
-        if (state.version != 1 || state.taskId == null || state.taskId <= 0 || state.revision < 0 || state.settingsRevision < 0
+        if (state.version != 2 || state.taskId == null || state.taskId <= 0 || state.revision < 0 || state.settingsRevision < 0
                 || state.intervalMinutes < 1 || state.intervalMinutes > 1440 || state.batchLimit < 1 || state.batchLimit > 5
-                || !PHASES.contains(state.phase) || !STATUSES.contains(state.status)
-                || state.taskMaxId < 0 || state.discoveryMaxId < 0 || state.linkMaxId < 0 || state.p2pMaxId < 0
-                || state.taskCursor < 0 || state.taskCursor > state.taskMaxId || state.discoveryCursor < 0 || state.discoveryCursor > state.discoveryMaxId
-                || state.linkCursor < 0 || state.linkCursor > state.linkMaxId || state.p2pCursor < 0 || state.p2pCursor > state.p2pMaxId
-                || state.sourceDiscoveryCursor < 0 || state.processed < 0 || state.succeeded < 0 || state.skipped < 0 || state.failed < 0
+                || !PHASES.contains(state.phase) || !STATUSES.contains(state.status) || !ACTIONS.contains(state.currentAction)
+                || state.identityMaxId < 0 || state.identityCursor < 0 || state.identityCursor > state.identityMaxId
+                || state.processed < 0 || state.succeeded < 0 || state.skipped < 0 || state.failed < 0
                 || state.succeeded > state.processed || state.skipped != state.processed - state.succeeded
-                || state.movieCursor == null || state.movieCursor.length() > 64) invalid();
+                || state.currentSeedCount < 0 || state.currentSeedCount > 2 || state.currentResourceIds == null || state.currentResourceIds.size() > 4
+                || state.currentSeedNames == null || state.currentSeedNames.size() > 4
+                || (state.lastResult != null && !RESULTS.contains(state.lastResult))) invalid();
+        for (Long id : state.currentResourceIds) if (id == null || id <= 0) invalid();
+        for (String name : state.currentSeedNames) if (!safeText(name, 255)) invalid();
         iso(state.movieCutoff, false); iso(state.nextRunAt, true); iso(state.leaseUntil, true);
         if ((state.leaseOwner == null) != (state.leaseUntil == null)
                 || (state.leaseOwner != null && !state.leaseOwner.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
                 || ("RUNNING".equals(state.status) && state.leaseOwner == null)) invalid();
-        if (state.currentKind != null && (!KINDS.contains(state.currentKind) || state.currentMovieId == null || state.currentMovieId.isBlank() || state.currentMovieId.length() > 64)) invalid();
-        for (Long id : new Long[] { state.currentId, state.currentChildId, state.currentDiscoveryTaskId, state.currentResourceLinkId }) if (id != null && id <= 0) invalid();
-        if (state.currentKind == null && (state.currentId != null || state.currentChildId != null || state.currentMovieId != null
-                || state.currentDiscoveryTaskId != null || state.currentResourceLinkId != null || state.currentGyingSubmitting)) invalid();
-        if (state.currentKind != null) {
-            switch (state.currentKind) {
-                case "BAIDU_TASK" -> { if (!"EXISTING_TASKS".equals(state.phase) || state.currentId == null || state.currentId > state.taskMaxId) invalid(); }
-                case "DISCOVERY" -> { if (!"EXISTING_DISCOVERIES".equals(state.phase) || state.currentId == null || state.currentId > state.discoveryMaxId) invalid(); }
-                case "RESOURCE_LINK" -> { if (!"EXISTING_DISCOVERIES".equals(state.phase) || state.currentId == null || state.currentId > state.linkMaxId) invalid(); }
-                case "P2P_REFERENCE" -> { if (!"EXISTING_P2P".equals(state.phase) || state.currentId == null || state.currentId > state.p2pMaxId) invalid(); }
-                case "SOURCE_MOVIE" -> { if (!"SOURCE_SEARCH".equals(state.phase) || state.currentId != null) invalid(); }
-                default -> invalid();
-            }
+        if (state.currentIdentityId == null) {
+            if (state.currentChildId != null || state.currentMovieId != null || state.currentGyingType != null || state.currentGyingId != null
+                    || !state.currentResourceIds.isEmpty() || !state.currentSeedNames.isEmpty() || state.currentSeedCount != 0
+                    || !("IDLE".equals(state.currentAction) || "COMPLETE".equals(state.currentAction))) invalid();
+        } else {
+            if (!"GYING_TORRENTS".equals(state.phase) || state.currentIdentityId <= state.identityCursor || state.currentIdentityId > state.identityMaxId
+                    || !safeText(state.currentMovieId, 64) || !Set.of("mv", "tv", "ac").contains(state.currentGyingType)
+                    || state.currentGyingId == null || !state.currentGyingId.matches("[A-Za-z0-9]{1,100}")) invalid();
+            if (state.currentChildId != null && (state.currentChildId <= 0)) invalid();
         }
-        if (state.currentGyingSubmitting && (state.currentChildId == null || state.currentResourceLinkId == null)) invalid();
+    }
+    private static boolean safeText(String text, int max) {
+        return text != null && !text.isBlank() && text.length() <= max && text.chars().noneMatch(Character::isISOControl);
     }
     private static void iso(String value, boolean nullable) {
         if (value == null) { if (!nullable) invalid(); return; }

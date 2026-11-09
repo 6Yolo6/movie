@@ -1,0 +1,1031 @@
+{
+  "actualCandidateBuildAssets": true,
+  "mockedApi": true,
+  "productionApiWrites": false,
+  "nextServerStarted": false,
+  "scenarios": [
+    {
+      "lang": "zh",
+      "width": 1280,
+      "theme": "light",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 1280,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-1280-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "theme": "light",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 1280,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 1280,
+        "scroll": 1280
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-1280-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 390,
+      "theme": "light",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "zh",
+      "width": 390,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\zh-390-dark-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "theme": "light",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-light-connected.png",
+      "passed": true
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "theme": "dark",
+      "overflow": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": 0,
+      "externalRequests": 0,
+      "savedPerDrive": true,
+      "draftsSurviveConnectionRefresh": true,
+      "localExpiry": true,
+      "loginNeverEnablesStages": true,
+      "torrentOnlyPersistsOnReload": true,
+      "backfillDefaultOff10Minutes1Item": true,
+      "backfillSaveSeparateAndPersisted": true,
+      "backfillManualRuns": 0,
+      "gyingIdsAndSpecificSeedVerification": true,
+      "legacySelfShareDoesNotGate": true,
+      "noVideoDiscoveryOrGyingPublishing": true,
+      "completedSeedResultShown": true,
+      "seedVerificationScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-seed-verification.png",
+      "onlyMockedWrites": [
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "QUARK",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": false,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/saved/quark",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/login",
+          "method": "POST",
+          "body": {}
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "BAIDU",
+                "discoveryEnabled": false,
+                "videoEnabled": false,
+                "torrentEnabled": true,
+                "transferEnabled": false,
+                "gyingPublishEnabled": false,
+                "shareEnabled": false,
+                "savePath": "/fixture/baidu",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/config",
+          "method": "PUT",
+          "body": {
+            "driveWorkflows": [
+              {
+                "provider": "XUNLEI",
+                "discoveryEnabled": true,
+                "videoEnabled": true,
+                "torrentEnabled": true,
+                "transferEnabled": true,
+                "gyingPublishEnabled": true,
+                "shareEnabled": true,
+                "savePath": "/unsaved/xunlei",
+                "batchLimit": 5
+              }
+            ]
+          }
+        },
+        {
+          "path": "/api/admin/resource-hub/baidu/backfill",
+          "method": "PUT",
+          "body": {
+            "enabled": false,
+            "intervalMinutes": 30,
+            "batchLimit": 2
+          }
+        }
+      ],
+      "mockedBackgroundWrites": [
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        },
+        {
+          "path": "/api/monitoring/page-view",
+          "method": "POST"
+        }
+      ],
+      "screenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark.png",
+      "pendingScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-pending.png",
+      "connectedScreenshot": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\en-390-dark-connected.png",
+      "passed": true
+    }
+  ],
+  "observedWrites": [
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "QUARK",
+            "discoveryEnabled": true,
+            "videoEnabled": true,
+            "torrentEnabled": false,
+            "transferEnabled": true,
+            "gyingPublishEnabled": true,
+            "shareEnabled": true,
+            "savePath": "/saved/quark",
+            "batchLimit": 5
+          }
+        ]
+      }
+    },
+    {
+      "path": "/api/admin/resource-hub/baidu/login",
+      "method": "POST",
+      "body": {}
+    },
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "BAIDU",
+            "discoveryEnabled": false,
+            "videoEnabled": false,
+            "torrentEnabled": true,
+            "transferEnabled": false,
+            "gyingPublishEnabled": false,
+            "shareEnabled": false,
+            "savePath": "/fixture/baidu",
+            "batchLimit": 5
+          }
+        ]
+      }
+    },
+    {
+      "path": "/api/admin/resource-hub/config",
+      "method": "PUT",
+      "body": {
+        "driveWorkflows": [
+          {
+            "provider": "XUNLEI",
+            "discoveryEnabled": true,
+            "videoEnabled": true,
+            "torrentEnabled": true,
+            "transferEnabled": true,
+            "gyingPublishEnabled": true,
+            "shareEnabled": true,
+            "savePath": "/unsaved/xunlei",
+            "batchLimit": 5
+          }
+        ]
+      }
+    },
+    {
+      "path": "/api/admin/resource-hub/baidu/backfill",
+      "method": "PUT",
+      "body": {
+        "enabled": false,
+        "intervalMinutes": 30,
+        "batchLimit": 2
+      }
+    }
+  ],
+  "observedReads": [
+    "/api/notifications/unread-count",
+    "/api/admin/resource-hub/overview",
+    "/api/admin/resource-hub/tasks",
+    "/api/admin/resource-hub/discoveries",
+    "/api/admin/resource-hub/missing-resources",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/baidu/backfill",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/config",
+    "/api/notifications/unread-count",
+    "/api/admin/resource-hub/overview",
+    "/api/admin/resource-hub/tasks",
+    "/api/admin/resource-hub/discoveries",
+    "/api/admin/resource-hub/missing-resources",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/baidu/backfill",
+    "/api/admin/resource-hub/config",
+    "/api/notifications/unread-count",
+    "/api/admin/resource-hub/overview",
+    "/api/admin/resource-hub/tasks",
+    "/api/admin/resource-hub/discoveries",
+    "/api/admin/resource-hub/missing-resources",
+    "/api/admin/resource-hub/baidu/session",
+    "/api/admin/resource-hub/baidu/backfill",
+    "/api/admin/resource-hub/config",
+    "/api/admin/resource-hub/baidu/backfill",
+    "/api/admin/resource-hub/baidu/backfill"
+  ],
+  "status": "passed"
+}

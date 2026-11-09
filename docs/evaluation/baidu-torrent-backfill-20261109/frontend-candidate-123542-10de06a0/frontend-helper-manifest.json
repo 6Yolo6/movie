@@ -1,0 +1,69 @@
+{
+  "at": "2026-11-09T04:50:01.763274+00:00",
+  "helpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\BindFrontendCommit.py",
+      "sha256": "96e8a8983c93f90fc39ef1743cce297d11151e2664656eb221cfa54d9a4f5fca",
+      "bytes": 3145
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\BindFrontendBuild.py",
+      "sha256": "b85eb30f59d088e1ea965ffdecb8a1253de946c088514ddd3a090f9af9e24eb4",
+      "bytes": 2211
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\BuildFrontendRuntimeCandidate.py",
+      "sha256": "38b35b17dee72c1db30da61e66c0904d6d84c801d343fbdc223df26d96ab8d31",
+      "bytes": 12680
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\validate-isolated.cjs",
+      "sha256": "429e66cc208e86d5f75ff422914f7a390c916fe3fcae362809e747d05ef81bb9",
+      "bytes": 2751
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\build-isolated.cjs",
+      "sha256": "1ccc88a1f1c898c51c97729016f5add1b93fa6dca3a4521ce8dc4c2787654d69",
+      "bytes": 2094
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\native-build\\browser-qa.cjs",
+      "sha256": "e0dbd9efec83a565febc8e0d028c3172a5881c96d79af773b2e123dc600dc2ac",
+      "bytes": 21760
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\VerifyBaiduAdminUi.py",
+      "sha256": "ff5334a6ddb164246b124ba12bd2096fcf27bd701f27e9ef3e5f6dd9879cb408",
+      "bytes": 12002
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\VerifyBaiduPublicAssets.py",
+      "sha256": "b46455f5346435d29587c3e890388dc320accf29e5a1adb05b9f2f5b1d1e27f6",
+      "bytes": 8261
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\VerifyFinalBaiduMetadata.py",
+      "sha256": "62833e02840322c8c99cec916efd386f8c4735efa01a01e0e870b3f506e4e315",
+      "bytes": 6023
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\baidu-torrent-backfill-20261109\\frontend-runtime-candidate-123542-10de06a0\\admin-verify\\VerifyBaiduAdminUi.cjs",
+      "sha256": "be0dc853fac08ce7d9cc025361ccc39b9e3221f9390bddef207766c703d27ce4",
+      "bytes": 14758
+    }
+  ],
+  "externalReadonlyAuthHelper": {
+    "path": "E:\\gying-tools\\releases\\metadata-source-pause-20261029\\VerifyPause.py",
+    "sha256": "a8eeb6d8bde9aa6bef303d4fa56a84952f96b878339e378df2f98c44081a8da8"
+  },
+  "adminHelperState": "prepared_syntax_checked_not_executed",
+  "requiresReviewedCommitAndFixedImages": true,
+  "productionAdminRequestsExecuted": 0,
+  "productionPublicRequestsExecuted": 0,
+  "legacyParentId": 17580,
+  "legacyAndV2ParentPayloadAndPointerHashesCompared": true,
+  "existingDeviceOnly": true,
+  "newLoginOrDeviceCreated": false,
+  "configurationWrites": false,
+  "productionBackfillOrTransfersExecuted": false
+}

@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-09T04:46:58.909707+00:00",
+  "candidateImageId": "sha256:663b83853b72bbaff753a12c42e6a9a54718643c3cb3d10b95dda1e938f90c54",
+  "isolatedNetwork": "none",
+  "readOnlyContainer": true,
+  "portsMapped": false,
+  "productionMounts": false,
+  "smoke": {
+    "results": [
+      {
+        "route": "/",
+        "status": 200,
+        "htmlBytes": 67810,
+        "assetCount": 37
+      },
+      {
+        "route": "/admin/resource-hub",
+        "status": 200,
+        "htmlBytes": 61543,
+        "assetCount": 38
+      }
+    ],
+    "node": "v22.23.4",
+    "uid": 1001,
+    "features": {
+      "baidu-account-connection": true,
+      "baidu-login-state": true,
+      "baidu-start-login": true,
+      "videoEnabled": true,
+      "torrentEnabled": true,
+      "/api/admin/resource-hub/baidu/session": true,
+      "/api/admin/resource-hub/baidu/login": true,
+      "drive-workflow-settings": true,
+      "/api/admin/resource-hub/transfers/run": true,
+      "GYING_TORRENTS": true,
+      "COLLECT_GYING_TORRENTS": true,
+      "UPLOAD_TORRENT": true,
+      "baidu-backfill-current-item": true,
+      "baidu-backfill-current-action": true,
+      "baidu-backfill-legacy-task": true,
+      "baidu-backfill-controls": true,
+      "baidu-backfill-enabled": true,
+      "baidu-backfill-run": true,
+      "/api/admin/resource-hub/baidu/backfill": true,
+      "/api/admin/resource-hub/baidu/backfill/run": true
+    }
+  },
+  "content": {
+    "allHashesMatch": true,
+    "fileCount": 375
+  },
+  "temporarySmokeContainerRemoved": true,
+  "effectiveImageEnvUnchanged": true,
+  "nativeDependenciesInherited": true,
+  "productionFrontendUnchanged": true,
+  "deployed": false
+}

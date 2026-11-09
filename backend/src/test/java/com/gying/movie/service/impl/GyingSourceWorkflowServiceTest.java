@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -1482,6 +1483,48 @@ class GyingSourceWorkflowServiceTest {
             links.forEach((url, provider) -> checks.put(url, new LinkCheckResult(url, true, true, "valid")));
             return checks;
         });
+    }
+
+    private MovieSourceIdentity linkedSeedIdentity() {
+        MovieSourceIdentity identity = new MovieSourceIdentity(); identity.setId(100L); identity.setMovieId("movie1");
+        identity.setSource("GYING"); identity.setSourceType("mv"); identity.setExternalId("CaSe1"); identity.setMatchStatus("CONFIRMED");
+        when(movieService.getById("movie1")).thenReturn(movie("movie1", "Known movie", "mv", "AVAILABLE"));
+        when(sourceIdentityService.getById(100L)).thenReturn(identity);
+        return identity;
+    }
+    private Map<String, Object> knownSeed() {
+        return Map.of("type", "MAGNET", "provider", "P2P", "url", "magnet:?xt=urn:btih:" + "a".repeat(40),
+                "source_ref", "BT1", "quality", "1080P", "subtitle", "中文字幕（来源标注）", "archive_torrent", true, "title", "Known seed");
+    }
+    @Test void exactLinkedIdentityCollectionDoesNotSearchIngestPublishOrEnqueueOtherProviders() {
+        linkedSeedIdentity(); when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(knownSeed())));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink)call.getArgument(0)).setId(31L); return true; });
+        var archives = mock(P2pArchiveTaskService.class); org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        var result = service.collectMovieP2pResources("movie1", 100L); assertEquals("CaSe1", result.mid()); assertEquals(100L, result.identityId());
+        assertEquals(List.of("MAGNET", "TORRENT"), result.selected().stream().map(ResourceLink::getType).toList()); assertNull(result.selected().get(1).getUrl());
+        verify(gyingSourceClient).get("/resources/mv/CaSe1"); verify(gyingSourceClient, never()).post(anyString(), any());
+        verify(sourceIdentityService, never()).getOne(any(Wrapper.class), anyBoolean());
+        verifyNoInteractions(archives, discoveryService, transferTaskService, transferRunnerService, xunleiTransferTaskService, xunleiTransferRunnerService, publishService);
+    }
+    @Test void exactSeedCollectionPreservesManualResourceEvenIfItHasTheSameUrl() {
+        linkedSeedIdentity(); var seed = knownSeed(); when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(seed)));
+        ResourceLink manual = new ResourceLink(); manual.setId(77L); manual.setMovieId("movie1"); manual.setName("User supplied release"); manual.setUrl((String)seed.get("url"));
+        manual.setSource("MANUAL"); manual.setProvider("P2P"); manual.setAutoCollected(false);
+        when(resourceLinkService.getOne(any(Wrapper.class), eq(false))).thenReturn(manual);
+        when(resourceLinkService.save(any(ResourceLink.class))).thenAnswer(call -> { ((ResourceLink)call.getArgument(0)).setId(78L); return true; });
+        var result = service.collectMovieP2pResources("movie1", 100L); assertEquals(78L, result.selected().get(0).getId());
+        assertEquals("User supplied release", manual.getName()); assertEquals("MANUAL", manual.getSource()); assertFalse(manual.getAutoCollected());
+        verify(resourceLinkService, never()).updateById(any(ResourceLink.class));
+        var scope = ArgumentCaptor.forClass(Wrapper.class); verify(resourceLinkService).getOne(scope.capture(), eq(false));
+        assertTrue(scope.getValue().getSqlSegment().contains("auto_collected")); assertTrue(scope.getValue().getSqlSegment().contains("source"));
+    }
+    @Test void mappingChangedDuringGyingReadRejectsLocalWrites() {
+        MovieSourceIdentity before = linkedSeedIdentity(); MovieSourceIdentity changed = new MovieSourceIdentity(); changed.setId(100L); changed.setMovieId("other-movie");
+        changed.setSource("GYING"); changed.setSourceType("mv"); changed.setExternalId("CaSe1"); changed.setMatchStatus("CONFIRMED");
+        when(sourceIdentityService.getById(100L)).thenReturn(before, changed);
+        when(gyingSourceClient.get("/resources/mv/CaSe1")).thenReturn(Map.of("resources", List.of(knownSeed())));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.collectMovieP2pResources("movie1", 100L));
+        verifyNoInteractions(resourceLinkService, discoveryService, transferTaskService, transferRunnerService, publishService);
     }
 
 }

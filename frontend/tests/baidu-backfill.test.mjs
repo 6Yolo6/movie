@@ -7,8 +7,11 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
     const same = (actual, expected, label) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(label + ': ' + JSON.stringify(actual));
     };
-    const initial = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'EXISTING_TASKS', intervalMinutes: 10, batchLimit: 1,
-        processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null, ...patch });
+    const initial = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
+        processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null,
+        currentIdentityId: null, currentMovieId: null, currentGyingType: null, currentGyingId: null, currentChildId: null,
+        currentResourceIds: [], currentSeedNames: [], currentSeedCount: 0, currentAction: 'IDLE',
+        currentChildStatus: null, currentChildError: null, lastResult: null, legacyTaskId: null, ...patch });
     const deferred = () => {
         let resolve, reject;
         const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
@@ -33,7 +36,7 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
                 App: { useApp: () => ({ message: { error: value => errors.push(value), success: value => successes.push(value) } }) },
                 Typography: { Text: capture('Text'), Paragraph: capture('Paragraph') } },
             '@ant-design/icons': { CloudSyncOutlined: () => null, ReloadOutlined: () => null, SaveOutlined: () => null },
-            'react-i18next': { useTranslation: () => ({ t: key => key }) },
+            'react-i18next': { useTranslation: () => ({ t: (key, values) => key + (values ? JSON.stringify(values) : '') }) },
         };
         const library = loadModule('driveWorkflows', mocks);
         mocks['@/lib/cloudDriveWorkflows'] = library;
@@ -116,26 +119,75 @@ async function backfillSuite({ React, createRoot, loadPage, loadModule }) {
         await f.change('enabled', false); await f.save(); same(f.saves.length, 1, 'pause still saves');
         await f.reply(f.saves[0], initial());
     });
-    await check('manual gating uses saved hub, account, types and transfer/share settings', async f => {
+    await check('torrent backfill requires saved torrent, account and transfer/share settings independently of video or discovery', async f => {
         await f.reply(f.reads[0], initial());
         for (const patch of [{ hubEnabled: false }, { workflowBusy: true }, { workflow: { credentialConfigured: false } },
-            { workflow: { torrentEnabled: false } }, { workflow: { transferEnabled: false } }, { workflow: { shareEnabled: false } }]) {
+            { workflow: { torrentEnabled: false, videoEnabled: true } }, { workflow: { transferEnabled: false } }, { workflow: { shareEnabled: false } }]) {
             await f.rerender(patch); same(f.byId('run').disabled, true, 'required gate'); await f.run();
-            await f.rerender({ hubEnabled: true, workflowBusy: false, workflow: { credentialConfigured: true, torrentEnabled: true, transferEnabled: true, shareEnabled: true } });
+            await f.rerender({ hubEnabled: true, workflowBusy: false, workflow: { credentialConfigured: true, torrentEnabled: true,
+                videoEnabled: false, transferEnabled: true, shareEnabled: true } });
         }
         same(f.runs.length, 0, 'all direct calls guarded');
-        same(f.byId('run').disabled, false, 'existing resources need no discovery');
-        await f.refresh(); await f.reply(f.reads[1], initial({ phase: 'SOURCE_SEARCH' }));
-        same(f.byId('run').disabled, true, 'search needs discovery');
-        await f.rerender({ workflow: { discoveryEnabled: true } }); same(f.byId('run').disabled, false, 'saved discovery permits search');
+        same(f.byId('run').disabled, false, 'confirmed library IDs need no video or discovery');
+        await f.rerender({ workflow: { discoveryEnabled: true, videoEnabled: true, gyingPublishEnabled: true } });
+        same(f.byId('run').disabled, false, 'other settings do not change this scope');
+        await f.rerender({ workflow: { torrentEnabled: false } });
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.blocked.TORRENT_DISABLED'), true, 'specific torrent setting shown');
     });
-    await check('blocked status uses fixed reason text and discards raw and unknown fields', async f => {
-        await f.reply(f.reads[0], initial({ status: 'BLOCKED', blockedReason: 'BDUSS=raw-cookie', cookie: 'raw-cookie', currentMovieId: 'raw-cookie' }));
-        same(f.byId('blocked').title, 'cloudDriveWorkflows.baiduBackfill.blocked.UNKNOWN', 'safe fallback');
-        same(f.text().includes('raw-cookie'), false, 'no raw fields');
-        const decoded = f.library.baiduBackfillStatus(initial({ blockedReason: 'CHILD_ACTION_REQUIRED', cookie: 'raw-cookie', currentMovieId: 'raw-cookie' }));
+    await check('current seed verification shows specific library IDs, file names, action and archive task', async f => {
+        await f.reply(f.reads[0], initial({ taskId: 72, status: 'BLOCKED', blockedReason: 'CHILD_UNKNOWN',
+            currentIdentityId: 14, currentMovieId: 'movie-100', currentGyingType: 'mv', currentGyingId: 'G100',
+            currentChildId: 481, currentResourceIds: [610, 611], currentSeedNames: ['1080P_sub_123.torrent', '1080P_sub_123.txt'],
+            currentSeedCount: 1, currentAction: 'UPLOAD_TORRENT', currentChildStatus: 'UNKNOWN', currentChildError: 'BaiduActionException' }));
+        for (const value of ['14', 'movie-100', 'mv/G100', '481', '610, 611', '1080P_sub_123.torrent', '1080P_sub_123.txt']) {
+            same(f.text().includes(value), true, 'specific current metadata ' + value);
+        }
+        same(f.byId('current-action').children[2], 'cloudDriveWorkflows.baiduBackfill.actions.UPLOAD_TORRENT', 'current upload stage');
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.childStates.UNKNOWN'), true, 'submission uncertainty shown');
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.childErrors.BaiduActionException'), true, 'safe error category');
+        same(f.byId('blocked').title, 'cloudDriveWorkflows.baiduBackfill.blocked.CHILD_UNKNOWN', 'specific step explanation');
+    });
+    await check('historical self-share review is retained as information and cannot block a new torrent batch', async f => {
+        await f.reply(f.reads[0], initial({ legacyTaskId: 91, legacyStatus: 'UNKNOWN', legacyBlockedReason: 'CHILD_REVIEW_REQUIRED',
+            legacySelfShare: 'raw-cookie-never-display' }));
+        same(f.byId('legacy-task').type, 'info', 'historical task shown separately');
+        same(f.byId('legacy-task').title.includes('91'), true, 'historical ID visible');
+        same(Boolean(f.byId('blocked')), false, 'no current blocking reason inherited');
+        same(f.byId('run').disabled, false, 'new seed workflow available');
+        same(f.text().includes('raw-cookie'), false, 'raw historical payload omitted');
+        await f.run(); same(f.runs.length, 1, 'new batch callback reached'); await f.reply(f.runs[0], initial({ legacyTaskId: 91 }));
+    });
+    await check('blocked metadata uses fixed reason and action text and discards raw unknown fields', async f => {
+        await f.reply(f.reads[0], initial({ status: 'BLOCKED', blockedReason: 'BDUSS=raw-cookie', cookie: 'raw-cookie',
+            currentAction: 'raw-cookie', currentChildStatus: 'raw-cookie', currentChildError: 'raw-cookie', lastResult: 'raw-cookie' }));
+        same(f.byId('blocked').title, 'cloudDriveWorkflows.baiduBackfill.blocked.UNKNOWN', 'safe reason fallback');
+        same(f.text().includes('raw-cookie'), false, 'no raw codes or fields');
+        const decoded = f.library.baiduBackfillStatus(initial({ blockedReason: 'CHILD_ACTION_REQUIRED', cookie: 'raw-cookie',
+            currentIdentityId: 2, currentMovieId: 'movie-2', currentGyingType: 'tv', currentGyingId: 'T2' }));
         same(decoded.blockedReason, 'CHILD_ACTION_REQUIRED', 'recognized reason'); same(Object.hasOwn(decoded, 'cookie'), false, 'credentials omitted');
-        same(Object.hasOwn(decoded, 'currentMovieId'), false, 'unneeded identifiers omitted');
+        same([decoded.currentIdentityId, decoded.currentMovieId, decoded.currentGyingType, decoded.currentGyingId], [2, 'movie-2', 'tv', 'T2'], 'safe identifiers retained');
+    });
+    await check('malformed current seed metadata and retired search phases are rejected', async f => {
+        await f.reply(f.reads[0], initial());
+        for (const patch of [{ currentIdentityId: 0 }, { currentChildId: -1 }, { legacyTaskId: 0 },
+            { currentResourceIds: [null] }, { currentResourceIds: [1, 1] }, { currentResourceIds: [1, 2, 3, 4, 5] },
+            { currentSeedNames: [null] }, { currentSeedNames: ['x'.repeat(256)] }, { currentSeedNames: ['bad\nname.torrent'] },
+            { currentSeedNames: ['a', 'b', 'c', 'd', 'e'] }, { currentSeedCount: 3 }, { currentSeedCount: 1.5 },
+            { currentGyingType: 'movie' }, { currentGyingId: 'mv/G1' }, { currentMovieId: 'x'.repeat(65) },
+            { currentMovieId: 'bad\nID' }, { phase: 'EXISTING_TASKS' }, { phase: 'SOURCE_SEARCH' }]) {
+            let rejected = false;
+            try { f.library.baiduBackfillStatus(initial(patch)); } catch { rejected = true; }
+            same(rejected, true, 'invalid current metadata rejected ' + Object.keys(patch)[0]);
+        }
+        same([f.saves.length, f.runs.length], [0, 0], 'validation never triggers work');
+    });
+    await check('completed and skipped seed results remain readable without a generic review prompt', async f => {
+        await f.reply(f.reads[0], initial({ processed: 1, skipped: 1, lastResult: 'NO_ELIGIBLE_GYING_TORRENTS' }));
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.results.NO_ELIGIBLE_GYING_TORRENTS'), true, 'specific skip result');
+        same(Boolean(f.byId('blocked')), false, 'missing seed is not a manual review');
+        await f.refresh(); await f.reply(f.reads[1], initial({ status: 'COMPLETE', phase: 'COMPLETE', lastResult: 'TORRENTS_ARCHIVED' }));
+        same(f.text().includes('cloudDriveWorkflows.baiduBackfill.results.TORRENTS_ARCHIVED'), true, 'success result');
+        same(f.byId('run').disabled, true, 'completed stops work');
     });
     await check('running schedules poll with GET every ten seconds and stop at completion', async f => {
         await f.reply(f.reads[0], initial({ enabled: true, status: 'PENDING', nextRunAt: '2026-11-09T12:00:00.123456789' }));
@@ -198,6 +250,6 @@ test('Baidu backfill UI: real React scheduling, saved choices and request lifecy
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
         baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
     });
-    assert.equal(results.length, 17);
+    assert.equal(results.length, 21);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });

@@ -9,7 +9,7 @@ async function driveSuite({ React, createRoot, loadPage, loadModule, readApiErro
     const same = (actual, expected, label) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(label + ': ' + JSON.stringify(actual));
     };
-    const backfill = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'EXISTING_TASKS', intervalMinutes: 10, batchLimit: 1,
+    const backfill = patch => ({ taskId: null, enabled: false, status: 'PAUSED', phase: 'GYING_TORRENTS', intervalMinutes: 10, batchLimit: 1,
         processed: 0, succeeded: 0, skipped: 0, failed: 0, nextRunAt: null, blockedReason: null, ...patch });
     const deferred = () => {
         let resolve, reject;

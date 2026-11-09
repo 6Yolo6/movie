@@ -41,9 +41,8 @@ export default function BaiduBackfillControls({ workflow, workflowEdited, workfl
         : !hubEnabled ? 'HUB_DISABLED'
         : !workflow.transferEnabled ? 'TRANSFER_DISABLED'
         : !workflow.shareEnabled ? 'SHARE_DISABLED'
-        : !workflow.videoEnabled && !workflow.torrentEnabled ? 'FILE_TYPES_DISABLED'
-        : !workflow.credentialConfigured ? 'SESSION_REQUIRED'
-        : status?.phase === 'SOURCE_SEARCH' && !workflow.discoveryEnabled ? 'DISCOVERY_DISABLED' : null;
+        : !workflow.torrentEnabled ? 'TORRENT_DISABLED'
+        : !workflow.credentialConfigured ? 'SESSION_REQUIRED' : null;
     const cannotRun = controlsDisabled || Boolean(error) || Boolean(runBlocked) || status?.status === 'RUNNING' || status?.status === 'COMPLETE' || status?.phase === 'COMPLETE';
     const cannotSave = controlsDisabled || (draft.enabled && workflowEdited);
 
@@ -136,6 +135,49 @@ export default function BaiduBackfillControls({ workflow, workflowEdited, workfl
                     </Typography.Text>
                 </Col>)}
             </Row>
+            <Space orientation="vertical" size={6} className="w-full" data-testid="baidu-backfill-current-item">
+                <Typography.Text strong>{t('cloudDriveWorkflows.baiduBackfill.currentItem.title')}</Typography.Text>
+                {status.currentIdentityId !== null ? <>
+                    <Typography.Text data-testid="baidu-backfill-identity-id">
+                        {t('cloudDriveWorkflows.baiduBackfill.currentItem.identityId')} {status.currentIdentityId}
+                    </Typography.Text>
+                    {status.currentMovieId && <Typography.Text data-testid="baidu-backfill-movie-id" className="break-all">
+                        {t('cloudDriveWorkflows.baiduBackfill.currentItem.movieId')} {status.currentMovieId}
+                    </Typography.Text>}
+                    {status.currentGyingType && status.currentGyingId && <Typography.Text data-testid="baidu-backfill-gying-id">
+                        {t('cloudDriveWorkflows.baiduBackfill.currentItem.gyingId')} {status.currentGyingType}/{status.currentGyingId}
+                    </Typography.Text>}
+                    <Typography.Text data-testid="baidu-backfill-seed-count">
+                        {t('cloudDriveWorkflows.baiduBackfill.currentItem.seedCount', { count: status.currentSeedCount })}
+                    </Typography.Text>
+                </> : <Typography.Text type="secondary" data-testid="baidu-backfill-no-current-item">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.none')}
+                </Typography.Text>}
+                <Typography.Text role="status" aria-live="polite" data-testid="baidu-backfill-current-action">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.action')} {t(`cloudDriveWorkflows.baiduBackfill.actions.${status.currentAction}`)}
+                </Typography.Text>
+                {status.currentChildId !== null && <Typography.Text data-testid="baidu-backfill-child-id">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.childId')} {status.currentChildId}
+                </Typography.Text>}
+                {status.currentChildStatus && <Typography.Text data-testid="baidu-backfill-child-status">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.childStatus')} {t(`cloudDriveWorkflows.baiduBackfill.childStates.${status.currentChildStatus}`)}
+                </Typography.Text>}
+                {status.currentChildError && <Typography.Text type="secondary" data-testid="baidu-backfill-child-error">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.childError')} {t(`cloudDriveWorkflows.baiduBackfill.childErrors.${status.currentChildError}`)}
+                </Typography.Text>}
+                {status.currentSeedNames.length > 0 && <Space orientation="vertical" size={2} className="w-full">
+                    <Typography.Text type="secondary">{t('cloudDriveWorkflows.baiduBackfill.currentItem.seedNames')}</Typography.Text>
+                    {status.currentSeedNames.map((name, index) => <Typography.Text key={index} className="break-all" data-testid={`baidu-backfill-seed-name-${index}`}>
+                        {name}
+                    </Typography.Text>)}
+                </Space>}
+                {status.currentResourceIds.length > 0 && <Typography.Text type="secondary" data-testid="baidu-backfill-resource-ids" className="break-all">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.resourceIds')} {status.currentResourceIds.join(', ')}
+                </Typography.Text>}
+                {status.lastResult && <Typography.Text type="secondary" data-testid="baidu-backfill-last-result">
+                    {t('cloudDriveWorkflows.baiduBackfill.currentItem.lastResult')} {t(`cloudDriveWorkflows.baiduBackfill.results.${status.lastResult}`)}
+                </Typography.Text>}
+            </Space>
             <Typography.Text type="secondary" data-testid="baidu-backfill-next-run">
                 {t('cloudDriveWorkflows.baiduBackfill.nextRun', { time: status.nextRunAt
                     ? status.nextRunAt.replace('T', ' ').slice(0, 19) : t('cloudDriveWorkflows.baiduBackfill.noNextRun') })}
@@ -143,6 +185,8 @@ export default function BaiduBackfillControls({ workflow, workflowEdited, workfl
             {status.blockedReason && <Alert type="warning" showIcon data-testid="baidu-backfill-blocked"
                 title={t(`cloudDriveWorkflows.baiduBackfill.blocked.${status.blockedReason}`)} />}
         </>}
+        {status?.legacyTaskId !== null && status?.legacyTaskId !== undefined && <Alert type="info" showIcon data-testid="baidu-backfill-legacy-task"
+            title={t('cloudDriveWorkflows.baiduBackfill.legacyTask', { taskId: status.legacyTaskId })} />}
         {error && <Alert type="error" showIcon role="alert" title={t(`cloudDriveWorkflows.baiduBackfill.${error}`)} />}
         <Form layout="vertical" className="w-full">
             <Form.Item label={t('cloudDriveWorkflows.baiduBackfill.enabled')}>

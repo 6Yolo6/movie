@@ -450,8 +450,42 @@ public class GyingSourceWorkflowService {
                 "status", count == 0 ? "NO_ELIGIBLE_SUBTITLED_P2P" : "ARCHIVE_QUEUED");
     }
 
+    public record P2pCollection(String movieId, Long identityId, String typeCode, String mid,
+            int saved, List<ResourceLink> selected) {
+        public P2pCollection { selected = List.copyOf(selected); }
+    }
+
+    /** Exact verified identity only: no metadata ingestion, identity search, provider enqueue, or publishing. */
+    public P2pCollection collectMovieP2pResources(String movieId, Long identityId) {
+        MovieMetadata movie = movieService.getById(movieId);
+        if (movie == null || movie.getDeletedAt() != null || !"ACTIVE".equals(movie.getStatus())) throw new IllegalArgumentException("Active movie required");
+        MovieSourceIdentity identity = identityId == null ? null : sourceIdentityService.getById(identityId);
+        if (identity == null || !Objects.equals(movieId, identity.getMovieId()) || !"GYING".equals(identity.getSource())
+                || !Set.of("AUTO", "CONFIRMED").contains(identity.getMatchStatus()) || !Set.of("mv", "tv", "ac").contains(identity.getSourceType())
+                || identity.getExternalId() == null || !identity.getExternalId().matches("[A-Za-z0-9]{1,100}")) {
+            throw new IllegalArgumentException("Verified exact GYING identity required");
+        }
+        P2pCollection collected = collectGyingDirectResources(movieId, identity.getSourceType(), identity.getExternalId(), true, identityId);
+        return new P2pCollection(movieId, identityId, collected.typeCode(), collected.mid(), collected.saved(), collected.selected());
+    }
+
     private int syncGyingDirectResources(String movieId, String typeCode, String mid) {
+        P2pCollection collected = collectGyingDirectResources(movieId, typeCode, mid, false, null);
+        if (p2pArchiveTaskService != null && !collected.selected().isEmpty()) {
+            p2pArchiveTaskService.enqueue(movieId, typeCode, mid, collected.selected());
+        }
+        return collected.saved();
+    }
+
+    private P2pCollection collectGyingDirectResources(String movieId, String typeCode, String mid, boolean ownedOnly, Long identityId) {
         Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
+        if (ownedOnly) {
+            if (!(payload.get("resources") instanceof List<?>)) throw new IllegalStateException("Invalid GYING resource response");
+            MovieSourceIdentity current = sourceIdentityService.getById(identityId);
+            if (current == null || !Objects.equals(movieId, current.getMovieId()) || !"GYING".equals(current.getSource())
+                    || !Set.of("AUTO", "CONFIRMED").contains(current.getMatchStatus()) || !Objects.equals(typeCode, current.getSourceType())
+                    || !Objects.equals(mid, current.getExternalId())) throw new IllegalArgumentException("GYING identity changed during collection");
+        }
         int saved = 0;
         List<ResourceLink> selected = new ArrayList<>();
         Set<String> archiveTorrentRefs = new LinkedHashSet<>();
@@ -502,6 +536,7 @@ public class GyingSourceWorkflowService {
             String urlHash = ResourceHubHashUtils.sha256(url);
             ResourceLink link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                     .eq("movie_id", movieId)
+                    .eq(ownedOnly, "source", "GYING").eq(ownedOnly, "provider", "P2P").eq(ownedOnly, "auto_collected", true)
                     .and(query -> query.eq("url_hash", urlHash).or().eq("url", url))
                     .isNull("deleted_at")
                     .last("LIMIT 1"), false);
@@ -509,7 +544,7 @@ public class GyingSourceWorkflowService {
                 // Public torrent mirrors can rotate: reuse the stable BT identity.
                 link = resourceLinkService.getOne(new QueryWrapper<ResourceLink>()
                         .eq("movie_id", movieId).eq("source", "GYING").eq("source_ref", sourceRef)
-                        .eq("type", "TORRENT").eq("provider", "P2P").isNull("deleted_at")
+                        .eq("type", "TORRENT").eq("provider", "P2P").eq(ownedOnly, "auto_collected", true).isNull("deleted_at")
                         .orderByDesc("updated_at").last("LIMIT 1"), false);
             }
             String collectionSlot = stringValue(item.get("collection_slot"));
@@ -519,6 +554,9 @@ public class GyingSourceWorkflowService {
                         .eq("movie_id", movieId).eq("source", "GYING").eq("auto_collected", true)
                         .eq("type", type).eq("provider", "P2P").eq("quality", collectionSlot)
                         .isNull("deleted_at").orderByDesc("updated_at").last("LIMIT 1"), false);
+            }
+            if (ownedOnly && link != null && (!"GYING".equals(link.getSource()) || !"P2P".equals(link.getProvider()) || !Boolean.TRUE.equals(link.getAutoCollected()))) {
+                link = null;
             }
             LocalDateTime now = LocalDateTime.now();
             if (link == null) {
@@ -576,16 +614,15 @@ public class GyingSourceWorkflowService {
             saved++;
             selected.add(link);
         }
-        if (p2pArchiveTaskService != null && !selected.isEmpty()) {
+        if (!selected.isEmpty()) {
             List<ResourceLink> torrentDescriptors = selected.stream()
                     .filter(link -> "MAGNET".equals(link.getType()) && archiveTorrentRefs.contains(link.getSourceRef()))
                     .filter(link -> selected.stream().noneMatch(other -> "TORRENT".equals(other.getType())
                             && Objects.equals(other.getSourceRef(), link.getSourceRef())))
                     .map(P2pArchiveTaskService::torrentDescriptor).toList();
             selected.addAll(torrentDescriptors);
-            p2pArchiveTaskService.enqueue(movieId, typeCode, mid, selected);
         }
-        return saved;
+        return new P2pCollection(movieId, null, typeCode, mid, saved, selected);
     }
 
     private boolean hasActiveDiskResource(String movieId) {

@@ -57,12 +57,13 @@ class BaiduBackfillControllerTest {
         verifyNoInteractions(service);
     }
     @Test void validBasePutAndEmptyRunReturnTheSamePublicStateShape() throws Exception {
-        var state = new BaiduBackfillService.Status(7L, false, "PAUSED", "EXISTING_TASKS", 10, 1, 0, 0, 0, 0, null, null, null);
+        var state = new BaiduBackfillService.Status(7L, false, "PAUSED", "GYING_TORRENTS", 10, 1, 0, 0, 0, 0, null, null, null, null, null, null, null, List.of(), "IDLE", List.of(), 0, null, null, null, 17580L);
         when(service.settings(false, 10, 1)).thenReturn(state); when(service.runOnce()).thenReturn(state); when(service.status()).thenReturn(state);
         mvc.perform(put(BASE).header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"enabled\":false,\"intervalMinutes\":10,\"batchLimit\":1}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.data.taskId").value(7)).andExpect(jsonPath("$.data.batchLimit").value(1));
-        mvc.perform(get(BASE).header("Authorization", "Bearer fixture-admin")).andExpect(status().isOk()).andExpect(jsonPath("$.data.phase").value("EXISTING_TASKS"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.taskId").value(7)).andExpect(jsonPath("$.data.batchLimit").value(1)).andExpect(jsonPath("$.data.currentAction").value("IDLE"))
+                .andExpect(jsonPath("$.data.currentResourceIds").isEmpty()).andExpect(jsonPath("$.data.legacyTaskId").value(17580));
+        mvc.perform(get(BASE).header("Authorization", "Bearer fixture-admin")).andExpect(status().isOk()).andExpect(jsonPath("$.data.phase").value("GYING_TORRENTS"));
         mvc.perform(post(BASE + "/run").header("Authorization", "Bearer fixture-admin").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("PAUSED"));
         verify(service).settings(false, 10, 1); verify(service).runOnce(); verify(service).status();

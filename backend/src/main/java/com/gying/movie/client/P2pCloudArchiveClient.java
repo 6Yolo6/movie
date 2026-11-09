@@ -100,6 +100,7 @@ public class P2pCloudArchiveClient {
         switch (provider) {
             case "BAIDU" -> {
                 try { return baidu.p2pUpload(folder, file.name(), file.bytes()); }
+                catch (BaiduActionException error) { throw error; }
                 catch (Exception error) { throw new IllegalStateException("BAIDU P2P file upload or verification failed (" + error.getClass().getSimpleName() + ")"); }
             }
             case "QUARK", "XUNLEI" -> { }

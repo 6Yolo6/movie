@@ -69,13 +69,17 @@ ADMIN `GET /api/admin/resource-hub/baidu/session` 只返回连接状态、脱敏
 
 ADMIN `GET /api/admin/resource-hub/baidu/transfers` 查看摘要，`POST /api/admin/resource-hub/baidu/transfers/{id}/submit` 执行。独立 `baidu_transfer_task` 先持久化账号、内容计划和转存/分享意图；未知结果只读核验，不重复 POST。目标内容与自有分享核验通过才入库。仅种子结果为 TORRENT，不把影片标记为可播放视频。
 
-## 百度慢速补全
+## 百度种子补全
 
-百度卡片单独保存补全开关、间隔和批次数量，默认关闭、十分钟一条。顺序为已有百度任务 → 已有百度发现和资源链接 → 已有种子/磁力引用 → 仅百度的来源搜索。存量阶段不要求打开发现；来源搜索阶段才要求发现开启。全过程遵守该盘视频/种子、转存、分享、总工作流开关；自动运行还要求 Worker 开启。
+百度卡片单独保存补全开关、间隔和批次数量，默认关闭、十分钟一条。此功能仅按库内已确认的 GYING 来源 ID 读取种子，校验后将小型 `.torrent` 与配套磁力文本归档到百度，并回写本库的 TORRENT 资源。它遵守总工作流、百度种子、转存、分享和账号门禁；自动运行还要求 Worker 开启。视频采集和发现开关不参与这项独立功能。
+
+扫描使用 `movie_source_identity` 中 GYING 的 `AUTO/CONFIRMED` 映射，保留外部 `mv/tv/ac` 类型与 ID；本地资源行 ID 不能代替 GYING ID。不扫描旧百度分享、转存任务或发现候选，不调用 PanSou、片名搜索、来源发现、视频转存或 GYING 发布。种子占少量空间，不会下载关联视频。
 
 读取 `GET /api/admin/resource-hub/baidu/backfill` 及无父任务时的启动调度不创建任务。`PUT` 同路径保存 `{ "enabled": false, "intervalMinutes": 10, "batchLimit": 1 }`；间隔 1–1440 分钟、每批 1–5 条。`POST /api/admin/resource-hub/baidu/backfill/run` 仅手动一小批，可在自动补全关闭时使用，仍受该盘策略约束。页面未保存的工作流或补全草稿不能用于执行。
 
-复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务和 `sys_config` 的 `resource.hub.baidu.backfill.task-id` 唯一指针，不需新增表。固定初次存量高水位，记录游标、子任务、统计和三十分钟数据库租约；重启后继续原项。UNKNOWN、账号失效、需人工核验、未知发布结果会阻塞，保留远端意图，不自动重置。旧夸克/迅雷 P2P 只复制原始小文件引用，不复制目录、分享或远端意图。普通 Worker 不消费这些补全子任务。
+复用 `resource_hub_task` 的 `CLOUD_DRIVE_BACKFILL` 父任务，以新的 `resource.hub.baidu.torrent-backfill.task-id` 独立指针保存 v2 进度，不需新增表。固定初次来源身份高水位，记录 GYING 游标、百度 P2P 子任务、统计和三十分钟数据库租约；重启后继续原项。普通 Worker 不消费补全专属子任务。页面显示当前 GYING ID、种子选择、归档步骤和具体错误类别；种子开关关闭会明确提示。
+
+旧 `resource.hub.baidu.backfill.task-id` 及父任务、游标、转存子任务和 UNKNOWN/远端意图原样保留，新补全不读取它们。旧视频分享的审核或源链接错误不会阻塞种子补全。若同片百度种子已有未知提交或待核验 P2P 任务，则保留其原选择及远端检查点，显示该种子任务的具体状态；不重置、重建或重放未知提交。
 
 宿主扫码配置可选 `proxyServer`，仅接受显式 `http://127.0.0.1:<端口>`；当前复用既有 7897 代理。有限权限任务对已有私有目录只验证所有者和 ACL，遇不安全目录直接失败，不重新取得所有权。本次部署已同步新 backend 固定镜像并通过实际配置回读与只读 idle，保留 profile 和加密会话；扫码任务已恢复Enabled/Ready，Limited/Interactive实际运行exit0、XML与installation一致及独立只读核验通过；idle由严格前后无handoff与exit0推定，实际stdout未捕获。首次默认Enabled节点省略造成的失败和精确CAS回disabled保留于验收记录。
 

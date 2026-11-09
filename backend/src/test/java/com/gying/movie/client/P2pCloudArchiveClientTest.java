@@ -129,6 +129,23 @@ class P2pCloudArchiveClientTest {
         assertFalse(failure.getMessage().contains("fixture-sensitive-cookie")); assertNull(failure.getCause());
         verifyNoInteractions(quark, xunlei);
     }
+    @Test void baiduUploadPreservesAccountActionAndUncertainOutcomeClassification() {
+        for (var expected : List.of(
+                new BaiduActionException("UPLOAD_SESSION_SCOPE_UNAVAILABLE", false, true, false),
+                new BaiduActionException("SESSION_EXPIRED", false, true, false),
+                new BaiduActionException("UPLOAD_OUTCOME_UNKNOWN", false, false, true),
+                new BaiduActionException("UPLOAD_RETRYABLE", true, false, false))) {
+            var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
+            var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper); var file = text();
+            when(baidu.p2pUpload("/fixture/metadata", file.name(), file.bytes())).thenThrow(expected);
+            var actual = assertThrows(BaiduActionException.class, () -> client.upload("BAIDU", "/fixture/metadata", file));
+            assertSame(expected, actual); assertEquals(expected.code(), actual.code());
+            assertEquals(expected.actionRequired(), actual.actionRequired()); assertEquals(expected.uncertain(), actual.uncertain());
+            assertEquals(expected.retryable(), actual.retryable());
+            verify(baidu).p2pUpload("/fixture/metadata", file.name(), file.bytes()); verifyNoMoreInteractions(baidu);
+            verifyNoInteractions(quark, xunlei);
+        }
+    }
     @Test void baiduConfiguredGateReadsSessionMetadataWithoutAnyCloudAction() {
         var quark = mock(QuarkShareClient.class); var xunlei = mock(XunleiClient.class); var baidu = mock(BaiduWebClient.class);
         var client = new P2pCloudArchiveClient(quark, xunlei, baidu, mapper);
