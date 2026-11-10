@@ -538,8 +538,9 @@ public class BaiduWebClient {
             if (ticket.isMissingNode()) throw precreateInvalid("UPLOAD_ID_MISSING");
             if (!ticket.isTextual()) throw precreateInvalid("UPLOAD_ID_TYPE_INVALID");
             String uploadId = ticket.textValue();
-            if (uploadId.isEmpty() || uploadId.length() > 200) throw precreateInvalid("UPLOAD_ID_LENGTH_INVALID");
-            if (!uploadId.matches("[A-Za-z0-9_-]{1,200}")) throw precreateInvalid("UPLOAD_ID_CHARACTERS_INVALID");
+            if (uploadId.isEmpty() || uploadId.length() > 1024) throw precreateInvalid("UPLOAD_ID_LENGTH_INVALID");
+            // Opaque provider ticket: preserve printable ASCII; form() encodes both query and commit values.
+            if (uploadId.chars().anyMatch(c -> c < 33 || c > 126)) throw precreateInvalid("UPLOAD_ID_CHARACTERS_INVALID");
             JsonNode blocks = pre.path("block_list");
             if (blocks.isMissingNode()) throw precreateInvalid("BLOCK_LIST_MISSING");
             if (!blocks.isArray()) throw precreateInvalid("BLOCK_LIST_TYPE_INVALID");

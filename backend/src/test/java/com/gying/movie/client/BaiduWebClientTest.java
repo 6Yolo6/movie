@@ -311,10 +311,50 @@ class BaiduWebClientTest {
         assertInvalidPrecreate("{\"errno\":0,\"return_type\":1}", "UPLOAD_ID_MISSING");
         for (String value : List.of("null", "1", "true", "[]", "{}"))
             assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":" + value + "}", "UPLOAD_ID_TYPE_INVALID");
-        for (String value : List.of("", "u".repeat(201), " " + "u".repeat(200) + " "))
+        for (String value : List.of("", "u".repeat(1025), " " + "u".repeat(1024) + " "))
             assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + value + "\"}", "UPLOAD_ID_LENGTH_INVALID");
-        for (String value : List.of(" ", " up1 ", "up1\\r\\n", "private/up1", "private up1", "up.1", "编号", "private\\nvalue"))
+        for (String value : List.of(" ", " up1 ", "up1\\r\\n", "private up1", "编号", "private\\nvalue"))
             assertInvalidPrecreate("{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + value + "\"}", "UPLOAD_ID_CHARACTERS_INVALID");
+    }
+    @Test void opaqueUploadIdsStaySingleEncodedValuesThroughBlockAndCommit() throws Exception {
+        byte[] bytes = magnetBytes(); transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
+        StringBuilder allPrintable = new StringBuilder();
+        for (char c = 33; c <= 126; c++) allPrintable.append(c);
+        for (String uploadId : List.of("fixture+/==", "fixture&extra=value?#%2F", allPrintable.toString())) {
+            transport.owned.put("/target", "[]"); transport.requests.clear();
+            transport.precreateResponse = mapper.writeValueAsString(Map.of("errno", 0, "return_type", 1,
+                    "uploadid", uploadId, "block_list", List.of(0)));
+            assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
+            var block = transport.requests.stream().filter(r -> r.uri().getPath().equals("/rest/2.0/pcs/superfile2")).findFirst().orElseThrow();
+            assertEquals("https", block.uri().getScheme()); assertEquals("pcs.baidu.com", block.uri().getHost());
+            assertEquals("/rest/2.0/pcs/superfile2", block.uri().getRawPath());
+            assertEquals(-1, block.uri().getPort()); assertNull(block.uri().getUserInfo()); assertNull(block.uri().getFragment());
+            var blockValues = query(block.uri().getRawQuery());
+            assertEquals(Set.of("method", "app_id", "type", "path", "partseq", "partoffset", "uploadid"), blockValues.keySet());
+            assertEquals(uploadId, blockValues.get("uploadid")); assertEquals("/target/magnet.txt", blockValues.get("path"));
+            assertEquals("upload", blockValues.get("method"));
+            var commit = transport.requests.stream().filter(r -> r.uri().getPath().equals("/api/create")).findFirst().orElseThrow();
+            assertEquals("https", commit.uri().getScheme()); assertEquals("pan.baidu.com", commit.uri().getHost());
+            assertEquals("/api/create", commit.uri().getRawPath()); assertNull(commit.uri().getFragment());
+            var commitValues = query(body(commit));
+            assertEquals(Set.of("uploadid", "path", "size", "isdir", "rtype", "block_list", "target_path"), commitValues.keySet());
+            assertEquals(uploadId, commitValues.get("uploadid")); assertEquals("/target/magnet.txt", commitValues.get("path"));
+            String encoded = java.net.URLEncoder.encode(uploadId, StandardCharsets.UTF_8);
+            assertTrue(block.uri().getRawQuery().contains("uploadid=" + encoded));
+            assertTrue(body(commit).contains("uploadid=" + encoded));
+            assertEquals(1, transport.count("POST", "/api/precreate"));
+            assertEquals(1, transport.count("POST", "/rest/2.0/pcs/superfile2"));
+            assertEquals(1, transport.count("POST", "/api/create"));
+        }
+    }
+    @Test void opaqueUploadIdControlsWhitespaceAndNonAsciiStopBeforeBlockOrCommit() throws Exception {
+        var rejected = new ArrayList<String>();
+        for (char c = 0; c <= 32; c++) rejected.add("private" + c + "value");
+        for (String suffix : List.of("\u007f", "\u0085", "\u00a0", "\u200b", "\ufeff", "编号")) rejected.add("private" + suffix);
+        for (String uploadId : rejected) {
+            assertInvalidPrecreate(mapper.writeValueAsString(Map.of("errno", 0, "return_type", 1,
+                    "uploadid", uploadId, "block_list", List.of(0))), "UPLOAD_ID_CHARACTERS_INVALID");
+        }
     }
     @Test void precreateBlockListFailuresRejectNoncanonicalIndexesAndOverflow() {
         String prefix = "{\"errno\":0,\"return_type\":1,\"uploadid\":\"up1\"";
@@ -351,7 +391,7 @@ class BaiduWebClientTest {
     }
     @Test void validTypeOneCanReuseKnownBlocksWithoutSendingTheBlockAgain() {
         byte[] bytes = magnetBytes(); transport.uploadBytes = bytes; transport.uploadName = "magnet.txt";
-        for (String uploadId : List.of("u", "up-1_2", "u".repeat(200))) {
+        for (String uploadId : List.of("u", "up-1_2", "u".repeat(200), "u".repeat(201), "u".repeat(1024))) {
             transport.owned.put("/target", "[]"); transport.requests.clear();
             transport.precreateResponse = "{\"errno\":0,\"return_type\":1,\"uploadid\":\"" + uploadId + "\",\"block_list\":[]}";
             assertEquals("30", client.p2pUpload("/target", "magnet.txt", bytes));
