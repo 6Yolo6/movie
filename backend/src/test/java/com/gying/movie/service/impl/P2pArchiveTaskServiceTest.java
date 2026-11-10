@@ -603,7 +603,7 @@ class P2pArchiveTaskServiceTest {
         var actual = ArgumentCaptor.forClass(P2pCloudArchiveClient.FileData.class);
         verify(cloud, times(3)).upload(eq("BAIDU"), anyString(), actual.capture());
         assertEquals(List.of(true, false, false), actual.getAllValues().stream().map(file -> file.name().endsWith(".txt")).toList());
-        verify(cloud).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".txt")));
+        verify(cloud, times(3)).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".txt")));
         verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
     }
 
@@ -621,6 +621,185 @@ class P2pArchiveTaskServiceTest {
         assertEquals(2, mapper.readTree(task.getPayload()).path("uploadedFiles").size());
         verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), any());
         verify(cloud).createShare(eq("BAIDU"), anyString(), anyString()); verify(links, never()).save(any());
+    }
+
+    private ResourceHubTask ownedBaiduTaskForFileVerification() throws Exception {
+        ResourceHubTask task = baiduTask();
+        var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
+        payload.put("backfillParentId", 100L); task.setPayload(payload.toString());
+        when(tasks.getById(task.getId())).thenReturn(task);
+        return task;
+    }
+
+    private void assertBaiduFileDriftStopsWithoutReplay(ResourceHubTask task, String stage, boolean shareAlreadyCreated) throws Exception {
+        assertEquals("ACTION_REQUIRED", task.getStatus()); assertEquals(0, task.getAttempts());
+        var payload = mapper.readTree(task.getPayload());
+        assertEquals(stage, payload.path("stage").asText());
+        assertEquals("UPLOAD_CHECKPOINT_MISMATCH", payload.path("errorCode").asText());
+        assertEquals(2, payload.path("uploadedFiles").size());
+        Set<String> confirmed = new HashSet<>(); payload.path("uploadedFiles").elements().forEachRemaining(id -> confirmed.add(id.asText()));
+        assertEquals(Set.of("101", "102"), confirmed);
+        assertEquals(100L, payload.path("backfillParentId").asLong());
+        if (payload.has("baiduUploadIntent")) {
+            assertEquals("CONFIRMED", payload.path("baiduUploadIntent").path("status").asText());
+            assertEquals("102", payload.path("baiduUploadIntent").path("fileId").asText());
+        }
+        assertFalse(payload.path("baiduShareSubmitting").asBoolean());
+        assertEquals(shareAlreadyCreated, payload.has("shareUrl"));
+        assertTrue(task.getLastError().contains("UPLOAD_CHECKPOINT_MISMATCH"));
+        verify(links, never()).save(any()); verify(links, never()).updateById(any());
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertEquals("ACTION_REQUIRED", task.getStatus());
+        verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), any());
+    }
+
+    @Test void baiduStopsBeforeShareWhenEarlierFreshUploadDisappearsDuringSecondUpload() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var secondUploadFinished = new java.util.concurrent.atomic.AtomicBoolean();
+        var uploads = new java.util.concurrent.atomic.AtomicInteger();
+        when(cloud.upload(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            if (uploads.incrementAndGet() == 1) return "101";
+            secondUploadFinished.set(true); return "102";
+        });
+        when(cloud.findUploadedFile(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            var file = (P2pCloudArchiveClient.FileData) call.getArgument(2);
+            return file.name().endsWith(".txt") ? secondUploadFinished.get() ? null : "101" : "102";
+        });
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertBaiduFileDriftStopsWithoutReplay(task, "VERIFY_UPLOADED_FILES", false);
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(cloud, never()).findOwnShare(anyString(), anyString());
+    }
+
+    @Test void baiduRejectsChangedFileIdBeforeShareEvenWhenMetadataContentStillMatches() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var secondUploadFinished = new java.util.concurrent.atomic.AtomicBoolean();
+        var uploads = new java.util.concurrent.atomic.AtomicInteger();
+        when(cloud.upload(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            if (uploads.incrementAndGet() == 1) return "101";
+            secondUploadFinished.set(true); return "102";
+        });
+        // findUploadedFile already checks content; a new file with the same bytes still has another receipt ID.
+        when(cloud.findUploadedFile(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            var file = (P2pCloudArchiveClient.FileData) call.getArgument(2);
+            return file.name().endsWith(".txt") ? secondUploadFinished.get() ? "replacement-id" : "101" : "102";
+        });
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertBaiduFileDriftStopsWithoutReplay(task, "VERIFY_UPLOADED_FILES", false);
+        verify(cloud, never()).createShare(anyString(), anyString(), anyString());
+        verify(cloud, never()).findOwnShare(anyString(), anyString());
+    }
+
+    @Test void baiduStopsPublicationWhenConfirmedFilesDriftDuringShareCreation() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var shareCreated = new java.util.concurrent.atomic.AtomicBoolean();
+        when(cloud.createShare(eq("BAIDU"), anyString(), anyString())).thenAnswer(call -> {
+            shareCreated.set(true); return "https://pan.baidu.com/s/1fixture?pwd=abcd";
+        });
+        when(cloud.findUploadedFile(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            var file = (P2pCloudArchiveClient.FileData) call.getArgument(2);
+            return file.name().endsWith(".txt") ? shareCreated.get() ? null : "101" : "102";
+        });
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertBaiduFileDriftStopsWithoutReplay(task, "VERIFY_SHARE_FILES", true);
+        verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+    }
+
+    @Test void baiduStopsPublicationWhenConfirmedFilesDriftDuringLiveShareConfirmation() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var shareConfirmed = new java.util.concurrent.atomic.AtomicBoolean();
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenAnswer(call -> {
+            shareConfirmed.set(true); return "https://pan.baidu.com/s/1fixture?pwd=abcd";
+        });
+        when(cloud.findUploadedFile(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            var file = (P2pCloudArchiveClient.FileData) call.getArgument(2);
+            return file.name().endsWith(".txt") ? shareConfirmed.get() ? "replacement-id" : "101" : "102";
+        });
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertBaiduFileDriftStopsWithoutReplay(task, "VERIFY_SHARE_FILES", true);
+        verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+    }
+
+    @Test void baiduPublishesOnlyAfterBothFreshFileSetsAreVerified() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertEquals("SUCCEEDED", task.getStatus());
+        var payload = mapper.readTree(task.getPayload());
+        assertEquals("COMPLETE", payload.path("stage").asText()); assertEquals(2, payload.path("fileCount").asInt());
+        assertEquals(2, payload.path("uploadedFiles").size()); assertFalse(payload.has("baiduUploadIntent"));
+        verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), any());
+        var order = inOrder(cloud, links);
+        order.verify(cloud).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".txt")));
+        order.verify(cloud).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".torrent")));
+        order.verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        order.verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+        order.verify(cloud).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".txt")));
+        order.verify(cloud).findUploadedFile(eq("BAIDU"), anyString(), argThat(file -> file.name().endsWith(".torrent")));
+        order.verify(cloud).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        order.verify(links).save(any(ResourceLink.class));
+        verify(cloud, times(2)).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        verify(cloud, times(4)).findUploadedFile(eq("BAIDU"), anyString(), any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "DESTINATION_CONFLICT,false,true,ACTION_REQUIRED,0",
+        "LOGIN_REQUIRED,false,true,ACTION_REQUIRED,0",
+        "NETWORK_UNAVAILABLE,true,false,FAILED,1"
+    })
+    void baiduPreservesReadFailureCodeAfterLiveShareConfirmation(String code, boolean retryable,
+            boolean actionRequired, String expectedStatus, int expectedAttempts) throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var shareConfirmed = new java.util.concurrent.atomic.AtomicBoolean();
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenAnswer(call -> {
+            shareConfirmed.set(true); return "https://pan.baidu.com/s/1fixture?pwd=abcd";
+        });
+        when(cloud.findUploadedFile(eq("BAIDU"), anyString(), any())).thenAnswer(call -> {
+            var file = (P2pCloudArchiveClient.FileData) call.getArgument(2);
+            if (shareConfirmed.get()) throw new BaiduActionException(code, retryable, actionRequired, false);
+            return file.name().endsWith(".txt") ? "101" : "102";
+        });
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertEquals(expectedStatus, task.getStatus()); assertEquals(expectedAttempts, task.getAttempts());
+        var payload = mapper.readTree(task.getPayload());
+        assertEquals("VERIFY_SHARE_FILES", payload.path("stage").asText());
+        assertEquals(code, payload.path("errorCode").asText()); assertTrue(task.getLastError().contains(code));
+        assertEquals(2, payload.path("uploadedFiles").size());
+        assertEquals("https://pan.baidu.com/s/1fixture?pwd=abcd", payload.path("shareUrl").asText());
+        assertFalse(payload.path("baiduShareSubmitting").asBoolean());
+        verify(links, never()).save(any()); verify(links, never()).updateById(any());
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), any());
+        verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+    }
+
+    @Test void baiduStopsPublicationWhenMetadataFolderBecomesUnsafeDuringLiveShareConfirmation() throws Exception {
+        ResourceHubTask task = ownedBaiduTaskForFileVerification();
+        var shareConfirmed = new java.util.concurrent.atomic.AtomicBoolean();
+        when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenAnswer(call -> {
+            shareConfirmed.set(true); return "https://pan.baidu.com/s/1fixture?pwd=abcd";
+        });
+        doAnswer(call -> {
+            if (shareConfirmed.get()) throw new BaiduActionException("METADATA_FOLDER_INVALID", false, true, false);
+            return null;
+        }).when(cloud).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        assertEquals("ACTION_REQUIRED", task.getStatus()); assertEquals(0, task.getAttempts());
+        var payload = mapper.readTree(task.getPayload());
+        assertEquals("VERIFY_SHARE_FILES", payload.path("stage").asText());
+        assertEquals("METADATA_FOLDER_INVALID", payload.path("errorCode").asText());
+        assertEquals(2, payload.path("uploadedFiles").size());
+        assertEquals("https://pan.baidu.com/s/1fixture?pwd=abcd", payload.path("shareUrl").asText());
+        assertFalse(payload.path("baiduShareSubmitting").asBoolean());
+        verify(links, never()).save(any()); verify(links, never()).updateById(any());
+        service.submitOne(task.getId(), "BAIDU", 100L);
+        verify(cloud, times(2)).upload(eq("BAIDU"), anyString(), any());
+        verify(cloud).createShare(eq("BAIDU"), anyString(), anyString());
+        verify(cloud).findOwnShare(eq("BAIDU"), anyString());
+        verify(cloud, times(2)).verifyMetadataOnlyFolder(eq("BAIDU"), anyString());
     }
 
     ResourceHubTask interruptedBaiduUpload() throws Exception {
@@ -752,15 +931,18 @@ class P2pArchiveTaskServiceTest {
     @CsvSource({"mv,mv", "tv,tv", "ac,ac", "movie,mv", "anime,ac"})
     void baiduNewMetadataFoldersUseTheCanonicalMovieTvAndAnimeRoots(String category, String expected) throws Exception {
         ResourceHubTask task = baiduTask(); movies.getById("movie1").setCategory(category);
+        String movieFolder = "/Baidu Root/" + expected + "/测试电影（movie1）";
+        when(cloud.findUploadedFile(eq("BAIDU"), eq(movieFolder + "/磁力种子"), any())).thenAnswer(call ->
+                ((P2pCloudArchiveClient.FileData) call.getArgument(2)).name().endsWith(".txt") ? "101" : "102");
         when(cloud.ensureFolder(eq("BAIDU"), any(), anyString())).thenAnswer(call -> call.getArgument(2) + "/磁力种子");
         when(cloud.upload(eq("BAIDU"), anyString(), any())).thenReturn("101", "102");
         when(cloud.createShare(eq("BAIDU"), anyString(), anyString())).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
         when(cloud.findOwnShare(eq("BAIDU"), anyString())).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
         service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());
-        String movieFolder = "/Baidu Root/" + expected + "/测试电影（movie1）";
         assertEquals(movieFolder + "/磁力种子", mapper.readTree(task.getPayload()).path("folderId").asText());
         verify(cloud).ensureFolder("BAIDU", null, movieFolder);
         verify(cloud, times(2)).upload(eq("BAIDU"), eq(movieFolder + "/磁力种子"), any());
+        verify(cloud, times(4)).findUploadedFile(eq("BAIDU"), eq(movieFolder + "/磁力种子"), any());
         verifyNoInteractions(quark, xunlei);
     }
 
@@ -792,6 +974,8 @@ class P2pArchiveTaskServiceTest {
         var payload = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(task.getPayload());
         payload.put("folderId", original); task.setPayload(payload.toString());
         when(cloud.upload(eq("BAIDU"), eq(original), any())).thenReturn("101", "102");
+        when(cloud.findUploadedFile(eq("BAIDU"), eq(original), any())).thenAnswer(call ->
+                ((P2pCloudArchiveClient.FileData) call.getArgument(2)).name().endsWith(".txt") ? "101" : "102");
         when(cloud.createShare(eq("BAIDU"), eq(original), anyString())).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
         when(cloud.findOwnShare(eq("BAIDU"), eq(original))).thenReturn("https://pan.baidu.com/s/1fixture?pwd=abcd");
         service.runTask(task); assertEquals("SUCCEEDED", task.getStatus());

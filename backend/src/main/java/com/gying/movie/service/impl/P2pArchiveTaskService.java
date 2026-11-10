@@ -385,7 +385,11 @@ public class P2pArchiveTaskService {
                 payload.put("uploadedFiles", uploaded); persist(task, payload);
                 freshBaiduUpload = false;
             }
-            if ("BAIDU".equals(provider)) payload.remove("baiduUploadIntent");
+            if ("BAIDU".equals(provider)) {
+                payload.remove("baiduUploadIntent");
+                stage = "VERIFY_UPLOADED_FILES";
+                verifyBaiduUploadedFiles(files, folder, uploaded);
+            }
             stage = "CREATE_METADATA_SHARE";
             if ("BAIDU".equals(provider)) cloud.verifyMetadataOnlyFolder(provider, folder);
             String shareUrl = Objects.toString(payload.get("shareUrl"), "");
@@ -415,6 +419,9 @@ public class P2pArchiveTaskService {
                 String verified = cloud.findOwnShare(provider, folder);
                 if (!usableOwnShare(provider, verified)) throw new IllegalStateException("Baidu metadata share is unavailable");
                 shareUrl = verified; payload.put("shareUrl", verified); persist(task, payload);
+                stage = "VERIFY_SHARE_FILES";
+                verifyBaiduUploadedFiles(files, folder, uploaded);
+                cloud.verifyMetadataOnlyFolder(provider, folder);
             }
             stage = "PUBLISH_METADATA_LINK";
             ResourceLink link = links.getOne(new QueryWrapper<ResourceLink>()
@@ -470,6 +477,17 @@ public class P2pArchiveTaskService {
             } else { task.setStatus("FAILED"); }
             task.setLastError("P2P archive failed at " + stage + " (" + (errorCode == null ? error.getClass().getSimpleName() : errorCode) + ")");
             task.setScheduledAt(LocalDateTime.now().plusMinutes(30)); task.setFinishedAt(LocalDateTime.now()); persist(task, payload);
+        }
+    }
+
+    private void verifyBaiduUploadedFiles(List<FileData> files, String folder, Map<String, String> uploaded) {
+        // Files can disappear or be replaced after an earlier upload was confirmed.
+        // Recheck the whole expected set without granting permission to upload again.
+        for (FileData file : files) {
+            String confirmed = uploaded.get(file.name());
+            if (confirmed == null || !confirmed.equals(cloud.findUploadedFile("BAIDU", folder, file))) {
+                throw new BaiduActionException("UPLOAD_CHECKPOINT_MISMATCH", false, true, false);
+            }
         }
     }
 
