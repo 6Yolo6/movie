@@ -410,5 +410,200 @@ class MovieDuplicateMergeMySqlTest {
             assertEquals("ACTIVE",jdbc.queryForObject("SELECT status FROM movie_metadata WHERE id=?",String.class,pair.fromMovieId()));
         } finally { restoreMetadataRoutine(); }
     }
+    record QuarkFixture(long task,long discovery,long resource) { }
+    static QuarkFixture completedQuarkFixture(MovieDuplicateMergeService.Pair pair, boolean sourceMovie) {
+        String movieId=sourceMovie?pair.fromMovieId():pair.toMovieId();
+        String own="https://pan.quark.cn/s/ownedFixture",original="https://pan.quark.cn/s/sourceFixture";
+        String ownHash=com.gying.movie.utils.ResourceHubHashUtils.sha256(own);
+        long resource=insert("resource_link",Map.ofEntries(
+            Map.entry("movie_id",movieId),Map.entry("provider","QUARK"),Map.entry("type","DISK"),
+            Map.entry("source","GYING_PUBLISHED"),Map.entry("status","ACTIVE"),Map.entry("audit_status",1),
+            Map.entry("link_status","NORMAL"),Map.entry("url",own),Map.entry("url_hash",ownHash),
+            Map.entry("validated_at","2026-09-19 15:16:22"),Map.entry("updated_at","2026-09-19 15:16:22")));
+        long discovery=insert("resource_discovery_result",Map.ofEntries(
+            Map.entry("movie_id",movieId),Map.entry("provider","QUARK"),Map.entry("resource_type","DISK"),
+            Map.entry("source","GYING"),Map.entry("source_ref","upstream"),Map.entry("status","SAVED"),
+            Map.entry("share_url",own),Map.entry("share_url_hash",ownHash),Map.entry("resource_link_id",resource),
+            Map.entry("original_url",original),Map.entry("updated_at","2026-09-19 15:16:22")));
+        long task=insert("quark_transfer_task",Map.ofEntries(
+            Map.entry("movie_id",movieId),Map.entry("discovery_result_id",discovery),Map.entry("status","SUBMITTED"),
+            Map.entry("attempts",1),Map.entry("saved_path","/GYing Resource Hub/tv/Fixture"),
+            Map.entry("original_url",original),Map.entry("original_url_hash",com.gying.movie.utils.ResourceHubHashUtils.sha256(original)),
+            Map.entry("share_url",own),Map.entry("share_url_hash",ownHash),
+            Map.entry("started_at","2026-09-19 15:16:11"),Map.entry("finished_at","2026-09-19 15:16:20"),
+            Map.entry("updated_at","2026-09-19 15:16:22"),
+            Map.entry("request_payload","{\"taskname\":\"Fixture\",\"shareurl\":\""+original+"\",\"savepath\":\"/GYing Resource Hub/tv/Fixture\"}"),
+            Map.entry("response_payload","{\"addTask\":{\"code\":0,\"data\":{\"taskname\":\"Fixture\"},\"success\":true,\"message\":\"ok\"},\"runNowOutput\":\"fixture completed\"}")));
+        return new QuarkFixture(task,discovery,resource);
+    }
+    @Test void completedSubmittedQuarkEvidencePreservesAllReferenceFields() {
+        for(boolean sourceMovie:List.of(false,true)) {
+            var pair=pair(); var fixture=completedQuarkFixture(pair,sourceMovie);
+            var beforeTask=jdbc.queryForMap("SELECT * FROM quark_transfer_task WHERE id=?",fixture.task());
+            var beforeDiscovery=jdbc.queryForMap("SELECT * FROM resource_discovery_result WHERE id=?",fixture.discovery());
+            var beforeResource=jdbc.queryForMap("SELECT * FROM resource_link WHERE id=?",fixture.resource());
+            var reviewed=preview(pair); assertEquals(true,reviewed.get("canMerge"));
+            assertEquals(1,service.merge(request(reviewed),7L).get("merged"));
+            if(sourceMovie) {
+                beforeTask.put("movie_id",pair.toMovieId()); beforeDiscovery.put("movie_id",pair.toMovieId()); beforeResource.put("movie_id",pair.toMovieId());
+            }
+            assertEquals(beforeTask,jdbc.queryForMap("SELECT * FROM quark_transfer_task WHERE id=?",fixture.task()));
+            assertEquals(beforeDiscovery,jdbc.queryForMap("SELECT * FROM resource_discovery_result WHERE id=?",fixture.discovery()));
+            assertEquals(beforeResource,jdbc.queryForMap("SELECT * FROM resource_link WHERE id=?",fixture.resource()));
+            assertEquals("SUBMITTED",jdbc.queryForObject("SELECT status FROM quark_transfer_task WHERE id=?",String.class,fixture.task()));
+        }
+    }
+    @Test void submittedQuarkRejectsAnyMissingContradictoryOrTemporaryEvidence() {
+        Map<String,List<String>> changes=new LinkedHashMap<>();
+        changes.put("quark_transfer_task",List.of(
+            "finished_at=NULL","saved_path=NULL","saved_path=' '","last_error='failure'",
+            "share_url=NULL","share_url_hash=NULL","share_url_hash=REPEAT('0',64)","discovery_result_id=NULL",
+            "request_payload=NULL","request_payload='[]'","request_payload='{\"origin\":\"QQ_BOT\"}'",
+            "request_payload='{\"nested\":{\"phase\":\"UNKNOWN\"}}'","response_payload=NULL",
+            "response_payload='[{\"phase\":\"UNKNOWN\"}]'","response_payload='\"UNKNOWN\"'",
+            "original_url='https://pan.quark.cn/s/ownedFixture?pwd=abcd'",
+            "original_url='https://pan.quark.cn/s/ownedFixture/#/list/share/folder'",
+            "original_url='https://pan.quark.cn/s/%6fwnedFixture'",
+            "original_url='not-a-share'","status='RUNNING'","status='PENDING'","status='UNKNOWN'","status='WAITING_SHARE'",
+            "response_payload='{\"nested\":{\"phase\":\"UNKNOWN\"}}'","response_payload='{\"nested\":{\"shareSubmitting\":true}}'"));
+        changes.put("resource_discovery_result",List.of(
+            "movie_id='other-unrelated-movie'","provider='XUNLEI'","resource_type='TORRENT'","status='FAILED'",
+            "failure_reason='failure'","source='QQ_BOT'","source_ref='BAIDU_TEMP:fixture'",
+            "share_url=NULL","share_url_hash=NULL","original_url='https://pan.quark.cn/s/another'",
+            "resource_link_id=NULL"));
+        changes.put("resource_link",List.of(
+            "movie_id='other-unrelated-movie'","provider='XUNLEI'","type='TORRENT'","status='DELETED'",
+            "deleted_at='2026-09-19 15:16:23'","audit_status=0","link_status='INVALID'","source='BAIDU_TEMP'",
+            "source='QQ_BOT'","url='https://pan.quark.cn/s/other'","url_hash=REPEAT('0',64)",
+            "validated_at=NULL","validated_at='2026-09-19 15:16:19'","last_check_error='failure'"));
+        for(var table:changes.entrySet()) for(String change:table.getValue()) {
+            var pair=pair(); var fixture=completedQuarkFixture(pair,false);
+            long id=switch(table.getKey()) { case "quark_transfer_task"->fixture.task(); case "resource_discovery_result"->fixture.discovery(); default->fixture.resource(); };
+            assertEquals(1,jdbc.update("UPDATE "+table.getKey()+" SET "+change+" WHERE id=?",id));
+            var reviewed=preview(pair); assertFalse((Boolean)reviewed.get("canMerge"),table.getKey()+":"+change);
+            assertTrue(blocked(reviewed,"ACTIVE_OR_UNKNOWN_TASK"),table.getKey()+":"+change);
+        }
+    }
+    @Test void submittedQuarkRejectsSpoofedOwnedUrlEvenWhenEveryStoredHashMatches() {
+        for(String own:List.of("http://pan.quark.cn/s/ownedFixture","https://pan.quark.cn.evil.invalid/s/ownedFixture",
+            "https://fixture@pan.quark.cn/s/ownedFixture","https://pan.quark.cn:444/s/ownedFixture",
+            "https://pan.quark.cn/s/ownedFixture#fragment","https://pan.quark.cn/s/ownedFixture?redirect=elsewhere",
+            "https://pan.quark.cn/s/ownedFixture?pwd=abcd&pwd=efgh","https://pan.quark.cn/s/ownedFixture/")) {
+            var pair=pair(); var fixture=completedQuarkFixture(pair,false);
+            String hash=com.gying.movie.utils.ResourceHubHashUtils.sha256(own);
+            jdbc.update("UPDATE quark_transfer_task SET share_url=?,share_url_hash=? WHERE id=?",own,hash,fixture.task());
+            jdbc.update("UPDATE resource_discovery_result SET share_url=?,share_url_hash=? WHERE id=?",own,hash,fixture.discovery());
+            jdbc.update("UPDATE resource_link SET url=?,url_hash=? WHERE id=?",own,hash,fixture.resource());
+            assertTrue(blocked(preview(pair),"ACTIVE_OR_UNKNOWN_TASK"),own);
+        }
+    }
+    @Test void sameQuarkSourceShareIdRejectsQueryFragmentTrailingSlashEncodingAndHostCaseVariants() {
+        for(String original:List.of("https://pan.quark.cn/s/ownedFixture?pwd=abcd",
+            "https://pan.quark.cn/s/ownedFixture#/list/share/folder","https://pan.quark.cn/s/ownedFixture/",
+            "https://pan.quark.cn/s/ownedFixture/#/list/share/folder","https://pan.quark.cn/s/%6fwnedFixture",
+            "https://PAN.QUARK.CN/s/ownedFixture?pwd=abcd")) {
+            var pair=pair(); var fixture=completedQuarkFixture(pair,false);
+            jdbc.update("UPDATE quark_transfer_task SET original_url=?,original_url_hash=? WHERE id=?",
+                original,com.gying.movie.utils.ResourceHubHashUtils.sha256(original),fixture.task());
+            jdbc.update("UPDATE resource_discovery_result SET original_url=? WHERE id=?",original,fixture.discovery());
+            var reviewed=preview(pair); assertFalse((Boolean)reviewed.get("canMerge"),original);
+            assertTrue(blocked(reviewed,"ACTIVE_OR_UNKNOWN_TASK"),original);
+        }
+    }
+    @Test void submittedIsStillUncertainForOtherProvidersAndNestedTaskStates() {
+        var pair=pair(); insert("xunlei_transfer_task",Map.of("movie_id",pair.toMovieId(),"status","SUBMITTED","finished_at","2026-09-19 15:16:20"));
+        assertTrue(blocked(preview(pair),"ACTIVE_OR_UNKNOWN_TASK"));
+        var nested=pair(); var fixture=completedQuarkFixture(nested,false);
+        jdbc.update("UPDATE quark_transfer_task SET response_payload='{\"nested\":{\"status\":\"SUBMITTED\"}}' WHERE id=?",fixture.task());
+        assertTrue(blocked(preview(nested),"ACTIVE_OR_UNKNOWN_TASK"));
+    }
+    @Test void quarkCompletionEvidenceRowsAreLockedAndAnyFullRowDriftInvalidatesReview() {
+        var pair=pair(); var fixture=completedQuarkFixture(pair,false); List<String> locks=new ArrayList<>();
+        JdbcTemplate observed=new JdbcTemplate(source) {
+            @Override public List<Map<String,Object>> queryForList(String sql,Object... arguments) {
+                if(sql.endsWith(" FOR UPDATE")) locks.add(sql);
+                return super.queryForList(sql,arguments);
+            }
+        };
+        var observedService=new MovieDuplicateMergeService(observed,json,new DataSourceTransactionManager(source));
+        var reviewed=observedService.preview(new MovieDuplicateMergeService.PreviewRequest(List.of(pair)),7L);
+        assertEquals(true,reviewed.get("canMerge")); observedService.merge(request(reviewed),7L);
+        for(String table:List.of("quark_transfer_task","resource_discovery_result","resource_link"))
+            assertTrue(locks.stream().anyMatch(sql->sql.contains(" FROM "+table+" WHERE ")&&sql.endsWith(" FOR UPDATE")),table);
+        var drifting=pair(); var evidence=completedQuarkFixture(drifting,false);
+        for(String table:List.of("quark_transfer_task","resource_discovery_result","resource_link")) {
+            var before=preview(drifting); assertEquals(true,before.get("canMerge"));
+            long id=table.equals("quark_transfer_task")?evidence.task():table.equals("resource_discovery_result")?evidence.discovery():evidence.resource();
+            String change=table.equals("quark_transfer_task")?"attempts=attempts+1":table.equals("resource_discovery_result")?"version_note=UUID()":"remark=UUID()";
+            jdbc.update("UPDATE "+table+" SET "+change+" WHERE id=?",id);
+            assertEquals(true,preview(drifting).get("canMerge"));
+            assertEquals(409,assertThrows(ResponseStatusException.class,()->service.merge(request(before),7L)).getStatusCode().value(),table);
+            assertEquals("ACTIVE",jdbc.queryForObject("SELECT status FROM movie_metadata WHERE id=?",String.class,drifting.fromMovieId()));
+        }
+    }
+    static MovieDuplicateMergeService.Pair p2pPair() {
+        String suffix=UUID.randomUUID().toString().replace("-",""); String from="tmdb_tv_"+suffix,to="GY"+suffix;
+        jdbc.update("INSERT INTO movie_metadata(id,title_en,category,tmdb_type,year,season,status,actors) VALUES(?,?,'tv','tv',2025,1,'ACTIVE','[\"Same Actor\"]'),(?,?,'tv','tv',2025,1,'ACTIVE','[\"Same Actor\"]')",
+            from,"Reviewed "+suffix,to,"Reviewed "+suffix);
+        return new MovieDuplicateMergeService.Pair(from,to);
+    }
+    static String p2pTargetPayload(MovieDuplicateMergeService.Pair pair,int version) {
+        return """
+            {"version":%d,"typeCode":"tv","mid":"%s","stage":"COMPLETE",
+             "policy":"1080P_4K_AT_LEAST_ONE_CHINESE_SUBTITLE_METADATA_FILES_ONLY",
+             "folderId":"fixture-folder","shareUrl":"https://pan.quark.cn/s/metadataFixture",
+             "fingerprint":"fixture-fingerprint","resourceIds":[1],"uploadedFiles":{"magnet.txt":"fixture-file"},
+             "resourceLinkId":2}
+            """.formatted(version,pair.toMovieId());
+    }
+    @Test void retainedP2pUpstreamMidHistoryPreservesPayloadAndCurrentLateWriteGuards() {
+        for(int version:List.of(1,2)) {
+            var pair=p2pPair(); List<Long> ids=new ArrayList<>(); List<Map<String,Object>> before=new ArrayList<>();
+            for(String provider:List.of("QUARK","XUNLEI")) {
+                long id=insert("resource_hub_task",Map.of("task_type","P2P_ARCHIVE","movie_id",pair.toMovieId(),
+                    "source",provider,"status","SUCCEEDED","payload",p2pTargetPayload(pair,version)));
+                ids.add(id); before.add(jdbc.queryForMap("SELECT * FROM resource_hub_task WHERE id=?",id));
+            }
+            var reviewed=preview(pair); assertEquals(true,reviewed.get("canMerge")); service.merge(request(reviewed),7L);
+            for(int i=0;i<ids.size();i++) {
+                assertEquals(before.get(i),jdbc.queryForMap("SELECT * FROM resource_hub_task WHERE id=?",ids.get(i)));
+                jdbc.update("UPDATE resource_hub_task SET attempts=attempts+1 WHERE id=?",ids.get(i));
+                assertEquals(before.get(i).get("payload"),jdbc.queryForObject("SELECT payload FROM resource_hub_task WHERE id=?",String.class,ids.get(i)));
+            }
+            String sourceMid=p2pTargetPayload(pair,version).replace("\"mid\":\""+pair.toMovieId()+"\"","\"mid\":\""+pair.fromMovieId()+"\"");
+            assertThrows(DataAccessException.class,()->insert("resource_hub_task",Map.of("task_type","P2P_ARCHIVE",
+                "movie_id",pair.fromMovieId(),"source","QUARK","status","SUCCEEDED","payload",sourceMid)));
+        }
+    }
+    @Test void p2pTargetMidExceptionRejectsUnknownNestedIdsMalformedIdentityOrReverseDirection() {
+        for(String change:List.of("source-mid","source-row","nested-target","nested-source","version-string","version-float",
+            "version-overflow","unsupported-version","wrong-type","unknown-provider","wrong-task-type","running","unknown-state")) {
+            var pair=p2pPair(); var payload=(com.fasterxml.jackson.databind.node.ObjectNode)readJson(p2pTargetPayload(pair,2));
+            String movie=pair.toMovieId(),type="P2P_ARCHIVE",provider="QUARK",status="SUCCEEDED";
+            switch(change) {
+                case "source-mid"->payload.put("mid",pair.fromMovieId());
+                case "source-row"->movie=pair.fromMovieId();
+                case "nested-target"->payload.putObject("runtime").put("movieId",pair.toMovieId());
+                case "nested-source"->payload.putObject("runtime").put("movieId",pair.fromMovieId());
+                case "version-string"->payload.put("version","2");
+                case "version-float"->payload.put("version",2.0);
+                case "version-overflow"->payload.put("version",4294967297L);
+                case "unsupported-version"->payload.put("version",3);
+                case "wrong-type"->payload.put("typeCode","TV");
+                case "unknown-provider"->provider="OTHER";
+                case "wrong-task-type"->type="RESOURCE_DISCOVERY";
+                case "running"->status="RUNNING";
+                case "unknown-state"->payload.putObject("runtime").put("phase","UNKNOWN");
+            }
+            insert("resource_hub_task",Map.of("task_type",type,"movie_id",movie,"source",provider,"status",status,"payload",payload.toString()));
+            var reviewed=preview(pair); assertFalse((Boolean)reviewed.get("canMerge"),change);
+            assertTrue(blocked(reviewed,change.equals("unknown-state")?"ACTIVE_OR_UNKNOWN_TASK":"TASK_PAYLOAD_INVALID"),change);
+        }
+        var pair=p2pPair();
+        insert("resource_hub_task",Map.of("task_type","P2P_ARCHIVE","movie_id",pair.toMovieId(),"source","QUARK",
+            "status","SUCCEEDED","payload",p2pTargetPayload(pair,2)));
+        var reversed=new MovieDuplicateMergeService.Pair(pair.toMovieId(),pair.fromMovieId());
+        assertTrue(blocked(preview(reversed),"TASK_PAYLOAD_INVALID"));
+    }
     static com.fasterxml.jackson.databind.JsonNode readJson(String value) { try { return json.readTree(value); } catch(Exception error) { throw new IllegalStateException(error); } }
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.entity.MovieMetadata;
 import com.gying.movie.utils.MovieDuplicateMatcher;
+import com.gying.movie.utils.QqTransferMarker;
+import com.gying.movie.utils.ResourceHubHashUtils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -123,7 +125,9 @@ public class MovieDuplicateMergeService {
         Map<String,Set<String>> required=new LinkedHashMap<>();
         for(Reference ref:REFERENCES) required.put(ref.table(),new HashSet<>(Set.of("id",ref.column())));
         required.get("resource_hub_task").addAll(Set.of("payload","status")); required.get("user_favorite").addAll(Set.of("user_id","created_at"));
-        required.get("resource_link").addAll(Set.of("status","deleted_at","audit_status","link_status","source","type"));
+        required.get("resource_link").addAll(Set.of("status","deleted_at","audit_status","link_status","source","type","provider","url","url_hash","validated_at","last_check_error"));
+        required.get("quark_transfer_task").addAll(Set.of("status","finished_at","saved_path","last_error","share_url","share_url_hash","original_url","discovery_result_id","request_payload","response_payload"));
+        required.get("resource_discovery_result").addAll(Set.of("provider","share_url","share_url_hash","original_url","resource_link_id","resource_type","status","failure_reason","source","source_ref"));
         required.get("comment").add("comment_type"); required.get("user_notification").add("target_type");
         required.get("baidu_transfer_task").addAll(Set.of("scope_key","original_url_hash","status"));
         required.put("movie_metadata",Set.of("id","status","deleted_at","updated_at","title_cn","title_en","year","category","season","tmdb_id","tmdb_type","actors","directors","aliases","series_name","resource_status"));
@@ -237,8 +241,8 @@ public class MovieDuplicateMergeService {
             long from=rows.stream().filter(row -> pair.fromMovieId().equals(text(row.get(ref.column())))).count();
             long to=rows.stream().filter(row -> pair.toMovieId().equals(text(row.get(ref.column())))).count();
             impact.add(Map.of("reference",ref.table(),"fromCount",from,"toCount",to,"action",ref.action()));
-            checkReferences(pair,ref,rows,blockers);
         }
+        for(Reference ref:REFERENCES) checkReferences(pair,ref,all.getOrDefault(ref.table(),List.of()),all,blockers);
         impact.add(Map.of("reference","movie_metadata","fromCount",source==null?0:1,"toCount",target==null?0:1,"action","PRESERVE_SOURCE_WITH_ALIAS"));
         Map<String,Object> item=new LinkedHashMap<>(); item.put("fromMovieId",pair.fromMovieId()); item.put("toMovieId",pair.toMovieId());
         item.put("fromTitle",title(source,pair.fromMovieId())); item.put("toTitle",title(target,pair.toMovieId()));
@@ -288,10 +292,11 @@ public class MovieDuplicateMergeService {
         return false;
     }
 
-    private void checkReferences(Pair pair, Reference ref, List<Map<String,Object>> rows, List<Map<String,Object>> blockers) {
+    private void checkReferences(Pair pair, Reference ref, List<Map<String,Object>> rows, Map<String,List<Map<String,Object>>> all, List<Map<String,Object>> blockers) {
         long pending=0, temporary=0, invalid=0;
         for(var row:rows) {
-            if(TASK_TABLES.contains(ref.table()) && (!TERMINAL.contains(text(row.get("status")).toUpperCase(Locale.ROOT)) || uncertain(row))) pending++;
+            boolean completedQuark=ref.table().equals("quark_transfer_task") && completedQuarkTransfer(row,all);
+            if(TASK_TABLES.contains(ref.table()) && ((!TERMINAL.contains(text(row.get("status")).toUpperCase(Locale.ROOT)) && !completedQuark) || uncertain(row))) pending++;
             if((ref.table().equals("resource_link") && "BAIDU_TEMP".equalsIgnoreCase(text(row.get("source"))))
                 || (ref.table().equals("resource_discovery_result") && text(row.get("source_ref")).startsWith("BAIDU_TEMP:"))
                 || (ref.table().equals("baidu_transfer_task") && !"PERMANENT".equals(row.get("scope_key")))
@@ -301,6 +306,8 @@ public class MovieDuplicateMergeService {
                     JsonNode payload=json.readTree(text(row.get("payload")));
                     if(payload==null || !payload.isObject()) { invalid++; continue; }
                     ObjectNode safe=payload.deepCopy(); safe.remove(List.of("movieId","deferredItems")); JsonNode id=payload.get("movieId");
+                    // P2P mid names the upstream GYING identity. Only retained-target history is safe under the current SQL guards.
+                    if(retainedP2pIdentity(pair,row,payload)) safe.remove("mid");
                     if(containsId(safe,pair.fromMovieId()) || containsId(safe,pair.toMovieId())) invalid++;
                     if(id!=null && !id.isNull() && !id.isTextual()) invalid++;
                     if(row.get("movie_id")!=null && id!=null && id.isTextual() && !Objects.equals(text(row.get("movie_id")),id.textValue())) invalid++;
@@ -323,6 +330,55 @@ public class MovieDuplicateMergeService {
             long conflicts=rows.stream().filter(row -> pair.fromMovieId().equals(row.get("movie_id")) && targetKeys.contains(text(row.get("original_url_hash"))+"\u0000"+text(row.get("scope_key")))).count();
             if(conflicts>0) blockers.add(block("TRANSFER_KEY_CONFLICT",ref.table(),conflicts));
         }
+    }
+
+    private boolean completedQuarkTransfer(Map<String,Object> task, Map<String,List<Map<String,Object>>> all) {
+        if(!"SUBMITTED".equals(task.get("status")) || dateTime(task.get("finished_at"))==null
+            || text(task.get("saved_path")).isBlank() || !text(task.get("last_error")).isBlank()
+            || QqTransferMarker.isTemporary(text(task.get("request_payload")))) return false;
+        String share=text(task.get("share_url")),shareHash=text(task.get("share_url_hash")),original=text(task.get("original_url"));
+        if(!share.matches("https://pan\\.quark\\.cn/s/[A-Za-z0-9_-]{1,100}(?:\\?pwd=[A-Za-z0-9]{1,20})?")
+            || !ResourceHubHashUtils.sha256(share).equals(shareHash) || original.isBlank()) return false;
+        try {
+            JsonNode request=json.readTree(text(task.get("request_payload"))),response=json.readTree(text(task.get("response_payload")));
+            if(request==null || !request.isObject() || uncertainNode(request)
+                || response==null || !response.isObject() || uncertainNode(response)) return false;
+            java.net.URI source=java.net.URI.create(original),owned=java.net.URI.create(share);
+            if(!"https".equals(source.getScheme()) || !"pan.quark.cn".equalsIgnoreCase(source.getHost())
+                || source.getUserInfo()!=null || source.getPort()!=-1 || source.getPath()==null) return false;
+            var sourcePath=Pattern.compile("/s/([A-Za-z0-9_-]{1,100})/?").matcher(source.getPath());
+            if(!sourcePath.matches() || owned.getPath().equals("/s/"+sourcePath.group(1))) return false;
+        } catch(Exception invalid) { return false; }
+        String movieId=text(task.get("movie_id"));
+        var discovery=find(all.getOrDefault("resource_discovery_result",List.of()),"id",text(task.get("discovery_result_id")));
+        if(discovery==null || !movieId.equals(text(discovery.get("movie_id"))) || !"QUARK".equals(discovery.get("provider"))
+            || !"DISK".equals(discovery.get("resource_type")) || !Set.of("DISCOVERED","SAVED","DUPLICATE").contains(text(discovery.get("status")))
+            || "QQ_BOT".equalsIgnoreCase(text(discovery.get("source"))) || text(discovery.get("source_ref")).startsWith("BAIDU_TEMP:")
+            || !text(discovery.get("failure_reason")).isBlank() || !share.equals(discovery.get("share_url"))
+            || !shareHash.equals(discovery.get("share_url_hash")) || !original.equals(discovery.get("original_url"))) return false;
+        var link=find(all.getOrDefault("resource_link",List.of()),"id",text(discovery.get("resource_link_id")));
+        if(link==null || !movieId.equals(text(link.get("movie_id"))) || !"QUARK".equals(link.get("provider")) || !"DISK".equals(link.get("type"))
+            || !"ACTIVE".equals(link.get("status")) || link.get("deleted_at")!=null || !"1".equals(text(link.get("audit_status")))
+            || !"NORMAL".equals(link.get("link_status")) || Set.of("BAIDU_TEMP","QQ_BOT").contains(text(link.get("source")).toUpperCase(Locale.ROOT))
+            || !text(link.get("last_check_error")).isBlank() || !share.equals(link.get("url")) || !shareHash.equals(link.get("url_hash"))) return false;
+        LocalDateTime verified=dateTime(link.get("validated_at"));
+        return verified!=null && !verified.isBefore(dateTime(task.get("finished_at")));
+    }
+
+    private static boolean retainedP2pIdentity(Pair pair, Map<String,Object> row, JsonNode payload) {
+        JsonNode version=payload.get("version"),mid=payload.get("mid"),type=payload.get("typeCode");
+        return "P2P_ARCHIVE".equals(row.get("task_type")) && TERMINAL.contains(text(row.get("status")).toUpperCase(Locale.ROOT))
+            && Set.of("QUARK","XUNLEI","BAIDU").contains(text(row.get("source")))
+            && pair.toMovieId().equals(text(row.get("movie_id"))) && version!=null && version.isIntegralNumber()
+            && (version.intValue()==1 || version.intValue()==2) && version.canConvertToInt()
+            && type!=null && type.isTextual() && Set.of("mv","tv","ac").contains(type.textValue())
+            && mid!=null && mid.isTextual() && mid.textValue().matches("[A-Za-z0-9]{1,100}") && pair.toMovieId().equals(mid.textValue());
+    }
+
+    private static LocalDateTime dateTime(Object value) {
+        if(value instanceof LocalDateTime local) return local;
+        if(value instanceof java.sql.Timestamp timestamp) return timestamp.toLocalDateTime();
+        return null;
     }
 
     private void apply(Pair pair, Snapshot state, String reviewId, Long actor) {
