@@ -1,0 +1,7 @@
+{
+  "services": {
+    "backend": {
+      "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d"
+    }
+  }
+}

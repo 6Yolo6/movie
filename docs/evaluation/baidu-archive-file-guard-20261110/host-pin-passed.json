@@ -1,0 +1,165 @@
+{
+  "status": "host-pinned-and-post-checkpoint-verified",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "startedAt": "2026-11-10T15:13:29.261393+00:00",
+  "configurationReplaceAttempted": true,
+  "privateConfigurationWritten": true,
+  "configurationOutcomeUnknown": false,
+  "hostConfigurationCasLimit": 1,
+  "additionalServiceActivations": 0,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "productionMergePerformed": false,
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\deployment-20261110T151029.955552Z.json",
+    "sha256": "46ac5714bd78d72af66de1b9ae32b539fedf1d3ea73983d90de90d71bf12a47f"
+  },
+  "acceptance": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\acceptance-20261110T151132.671745Z.json",
+    "sha256": "8b5e563da1225d041a2f6d20a8944f4e7822e3ed6ade080e28738a6d9b9cb32b"
+  },
+  "idle": {
+    "at": "2026-11-10T15:13:33.191314+00:00",
+    "phase": "Immediately before exact host image CAS",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "onlyExpectedBackendImageChanged": true,
+  "hostOwnerGroupDaclRetained": true,
+  "postPlan": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\post-plan.json",
+    "sha256": "67d1bbc432715378fe9d8a528cf4809cae170a4444e82af0a09417e4705dbf7f"
+  },
+  "configurationSha256": "a46bbc7fcda85f62f87d756c51113915f2edcfea0efdd222d59a53b7dfaeea29",
+  "taskXmlAclAndProfileRetained": true,
+  "postCheckpoint": {
+    "directory": "G:\\gying-backups\\baidu-archive-file-guard-post-pin-20261110-20261110T151352.898502Z",
+    "artifacts": 3,
+    "authenticated": true,
+    "manifestSha256": "59373b4684e8eb9cba4627edba695a4d2815129f1e71aa6258bd80fdbb3caf55",
+    "hostCompleteContentVerified": true,
+    "baiduVault": {
+      "aes256GcmAuthenticated": true,
+      "sessionSchemaValid": true,
+      "currentSessionSchemaValid": true,
+      "privateAccountIdentityMatched": true,
+      "cookieEntryCount": 27,
+      "credentialValuesPrinted": false,
+      "plaintextSessionWritten": false,
+      "stateSha256": "97528511f9a1db35440f95e41150fb31c48ea026717a94fabc6aae835f394610",
+      "keySha256": "e50bbffbde9409fe5c8d9805a27828fa336438e93b307e99cf3fdd73fe5c0909",
+      "currentSessionHashesMatched": true,
+      "regularMembersRecovered": 2,
+      "sessionAndKeyMode": "0600",
+      "directoryMode": "0700",
+      "numericLinuxUid": 10001,
+      "numericLinuxGid": 10001,
+      "sameBackendDataVolume": true,
+      "livePairUnchangedDuringVerification": true,
+      "plaintextArchivesWritten": false,
+      "productionDataRestored": false
+    },
+    "archivedQueueAuthenticated": true,
+    "queueCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    }
+  },
+  "runtimeVerificationAfterPin": {
+    "verifiedAt": "2026-11-10T15:14:21.016402+00:00",
+    "completeOldConfigAuthenticated": true,
+    "oldEnvSequenceRetained": true,
+    "oldFullLabelsRetained": true,
+    "allConfigFieldsVerified": true,
+    "semanticEnvironmentExact": true,
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "oldEnvironmentOrderSha256": "0eb7c3cdbd204acf81ec1e8e8b771c92b3d2c37b29b5ee6c0603d604be7f00a5",
+    "currentEnvironmentOrderSha256": "4ff882f88d8cce37d0800132601914d5218e22014d4948feb65d3458d66a347b",
+    "environmentSequenceEqual": false,
+    "actualRuntime": {
+      "configurationSha256": "eecd136d2ea480b25ab4fdb88cd55a7d0ed10849c96616b1c4b12b18e3f5d442",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "5943f1ee2f8b86ebdac3f8f75e60674985ee8b6364903fd65166c43ad5c64dee",
+      "bakedAndCustomLabelsSha256": "706902d04eae62995d71bb565cd3f6524a39a947e3cc0d044fa20bbd02561b59",
+      "generatedComposeLabelsSha256": "51f2418f9ff39696705f89f86b802cb196a9e7de512f2a1203347f154695f74b",
+      "candidatePlatformManifest": "sha256:9fc6c219ea038c12940f1687d61a1645ecbfd6a9d2ffaeb298439521a08780c5",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "idleAfterPin": {
+    "at": "2026-11-10T15:14:24.881570+00:00",
+    "phase": "After exact host pin and post checkpoint",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "liveBackend": {
+    "id": "0b96c7e0e4809269ad59ab717bfbc13a31de94d9360de256bb14b99fc7bce19f",
+    "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+    "startedAt": "2026-11-10T15:09:58.682715663Z"
+  },
+  "hostConfigurationCasAttempts": 1,
+  "completedAt": "2026-11-10T15:14:33.084345+00:00"
+}

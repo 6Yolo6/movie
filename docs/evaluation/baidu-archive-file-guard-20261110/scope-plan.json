@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "releasePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110",
+  "affectedServices": [
+    "backend"
+  ],
+  "activationLimit": 1,
+  "hostConfigurationCasLimit": 1,
+  "dailyConfigurationCasLimit": 1,
+  "dailyArtifactsBefore": 44,
+  "dailyArtifactsAfter": 45,
+  "manualFilmCycles": 0,
+  "duplicateScans": 0,
+  "duplicatePreviews": 0,
+  "providerRequestsForAcceptance": 0,
+  "cloudWriteBudget": 0,
+  "sqlWriteBudget": 0,
+  "productionMergeAuthorized": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "nginxGenerationChanges": 0,
+  "oldBackendImage": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+  "dailyConfigurationBeforeSha256": "c135007aac9079d23d3e05df7ca8b2e7e0b93e4bbf481cdde0e59e0dc31fb4d5"
+}

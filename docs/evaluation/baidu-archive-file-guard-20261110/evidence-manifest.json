@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "status": "FINAL_DELIVERY_EVIDENCE_VERIFIED_NO_ELIGIBLE_NEXT_IDENTITY",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "copyMethod": "Original bytes, JSON -text, no serialization of receipts",
+  "sensitiveValueKeyAndTokenShapeScanPassed": true,
+  "files": [
+    {
+      "file": "regression-red.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\regression-red.json",
+      "bytes": 2854,
+      "sha256": "3543bdeaef289d5f5d6d349cbae00ce637c9f19c85260654dba726056ca914b1"
+    },
+    {
+      "file": "green-infrastructure-failure.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\green-infrastructure-failure.json",
+      "bytes": 1111,
+      "sha256": "6261c49bcee43919d2784e236c9d09f858426e8a281c8424214fa75a6234161a"
+    },
+    {
+      "file": "suite-first.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-first.json",
+      "bytes": 21140,
+      "sha256": "512b462a29851773db728a0cbeaed50e390ba2190013d77daf80032d80693164"
+    },
+    {
+      "file": "suite-final.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-final.json",
+      "bytes": 21109,
+      "sha256": "12d520a873f3018976a8a5182545867639bc945645509d441122179c39279242"
+    },
+    {
+      "file": "backend-build.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-build-raw.json",
+      "bytes": 2215,
+      "sha256": "430351a1b19c2ad9eb39e06bc1d3ee6ceeb69206fd14ebfd1447afcfed4aa3d2"
+    },
+    {
+      "file": "backend-source-manifest.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-source-manifest.json",
+      "bytes": 76552,
+      "sha256": "a15df5e569067eb8b75a607a66914cf36739df71f9aa681bd4d8621f78b84642"
+    },
+    {
+      "file": "root-offline-tests.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\root-offline-tests.json",
+      "bytes": 2321,
+      "sha256": "49baa90e3296c87b987256d53530827f0adb1265302758e14e869f0767761f1c"
+    },
+    {
+      "file": "ops-offline-report.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\ops-offline-report.json",
+      "bytes": 4319,
+      "sha256": "ffdbd2290a090b70e0e0fd695729abc57165781735d9cb0bfbfd337e3f163e56"
+    },
+    {
+      "file": "offline-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\offline-independent-review.json",
+      "bytes": 17331,
+      "sha256": "afd24ff84f9a5e0b237d3698e9a63f45928cf3bc64ec444166d4500280845d8c"
+    },
+    {
+      "file": "prepare-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\prepare-independent-review.json",
+      "bytes": 8225,
+      "sha256": "f97bdc000cf7872e5a67ecfb27002a54e6b130118902eba3242c9e40106d61f2"
+    },
+    {
+      "file": "helper-source-derivation.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\helper-source-derivation.json",
+      "bytes": 5999,
+      "sha256": "2fcbc0d73144d5b0817c53d610bcc3e143fb27530841f8515ece55aa2753f381"
+    },
+    {
+      "file": "dependencies.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\dependencies.json",
+      "bytes": 6763,
+      "sha256": "ae1340586fae548b1c152b05f5edefb9a51f369feee188edcc4d0f90ee525594"
+    },
+    {
+      "file": "scope-plan.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\scope-plan.json",
+      "bytes": 780,
+      "sha256": "0e4cad1ce501a6b8221b19f0598232b16a893a298b09a92a3e81e49e1405d3c7"
+    },
+    {
+      "file": "candidate-binding.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\candidate-binding.json",
+      "bytes": 1281,
+      "sha256": "c08816cc139a59bb76de1d1fcbae85efa858f4c2e35681a6f7a36f695dd28cd8"
+    },
+    {
+      "file": "candidate-binding-validation.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\candidate-binding-validation-20261110T150634.086155Z.json",
+      "bytes": 1281,
+      "sha256": "c08816cc139a59bb76de1d1fcbae85efa858f4c2e35681a6f7a36f695dd28cd8"
+    },
+    {
+      "file": "plan.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\plan.json",
+      "bytes": 366411,
+      "sha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099"
+    },
+    {
+      "file": "post-plan.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\post-plan.json",
+      "bytes": 366411,
+      "sha256": "67d1bbc432715378fe9d8a528cf4809cae170a4444e82af0a09417e4705dbf7f"
+    },
+    {
+      "file": "candidate.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\candidate.json",
+      "bytes": 136,
+      "sha256": "763f52da91c25113baccba793ef1688c958c4741a32d35b2d1aa7e6ef1a2f98d"
+    },
+    {
+      "file": "rollback.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\rollback.json",
+      "bytes": 136,
+      "sha256": "0abeecc24706a9957fbece35844639e6664c21b2b44c042830ec4d8df3b20fbe"
+    },
+    {
+      "file": "backup-preflight-prepare.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backup-preflight-20261110T150710.075453Z.json",
+      "bytes": 3403,
+      "sha256": "cb2d81c5cc5771f50df23d845f5069050098170f470dcae76571fd8574ad3b20"
+    },
+    {
+      "file": "backup-preflight-deploy.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backup-preflight-20261110T150754.072147Z.json",
+      "bytes": 3403,
+      "sha256": "24a69beb3e2b388febf5550ebd96545bd3acb84a96c9d598f58417ba305b40b7"
+    },
+    {
+      "file": "minio-authenticated-read-prepare.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\minio-authenticated-read-20261110T150705Z.json",
+      "bytes": 949,
+      "sha256": "8c46fb13a113307dcafe1a379090be76f3b6a2255b43c4aa0552cc62ec66e383"
+    },
+    {
+      "file": "minio-authenticated-read-deploy.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\minio-authenticated-read-20261110T150756Z.json",
+      "bytes": 949,
+      "sha256": "d0b5957b81be8c951dc6538c3c586a6c6a8384ce72c0dca52764b6d84c9ccdda"
+    },
+    {
+      "file": "deployment-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\deployment-20261110T151029.955552Z.json",
+      "bytes": 12655,
+      "sha256": "46ac5714bd78d72af66de1b9ae32b539fedf1d3ea73983d90de90d71bf12a47f"
+    },
+    {
+      "file": "acceptance-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\acceptance-20261110T151132.671745Z.json",
+      "bytes": 20428,
+      "sha256": "8b5e563da1225d041a2f6d20a8944f4e7822e3ed6ade080e28738a6d9b9cb32b"
+    },
+    {
+      "file": "post-prepared.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\post-prepared.json",
+      "bytes": 1107,
+      "sha256": "50a3f30844be23f3afaa67c13eae491804cdc0be835187b3358e31192a9b0426"
+    },
+    {
+      "file": "host-pin-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\host-pin-20261110T151433.084345Z.json",
+      "bytes": 6354,
+      "sha256": "e8f622f7016fa65ca039d763f141a85c988aca41d42dac081fe4251670f86698"
+    },
+    {
+      "file": "daily-prepared.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-prepared.json",
+      "bytes": 2058,
+      "sha256": "f3bb74fdd58400121177f3b60209fcfe2bad6792ff08a0a6166bb8c32ebd8f5f"
+    },
+    {
+      "file": "daily-apply-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\daily-apply-20261110T151645.706782Z.json",
+      "bytes": 1882,
+      "sha256": "6c8fefcdcd261db63a67cf713f0d69fc7fc5e07ff78713550ce7fc9afb0419b4"
+    },
+    {
+      "file": "final-read-only-passed.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\final-read-only-20261110T151901.204784Z.json",
+      "bytes": 5711,
+      "sha256": "7889847ac89e8c1672304e553bcff54d2226a59c0846d4940e5106741257ddbe"
+    },
+    {
+      "file": "next-candidate-readonly.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-readonly-20261110T151953.090241Z.json",
+      "bytes": 1815,
+      "sha256": "5542ed0440658dcea3522aea45541d34d0f90825e9fc567ae6f65eb9be882a9f"
+    },
+    {
+      "file": "next-candidate-interpretation.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\next-candidate-interpretation.json",
+      "bytes": 1239,
+      "sha256": "ad3a15e37ff121ebc86008e753effc1a157093cfda91dfa4477cb8478ffce6d8"
+    },
+    {
+      "file": "final-independent-review.json",
+      "sourcePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\final-independent-review.json",
+      "bytes": 13399,
+      "sha256": "e74df15d5a7be68ef232dd39f3bda9409d64eade27d8a29b548f32164a91b9c8"
+    }
+  ],
+  "excluded": [
+    "age ciphertext and private keys",
+    "private config/env/Cookie/JWT",
+    "complete inspect/provider raw responses",
+    "raw application/build logs"
+  ],
+  "pending": [],
+  "nextCandidateReceiptStatus": "PAUSED (parent-state projection overwrote top-level status; terminal read workflow completed; original receipt preserved)",
+  "independentReview": {
+    "status": "PASS",
+    "scope": "Static local review only; production I/O 0; no independent runtime/provider/SQL/decryption",
+    "file": "final-independent-review.json",
+    "sha256": "e74df15d5a7be68ef232dd39f3bda9409d64eade27d8a29b548f32164a91b9c8"
+  }
+}

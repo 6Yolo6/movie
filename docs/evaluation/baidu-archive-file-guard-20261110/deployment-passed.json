@@ -1,0 +1,343 @@
+{
+  "status": "deployed-backend-semantic-verification-passed",
+  "startedAt": "2026-11-10T15:07:45.911393+00:00",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "services": [
+    "backend"
+  ],
+  "planSha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099",
+  "activationAttempts": 1,
+  "sqlWrites": 0,
+  "cloudWrites": 0,
+  "productionMergePerformed": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "completeConfigPreflightBeforeTerm": {
+    "completeOldConfigAuthenticated": true,
+    "knownCompleteConfigFieldset": true,
+    "oldEnvironmentUnique": true,
+    "currentComposeEnvironmentMatchesOldContainer": true,
+    "everyModeledOldConfigFieldMatchesCurrentCompose": true,
+    "candidateEntireImageConfigPreserved": true,
+    "wholeOriginalComposeModelNativeHashVerified": true,
+    "originalComposeModelSha256": "dfebf77aaf59c171c9da476d1d0bae5b52e70beb2bcffee92ca7fc577cd5f792",
+    "oldFullLabelsVerified": true,
+    "plaintextWritten": false
+  },
+  "backupPreflightImmediatelyBeforeTerm": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backup-preflight-20261110T150754.072147Z.json",
+    "sha256": "24a69beb3e2b388febf5550ebd96545bd3acb84a96c9d598f58417ba305b40b7"
+  },
+  "dependencyReadinessImmediatelyBeforeTerm": {
+    "at": "2026-11-10T15:07:57.427303+00:00",
+    "backendId": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "backendConfigurationSha256": "00900c58c04016d8f6b53279b5a4c6ad21d5fa6e0d151100e0cbe210d211b63e",
+    "actualConfiguredDependencies": {
+      "database": {
+        "configuredBackendTcpPath": true,
+        "applicationIdentity": "gying_app@%",
+        "database": "gying",
+        "readOnly": true
+      },
+      "redis": {
+        "configuredBackendTcpPath": true,
+        "authenticatedPing": true
+      },
+      "minio": {
+        "configuredEndpointSha256": "0fd04c4d73095f1917fba91773c4b315ddd77580549da2ab315f1c5ed15fded8",
+        "getSucceeded": true,
+        "bytes": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "authenticatedExistingObjectRead": {
+          "startedAt": "2026-11-10T15:07:56.327894+00:00",
+          "method": "GET",
+          "reader": "existing frontend Node peer on backend network",
+          "source": "current backend endpoint and S3 credentials",
+          "objectWrites": 0,
+          "cloudProviderRequests": 0,
+          "status": "passed",
+          "bytes": 155434,
+          "sha256": "f3ebd8bd87709ca80e46105f4d799a8a17e0e8b21bfa670a427d6a965299a313",
+          "contentType": "image/jpeg",
+          "objectKeySha256": "601e080aed838ef037f6998a1dd5f00665a088281b9821f4638468800fdeeab5",
+          "endpoint": "host.docker.internal:9000",
+          "credentialKeysPresent": [
+            "MINIO_ACCESS_KEY",
+            "MINIO_SECRET_KEY"
+          ],
+          "liveBackend": {
+            "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+            "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+            "startedAt": "2026-11-10T12:06:37.094729994Z"
+          },
+          "httpStatus": 200,
+          "completedAt": "2026-11-10T15:07:56.928853+00:00"
+        }
+      },
+      "source": {
+        "configuredEndpointSha256": "b1772e63f9cafea2da9ae65c2025b796e6d94a42644c5504593e71e0f1cd398d",
+        "getSucceeded": true,
+        "bytes": 12,
+        "bodySha256": "6bc0da1f42f96fc37b8bd7ed20ba57606d2a0da5cda2b135c7854fbdc985b8a3"
+      },
+      "quark": {
+        "configuredEndpointSha256": "0649a4ce45ded1fc538129553a67a5567eb80c49d5b7b271f0d23b7dc3866727",
+        "getSucceeded": true,
+        "bytes": 2745,
+        "bodySha256": "68321f39c5b38b7db84d45d40240ce515138a9bc170e951ae2ddf850b90473a3"
+      },
+      "publisher": {
+        "configuredEndpointSha256": "e99fb90e1c7919b1fcf36c2cf011a8bf437acf8c0be9d0ddb50e1219b1f98082",
+        "getSucceeded": true,
+        "bytes": 11,
+        "bodySha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93"
+      },
+      "pansou": {
+        "configuredEndpointSha256": "64516ea35c402b285d8fad14934948c3c66c677d3e5afc7fe76f1e4388968394",
+        "backendTcpReachable": true,
+        "serviceHealthVerified": false
+      }
+    },
+    "readOnly": true,
+    "cloudWrites": 0
+  },
+  "idle": {
+    "at": "2026-11-10T15:08:01.249875+00:00",
+    "phase": "Immediately before Baidu file guard normal TERM",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "signalProof": {
+    "signal": "SIGTERM",
+    "pid1": "java",
+    "receiver": "handler"
+  },
+  "phase": "Backend actual runtime and local entry verification passed",
+  "normalTermAttempted": true,
+  "oldBackendStoppedNormally": true,
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\baidu-archive-file-guard-20261110-20261110T150808.375471Z",
+    "artifacts": 7,
+    "authenticated": true,
+    "manifestSha256": "f83eba3a57c318c08e971ca3b2644d26808eb56dea30169d41143146b7320325",
+    "offlineVerification": {
+      "verifiedAt": "2026-11-10T15:09:39.175793+00:00",
+      "plaintextArchivesWritten": false,
+      "productionDataRestored": false,
+      "configuration": {
+        "uniqueMembers": 74,
+        "contentHashesMatched": true
+      },
+      "hostMaterials": {
+        "uniqueMembers": 882,
+        "contentHashesMatched": true,
+        "installedAtPreparation": true,
+        "exactTaskXmlAndNtfsAclMetadata": true,
+        "taskEnabled": true,
+        "taskState": "Ready",
+        "ntfsAclEntries": 1374
+      },
+      "images": {
+        "backend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 14,
+          "contentAddressedBlobsVerified": 20
+        },
+        "frontend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 36,
+          "contentAddressedBlobsVerified": 42
+        }
+      },
+      "mysql": {
+        "dumpBytes": 108193713,
+        "tableObjects": 31,
+        "routineObjects": 1,
+        "triggerObjects": 34,
+        "metadataRoutineRestorable": true,
+        "metadataCanonicalBodySha256": "968ab4ccec6644d4635e5c7630c6043c4c0cd86a2b2c1b67259d0b5b2fd4590c",
+        "metadataZeroParameters": true,
+        "metadataReadsSqlData": true,
+        "metadataSecurityDefiner": true,
+        "completeCanonicalTriggerBodiesVerified": 34,
+        "completionMarkerPresent": true,
+        "singleTransaction": true,
+        "databaseImportPerformed": false
+      },
+      "backend-data": {
+        "regularFiles": 7,
+        "persistedQueueMemberRecovered": true
+      },
+      "ai-state-key": {
+        "regularFiles": 1,
+        "persistedQueueMemberRecovered": true
+      },
+      "baiduVault": {
+        "aes256GcmAuthenticated": true,
+        "sessionSchemaValid": true,
+        "currentSessionSchemaValid": true,
+        "privateAccountIdentityMatched": true,
+        "cookieEntryCount": 27,
+        "credentialValuesPrinted": false,
+        "plaintextSessionWritten": false,
+        "stateSha256": "97528511f9a1db35440f95e41150fb31c48ea026717a94fabc6aae835f394610",
+        "keySha256": "e50bbffbde9409fe5c8d9805a27828fa336438e93b307e99cf3fdd73fe5c0909",
+        "currentSessionHashesMatched": true,
+        "regularMembersRecovered": 2,
+        "sessionAndKeyMode": "0600",
+        "directoryMode": "0700",
+        "numericLinuxUid": 10001,
+        "numericLinuxGid": 10001,
+        "sameBackendDataVolume": true,
+        "livePairUnchangedDuringVerification": true,
+        "plaintextArchivesWritten": false,
+        "productionDataRestored": false
+      },
+      "queueRestore": {
+        "authenticatedFromBothBackedUpMembers": true,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "localAgentStateRead": false
+      }
+    }
+  },
+  "idleBeforeActivation": {
+    "at": "2026-11-10T15:09:57.150569+00:00",
+    "phase": "Immediately before one fixed Baidu file guard backend activation",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "liveBackend": {
+    "id": "0b96c7e0e4809269ad59ab717bfbc13a31de94d9360de256bb14b99fc7bce19f",
+    "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+    "startedAt": "2026-11-10T15:09:58.682715663Z"
+  },
+  "readiness": {
+    "origin": "http://127.0.0.1:8880",
+    "path": "/api/qq-bot/health",
+    "status": 200,
+    "bytes": 15,
+    "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+  },
+  "runtimeVerification": {
+    "verifiedAt": "2026-11-10T15:10:29.955035+00:00",
+    "completeOldConfigAuthenticated": true,
+    "oldEnvSequenceRetained": true,
+    "oldFullLabelsRetained": true,
+    "allConfigFieldsVerified": true,
+    "semanticEnvironmentExact": true,
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "oldEnvironmentOrderSha256": "0eb7c3cdbd204acf81ec1e8e8b771c92b3d2c37b29b5ee6c0603d604be7f00a5",
+    "currentEnvironmentOrderSha256": "4ff882f88d8cce37d0800132601914d5218e22014d4948feb65d3458d66a347b",
+    "environmentSequenceEqual": false,
+    "actualRuntime": {
+      "configurationSha256": "eecd136d2ea480b25ab4fdb88cd55a7d0ed10849c96616b1c4b12b18e3f5d442",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "5943f1ee2f8b86ebdac3f8f75e60674985ee8b6364903fd65166c43ad5c64dee",
+      "bakedAndCustomLabelsSha256": "706902d04eae62995d71bb565cd3f6524a39a947e3cc0d044fa20bbd02561b59",
+      "generatedComposeLabelsSha256": "51f2418f9ff39696705f89f86b802cb196a9e7de512f2a1203347f154695f74b",
+      "candidatePlatformManifest": "sha256:9fc6c219ea038c12940f1687d61a1645ecbfd6a9d2ffaeb298439521a08780c5",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "nginxReloadedInProcess": true,
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 68036,
+      "sha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/movie/1YKW",
+      "status": 200,
+      "bytes": 245260,
+      "sha256": "39e4e60650369da1e6d62c0722638d8d9b0a9605b3b7699ab0a3e2b0720d3c5c"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1337,
+      "sha256": "9d2e9a66784f6e5c99b369fe3761b0d3092f14358ab762db7276a6788b93afe9"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/admin/resource-hub/config",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0"
+    }
+  ],
+  "completedAt": "2026-11-10T15:10:29.955552+00:00"
+}

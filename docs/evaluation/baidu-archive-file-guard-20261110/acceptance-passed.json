@@ -1,0 +1,602 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-10T15:10:53.377170+00:00",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "planSha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099",
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\deployment-20261110T151029.955552Z.json",
+    "sha256": "46ac5714bd78d72af66de1b9ae32b539fedf1d3ea73983d90de90d71bf12a47f"
+  },
+  "liveBackend": {
+    "id": "0b96c7e0e4809269ad59ab717bfbc13a31de94d9360de256bb14b99fc7bce19f",
+    "image": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+    "startedAt": "2026-11-10T15:09:58.682715663Z"
+  },
+  "publicEntryChecksPassed": true,
+  "affectedBackendReadChecksPassed": true,
+  "frontendChanged": false,
+  "uiChecksApplicable": false,
+  "productionMergePerformed": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "sqlWritesScope": "Operator-issued direct SQL writes only; existing authentication may touch login_device.last_seen_at",
+  "operatorDirectSqlWrites": 0,
+  "routineExistingDeviceLastSeenMayChange": true,
+  "newDevicesOrLogins": 0,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "requests": {
+    "nonGetRequests": 0,
+    "providerRequests": 0,
+    "duplicateScans": 0,
+    "duplicatePreviews": 0,
+    "manualFilmCycles": 0
+  },
+  "historicalUiEvidenceOnly": true,
+  "idleBefore": {
+    "at": "2026-11-10T15:10:57.078215+00:00",
+    "phase": "Before read-only Baidu guard acceptance",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "entries": {
+    "checks": [
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 68036,
+        "bodySha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/resource-search",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61122,
+        "bodySha256": "31754401f4f15f362d048342e134ec1a7e17841db7b045a0f772240d9cb1a9f3"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/admin/resource-hub",
+        "method": "GET",
+        "kind": "admin-page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61825,
+        "bodySha256": "925051c063c7ca8b511ebc8065189b982e9220c74ebc9c7008e2f8b65a7e07f1"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/movie/1YKW",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 245260,
+        "bodySha256": "39e4e60650369da1e6d62c0722638d8d9b0a9605b3b7699ab0a3e2b0720d3c5c"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "kind": "catalog",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 2258,
+        "bodySha256": "67d96e701b0125a9b76beddba14c427f36df6e73d4e9adada58495aed54979fa",
+        "returned": 2,
+        "total": 15788
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/qq-bot/health",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/internal/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 401,
+        "bodyBytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 401,
+        "bodyBytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 68403,
+        "bodySha256": "67313d652bf75cbb9462f26c6e4633a4f1d50e0edef0d2aad90b4189ee7312ba"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/resource-search",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61489,
+        "bodySha256": "38c4a6d67e9f921fdf20cb326592ac9ab44acae633a4f5b8e40ee0ea5562375b"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/admin/resource-hub",
+        "method": "GET",
+        "kind": "admin-page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "6dcb9488edb7873f4f889b920de92e84ed30e944ae9f003683a81ed5eda7e647"
+        }
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/movie/1YKW",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 245627,
+        "bodySha256": "cc3be7eaa76bf28884da0c593bf05c23ed692537272ebdaeb37a35386fcaad18"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "kind": "catalog",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 2258,
+        "bodySha256": "67d96e701b0125a9b76beddba14c427f36df6e73d4e9adada58495aed54979fa",
+        "returned": 2,
+        "total": 15788
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/qq-bot/health",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/internal/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "edf720128b5cca0e48c718294898768b35a1524f4d9ac8928c2221f75e42a83d"
+        }
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "b27fc1ea192f6ff9d43ad77dc8a9a89c43449db9ace2e6cc4eb7d3171b54a4af"
+        }
+      }
+    ],
+    "passed": true,
+    "passedChecks": 20,
+    "publicTransport": "existing-loopback-proxy-7897",
+    "actualChecks": 20,
+    "authenticatedRequests": 0,
+    "retryAttempts": 0
+  },
+  "backendReads": {
+    "configurationDataSha256": "ca0f1fb6bd0323e721533acfaefb576d2d6e765c6d5f3efd95dedd59602c8821",
+    "backfillDataSha256": "dc0a5cdb2d224608a940e8b2cb4aec61fc28b12319e461a90c694205e5050488",
+    "enabledConfiguration": {
+      "enabled": true,
+      "gyingDiscoveryEnabled": true,
+      "gyingAutoSyncEnabled": true,
+      "workerEnabled": true
+    },
+    "parent": {
+      "taskId": 17583,
+      "enabled": false,
+      "status": "PAUSED",
+      "revision": 63,
+      "intervalMinutes": 10,
+      "batchLimit": 1,
+      "processed": 5,
+      "skipped": 5,
+      "succeeded": 0,
+      "failed": 0,
+      "currentChildId": null,
+      "currentIdentityId": null,
+      "nextRunAt": null,
+      "leaseOwner": null,
+      "leaseUntil": null,
+      "deferredCount": 3,
+      "unknown": [
+        {
+          "id": 17584,
+          "status": "UNKNOWN",
+          "attempts": 1
+        },
+        {
+          "id": 17606,
+          "status": "UNKNOWN",
+          "attempts": 1
+        },
+        {
+          "id": 17622,
+          "status": "UNKNOWN",
+          "attempts": 1
+        }
+      ],
+      "parentPayloadSha256": "823876a1f2d7ed6a4139152d134eb766f522cc2f06a2c941b35faae89abc2301"
+    },
+    "apiParent": {
+      "taskId": 17583,
+      "enabled": false,
+      "status": "PAUSED",
+      "revision": 63,
+      "intervalMinutes": 10,
+      "batchLimit": 1,
+      "processed": 5,
+      "skipped": 5,
+      "succeeded": 0,
+      "failed": 0,
+      "currentChildId": null,
+      "currentIdentityId": null,
+      "nextRunAt": null,
+      "deferredCount": 3
+    },
+    "reads": [
+      {
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "attempts": 1,
+        "httpStatus": 200,
+        "bytes": 4328,
+        "dataSha256": "ca0f1fb6bd0323e721533acfaefb576d2d6e765c6d5f3efd95dedd59602c8821",
+        "responseBodyWritten": false
+      },
+      {
+        "path": "/api/admin/resource-hub/baidu/backfill",
+        "method": "GET",
+        "attempts": 1,
+        "httpStatus": 200,
+        "bytes": 2133,
+        "dataSha256": "dc0a5cdb2d224608a940e8b2cb4aec61fc28b12319e461a90c694205e5050488",
+        "responseBodyWritten": false
+      }
+    ],
+    "authentication": {
+      "existingDeviceReused": true,
+      "newDeviceCreated": false,
+      "loginPerformed": false,
+      "jwtLifetimeSeconds": 300,
+      "deviceJtiSha256": "fe8556707309b8e3de95c401534f4b764ee5da4fadc7ae0fb264c1a965767f3f"
+    },
+    "fullResponseBodiesWritten": false,
+    "providerRequests": 0,
+    "nonGetRequests": 0,
+    "operatorDirectSqlWrites": 0,
+    "routineExistingDeviceLastSeenMayChange": true,
+    "authenticationSideEffect": "Existing authenticated GET may touch login_device.last_seen_at; no new login/device or business write"
+  },
+  "criticalClass": {
+    "member": "BOOT-INF/classes/com/gying/movie/service/impl/P2pArchiveTaskService.class",
+    "sha256": "c5b714b2a0ad16067c0ac932ebc4a17d1539cb580de08b4631037154f11f913d",
+    "candidateJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "liveJarHasSameSha256": true,
+    "proof": "Actual live JAR SHA256 equals the immutable candidate JAR; therefore the complete class/resource bytes and this exact member match",
+    "verifiedClassResources": 440
+  },
+  "runtimeVerificationAfter": {
+    "verifiedAt": "2026-11-10T15:11:20.742069+00:00",
+    "completeOldConfigAuthenticated": true,
+    "oldEnvSequenceRetained": true,
+    "oldFullLabelsRetained": true,
+    "allConfigFieldsVerified": true,
+    "semanticEnvironmentExact": true,
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "oldEnvironmentOrderSha256": "0eb7c3cdbd204acf81ec1e8e8b771c92b3d2c37b29b5ee6c0603d604be7f00a5",
+    "currentEnvironmentOrderSha256": "4ff882f88d8cce37d0800132601914d5218e22014d4948feb65d3458d66a347b",
+    "environmentSequenceEqual": false,
+    "actualRuntime": {
+      "configurationSha256": "eecd136d2ea480b25ab4fdb88cd55a7d0ed10849c96616b1c4b12b18e3f5d442",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "5943f1ee2f8b86ebdac3f8f75e60674985ee8b6364903fd65166c43ad5c64dee",
+      "bakedAndCustomLabelsSha256": "706902d04eae62995d71bb565cd3f6524a39a947e3cc0d044fa20bbd02561b59",
+      "generatedComposeLabelsSha256": "51f2418f9ff39696705f89f86b802cb196a9e7de512f2a1203347f154695f74b",
+      "candidatePlatformManifest": "sha256:9fc6c219ea038c12940f1687d61a1645ecbfd6a9d2ffaeb298439521a08780c5",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "idleAfter": {
+    "at": "2026-11-10T15:11:24.354378+00:00",
+    "phase": "After read-only Baidu guard acceptance",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "runtimeVerificationFinally": {
+    "verifiedAt": "2026-11-10T15:11:32.671745+00:00",
+    "completeOldConfigAuthenticated": true,
+    "oldEnvSequenceRetained": true,
+    "oldFullLabelsRetained": true,
+    "allConfigFieldsVerified": true,
+    "semanticEnvironmentExact": true,
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "oldEnvironmentOrderSha256": "0eb7c3cdbd204acf81ec1e8e8b771c92b3d2c37b29b5ee6c0603d604be7f00a5",
+    "currentEnvironmentOrderSha256": "4ff882f88d8cce37d0800132601914d5218e22014d4948feb65d3458d66a347b",
+    "environmentSequenceEqual": false,
+    "actualRuntime": {
+      "configurationSha256": "eecd136d2ea480b25ab4fdb88cd55a7d0ed10849c96616b1c4b12b18e3f5d442",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "5943f1ee2f8b86ebdac3f8f75e60674985ee8b6364903fd65166c43ad5c64dee",
+      "bakedAndCustomLabelsSha256": "706902d04eae62995d71bb565cd3f6524a39a947e3cc0d044fa20bbd02561b59",
+      "generatedComposeLabelsSha256": "51f2418f9ff39696705f89f86b802cb196a9e7de512f2a1203347f154695f74b",
+      "candidatePlatformManifest": "sha256:9fc6c219ea038c12940f1687d61a1645ecbfd6a9d2ffaeb298439521a08780c5",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "completedAt": "2026-11-10T15:11:32.671745+00:00"
+}

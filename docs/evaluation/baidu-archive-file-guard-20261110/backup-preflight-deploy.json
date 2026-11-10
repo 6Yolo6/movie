@@ -1,0 +1,81 @@
+{
+  "tools": {
+    "python": {
+      "path": "E:\\python3.10.6\\python.exe",
+      "sha256": "32ce1d2650ea8b9d394f5b8f94677d27888dccdc3713365bf903a8c465c9d776"
+    },
+    "mysql": {
+      "path": "E:\\Mysql-8.0.28\\mysql8.0.28\\bin\\mysql.exe",
+      "sha256": "d5383d7fdacee4d053d7690d9086085d30a6b5b4a3103f77ffa3399f161894ca"
+    },
+    "mysqldump": {
+      "path": "E:\\Mysql-8.0.28\\mysql8.0.28\\bin\\mysqldump.exe",
+      "sha256": "072990ae3bdc73f28601dea9615b069d511e3bc1a606553313d32fcfc7f6a0ad"
+    },
+    "age": {
+      "path": "G:\\gying-tools\\age-v1.3.2\\age.exe",
+      "sha256": "2821a4ed191da07372acd302e5f6feae7a7985e285e1417765ebe74025af45f0"
+    },
+    "tar": {
+      "path": "C:\\Windows\\System32\\tar.exe",
+      "sha256": "92fafed485af0fe4c291457dc3c00d0241f6a136731bab63ef18a3f0c949d37a"
+    },
+    "docker": {
+      "path": "C:\\Users\\ASUS\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe",
+      "sha256": "9693eb5d2e1adf26a830d62e1428c244125ca518db7322779932b702e21b3227"
+    },
+    "node": {
+      "path": "D:\\nvm\\nvm\\v24.22.1\\node.exe",
+      "sha256": "d702daa815eabbff763c7d3808e235cf031cf2ca70211b56847bc72f51e240e5"
+    }
+  },
+  "privateInputs": {
+    "defaults": {
+      "path": "G:\\gying-secrets\\mysql-backup.cnf",
+      "sha256": "c44e297a188a8d220e4cadb38907a4d3546e218fe813e33e387e0c583c2cf505",
+      "ownerGroupDaclSha256": "f0b272d113c1803a011547d14fd7aeefc2c052fa6a100e3e1030b453a48d7f2d"
+    },
+    "maintenanceDefaults": {
+      "path": "G:\\gying-secrets\\mysql-backup.cnf",
+      "sha256": "c44e297a188a8d220e4cadb38907a4d3546e218fe813e33e387e0c583c2cf505",
+      "ownerGroupDaclSha256": "f0b272d113c1803a011547d14fd7aeefc2c052fa6a100e3e1030b453a48d7f2d"
+    },
+    "recipient": {
+      "path": "G:\\gying-secrets\\backup-recipient.txt",
+      "sha256": "8d11e217a50cc81083da5ea53a21fa8b7116510287c9b7e7703fd522389046c5",
+      "ownerGroupDaclSha256": "1f7c501081e6e1ccd3830ba3cb2b31f4b628a839151c64c52ac8777f5d37f749"
+    },
+    "identity": {
+      "path": "F:\\gying-recovery-keys\\gying-age-20260925.txt",
+      "sha256": "55563cee31475e3e70e4785cb106981c0255451ca7d9bc7b358fcbf8137f3883",
+      "ownerGroupDaclSha256": "1f7c501081e6e1ccd3830ba3cb2b31f4b628a839151c64c52ac8777f5d37f749"
+    }
+  },
+  "tarImage": "sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc",
+  "outputRoot": "G:\\gying-backups",
+  "principalHostSha256": "d9162fb445df3029a139ad508e4bd4952cbb278d04b890b3f2624168fc383724",
+  "toolExecutionVerified": true,
+  "schema": {
+    "readOnlySchemaDump": true,
+    "dumpBytes": 109673,
+    "schemaDumpSha256": "221f5c1354cc3d4b3b3d7e6134987f308c86a54cf9ccc8876f0beeda100b93dc",
+    "tables": 31,
+    "routines": 1,
+    "triggers": 34,
+    "fullObjectBodiesVerified": true,
+    "allTableSelectPrivilegesVerified": true,
+    "plaintextDumpWritten": false
+  },
+  "at": "2026-11-10T15:07:54.071146+00:00",
+  "syntheticOnly": true,
+  "productionDataCaptured": false,
+  "outputWritable": true,
+  "canary": {
+    "directory": "G:\\gying-backups\\baidu-file-guard-synthetic-preflight-20261110-20261110T150753.812202Z",
+    "artifacts": 1,
+    "authenticated": true,
+    "manifestSha256": "6840fb1bdc31664dd1ae738a4549153bbf553acc045cd8b7513dadc5ee35e93a"
+  },
+  "canaryArchiveSha256": "c6c42a90bc466e70a5e91409c82f34fd2cec571a59d2d6f8673a5f3e7ec9bcf0",
+  "completeCanaryContentAuthenticated": true
+}

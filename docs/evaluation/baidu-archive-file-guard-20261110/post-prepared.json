@@ -1,0 +1,19 @@
+{
+  "status": "prepared-no-production-mutation",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "planSha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099",
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\deployment-20261110T151029.955552Z.json",
+    "sha256": "46ac5714bd78d72af66de1b9ae32b539fedf1d3ea73983d90de90d71bf12a47f"
+  },
+  "acceptance": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\acceptance-20261110T151132.671745Z.json",
+    "sha256": "8b5e563da1225d041a2f6d20a8944f4e7822e3ed6ade080e28738a6d9b9cb32b"
+  },
+  "oldConfigurationSha256": "3fb400407d475c82806c18a597b5a0df412d98c298039b59061a65fa32f64671",
+  "oldExpectedImage": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+  "newExpectedImage": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+  "hostMetadataSha256": "66c818e75ecb0a83ae0232a98e2e2be66b5a5fa94993833ccac7103bd8cb82ce",
+  "hostConfigPreimageAuthenticated": true,
+  "at": "2026-11-10T15:12:04.445030+00:00"
+}

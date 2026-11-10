@@ -1,0 +1,25 @@
+{
+  "startedAt": "2026-11-10T15:07:05.074803+00:00",
+  "method": "GET",
+  "reader": "existing frontend Node peer on backend network",
+  "source": "current backend endpoint and S3 credentials",
+  "objectWrites": 0,
+  "cloudProviderRequests": 0,
+  "status": "passed",
+  "bytes": 155434,
+  "sha256": "f3ebd8bd87709ca80e46105f4d799a8a17e0e8b21bfa670a427d6a965299a313",
+  "contentType": "image/jpeg",
+  "objectKeySha256": "601e080aed838ef037f6998a1dd5f00665a088281b9821f4638468800fdeeab5",
+  "endpoint": "host.docker.internal:9000",
+  "credentialKeysPresent": [
+    "MINIO_ACCESS_KEY",
+    "MINIO_SECRET_KEY"
+  ],
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "httpStatus": 200,
+  "completedAt": "2026-11-10T15:07:05.876980+00:00"
+}

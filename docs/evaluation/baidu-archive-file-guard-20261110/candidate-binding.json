@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "authorizationBasis": "AGENTS.md delivery workflow for this user-requested code change",
+  "affectedServices": [
+    "backend"
+  ],
+  "productionMergeAuthorized": false,
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "candidateBackendImage": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+  "candidateJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+  "suiteReport": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-final.json",
+    "sha256": "12d520a873f3018976a8a5182545867639bc945645509d441122179c39279242"
+  },
+  "sourceManifest": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-source-manifest.json",
+    "sha256": "a15df5e569067eb8b75a607a66914cf36739df71f9aa681bd4d8621f78b84642"
+  },
+  "buildReport": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-build-raw.json",
+    "sha256": "430351a1b19c2ad9eb39e06bc1d3ee6ceeb69206fd14ebfd1447afcfed4aa3d2"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\offline-independent-review.json",
+    "sha256": "afd24ff84f9a5e0b237d3698e9a63f45928cf3bc64ec444166d4500280845d8c"
+  }
+}

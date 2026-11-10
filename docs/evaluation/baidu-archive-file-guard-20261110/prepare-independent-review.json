@@ -1,0 +1,143 @@
+{
+  "status": "PASS",
+  "releasePath": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110",
+  "reviewedAt": "2026-11-10T15:15:02.888286+00:00",
+  "reviewer": "checkpoint_final_review",
+  "scope": "Independent static consistency audit of fresh real prepare evidence and offline candidate binding; no production I/O",
+  "blockingFindings": [],
+  "plan": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\plan.json",
+    "sha256": "4bde4d85c494b2c04040b8c0340bd0d1fbfb98501cca5dfebcfb4db8fe973099"
+  },
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\candidate-binding.json",
+    "sha256": "c08816cc139a59bb76de1d1fcbae85efa858f4c2e35681a6f7a36f695dd28cd8"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\offline-independent-review.json",
+    "sha256": "afd24ff84f9a5e0b237d3698e9a63f45928cf3bc64ec444166d4500280845d8c"
+  },
+  "dependencies": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\dependencies.json",
+    "sha256": "ae1340586fae548b1c152b05f5edefb9a51f369feee188edcc4d0f90ee525594"
+  },
+  "backupPreflight": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backup-preflight-20261110T150710.075453Z.json",
+    "sha256": "cb2d81c5cc5771f50df23d845f5069050098170f470dcae76571fd8574ad3b20"
+  },
+  "suite": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\suite-final.json",
+    "sha256": "12d520a873f3018976a8a5182545867639bc945645509d441122179c39279242"
+  },
+  "sourceManifest": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-source-manifest.json",
+    "sha256": "a15df5e569067eb8b75a607a66914cf36739df71f9aa681bd4d8621f78b84642"
+  },
+  "build": {
+    "path": "E:\\gying-tools\\releases\\baidu-archive-file-guard-20261110\\backend-build-raw.json",
+    "sha256": "430351a1b19c2ad9eb39e06bc1d3ee6ceeb69206fd14ebfd1447afcfed4aa3d2"
+  },
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "candidateBackendImage": "sha256:5b5530ed328738aca237776200825b71041002fd4cd5304286efc2e53855386d",
+  "candidateJarSha256": "ce41205a599890bf53314b214e5db0515d5e61584a0a54845487a0cc509c8cc0",
+  "checks": {
+    "candidateBindingAndBackendOnlyScope": {
+      "status": "PASS",
+      "evidence": "Exact prepare plan SHA, source commit/image/JAR, suite/source/build/offline report hashes match; only backend overlay image changes."
+    },
+    "sealedDependencyAndReviewClosure": {
+      "status": "PASS",
+      "files": 33,
+      "evidence": "Reviewed dependency list equals seal, all 33 current file hashes match and are present in plan configurationFiles; parallel delivery_docs audit additionally checked 416 current source hashes, local JAR and suite/build totals."
+    },
+    "completeConfigAndComposeProof": {
+      "status": "PASS",
+      "completeFields": 17,
+      "evidence": "Encrypted old full Config ciphertext SHA matches; exact complete fieldset, Env uniqueness/union, modeled fields, full Labels, candidate entire image Config and whole original native Compose hash proofs recorded true. No plaintext read or decrypt in this independent audit.",
+      "originalComposeModelSha256": "dfebf77aaf59c171c9da476d1d0bae5b52e70beb2bcffee92ca7fc577cd5f792",
+      "originalConfig": {
+        "sha256": "9fa2469fc0fb941cb448cf55f1693236079d24eee9f7cdf04841de2e0779df5d",
+        "plaintextSha256": "630fd141d5ecec7e50626b3cbf3f4eee9de5d0fe79bf753a392bc776a5b3cc67",
+        "envSequenceSha256": "0eb7c3cdbd204acf81ec1e8e8b771c92b3d2c37b29b5ee6c0603d604be7f00a5",
+        "labelsSha256": "610301ae9e0cff25c712aa4b26e471979056488254aee78c69ff3719ba383d3a"
+      }
+    },
+    "thirteenContainerBaseline": {
+      "status": "PASS",
+      "containers": 13,
+      "unaffectedContainers": 12,
+      "evidence": "Exact names and unique identities with six generation fields recorded; backend/frontend identities match service and readiness. Historical stopped probes retained in baseline; no all-running requirement.",
+      "baselineSha256": "14df0cb9107c071948208800e1c8cd9d239b67daaedee82fb14ae73f3b034daf"
+    },
+    "queueAndRollbackMaterials": {
+      "status": "PASS",
+      "evidence": "Queue named volumes/members match old mount destination/read-write roles; candidate and rollback overlay bytes hash match exact respective images. Host installed/enabled Ready, 1374 ACL records and 880 unique prepare material member hashes recorded."
+    },
+    "protectedRowsAndParentUnknownProjection": {
+      "status": "PASS",
+      "tables": 8,
+      "rows": 111,
+      "evidence": "Exact whole-row counts/hashes and parent 17583 disabled PAUSED rev63, 5 processed/5 skipped/3 deferred, null child/identity/schedule/lease; children 17584/17606/17622 UNKNOWN attempts1. Exact API parent matches SQL projection. General four enabled values preserved as recorded true.",
+      "parentPayloadSha256": "823876a1f2d7ed6a4139152d134eb766f522cc2f06a2c941b35faae89abc2301"
+    },
+    "configuredDependencyReadiness": {
+      "status": "PASS",
+      "evidence": "Readiness is bound to recorded old backend id/config; DB backend TCP read-only app identity, Redis authenticated PING, MinIO health GET and authenticated existing object frontend-peer GET, source/quark/publisher GET and PanSou TCP proof recorded.",
+      "backendId": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+      "backendConfigurationSha256": "00900c58c04016d8f6b53279b5a4c6ad21d5fa6e0d151100e0cbe210d211b63e",
+      "minioObjectReadBodySha256": "f3ebd8bd87709ca80e46105f4d799a8a17e0e8b21bfa670a427d6a965299a313"
+    },
+    "privateInputAclToolsSchemaAndCanary": {
+      "status": "PASS",
+      "toolCount": 7,
+      "privateInputCount": 4,
+      "schemaObjects": {
+        "tables": 31,
+        "routines": 1,
+        "triggers": 34
+      },
+      "evidence": "Exact preflight receipt hash; private file SHA/DACL and defaults metadata agree; principal-host and seven tool hashes present and execution/output writable true; all table SELECT privilege and full object body schema dump verified without plaintext write; one synthetic age canary content authenticated, no production data captured."
+    },
+    "idleDailyBaselineAndReadonlyDisclosure": {
+      "status": "PASS",
+      "dailyArtifactCount": 44,
+      "evidence": "All five fresh idle counters zero; daily original configuration hash/44 artifact baseline, additionalCoverageApplied=false and naturalFullBackupVerified=false. Exactly two existing ADMIN GETs, zero nonGET/provider/operator direct SQL writes; routine existing-device last_seen touch explicitly disclosed."
+    }
+  },
+  "parallelStaticReview": {
+    "reviewer": "delivery_docs",
+    "status": "PASS",
+    "blockingFindings": [],
+    "sourceFiles": 416,
+    "sealedFiles": 33,
+    "suiteTotals": {
+      "tests": 1443,
+      "passed": 1442,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "archiveTests": 76,
+    "baiduClientTests": 44,
+    "realMergeSqlTests": 24
+  },
+  "actionsDuringReview": {
+    "productionCommandsExecuted": 0,
+    "productionSqlRequests": 0,
+    "providerRequests": 0,
+    "httpRequests": 0,
+    "archiveDecryptions": 0,
+    "privateConfigurationContentsRead": 0,
+    "productionWrites": 0,
+    "serviceActivations": 0,
+    "sealedHelpersWritten": 0,
+    "receiptFilesWritten": 1
+  },
+  "limits": [
+    "PASS is evidence-consistency review of recorded prepare proofs, not an independent live-runtime probe or archive decryption.",
+    "MinIO authenticated existing object GET used existing frontend Node peer with backend network/credentials; backend own business MinIO request is not proved. PanSou service health remains unverified despite TCP reachability.",
+    "Daily 44-artifact baseline does not establish additional coverage or a natural scheduled full backup.",
+    "Existing authenticated read may normally touch login_device.last_seen_at; zero operator direct SQL writes is not an all-database-write claim.",
+    "No additional provider authorization, UNKNOWN replay, schedule restoration, SQL restore, credential rotation, external content publication, activation or CAS is authorized by this receipt."
+  ]
+}

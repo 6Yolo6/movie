@@ -1,0 +1,61 @@
+{
+  "status": "daily-coverage-applied-native-dry-run-verified",
+  "sourceCommit": "2f282d26525b3ce64c5c854a7c237c61dc85b142",
+  "startedAt": "2026-11-10T15:16:16.291368+00:00",
+  "privateConfigurationWritten": true,
+  "configurationReplaceAttempted": true,
+  "configurationOutcomeUnknown": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "sqlWrites": 0,
+  "cloudWrites": 0,
+  "serviceChanges": 0,
+  "productionMergePerformed": false,
+  "naturalBackupVerified": false,
+  "fullBackupExecuted": false,
+  "idleBefore": {
+    "at": "2026-11-10T15:16:20.056928+00:00",
+    "phase": "Immediately before one additive daily configuration CAS",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "nativeDryRunBefore": {
+    "mode": "dry-run",
+    "artifactCount": 44,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "nativeProposedDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 45,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "onlySingleReleasePathAdded": true,
+  "ownerGroupDaclRetained": true,
+  "nativeDryRunAfter": {
+    "mode": "dry-run",
+    "artifactCount": 45,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "idleAfter": {
+    "at": "2026-11-10T15:16:45.706782+00:00",
+    "phase": "After one additive daily configuration CAS",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "configurationSha256": "3ed90a283e8ac8a6447ffc692b30262e1e0bf64eb1854d758ec0988f84bddb29",
+  "originalArtifacts": 44,
+  "currentArtifacts": 45,
+  "completedAt": "2026-11-10T15:16:45.706782+00:00"
+}
