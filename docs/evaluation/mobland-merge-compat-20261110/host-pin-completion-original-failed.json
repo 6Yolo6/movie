@@ -1,0 +1,57 @@
+{
+  "status": "stopped-preserve-current-state",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "startedAt": "2026-11-10T13:48:44.394494+00:00",
+  "completionBinding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-binding.json",
+    "sha256": "690ca274cc96aa5c434f5040298b357faa5431cd2a7fa1cf30111d6c5517171c"
+  },
+  "independentReview": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\independent-host-pin-completion-review.json",
+    "sha256": "71d213e1d82fdff6b587c8275796e10064b798a1b70677715216ccaf94a46865"
+  },
+  "originalHostPinFailure": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-20261110T130414.705387Z.json",
+    "sha256": "6cf0049ab40b39a6c292b15b749407986ab90e8f8b0752d53e5ec8cce1e46d4f"
+  },
+  "originalFailurePreserved": true,
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+    "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+  },
+  "acceptance": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T130024.241605Z.json",
+    "sha256": "72803161c2f49f426b63721f72fa31fd24fb1f0fab2e9d434cde14cbfbc01d21"
+  },
+  "existingHostConfigurationCasAttempts": 1,
+  "additionalHostConfigurationCasAttempts": 0,
+  "totalHostConfigurationCasAttempts": 1,
+  "additionalServiceActivations": 0,
+  "configurationReplaceAttempted": false,
+  "privateConfigurationWritten": true,
+  "configurationOutcomeUnknown": true,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "productionMergePerformed": false,
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "idleBefore": {
+    "at": "2026-11-10T13:48:48.573379+00:00",
+    "phase": "Before checkpoint-only completion of existing host pin",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "errorType": "Gate",
+  "gate": "COMPLETE_AUTHENTICATED_ORIGINAL_HOST_CONTENT_AND_METADATA",
+  "configurationSha256": "3fb400407d475c82806c18a597b5a0df412d98c298039b59061a65fa32f64671",
+  "observedPostCheckpoints": [],
+  "completedAt": "2026-11-10T13:48:51.997714+00:00"
+}

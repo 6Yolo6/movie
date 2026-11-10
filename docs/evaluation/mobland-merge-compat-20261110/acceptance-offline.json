@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "offlineOnly": true,
+  "realHttpRequests": 0,
+  "realBrowserLaunches": 0,
+  "productionMutations": 0,
+  "checks": [
+    {
+      "name": "python-ast",
+      "passed": true
+    },
+    {
+      "name": "python-default-no-runtime-io",
+      "passed": true
+    },
+    {
+      "name": "missing-bound-run-inputs-stop-before-runtime",
+      "passed": true
+    },
+    {
+      "name": "exact-cloudflare-access-redirect-shape",
+      "passed": true
+    },
+    {
+      "name": "twenty-anonymous-entry-contracts-no-retry",
+      "passed": true
+    },
+    {
+      "name": "failed-entry-single-attempt-only",
+      "passed": true
+    },
+    {
+      "name": "baidu-unknown-full-row-drift-detected",
+      "passed": true
+    },
+    {
+      "name": "browser-default-no-io-and-dispatch-boundaries",
+      "passed": true
+    }
+  ],
+  "helpers": {
+    "acceptance": "915872c6b77ba722de568f5c43b66937bd952b64406e480d91b95a0fdc1c10c6",
+    "visual": "2c959145e01bab6e1b0e894919bd9651fb888f59049f8b17674a0b97fe6962df"
+  },
+  "createdAt": "2026-11-10T11:43:19.130235+00:00"
+}

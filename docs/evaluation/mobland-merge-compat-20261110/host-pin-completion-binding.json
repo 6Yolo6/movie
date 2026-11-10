@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "createdAt": "2026-11-10T13:21:36.441018+00:00",
+  "scope": "Complete checkpoint only after the one existing host image CAS",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "existingHostConfigurationCasAttempts": 1,
+  "additionalHostConfigurationCasAttempts": 0,
+  "additionalServiceActivations": 0,
+  "productionMergeAuthorized": false,
+  "currentConfigurationSha256": "3fb400407d475c82806c18a597b5a0df412d98c298039b59061a65fa32f64671",
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinComplete.py",
+    "sha256": "8004953db32f5ffcde726a88c4baffe3c0c1fe0e3ffb48ac7ea6a56878ad25ca"
+  },
+  "verificationBinding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-binding.json",
+    "sha256": "4aaba3fd76a99053fe498e3337184b9a75a27bf7c1ff66c34792c29336a44ac6"
+  },
+  "originalPlan": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\plan.json",
+    "sha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a"
+  },
+  "prepared": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\post-prepared.json",
+    "sha256": "6990b561d0b3ed42d45011fa9954c14e65940b70eca250db6865433de00888b1"
+  },
+  "originalHostPinFailure": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-20261110T130414.705387Z.json",
+    "sha256": "6cf0049ab40b39a6c292b15b749407986ab90e8f8b0752d53e5ec8cce1e46d4f"
+  },
+  "originalHostPinReservation": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-reservation.json",
+    "sha256": "860d73e0666ad71a303ea293e3aad9b758847479bb6b579c50d121c09daa1db6"
+  },
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+    "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+  },
+  "acceptance": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T130024.241605Z.json",
+    "sha256": "72803161c2f49f426b63721f72fa31fd24fb1f0fab2e9d434cde14cbfbc01d21"
+  },
+  "offlineReport": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-offline-report.json",
+    "sha256": "dcf08ebcd8b81b063b1d4f4d8b7ff3beb6d08c40662fbd916ea55238a9883513"
+  }
+}

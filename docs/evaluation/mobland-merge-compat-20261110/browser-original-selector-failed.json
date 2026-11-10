@@ -1,0 +1,227 @@
+{
+  "status": "failed",
+  "stage": "preview",
+  "startedAt": "2026-11-10T12:49:31.200Z",
+  "binding": {
+    "planSha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a",
+    "deploymentSha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796",
+    "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16"
+  },
+  "realWebsite": true,
+  "realAuthenticatedBrowser": true,
+  "incognitoContext": true,
+  "group": {
+    "lang": "zh",
+    "theme": "light",
+    "width": 390
+  },
+  "tokenWrittenToFile": false,
+  "productionMergeExecuted": false,
+  "productionCloudActionExecuted": false,
+  "apiRequests": [
+    {
+      "path": "/api/notifications/unread-count",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST",
+      "dispatched": false
+    },
+    {
+      "path": "/api/admin/resource-hub/overview",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/tasks",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/discoveries",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/missing-resources",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/cleanup/duplicate-tmdb",
+      "method": "POST",
+      "dispatched": true,
+      "page": 1,
+      "dryRun": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/duplicates/preview",
+      "method": "POST",
+      "dispatched": true,
+      "pair": {
+        "fromMovieId": "tmdb_tv_247718",
+        "toMovieId": "1YKW"
+      },
+      "status": 200
+    }
+  ],
+  "blockedRequests": [
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST",
+      "dispatched": false,
+      "reason": "existing-page-telemetry-not-authorized"
+    }
+  ],
+  "unauthorizedApiAttempts": [],
+  "pageErrors": [],
+  "screenshots": [],
+  "confirmation": {
+    "tested": false,
+    "mergeClicked": false,
+    "remainedUnchecked": true
+  },
+  "scan": {
+    "complete": true,
+    "scannedMovies": 15756,
+    "candidates": 145,
+    "pagesChecked": [
+      1
+    ]
+  },
+  "selectedCandidate": {
+    "fromMovieId": "tmdb_tv_247718",
+    "toMovieId": "1YKW",
+    "fromResources": 0,
+    "toResources": 8
+  },
+  "review": {
+    "reviewId": "d17d6f3a-2345-4f1f-a38a-23f351cf1f9f",
+    "expiresAt": "2026-11-10T12:59:43.878026756Z",
+    "canMerge": true,
+    "items": [
+      {
+        "fromMovieId": "tmdb_tv_247718",
+        "toMovieId": "1YKW",
+        "eligible": true,
+        "blockers": [],
+        "impact": [
+          {
+            "reference": "baidu_temporary_cleanup_job",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "baidu_transfer_task",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "movie_source_identity",
+            "toCount": 1,
+            "fromCount": 1,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_bot_search_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_channel_post_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_transfer_cleanup_job",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "quark_transfer_task",
+            "toCount": 1,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_discovery_result",
+            "toCount": 2,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_hub_task",
+            "toCount": 2,
+            "fromCount": 0,
+            "action": "MOVE_TASK_PAYLOAD"
+          },
+          {
+            "reference": "resource_link",
+            "toCount": 8,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_operation_log",
+            "toCount": 16,
+            "fromCount": 18,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "social_post_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "user_favorite",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MERGE_FAVORITES_PRESERVE_HISTORY"
+          },
+          {
+            "reference": "xunlei_transfer_task",
+            "toCount": 1,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "comment",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_COMMENTS"
+          },
+          {
+            "reference": "user_notification",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_MOVIE_NOTIFICATIONS"
+          },
+          {
+            "reference": "movie_metadata",
+            "toCount": 1,
+            "fromCount": 1,
+            "action": "PRESERVE_SOURCE_WITH_ALIAS"
+          }
+        ]
+      }
+    ]
+  },
+  "failure": "Fresh browser verification failed at preview",
+  "ephemeralBrowserClosed": true,
+  "completedAt": "2026-11-10T12:50:30.676Z",
+  "scriptSha256": "2c959145e01bab6e1b0e894919bd9651fb888f59049f8b17674a0b97fe6962df"
+}

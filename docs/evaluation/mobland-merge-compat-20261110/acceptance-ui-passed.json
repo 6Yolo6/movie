@@ -1,0 +1,1088 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-10T12:59:30.698595+00:00",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "planSha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a",
+  "deployment": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+    "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+  },
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "helpers": {
+    "acceptance": "430b11408f7617df9d98a552885a39fb58eaa846a9334e73c1f1316cc8e6e746",
+    "visual": "d3e7f39773506b4196adc8cc15b1b3d71a3cfcbb49e7873f2d920c1c80e3a785",
+    "runtime": "44e27bfe60af9f342b06843b0b5567e8a372707f4d09c3905a206d5df4a32ea7",
+    "ops": "7b4ded0c9b6ae8e439dcd971260a4f068f5f8ce9c9b0539ea8d05a953b88a237"
+  },
+  "productionMergePerformed": false,
+  "cloudWrites": 0,
+  "newDevicesOrLogins": 0,
+  "browserAttempts": 1,
+  "previewReviewRowsMayBeCreated": true,
+  "routineExistingDeviceLastSeenMayChange": true,
+  "tokenWrittenToFile": false,
+  "tokenInCommandArguments": false,
+  "historicalEightGroupScreenshotsRerun": false,
+  "publicEntryChecksPassed": true,
+  "affectedUiChecksPassed": true,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "evidenceDirectory": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z",
+  "protectedBefore": {
+    "resource_hub_task": {
+      "rows": 7,
+      "sha256": "89c2948973f2faf3cbdd7fccc5fa9be7cb2661b50ae7bec014dc3fc4b31d029c"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "quark_transfer_task": {
+      "rows": 1,
+      "sha256": "ac5fd2391fef2a8fa8e8a56066e00dcba1d403384319a9e6fa16ebaccaa72950"
+    },
+    "resource_discovery_result": {
+      "rows": 1,
+      "sha256": "0f904783b01671f9b09b32d69025933fb521bcd4616f9f649f614b7ed4058bf7"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "6d904aa397c8f19e6c7f51e6c4b95e0151ce989222b8d06492a009c49397ef00"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "c8dc0b891917e6ba94f12ed758b24af9b516d7f274bb0dcf836df3f8ade9f8a1"
+    },
+    "resource_link": {
+      "rows": 8,
+      "sha256": "d72cb6cd7cf57ebc644bcb640020c530b38474f216c2bfb47a9721b12f465ee1"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedWholeRowsBefore": {
+    "resource_link": [
+      {
+        "id": 2528,
+        "sha256": "7d6a20d219feefb3f24578cbe5ad96486740bce0f2c07f7fbb12f2ddc062c8e9"
+      },
+      {
+        "id": 2529,
+        "sha256": "a69ccfac9bca8235b204b5334b66e7dd073ec60a2db2f7a58a307bae24f15da3"
+      },
+      {
+        "id": 12530,
+        "sha256": "9a8ae3eff363a68c20a86f011071ef32c64cfa65f110dca3ba6f6f1f72b3f5c7"
+      },
+      {
+        "id": 12531,
+        "sha256": "c9c96d4aaf43791ce1fe328c55305226738fbab2640d0446288f9e935e87163c"
+      },
+      {
+        "id": 12532,
+        "sha256": "4e1ba5a01026466bdaf3b8b79f1dd36dce1f525751fc861d0808c51e73f4b187"
+      },
+      {
+        "id": 12533,
+        "sha256": "d944c552c5d0a53fd893ccb645e89ce76439d9e00ad274b0ce23b7fa897bd41a"
+      },
+      {
+        "id": 12568,
+        "sha256": "881bf2327b2b1b9832518f99752fd84214bc5640efc85bdcdb820a4c2eb5e325"
+      },
+      {
+        "id": 12569,
+        "sha256": "ac620a68057ca6b6d780d8922625b8ebe38165e8e4e72cb1b5e8c062ce9c9591"
+      }
+    ],
+    "resource_hub_task": [
+      {
+        "id": 7803,
+        "sha256": "f2a425f83930d1f3ce9a383ef66f57dc9203042b5cc2c70784efb62525cf0495"
+      },
+      {
+        "id": 7804,
+        "sha256": "6b579d097ffdbaa80d0d21c4a446c152a566886b86d439efdea336bcc6fd682d"
+      },
+      {
+        "id": 17580,
+        "sha256": "b9e66992373bad09530c0a25c762c19439acac35cf7ee7da80f73aa584fbd320"
+      },
+      {
+        "id": 17583,
+        "sha256": "67ad276c42aaf4e3bf1964cb4c131e0136626595d545d07fbe0af95ae2817fd0"
+      },
+      {
+        "id": 17584,
+        "sha256": "5bcfd3282419de82e39d1daf1dbdb8a2488028cdbdd10c766de20b732929db2c"
+      },
+      {
+        "id": 17606,
+        "sha256": "6c3f6d29d823637f6805487eda800609f775ec0703edb0406c677753648e1b3b"
+      },
+      {
+        "id": 17622,
+        "sha256": "c4ec9129288b6a4cd71be3ce88003265aa78a262f5d0bfabe92cba4c38d71848"
+      }
+    ],
+    "quark_transfer_task": [
+      {
+        "id": 1481,
+        "sha256": "cdccea3530ba4407f4f13e58d816c119dc04d68da1d9f4d0edfb9cf34aa197a6"
+      }
+    ],
+    "baidu_transfer_task": [
+      {
+        "id": 1,
+        "sha256": "69ee154197abd7e5217cca5d8216d6a8bf6426653ebe86c74beffc3c24fac3a3"
+      }
+    ],
+    "resource_discovery_result": [
+      {
+        "id": 5784,
+        "sha256": "6074b24dc97b236ead4c3fa21eaaaf5e98979d5266d1cff1ab5cd3d3b05e0c28"
+      }
+    ]
+  },
+  "entries": {
+    "checks": [
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 68036,
+        "bodySha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/resource-search",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61122,
+        "bodySha256": "31754401f4f15f362d048342e134ec1a7e17841db7b045a0f772240d9cb1a9f3"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/admin/resource-hub",
+        "method": "GET",
+        "kind": "admin-page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61825,
+        "bodySha256": "925051c063c7ca8b511ebc8065189b982e9220c74ebc9c7008e2f8b65a7e07f1"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/movie/1YKW",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 245260,
+        "bodySha256": "39e4e60650369da1e6d62c0722638d8d9b0a9605b3b7699ab0a3e2b0720d3c5c"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "kind": "catalog",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 3603,
+        "bodySha256": "50073a0ffc12603695c335ade394974ee96870c0170a33e9fd02f635964ae70c",
+        "returned": 2,
+        "total": 15756
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/qq-bot/health",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/internal/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 548,
+        "bodySha256": "d465172175d35d493fb1633e237700022bd849fa123164790b168b8318acb090"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 401,
+        "bodyBytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 401,
+        "bodyBytes": 60,
+        "bodySha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 68403,
+        "bodySha256": "67313d652bf75cbb9462f26c6e4633a4f1d50e0edef0d2aad90b4189ee7312ba"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/resource-search",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 61489,
+        "bodySha256": "38c4a6d67e9f921fdf20cb326592ac9ab44acae633a4f5b8e40ee0ea5562375b"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/admin/resource-hub",
+        "method": "GET",
+        "kind": "admin-page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "7e1ea4e0c33bc4235998e71aa340cb532b45a03a59e79fcbacacca246468d7da"
+        }
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/movie/1YKW",
+        "method": "GET",
+        "kind": "page",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 245627,
+        "bodySha256": "cc3be7eaa76bf28884da0c593bf05c23ed692537272ebdaeb37a35386fcaad18"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/movies/list?page=1&size=2",
+        "method": "GET",
+        "kind": "catalog",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 200,
+        "bodyBytes": 3603,
+        "bodySha256": "50073a0ffc12603695c335ade394974ee96870c0170a33e9fd02f635964ae70c",
+        "returned": 2,
+        "total": 15756
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/internal/ai/catalog/documents",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/qq-bot/health",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/internal/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "denied",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 404,
+        "bodyBytes": 915,
+        "bodySha256": "b58d0e0d7edba8723a4e97be8984efa72b8b8cd0d2c30ebc47505a3f72a12575"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/admin/resource-hub/config",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "79c318d179cc91e8c6cfc9d7bd2cf03101f68564be6b254a51226ef2ef3f33a7"
+        }
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/admin/resource-hub/baidu/session",
+        "method": "GET",
+        "kind": "admin",
+        "attempts": 1,
+        "credentialsSent": false,
+        "redirectFollowed": false,
+        "passed": true,
+        "httpStatus": 302,
+        "bodyBytes": 510,
+        "bodySha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+        "accessRedirect": {
+          "scheme": "https",
+          "hostname": "frosty-haze-36b0.cloudflareaccess.com",
+          "path": "/cdn-cgi/access/login/gyinghub.dpdns.org",
+          "locationSha256": "b97602335bcfa4ac09a938edaae10199aa443fa484ac427dd7e60acd0c4c88fa"
+        }
+      }
+    ],
+    "passed": true,
+    "passedChecks": 20,
+    "publicTransport": "existing-loopback-proxy-7897",
+    "actualChecks": 20,
+    "authenticatedRequests": 0,
+    "retryAttempts": 0
+  },
+  "entryChecksReusedFrom": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T125044.133792Z.json",
+    "sha256": "e54a2f80dfd4fb725306f87d50a1f01fb019c209ce3d9ae3bb345768158ac888"
+  },
+  "newAnonymousEntryChecks": 0,
+  "manualSelectorCorrection": true,
+  "totalReleasePreviewLimit": 2,
+  "uiBindingSha256": "25381a11d600a97f14327a29f129e069a128913561485226132d9a4779e11ee6",
+  "browser": {
+    "status": "passed",
+    "result": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\browser-result.json",
+      "sha256": "b6892595ff7ac7b00b90530fab841a2181075474506817bab3aaafef1c26ee35"
+    },
+    "screenshots": [
+      {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-top-390-zh-light.png",
+        "sha256": "a1967e32f85ade6f15ca59f4205defd7f89e16a1a4335cf228193bb5366c6b8c",
+        "kind": "viewport-top"
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-action-390-zh-light.png",
+        "sha256": "69c8d7a48da59c1e2f71b443e310c45210f795748249c7d5f8175d27b7709b79",
+        "kind": "viewport-action"
+      }
+    ],
+    "authentication": {
+      "existingDeviceReused": true,
+      "newDeviceCreated": false,
+      "loginPerformed": false,
+      "jwtLifetimeSeconds": 300,
+      "deviceJtiSha256": "fe8556707309b8e3de95c401534f4b764ee5da4fadc7ae0fb264c1a965767f3f"
+    },
+    "group": {
+      "lang": "zh",
+      "theme": "light",
+      "width": 390
+    },
+    "scan": {
+      "complete": true,
+      "scannedMovies": 15756,
+      "candidates": 145,
+      "pagesChecked": [
+        1
+      ]
+    },
+    "review": {
+      "reviewId": "40db6a0e-a9c6-4235-b2e1-5626a7d4e302",
+      "expiresAt": "2026-11-10T13:09:56.369147279Z",
+      "canMerge": true,
+      "items": [
+        {
+          "fromMovieId": "tmdb_tv_247718",
+          "toMovieId": "1YKW",
+          "eligible": true,
+          "blockers": [],
+          "impact": [
+            {
+              "reference": "baidu_temporary_cleanup_job",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "baidu_transfer_task",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "movie_source_identity",
+              "toCount": 1,
+              "fromCount": 1,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "qq_bot_search_log",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "qq_channel_post_log",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "qq_transfer_cleanup_job",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "quark_transfer_task",
+              "toCount": 1,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "resource_discovery_result",
+              "toCount": 2,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "resource_hub_task",
+              "toCount": 2,
+              "fromCount": 0,
+              "action": "MOVE_TASK_PAYLOAD"
+            },
+            {
+              "reference": "resource_link",
+              "toCount": 8,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "resource_operation_log",
+              "toCount": 16,
+              "fromCount": 18,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "social_post_log",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "user_favorite",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MERGE_FAVORITES_PRESERVE_HISTORY"
+            },
+            {
+              "reference": "xunlei_transfer_task",
+              "toCount": 1,
+              "fromCount": 0,
+              "action": "MOVE_REFERENCES"
+            },
+            {
+              "reference": "comment",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_COMMENTS"
+            },
+            {
+              "reference": "user_notification",
+              "toCount": 0,
+              "fromCount": 0,
+              "action": "MOVE_MOVIE_NOTIFICATIONS"
+            },
+            {
+              "reference": "movie_metadata",
+              "toCount": 1,
+              "fromCount": 1,
+              "action": "PRESERVE_SOURCE_WITH_ALIAS"
+            }
+          ]
+        }
+      ]
+    },
+    "confirmation": {
+      "tested": false,
+      "mergeClicked": false,
+      "remainedUnchecked": true
+    },
+    "apiRequests": [
+      {
+        "path": "/api/notifications/unread-count",
+        "method": "GET",
+        "dispatched": true,
+        "status": 200
+      },
+      {
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "dispatched": false
+      },
+      {
+        "path": "/api/admin/resource-hub/overview",
+        "method": "GET",
+        "dispatched": true,
+        "status": 200
+      },
+      {
+        "path": "/api/admin/resource-hub/tasks",
+        "method": "GET",
+        "dispatched": true,
+        "status": 200
+      },
+      {
+        "path": "/api/admin/resource-hub/discoveries",
+        "method": "GET",
+        "dispatched": true,
+        "status": 200
+      },
+      {
+        "path": "/api/admin/resource-hub/missing-resources",
+        "method": "GET",
+        "dispatched": true,
+        "status": 200
+      },
+      {
+        "path": "/api/admin/resource-hub/cleanup/duplicate-tmdb",
+        "method": "POST",
+        "dispatched": true,
+        "page": 1,
+        "dryRun": true,
+        "status": 200
+      },
+      {
+        "path": "/api/admin/resource-hub/duplicates/preview",
+        "method": "POST",
+        "dispatched": true,
+        "pair": {
+          "fromMovieId": "tmdb_tv_247718",
+          "toMovieId": "1YKW"
+        },
+        "status": 200
+      }
+    ],
+    "blockedRequests": [
+      {
+        "path": "/api/monitoring/page-view",
+        "method": "POST",
+        "dispatched": false,
+        "reason": "existing-page-telemetry-not-authorized"
+      }
+    ],
+    "pageErrors": [],
+    "modal": {
+      "x": 8.463531494140625,
+      "y": 110.0152587890625,
+      "width": 373.07293701171875,
+      "height": 1621.969482421875,
+      "viewportHeight": 1000,
+      "viewportWidth": 390
+    },
+    "action": {
+      "x": 32,
+      "y": 968,
+      "width": 177.390625,
+      "height": 32,
+      "viewportHeight": 1000,
+      "disabled": true
+    },
+    "layout": {
+      "viewport": 390,
+      "documentWidth": 390
+    },
+    "processExitCode": 0,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "freshBrowserGroups": 1
+  },
+  "protectedAfter": {
+    "resource_hub_task": {
+      "rows": 7,
+      "sha256": "89c2948973f2faf3cbdd7fccc5fa9be7cb2661b50ae7bec014dc3fc4b31d029c"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "quark_transfer_task": {
+      "rows": 1,
+      "sha256": "ac5fd2391fef2a8fa8e8a56066e00dcba1d403384319a9e6fa16ebaccaa72950"
+    },
+    "resource_discovery_result": {
+      "rows": 1,
+      "sha256": "0f904783b01671f9b09b32d69025933fb521bcd4616f9f649f614b7ed4058bf7"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "6d904aa397c8f19e6c7f51e6c4b95e0151ce989222b8d06492a009c49397ef00"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "c8dc0b891917e6ba94f12ed758b24af9b516d7f274bb0dcf836df3f8ade9f8a1"
+    },
+    "resource_link": {
+      "rows": 8,
+      "sha256": "d72cb6cd7cf57ebc644bcb640020c530b38474f216c2bfb47a9721b12f465ee1"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedWholeRowsAfter": {
+    "resource_link": [
+      {
+        "id": 2528,
+        "sha256": "7d6a20d219feefb3f24578cbe5ad96486740bce0f2c07f7fbb12f2ddc062c8e9"
+      },
+      {
+        "id": 2529,
+        "sha256": "a69ccfac9bca8235b204b5334b66e7dd073ec60a2db2f7a58a307bae24f15da3"
+      },
+      {
+        "id": 12530,
+        "sha256": "9a8ae3eff363a68c20a86f011071ef32c64cfa65f110dca3ba6f6f1f72b3f5c7"
+      },
+      {
+        "id": 12531,
+        "sha256": "c9c96d4aaf43791ce1fe328c55305226738fbab2640d0446288f9e935e87163c"
+      },
+      {
+        "id": 12532,
+        "sha256": "4e1ba5a01026466bdaf3b8b79f1dd36dce1f525751fc861d0808c51e73f4b187"
+      },
+      {
+        "id": 12533,
+        "sha256": "d944c552c5d0a53fd893ccb645e89ce76439d9e00ad274b0ce23b7fa897bd41a"
+      },
+      {
+        "id": 12568,
+        "sha256": "881bf2327b2b1b9832518f99752fd84214bc5640efc85bdcdb820a4c2eb5e325"
+      },
+      {
+        "id": 12569,
+        "sha256": "ac620a68057ca6b6d780d8922625b8ebe38165e8e4e72cb1b5e8c062ce9c9591"
+      }
+    ],
+    "resource_hub_task": [
+      {
+        "id": 7803,
+        "sha256": "f2a425f83930d1f3ce9a383ef66f57dc9203042b5cc2c70784efb62525cf0495"
+      },
+      {
+        "id": 7804,
+        "sha256": "6b579d097ffdbaa80d0d21c4a446c152a566886b86d439efdea336bcc6fd682d"
+      },
+      {
+        "id": 17580,
+        "sha256": "b9e66992373bad09530c0a25c762c19439acac35cf7ee7da80f73aa584fbd320"
+      },
+      {
+        "id": 17583,
+        "sha256": "67ad276c42aaf4e3bf1964cb4c131e0136626595d545d07fbe0af95ae2817fd0"
+      },
+      {
+        "id": 17584,
+        "sha256": "5bcfd3282419de82e39d1daf1dbdb8a2488028cdbdd10c766de20b732929db2c"
+      },
+      {
+        "id": 17606,
+        "sha256": "6c3f6d29d823637f6805487eda800609f775ec0703edb0406c677753648e1b3b"
+      },
+      {
+        "id": 17622,
+        "sha256": "c4ec9129288b6a4cd71be3ce88003265aa78a262f5d0bfabe92cba4c38d71848"
+      }
+    ],
+    "quark_transfer_task": [
+      {
+        "id": 1481,
+        "sha256": "cdccea3530ba4407f4f13e58d816c119dc04d68da1d9f4d0edfb9cf34aa197a6"
+      }
+    ],
+    "baidu_transfer_task": [
+      {
+        "id": 1,
+        "sha256": "69ee154197abd7e5217cca5d8216d6a8bf6426653ebe86c74beffc3c24fac3a3"
+      }
+    ],
+    "resource_discovery_result": [
+      {
+        "id": 5784,
+        "sha256": "6074b24dc97b236ead4c3fa21eaaaf5e98979d5266d1cff1ab5cd3d3b05e0c28"
+      }
+    ]
+  },
+  "runtimeVerificationAfter": {
+    "startAndEndGenerationVerified": true,
+    "currentRawConfigAndHostConfigStable": true,
+    "verifiedAt": "2026-11-10T13:00:11.902536+00:00",
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "actualRuntime": {
+      "configurationSha256": "00900c58c04016d8f6b53279b5a4c6ad21d5fa6e0d151100e0cbe210d211b63e",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "originalRawConfigurationSha256": "7b7dee93c5ef32ec541e3a1a241c55193b8618854f8e544b1456570f697f2405",
+    "originalRawConfigurationHashEqualityClaimed": false,
+    "rawSerializationLimitation": "Old Env sequence and complete old container labels were not persisted. Original raw-Config hash FAIL remains; current full modeled fields, unique Env map and strict generated metadata are independently verified.",
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "15cc44464eeedff357ef883855b55a37516a11f9334f4399d792855006430696",
+      "bakedAndCustomLabelsSha256": "ec25025ff1212a218abecbbf6af781e4ce60a99d6ab3ac69f6b88326053f5a21",
+      "generatedComposeLabelsSha256": "38538161aecb04cff14c571a4c17e26331e685e7d634141a57c95fdf067b1b8e",
+      "candidatePlatformManifest": "sha256:7457da1aedfd4e3fd3a554f86ef0c7564a4fd422a3337d53607c7a909fd48c73",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "2f8657ab78c864f6ab5ef31ca257c69ff529b024d2f6359444dd301ca263a59a",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "protectedHistoryAndSysConfigUnchanged": true,
+  "allEightResourcesAndHistoricalTasksWholeRowsUnchanged": true,
+  "actualScreenshots": 2,
+  "freshBrowserGroups": 1,
+  "protectedFinally": {
+    "resource_hub_task": {
+      "rows": 7,
+      "sha256": "89c2948973f2faf3cbdd7fccc5fa9be7cb2661b50ae7bec014dc3fc4b31d029c"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "quark_transfer_task": {
+      "rows": 1,
+      "sha256": "ac5fd2391fef2a8fa8e8a56066e00dcba1d403384319a9e6fa16ebaccaa72950"
+    },
+    "resource_discovery_result": {
+      "rows": 1,
+      "sha256": "0f904783b01671f9b09b32d69025933fb521bcd4616f9f649f614b7ed4058bf7"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "6d904aa397c8f19e6c7f51e6c4b95e0151ce989222b8d06492a009c49397ef00"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "c8dc0b891917e6ba94f12ed758b24af9b516d7f274bb0dcf836df3f8ade9f8a1"
+    },
+    "resource_link": {
+      "rows": 8,
+      "sha256": "d72cb6cd7cf57ebc644bcb640020c530b38474f216c2bfb47a9721b12f465ee1"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedWholeRowsFinally": {
+    "resource_link": [
+      {
+        "id": 2528,
+        "sha256": "7d6a20d219feefb3f24578cbe5ad96486740bce0f2c07f7fbb12f2ddc062c8e9"
+      },
+      {
+        "id": 2529,
+        "sha256": "a69ccfac9bca8235b204b5334b66e7dd073ec60a2db2f7a58a307bae24f15da3"
+      },
+      {
+        "id": 12530,
+        "sha256": "9a8ae3eff363a68c20a86f011071ef32c64cfa65f110dca3ba6f6f1f72b3f5c7"
+      },
+      {
+        "id": 12531,
+        "sha256": "c9c96d4aaf43791ce1fe328c55305226738fbab2640d0446288f9e935e87163c"
+      },
+      {
+        "id": 12532,
+        "sha256": "4e1ba5a01026466bdaf3b8b79f1dd36dce1f525751fc861d0808c51e73f4b187"
+      },
+      {
+        "id": 12533,
+        "sha256": "d944c552c5d0a53fd893ccb645e89ce76439d9e00ad274b0ce23b7fa897bd41a"
+      },
+      {
+        "id": 12568,
+        "sha256": "881bf2327b2b1b9832518f99752fd84214bc5640efc85bdcdb820a4c2eb5e325"
+      },
+      {
+        "id": 12569,
+        "sha256": "ac620a68057ca6b6d780d8922625b8ebe38165e8e4e72cb1b5e8c062ce9c9591"
+      }
+    ],
+    "resource_hub_task": [
+      {
+        "id": 7803,
+        "sha256": "f2a425f83930d1f3ce9a383ef66f57dc9203042b5cc2c70784efb62525cf0495"
+      },
+      {
+        "id": 7804,
+        "sha256": "6b579d097ffdbaa80d0d21c4a446c152a566886b86d439efdea336bcc6fd682d"
+      },
+      {
+        "id": 17580,
+        "sha256": "b9e66992373bad09530c0a25c762c19439acac35cf7ee7da80f73aa584fbd320"
+      },
+      {
+        "id": 17583,
+        "sha256": "67ad276c42aaf4e3bf1964cb4c131e0136626595d545d07fbe0af95ae2817fd0"
+      },
+      {
+        "id": 17584,
+        "sha256": "5bcfd3282419de82e39d1daf1dbdb8a2488028cdbdd10c766de20b732929db2c"
+      },
+      {
+        "id": 17606,
+        "sha256": "6c3f6d29d823637f6805487eda800609f775ec0703edb0406c677753648e1b3b"
+      },
+      {
+        "id": 17622,
+        "sha256": "c4ec9129288b6a4cd71be3ce88003265aa78a262f5d0bfabe92cba4c38d71848"
+      }
+    ],
+    "quark_transfer_task": [
+      {
+        "id": 1481,
+        "sha256": "cdccea3530ba4407f4f13e58d816c119dc04d68da1d9f4d0edfb9cf34aa197a6"
+      }
+    ],
+    "baidu_transfer_task": [
+      {
+        "id": 1,
+        "sha256": "69ee154197abd7e5217cca5d8216d6a8bf6426653ebe86c74beffc3c24fac3a3"
+      }
+    ],
+    "resource_discovery_result": [
+      {
+        "id": 5784,
+        "sha256": "6074b24dc97b236ead4c3fa21eaaaf5e98979d5266d1cff1ab5cd3d3b05e0c28"
+      }
+    ]
+  },
+  "runtimeVerificationFinally": {
+    "startAndEndGenerationVerified": true,
+    "currentRawConfigAndHostConfigStable": true,
+    "verifiedAt": "2026-11-10T13:00:24.240545+00:00",
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "actualRuntime": {
+      "configurationSha256": "00900c58c04016d8f6b53279b5a4c6ad21d5fa6e0d151100e0cbe210d211b63e",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "originalRawConfigurationSha256": "7b7dee93c5ef32ec541e3a1a241c55193b8618854f8e544b1456570f697f2405",
+    "originalRawConfigurationHashEqualityClaimed": false,
+    "rawSerializationLimitation": "Old Env sequence and complete old container labels were not persisted. Original raw-Config hash FAIL remains; current full modeled fields, unique Env map and strict generated metadata are independently verified.",
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "15cc44464eeedff357ef883855b55a37516a11f9334f4399d792855006430696",
+      "bakedAndCustomLabelsSha256": "ec25025ff1212a218abecbbf6af781e4ce60a99d6ab3ac69f6b88326053f5a21",
+      "generatedComposeLabelsSha256": "38538161aecb04cff14c571a4c17e26331e685e7d634141a57c95fdf067b1b8e",
+      "candidatePlatformManifest": "sha256:7457da1aedfd4e3fd3a554f86ef0c7564a4fd422a3337d53607c7a909fd48c73",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "2f8657ab78c864f6ab5ef31ca257c69ff529b024d2f6359444dd301ca263a59a",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "completedAt": "2026-11-10T13:00:24.241605+00:00"
+}

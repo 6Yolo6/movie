@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "command": "python -B E:/gying-tools/releases/mobland-merge-compat-20261110/OfflineTests.py",
+  "observedExit": 0,
+  "tests": 13,
+  "failures": 0,
+  "runtimeIoPerformed": false,
+  "testSourceSha256": "ee8e8bc14895a1018c53cd1351cb59646b35398b05aa3baa1161551ba2cbcd05",
+  "reportedAt": "2026-11-10T11:42:18.812608+00:00",
+  "checks": [
+    "default modes make no runtime calls",
+    "two candidate labels normalize, every other label remains strict",
+    "daily single additive rule/all old fields retained and replay blocked",
+    "invalid binding scope and missing24 realSQL gate stop before git",
+    "backup and actualdependency failure block TERM",
+    "checkpoint failure preserves stopped backend/no activation",
+    "one activation failure/no retry or restore",
+    "host CAS malformedstdout recognizes written image-only bytes",
+    "host CAS malformedstdout+ACL drift reports uncertainty",
+    "daily partialCAS observes current bytes/no automatic restore"
+  ]
+}

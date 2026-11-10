@@ -1,0 +1,192 @@
+{
+  "status": "verified-after-raw-runtime-hash-failure",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "planSha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a",
+  "verificationBinding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-binding.json",
+    "sha256": "4aaba3fd76a99053fe498e3337184b9a75a27bf7c1ff66c34792c29336a44ac6"
+  },
+  "originalFailedDeployment": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\deployment-20261110T120655.546399Z.json",
+    "sha256": "0b16d5c40f8cb23f80f7177d24ba6a90d8d583b88ff07b78a46d824853b735cf"
+  },
+  "originalFailurePreserved": true,
+  "originalGateChanged": false,
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\mobland-merge-compat-20261110-20261110T120357.471400Z",
+    "artifacts": 7,
+    "authenticated": true,
+    "manifestSha256": "ecaf978eaa3ea9bb3f80724fe9723412b6649781c1e1238942f20f98dcef7f8b",
+    "offlineVerification": {
+      "verifiedAt": "2026-11-10T12:06:09.275061+00:00",
+      "plaintextArchivesWritten": false,
+      "productionDataRestored": false,
+      "configuration": {
+        "uniqueMembers": 72,
+        "contentHashesMatched": true
+      },
+      "hostMaterials": {
+        "uniqueMembers": 882,
+        "contentHashesMatched": true,
+        "installedAtPreparation": true,
+        "exactTaskXmlAndNtfsAclMetadata": true,
+        "taskEnabled": true,
+        "taskState": "Ready",
+        "ntfsAclEntries": 1374
+      },
+      "images": {
+        "backend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 14,
+          "contentAddressedBlobsVerified": 20
+        },
+        "frontend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 36,
+          "contentAddressedBlobsVerified": 42
+        }
+      },
+      "mysql": {
+        "dumpBytes": 108129817,
+        "tableObjects": 31,
+        "routineObjects": 1,
+        "triggerObjects": 34,
+        "metadataRoutineRestorable": true,
+        "metadataCanonicalBodySha256": "968ab4ccec6644d4635e5c7630c6043c4c0cd86a2b2c1b67259d0b5b2fd4590c",
+        "metadataZeroParameters": true,
+        "metadataReadsSqlData": true,
+        "metadataSecurityDefiner": true,
+        "completeCanonicalTriggerBodiesVerified": 34,
+        "completionMarkerPresent": true,
+        "singleTransaction": true,
+        "databaseImportPerformed": false
+      },
+      "backend-data": {
+        "regularFiles": 7,
+        "persistedQueueMemberRecovered": true
+      },
+      "ai-state-key": {
+        "regularFiles": 1,
+        "persistedQueueMemberRecovered": true
+      },
+      "baiduVault": {
+        "aes256GcmAuthenticated": true,
+        "sessionSchemaValid": true,
+        "currentSessionSchemaValid": true,
+        "privateAccountIdentityMatched": true,
+        "cookieEntryCount": 27,
+        "credentialValuesPrinted": false,
+        "plaintextSessionWritten": false,
+        "stateSha256": "97528511f9a1db35440f95e41150fb31c48ea026717a94fabc6aae835f394610",
+        "keySha256": "e50bbffbde9409fe5c8d9805a27828fa336438e93b307e99cf3fdd73fe5c0909",
+        "currentSessionHashesMatched": true,
+        "regularMembersRecovered": 2,
+        "sessionAndKeyMode": "0600",
+        "directoryMode": "0700",
+        "numericLinuxUid": 10001,
+        "numericLinuxGid": 10001,
+        "sameBackendDataVolume": true,
+        "livePairUnchangedDuringVerification": true,
+        "plaintextArchivesWritten": false,
+        "productionDataRestored": false
+      },
+      "queueRestore": {
+        "authenticatedFromBothBackedUpMembers": true,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "localAgentStateRead": false
+      }
+    }
+  },
+  "activationAttempts": 1,
+  "additionalServiceActivations": 0,
+  "productionMergePerformed": false,
+  "runtimeVerification": {
+    "startAndEndGenerationVerified": true,
+    "currentRawConfigAndHostConfigStable": true,
+    "verifiedAt": "2026-11-10T12:46:33.819684+00:00",
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "actualRuntime": {
+      "configurationSha256": "00900c58c04016d8f6b53279b5a4c6ad21d5fa6e0d151100e0cbe210d211b63e",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "originalRawConfigurationSha256": "7b7dee93c5ef32ec541e3a1a241c55193b8618854f8e544b1456570f697f2405",
+    "originalRawConfigurationHashEqualityClaimed": false,
+    "rawSerializationLimitation": "Old Env sequence and complete old container labels were not persisted. Original raw-Config hash FAIL remains; current full modeled fields, unique Env map and strict generated metadata are independently verified.",
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "15cc44464eeedff357ef883855b55a37516a11f9334f4399d792855006430696",
+      "bakedAndCustomLabelsSha256": "ec25025ff1212a218abecbbf6af781e4ce60a99d6ab3ac69f6b88326053f5a21",
+      "generatedComposeLabelsSha256": "38538161aecb04cff14c571a4c17e26331e685e7d634141a57c95fdf067b1b8e",
+      "candidatePlatformManifest": "sha256:7457da1aedfd4e3fd3a554f86ef0c7564a4fd422a3337d53607c7a909fd48c73",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "2f8657ab78c864f6ab5ef31ca257c69ff529b024d2f6359444dd301ca263a59a",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "idle": {
+    "at": "2026-11-10T12:46:38.164885+00:00",
+    "phase": "Supplemental verification of existing candidate; no activation",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "at": "2026-11-10T12:46:38.165882+00:00"
+}

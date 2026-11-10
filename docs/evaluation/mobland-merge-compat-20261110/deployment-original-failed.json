@@ -1,0 +1,227 @@
+{
+  "status": "stopped-preserve-current-state",
+  "startedAt": "2026-11-10T12:03:29.384343+00:00",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "services": [
+    "backend"
+  ],
+  "planSha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a",
+  "activationAttempts": 1,
+  "sqlWrites": 0,
+  "cloudWrites": 0,
+  "productionMergePerformed": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "backupPreflightImmediatelyBeforeTerm": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\backup-preflight-20261110T120334.768036Z.json",
+    "sha256": "aaa74890c2a601b43f6cc7db9ab525bc8b18dce258f1c2c9582c73cacba1c70b"
+  },
+  "dependencyReadinessImmediatelyBeforeTerm": {
+    "at": "2026-11-10T12:03:44.945024+00:00",
+    "backendId": "7f2c7ef4b7fb86baa29c302ed43d756730ebbdc0b55ded2383378c1bebd76e16",
+    "backendConfigurationSha256": "7b7dee93c5ef32ec541e3a1a241c55193b8618854f8e544b1456570f697f2405",
+    "actualConfiguredDependencies": {
+      "database": {
+        "configuredBackendTcpPath": true,
+        "applicationIdentity": "gying_app@%",
+        "database": "gying",
+        "readOnly": true
+      },
+      "redis": {
+        "configuredBackendTcpPath": true,
+        "authenticatedPing": true
+      },
+      "minio": {
+        "configuredEndpointSha256": "0fd04c4d73095f1917fba91773c4b315ddd77580549da2ab315f1c5ed15fded8",
+        "getSucceeded": true,
+        "bytes": 0,
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "authenticatedExistingObjectRead": {
+          "startedAt": "2026-11-10T12:03:43.805683+00:00",
+          "method": "GET",
+          "reader": "existing frontend Node peer on backend network",
+          "source": "current backend endpoint and S3 credentials",
+          "objectWrites": 0,
+          "cloudProviderRequests": 0,
+          "status": "passed",
+          "bytes": 155434,
+          "sha256": "f3ebd8bd87709ca80e46105f4d799a8a17e0e8b21bfa670a427d6a965299a313",
+          "contentType": "image/jpeg",
+          "objectKeySha256": "601e080aed838ef037f6998a1dd5f00665a088281b9821f4638468800fdeeab5",
+          "endpoint": "host.docker.internal:9000",
+          "credentialKeysPresent": [
+            "MINIO_ACCESS_KEY",
+            "MINIO_SECRET_KEY"
+          ],
+          "liveBackend": {
+            "id": "7f2c7ef4b7fb86baa29c302ed43d756730ebbdc0b55ded2383378c1bebd76e16",
+            "image": "sha256:9886a25b4fcf985842dcb8db7a27e770cce5b415c033d5777534d3ff3e3699be",
+            "startedAt": "2026-11-10T08:10:32.157226569Z"
+          },
+          "httpStatus": 200,
+          "completedAt": "2026-11-10T12:03:44.439198+00:00"
+        }
+      },
+      "source": {
+        "configuredEndpointSha256": "b1772e63f9cafea2da9ae65c2025b796e6d94a42644c5504593e71e0f1cd398d",
+        "getSucceeded": true,
+        "bytes": 12,
+        "bodySha256": "6bc0da1f42f96fc37b8bd7ed20ba57606d2a0da5cda2b135c7854fbdc985b8a3"
+      },
+      "quark": {
+        "configuredEndpointSha256": "0649a4ce45ded1fc538129553a67a5567eb80c49d5b7b271f0d23b7dc3866727",
+        "getSucceeded": true,
+        "bytes": 2745,
+        "bodySha256": "68321f39c5b38b7db84d45d40240ce515138a9bc170e951ae2ddf850b90473a3"
+      },
+      "publisher": {
+        "configuredEndpointSha256": "e99fb90e1c7919b1fcf36c2cf011a8bf437acf8c0be9d0ddb50e1219b1f98082",
+        "getSucceeded": true,
+        "bytes": 11,
+        "bodySha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93"
+      },
+      "pansou": {
+        "configuredEndpointSha256": "64516ea35c402b285d8fad14934948c3c66c677d3e5afc7fe76f1e4388968394",
+        "backendTcpReachable": true,
+        "serviceHealthVerified": false
+      }
+    },
+    "readOnly": true,
+    "cloudWrites": 0
+  },
+  "idle": {
+    "at": "2026-11-10T12:03:49.188740+00:00",
+    "phase": "Immediately before MobLand normal TERM",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "signalProof": {
+    "signal": "SIGTERM",
+    "pid1": "java",
+    "receiver": "handler"
+  },
+  "phase": "One fixed backend activation intent",
+  "normalTermAttempted": true,
+  "oldBackendStoppedNormally": true,
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\mobland-merge-compat-20261110-20261110T120357.471400Z",
+    "artifacts": 7,
+    "authenticated": true,
+    "manifestSha256": "ecaf978eaa3ea9bb3f80724fe9723412b6649781c1e1238942f20f98dcef7f8b",
+    "offlineVerification": {
+      "verifiedAt": "2026-11-10T12:06:09.275061+00:00",
+      "plaintextArchivesWritten": false,
+      "productionDataRestored": false,
+      "configuration": {
+        "uniqueMembers": 72,
+        "contentHashesMatched": true
+      },
+      "hostMaterials": {
+        "uniqueMembers": 882,
+        "contentHashesMatched": true,
+        "installedAtPreparation": true,
+        "exactTaskXmlAndNtfsAclMetadata": true,
+        "taskEnabled": true,
+        "taskState": "Ready",
+        "ntfsAclEntries": 1374
+      },
+      "images": {
+        "backend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 14,
+          "contentAddressedBlobsVerified": 20
+        },
+        "frontend": {
+          "fixedImageRootDigestMatched": true,
+          "layersPresent": 36,
+          "contentAddressedBlobsVerified": 42
+        }
+      },
+      "mysql": {
+        "dumpBytes": 108129817,
+        "tableObjects": 31,
+        "routineObjects": 1,
+        "triggerObjects": 34,
+        "metadataRoutineRestorable": true,
+        "metadataCanonicalBodySha256": "968ab4ccec6644d4635e5c7630c6043c4c0cd86a2b2c1b67259d0b5b2fd4590c",
+        "metadataZeroParameters": true,
+        "metadataReadsSqlData": true,
+        "metadataSecurityDefiner": true,
+        "completeCanonicalTriggerBodiesVerified": 34,
+        "completionMarkerPresent": true,
+        "singleTransaction": true,
+        "databaseImportPerformed": false
+      },
+      "backend-data": {
+        "regularFiles": 7,
+        "persistedQueueMemberRecovered": true
+      },
+      "ai-state-key": {
+        "regularFiles": 1,
+        "persistedQueueMemberRecovered": true
+      },
+      "baiduVault": {
+        "aes256GcmAuthenticated": true,
+        "sessionSchemaValid": true,
+        "currentSessionSchemaValid": true,
+        "privateAccountIdentityMatched": true,
+        "cookieEntryCount": 27,
+        "credentialValuesPrinted": false,
+        "plaintextSessionWritten": false,
+        "stateSha256": "97528511f9a1db35440f95e41150fb31c48ea026717a94fabc6aae835f394610",
+        "keySha256": "e50bbffbde9409fe5c8d9805a27828fa336438e93b307e99cf3fdd73fe5c0909",
+        "currentSessionHashesMatched": true,
+        "regularMembersRecovered": 2,
+        "sessionAndKeyMode": "0600",
+        "directoryMode": "0700",
+        "numericLinuxUid": 10001,
+        "numericLinuxGid": 10001,
+        "sameBackendDataVolume": true,
+        "livePairUnchangedDuringVerification": true,
+        "plaintextArchivesWritten": false,
+        "productionDataRestored": false
+      },
+      "queueRestore": {
+        "authenticatedFromBothBackedUpMembers": true,
+        "moviePending": 0,
+        "movieRunning": 0,
+        "localAgentStateRead": false
+      }
+    }
+  },
+  "idleBeforeActivation": {
+    "at": "2026-11-10T12:06:35.382425+00:00",
+    "phase": "Immediately before one fixed MobLand backend activation",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "liveBackend": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "startedAt": "2026-11-10T12:06:37.094729994Z"
+  },
+  "readiness": {
+    "origin": "http://127.0.0.1:8880",
+    "path": "/api/qq-bot/health",
+    "status": 200,
+    "bytes": 15,
+    "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+  },
+  "errorType": "Gate",
+  "gate": "ACTUAL_RUNTIME_ONLY_IMAGE_CHANGED",
+  "requiresManualRecoveryReview": true,
+  "observedBackendAfterFailure": {
+    "id": "9c0615a83738d6d233f04313865f4ca2d6808154645e6c2be41e6df7b35f3c35",
+    "image": "sha256:daaeafd28dde4647f07da2cf0a58ba385f3ab1b2c181e6cc6948b52472d18bae",
+    "running": true,
+    "exitCode": 0
+  },
+  "backendStateUnknown": false,
+  "completedAt": "2026-11-10T12:06:55.546399+00:00"
+}

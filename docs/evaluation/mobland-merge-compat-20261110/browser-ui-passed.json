@@ -1,0 +1,257 @@
+{
+  "status": "passed",
+  "stage": "complete",
+  "startedAt": "2026-11-10T12:59:44.237Z",
+  "binding": {
+    "planSha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a",
+    "deploymentSha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796",
+    "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16"
+  },
+  "realWebsite": true,
+  "realAuthenticatedBrowser": true,
+  "incognitoContext": true,
+  "group": {
+    "lang": "zh",
+    "theme": "light",
+    "width": 390
+  },
+  "tokenWrittenToFile": false,
+  "productionMergeExecuted": false,
+  "productionCloudActionExecuted": false,
+  "apiRequests": [
+    {
+      "path": "/api/notifications/unread-count",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST",
+      "dispatched": false
+    },
+    {
+      "path": "/api/admin/resource-hub/overview",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/tasks",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/discoveries",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/missing-resources",
+      "method": "GET",
+      "dispatched": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/cleanup/duplicate-tmdb",
+      "method": "POST",
+      "dispatched": true,
+      "page": 1,
+      "dryRun": true,
+      "status": 200
+    },
+    {
+      "path": "/api/admin/resource-hub/duplicates/preview",
+      "method": "POST",
+      "dispatched": true,
+      "pair": {
+        "fromMovieId": "tmdb_tv_247718",
+        "toMovieId": "1YKW"
+      },
+      "status": 200
+    }
+  ],
+  "blockedRequests": [
+    {
+      "path": "/api/monitoring/page-view",
+      "method": "POST",
+      "dispatched": false,
+      "reason": "existing-page-telemetry-not-authorized"
+    }
+  ],
+  "unauthorizedApiAttempts": [],
+  "pageErrors": [],
+  "screenshots": [
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-top-390-zh-light.png",
+      "sha256": "a1967e32f85ade6f15ca59f4205defd7f89e16a1a4335cf228193bb5366c6b8c",
+      "kind": "viewport-top"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-browser-20261110T125930.697589Z\\mobland-preview-action-390-zh-light.png",
+      "sha256": "69c8d7a48da59c1e2f71b443e310c45210f795748249c7d5f8175d27b7709b79",
+      "kind": "viewport-action"
+    }
+  ],
+  "confirmation": {
+    "tested": false,
+    "mergeClicked": false,
+    "remainedUnchecked": true
+  },
+  "scan": {
+    "complete": true,
+    "scannedMovies": 15756,
+    "candidates": 145,
+    "pagesChecked": [
+      1
+    ]
+  },
+  "selectedCandidate": {
+    "fromMovieId": "tmdb_tv_247718",
+    "toMovieId": "1YKW",
+    "fromResources": 0,
+    "toResources": 8
+  },
+  "review": {
+    "reviewId": "40db6a0e-a9c6-4235-b2e1-5626a7d4e302",
+    "expiresAt": "2026-11-10T13:09:56.369147279Z",
+    "canMerge": true,
+    "items": [
+      {
+        "fromMovieId": "tmdb_tv_247718",
+        "toMovieId": "1YKW",
+        "eligible": true,
+        "blockers": [],
+        "impact": [
+          {
+            "reference": "baidu_temporary_cleanup_job",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "baidu_transfer_task",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "movie_source_identity",
+            "toCount": 1,
+            "fromCount": 1,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_bot_search_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_channel_post_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "qq_transfer_cleanup_job",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "quark_transfer_task",
+            "toCount": 1,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_discovery_result",
+            "toCount": 2,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_hub_task",
+            "toCount": 2,
+            "fromCount": 0,
+            "action": "MOVE_TASK_PAYLOAD"
+          },
+          {
+            "reference": "resource_link",
+            "toCount": 8,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "resource_operation_log",
+            "toCount": 16,
+            "fromCount": 18,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "social_post_log",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "user_favorite",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MERGE_FAVORITES_PRESERVE_HISTORY"
+          },
+          {
+            "reference": "xunlei_transfer_task",
+            "toCount": 1,
+            "fromCount": 0,
+            "action": "MOVE_REFERENCES"
+          },
+          {
+            "reference": "comment",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_COMMENTS"
+          },
+          {
+            "reference": "user_notification",
+            "toCount": 0,
+            "fromCount": 0,
+            "action": "MOVE_MOVIE_NOTIFICATIONS"
+          },
+          {
+            "reference": "movie_metadata",
+            "toCount": 1,
+            "fromCount": 1,
+            "action": "PRESERVE_SOURCE_WITH_ALIAS"
+          }
+        ]
+      }
+    ]
+  },
+  "modal": {
+    "x": 8.463531494140625,
+    "y": 110.0152587890625,
+    "width": 373.07293701171875,
+    "height": 1621.969482421875,
+    "viewportHeight": 1000,
+    "viewportWidth": 390
+  },
+  "action": {
+    "x": 32,
+    "y": 968,
+    "width": 177.390625,
+    "height": 32,
+    "viewportHeight": 1000,
+    "disabled": true
+  },
+  "layout": {
+    "viewport": 390,
+    "documentWidth": 390
+  },
+  "ephemeralBrowserClosed": true,
+  "completedAt": "2026-11-10T12:59:58.535Z",
+  "scriptSha256": "d3e7f39773506b4196adc8cc15b1b3d71a3cfcbb49e7873f2d920c1c80e3a785"
+}

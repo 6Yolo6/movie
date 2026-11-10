@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "reportedAt": "2026-11-10T13:54:16.161060+00:00",
+  "command": "python -X utf8 -B E:/gying-tools/releases/mobland-merge-compat-20261110/HostPinCompletionV2OfflineTests.py",
+  "tests": 10,
+  "failures": 0,
+  "exitCode": 0,
+  "pythonAstSyntax": "PASS",
+  "sourceBoundary": "One frozen P.capture call, no apply/atomic_replace/set_security/temporary call; unchanged create-only reservation/post-plan and lock",
+  "productionMutations": 0,
+  "productionHelperExecuted": false,
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompleteV2.py",
+    "sha256": "8438a9d19d0288df24e21305856e67336e12f2a53cd07b08dcf06eae195590be"
+  },
+  "testSource": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompletionV2OfflineTests.py",
+    "sha256": "381ec3a7bd61f43052ba0970356e09701633e031a123b9dfa8730d676cab3789"
+  },
+  "preservedOriginalSixBoundaryCases": true,
+  "newPureBoundaryCases": [
+    "Exact known original host-checkpoint-state member accepted",
+    "Unexpected additional original archive member rejected",
+    "Altered known state digest/content rejected",
+    "Captured state must match exact compact sorted canonical bytes"
+  ],
+  "originalHostCheckpointState": {
+    "member": "host-checkpoint-state.json",
+    "sha256": "f34dc92b34b588e71dd8af7a7e580bc45623451ca645501200e571ac1ed8e7b3",
+    "expectedBytes": 57
+  },
+  "completeFailureInjectionCovered": false,
+  "limitations": [
+    "Tests do not execute complete/current/inputs/capture or inject reservation/capture/final-verification failures. Those control paths require independent static review and actual locked runtime gates.",
+    "V1 first completion failure remains configurationOutcomeUnknown=true. New source fixes only an omitted legitimate authenticated old archive member; it does not declare V2 production success."
+  ]
+}

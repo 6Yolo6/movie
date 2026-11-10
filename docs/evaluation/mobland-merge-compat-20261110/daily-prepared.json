@@ -1,0 +1,50 @@
+{
+  "status": "prepared-additive-daily-coverage",
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "pin": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-20261110T135913.824420Z.json",
+    "sha256": "632cd33718e89bbbf969df9ed2eff8749b507c7965fafc39f867a4970a76ded0"
+  },
+  "oldSha256": "5c060abd865fc9ace8a082c16273881fa9c1ef76e480b4b3c2355a9316fb1e99",
+  "proposedSha256": "c135007aac9079d23d3e05df7ca8b2e7e0b93e4bbf481cdde0e59e0dc31fb4d5",
+  "ownerGroupDaclSha256": "1f7c501081e6e1ccd3830ba3cb2b31f4b628a839151c64c52ac8777f5d37f749",
+  "onlyAddition": {
+    "name": "mobland-merge-compat-release-20261110",
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110"
+  },
+  "beforeDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 43,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "proposedDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 44,
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "originalCheckpoint": {
+    "directory": "G:\\gying-backups\\mobland-daily-config-before-20261110-20261110T140048.122349Z",
+    "artifacts": 1,
+    "authenticated": true,
+    "manifestSha256": "dd00285c28286e5127d3a350de9e1b2c8c3a39d16e0e512dbbfece3ee276a795",
+    "archive": "G:\\gying-backups\\mobland-daily-config-before-20261110-20261110T140048.122349Z\\backup-config-before.tar.age",
+    "archiveSha256": "3d5c039cfcd6b266e9009c512b2c87f26a57b45714819617d371e9f15daa8a4f",
+    "exactOriginalContentAuthenticated": true
+  },
+  "idle": {
+    "at": "2026-11-10T14:00:45.234790+00:00",
+    "phase": "Daily coverage prepare after authenticated host pin",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "at": "2026-11-10T14:00:48.392797+00:00",
+  "productionConfigurationWritten": false,
+  "naturalBackupVerified": false
+}

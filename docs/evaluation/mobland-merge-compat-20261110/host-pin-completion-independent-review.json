@@ -1,0 +1,151 @@
+{
+  "status": "PASS",
+  "reviewedAt": "2026-11-10T13:43:24.095527+00:00",
+  "reviewKind": "Independent local source, exact evidence-link and offline boundary review for checkpoint-only completion",
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-binding.json",
+    "sha256": "690ca274cc96aa5c434f5040298b357faa5431cd2a7fa1cf30111d6c5517171c"
+  },
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinComplete.py",
+    "sha256": "8004953db32f5ffcde726a88c4baffe3c0c1fe0e3ffb48ac7ea6a56878ad25ca"
+  },
+  "sourceCommit": "0bba123db30867e0ea2cf045ae2ed0976104bb16",
+  "scope": "Permit only the frozen three-archive checkpoint completion after the one already completed host expectedBackendImage CAS. This receipt does not authorize a new CAS, affected-service activation, cloud write, SQL data/schema write, movie merge, automatic retry or restore.",
+  "reviewedSources": [
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinComplete.py",
+      "sha256": "8004953db32f5ffcde726a88c4baffe3c0c1fe0e3ffb48ac7ea6a56878ad25ca"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompletionOfflineTests.py",
+      "sha256": "ad725a42afe886d97b9b33a82268a151d431553ace7c2f8edb24918a4ef405d8"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\Runtime.py",
+      "sha256": "44e27bfe60af9f342b06843b0b5567e8a372707f4d09c3905a206d5df4a32ea7"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\VerifiedOps.py",
+      "sha256": "7b4ded0c9b6ae8e439dcd971260a4f068f5f8ce9c9b0539ea8d05a953b88a237"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\PostVerified.py",
+      "sha256": "14dba2baa1f09c70dc85b80930151977e0c81d743dfaf4712145bbb4e51ed050"
+    }
+  ],
+  "reviewedDependencyPrimitives": [
+    "AuditCheckpoint.scan_tar",
+    "HostCheckpoint.snapshot/encoded/digest",
+    "HostWindowsState.ps1",
+    "UpdateDailyBackupCoverage.security",
+    "Common.idle/Checkpoint.archive/Checkpoint.finish"
+  ],
+  "exactInputReferences": {
+    "helper": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinComplete.py",
+      "sha256": "8004953db32f5ffcde726a88c4baffe3c0c1fe0e3ffb48ac7ea6a56878ad25ca"
+    },
+    "verificationBinding": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-binding.json",
+      "sha256": "4aaba3fd76a99053fe498e3337184b9a75a27bf7c1ff66c34792c29336a44ac6"
+    },
+    "originalPlan": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\plan.json",
+      "sha256": "6c189a988228514daaf7fb149f119eac983d3ea8932257b49669d42218b8fa7a"
+    },
+    "prepared": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\post-prepared.json",
+      "sha256": "6990b561d0b3ed42d45011fa9954c14e65940b70eca250db6865433de00888b1"
+    },
+    "originalHostPinFailure": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-20261110T130414.705387Z.json",
+      "sha256": "6cf0049ab40b39a6c292b15b749407986ab90e8f8b0752d53e5ec8cce1e46d4f"
+    },
+    "originalHostPinReservation": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-reservation.json",
+      "sha256": "860d73e0666ad71a303ea293e3aad9b758847479bb6b579c50d121c09daa1db6"
+    },
+    "deployment": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\verification-completed.json",
+      "sha256": "c0747de5952efae65255e310ef9e4984a55ce10379dbb10b094792fee16e2796"
+    },
+    "acceptance": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\acceptance-20261110T130024.241605Z.json",
+      "sha256": "72803161c2f49f426b63721f72fa31fd24fb1f0fab2e9d434cde14cbfbc01d21"
+    },
+    "offlineReport": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\host-pin-completion-offline-report.json",
+      "sha256": "dcf08ebcd8b81b063b1d4f4d8b7ff3beb6d08c40662fbd916ea55238a9883513"
+    }
+  },
+  "checks": [
+    {
+      "status": "PASS",
+      "area": "Exact immutable inputs and original failure",
+      "evidence": "All nine binding path/hash pairs match local bytes in this release. Prepared, original failure, original reservation, supplemental deployment, acceptance and verification binding agree on the source, original plan and the same live backend Id/image/StartedAt. Original failure retains stopped-preserve-current-state, RuntimeError, one attempted/completed image-only CAS with known current SHA and retained owner/group/DACL, zero SQL/cloud/merge writes, no retry/restore, and no postPlan/postCheckpoint. The failed sub-step was not persisted; no exclusive failure cause is inferred."
+    },
+    {
+      "status": "PASS",
+      "area": "Original recovery material authenticity",
+      "evidence": "The original complete seven-artifact manifest digest and every listed ciphertext digest match the frozen deployment receipt; all seven entries retain authenticatedDecryption=true. Source review confirms scan_tar consumes age to EOF and requires successful authenticated decryption, rejects unsafe and duplicate file member paths, and hashes the complete old host member map against all original material hashes plus canonical metadata."
+    },
+    {
+      "status": "PASS",
+      "area": "Known current host and image-only delta",
+      "evidence": "Local current host-config SHA matches the binding, differs from the authenticated old SHA, and old/new expected image values are distinct in prepared evidence. All 880 current host material file hashes match the allowed image-only post copy, with one exact config row and exact complete file inventory. Runtime delta authenticates old bytes, requires the frozen known current bytes, verifies old expected image, and accepts only JSON equality after replacing expectedBackendImage."
+    },
+    {
+      "status": "PASS",
+      "area": "Owner/group/DACL, task XML, profile and 880-file protection",
+      "evidence": "Runtime gates derive the config ACL digest from exactly one non-directory row in authenticated old metadata and compare the Windows security descriptor normalized with OWNER/GROUP/DACL flags 7. Frozen host snapshot includes scheduled-task XML and complete root/file/directory SDDL inventory, rejects reparse points and requires exact enabled Ready Limited Interactive task identity. host_check compares the full original canonical metadata digest, every host-file digest, exact file inventory, expected image, unrelated generations and protected history."
+    },
+    {
+      "status": "PASS",
+      "area": "Same backend generation, runtime and history",
+      "evidence": "current() validates the pure post plan and calls the frozen VerifiedOps verifier before and after capture. It requires the same bound Id/image/StartedAt at both verifier ends, no restart/OOM, stable full Config/HostConfig, complete modeled Config fields, exact unique environment values, strict generated labels, original mounts/networks/HostConfig, actual candidate JAR, all unrelated twelve container generations and protected full-row history/sys_config hashes. Original raw-Config hash FAIL and missing old Env sequence/labels limitation remain explicit."
+    },
+    {
+      "status": "PASS",
+      "area": "Single capture, three archives and before/after gates",
+      "evidence": "AST inspection finds exactly one P.capture call and no apply, atomic_replace, set_security or temporary mutation call in the completion helper. Under the shared maintenance lock it requires idle plus current proof before reservation/capture, then idle plus the same complete current proof after capture before successful status. Frozen P.capture creates only backend-data.tar.age, ai-state-key.tar.age and host-materials.tar.age; Docker source mounts are readonly and tar helper containers have no network. It requires three authenticated archives, complete host content, Baidu vault/session validation and authenticated idle archived state/key counts."
+    },
+    {
+      "status": "PASS",
+      "area": "Create-only reservation and failure/partial evidence",
+      "evidence": "Completion rejects an existing post-plan, reservation or checkpoint prefix before capture. R.save uses exclusive-create and fsync, with reservation persisted before exclusive post-plan creation and the sole capture call. Errors preserve current state and the original failure; the separate final receipt records stopped status/error type, current revalidation or outcomeUnknown, and new partial checkpoint directories with manifest/hash/authentication counts and encrypted file hashes/sizes. Partial rows explicitly set completionClaimed=false even when a manifest has progressed. There is no deletion, retry, restore or second capture path."
+    }
+  ],
+  "offlineVerification": {
+    "status": "PASS",
+    "command": "python -X utf8 -B E:/gying-tools/releases/mobland-merge-compat-20261110/HostPinCompletionOfflineTests.py",
+    "tests": 6,
+    "failures": 0,
+    "exitCode": 0,
+    "pythonAstSyntax": "PASS",
+    "testSource": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\HostPinCompletionOfflineTests.py",
+      "sha256": "ad725a42afe886d97b9b33a82268a151d431553ace7c2f8edb24918a4ef405d8"
+    },
+    "productionHelperExecuted": false,
+    "productionMutations": 0
+  },
+  "observedLocalCounts": {
+    "frozenDependencyFiles": 34,
+    "frozenContinuationModules": 4,
+    "retainedConfigurationFiles": 66,
+    "hostFiles": 880,
+    "originalCheckpointArtifacts": 7
+  },
+  "limitations": [
+    "Independent review executed only local reads, hashes, AST parsing and six isolated offline tests; it did not invoke complete/apply/capture, Docker, live SQL, live health checks, the scheduled-task snapshot or archive decryption.",
+    "Authenticated old plaintext delta/SDDL, live generation/history, queue/vault state and capture success were assessed as mandatory source gates and linked prior evidence; this review is not a new production result for those gates.",
+    "The six offline tests cover pure delta, exact current digest, scope budgets, post-plan copying and default no-I/O behavior. They do not execute complete() or inject capture/reservation/final-verification failures; those paths were reviewed statically.",
+    "The pending three post archives and any future completion receipt have not been created by this reviewer. Earlier original failures, current unknown cloud outcomes and safety failures remain preserved."
+  ],
+  "blockedReasons": [],
+  "repositoryFilesModified": false,
+  "helpersModified": false,
+  "sensitiveValuesPrinted": false,
+  "onlyReviewerOutputCreated": "E:\\gying-tools\\releases\\mobland-merge-compat-20261110\\independent-host-pin-completion-review.json"
+}
