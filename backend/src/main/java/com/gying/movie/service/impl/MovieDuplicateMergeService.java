@@ -31,7 +31,8 @@ public class MovieDuplicateMergeService {
     public record PreviewRequest(List<Pair> pairs) { }
     public record MergeRequest(String reviewId, String idempotencyKey, Boolean confirmed) { }
     private record Reference(String table, String column, String filter, String action) { }
-    private record Snapshot(Map<String,Object> view, Map<String,List<Map<String,Object>>> rows, String fingerprint) { }
+    private record Snapshot(Map<String,Object> view, Map<String,List<Map<String,Object>>> rows, String fingerprint, TmdbBinding binding) { }
+    record TmdbBinding(Long tmdbId, String tmdbType, int season, Object sourceIdentityId, Object gyingIdentityId, boolean changesMetadata) { }
     private record Schema(Map<String,Set<String>> columns, List<Map<String,Object>> blockers, String fingerprint) { }
     public record TriggerDefinition(String name, String table, String event, String statement, String body) { }
     public record GuardMetadataDefinition(String statement, String body) { }
@@ -124,6 +125,7 @@ public class MovieDuplicateMergeService {
         for(var entry:columns.entrySet()) if(entry.getValue().contains("movie_id") && !known.contains(entry.getKey())) blockers.add(block("UNKNOWN_REFERENCE",entry.getKey(),1));
         Map<String,Set<String>> required=new LinkedHashMap<>();
         for(Reference ref:REFERENCES) required.put(ref.table(),new HashSet<>(Set.of("id",ref.column())));
+        required.get("movie_source_identity").addAll(Set.of("source","source_type","external_id","season","match_status"));
         required.get("resource_hub_task").addAll(Set.of("payload","status")); required.get("user_favorite").addAll(Set.of("user_id","created_at"));
         required.get("resource_link").addAll(Set.of("status","deleted_at","audit_status","link_status","source","type","provider","url","url_hash","validated_at","last_check_error"));
         required.get("quark_transfer_task").addAll(Set.of("status","finished_at","saved_path","last_error","share_url","share_url_hash","original_url","discovery_result_id","request_payload","response_payload"));
@@ -243,11 +245,72 @@ public class MovieDuplicateMergeService {
             impact.add(Map.of("reference",ref.table(),"fromCount",from,"toCount",to,"action",ref.action()));
         }
         for(Reference ref:REFERENCES) checkReferences(pair,ref,all.getOrDefault(ref.table(),List.of()),all,blockers);
+        TmdbBinding binding=plannedTmdbBinding(pair,source,target,all.getOrDefault("movie_source_identity",List.of()),blockers);
+        if(binding!=null) checkTmdbBindingOwners(pair,binding,all,blockers,locking);
         impact.add(Map.of("reference","movie_metadata","fromCount",source==null?0:1,"toCount",target==null?0:1,"action","PRESERVE_SOURCE_WITH_ALIAS"));
         Map<String,Object> item=new LinkedHashMap<>(); item.put("fromMovieId",pair.fromMovieId()); item.put("toMovieId",pair.toMovieId());
         item.put("fromTitle",title(source,pair.fromMovieId())); item.put("toTitle",title(target,pair.toMovieId()));
         item.put("eligible",blockers.isEmpty()); item.put("blockers",blockers); item.put("impact",impact);
-        return new Snapshot(item,all,hash(List.of(schema.fingerprint(),all)));
+        if(binding!=null) item.put("tmdbBinding",Map.of("tmdbId",binding.tmdbId(),"tmdbType",binding.tmdbType(),"season",binding.season(),
+            "sourceIdentityId",binding.sourceIdentityId(),"gyingIdentityId",binding.gyingIdentityId(),"changesMetadata",binding.changesMetadata()));
+        return new Snapshot(item,all,hash(List.of(schema.fingerprint(),all)),binding);
+    }
+
+    static TmdbBinding plannedTmdbBinding(Pair pair, Map<String,Object> source, Map<String,Object> target,
+            List<Map<String,Object>> identities, List<Map<String,Object>> blockers) {
+        if(source==null || target==null || !active(source) || !active(target)) return null;
+        Long tmdbId=number(source.get("tmdb_id")); String type=text(source.get("tmdb_type"));
+        if(tmdbId==null || tmdbId<=0 || !Set.of("movie","tv").contains(type)) return null;
+        Long sourceSeason="movie".equals(type)?Long.valueOf(0):number(source.get("season"));
+        Long targetSeason="movie".equals(type)?Long.valueOf(0):number(target.get("season"));
+        if(sourceSeason==null || targetSeason==null || sourceSeason<0 || sourceSeason>Integer.MAX_VALUE
+            || !sourceSeason.equals(targetSeason) || ("tv".equals(type) && sourceSeason==0)) return null;
+        String gyingType=text(target.get("category"));
+        if(!Set.of("mv","tv","ac").contains(gyingType) || ("tv".equals(type) && "mv".equals(gyingType))
+            || ("movie".equals(type) && "tv".equals(gyingType))) return null;
+        // 使用真实来源记录和已确认的同季 TMDB 身份，不依据本地 ID 前缀推断来源。
+        var gying=identities.stream().filter(row -> pair.toMovieId().equals(row.get("movie_id")) && "GYING".equals(row.get("source"))
+            && Set.of("AUTO","CONFIRMED").contains(text(row.get("match_status"))) && gyingType.equals(row.get("source_type"))
+            && text(row.get("external_id")).matches("[A-Za-z0-9]{1,100}") && sourceSeason.equals(number(row.get("season")))
+            && row.get("id")!=null).findFirst().orElse(null);
+        if(gying==null) return null;
+        var confirmed=identities.stream().filter(row -> pair.fromMovieId().equals(row.get("movie_id"))
+            && "TMDB".equals(row.get("source")) && "CONFIRMED".equals(row.get("match_status"))).toList();
+        if(confirmed.isEmpty()) return null;
+        if(confirmed.stream().anyMatch(row -> !type.equals(row.get("source_type")) || !String.valueOf(tmdbId).equals(row.get("external_id"))
+            || !sourceSeason.equals(number(row.get("season"))) || row.get("id")==null)) {
+            blockers.add(block("TMDB_BINDING_IDENTITY_CONFLICT","movie_source_identity",1)); return null;
+        }
+        var retainedConfirmed=identities.stream().filter(row -> pair.toMovieId().equals(row.get("movie_id"))
+            && "TMDB".equals(row.get("source")) && "CONFIRMED".equals(row.get("match_status"))).toList();
+        if(retainedConfirmed.stream().anyMatch(row -> !type.equals(row.get("source_type")) || !String.valueOf(tmdbId).equals(row.get("external_id"))
+            || !sourceSeason.equals(number(row.get("season"))))) {
+            blockers.add(block("TMDB_BINDING_IDENTITY_CONFLICT","movie_source_identity",1)); return null;
+        }
+        if((target.get("tmdb_id")!=null && !tmdbId.equals(number(target.get("tmdb_id"))))
+            || (!text(target.get("tmdb_type")).isBlank() && !type.equals(target.get("tmdb_type")))) {
+            blockers.add(block("TMDB_BINDING_METADATA_CONFLICT","movie_metadata",1)); return null;
+        }
+        boolean changes=!tmdbId.equals(number(target.get("tmdb_id"))) || !type.equals(target.get("tmdb_type"));
+        return new TmdbBinding(tmdbId,type,sourceSeason.intValue(),confirmed.get(0).get("id"),gying.get("id"),changes);
+    }
+
+    private void checkTmdbBindingOwners(Pair pair, TmdbBinding binding, Map<String,List<Map<String,Object>>> all,
+            List<Map<String,Object>> blockers, boolean locking) {
+        String ending=" ORDER BY BINARY id LIMIT "+(MAX_REFERENCE_ROWS+1)+(locking?" FOR UPDATE":"");
+        String season="tv".equals(binding.tmdbType())?" AND season=?":"";
+        List<Object> arguments=new ArrayList<>(List.of(binding.tmdbType(),binding.tmdbId(),pair.fromMovieId(),pair.toMovieId()));
+        if(!season.isEmpty()) arguments.add(binding.season());
+        var owners=jdbc.queryForList("SELECT * FROM movie_metadata WHERE tmdb_type=? AND tmdb_id=? AND BINARY id NOT IN (?,?) AND status='ACTIVE' AND deleted_at IS NULL"+season+ending,arguments.toArray());
+        all.put("tmdb_binding_metadata_owners",owners);
+        var identityRows=jdbc.queryForList("SELECT * FROM movie_source_identity WHERE source='TMDB' AND source_type=? AND external_id=? AND season=? ORDER BY id LIMIT "+(MAX_REFERENCE_ROWS+1)+(locking?" FOR UPDATE":""),
+            binding.tmdbType(),String.valueOf(binding.tmdbId()),binding.season());
+        all.put("tmdb_binding_identity_owners",identityRows);
+        var identityMovies=jdbc.queryForList("SELECT m.* FROM movie_metadata m JOIN movie_source_identity i ON m.id=i.movie_id AND BINARY m.id=BINARY i.movie_id WHERE i.source='TMDB' AND i.source_type=? AND i.external_id=? AND i.season=? AND BINARY m.id NOT IN (?,?) AND m.status='ACTIVE' AND m.deleted_at IS NULL ORDER BY BINARY m.id LIMIT "+(MAX_REFERENCE_ROWS+1)+(locking?" FOR UPDATE":""),
+            binding.tmdbType(),String.valueOf(binding.tmdbId()),binding.season(),pair.fromMovieId(),pair.toMovieId());
+        all.put("tmdb_binding_identity_movies",identityMovies);
+        if(!owners.isEmpty() || !identityMovies.isEmpty()) blockers.add(block("TMDB_BINDING_ACTIVE_OWNER_CONFLICT","movie_metadata",owners.size()+identityMovies.size()));
+        if(identityRows.size()>MAX_REFERENCE_ROWS) blockers.add(block("REFERENCE_LIMIT","movie_source_identity",identityRows.size()));
     }
 
     private void checkIdentity(Map<String,Object> source, Map<String,Object> target, List<Map<String,Object>> blockers) {
@@ -413,6 +476,9 @@ public class MovieDuplicateMergeService {
         var originalTarget=find(state.rows().get("movie_metadata"),"id",pair.toMovieId());
         jdbc.update("INSERT INTO movie_merge_reference_history(review_id,reference_table,reference_row_id,original_movie_id,canonical_movie_id,original_fingerprint,recorded_at) VALUES(?,?,?,?,?,?,?)",
             reviewId,"movie_metadata",pair.toMovieId(),pair.toMovieId(),pair.toMovieId(),hash(originalTarget),utc(Instant.now()));
+        TmdbBinding binding=state.binding();
+        if(binding!=null && binding.changesMetadata() && jdbc.update("UPDATE movie_metadata SET tmdb_id=?,tmdb_type=?,updated_at=updated_at WHERE id=? AND BINARY id=BINARY ? AND status='ACTIVE' AND deleted_at IS NULL",
+            binding.tmdbId(),binding.tmdbType(),pair.toMovieId(),pair.toMovieId())!=1) throw conflict("Canonical TMDB binding changed");
         long normal=jdbc.queryForObject("SELECT COUNT(*) FROM resource_link WHERE movie_id=? AND BINARY movie_id=BINARY ? AND status='ACTIVE' AND deleted_at IS NULL AND audit_status=1 AND type='DISK' AND (link_status IS NULL OR link_status='NORMAL') AND (source IS NULL OR source<>'BAIDU_TEMP')",Long.class,pair.toMovieId(),pair.toMovieId());
         boolean knownTrailer="TRAILER".equals(originalTarget.get("resource_status"))||"TRAILER".equals(originalSource.get("resource_status"));
         String resourceStatus=normal>0?"AVAILABLE":knownTrailer?"TRAILER":"UNKNOWN";

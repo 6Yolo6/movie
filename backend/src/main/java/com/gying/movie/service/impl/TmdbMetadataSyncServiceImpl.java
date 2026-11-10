@@ -426,7 +426,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                 .eq("tmdb_id", item.getTmdbId())
                 .last("LIMIT 1"), false);
         if (byTmdb != null) {
-            return byTmdb;
+            return retainedMovie(byTmdb);
         }
 
         Integer year = parseYear(releaseDate(details, item.getMediaType()));
@@ -462,7 +462,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                     }
                 })
                 .last("LIMIT 1");
-        return movieService.getOne(query, false);
+        return retainedMovie(movieService.getOne(query, false));
     }
 
     private MovieMetadata findExistingSeries(List<String> titles, Integer year, String mediaType) {
@@ -483,7 +483,19 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                 .orderByAsc("season")
                 .orderByDesc("popularity")
                 .last("LIMIT 1");
-        return movieService.getOne(query, false);
+        return retainedMovie(movieService.getOne(query, false));
+    }
+
+    private MovieMetadata retainedMovie(MovieMetadata candidate) {
+        if (candidate == null) {
+            return null;
+        }
+        // 所有查询命中都先解析合并别名，禁止更新或重新创建已退役的原记录。
+        MovieMetadata retained = movieService.getById(candidate.getId());
+        if (retained == null || !"ACTIVE".equals(retained.getStatus()) || retained.getDeletedAt() != null) {
+            throw new IllegalStateException("TMDB metadata matched a retired movie without an active canonical record");
+        }
+        return retained;
     }
 
     private void markRunning(ResourceHubTask task) {

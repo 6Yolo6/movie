@@ -606,4 +606,114 @@ class MovieDuplicateMergeMySqlTest {
         assertTrue(blocked(preview(reversed),"TASK_PAYLOAD_INVALID"));
     }
     static com.fasterxml.jackson.databind.JsonNode readJson(String value) { try { return json.readTree(value); } catch(Exception error) { throw new IllegalStateException(error); } }
+
+    private record BindingFixture(long tmdbId,long tmdbIdentity,long gyingIdentity,String type,int season) { }
+    private static final java.util.concurrent.atomic.AtomicLong bindingIds=new java.util.concurrent.atomic.AtomicLong(90000000);
+    private static BindingFixture bindingFixture(MovieDuplicateMergeService.Pair pair,String type,int season) {
+        long tmdbId=bindingIds.incrementAndGet();
+        jdbc.update("UPDATE movie_metadata SET tmdb_id=?,tmdb_type=?,resource_status='UNKNOWN',updated_at='2020-01-02 03:04:05' WHERE id=?",tmdbId,type,pair.fromMovieId());
+        jdbc.update("UPDATE movie_metadata SET tmdb_id=NULL,tmdb_type=NULL,resource_status='UNKNOWN',updated_at='2020-01-02 03:04:05' WHERE id=?",pair.toMovieId());
+        long gying=insert("movie_source_identity",Map.ofEntries(Map.entry("movie_id",pair.toMovieId()),Map.entry("source","GYING"),
+            Map.entry("source_type",type.equals("movie")?"mv":"tv"),Map.entry("external_id",UUID.randomUUID().toString().replace("-","")),
+            Map.entry("season",season),Map.entry("match_status","AUTO"),Map.entry("match_method","STRICT_METADATA"),
+            Map.entry("confidence",100),Map.entry("evidence_json","{\"origin\":\"fixture\"}"),
+            Map.entry("created_at","2020-01-02 03:04:05"),Map.entry("updated_at","2020-01-02 03:04:05")));
+        long identity=insert("movie_source_identity",Map.ofEntries(Map.entry("movie_id",pair.fromMovieId()),Map.entry("source","TMDB"),
+            Map.entry("source_type",type),Map.entry("external_id",String.valueOf(tmdbId)),Map.entry("season",season),
+            Map.entry("match_status","CONFIRMED"),Map.entry("match_method","EXACT_SERIES_SEASON"),Map.entry("confidence",100),
+            Map.entry("evidence_json","{\"originalEvidence\":true}"),Map.entry("created_at","2020-01-02 03:04:05"),Map.entry("updated_at","2020-01-02 03:04:05")));
+        return new BindingFixture(tmdbId,identity,gying,type,season);
+    }
+    @SuppressWarnings("unchecked") private static Map<String,Object> previewBinding(Map<String,Object> review) {
+        return (Map<String,Object>)((List<Map<String,Object>>)review.get("items")).get(0).get("tmdbBinding");
+    }
+    @Test void bindsVerifiedGyingCanonicalAtomicallyPreservingOriginalMetadataHistoryAndIdentityProvenance() {
+        for(String type:List.of("movie","tv")) {
+            var pair=type.equals("movie")?pair():p2pPair(); var fixture=bindingFixture(pair,type,type.equals("movie")?0:1);
+            var originalSource=jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.fromMovieId());
+            var originalTarget=jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId());
+            var originalIdentity=jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.tmdbIdentity());
+            var gyingIdentity=jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.gyingIdentity());
+            var review=preview(pair); assertEquals(true,review.get("canMerge"));
+            assertEquals(fixture.tmdbId(),previewBinding(review).get("tmdbId")); assertEquals(type,previewBinding(review).get("tmdbType"));
+            assertEquals(fixture.tmdbIdentity(),previewBinding(review).get("sourceIdentityId")); assertEquals(true,previewBinding(review).get("changesMetadata"));
+            var merge=request(review); service.merge(merge,7L);
+            var expectedTarget=new LinkedHashMap<>(originalTarget); expectedTarget.put("tmdb_id",fixture.tmdbId()); expectedTarget.put("tmdb_type",type);
+            assertEquals(expectedTarget,jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId()));
+            var sourceAfter=jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.fromMovieId());
+            assertEquals("DELETED",sourceAfter.get("status")); assertNotNull(sourceAfter.get("deleted_at"));
+            for(String changed:List.of("status","deleted_at","updated_at")) { originalSource.remove(changed); sourceAfter.remove(changed); }
+            assertEquals(originalSource,sourceAfter);
+            originalIdentity.put("movie_id",pair.toMovieId());
+            assertEquals(originalIdentity,jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.tmdbIdentity()));
+            assertEquals(gyingIdentity,jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.gyingIdentity()));
+            String beforeFingerprint=org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"hash",originalTarget);
+            assertEquals(beforeFingerprint,jdbc.queryForObject("SELECT original_fingerprint FROM movie_merge_reference_history WHERE review_id=? AND reference_table='movie_metadata' AND reference_row_id=?",String.class,review.get("reviewId"),pair.toMovieId()));
+            assertEquals(true,service.merge(merge,7L).get("replayed")); assertEquals(pair.toMovieId(),new MovieMergeAliasResolver(jdbc).resolve(pair.fromMovieId()));
+        }
+    }
+    @Test void missingTrustedProvenanceOnlyMigratesIdentityWithoutInventingMetadataBinding() {
+        for(String missing:List.of("gying","confirmed-tmdb")) {
+            var pair=pair(); var fixture=bindingFixture(pair,"movie",0);
+            jdbc.update("UPDATE movie_source_identity SET match_status='PENDING' WHERE id=?",missing.equals("gying")?fixture.gyingIdentity():fixture.tmdbIdentity());
+            var originalTarget=jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId());
+            var review=preview(pair); assertEquals(true,review.get("canMerge")); assertNull(previewBinding(review)); service.merge(request(review),7L);
+            assertEquals(originalTarget,jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId()));
+            assertEquals(pair.toMovieId(),jdbc.queryForObject("SELECT movie_id FROM movie_source_identity WHERE id=?",String.class,fixture.tmdbIdentity()));
+        }
+    }
+    @Test void conflictingMetadataConfirmedIdentityAndThirdActiveOwnerBlockBinding() {
+        for(String conflict:List.of("target-id","target-type","source-identity-id","source-identity-type","source-identity-season","target-identity-type","target-identity-season","metadata-owner")) {
+            var pair=pair(); var fixture=bindingFixture(pair,"movie",0);
+            switch(conflict) {
+                case "target-id" -> jdbc.update("UPDATE movie_metadata SET tmdb_id=? WHERE id=?",fixture.tmdbId()+1000000,pair.toMovieId());
+                case "target-type" -> jdbc.update("UPDATE movie_metadata SET tmdb_type='tv' WHERE id=?",pair.toMovieId());
+                case "source-identity-id" -> jdbc.update("UPDATE movie_source_identity SET external_id=? WHERE id=?",String.valueOf(fixture.tmdbId()+1000000),fixture.tmdbIdentity());
+                case "source-identity-type" -> jdbc.update("UPDATE movie_source_identity SET source_type='tv' WHERE id=?",fixture.tmdbIdentity());
+                case "source-identity-season" -> jdbc.update("UPDATE movie_source_identity SET season=2 WHERE id=?",fixture.tmdbIdentity());
+                case "target-identity-type" -> insert("movie_source_identity",Map.of("movie_id",pair.toMovieId(),"source","TMDB","source_type","tv","external_id",String.valueOf(fixture.tmdbId()+1000000),"season",0,"match_status","CONFIRMED"));
+                case "target-identity-season" -> insert("movie_source_identity",Map.of("movie_id",pair.toMovieId(),"source","TMDB","source_type","movie","external_id",String.valueOf(fixture.tmdbId()+1000000),"season",2,"match_status","CONFIRMED"));
+                case "metadata-owner" -> { var third=pair(); jdbc.update("UPDATE movie_metadata SET tmdb_id=?,tmdb_type='movie' WHERE id=?",fixture.tmdbId(),third.toMovieId()); }
+            }
+            var review=preview(pair); assertFalse((Boolean)review.get("canMerge"),conflict);
+            assertThrows(ResponseStatusException.class,()->service.merge(request(review),7L));
+            assertEquals("ACTIVE",jdbc.queryForObject("SELECT status FROM movie_metadata WHERE id=?",String.class,pair.fromMovieId()));
+        }
+    }
+    @Test void televisionOwnersAreCheckedBySeasonAndNewOwnerInvalidatesReviewedBinding() {
+        var pair=p2pPair(); var fixture=bindingFixture(pair,"tv",1); var third=p2pPair();
+        jdbc.update("UPDATE movie_metadata SET tmdb_id=?,tmdb_type='tv',season=2 WHERE id=?",fixture.tmdbId(),third.toMovieId());
+        var review=preview(pair); assertEquals(true,review.get("canMerge")); assertNotNull(previewBinding(review));
+        jdbc.update("UPDATE movie_metadata SET season=1 WHERE id=?",third.toMovieId());
+        assertTrue(blocked(preview(pair),"TMDB_BINDING_ACTIVE_OWNER_CONFLICT"));
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->service.merge(request(review),7L)).getStatusCode().value());
+        assertNull(jdbc.queryForObject("SELECT tmdb_id FROM movie_metadata WHERE id=?",Long.class,pair.toMovieId()));
+        jdbc.update("UPDATE movie_metadata SET status='DELETED',deleted_at='2020-01-02 03:04:05' WHERE id=?",third.toMovieId());
+        assertEquals(true,preview(pair).get("canMerge"));
+        service.merge(request(preview(pair)),7L);
+        assertEquals(fixture.tmdbId(),jdbc.queryForObject("SELECT tmdb_id FROM movie_metadata WHERE id=?",Long.class,pair.toMovieId()));
+    }
+    @Test void bindingRollbackPreservesCanonicalAndIdentityWhenLaterAliasWriteFails() {
+        var pair=pair(); var fixture=bindingFixture(pair,"movie",0);
+        var targetBefore=jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId());
+        var identityBefore=jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.tmdbIdentity());
+        var review=preview(pair); assertEquals(true,review.get("canMerge"));
+        JdbcTemplate failing=new JdbcTemplate(source) { @Override public int update(String sql,Object...args) {
+            if(sql.startsWith("INSERT INTO movie_merge_alias")) throw new DataIntegrityViolationException("fixture injected alias failure");
+            return super.update(sql,args);
+        } };
+        var isolated=new MovieDuplicateMergeService(failing,json,new DataSourceTransactionManager(source));
+        assertThrows(DataIntegrityViolationException.class,()->isolated.merge(request(review),7L));
+        assertEquals(targetBefore,jdbc.queryForMap("SELECT * FROM movie_metadata WHERE id=?",pair.toMovieId()));
+        assertEquals(identityBefore,jdbc.queryForMap("SELECT * FROM movie_source_identity WHERE id=?",fixture.tmdbIdentity()));
+        assertEquals(0L,jdbc.queryForObject("SELECT COUNT(*) FROM movie_merge_reference_history WHERE review_id=?",Long.class,review.get("reviewId")));
+        assertEquals("ACTIVE",jdbc.queryForObject("SELECT status FROM movie_metadata WHERE id=?",String.class,pair.fromMovieId()));
+    }
+    @Test void fullBindingIdentityDriftInvalidatesPreviewEvenWhenIdentityStillMatches() {
+        var pair=pair(); var fixture=bindingFixture(pair,"movie",0); var review=preview(pair); assertEquals(true,review.get("canMerge"));
+        jdbc.update("UPDATE movie_source_identity SET evidence_json='{\"originalEvidence\":true,\"laterAudit\":true}' WHERE id=?",fixture.tmdbIdentity());
+        assertEquals(true,preview(pair).get("canMerge"));
+        assertEquals(409,assertThrows(ResponseStatusException.class,()->service.merge(request(review),7L)).getStatusCode().value());
+        assertNull(jdbc.queryForObject("SELECT tmdb_id FROM movie_metadata WHERE id=?",Long.class,pair.toMovieId()));
+    }
 }
