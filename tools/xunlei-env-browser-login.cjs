@@ -143,6 +143,20 @@ function captchaUrl(value) {
         && new URL(value).pathname === '/v1/shield/captcha/init'; }
     catch { return false; }
 }
+function riskBootstrapRequest(request) {
+    try {
+        const url = request.url();
+        const headers = typeof request.headers === 'function' ? request.headers() : {};
+        if (request.method() !== 'POST' || !sync.trustedUrl(url, 'xluser-ssl.xunlei.com', '/risk')
+                || new URL(url).pathname !== '/risk'
+                || Object.keys(headers || {}).some(key => key.toLowerCase() === 'authorization')) return false;
+        const types = Object.entries(headers || {}).filter(([key]) => key.toLowerCase() === 'content-type');
+        if (types.length !== 1 || typeof types[0][1] !== 'string'
+                || types[0][1].split(';', 1)[0].trim().toLowerCase() !== 'application/json') return false;
+        const body = JSON.parse(typeof request.postData === 'function' ? request.postData() : null);
+        return body !== null && typeof body === 'object' && !Array.isArray(body) && !hasPasswordField(request);
+    } catch { return false; }
+}
 function blockedRequest(request) {
     try {
         const url = request.url();
@@ -150,9 +164,10 @@ function blockedRequest(request) {
         const authorization = headers.authorization || headers.Authorization || '';
         const official = sync.driveUrl(url) || sync.authUrl(url) || captchaUrl(url);
         // A 307/308 must not carry credentials or a Bearer token to another
-        // host. The browser may only write to the exact login/renewal endpoints.
+        // host. Writes are restricted to exact auth endpoints and credential-free bootstrap.
         if (/^Bearer\s+/i.test(authorization) && !official) return true;
-        if (!SAFE_METHODS.has(request.method())) return !sync.authUrl(url) && !captchaUrl(url);
+        if (!SAFE_METHODS.has(request.method())) return !sync.authUrl(url) && !captchaUrl(url)
+            && !riskBootstrapRequest(request);
         return false;
     } catch { return true; }
 }
@@ -163,7 +178,8 @@ function hasPasswordField(request) {
     const passwordKey = key => ['password', 'passwd'].includes(String(key).replace(/[_-]/g, '').toLowerCase());
     try {
         const walk = (value, depth = 0) => {
-            if (!value || typeof value !== 'object' || depth > 8) return false;
+            if (!value || typeof value !== 'object') return false;
+            if (depth > 8) return true; // Uninspected nested fields cannot establish a password-free request.
             return Object.keys(value).some(key => passwordKey(key) || walk(value[key], depth + 1));
         };
         return walk(JSON.parse(body));
@@ -300,7 +316,30 @@ async function run(options) {
             live.needsInteraction = true;
             return finish(null, 'login_blocked');
         }
-        let frame = loginFrame(page);
+        if (!trustedLoginPage(page.url())) {
+            if (!trustedPage(page.url())) throw new SafeFailure('login_origin_rejected');
+            await page.goto('https://pan.xunlei.com/login/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+        }
+        const assertWaitingPage = () => {
+            if (!trustedLoginPage(page.url())
+                    && (!trustedPage(page.url()) || new URL(page.url()).pathname !== '/')) {
+                throw new SafeFailure('login_origin_rejected');
+            }
+        };
+        let frame;
+        for (let round = 0; round < (options.loginFrameRounds || 60); round++) {
+            assertWaitingPage();
+            const selected = await collect(RENEW_AHEAD_MS);
+            assertWaitingPage();
+            if (selected) return await accept(selected, 'renewed');
+            if (trustedLoginPage(page.url())) {
+                const frames = page.frames().filter(item => trustedFrame(item.url()));
+                if (frames.length > 1) throw new SafeFailure('login_frame_unavailable');
+                if (frames.length === 1) { frame = frames[0]; break; }
+            }
+            await wait(250);
+        }
+        if (!frame) throw new SafeFailure('login_frame_unavailable');
         let result = await action(page, frame, 'mode'); checkForm(result);
         await wait(700);
         frame = loginFrame(page);
@@ -385,7 +424,7 @@ async function main(env = process.env, overrides = {}) {
     return state ? 0 : 2;
 }
 module.exports = { run, capture: run, main, readGuard, writeGuard, loadBackendCredentials, trustedPage, trustedFrame,
-    assertPrivateProfile, blockedRequest, captchaUrl, hasPasswordField, passwordSigninRequest, createPasswordRequestGate, formAction, RENEW_AHEAD_MS, SafeFailure };
+    assertPrivateProfile, blockedRequest, captchaUrl, riskBootstrapRequest, hasPasswordField, passwordSigninRequest, createPasswordRequestGate, formAction, RENEW_AHEAD_MS, SafeFailure };
 if (require.main === module) main().then(code => { process.exitCode = code; }).catch(() => {
     console.log('XUNLEI_ENV_SYNC=failed;REASON=output_unavailable'); process.exitCode = 1;
 });

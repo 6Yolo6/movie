@@ -1,0 +1,17 @@
+{
+  "baselineCommit": "681d26f76c76c32de3d988b343fd60c6c5287b3c",
+  "files": [
+    {
+      "file": "tools/xunlei-env-browser-login.cjs",
+      "sha256": "f34bced4fe7e1032b594f1b77d952b683c33802faa9ad8cb427530cbe63ec2cf"
+    },
+    {
+      "file": "tools/sync-xunlei-edge-token.ps1",
+      "sha256": "a361ed24960408867d2ad5d0d110a8b8bdff9da4c2201846de1afb6a7fd4faee"
+    },
+    {
+      "file": "tools/run-xunlei-token-sync.cmd",
+      "sha256": "0e7846004af60f54c05df9c9aa526ef751f148b3c101189100eecd03cd511045"
+    }
+  ]
+}

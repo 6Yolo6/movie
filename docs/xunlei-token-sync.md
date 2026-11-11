@@ -1,6 +1,6 @@
 # 迅雷浏览器会话与 Token 同步
 
-[现状](current-project-status.md) · [11月2日诊断与验收](evaluation/platform-diagnosis-20261102/README.md) · [旧步骤和证据](history/README.md#git-history)
+[现状](current-project-status.md) · [11月11日刷新修复](evaluation/xunlei-token-refresh-20261111/README.md) · [11月2日诊断与验收](evaluation/platform-diagnosis-20261102/README.md) · [旧步骤和证据](history/README.md#git-history)
 
 ## 正常运行
 
@@ -8,9 +8,9 @@ GYing Xunlei Token Sync 每两小时及登录触发，ASUS/Interactive/Limited�
 
 1. 固定生产 backend、UID10001及当前账户。从持久状态读取完整凭据，用官方固定文件列表只读接口验证；有效期超过下次2小时运行加5分钟余量时直接复用，不打开浏览器。
 2. 无效或临近到期时，新开独立 headless Edge，使用 private-sync-v2/env-login-profile 的受限持久会话，让官方网页正常续期。无需普通 Edge 迅雷标签，不复制普通 profile、Cookie 或密码库。
-3. 会话无法自然续期时，仅从同一运行中 backend 的 XUNLEI_ACCOUNT/PASSWORD 在进程内存读账号密码。在精确官方 HTTPS 主页面和 iframe 切换账号密码登录，最多提交一次；发现验证码或提交前持久 loginBlocked 保护，SDK重复密码signin请求也被拦截。验证码、短信、密码错误、提交后超时停止；后续自动任务只读检查，不再次提交，只有官方API验证成功或显式人工重试可解除。
+3. 会话无法自然续期时，仅从同一运行中 backend 的 XUNLEI_ACCOUNT/PASSWORD 在进程内存读账号密码。守护检查通过后导航固定官方登录页，有界等待唯一可信 iframe，每轮优先验证自然续期，再切换账号密码登录，最多提交一次；发现验证码或提交前持久 loginBlocked 保护，SDK重复密码signin请求也被拦截。验证码、短信、密码错误、提交后超时停止；后续自动任务只读检查，不再次提交，只有官方API验证成功或显式人工重试可解除。
 4. 同 access-token 合完整 refresh/user/client/device/captcha 字段，不借用旧 token 的配套。只接受当前 backend 账户、有效期覆盖125分钟、固定官方 files HTTP200且文件数组成立及无业务错误。网络/5xx不能作为再次密码登录的依据。
-5. 浏览器拦截 Drive 写操作，以及精确官方认证/验证码初始化之外的 POST 等写请求；带 Bearer 的请求只允许官方 Drive/认证边界。官方验证拒重定向，不上传、转存、删除或分享。
+5. 浏览器拦截 Drive 写操作；除精确官方认证/验证码初始化外，仅允许官方 `/risk` POST 的可解析 JSON对象且无 Authorization/密码字段，其余写请求拒绝；带 Bearer 的请求只允许官方 Drive/认证边界。官方验证拒重定向，不上传、转存、删除或分享。
 6. 旧状态 DPAPI CurrentUser 加密备份并认证；backend UID10001 通过 stdin 写同目录600私有临时文件，旧 SHA 比对后原子替换、10001:10001/600并回读。并发变更退出75，保留 backend 已写的新状态；不是跨进程共享事务锁。
 7. 仅正常关闭本轮独立 browser，清理 nonce 标记 run 目录叶文件；受限 env-login-profile 留作后续续期。清理越界/reparse停止，不接触用户普通 Edge。
 
@@ -47,3 +47,5 @@ python -X utf8 tools/tests/test_xunlei_token_activation.py
 2026-10-25：14:33自然任务成功，16:20未见同步私有profile；普通Edge10进程工作集约214.62MiB、private commit约381.64MiB，为不同指标和历史样本，不能全部归因于同步脚本。browser.close异常或外部超时仍可能残留，只清理确定属于本轮的实例。
 
 2026-11-02：旧token自然过期、官方401及旧任务无标签失败已实证；17:51环境变量账号密码在独立官方Edge登录一次成功，无验证码，17:52同账户完整新状态DPAPI备份/非rootCAS写回/官方200通过。18:18主机脚本已启用，51 Node/21 Windows/5隔离写回以及原任务真实入口exit0通过；独立profile官方200、0密码signin且token未变化。详情见本轮验收记录；自然到期后的下一轮和真实验证码仍需按发生情况核对。
+
+2026-11-11：修复前官方401和后台过期已实证，浏览器拦截官方/risk导致初始化失败。已精确允许无凭据JSON bootstrap并补固定登录导航/有界iframe等待，62 Node/21 Windows及就绪检查通过。23:03原任务自然续期updated/exit0/0密码；23:04同账户完整凭据/官方200/10001:10001_600/后台expired=false，到期11月12日10:49:07。原两小时任务启用，百度true/10/1及13容器代次保持，DPAPI旧状态认证匹配；空白诊断profile官方iframe已验，真实验证码/短信未发生。[本轮证据](evaluation/xunlei-token-refresh-20261111/README.md)。

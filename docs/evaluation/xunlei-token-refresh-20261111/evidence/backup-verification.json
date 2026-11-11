@@ -1,0 +1,9 @@
+﻿{
+    "checkedAt":  "2026-11-11T23:05:04.4193491+08:00",
+    "encryptedBackupPath":  "E:\\gying-tools\\xunlei-auth-helper\\private-sync-v2\\rollback\\20261111-230353-fb645ffdd92e40328864a7ec1618f3a4.dpapi",
+    "encryptedBytes":  2182,
+    "authenticated":  true,
+    "matchesOldBackendSha":  true,
+    "plaintextWritten":  false,
+    "scriptRollbackPath":  "E:/gying-tools/releases/xunlei-token-refresh-20261111/scripts-before/xunlei-env-browser-login.runtime-before.cjs"
+}

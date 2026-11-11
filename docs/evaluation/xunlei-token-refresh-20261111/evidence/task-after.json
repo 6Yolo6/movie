@@ -1,0 +1,24 @@
+﻿{
+    "checkedAt":  "2026-11-11T23:05:06.5421751+08:00",
+    "taskName":  "GYing Xunlei Token Sync",
+    "state":  "Ready",
+    "enabled":  true,
+    "lastRun":  "2026-11-11T23:03:03.0000000+08:00",
+    "lastTaskResult":  0,
+    "nextRun":  "2026-11-12T00:33:33.0000000+08:00",
+    "result":  {
+                   "validated":  true,
+                   "expiresAt":  1794451747000,
+                   "hasRefreshToken":  true,
+                   "live":  {
+                                "status":  "renewed",
+                                "refreshed":  true,
+                                "loginSubmitted":  false,
+                                "needsInteraction":  false
+                            },
+                   "status":  "updated",
+                   "checkedAt":  "2026-11-11T23:03:53.7557847+08:00"
+               },
+    "loginBlocked":  false,
+    "scriptSha256":  "59072646be277a17ba0215d0384d46277db213803689bea0335baccfa2091d2b"
+}

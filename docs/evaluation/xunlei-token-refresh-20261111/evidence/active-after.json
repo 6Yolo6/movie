@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-11T15:04:15.542Z",
+  "sha256": "109c523029b8beb5f68b3e6bad4c3c4ffacc014256fb8f5f2993f3e5a1288046",
+  "expiresAt": "2026-11-12T02:49:07.000Z",
+  "expired": false,
+  "coversNextRun": true,
+  "complete": true,
+  "hasCaptcha": true,
+  "jwtAccountMatches": true,
+  "officialReadOnlyValid": true,
+  "officialHttpStatus": 200,
+  "mode": "10001:10001 600",
+  "driveWrites": 0,
+  "passwordSubmissions": 0
+}

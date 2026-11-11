@@ -17,19 +17,19 @@ const state = (hours, user) => ({ access_token: jwt(hours, user), token_type: 'B
     device_id: 'fixture-device', refresh_token: 'fixture-refresh-' + hours, captcha_token: 'fixture-captcha',
     client_version: '1.82.0', package_name: 'pan.xunlei.com' });
 function fixture(extra = {}) {
-    const calls = { launch: 0, close: 0, credentials: 0, submit: 0, guard: [], validation: [], actions: [] };
+    const calls = { launch: 0, close: 0, credentials: 0, submit: 0, guard: [], validation: [], actions: [], goto: [], delays: [] };
     let guard = { loginBlocked: false };
     let submitted = false;
     const page = new EventEmitter();
-    page._url = LOGIN; page.url = () => page._url;
+    page._url = 'about:blank'; page.url = () => page._url;
     page.setBypassServiceWorker = async () => {};
     page.setRequestInterception = async () => {};
     const frame = { url: () => FRAME };
-    page.frames = () => [frame];
-    page.goto = async () => {};
+    page.frames = () => page._url === LOGIN ? [frame] : [];
+    page.goto = async url => { calls.goto.push(url); page._url = url; };
     const options = {
         current: state(-1), now: () => NOW, edgePath: 'fixture-edge', profilePath: path.join(os.tmpdir(), 'private-sync-v2', 'env-login-profile'),
-        naturalRounds: 1, loginRounds: 2, delay: async () => {},
+        naturalRounds: 1, loginRounds: 2, loginFrameRounds: 3, delay: async ms => { calls.delays.push(ms); },
         puppeteer: { launch: async launch => { calls.launch++; assert.equal(launch.headless, true);
             return { pages: async () => [page], close: async () => { calls.close++; } }; } },
         readGuard: () => guard,
@@ -99,6 +99,67 @@ test('password fallback persists protection before one submit and accepts only v
     assert.equal(f.calls.credentials, 1); assert.equal(f.calls.submit, 1);
     assert.equal(f.calls.guard[0].loginBlocked, true); assert.equal(f.calls.guard.at(-1).loginBlocked, false);
     assert.equal(result.live.loginSubmitted, true); assert.equal(f.calls.close, 1);
+});
+test('password fallback navigates from home to the fixed login route and waits for its frame', async () => {
+    const f = fixture();
+    f.page.frames = () => f.page._url === LOGIN && f.calls.delays.filter(ms => ms === 250).length >= 2 ? [f.frame] : [];
+    const result = await helper.run(f.options);
+    assert.equal(result.status, 'logged_in');
+    assert.deepEqual(f.calls.goto, ['https://pan.xunlei.com/', LOGIN]);
+    assert.equal(f.calls.delays.filter(ms => ms === 250).length, 2);
+    assert.equal(f.calls.credentials, 1); assert.equal(f.calls.submit, 1);
+});
+test('an existing login route needs no second navigation', async () => {
+    const f = fixture();
+    f.page.goto = async url => { f.calls.goto.push(url); f.page._url = LOGIN; };
+    assert.equal((await helper.run(f.options)).status, 'logged_in');
+    assert.deepEqual(f.calls.goto, ['https://pan.xunlei.com/']);
+});
+test('login navigation can redirect home and renew naturally before reading credentials', async () => {
+    let waitingRounds = 0;
+    const f = fixture({ storageCredentials: async page => page._url === 'https://pan.xunlei.com/'
+        && waitingRounds >= 1 ? [state(12)] : [] });
+    const goto = f.page.goto;
+    f.page.goto = async url => { await goto(url); if (url === LOGIN) f.page._url = 'https://pan.xunlei.com/'; };
+    const wait = f.options.delay;
+    f.options.delay = async ms => { await wait(ms); if (ms === 250) waitingRounds++; };
+    const result = await helper.run(f.options);
+    assert.equal(result.status, 'renewed'); assert.equal(result.validationHttpStatus, 200);
+    assert.equal(f.calls.credentials, 0); assert.equal(f.calls.submit, 0);
+});
+test('missing and duplicate official frames fail without reading credentials', async () => {
+    for (const duplicate of [false, true]) {
+        const f = fixture(); f.page.frames = () => duplicate ? [f.frame, f.frame] : [];
+        const result = await helper.run(f.options);
+        assert.equal(result.reason, 'login_frame_unavailable');
+        assert.equal(f.calls.credentials, 0); assert.equal(f.calls.submit, 0);
+        assert.equal(f.calls.delays.filter(ms => ms === 250).length, duplicate ? 0 : 3);
+    }
+});
+test('a login navigation to an unknown origin or route fails before any password action', async () => {
+    for (const url of ['https://evil.test/login/', 'http://pan.xunlei.com/login/', 'https://pan.xunlei.com/unexpected/']) {
+        const f = fixture(); const goto = f.page.goto;
+        f.page.goto = async target => { await goto(target); if (target === LOGIN) f.page._url = url; };
+        const result = await helper.run(f.options);
+        assert.equal(result.reason, 'login_origin_rejected'); assert.equal(f.calls.credentials, 0);
+        assert.equal(f.calls.submit, 0); assert.equal(f.calls.actions.length, 0);
+    }
+});
+test('navigation during login-frame collection cannot accept a candidate from an unknown origin', async () => {
+    const f = fixture();
+    f.options.storageCredentials = async page => {
+        if (!f.calls.goto.includes(LOGIN)) return [];
+        page._url = 'https://evil.test/'; return [state(12)];
+    };
+    const result = await helper.run(f.options);
+    assert.equal(result.reason, 'login_origin_rejected'); assert.equal(result.state, null);
+    assert.equal(f.calls.credentials, 0); assert.equal(f.calls.submit, 0);
+});
+test('a persisted login guard stops before navigation to the password login route', async () => {
+    const f = fixture(); f.setGuard({ loginBlocked: true });
+    assert.equal((await helper.run(f.options)).reason, 'login_blocked');
+    assert.deepEqual(f.calls.goto, ['https://pan.xunlei.com/']);
+    assert.equal(f.calls.credentials, 0); assert.equal(f.calls.submit, 0);
 });
 test('missing or incompatible frame origins prevent credential reads', async () => {
     for (const url of ['https://i.xunlei.com.evil.test/center/account/personal/auth/',
@@ -228,6 +289,116 @@ test('the direct capture entry also rejects a regular user browser profile', asy
     const f = fixture({ forceBrowser: true, profilePath: path.join(os.tmpdir(), 'User Data', 'Default') });
     const result = await helper.capture(f.options);
     assert.equal(result.reason, 'private_profile_rejected'); assert.equal(f.calls.launch, 0);
+});
+const RISK = 'https://xluser-ssl.xunlei.com/risk';
+const riskRequest = (extra = {}) => ({ url: () => RISK, method: () => 'POST',
+    headers: () => ({ 'content-type': 'application/json' }),
+    postData: () => '{"action":"bootstrap"}', ...extra });
+test('only the exact official risk bootstrap POST is allowed without authorization or password fields', () => {
+    assert.equal(helper.riskBootstrapRequest(riskRequest()), true);
+    assert.equal(helper.blockedRequest(riskRequest()), false);
+    assert.equal(helper.riskBootstrapRequest(riskRequest({ url: () => RISK + '?scene=login' })), true);
+    assert.equal(helper.riskBootstrapRequest(riskRequest({ url: () => 'https://xluser-ssl.xunlei.com:443/risk' })), true);
+    for (const url of [RISK + '/', RISK + '2', RISK.replace('https:', 'http:'),
+        RISK.replace('.com/', '.com:444/'), RISK.replace('.com/', '.com.evil.test/'),
+        'https://fixture@xluser-ssl.xunlei.com/risk']) {
+        const request = riskRequest({ url: () => url });
+        assert.equal(helper.riskBootstrapRequest(request), false, url);
+        assert.equal(helper.blockedRequest(request), true, url);
+    }
+    for (const method of ['GET', 'PUT', 'PATCH', 'DELETE']) {
+        const request = riskRequest({ method: () => method });
+        assert.equal(helper.riskBootstrapRequest(request), false, method);
+        if (method !== 'GET') assert.equal(helper.blockedRequest(request), true, method);
+    }
+    for (const headers of [{ authorization: 'Bearer fixture-private' }, { Authorization: 'Basic fixture-private' },
+        { AUTHORIZATION: '' }]) {
+        const request = riskRequest({ headers: () => ({ 'content-type': 'application/json', ...headers }) });
+        assert.equal(helper.riskBootstrapRequest(request), false);
+        assert.equal(helper.blockedRequest(request), true);
+    }
+    for (const body of ['{"payload":{"password":"fixture-private"}}', 'account=fixture&passwd=fixture-private']) {
+        const request = riskRequest({ postData: () => body });
+        assert.equal(helper.riskBootstrapRequest(request), false);
+        assert.equal(helper.blockedRequest(request), true);
+    }
+    let nested = { password: 'fixture-private' };
+    for (let level = 0; level < 10; level++) nested = { payload: nested };
+    const deepRequest = riskRequest({ postData: () => JSON.stringify(nested) });
+    assert.equal(helper.riskBootstrapRequest(deepRequest), false);
+    assert.equal(helper.blockedRequest(deepRequest), true);
+    const gate = helper.createPasswordRequestGate();
+    assert.equal(gate.blocked(riskRequest()), false); assert.equal(gate.count, 0);
+    assert.equal(gate.blocked({ ...riskRequest(), url: () => 'https://api-pan.xunlei.com/drive/v1/files' }), true);
+});
+test('risk bootstrap requires one JSON content type and a valid object body', () => {
+    for (const headers of [{ 'Content-Type': 'Application/JSON; charset=UTF-8' },
+        { 'CONTENT-TYPE': ' application/json ; charset=utf-8' }]) {
+        const request = riskRequest({ headers: () => headers });
+        assert.equal(helper.riskBootstrapRequest(request), true);
+        assert.equal(helper.blockedRequest(request), false);
+    }
+    for (const headers of [{}, { 'content-type': '' }, { 'content-type': 'text/plain' },
+        { 'content-type': 'application/x-www-form-urlencoded' },
+        { 'content-type': 'multipart/form-data; boundary=fixture' },
+        { 'content-type': 'application/json, text/plain' },
+        { 'content-type': 'application/json', 'Content-Type': 'application/json' }]) {
+        const request = riskRequest({ headers: () => headers });
+        assert.equal(helper.riskBootstrapRequest(request), false);
+        assert.equal(helper.blockedRequest(request), true);
+    }
+    const multipart = '--fixture\r\nContent-Disposition: form-data; name="password"\r\n\r\nfixture-private\r\n--fixture--';
+    for (const body of [undefined, '', '{broken', 'null', 'true', '123', '"fixture"', '[]', '[{}]',
+        'action=bootstrap', multipart]) {
+        const request = riskRequest({ postData: () => body });
+        assert.equal(helper.riskBootstrapRequest(request), false);
+        assert.equal(helper.blockedRequest(request), true);
+    }
+});
+function bootstrapFixture(extraRequest = {}) {
+    const f = fixture(); let continued = false, aborted = false, ready = false;
+    f.page.frames = () => f.page._url === LOGIN && ready ? [f.frame] : [];
+    const goto = f.page.goto;
+    f.page.goto = async url => {
+        await goto(url);
+        if (url === LOGIN) f.page.emit('request', riskRequest({
+            continue: async () => { assert.equal(f.calls.credentials, 0); continued = true; },
+            abort: async () => { aborted = true; }, ...extraRequest,
+        }));
+    };
+    const wait = f.options.delay;
+    f.options.delay = async ms => { await wait(ms); if (ms === 250 && continued) ready = true; };
+    return { ...f, bootstrap: () => ({ continued, aborted }) };
+}
+test('login bootstrap is allowed before a delayed frame and leaves the only signin request guarded', async () => {
+    const f = bootstrapFixture(); const action = f.options.formAction;
+    f.options.formAction = async (...args) => {
+        const result = await action(...args);
+        if (args[2] === 'submit') f.page.emit('request', riskRequest({
+            url: () => 'https://xluser-ssl.xunlei.com/v1/auth/signin',
+            postData: () => '{"password":"fixture-private"}', continue: async () => {},
+            abort: async () => { assert.fail('authorized first signin must be permitted'); },
+        }));
+        return result;
+    };
+    const result = await helper.run(f.options);
+    assert.equal(result.status, 'logged_in'); assert.equal(result.validationHttpStatus, 200);
+    assert.deepEqual(f.bootstrap(), { continued: true, aborted: false });
+    assert.equal(f.calls.delays.filter(ms => ms === 250).length, 1);
+    assert.equal(f.calls.credentials, 1); assert.equal(f.calls.submit, 1);
+    assert.equal(result.passwordSigninRequests, 1);
+});
+test('unsafe bootstrap requests leave the login frame unavailable without reading or submitting credentials', async () => {
+    for (const request of [{ headers: () => ({ 'content-type': 'application/json', authorization: 'Bearer fixture-private' }) },
+        { postData: () => '{"password":"fixture-private"}' }, { url: () => RISK + '2' },
+        { headers: () => ({ 'content-type': 'multipart/form-data; boundary=fixture' }) },
+        { postData: () => '{broken' }, { postData: () => '[]' }]) {
+        const f = bootstrapFixture(request); const result = await helper.run(f.options);
+        assert.equal(result.reason, 'login_frame_unavailable');
+        assert.deepEqual(f.bootstrap(), { continued: false, aborted: true });
+        assert.equal(f.calls.credentials, 0); assert.equal(f.calls.submit, 0);
+        assert.equal(result.passwordSigninRequests, 0);
+    }
 });
 test('the renderer repeats the official iframe origin check before touching form fields', async () => {
     const prior = global.location; let evaluated = false;
