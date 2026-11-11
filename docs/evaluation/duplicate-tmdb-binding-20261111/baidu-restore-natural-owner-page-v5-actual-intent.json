@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "generation": "resolved-natural-generation-1",
+  "status": "ENABLE_RESERVED_NO_REPLAY",
+  "startedAt": "2026-11-11T13:40:09.547480+00:00",
+  "bindingSha256": "1adc703ecc454a2740fb5b423d78d61810bc45e8384aed6faad3ebdede3c4fc8",
+  "reviewSha256": "5200610a681fd80d67520dfd982b234c94f5be81864b47aa0aa10d833ec8aa0d",
+  "authorizationSha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3",
+  "resolverTerminalReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+  },
+  "officialReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T132738.346416Z.json",
+    "sha256": "8ca58c024d90c9f7b1e7012c40787ce5111421d007e05b9465e24679d41a63e3"
+  },
+  "officialOwnerGeneration": {
+    "generationBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-reviewed-compiled-binding-af635c0e0464439c957b156461e0d74a.json",
+      "sha256": "c4c1f4177c2df3ca6fe3e0e96aead90d39d48c8597b6727f39a07921d78eb67a"
+    },
+    "sources": {
+      "ReconcileBaiduOwnerPageReadOnlyV5.java": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerPageReadOnlyV5.java",
+        "sha256": "2bc74bc6581b357d000774849320f12158f9ba801d39e84146e95813820e4f62"
+      },
+      "CompileReconcilerOwnerPageV5.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerPageV5.py",
+        "sha256": "add80457752c53e74d5434cbbe0c609a35f97cea43dd6c144be6849a8492dc67"
+      },
+      "PostReconcileOwnerPageV5.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerPageV5.py",
+        "sha256": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0"
+      },
+      "OwnerPageV5Binding.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerPageV5Binding.py",
+        "sha256": "07e2aae30614a3376049747176796d310460a7bbe14d945f0f1a9542c25050cb"
+      }
+    }
+  },
+  "beforeSha256": "4fb109e1028162a48d7af9fe70b53f708e6b74b3d024ee2af08282608e2009e2",
+  "expectedIdentity": {
+    "identityId": 49,
+    "movieId": "r7yR",
+    "sourceType": "mv",
+    "externalId": "r7yR",
+    "titleCn": "控方证人",
+    "year": "1957"
+  },
+  "sourceManifestSha256": "e4ae3567ea7f67a074f0bf2360d4ddccbf990a1d4a8fa31d4877e3e62790a4cb",
+  "scope": {
+    "settingsEnablePutLimit": 1,
+    "protectivePausePutLimit": 1,
+    "enabled": true,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "naturalCycleLimit": 1,
+    "expectedNextIdentity": {
+      "identityId": 49,
+      "movieId": "r7yR",
+      "sourceType": "mv",
+      "externalId": "r7yR"
+    },
+    "manualPostRequests": 0,
+    "directSqlWrites": 0,
+    "restoreOnlyAfterOfficialReconciledSuccess": true,
+    "keepEnabledAfterAcceptedNaturalCycle": true,
+    "protectivePauseOnAnyUncertainty": true,
+    "replayAllowed": false
+  },
+  "originalTransportOutcomeUnknown": true,
+  "originalPostAcknowledgmentRecovered": false
+}

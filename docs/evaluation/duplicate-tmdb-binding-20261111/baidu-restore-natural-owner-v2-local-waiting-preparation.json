@@ -1,0 +1,37 @@
+{
+  "status": "LOCAL_WAITING_TEMPLATE_AND_TERMINAL_CHAIN_VERIFIED",
+  "createdAt": "2026-11-11T11:13:47.471089+00:00",
+  "template": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-resolved-natural-owner-v2-waiting-template-eed5b3e0ea704ab7b9b31639f809f8dc.json",
+    "sha256": "1e97c2bfb7d658453123f2b30574103e661e2ce7f9c13c1ee5f3e7fd472410ed"
+  },
+  "helperSha256": "1ca6538b82d2a11e01a3877e7bb09e2addf817ab0cd622e5cb52aa716e6502fd",
+  "testScriptSha256": "3d9ccfc2e30b4ee68f50f6e3f9fe965e26284778a928bb992b8235cc627841ff",
+  "offlineTestReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-offline-tests-58b4f0b1cc03422d91e0b3aa9b429997.json",
+    "sha256": "fb31ca626c5f5654fc7b8cb4aa892653fb7d3c928952335d94808b8bce17b127"
+  },
+  "resolverTerminalReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+  },
+  "ownerCompiledGeneration": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-reviewed-compiled-binding-e8f11b93149e4118a5c0413b5a85eb7e.json",
+    "sha256": "5c7b556a39f67e0482f95db8732ea1b17311f99f22b65933c5acfcca2452b2ce"
+  },
+  "ownerCompilerReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-owner-v2-build-attempts\\28524f60b83f4df5b2f9f4c334a48c28\\compile-completed.json",
+    "sha256": "ff9e52faefce5d80e04f9497b44e54590a607c6d79288014f664e3c193dedf3a"
+  },
+  "compiledArtifactFilesVerified": 545,
+  "officialPassObserved": false,
+  "runtimeReads": 0,
+  "credentialsRead": false,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0,
+  "naturalIntentCreated": false,
+  "oldTemplateRetained": true,
+  "originalUnknownReceiptRetained": true
+}

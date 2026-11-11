@@ -1,0 +1,64 @@
+{
+  "version": 2,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:04:13.005333+00:00",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerReadOnlyV2.java": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c",
+    "CompileReconcilerOwnerV2.py": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+    "PostReconcileOwnerV2.py": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df",
+    "OwnerV2Binding.py": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459"
+  },
+  "testSourceSha256": {
+    "OwnerSchemaMocksV2.java": "d1b1d06fc7f6c67ccbae831f09d8c81e212e0cf639e353a67d0f0a68e5382bb3",
+    "test_owner_v2_pipeline.py": "eedb7b5abb1bc5d0065c8da27a91a23c8149440f6da3b451e4e1440122a9cc88"
+  },
+  "javaCompilation": {
+    "release": 17,
+    "javacExit": 0,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidateClassPathFromOriginalCompilerReceipt": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-build-attempts\\f77ed83f37aa47b18726aaa9d3581042\\compile-completed.json",
+      "sha256": "cfb82ae98536be8351bd55ea9f48f2bad6e7882af6cdf30e3589cb07080417be"
+    },
+    "oldArtifactManifestSha256": "a223f340b77c8e8d748147feda85e656b6575be02a42db02d2eeceef924161bb",
+    "oldArtifactHashesVerified": 544
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualOwnerSchemaObserved": false,
+  "fullOriginalSuitesExecuted": false,
+  "javaMocks": {
+    "exit": 0,
+    "stdoutSha256": "a0fabb571767bfe5c31a7ad8306b52767a05e27088feb4c4623fbc57c89cba62",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "result": {
+      "cloudWrites": 0,
+      "tests": 27,
+      "status": "PASS",
+      "productionApiRequests": 0,
+      "sqlWrites": 0
+    }
+  },
+  "javaDefault": {
+    "exit": 0,
+    "result": {
+      "mode": "no-I/O plan",
+      "cloudWrites": 0,
+      "springStarted": false,
+      "sqlOpened": false
+    }
+  },
+  "pythonMocks": {
+    "tests": 21,
+    "failures": 0,
+    "errors": 0
+  },
+  "oldFrozenArtifactBytesRetained": true,
+  "completedAt": "2026-11-11T11:04:16.978132+00:00"
+}

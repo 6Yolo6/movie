@@ -1,0 +1,58 @@
+{
+  "version": 31,
+  "status": "PASS",
+  "createdAt": "2026-11-11T12:05:09.773341+00:00",
+  "reviewer": "independent-static-review/review_data_helpers",
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageParseReadOnlyV31.java": "8fb58f7af5bbe33ce5aa5f0d88ee1059a3b6df936997529d846061b74511deed",
+    "CompileOwnPageParseDiagnosticV31.py": "7fa8917456afa84cd31e23063a4d55de00605abafa709f003d10f136d682d111",
+    "PostOwnPageParseDiagnosticV31.py": "a3dbdbaed9421cf13e1acaa61526fb1b5636dc193d1d25c98c7e88f84d867b62",
+    "OwnPageParseDiagnosticV31Binding.py": "d6f46b57e3717e4e46abcf8ea705c1023ca4667f61db98030a9d369c0b24cd70"
+  },
+  "testSourceSha256": {
+    "OwnPageParseDiagnosticMocksV31.java": "8eb35ced2c0a8bfd4fb56734508b8f8c86f446bc27d5cea87043bf000c341f35",
+    "test_own_page_parse_diag_v31.py": "5f656fecae334023ea747124abaf7a4061aebc5d8fb0cda2ac8b23cc4cbcd3d2"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-diag-v31-local-tests\\963c9f11aa184e05939664e5eee83924\\own-page-parse-diag-v31-local-tests.json",
+    "sha256": "6b91b7ee6d58597684b478dd49ad93442c951c8ea0aa7f44ff42a38839d405df"
+  },
+  "generationDerivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-v31-local-derivation-99998534f9f44f518b6d25ebbb8c2ac8.json",
+    "sha256": "dd3e7edfcbd73a5b7b9c551cbe19a5a8f3d75f854ba483895dad7e6c48f1aa1a"
+  },
+  "scope": "V31 diagnostic-only targeted static source/AST and local frozen-reference review; no helper imports or runtime execution",
+  "reviewChecks": {
+    "exactFinalSourceAndTargetedTestBytes": true,
+    "targetedJava45Python15PassReceiptVerified": true,
+    "javaTelemetryRemovalAndInverseNamesRecoverExactV3Bytes": true,
+    "compilerAndPostInverseNamesRecoverExactV3Bytes": true,
+    "postContextInitSqlSuccessExactOriginalAst": true,
+    "frozenLocalReferencesVerified": 21,
+    "strictParserNoRelaxationOrEval": true,
+    "transportSessionProtectedRowAndOwnerFalseGatesPreserved": true,
+    "bounded20FailureInventoryAndCompletenessConsistency": true,
+    "exactSafeDiagnosticSchemaAndEnumWhitelist": true,
+    "objectBoundaryHasEmptyCandidateHashAndNoPartialLiteral": true,
+    "wholeCandidateUtf8ByteHashOnly": true,
+    "coordinatesExplicitUtf16AndBounded": true,
+    "rawExceptionMessagesAndRawHtmlNotEmitted": true,
+    "newFieldsRemovedBeforePreviousV3Sanitizer": true,
+    "v2AndV3SourcesCompiledBindingAndActualStopDiagnosticFrozen": true
+  },
+  "limits": [
+    "This PASS authorizes binding of this reviewed diagnostic generation only; it is not official reconciliation PASS or owner proof.",
+    "Two matching regex tokens remain diagnostic only and do not establish one semantic object.",
+    "Previous 541 artifact inventory retained by unchanged targeted local test and derivation receipts; the full old suite and inventory were not rerun by this reviewer."
+  ],
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "fullOldSuitesExecuted": false
+}

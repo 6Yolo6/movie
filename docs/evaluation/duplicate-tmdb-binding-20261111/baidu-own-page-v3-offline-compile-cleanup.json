@@ -1,0 +1,47 @@
+{
+  "version": 3,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:47:54.009829+00:00",
+  "runId": "57c3694303c24cf6bc43df3b0d19ee67",
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62",
+    "CompileOwnPageDiagnosticV3.py": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3",
+    "PostOwnPageDiagnosticV3.py": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa",
+    "OwnPageDiagnosticV3Binding.py": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+  },
+  "precompileBinding": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-precompile-binding-736fc8dce0db4089990b4978ce3ec650.json",
+    "sha256": "ba0c3c96d3359d5f5e0499be523ac94410864b6e83937227319f31af6ee11f19"
+  },
+  "compilerReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\compile-completed.json",
+    "sha256": "2ace7582a41c2816c77efb6dd7b93e61a29b16fd73a99df8f71e7e793845fae7"
+  },
+  "ownedContainersRemovedReceiptTrue": true,
+  "exactOwnedLabelAbsenceChecked": true,
+  "ownedRunnerCountAfter": 0,
+  "dockerQueryExit": 0,
+  "dockerQueryStdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "dockerQueryStderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "artifactManifest": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\artifact-manifest.json",
+    "sha256": "f462a88448515afdb09d57f63d6a5c232bf0682ff83179f5ad97b1959cc5a979"
+  },
+  "verifiedArtifactFiles": 541,
+  "copiedJava": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\DiagnoseBaiduOwnPageReadOnlyV3.java",
+    "sha256": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62"
+  },
+  "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+  "cloudRequests": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "productionDiagnosticRunnerExecuted": false
+}

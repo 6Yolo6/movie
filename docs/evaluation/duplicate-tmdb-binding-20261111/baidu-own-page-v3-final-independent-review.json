@@ -1,0 +1,82 @@
+{
+  "version": 3,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:43:05.071112+00:00",
+  "reviewAuthor": "review_data_helpers",
+  "reviewScope": "FINAL_DIAGNOSTIC_SOURCE_AND_LOCAL_MOCK_EVIDENCE_ONLY",
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62",
+    "CompileOwnPageDiagnosticV3.py": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3",
+    "PostOwnPageDiagnosticV3.py": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa",
+    "OwnPageDiagnosticV3Binding.py": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+  },
+  "testSourceSha256": {
+    "OwnPageDiagnosticMocksV3.java": "d67da68ac347019683892fe1418c113a0c725834869daf2c75d20e217fd328f3",
+    "test_own_page_diag_v3.py": "28b7c3d6bba3028e072f92e62c853600a8d864bb6b4ff9fc2cd8dfa291971c03"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-tests\\7b11dc6ceea84f88856f2ce30218125f\\own-page-diag-v3-local-tests.json",
+    "sha256": "cf888ce3440216466d34c34909b776e08b03f4b9b5b6abad0c938f5815070f15"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-derivation-5f18b12c336c40d88651a553121d014f.json",
+    "sha256": "f142a1cd0ecccc701ed2292e682581a662dc1277768ed5b762418c210963f684"
+  },
+  "checks": {
+    "exactFinalFourSourcesAndTwoTestsMatch90MockReceipt": true,
+    "authorJavaMocksPassed": 65,
+    "authorPythonMocksPassed": 25,
+    "originalFrozenInputsByteChecked": 13,
+    "ownerV2ActualStop71d076dcAndCompiledBinding5c7b556aRetained": true,
+    "oldCompiledArtifactManifestFilesByteChecked": 545,
+    "compilerFourGenerationRenamesReverseToExactOriginalBytes13301696": true,
+    "compilerFourUtilityFunctionAstsUnchanged": true,
+    "postEightFunctionsAndMethodsAstsUnchanged": true,
+    "postContextInitSqlSuccessExactOldAsts": true,
+    "apiGetOnlyFiveExactPathsFixedHttpsOrigin": true,
+    "ownPageOriginalChild17650ResourceUrlFolderDirectoryAndRecordShareBound": true,
+    "boundShareIdentitySameOriginAllRedirectsAndMaxThree": true,
+    "hostOnlyDomainCookieScopePathOrderAndExpiryChecks": true,
+    "fixedPublicNetdiskUserAgentAndSameOriginReferer": true,
+    "retryPropertiesBeforeStaticHttpClientAndLibraryRedirectsNever": true,
+    "responseSizeStrictUtf8AndMediaChecks": true,
+    "strictDuplicateJsonAndNoTrailingTokens": true,
+    "inertJsonBodyScriptAssignmentSetDataMsetCandidates": true,
+    "candidateOwnerAndShareIdSameObjectNoCrossJoin": true,
+    "genericUkRegexAndAllStructuredObjectsNeverOwnerProof": true,
+    "allOutputsOfficialReconciliationFalse": true,
+    "javaPythonSeventySafeFieldNamesExactlyMatch": true,
+    "unknownProviderKeyNamesOmittedOnlyBoundedCountsEnumsBooleansSaved": true,
+    "exactSafeSchemaMissingAliasMatchingFactsChecked": true,
+    "frozenActualTerminalFactAndChildPayloadHashBeforeAfter": true,
+    "sessionUidOfficialGetBeforeAfterAndStateKeyPairByteChecks": true,
+    "sessionDataReadonlyNoVaultSaveResponseCookieUpdateOrSharePasswordPost": true,
+    "offlineCompilerSourcesGenerationImageJarNetworkNoneOwnedCleanupBound": true,
+    "compiledRunFullInventorySizeShaCurrentBackendBound": true,
+    "subprocessOutputMemoryOnlySafeSchemaBeforeSaving": true,
+    "fullProtectedRowsAndContainerGenerationsCompared": true
+  },
+  "productionExecuted": false,
+  "helpersImportedOrExecuted": false,
+  "fixturesOrMocksExecutedByReviewer": false,
+  "credentialsRead": false,
+  "dockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "executableBindingReviewed": false,
+  "actualNewOfflineCompileReviewed": false,
+  "naturalIntentCreated": false,
+  "storageNote": "Root explicitly authorized this create-once safe review in the existing E release directory after D had zero free space. Original files were not modified.",
+  "limitations": [
+    "This is a diagnostic source review. It does not establish actual ownership or official reconciliation PASS.",
+    "Author mocks used retained Owner V2 classpath. The new fresh Docker compiler result and final binding require actual lineage and complete artifact checks.",
+    "Known JSON containers and regex probes remain observations. Generic uk, multiple containers and unrecognized Go try wrappers cannot be reused as formal ownership proof."
+  ]
+}

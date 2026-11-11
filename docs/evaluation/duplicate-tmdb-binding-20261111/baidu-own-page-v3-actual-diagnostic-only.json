@@ -1,0 +1,784 @@
+{
+  "status": "OWNER_SCHEMA_DIAGNOSTIC_COLLECTED",
+  "startedAt": "2026-11-11T11:49:25.828527+00:00",
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "ownerProofSufficient": false,
+  "officialReconciliationVerified": false,
+  "scriptSha256": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa",
+  "generationBindingSha256": "fa8980f5c3af88a0f50890f9cbecba9bd8cc78aff4ddb2730ef18ac18616a8db",
+  "generationBindingPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-compiled-binding-dad60f775b3b40e29c8cca1a50eb75e8.json",
+  "diagnosticGeneration": "own-page-schema-v3",
+  "successfulArchiveRows": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "sourceMovieProjectionSha256": "1e796fc93c8bbaa66123b9cfea331f7d31d99e3b49eb4af6096872ff6d6e0ffb",
+    "selectedSourceProjectionSha256": "a6d4cf81ee2ea917a4aba2d89b09893966dd54c2ea36de8072dfca93e6ea8c08",
+    "metadataLinkProjectionSha256": "c4be60ae8d469cafb8e87556f424a3d0d9f1ac96f1c81846612f86708d8d804f",
+    "resourceLinkId": 28262,
+    "selectedResourceIds": [
+      28260,
+      28261
+    ],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999"
+  },
+  "cycleReceiptSha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+  "cycleReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+  "schemaDiagnostic": {
+    "status": "OWNER_SCHEMA_DIAGNOSTIC_ONLY",
+    "diagnosticGate": "PAGE_STRICT_JSON_PARSE_FAILED",
+    "childId": 17650,
+    "parentTaskId": 17583,
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "diagnostics": {
+      "record": {
+        "probes": {
+          "share_uk": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "uk": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "uid": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "shareid": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "shareId": {
+            "jsonType": "NUMBER",
+            "matchesRecordShareId": true,
+            "null": false,
+            "canonicalDigits": true,
+            "present": true,
+            "text": false,
+            "integer": true,
+            "matchesSessionUid": false
+          },
+          "SHARE_UK": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "SHARE_ID": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          }
+        },
+        "fieldNames": [
+          "appId",
+          "bitmap",
+          "channel",
+          "channelInfo",
+          "ctime",
+          "dCnt",
+          "description",
+          "dtime",
+          "expiredTime",
+          "expiredType",
+          "fsIds",
+          "ip",
+          "isClink",
+          "isElink",
+          "is_card",
+          "is_knowledge",
+          "kid",
+          "lastExpireTime",
+          "name",
+          "opExpireDays",
+          "oriExpiredType",
+          "passwd",
+          "port",
+          "privilege_type",
+          "public",
+          "publicChannel",
+          "shareId",
+          "shareinfo",
+          "sharetype",
+          "shortlink",
+          "shorturl",
+          "sinfo",
+          "status",
+          "substatus",
+          "tCnt",
+          "tag",
+          "tplId",
+          "typicalCategory",
+          "typicalPath",
+          "vCnt"
+        ],
+        "fieldCount": 40,
+        "jsonType": "OBJECT",
+        "present": true,
+        "fieldNamesComplete": true
+      },
+      "page": {
+        "genericUkIsNotShareOwnerProof": true,
+        "regexTokensAreDiagnosticOnly": true,
+        "knownStructures": {
+          "yunDataPresent": false,
+          "localsPresent": true,
+          "scriptInventoryComplete": true,
+          "structuredInventoryComplete": true,
+          "strictJsonParseFailed": true,
+          "duplicateJsonKeyObserved": false,
+          "scriptCount": 12
+        },
+        "tokenProbes": {
+          "share_uk": {
+            "uniqueOccurrence": true,
+            "count": 1,
+            "matchesRecordShareId": false,
+            "typeNames": [
+              "STRING"
+            ],
+            "countsComplete": true,
+            "allValuesCanonical": true,
+            "present": true,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": true,
+            "uniqueCanonicalValue": true
+          },
+          "uk": {
+            "uniqueOccurrence": false,
+            "count": 2,
+            "matchesRecordShareId": false,
+            "typeNames": [
+              "OTHER",
+              "STRING"
+            ],
+            "countsComplete": true,
+            "allValuesCanonical": false,
+            "present": true,
+            "invalidLiteralObserved": true,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": false
+          },
+          "uid": {
+            "uniqueOccurrence": false,
+            "count": 0,
+            "matchesRecordShareId": false,
+            "typeNames": [],
+            "countsComplete": true,
+            "allValuesCanonical": false,
+            "present": false,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": false
+          },
+          "shareid": {
+            "uniqueOccurrence": true,
+            "count": 1,
+            "matchesRecordShareId": true,
+            "typeNames": [
+              "INTEGER"
+            ],
+            "countsComplete": true,
+            "allValuesCanonical": true,
+            "present": true,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": true
+          },
+          "shareId": {
+            "uniqueOccurrence": false,
+            "count": 0,
+            "matchesRecordShareId": false,
+            "typeNames": [],
+            "countsComplete": true,
+            "allValuesCanonical": false,
+            "present": false,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": false
+          },
+          "SHARE_UK": {
+            "uniqueOccurrence": false,
+            "count": 0,
+            "matchesRecordShareId": false,
+            "typeNames": [],
+            "countsComplete": true,
+            "allValuesCanonical": false,
+            "present": false,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": false
+          },
+          "SHARE_ID": {
+            "uniqueOccurrence": false,
+            "count": 0,
+            "matchesRecordShareId": false,
+            "typeNames": [],
+            "countsComplete": true,
+            "allValuesCanonical": false,
+            "present": false,
+            "invalidLiteralObserved": false,
+            "matchesSessionUid": false,
+            "uniqueCanonicalValue": false
+          }
+        },
+        "ownerProofSufficient": false,
+        "structuredObjects": [],
+        "responseBytes": 6110,
+        "redirectCount": 0,
+        "finalTargetClass": "SHARE",
+        "mediaType": "HTML",
+        "utf8Valid": true,
+        "sameOriginAllHops": true,
+        "boundShareIdentityAllHops": true
+      },
+      "details": {
+        "probes": {
+          "share_uk": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "uk": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "uid": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "shareid": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "shareId": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "SHARE_UK": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          },
+          "SHARE_ID": {
+            "jsonType": "MISSING",
+            "matchesRecordShareId": false,
+            "null": false,
+            "canonicalDigits": false,
+            "present": false,
+            "text": false,
+            "integer": false,
+            "matchesSessionUid": false
+          }
+        },
+        "fieldNames": [
+          "errno",
+          "isElink",
+          "pwd",
+          "shorturl"
+        ],
+        "fieldCount": 7,
+        "jsonType": "OBJECT",
+        "present": true,
+        "fieldNamesComplete": false
+      },
+      "recordNested": {
+        "shareinfo": {
+          "probes": {
+            "share_uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareId": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_UK": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_ID": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            }
+          },
+          "fieldNames": [],
+          "fieldCount": 0,
+          "jsonType": "STRING",
+          "present": true,
+          "fieldNamesComplete": true
+        },
+        "sinfo": {
+          "probes": {
+            "share_uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareId": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_UK": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_ID": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            }
+          },
+          "fieldNames": [],
+          "fieldCount": 0,
+          "jsonType": "STRING",
+          "present": true,
+          "fieldNamesComplete": true
+        }
+      },
+      "session": {
+        "serverAccountVerified": true,
+        "sameAccountBeforeAndAfter": true,
+        "records0": {
+          "probes": {
+            "share_uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uk": {
+              "jsonType": "NUMBER",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": true,
+              "present": true,
+              "text": false,
+              "integer": true,
+              "matchesSessionUid": true
+            },
+            "uid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareId": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_UK": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_ID": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            }
+          },
+          "fieldNames": [
+            "uk",
+            "uname"
+          ],
+          "fieldCount": 23,
+          "jsonType": "OBJECT",
+          "present": true,
+          "fieldNamesComplete": false
+        },
+        "schema": {
+          "probes": {
+            "share_uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareId": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_UK": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_ID": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            }
+          },
+          "fieldNames": [
+            "errno",
+            "records"
+          ],
+          "fieldCount": 6,
+          "jsonType": "OBJECT",
+          "present": true,
+          "fieldNamesComplete": false
+        },
+        "vaultUidCanonical": true,
+        "userInfo": {
+          "probes": {
+            "share_uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uk": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "uid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareid": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "shareId": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_UK": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            },
+            "SHARE_ID": {
+              "jsonType": "MISSING",
+              "matchesRecordShareId": false,
+              "null": false,
+              "canonicalDigits": false,
+              "present": false,
+              "text": false,
+              "integer": false,
+              "matchesSessionUid": false
+            }
+          },
+          "fieldNames": [],
+          "fieldCount": 0,
+          "jsonType": "MISSING",
+          "present": false,
+          "fieldNamesComplete": true
+        }
+      }
+    },
+    "apiGetRequests": 15,
+    "pageGetRequests": 1,
+    "cloudWrites": 0,
+    "springStarted": false,
+    "sqlOpened": false,
+    "sessionPairUnchanged": true,
+    "ownerProofSufficient": false,
+    "officialReconciliationVerified": false,
+    "replayAllowed": false,
+    "compilerReceiptSha256": "2ace7582a41c2816c77efb6dd7b93e61a29b16fd73a99df8f71e7e793845fae7",
+    "compilerReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diagnostic-v3-build-attempts\\57c3694303c24cf6bc43df3b0d19ee67\\compile-completed.json",
+    "stdoutSha256": "80bb546a50569e0c0cdbac24eda39957a13ec3d628aea5aee3b8d03ba65d2147",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rawHtmlOrProviderValuesWritten": false
+  },
+  "protectedRowsRetained": true,
+  "allGenerationsRetained": true,
+  "completedAt": "2026-11-11T11:49:46.625220+00:00"
+}

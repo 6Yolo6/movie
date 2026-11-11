@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "status": "POST_OFFICIAL_FAILURE_FULL_SNAPSHOT_EXACTLY_RETAINED",
+  "createdAt": "2026-11-11T10:53:47.631915+00:00",
+  "sourceObservation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\after-official-failures-readonly-17f14457d0ef43718876610e95030727.json",
+    "sha256": "2715b39a46ccf75e5c97b5440819328607ab9634434b2335a686ece389a22b52",
+    "bytes": 10214
+  },
+  "boundActualResolverTerminal": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+    "bytes": 37661
+  },
+  "localIndependentChecks": {
+    "fullSnapshotExactlyEqualsActualResolverFinally": true,
+    "parent": true,
+    "children": true,
+    "protected": true,
+    "candidateIdentityMetadataSha256": true,
+    "candidateResourceScopes": true,
+    "runtime": true,
+    "containerGenerationCount": 13
+  },
+  "currentParent": {
+    "taskId": 17583,
+    "revision": 72,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 48,
+    "processed": 7,
+    "skipped": 6,
+    "succeeded": 1,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentChildId": null,
+    "currentIdentityId": null
+  },
+  "successfulChild": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "status": "SUCCEEDED",
+    "phase": "COMPLETE",
+    "attempts": 1,
+    "fileCount": 4,
+    "totalBytes": 143163
+  },
+  "officialReconciliationVerified": false,
+  "schedulerRestored": false,
+  "manualSlots3And4Executed": false,
+  "ledgerStopFileCreatedByTheseOfficialStops": false,
+  "originalTransportUnknownRetained": true,
+  "originalPostAcknowledgmentRecovered": false,
+  "oldUnknownChildrenAllRowsRetained": true,
+  "protectedCompleteRowsRetained": true,
+  "candidateIdentityMetadataRetained": true,
+  "allFiveCandidateResourceScopesRetained": true,
+  "all13RuntimeGenerationsAndConfigurationsRetained": true,
+  "sourceActions": {
+    "cloudWrites": 0,
+    "directSqlWrites": 0,
+    "manualPostRequests": 0,
+    "settingsPutRequests": 0
+  },
+  "reviewerProductionApiRequests": 0,
+  "reviewerProductionSqlQueries": 0,
+  "reviewerProductionDockerCommands": 0,
+  "reviewerRuntimeImports": 0,
+  "reviewerDecryptionCalls": 0,
+  "limits": [
+    "Only existing local JSON bytes were compared; no new live verification by this reviewer.",
+    "Official reconciliation STOP does not change the already successful database child to FAILED.",
+    "No owner alias or provider schema fact is inferred before an actual official read-only observation."
+  ]
+}

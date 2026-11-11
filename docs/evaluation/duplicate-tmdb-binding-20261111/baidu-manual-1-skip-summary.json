@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "status": "MANUAL_IDENTITY_47_SKIP_VERIFIED",
+  "sourceReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-1.receipt.json",
+    "sha256": "d31d3ab5683c2224f221bf4002a95677cff3a5957d68d209cd2ccf5079decc9a",
+    "bytes": 21262,
+    "status": "SKIP",
+    "startedAt": "2026-11-11T10:11:32.753970+00:00",
+    "completedAt": "2026-11-11T10:11:36.584238+00:00"
+  },
+  "authorizationSha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3",
+  "intentSha256": "c9f1c15c477f0d2e5ef2c20758be36c523a1831fd67572a94056e313b7e71846",
+  "manualOrdinal": 1,
+  "manualPostRequests": 1,
+  "sendOutcomeUnknown": false,
+  "actualArchiveAttempts": 0,
+  "newChildCount": 0,
+  "failure": null,
+  "expectedIdentity": {
+    "identityId": 47,
+    "movieId": "0WG4",
+    "sourceType": "mv",
+    "externalId": "0WG4",
+    "titleCn": "拯救生命演唱会",
+    "year": "1985"
+  },
+  "sourceRead": {
+    "responseBytes": 17,
+    "responseSha256": "6ccd51ba1a0ccb19c50394b3f6b7269b708ce8da4ad06750d0f5a0c9f748f2ff",
+    "httpStatus": 200,
+    "method": "GET",
+    "requestPathSha256": "5dd26a2bf33051f6b0cfd10397245ebcb69065f6d3f46d07780835a8af3c2263",
+    "bodyOrCredentialsSaved": false
+  },
+  "sourceResourceGetRequests": 1,
+  "torrentGetRequests": 0,
+  "resourceCount": 0,
+  "eligible": false,
+  "selectedFileCount": 0,
+  "selectionReasons": [
+    "NO_EXPLICIT_CHINESE_SUBTITLE",
+    "NO_P2P_METADATA_CANDIDATES",
+    "NO_TORRENT_CANDIDATE"
+  ],
+  "beforeParent": {
+    "taskId": 17583,
+    "revision": 63,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 46,
+    "identityMaxId": 18820,
+    "processed": 5,
+    "skipped": 5,
+    "succeeded": 0,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "lastResult": "UNKNOWN_DEFERRED",
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "823876a1f2d7ed6a4139152d134eb766f522cc2f06a2c941b35faae89abc2301"
+  },
+  "afterParent": {
+    "taskId": 17583,
+    "revision": 67,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 47,
+    "identityMaxId": 18820,
+    "processed": 6,
+    "skipped": 6,
+    "succeeded": 0,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "lastResult": "NO_ELIGIBLE_GYING_TORRENTS",
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "347d5e3073d152574f6bc6b15dcf01ae21ba990259ac6d4d6961ae8a77026248"
+  },
+  "unknownChildren": [
+    {
+      "id": 17584,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5"
+    },
+    {
+      "id": 17606,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "3fd6ade6767a0184eabd9101328914067ad61ff44eae388cc0a748a564c512fa"
+    },
+    {
+      "id": 17622,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "2e6cf9e2990b321198a52c6f12f45c42dd3d78c357bf71a11b2c2f1cfd37b19e"
+    }
+  ],
+  "protectedCompleteRows": {
+    "resource_hub_task": {
+      "rows": 4,
+      "sha256": "013e57ccce190d2197180157a960b1914ad6d5047f82fa7eb70cdbecc4527ff4"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "candidateIdentityMetadataSha256": "9348b4f102b680ead0ab3b5e21a563e065414e48c4fd5e6c4cfc26532b8a99ab",
+  "candidateResourceScopes": {
+    "0WG4": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "x3xX": {
+      "rows": 1,
+      "sha256": "2f020c05c53f2f62befa34cf2cd772526234e4875616c28bce4091196abcd661"
+    },
+    "r7yR": {
+      "rows": 1,
+      "sha256": "758cc55ba489ffe14d58a80bdefd63cdf9eae41125e678efe44dafee303702ce"
+    },
+    "M9m6": {
+      "rows": 6,
+      "sha256": "443b802fc964cd4a5f87e165db9f1b1705da8d07a93985aaad500644908aaeb3"
+    },
+    "738A": {
+      "rows": 1,
+      "sha256": "bdc09b750085d14aaf37d3ead95e31531132b51078f4210ba2c1dea106a1835b"
+    }
+  },
+  "runtime": {
+    "allContainerCount": 13,
+    "receiptBeforeAfterCompleteRuntimeExact": true,
+    "allContainerGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "completeBackendConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "completeBackendHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "hostConfigSha256": "47401b8ec6960c5b180704adb33436b815a421dc106ad3f4e87f91d73f211a0e",
+    "dailyConfigSha256": "8d5b26578064af2de5fc42ed2c7f2e7a60ce855e09cfa7ea21ab14fdaa36ea0c",
+    "completeRuntimeSnapshotSha256": "b5f1ac84c433d39c613f1d6afc268ec489ec7e39e2c3ebc4a8cd6761dd505f2e"
+  },
+  "independentLocalReceiptChecks": {
+    "authorizationSha256Exact": true,
+    "manualFirstIdentityAndOrdinalExact": true,
+    "onePostAndNormalSkip": true,
+    "noActualArchiveOrNewChild": true,
+    "ineligibleEmptyFileSelection": true,
+    "oldUnknownChildrenExact": true,
+    "protectedRowsAndCandidateMetadataExact": true,
+    "candidateResourceScopesExact": true,
+    "completeRuntimeSnapshotExact": true,
+    "baselineParentSafeFieldsExact": true,
+    "pausedTenMinuteOneAndNoCurrentChild": true,
+    "expectedParentAdvanceExact": true,
+    "noDirectSqlWrites": true,
+    "existingDeviceOnlyNoLogin": true,
+    "baselineRuntimeCompleteSnapshotExact": true
+  },
+  "reviewMethod": "Local JSON comparison of existing receipt and repository-safe baseline summary only; no production re-query or old suite",
+  "reviewProductionApiRequests": 0,
+  "reviewProductionSqlQueries": 0,
+  "reviewDockerRequests": 0,
+  "directSqlWrites": 0,
+  "routineExistingAdminLastSeenMayChange": true,
+  "existingDeviceReused": true,
+  "newDeviceCreated": false,
+  "loginPerformed": false,
+  "rawReceiptAndRuntimeRemainOutsideRepository": true,
+  "fullBusinessRowsProviderUrlsAndCredentialValuesWritten": false,
+  "archiveSuccessVerified": false,
+  "naturalScheduleRestored": false,
+  "naturalRoundExecuted": false,
+  "oldUnknownNotReplayed": true,
+  "gitActions": 0
+}

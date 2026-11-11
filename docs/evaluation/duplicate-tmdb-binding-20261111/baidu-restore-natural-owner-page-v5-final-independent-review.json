@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "status": "INDEPENDENT_REVIEW_PASS",
+  "generation": "resolved-natural-generation-1",
+  "createdAt": "2026-11-11T13:37:31.551398+00:00",
+  "reviewer": "natural_v5_final_audit",
+  "sourceAuthor": false,
+  "bindingAuthor": false,
+  "bindingSha256": "1adc703ecc454a2740fb5b423d78d61810bc45e8384aed6faad3ebdede3c4fc8",
+  "scriptSha256": "85a32a1275e37158110b16f8ab2254b290879fc16e65d6f60ae80bcc595a91c6",
+  "offlineTestReceiptSha256": "c3a4437f267df01334041306a0b5f0885fe79523c8d0b5398871e96cfb63d9aa",
+  "testScriptSha256": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0",
+  "originalTransportUnknownPreserved": true,
+  "productionExecuted": false,
+  "exactOriginalAuthorizationScopeRetained": true,
+  "enableLimit": 1,
+  "protectivePauseLimit": 1,
+  "naturalCycleLimit": 1,
+  "originalAndNewGenerationLedgerReplayGatesRetained": true,
+  "originalStopNeverChangedOrBypassed": true,
+  "originalManual2IntentAndUnknownReceiptRemainUnchanged": true,
+  "noManual3Or4Reservations": true,
+  "originalV4SourceAndTestBytesRetained": true,
+  "exactV4SourceRecoveredAfterNameAndFourPinInverse": true,
+  "exactV4TestRecoveredAfterNameInverse": true,
+  "changedFunctions": [
+    "validate_official",
+    "validate_owner_generation",
+    "load_reviewed",
+    "check_bundle_bytes"
+  ],
+  "unchangedFunctionsAndClasses": 21,
+  "allTwentyFiveFunctionsAndClassesPresent": true,
+  "freshCompleteStateAndExpectedIdentity49RequiredImmediatelyBeforeEnable": true,
+  "officialV5SameRootOwnerProofAndFourFileManifestRequired": true,
+  "fullCompiledInventoryAdditionDeletionHashAndSizeCheckedBeforeEnableAtEveryPollAndAtTerminal": true,
+  "strictOfficialV5GenerationNoLegacyOrV31Fallback": true,
+  "naturalErrorsOrUnknownProtectivelyPauseOnce": true,
+  "actualOfflineTests": 79,
+  "failures": 0,
+  "errors": 0,
+  "safeReferenceCountVerified": 65,
+  "actualCompiledArtifactCountVerified": 549,
+  "actualOfficialFileCountVerified": 4,
+  "actualOfficialTotalBytesVerified": 143163,
+  "officialReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T132738.346416Z.json",
+    "sha256": "8ca58c024d90c9f7b1e7012c40787ce5111421d007e05b9465e24679d41a63e3"
+  },
+  "resolverTerminalReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+    "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+  },
+  "ownerGenerationBinding": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-reviewed-compiled-binding-af635c0e0464439c957b156461e0d74a.json",
+    "sha256": "c4c1f4177c2df3ca6fe3e0e96aead90d39d48c8597b6727f39a07921d78eb67a"
+  },
+  "ownerSourceSha256": {
+    "ReconcileBaiduOwnerPageReadOnlyV5.java": "2bc74bc6581b357d000774849320f12158f9ba801d39e84146e95813820e4f62",
+    "CompileReconcilerOwnerPageV5.py": "add80457752c53e74d5434cbbe0c609a35f97cea43dd6c144be6849a8492dc67",
+    "PostReconcileOwnerPageV5.py": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0",
+    "OwnerPageV5Binding.py": "07e2aae30614a3376049747176796d310460a7bbe14d945f0f1a9542c25050cb"
+  },
+  "runtimeDockerRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0,
+  "naturalIntentAbsentAtReview": true,
+  "offlineBindingLoaderVerified": true
+}

@@ -1,0 +1,31 @@
+{
+  "status": "STOPPED",
+  "startedAt": "2026-11-11T10:45:35.969276+00:00",
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "scriptSha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c",
+  "successfulArchiveRows": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "sourceMovieProjectionSha256": "1e796fc93c8bbaa66123b9cfea331f7d31d99e3b49eb4af6096872ff6d6e0ffb",
+    "selectedSourceProjectionSha256": "a6d4cf81ee2ea917a4aba2d89b09893966dd54c2ea36de8072dfca93e6ea8c08",
+    "metadataLinkProjectionSha256": "c4be60ae8d469cafb8e87556f424a3d0d9f1ac96f1c81846612f86708d8d804f",
+    "resourceLinkId": 28262,
+    "selectedResourceIds": [
+      28260,
+      28261
+    ],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999"
+  },
+  "cycleReceiptSha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+  "cycleReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+  "failure": {
+    "type": "Gate",
+    "module": "__main__",
+    "code": "GENUINE_OFFICIAL_RECONCILIATION_COMPLETE"
+  },
+  "completedAt": "2026-11-11T10:46:07.333208+00:00"
+}

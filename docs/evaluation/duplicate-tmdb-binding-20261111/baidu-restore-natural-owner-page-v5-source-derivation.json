@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "version": 5,
+  "sourceSha256": {
+    "RestoreResolvedNaturalOwnerPageV5Once.py": "85a32a1275e37158110b16f8ab2254b290879fc16e65d6f60ae80bcc595a91c6",
+    "TestRestoreResolvedNaturalOwnerPageV5Offline.py": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0",
+    "ReconcileBaiduOwnerPageReadOnlyV5.java": "2bc74bc6581b357d000774849320f12158f9ba801d39e84146e95813820e4f62",
+    "CompileReconcilerOwnerPageV5.py": "add80457752c53e74d5434cbbe0c609a35f97cea43dd6c144be6849a8492dc67",
+    "PostReconcileOwnerPageV5.py": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0",
+    "OwnerPageV5Binding.py": "07e2aae30614a3376049747176796d310460a7bbe14d945f0f1a9542c25050cb"
+  },
+  "originalV4Sources": {
+    "RestoreResolvedNaturalOwnerPageV4Once.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\RestoreResolvedNaturalOwnerPageV4Once.py",
+      "sha256": "e6e8577312cb12c3a7c178287eea0c719b3da788a6ed14e933d12a1a63bb0332"
+    },
+    "TestRestoreResolvedNaturalOwnerPageV4Offline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\TestRestoreResolvedNaturalOwnerPageV4Offline.py",
+      "sha256": "6be84f9b28c2c5fc6f732af169324a72e04d99d774f19f35ad7ec2f7c86d31d7"
+    }
+  },
+  "frozenFinalSources": {
+    "RestoreResolvedNaturalOwnerPageV5Once.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-final-source-preservation-9a9dbb0543dd4b54b446efa78462af60\\RestoreResolvedNaturalOwnerPageV5Once.py",
+      "sha256": "85a32a1275e37158110b16f8ab2254b290879fc16e65d6f60ae80bcc595a91c6"
+    },
+    "TestRestoreResolvedNaturalOwnerPageV5Offline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-final-source-preservation-9a9dbb0543dd4b54b446efa78462af60\\TestRestoreResolvedNaturalOwnerPageV5Offline.py",
+      "sha256": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0"
+    }
+  },
+  "offlineTestReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-final-source-preservation-9a9dbb0543dd4b54b446efa78462af60\\restore-natural-owner-page-v5-final-offline-tests-20261111.json",
+    "sha256": "c3a4437f267df01334041306a0b5f0885fe79523c8d0b5398871e96cfb63d9aa"
+  },
+  "exactTransformationOnlyV4ToV5AndFourReviewedPins": true,
+  "topLevelFunctionClassCount": 25,
+  "changedFunctionClassNames": [
+    "validate_official",
+    "validate_owner_generation",
+    "load_reviewed",
+    "check_bundle_bytes"
+  ],
+  "unchangedFunctionClassCount": 21,
+  "generationRetained": "resolved-natural-generation-1",
+  "settingsEnablePutLimit": 1,
+  "protectivePausePutLimit": 1,
+  "manualPostRequests": 0,
+  "proofThroughPinnedV5ValidatorRequireSuccess": true,
+  "fullCompiledInventoryEveryPollAndTerminalRetained": true,
+  "credentialsRead": false,
+  "productionRequests": 0,
+  "actualOfficialPassObserved": false
+}

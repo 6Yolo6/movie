@@ -1,0 +1,175 @@
+{
+  "version": 3,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:39:56.917395+00:00",
+  "sourceSha256": {
+    "DiagnoseBaiduOwnPageReadOnlyV3.java": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62",
+    "CompileOwnPageDiagnosticV3.py": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3",
+    "PostOwnPageDiagnosticV3.py": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa",
+    "OwnPageDiagnosticV3Binding.py": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+  },
+  "testSourceSha256": {
+    "OwnPageDiagnosticMocksV3.java": "d67da68ac347019683892fe1418c113a0c725834869daf2c75d20e217fd328f3",
+    "test_own_page_diag_v3.py": "28b7c3d6bba3028e072f92e62c853600a8d864bb6b4ff9fc2cd8dfa291971c03"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-tests\\7b11dc6ceea84f88856f2ce30218125f\\own-page-diag-v3-local-tests.json",
+    "sha256": "cf888ce3440216466d34c34909b776e08b03f4b9b5b6abad0c938f5815070f15"
+  },
+  "frozenInputs": {
+    "originalInputs": {
+      "ReconcileNewBaiduArchiveReadOnly.java": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+        "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+      },
+      "CompileReconciler.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+        "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+      },
+      "PostReconcile.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+        "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+      },
+      "Cycle.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+        "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+      },
+      "plan.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+        "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+      },
+      "sealed-plan.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\sealed-plan.json",
+        "sha256": "4842b6a0895d38f01071fc42c890cd98ea543d09e8a0b2a1e4890dc5fac5f15a"
+      },
+      "execution-ledger/baseline.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+        "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1"
+      },
+      "execution-ledger/authorization-20261111T100657Z.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\authorization-20261111T100657Z.json",
+        "sha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3"
+      },
+      "execution-ledger/manual-2.intent.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+        "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+      },
+      "execution-ledger/manual-2.receipt.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+        "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+      },
+      "execution-ledger/manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+        "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+      },
+      "readonly-preparation-20261111T104607.333208Z.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T104607.333208Z.json",
+        "sha256": "48ba934b3e013aa14c20cafbeab02f8dac2f9722375f9063a232a7f41640d99a"
+      },
+      "official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json",
+        "sha256": "1cddac7f543a576793a83b58cff2bdcbe04bc8167524bcce02ce8f36b14fe47e"
+      }
+    },
+    "ownerV2CompiledBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-reviewed-compiled-binding-e8f11b93149e4118a5c0413b5a85eb7e.json",
+      "sha256": "5c7b556a39f67e0482f95db8732ea1b17311f99f22b65933c5acfcca2452b2ce"
+    },
+    "ownerV2ActualStop": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T111309.268510Z.json",
+      "sha256": "71d076dc2c79b92c6b2078ccdd571bd509cb4887538ef51f6f23581803332496"
+    }
+  },
+  "compilerDerivation": {
+    "original": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerV2.py",
+      "sha256": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51"
+    },
+    "new": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileOwnPageDiagnosticV3.py",
+      "sha256": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3"
+    },
+    "fullByteReverseEqualsOriginal": true,
+    "restoredOriginalSha256": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+    "onlyChanges": [
+      "generation validator import",
+      "independent Java class/source names",
+      "independent owned compiler label",
+      "independent output directory"
+    ],
+    "allPinnedImageNetworkNoneCredentialFreeJarManifestAndOwnedCleanupGatesRetained": true
+  },
+  "wrapperDerivation": {
+    "original": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerV2.py",
+      "sha256": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df"
+    },
+    "new": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageDiagnosticV3.py",
+      "sha256": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa"
+    },
+    "contextInitSqlAndSuccessfulChildProjectionAstEqual": true,
+    "compiledGenerationArgumentAndCompleteJarManifestHashesRequired": true,
+    "sameCandidateImageReadonlyDataAndCodeMountsRequired": true,
+    "sourceCredentialsNotProvided": true,
+    "exactChild17650AndFrozenTerminalFactRequired": true,
+    "protectedRowsAndAllContainerGenerationsRetained": true,
+    "onlyOwnedDiagnosticRunnerMayBeRemoved": true,
+    "outputNeverOfficialReconciliationVerified": true
+  },
+  "javaDiagnosticBoundaries": {
+    "apiPaths": [
+      "/api/gettemplatevariable",
+      "/api/list",
+      "/api/user/getinfo",
+      "/share/record",
+      "/share/surlinfoinrecord"
+    ],
+    "allRequestsGetOnly": true,
+    "exactRecordFolderDirectoryFsidShareIdAndCanonicalChildUrlBound": true,
+    "officialSessionUidBeforeAfterAndSessionPairHashesRequired": true,
+    "pageTargets": [
+      "exact bound /s/1ID",
+      "/share/init with exact bound surl and optional unchanged pwd"
+    ],
+    "fixedHttpsOriginNoPortUserinfoFragment": true,
+    "duplicateOrUnknownQueryKeysRejected": true,
+    "maximumRedirects": 3,
+    "maximumPageRequests": 4,
+    "cookieHostOnlyDomainDotAndLongestPathSemanticsMatchProduction": true,
+    "fixedReferenceNetdiskUserAgentAndSameOriginReferer": true,
+    "strictUtf8AndMediaTokenAnd4MiBBodyBounds": true,
+    "retryPropertiesSetBeforeHttpClientInitialization": true,
+    "scriptParsingInertNoEvaluationOrAssetFetch": true,
+    "strictDuplicateAndTrailingJsonDetection": true,
+    "balancedJsonStringAndEscapeHandlingForSetDataMset": true,
+    "knownContainers": [
+      "BODY_JSON",
+      "SCRIPT_JSON",
+      "YUN_DATA_ASSIGNMENT",
+      "LOCALS_ASSIGNMENT",
+      "YUN_DATA_CALL",
+      "LOCALS_MSET_CALL"
+    ],
+    "unrecognizedTryWrappedGoContainerMayRemainRegexOnly": true,
+    "maximumScripts": 100,
+    "maximumKnownCallsPerScript": 100,
+    "maximumStructuredObjects": 20,
+    "safeFieldWhitelistSize": 70,
+    "safeFieldWhitelistSha256": "720fefe89c05191e74c460c28be8fd089b08a0e77d6d56e8ea0e2c09ef0678a8",
+    "unknownFieldNamesOnlyCountedNotWritten": true,
+    "allRegexAndStructuredObservationsHaveOwnerProofAcceptedFalse": true,
+    "noRawHtmlCookiesCredentialsOwnerShareIdOrPwdValuesWritten": true
+  },
+  "productionDockerCommands": 0,
+  "productionApiRequests": 0,
+  "productionSqlQueries": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "actualPageSchemaObserved": false,
+  "ownerProofAccepted": false,
+  "officialReconciliationVerified": false,
+  "allFrozenOriginalAndV2InputsRetained": true
+}

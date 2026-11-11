@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "status": "user-authorized",
+  "basis": "Explicit additional user confirmation in this chat after the original 3/3 budget was exhausted",
+  "userConfirmation": "确认追加并执行",
+  "confirmedAt": "2026-11-11T10:06:57+00:00",
+  "planSha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22",
+  "baselineSha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1",
+  "scriptSha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47",
+  "sourceCommit": "65fd377de0f055c6377c623e763d245e991241f8",
+  "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+  "scope": {
+    "manualConsecutiveFilmCycleLimit": 4,
+    "manualAllowedIdentityIds": [
+      47,
+      48,
+      49,
+      50
+    ],
+    "manualActualArchiveAttemptLimit": 1,
+    "manualPostLimitPerInvocation": 1,
+    "manualStopAtFirstActualArchiveOrAnyError": true,
+    "metadataUploadAndOwnShareCreation": true,
+    "metadataFilesPerActualArchiveLimit": 4,
+    "torrentFilesPerActualArchiveLimit": 2,
+    "magnetTextMaximumBytesEach": 16384,
+    "torrentMaximumBytesEach": 2097152,
+    "manualSelectedBytesMaximum": 4227072,
+    "manualOwnShareCreationLimit": 1,
+    "officialReadOnlyReconciliation": true,
+    "restoreOnlyAfterOfficialReconciledSuccess": true,
+    "restoreOriginalEnabledTrueIntervalMinutes10BatchLimit1": true,
+    "naturalCycleLimit": 1,
+    "normalAutomaticScheduleContinuesAfterAcceptedNaturalCycle": true,
+    "protectivePauseOnFailure": true,
+    "settingsEnablePutLimit": 1,
+    "protectivePausePutLimit": 1,
+    "directSqlWrites": 0,
+    "unknownReplay": false,
+    "separateExternalPublishing": false,
+    "automaticManualRetry": false
+  }
+}

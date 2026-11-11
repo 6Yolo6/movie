@@ -1,0 +1,47 @@
+{
+  "started_at_utc": "2026-11-11T10:31:01.617649+00:00",
+  "finished_at_utc": "2026-11-11T10:31:38.276856+00:00",
+  "exit_code": 0,
+  "configuration_sha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+  "test_sha256": "46ba3ee0949e2886bf4076f8b54e8d48c8a4bb2884fca1becec5111d6887ede2",
+  "result": {
+    "status": "PASS",
+    "checks": [
+      "nginx-config-syntax",
+      "/api/internal/resource-hub/health",
+      "/api/qq-bot/health",
+      "/api/%69nternal/resource-hub/health",
+      "/api/internal;ignored/resource-hub/health",
+      "/.env",
+      "/actuator/health",
+      "/media/private.txt",
+      "/media/secret/file.jpg",
+      "api-routing-and-header-sanitization",
+      "image-query-discarded",
+      "media-read-only",
+      "nginx-auth-rate-limit",
+      "baidu-run-over-30s-routing-and-header-sanitization",
+      "ordinary-api-30s-read-timeout",
+      "baidu-run-inherited-api-rate-limit"
+    ],
+    "timeout_observations": {
+      "baidu_run_status": 200,
+      "baidu_run_seconds": 31.0,
+      "ordinary_api_status": 504,
+      "ordinary_api_seconds": 30.015,
+      "baidu_run_rate_limited_requests": 43
+    },
+    "nginx_uid": "101",
+    "cleanup": {
+      "containers": [
+        "gying-security-nginx-07b45898-proxy",
+        "gying-security-nginx-07b45898-upstream"
+      ],
+      "network": "gying-security-nginx-07b45898-net",
+      "remaining_containers": [],
+      "remaining_networks": []
+    }
+  },
+  "stdout": null,
+  "stderr": ""
+}

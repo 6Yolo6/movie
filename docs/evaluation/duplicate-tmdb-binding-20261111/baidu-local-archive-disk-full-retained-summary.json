@@ -1,0 +1,38 @@
+{
+  "status": "LOCAL_ARCHIVE_WRITE_DISK_FULL_ORIGINAL_EVIDENCE_RETAINED",
+  "createdAt": "2026-11-11T11:54:51.500864+00:00",
+  "observedLocalWriteError": {
+    "errno": 28,
+    "type": "OSError",
+    "gate": "No space left on device",
+    "target": "docs/evaluation/duplicate-tmdb-binding-20261111/baidu-own-page-v3-local-tests.json",
+    "targetBytesAfterFailure": 0
+  },
+  "failedTargetWasNewArchiveCopy": true,
+  "onlyOwnNewZeroByteFailedCopyRemoved": true,
+  "externalOriginalReceiptRetained": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-local-tests\\7b11dc6ceea84f88856f2ce30218125f\\own-page-diag-v3-local-tests.json",
+    "sha256": "cf888ce3440216466d34c34909b776e08b03f4b9b5b6abad0c938f5815070f15"
+  },
+  "existing162JsonAnd163ShaRowsVerifiedIntactAfterCleanup": true,
+  "rootAuthorizedCreateOnceIndependentReviewOnE": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-final-independent-review-ac2dc293e63240c481f1f84c22ace43d.json",
+    "sha256": "dc0acb5756cd4ac0d580b936e34d0bdb4d620c3824a46d841e24ec1d0909c350"
+  },
+  "cacheCleanup": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\authorized-cache-cleanup-eebb0d56be29423ea8d5d2d13e6384c3.json",
+    "sha256": "c58d6e89e51d8240bab070fa172a408c257bb0a52047bffda86ccd1dff1571a5"
+  },
+  "cleanupUserAuthorization": "允许清理这 6 个缓存文件",
+  "cacheFilesRemoved": 6,
+  "cacheBytesRemoved": 438991360,
+  "directoriesDeleted": 0,
+  "initialObservedDFree": 0,
+  "cleanupReceiptFreeBefore": 1347706880,
+  "cleanupReceiptFreeAfter": 1786707968,
+  "entireDifferenceFromInitialZeroAttributedToSixFiles": false,
+  "productionRequestsByReviewer": 0,
+  "dockerCommandsByReviewer": 0,
+  "cloudWrites": 0,
+  "sqlWrites": 0
+}

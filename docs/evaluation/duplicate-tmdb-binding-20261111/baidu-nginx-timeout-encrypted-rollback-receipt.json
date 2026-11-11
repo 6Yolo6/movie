@@ -1,0 +1,40 @@
+{
+  "status": "ENCRYPTED_NGINX_ROLLBACK_AUTHENTICATED",
+  "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\configuration-rollback.tar.age",
+  "sha256": "0f679c6647a33c471d508ad7f9ed4c2ad17fd25fc42afdd1781073be43c545df",
+  "members": {
+    "receipt.json": {
+      "bytes": 8783,
+      "sha256": "e8be1ea000b10dd07fde15eea0c6fbf82d234a3780a992629dc3f080f1eb9d22"
+    },
+    "nginx.conf.original": {
+      "bytes": 3636,
+      "sha256": "a331053f5d868937e6e73474390265bd69c2d873e2b7e1e2cbd21b4b741f1771"
+    },
+    "nginx.conf.mounted-at-capture": {
+      "bytes": 3952,
+      "sha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8"
+    },
+    "nginx-main.conf.original": {
+      "bytes": 723,
+      "sha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269"
+    },
+    "nginx-main.conf.mounted-at-capture": {
+      "bytes": 723,
+      "sha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269"
+    },
+    "proxy-headers.conf.original": {
+      "bytes": 380,
+      "sha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499"
+    },
+    "proxy-headers.conf.mounted-at-capture": {
+      "bytes": 380,
+      "sha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499"
+    }
+  },
+  "authenticatedExactContent": true,
+  "configurationContainsNoCredentials": true,
+  "productionChanges": 0,
+  "originalCaptureSha256": "e8be1ea000b10dd07fde15eea0c6fbf82d234a3780a992629dc3f080f1eb9d22",
+  "scriptSha256": "f82071e1b71d8d6458cc0798019b42ba751163a57577863dd540ba6d27210fbc"
+}

@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "status": "PASS",
+  "createdAt": "2026-11-11T11:13:49.595219+00:00",
+  "scope": "Independent pure local actual offline compiler lineage, source bytes and complete artifact inventory review; no Docker or helper execution",
+  "sourceSha256": {
+    "ReconcileBaiduOwnerReadOnlyV2.java": "b165a31c13d51a9d87189a43cf87d969aa488957c3d2c8a23bb51f35655ded8c",
+    "CompileReconcilerOwnerV2.py": "13301696a2b3157f18b3e90ef8d066453518ef3e94c3dcf415f6959e023dcc51",
+    "PostReconcileOwnerV2.py": "a5e966c6564ffc4318808545d1ebca74bf8bd47e7261b77824544d49289df1df",
+    "OwnerV2Binding.py": "e451162cc55d9177b86733c4e581e143f7fe494fb1f0f2fa7eec9669a23ec459"
+  },
+  "references": {
+    "compiledBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-reviewed-compiled-binding-e8f11b93149e4118a5c0413b5a85eb7e.json",
+      "sha256": "5c7b556a39f67e0482f95db8732ea1b17311f99f22b65933c5acfcca2452b2ce",
+      "bytes": 7328
+    },
+    "precompileBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-reviewed-precompile-binding-e6edf41cac6d4c86a775b8d50b6f1308.json",
+      "sha256": "426bfd45d67da7f7686e2c157c5123064bd97ec34eb5ec9981e25ac550d6959f",
+      "bytes": 6467
+    },
+    "compilerReceipt": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-owner-v2-build-attempts\\28524f60b83f4df5b2f9f4c334a48c28\\compile-completed.json",
+      "sha256": "ff9e52faefce5d80e04f9497b44e54590a607c6d79288014f664e3c193dedf3a",
+      "bytes": 1624
+    },
+    "cleanup": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-offline-compile-cleanup-b6bc8eb8f1d14a86acab12b24ac984e3.json",
+      "sha256": "d8ba9118786f4cced2765d26d55c5b1939983c437515b3f6ff0101d09e23a2fe",
+      "bytes": 2097
+    }
+  },
+  "sourceIndependentReview": {
+    "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\baidu-owner-v2-final-independent-review.json",
+    "sha256": "c67b50bd4b78d7f65d27ebf3f09cc8a051e7e41531e17bbd6d08cb9050eb349d",
+    "bytes": 6162
+  },
+  "checks": {
+    "precompileAndCompiledSharedBindingsExactlyEqual": true,
+    "allSafeReferencesHashed": 27,
+    "exactCurrentSourcesAndLocalTestsReviewDerivationRetained": true,
+    "compilerReceiptExactlyReferencesPrecompileGeneration": true,
+    "candidateAndCompilerContainerImageIdsExactlyMatchPinnedIds": true,
+    "networkNoneNoProductionMountsCredentialsAndPullNever": true,
+    "copiedJavaSourceHashMatchesReviewedJava": true,
+    "fullArtifactInventoryCount": 545,
+    "allArtifactPathsSizesAndSha256MatchExactly": true,
+    "candidateJarMatchesActualBackendJar": true,
+    "ownedCleanupReceiptAndExactLabelAbsenceRecorded": true
+  },
+  "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+  "artifactManifestSha256": "52d03dae1b36878e94c161bb066ce1d39395a614f4a6fc511eaf9257e426e05e",
+  "actualOwnerSchemaObserved": false,
+  "officialReconciliationVerified": false,
+  "schedulerRestored": false,
+  "reviewerDockerCommands": 0,
+  "reviewerProductionApiRequests": 0,
+  "reviewerProductionSqlQueries": 0,
+  "reviewerRuntimeImports": 0,
+  "reviewerHelperExecutions": 0,
+  "reviewerFixtureExecutions": 0,
+  "reviewerTestExecutions": 0,
+  "reviewerDecryptionCalls": 0,
+  "findings": [],
+  "limits": [
+    "Runner removal and network facts are the exact bound executor receipts; this reviewer made no Docker query.",
+    "All 545 compiled files and copied Java source were independently hashed from local output.",
+    "Offline compile PASS does not prove the actual official owner schema, cloud file contents, own share, or natural scheduling."
+  ]
+}

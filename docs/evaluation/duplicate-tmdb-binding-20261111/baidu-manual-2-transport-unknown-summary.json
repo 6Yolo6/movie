@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "status": "ORIGINAL_MANUAL_2_TRANSPORT_UNKNOWN_PRESERVED",
+  "sourceReceipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+    "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601",
+    "bytes": 12828,
+    "startedAt": "2026-11-11T10:13:28.328931+00:00",
+    "completedAt": "2026-11-11T10:13:59.201855+00:00"
+  },
+  "originalReceiptFields": {
+    "status": "SEND_OUTCOME_UNKNOWN",
+    "authorizationSha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3",
+    "intentSha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9",
+    "manualOrdinal": 2,
+    "manualPostRequests": 1,
+    "sendOutcomeUnknown": true,
+    "actualArchiveAttempts": 0,
+    "failure": {
+      "type": "HTTPError",
+      "module": "urllib.error",
+      "code": null
+    },
+    "directSqlWrites": 0,
+    "routineExistingAdminLastSeenMayChange": true
+  },
+  "expectedIdentity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "expectedManifest": {
+    "resourceGetRequests": 1,
+    "torrentGetRequests": 2,
+    "identity": {
+      "identityId": 48,
+      "movieId": "x3xX",
+      "sourceType": "mv",
+      "externalId": "x3xX",
+      "titleCn": "霸王别姬",
+      "year": "1993"
+    },
+    "files": [
+      {
+        "filename": "1080P_中文字幕_f4d9129250d1.txt",
+        "type": "MAGNET",
+        "bytes": 150,
+        "sha256": "4f8bfb1bf2a434c1d492275f18721ba8ebae7ae6de28da7b4a3f7852b878cd68",
+        "md5": "4c04c00e35cf85df0b6f9d96fcf0dad4",
+        "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+        "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e"
+      },
+      {
+        "filename": "4K_中文字幕_30dea15de96f.txt",
+        "type": "MAGNET",
+        "bytes": 147,
+        "sha256": "6dcacbacbbb2c165cd3687bff5a3a41191368989c356592adfb67eb315b5c93e",
+        "md5": "34121b4bcccfce12ffbfbb05de7d4930",
+        "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+        "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935"
+      },
+      {
+        "filename": "1080P_中文字幕_f4d9129250d1.torrent",
+        "type": "TORRENT",
+        "bytes": 23603,
+        "sha256": "14887510865f037a2d12f05e824fe441a67b897e4c23a6f7f87ed03730a8a7ad",
+        "md5": "85fb42bf2b66e2934d0df2636dc5013b",
+        "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+        "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e"
+      },
+      {
+        "filename": "4K_中文字幕_30dea15de96f.torrent",
+        "type": "TORRENT",
+        "bytes": 119263,
+        "sha256": "6c8763cbd0f0baf8c9ca27b70a6859370953cc62d65b848e60aafff4681cbfa7",
+        "md5": "881a07aaa2e4fe7d44d270c0aaa40062",
+        "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+        "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935"
+      }
+    ],
+    "sourceRead": {
+      "responseBytes": 53266,
+      "responseSha256": "d12864505ad42cbdb1e829d596d4549fd7d1a38719bc45d25dea6fde4eac78e1",
+      "httpStatus": 200,
+      "method": "GET",
+      "requestPathSha256": "eb059728dced944afae84b4f1c84d107084a3159f3bca02fdd75ac2748c4e824",
+      "bodyOrCredentialsSaved": false
+    },
+    "resourceCount": 146,
+    "selectionReasons": [],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "eligible": true
+  },
+  "beforeParent": {
+    "taskId": 17583,
+    "revision": 67,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 47,
+    "identityMaxId": 18820,
+    "processed": 6,
+    "skipped": 6,
+    "succeeded": 0,
+    "failed": 0,
+    "deferredCount": 3,
+    "currentIdentityId": null,
+    "currentChildId": null,
+    "lastResult": "NO_ELIGIBLE_GYING_TORRENTS",
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "347d5e3073d152574f6bc6b15dcf01ae21ba990259ac6d4d6961ae8a77026248"
+  },
+  "beforeSnapshotExactPreviousManualAfter": true,
+  "returnedStatusPresent": false,
+  "afterSnapshotPresent": false,
+  "newChildrenResultPresent": false,
+  "interpretation": {
+    "originalActualArchiveAttemptsZeroCannotProveNoActualAttempt": true,
+    "missingPostResponseCannotProveFailureOrZeroCloudEffects": true,
+    "originalTransportUnknownIsNotRewrittenByLaterDatabaseSuccess": true,
+    "subsequentDatabaseSuccessRecordedSeparately": "baidu-manual-2-post-transport-readonly-summary.json",
+    "remainingManualSlotsStopped": true,
+    "automaticRetryAllowed": false,
+    "oldUnknownNotReplayed": true,
+    "officialReconciliationVerifiedByThisSummary": false,
+    "naturalScheduleRestored": false
+  },
+  "reviewMethod": "Local safe whitelist extraction from original immutable receipt only; no production query or original field rewrite",
+  "reviewProductionApiRequests": 0,
+  "reviewProductionSqlQueries": 0,
+  "reviewDockerRequests": 0,
+  "rawReceiptAndRuntimeRemainOutsideRepository": true,
+  "fullBusinessRowsProviderUrlsAndCredentialValuesWritten": false,
+  "gitActions": 0
+}

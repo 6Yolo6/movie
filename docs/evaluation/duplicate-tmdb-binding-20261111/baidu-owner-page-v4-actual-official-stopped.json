@@ -1,0 +1,198 @@
+{
+  "status": "STOPPED",
+  "startedAt": "2026-11-11T13:07:52.260639+00:00",
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "scriptSha256": "e855561349c64067c14eb3cea9bb2d8e8f9f85e4c7ca37ee45403238f4ccf583",
+  "generationBindingSha256": "b9bbfb815beaa6ecfad7465bec70ad0dd795b10afb2d6679f093cf8c7db61b58",
+  "generationBindingPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-reviewed-compiled-binding-86310884fcef49009dc4f6741f8b9aff.json",
+  "officialGeneration": "owner-page-v4",
+  "successfulArchiveRows": {
+    "childId": 17650,
+    "movieId": "x3xX",
+    "childPayloadSha256": "c73fef9b73e8f48aceec0cbec62df6a8275cecf0462b3b274aeea1a26d4cb839",
+    "sourceMovieProjectionSha256": "1e796fc93c8bbaa66123b9cfea331f7d31d99e3b49eb4af6096872ff6d6e0ffb",
+    "selectedSourceProjectionSha256": "a6d4cf81ee2ea917a4aba2d89b09893966dd54c2ea36de8072dfca93e6ea8c08",
+    "metadataLinkProjectionSha256": "c4be60ae8d469cafb8e87556f424a3d0d9f1ac96f1c81846612f86708d8d804f",
+    "resourceLinkId": 28262,
+    "selectedResourceIds": [
+      28260,
+      28261
+    ],
+    "fileCount": 4,
+    "totalBytes": 143163,
+    "urlSha256": "68221e28ac1c7302878589a8f3ba15f89ac72851d75ebabd9611255cd8c14999"
+  },
+  "cycleReceiptSha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc",
+  "cycleReceiptPath": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+  "failure": {
+    "type": "SafeOfficialGate",
+    "module": "__main__",
+    "code": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE"
+  },
+  "officialRunnerStopped": {
+    "exitCode": 1,
+    "stdoutSha256": "d48b04796850402145e499d710e1b1b8295be2fe048fb8cdd63760a5a07c9e78",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rawStdoutOrStderrWritten": false
+  },
+  "ownerDiagnostics": {
+    "version": 4,
+    "ownerMatchesCurrentSession": false,
+    "shareIdMatchesOwnRecord": false,
+    "candidate": {
+      "scriptIndex": -1,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "NONE",
+      "bytes": 0
+    },
+    "sameObjectOwnerAndId": false,
+    "pageShareId": {
+      "text": false,
+      "integer": false,
+      "matchesExpected": false,
+      "jsonType": "MISSING",
+      "present": false,
+      "canonicalDigits": false
+    },
+    "serverAccountBeforeAndAfterVerified": false,
+    "transport": {
+      "responseSha256": "124edd50cf6ce960e1f98821f7e3a133685fd16c368e1a1d895528954804ccd2",
+      "responseBytes": 6110,
+      "redirectCount": 0,
+      "finalTargetClass": "SHARE",
+      "mediaType": "HTML",
+      "utf8Valid": true,
+      "sameOriginAllHops": true,
+      "boundShareIdentityAllHops": true
+    },
+    "inventory": {
+      "inertParsing": true,
+      "scriptCount": 12,
+      "rootFieldsInspectedComplete": false,
+      "scriptInventoryComplete": true,
+      "strictTrailingDetection": true,
+      "strictDuplicateDetection": true,
+      "scriptHashes": [
+        {
+          "bytes": 616,
+          "sha256": "560d65ee6d57ee80f2d4f9c03523287e25af0efad1c115dda40a26bdfbf662f8",
+          "index": 0
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 1
+        },
+        {
+          "bytes": 1347,
+          "sha256": "b5cf432f842f2812afbcc6677f2685c8b20d6273034a7b6d4eabd0b34ad510e8",
+          "index": 2
+        },
+        {
+          "bytes": 63,
+          "sha256": "00d1d12344219dcdc6b230d42cc67e35ff9b664886e632e1589de835876719d1",
+          "index": 3
+        },
+        {
+          "bytes": 990,
+          "sha256": "86456e51855ef792e9fc7a179e71557197d2089b6d72cb610a5a773d545b9488",
+          "index": 4
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 5
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 6
+        },
+        {
+          "bytes": 1473,
+          "sha256": "9d0b19753e399d7a81a8795428b128a400c7dcaa6ece9d98e5146fc73ca16653",
+          "index": 7
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 8
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 9
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 10
+        },
+        {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "index": 11
+        }
+      ],
+      "shareCandidateCount": 0,
+      "rootFieldCount": 0,
+      "candidateCount": 0,
+      "candidateInventoryComplete": true
+    },
+    "recordShareId": {
+      "text": false,
+      "integer": true,
+      "matchesExpected": true,
+      "jsonType": "NUMBER",
+      "present": true,
+      "canonicalDigits": true
+    },
+    "recordAliases": {
+      "uid": {
+        "text": false,
+        "integer": false,
+        "matchesExpected": false,
+        "jsonType": "MISSING",
+        "present": false,
+        "canonicalDigits": false
+      },
+      "uk": {
+        "text": false,
+        "integer": false,
+        "matchesExpected": false,
+        "jsonType": "MISSING",
+        "present": false,
+        "canonicalDigits": false
+      }
+    },
+    "pageCriticalAliasesConsistent": false,
+    "failure": {
+      "stage": "OWNER_SCHEMA",
+      "column": 0,
+      "line": 0,
+      "coordinateSpace": "CANDIDATE_UTF16",
+      "lexemeKind": "NONE",
+      "reason": "PAGE_SHARE_CANDIDATE_NOT_UNIQUE"
+    },
+    "sessionUidCanonical": true,
+    "source": "NONE",
+    "pageOwner": {
+      "text": false,
+      "integer": false,
+      "matchesExpected": false,
+      "jsonType": "MISSING",
+      "present": false,
+      "canonicalDigits": false
+    },
+    "pageLoginState": {
+      "integer": false,
+      "jsonType": "MISSING",
+      "present": false,
+      "recognizedState": false
+    },
+    "parserMode": "NONE",
+    "recordAliasesConsistent": true
+  },
+  "completedAt": "2026-11-11T13:08:21.667646+00:00"
+}

@@ -1,0 +1,310 @@
+{
+  "version": 5,
+  "status": "REVIEWED_OWNER_PAGE_V5_OFFLINE_READY",
+  "createdAt": "2026-11-11T13:24:56.256117+00:00",
+  "sourceCommit": "65fd377de0f055c6377c623e763d245e991241f8",
+  "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+  "sources": {
+    "ReconcileBaiduOwnerPageReadOnlyV5.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerPageReadOnlyV5.java",
+      "sha256": "2bc74bc6581b357d000774849320f12158f9ba801d39e84146e95813820e4f62"
+    },
+    "CompileReconcilerOwnerPageV5.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerPageV5.py",
+      "sha256": "add80457752c53e74d5434cbbe0c609a35f97cea43dd6c144be6849a8492dc67"
+    },
+    "PostReconcileOwnerPageV5.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerPageV5.py",
+      "sha256": "4dee4a1bd6064d887edcacd92eda17b5c066755739bef1a62de5659e8726efe0"
+    },
+    "OwnerPageV5Binding.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerPageV5Binding.py",
+      "sha256": "07e2aae30614a3376049747176796d310460a7bbe14d945f0f1a9542c25050cb"
+    }
+  },
+  "frozenInputs": {
+    "originalInputs": {
+      "ReconcileNewBaiduArchiveReadOnly.java": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+        "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+      },
+      "CompileReconciler.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+        "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+      },
+      "PostReconcile.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+        "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+      },
+      "Cycle.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+        "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+      },
+      "plan.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+        "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+      },
+      "sealed-plan.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\sealed-plan.json",
+        "sha256": "4842b6a0895d38f01071fc42c890cd98ea543d09e8a0b2a1e4890dc5fac5f15a"
+      },
+      "execution-ledger/baseline.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+        "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1"
+      },
+      "execution-ledger/authorization-20261111T100657Z.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\authorization-20261111T100657Z.json",
+        "sha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3"
+      },
+      "execution-ledger/manual-2.intent.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+        "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+      },
+      "execution-ledger/manual-2.receipt.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+        "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+      },
+      "execution-ledger/manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+        "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+      },
+      "readonly-preparation-20261111T104607.333208Z.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T104607.333208Z.json",
+        "sha256": "48ba934b3e013aa14c20cafbeab02f8dac2f9722375f9063a232a7f41640d99a"
+      },
+      "official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json",
+        "sha256": "1cddac7f543a576793a83b58cff2bdcbe04bc8167524bcce02ce8f36b14fe47e"
+      }
+    },
+    "ownerPageV4Predecessors": {
+      "originalInputs": {
+        "ReconcileNewBaiduArchiveReadOnly.java": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+          "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+        },
+        "CompileReconciler.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+          "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+        },
+        "PostReconcile.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+          "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+        },
+        "Cycle.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+          "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+        },
+        "plan.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+          "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+        },
+        "sealed-plan.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\sealed-plan.json",
+          "sha256": "4842b6a0895d38f01071fc42c890cd98ea543d09e8a0b2a1e4890dc5fac5f15a"
+        },
+        "execution-ledger/baseline.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+          "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1"
+        },
+        "execution-ledger/authorization-20261111T100657Z.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\authorization-20261111T100657Z.json",
+          "sha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3"
+        },
+        "execution-ledger/manual-2.intent.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+          "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+        },
+        "execution-ledger/manual-2.receipt.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+          "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+        },
+        "execution-ledger/manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+          "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+        },
+        "readonly-preparation-20261111T104607.333208Z.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T104607.333208Z.json",
+          "sha256": "48ba934b3e013aa14c20cafbeab02f8dac2f9722375f9063a232a7f41640d99a"
+        },
+        "official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json",
+          "sha256": "1cddac7f543a576793a83b58cff2bdcbe04bc8167524bcce02ce8f36b14fe47e"
+        }
+      },
+      "ownerPageV31Predecessors": {
+        "originalInputs": {
+          "ReconcileNewBaiduArchiveReadOnly.java": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileNewBaiduArchiveReadOnly.java",
+            "sha256": "6094c1dba7da05331e7c0e1d8ef90c007a2f3576b55a4dda63727e87cf7e76b6"
+          },
+          "CompileReconciler.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconciler.py",
+            "sha256": "e7f60f93a18a3d0eb97285e7af3bd9a2c590e195d91b2f3b9b3373ea23259598"
+          },
+          "PostReconcile.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcile.py",
+            "sha256": "784354902c94d94efb60a5609b0f33768a919ce9335cf49d72dda09a9d03f94c"
+          },
+          "Cycle.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\Cycle.py",
+            "sha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47"
+          },
+          "plan.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\plan.json",
+            "sha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22"
+          },
+          "sealed-plan.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\sealed-plan.json",
+            "sha256": "4842b6a0895d38f01071fc42c890cd98ea543d09e8a0b2a1e4890dc5fac5f15a"
+          },
+          "execution-ledger/baseline.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+            "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1"
+          },
+          "execution-ledger/authorization-20261111T100657Z.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\authorization-20261111T100657Z.json",
+            "sha256": "cc97d3f5b9d48d20a3290b4e721ce6313b377f84633cfe9380c208d02c73adf3"
+          },
+          "execution-ledger/manual-2.intent.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.intent.json",
+            "sha256": "e49cf8d6a04c32e688cb0475830ba70d1cef88a94ca756e7402e93767b7db1b9"
+          },
+          "execution-ledger/manual-2.receipt.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2.receipt.json",
+            "sha256": "24ebeb78f8cd1588d99be5ad4485f3388a9e6208c0768fcff23bff9a3285c601"
+          },
+          "execution-ledger/manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\manual-2-readonly-terminal-fact-9c258a611d9647f6979041f5ff2ca65b.json",
+            "sha256": "6ca4fbe9cce6db86cec4ee07f2d1922ac94a1fb829b2bbf2a756a5cf028221cc"
+          },
+          "readonly-preparation-20261111T104607.333208Z.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T104607.333208Z.json",
+            "sha256": "48ba934b3e013aa14c20cafbeab02f8dac2f9722375f9063a232a7f41640d99a"
+          },
+          "official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\official-reconcile-diagnostic-44d5291119cb40f2921a97dfbe2e8889.json",
+            "sha256": "1cddac7f543a576793a83b58cff2bdcbe04bc8167524bcce02ce8f36b14fe47e"
+          }
+        },
+        "ownerV2CompiledBinding": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-v2-reviewed-compiled-binding-e8f11b93149e4118a5c0413b5a85eb7e.json",
+          "sha256": "5c7b556a39f67e0482f95db8732ea1b17311f99f22b65933c5acfcca2452b2ce"
+        },
+        "ownerV2ActualStop": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T111309.268510Z.json",
+          "sha256": "71d076dc2c79b92c6b2078ccdd571bd509cb4887538ef51f6f23581803332496"
+        },
+        "ownPageV3Sources": {
+          "DiagnoseBaiduOwnPageReadOnlyV3.java": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DiagnoseBaiduOwnPageReadOnlyV3.java",
+            "sha256": "6b673f35d2ecdd28b11b20fd7240ec0ac2ed59155a7e9c12decd6bb2ec5eff62"
+          },
+          "CompileOwnPageDiagnosticV3.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileOwnPageDiagnosticV3.py",
+            "sha256": "55d4254d769303b5ac44e9348e175023b8ebee75080e1155959c3a99b65786a3"
+          },
+          "PostOwnPageDiagnosticV3.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageDiagnosticV3.py",
+            "sha256": "a79047bd778a8560f97c7dd84ddcf66d49abad5cf3158f4c9a4b6b41b21946fa"
+          },
+          "OwnPageDiagnosticV3Binding.py": {
+            "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnPageDiagnosticV3Binding.py",
+            "sha256": "5502e57248c77d8f44397eea13201a21cf70a0b9fc9523cd43345ea901b75502"
+          }
+        },
+        "ownPageV3CompiledBinding": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-diag-v3-reviewed-compiled-binding-dad60f775b3b40e29c8cca1a50eb75e8.json",
+          "sha256": "fa8980f5c3af88a0f50890f9cbecba9bd8cc78aff4ddb2730ef18ac18616a8db"
+        },
+        "ownPageV3ActualDiagnostic": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T114946.625220Z.json",
+          "sha256": "53dfad35bfb66b99ddf21d10415dc30ccd817d59ecb3a8a80f094092eece69b5"
+        }
+      },
+      "ownerPageV31Sources": {
+        "DiagnoseBaiduOwnPageParseReadOnlyV31.java": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DiagnoseBaiduOwnPageParseReadOnlyV31.java",
+          "sha256": "8fb58f7af5bbe33ce5aa5f0d88ee1059a3b6df936997529d846061b74511deed"
+        },
+        "CompileOwnPageParseDiagnosticV31.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileOwnPageParseDiagnosticV31.py",
+          "sha256": "7fa8917456afa84cd31e23063a4d55de00605abafa709f003d10f136d682d111"
+        },
+        "PostOwnPageParseDiagnosticV31.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostOwnPageParseDiagnosticV31.py",
+          "sha256": "a3dbdbaed9421cf13e1acaa61526fb1b5636dc193d1d25c98c7e88f84d867b62"
+        },
+        "OwnPageParseDiagnosticV31Binding.py": {
+          "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnPageParseDiagnosticV31Binding.py",
+          "sha256": "d6f46b57e3717e4e46abcf8ea705c1023ca4667f61db98030a9d369c0b24cd70"
+        }
+      },
+      "ownerPageV31CompiledBinding": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\own-page-parse-v31-reviewed-compiled-binding-7f6a906f259444eebed48e05091ccc61.json",
+        "sha256": "bb6b34fdb5f272cd5c201be4fd8896b44e88c54da7c111bb1ba6832d07498c80"
+      },
+      "ownerPageV31ActualDiagnostic": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T120822.735594Z.json",
+        "sha256": "f3fbed33f7ea303dd9cad12921b65a031695a7c76ea44ee38e2d9ac1e31b3d51"
+      }
+    },
+    "ownerPageV4Sources": {
+      "ReconcileBaiduOwnerPageReadOnlyV4.java": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\ReconcileBaiduOwnerPageReadOnlyV4.java",
+        "sha256": "b40d82c597f049e0c270637e1627cec9bbe84e8fd2a5a4dfc5b8156427d98e40"
+      },
+      "CompileReconcilerOwnerPageV4.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CompileReconcilerOwnerPageV4.py",
+        "sha256": "cb165e463fdf845906f18d3bf07155efe1651a3428b678bab4aec2ae13759498"
+      },
+      "PostReconcileOwnerPageV4.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\PostReconcileOwnerPageV4.py",
+        "sha256": "e855561349c64067c14eb3cea9bb2d8e8f9f85e4c7ca37ee45403238f4ccf583"
+      },
+      "OwnerPageV4Binding.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerPageV4Binding.py",
+        "sha256": "b8ff40915eb0f7d232cca62bfba0431d09e7746f1ae51f9573c57c0d6e5314b9"
+      }
+    },
+    "ownerPageV4CompiledBinding": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v4-reviewed-compiled-binding-86310884fcef49009dc4f6741f8b9aff.json",
+      "sha256": "b9bbfb815beaa6ecfad7465bec70ad0dd795b10afb2d6679f093cf8c7db61b58"
+    },
+    "ownerPageV4ActualDiagnostic": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T130821.667646Z.json",
+      "sha256": "d517f7330d73604f015da37295fca23c69cd92d70d6567f782ecdcd16fdbf303"
+    }
+  },
+  "productionOwnerSource": {
+    "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\client\\BaiduWebClient.java",
+    "sha256": "8716bd852bf4b55c42a7d8cfac84663293ee0c57b6c95dc679ca39642b1a6dc3"
+  },
+  "offlineTests": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-local-tests\\5a7aa389047b4810aa87617d9ffeaac8\\owner-page-v5-local-tests.json",
+    "sha256": "0567a52b8b5064ff2233ff316c0970b63ba5ad263ab9d0f360a3e1738a0b71d1"
+  },
+  "independentReview": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-final-independent-review-cb070acbb7a04a799ef77276fa36bdd0.json",
+    "sha256": "682ea21adf116815928a6c936c33d14d18921394c68e7d85e764f4c63120ee2e"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\owner-page-v5-local-derivation-359210c793f547f3b04d00677e88b6e3.json",
+    "sha256": "c354bfe8e62d34d0a81579001d6fb71314d072ee01677e64ec8190ccf6a7fb2c"
+  },
+  "testSources": {
+    "OwnerPageSchemaMocksV5.java": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\OwnerPageSchemaMocksV5.java",
+      "sha256": "06201705f95c12aaf4dc67f16db599309abb0c3ee7fa2ad5b357b816d870be63"
+    },
+    "test_owner_page_v5_pipeline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\test_owner_page_v5_pipeline.py",
+      "sha256": "41a77191e2585c9840fa8b0c6ab705c5b133624606484cfc43065fd7b883c9aa"
+    }
+  },
+  "actualOwnerSchemaObserved": false,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0
+}

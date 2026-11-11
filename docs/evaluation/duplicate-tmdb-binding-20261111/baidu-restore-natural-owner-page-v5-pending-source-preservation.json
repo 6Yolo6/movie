@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "sources": {
+    "RestoreResolvedNaturalOwnerPageV4Once.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-pending-source-preservation-b6faa091d45a45d784477d55033efcbb\\RestoreResolvedNaturalOwnerPageV4Once.py",
+      "sha256": "e6e8577312cb12c3a7c178287eea0c719b3da788a6ed14e933d12a1a63bb0332",
+      "bytes": 37712
+    },
+    "RestoreResolvedNaturalOwnerPageV5Once.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-pending-source-preservation-b6faa091d45a45d784477d55033efcbb\\RestoreResolvedNaturalOwnerPageV5Once.py",
+      "sha256": "002d7e11128dbea79888fe7f990d12d6f99296cd008554ab0b4d06b2c8b7d214",
+      "bytes": 37588
+    },
+    "TestRestoreResolvedNaturalOwnerPageV4Offline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-pending-source-preservation-b6faa091d45a45d784477d55033efcbb\\TestRestoreResolvedNaturalOwnerPageV4Offline.py",
+      "sha256": "6be84f9b28c2c5fc6f732af169324a72e04d99d774f19f35ad7ec2f7c86d31d7",
+      "bytes": 50863
+    },
+    "TestRestoreResolvedNaturalOwnerPageV5Offline.py": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-pending-source-preservation-b6faa091d45a45d784477d55033efcbb\\TestRestoreResolvedNaturalOwnerPageV5Offline.py",
+      "sha256": "9a5c870b0cc288574cb0df7e68c6ee2559b12e3ad1f868e41ac06da3065e9fb0",
+      "bytes": 50863
+    },
+    "restore-natural-owner-page-v5-pending-offline-tests-20261111.json": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\restore-natural-owner-page-v5-pending-source-preservation-b6faa091d45a45d784477d55033efcbb\\restore-natural-owner-page-v5-pending-offline-tests-20261111.json",
+      "sha256": "e322b8ee41d10ca889a5297251da94fb13eca349b3b6b1ef66e0a02100f071c2",
+      "bytes": 9627
+    }
+  },
+  "sourceTransformation": "ONLY_V4_V5_NAMES_AND_EXPLICIT_PENDING_FOUR_SOURCE_PINS",
+  "fixedGeneration": "resolved-natural-generation-1",
+  "settingsEnablePutLimit": 1,
+  "protectivePausePutLimit": 1,
+  "manualPostRequests": 0,
+  "productionRequests": 0,
+  "credentialsRead": false,
+  "offlineTests": 79,
+  "pendingPinsAreUnusableForRealChain": true,
+  "topLevelFunctionClassInventory": [
+    "Gate",
+    "need",
+    "sha",
+    "digest",
+    "read",
+    "now",
+    "safe_error",
+    "write",
+    "load_module",
+    "check_restore_ledger",
+    "no_previous_restore",
+    "reference",
+    "frozen_inputs",
+    "validate_terminal",
+    "validate_official",
+    "validate_owner_generation",
+    "load_reviewed",
+    "check_bundle_bytes",
+    "Context",
+    "validate_preflight",
+    "core_snapshot",
+    "invariants",
+    "observe",
+    "execute",
+    "main"
+  ]
+}

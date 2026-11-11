@@ -1,0 +1,43 @@
+{
+  "Status": "AUTHORIZED_SIX_CACHE_FILES_REMOVED",
+  "FileCount": 6,
+  "FreeAfter": 1786707968,
+  "RecursiveDelete": false,
+  "FreeBefore": 1347706880,
+  "Files": [
+    {
+      "Sha256": "edda755f70be25897cef89a8da2a65076e7f2e1fba231f51c5b7d04d07eb52e6",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\client-production\\0.pack",
+      "Bytes": 169597423
+    },
+    {
+      "Sha256": "0f94a319fb64b1668b251320c4b51bdc357790eb860e17afd3e9a4f20aa18495",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\client-production\\index.pack",
+      "Bytes": 39110287
+    },
+    {
+      "Sha256": "4cf621d6541d0b5f1971d04d8acd429b63ef068b3eaf45a684bd7bf9f121aadc",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\edge-server-production\\0.pack",
+      "Bytes": 276
+    },
+    {
+      "Sha256": "e052176ceb78dbcaec191bec4b9777a43e1ad08c1118f4b71476042e91ad02b8",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\edge-server-production\\index.pack",
+      "Bytes": 2459
+    },
+    {
+      "Sha256": "b558a55d1bc9b3a2510e729feab229df2a24c5adf9f8688b6ec825d11b42b038",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\server-production\\0.pack",
+      "Bytes": 181499845
+    },
+    {
+      "Sha256": "4ee1da7a771f634e31c79ca5319b4dd709e8b30a59c08c1e8d8ed04d0716bb38",
+      "Path": "D:\\gying-movie\\movie\\frontend\\.next\\cache\\webpack\\server-production\\index.pack",
+      "Bytes": 48781070
+    }
+  ],
+  "CreatedAt": "2026-11-11T11:46:09.9716590Z",
+  "Bytes": 438991360,
+  "Authorization": "Explicit current user reply: 允许清理这 6 个缓存文件",
+  "DirectoriesDeleted": 0
+}

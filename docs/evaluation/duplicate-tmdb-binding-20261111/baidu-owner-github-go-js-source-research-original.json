@@ -1,0 +1,79 @@
+{
+  "status": "PUBLIC_GITHUB_PRIMARY_SOURCE_RESEARCH_COMPLETE",
+  "createdAt": "2026-11-11T11:31:09.164011+00:00",
+  "sources": [
+    {
+      "repo": "qjfoidnh/BaiduPCS-Go",
+      "commit": "1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73",
+      "commitDate": "2026-09-09T11:45:01+08:00",
+      "file": "baidupcs/transfer.go",
+      "lines": [
+        120,
+        124,
+        129,
+        149,
+        155,
+        156,
+        157,
+        158
+      ],
+      "finding": "AccessSharePage performs GET on /s/featurestr, selects a JSON candidate containing loginstate, then reads separate uk and share_uk plus shareid from the same candidate. Comments describe older locals.mset and newer try{{...}} wrappers. The loose regex is implementation reference only; strict uniqueness/context proof is still required.",
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\github-references-92bfc6\\BaiduPCS-Go\\baidupcs\\transfer.go",
+      "sha256": "b1c22b82f55778b7678b5218ca7abaf2c726d95fd3e8e812aa92cc0e3631186f",
+      "bytes": 9297,
+      "url": "https://github.com/qjfoidnh/BaiduPCS-Go/blob/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/baidupcs/transfer.go"
+    },
+    {
+      "repo": "qjfoidnh/BaiduPCS-Go",
+      "commit": "1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73",
+      "commitDate": "2026-09-09T11:45:01+08:00",
+      "file": "internal/pcscommand/transfer.go",
+      "lines": [
+        51,
+        60,
+        63,
+        65,
+        77,
+        81
+      ],
+      "finding": "The transfer flow obtains tokens by a first GET AccessSharePage before extraction-code POST; the POST uk parameter explicitly uses tokens.share_uk. The second GET follows password verification. This is evidence of an implemented GET-first owner candidate path, not evidence that current production pages expose it.",
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\github-references-92bfc6\\BaiduPCS-Go\\internal\\pcscommand\\transfer.go",
+      "sha256": "91352357b9a6077bf6a00410bfc039f2ec3e27d6eb8bd83d41b46d0222d826a0",
+      "bytes": 4557,
+      "url": "https://github.com/qjfoidnh/BaiduPCS-Go/blob/1b9131817aaf8ca7dee24bc00e33ebc4c7a5cc73/internal/pcscommand/transfer.go"
+    },
+    {
+      "repo": "syhyz1990/baiduyun",
+      "commit": "1bf1af46c44d9132842433283718253e93983e0a",
+      "commitDate": "2024-07-18T13:02:59+08:00",
+      "file": "panlinker.user.js",
+      "lines": [
+        1089,
+        1090,
+        1104,
+        1105
+      ],
+      "finding": "getShareData reads a single locals.dump result; primaryid uses shareid.value and owner uk uses share_uk.value. This browser-state implementation distinguishes login uk from share owner semantics but cannot be executed as an isolated GET-only parser.",
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\github-references-92bfc6\\baiduyun\\panlinker.user.js",
+      "sha256": "acc176ba49d38dd41bc600132ef43ce77172da7d0b5da6dfdaa0173d18010a9e",
+      "bytes": 151600,
+      "url": "https://github.com/syhyz1990/baiduyun/blob/1bf1af46c44d9132842433283718253e93983e0a/panlinker.user.js"
+    }
+  ],
+  "sourceAcquisition": "Public GitHub source repositories cloned read-only for inspection; downloaded code was not executed. GitHub API rate limit returned 403 before fallback clone.",
+  "userAuthorizedNonOfficialRepositoryReferences": true,
+  "actualProductionOwnerSchemaObserved": false,
+  "officialPassObserved": false,
+  "thirdPartyCodeExecuted": false,
+  "productionRequests": 0,
+  "credentialReads": 0,
+  "cloudWrites": 0,
+  "directSqlWrites": 0,
+  "manualPostRequests": 0,
+  "settingsPutRequests": 0,
+  "implementationRecommendations": [
+    "Borrow candidate wrapper recognition and same-object share_uk/shareid semantics, not loose first-match regex acceptance.",
+    "Parse a unique bounded structured JSON object without eval, reject duplicate or conflicting fields, prove complete decimal owner/share IDs and exact current-session/record/child matches.",
+    "GET-only diagnostic must never call upstream repository transfer/password POST or browser scripts, and remains STOP-only until actual official proof is separately verified."
+  ]
+}

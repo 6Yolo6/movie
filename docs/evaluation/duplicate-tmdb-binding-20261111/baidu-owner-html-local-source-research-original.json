@@ -1,0 +1,73 @@
+{
+  "status": "LOCAL_SOURCE_RESEARCH_ONLY_NOT_OWNER_PROOF",
+  "createdAt": "2026-11-11T11:22:07.529826+00:00",
+  "productionSource": {
+    "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\client\\BaiduWebClient.java",
+    "sha256": "8716bd852bf4b55c42a7d8cfac84663293ee0c57b6c95dc679ca39642b1a6dc3"
+  },
+  "sourceLineEvidence": {
+    "page": 836,
+    "fixedOrigin": 956,
+    "legacyHtmlNumber": 959,
+    "openSharePasswordPost": 730,
+    "findOwnShareCallsValidateOwnShare": 387,
+    "validateOwnShareCallsOpenShare": 459,
+    "normalizerEquivalentPaths": 690,
+    "cookieHeaderFilter": 909,
+    "redirectNeverBoundedBody": 74
+  },
+  "confirmedFromLocalSource": [
+    "JDK HTTP redirects are disabled; page manually follows at most three HTTP requests and checks fixed same origin but not bound share identity.",
+    "page is GET-only, does not import response cookies, and bounds each response through the transport.",
+    "openShare sends POST /share/verify whenever an extraction code exists; findOwnShare and validateOwnShare can therefore POST and must not be used in a GET-only diagnostic.",
+    "normalizedShareUrl recognizes /s/1ID and equivalent /share/init?surl=ID, then preserves at most one valid pwd in canonical output.",
+    "legacy htmlNumber returns the first regex match without a structured container, key boundary, complete numeric value, duplicate check or owner/shareId common-object check.",
+    "jsoup 1.17.2 is already declared in production pom; no production dependency change is needed for an isolated nonexecuting parser."
+  ],
+  "syntheticRegexFindings": [
+    {
+      "syntheticCase": "suffix_keys_are_not_field_boundaries",
+      "legacyRegexReturnsPlausibleOwnerAndShareId": true,
+      "strictOwnerEvidencePermitted": false
+    },
+    {
+      "syntheticCase": "numeric_prefix_accepts_invalid_suffix",
+      "legacyRegexReturnsPlausibleOwnerAndShareId": true,
+      "strictOwnerEvidencePermitted": false
+    },
+    {
+      "syntheticCase": "duplicate_owner_conflict_first_match",
+      "legacyRegexReturnsPlausibleOwnerAndShareId": true,
+      "strictOwnerEvidencePermitted": false
+    },
+    {
+      "syntheticCase": "owner_and_shareid_from_different_objects",
+      "legacyRegexReturnsPlausibleOwnerAndShareId": true,
+      "strictOwnerEvidencePermitted": false
+    },
+    {
+      "syntheticCase": "non_script_user_text_is_matching",
+      "legacyRegexReturnsPlausibleOwnerAndShareId": true,
+      "strictOwnerEvidencePermitted": false
+    }
+  ],
+  "diagnosticRecommendations": [
+    "Use a separate diagnostic generation, never an official PASS receipt. Bind exact original child URL/record shareId/current session UID in memory and retain V2 failures.",
+    "Transport exposes GET only, https pan.baidu.com, no userinfo/port/fragment, bounded UTF-8 body, 30-second request timeout, no library redirects/retries, at most three manually verified requests.",
+    "Every redirect must retain bound share identity using only known /s/1ID or /share/init?surl=ID forms; reject unrelated same-origin routes, unknown query keys, duplicate query keys or changed pwd.",
+    "Decode UTF-8 strictly and parse HTML inertly. Report only whitelisted structural names/types/counts/path SHA and equality/uniqueness booleans. Do not save raw HTML, values, URLs, scripts, cookies or pwd.",
+    "Use regex only to diagnose candidate locations. Formal future owner proof needs one known structured share container with share_uk and shareid together, strict duplicate keys and field types, full decimal values, and exact UID/record/share matching.",
+    "Generic uk may describe the logged-in user and is not an independent share owner proof. Nested candidates, multiple containers, conflicts, missing fields, challenge/login/password pages or unrecognized script shape must STOP.",
+    "Never execute JavaScript, fetch script assets, call openShare/validateOwnShare/findOwnShare/createOwnShare, issue extraction POST, persist response cookies or change the session pair."
+  ],
+  "actualOwnerSchemaObserved": false,
+  "officialPassObserved": false,
+  "runtimeReads": 0,
+  "credentialsRead": false,
+  "productionRequests": 0,
+  "sqlRequests": 0,
+  "sourceRequests": 0,
+  "cloudRequests": 0,
+  "productionMutations": 0,
+  "syntheticValuesAreNotProduction": true
+}

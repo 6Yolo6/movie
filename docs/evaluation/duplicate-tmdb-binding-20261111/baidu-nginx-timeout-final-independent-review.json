@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "status": "PASS",
+  "createdAt": "2026-11-11T10:50:49.915537+00:00",
+  "reviewer": "independent inspect_tmdb_change child",
+  "scope": "Pure local source and sealed evidence review; no runtime helper imports or execution",
+  "reviewedCode": {
+    "nginx/nginx.conf": {
+      "path": "D:\\gying-movie\\movie\\nginx\\nginx.conf",
+      "sha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+      "bytes": 3952
+    },
+    "nginx/nginx-main.conf": {
+      "path": "D:\\gying-movie\\movie\\nginx\\nginx-main.conf",
+      "sha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269",
+      "bytes": 723
+    },
+    "nginx/proxy-headers.conf": {
+      "path": "D:\\gying-movie\\movie\\nginx\\proxy-headers.conf",
+      "sha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499",
+      "bytes": 380
+    },
+    "nginx/trusted-tunnel-peers.conf": {
+      "path": "D:\\gying-movie\\movie\\nginx\\trusted-tunnel-peers.conf",
+      "sha256": "6f38087ed3709d319dce6d4161b1a658dc127a603a96d61b773a70e75fa0046b",
+      "bytes": 357
+    },
+    "tools/security/test_nginx.py": {
+      "path": "D:\\gying-movie\\movie\\tools\\security\\test_nginx.py",
+      "sha256": "46ba3ee0949e2886bf4076f8b54e8d48c8a4bb2884fca1becec5111d6887ede2",
+      "bytes": 7655
+    }
+  },
+  "sealedEvidence": {
+    "fixture": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-timeout-fixture-20261111.json",
+      "sha256": "cf37b62dea3a4501ee038b3723fbd6cd1b0cecfffabf746fa6f3da1902462856",
+      "bytes": 1539
+    },
+    "rollbackCapture": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\receipt.json",
+      "sha256": "e8be1ea000b10dd07fde15eea0c6fbf82d234a3780a992629dc3f080f1eb9d22",
+      "bytes": 8783
+    },
+    "encryptedRollbackReceipt": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\encrypted-rollback-receipt.json",
+      "sha256": "8eec33d1797ca37bd80c0ad12ba62f8763057807ff1cb18f88b8723cc6c47b8c",
+      "bytes": 1629
+    },
+    "originalStopBeforeReload": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-deployment-4120d44dbf4d4e4986c8110cd586380e.json",
+      "sha256": "293eb54526ec28c42ab1b799c1ffe0456a4cfd2c81268cfe65d67079b31b6cf8",
+      "bytes": 545
+    },
+    "originalStopAfterReload": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-deployment-faf408e5dde14f35a5caaaec4697cdf7.json",
+      "sha256": "3dff67e53f20847789272ac28eaf55595b0b56e4c407d8741f605c1418c29278",
+      "bytes": 4326
+    },
+    "finalCompletion": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-readonly-completion-38545e8bdb7840ecb6b65188c728042e.json",
+      "sha256": "279f6a31ccf54c4486115f84ddeda2c0060922a4eb4a81a67391b9549b4be83c",
+      "bytes": 8021
+    }
+  },
+  "supportingEvidence": {
+    "diagnostic8GetProbe": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-post-reload-readonly-entries-8641ec14a02544579ec72724c3900da9.json",
+      "sha256": "8ef5e30685b43b039033b820d443029500d744079b4923239ea166af83027ecd",
+      "bytes": 2844
+    },
+    "encryptedArchive": {
+      "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\configuration-rollback.tar.age",
+      "sha256": "0f679c6647a33c471d508ad7f9ed4c2ad17fd25fc42afdd1781073be43c545df",
+      "bytes": 30920
+    },
+    "rollback7ExactMembers": [
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\receipt.json",
+        "sha256": "e8be1ea000b10dd07fde15eea0c6fbf82d234a3780a992629dc3f080f1eb9d22",
+        "bytes": 8783
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx.conf.original",
+        "sha256": "a331053f5d868937e6e73474390265bd69c2d873e2b7e1e2cbd21b4b741f1771",
+        "bytes": 3636
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx.conf.mounted-at-capture",
+        "sha256": "20111b6a8f2fe40e301011e52de85245f1232f49af3d0628d72835bcf60ac1f8",
+        "bytes": 3952
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx-main.conf.original",
+        "sha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269",
+        "bytes": 723
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\nginx-main.conf.mounted-at-capture",
+        "sha256": "33499924b5c4fefaf12860877f735d51fca99b1ef8bdb245ea2d973dc5a41269",
+        "bytes": 723
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\proxy-headers.conf.original",
+        "sha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499",
+        "bytes": 380
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\nginx-rollback-7228f64ecda04b71af9f074e5dfcb957\\proxy-headers.conf.mounted-at-capture",
+        "sha256": "845fb4f966290c8626bce9916c00611485f5ffea063f65c90a0ef7a939f1a499",
+        "bytes": 380
+      }
+    ],
+    "boundExecutedSources": {
+      "CaptureNginxRollbackAndTransport.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\CaptureNginxRollbackAndTransport.py",
+        "sha256": "e6136e2140f9f9c439d335a8178be650e9294b901875af01c7e7f2ec8bd6ce79",
+        "bytes": 3913
+      },
+      "SealNginxRollback.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\SealNginxRollback.py",
+        "sha256": "f82071e1b71d8d6458cc0798019b42ba751163a57577863dd540ba6d27210fbc",
+        "bytes": 2480
+      },
+      "DeployNginxTimeout.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DeployNginxTimeout.py",
+        "sha256": "76beb61acbb76bb79dbab121c93c52e9d8943434be47065682230f30444b3b18",
+        "bytes": 6288
+      },
+      "DeployNginxTimeoutV2.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\DeployNginxTimeoutV2.py",
+        "sha256": "7f81d579c36776adb4092e51546fd6ed025858705213f2d19898d4c84355ef1b",
+        "bytes": 7568
+      },
+      "VerifyNginxTimeoutReadOnly.py": {
+        "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\VerifyNginxTimeoutReadOnly.py",
+        "sha256": "42822d572e8eb8a0e0291d9aa66c68fb02735e0104cd64e6f529d0a9890bb174",
+        "bytes": 4361
+      }
+    }
+  },
+  "configuration": {
+    "onlyNewNormalizedBlock": true,
+    "nestedExactRunPath": "/api/admin/resource-hub/baidu/backfill/run",
+    "runProxyReadTimeoutSeconds": 330,
+    "otherProxyReadTimeoutSeconds": 30,
+    "proxyConnectTimeoutSeconds": 5,
+    "proxySendTimeoutSeconds": 30,
+    "apiRateLimitAndSecurityHeadersInherited": true,
+    "http11HostRealIPSanitizedForwardingHeadersInherited": true,
+    "internalQQBotDotFileAndImageBoundariesRetained": true,
+    "mainProxyHeadersTrustedPeersUnchanged": true,
+    "originalConfigsMatchActualCapturedGitCommit": "284e1b68ad27be4f53dcf2192933478a76d5633f",
+    "candidateRawBytes": 3952,
+    "candidateCrlfCount": 89,
+    "newBlockRawBytes": 233,
+    "newBlockCrlfCount": 6,
+    "removedRawBytes": 3719,
+    "removedExistingCrlfCount": 83,
+    "removedThenGitLfNormalizedExactlyMatchesOriginal3636Bytes": true,
+    "originalGitConfigSha256": "a331053f5d868937e6e73474390265bd69c2d873e2b7e1e2cbd21b4b741f1771",
+    "rawCandidateMinusBlockDoesNotEqualRawGitBlobUntilGitEolNormalization": true
+  },
+  "recordedFixture": {
+    "status": "PASS",
+    "checksCount": 16,
+    "delayedRunPostStatus": 200,
+    "delayedRunPostSeconds": 31.0,
+    "ordinaryApiStatus": 504,
+    "ordinaryApiSeconds": 30.015,
+    "inheritedApiRateLimit429Count": 43,
+    "nginxFixtureUid": 101,
+    "noRemainingFixtureContainersOrNetworks": true,
+    "rerunByThisReviewer": false
+  },
+  "deployment": {
+    "successfulReloadsInBoundChain": 1,
+    "firstStopBeforeReloadRetained": true,
+    "secondStopAfterSuccessfulReloadRetained": true,
+    "readOnlyVerifierCallsNoReload": true,
+    "finalAnonymousGetCount": 14,
+    "finalAnonymousLocalCount": 7,
+    "finalAnonymousPublicCount": 7,
+    "allFinalExpectedStatusesMatched": true,
+    "correctPagesResourceSearchAndMovieX3xXReturn200": true,
+    "localAnonymousAdminStatus401Run405AndPublicAccess302": true,
+    "finalAdminStatusGetCount": 1,
+    "adminGetSuccessHttp200AndCodeOkEnforcedByFrozenCycleRequest": true,
+    "existingDeviceReusedNoLoginOrNewDevice": true,
+    "all13GenerationsAndConfigurationsRetainedByRootRecordedChecks": true,
+    "fullBaiduSnapshotEqualsSealedManual2ObservationAndRemainsEqual": true,
+    "postReloadEmergAlertCounts": 0,
+    "manualPostRequests": 0,
+    "settingsPutRequests": 0,
+    "cloudWrites": 0,
+    "directSqlWrites": 0,
+    "routineExistingAdminLastSeenMayChange": true
+  },
+  "exactRawMountProof": {
+    "shapeKeys": [
+      "Config",
+      "HostConfig",
+      "Mounts",
+      "NetworkSettings"
+    ],
+    "onlyMountsListPermuted": true,
+    "atMost7MountsExhaustivelyEnumerated": true,
+    "requiresExactlyOnePermutationMatchingOriginalRawConfigurationHash": true,
+    "idImageStartedAtRestartCountAlsoMustMatchOriginal": true,
+    "all13ProofHashesEqualOriginalCapture": true,
+    "normalizationForBeforeAfterOccursOnlyAfterExactOriginalHashProof": true,
+    "proofIsNotUnsubstantiatedSortingClaim": true,
+    "sourceAndExecutedReceiptsIndependentlyReviewedNoLiveReproduction": true
+  },
+  "rollback": {
+    "7SavedMemberHashesAndArchiveShaVerifiedLocally": true,
+    "rootSealerSourceRequiresAuthenticatedDecryptedMembersExactlyEqualOriginalBytes": true,
+    "noIndependentDecryption": true,
+    "sameBindSourceRestoreSyntaxAndReloadRollbackRecorded": true
+  },
+  "originalIncorrectEntryExpectations": {
+    "stopReceiptsNeverRewritten": true,
+    "oldMovies200ExpectationRemainsStopped": true,
+    "oldLocalAnonymousRun401ExpectationRemainsStopped": true,
+    "8DiagnosticGetsRetainedSeparatelyFrom14FinalGets": true
+  },
+  "findings": [],
+  "reviewLimits": [
+    "Live service facts are root observations in exact bound receipts; this review made no live call.",
+    "Archive authentication is from bound root SealNginxRollback execution; ciphertext and local original member hashes were independently checked without decryption.",
+    "No new archive POST or proof of a real archive completing after 30 seconds is claimed.",
+    "An initial reviewer-only LF-block assertion stopped locally; actual CRLF block and Git normalization were then precisely verified. No original file or receipt changed."
+  ],
+  "reviewerProductionDockerCommands": 0,
+  "reviewerProductionApiRequests": 0,
+  "reviewerProductionSqlQueries": 0,
+  "reviewerRuntimeImports": 0,
+  "reviewerFixtureExecutions": 0,
+  "reviewerTestExecutions": 0,
+  "reviewerDecryptionCalls": 0,
+  "reviewerCloudWrites": 0,
+  "reviewerDirectSqlWrites": 0
+}
