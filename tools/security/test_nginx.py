@@ -5,6 +5,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -20,12 +21,16 @@ def main():
     network=prefix+"-net"; upstream=prefix+"-upstream"; nginx=prefix+"-proxy"
     stage=root/"tmp"/prefix; stage.mkdir(parents=True)
     fixture=r'''from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-import threading,json
+import threading,json,time
+from urllib.parse import parse_qs, urlsplit
 class Handler(BaseHTTPRequestHandler):
  def log_message(self,*args): pass
  def do_GET(self):
-  body=json.dumps({'port':self.server.server_port,'path':self.path,'xff':self.headers.get('X-Forwarded-For'),'cf':self.headers.get('CF-Connecting-IP'),'proto':self.headers.get('X-Forwarded-Proto')}).encode()
-  self.send_response(200); self.send_header('Content-Length',str(len(body))); self.send_header('Content-Type','application/json'); self.end_headers(); self.wfile.write(body)
+  time.sleep(float(parse_qs(urlsplit(self.path).query).get('fixture_delay',['0'])[0]))
+  body=json.dumps({'port':self.server.server_port,'path':self.path,'xff':self.headers.get('X-Forwarded-For'),'real':self.headers.get('X-Real-IP'),'cf':self.headers.get('CF-Connecting-IP'),'proto':self.headers.get('X-Forwarded-Proto'),'host':self.headers.get('Host'),'http_version':self.request_version}).encode()
+  self.send_response(200); self.send_header('Content-Length',str(len(body))); self.send_header('Content-Type','application/json'); self.end_headers()
+  try: self.wfile.write(body)
+  except (BrokenPipeError,ConnectionResetError): pass
  def do_POST(self): self.do_GET()
 for port in [8880,3000,9000]:
  threading.Thread(target=ThreadingHTTPServer(('0.0.0.0',port),Handler).serve_forever,daemon=True).start()
@@ -45,17 +50,17 @@ threading.Event().wait()
         info=json.loads(docker("inspect",nginx))[0]
         port=info["NetworkSettings"]["Ports"]["8080/tcp"][0]["HostPort"]
         base="http://127.0.0.1:"+port
-        def request(path,method="GET",headers=None):
+        def request(path,method="GET",headers=None,timeout=5):
             req=urllib.request.Request(base+path,method=method,headers=headers or {})
             try:
-                with urllib.request.urlopen(req,timeout=5) as r: return r.status,r.headers,r.read()
+                with urllib.request.urlopen(req,timeout=timeout) as r: return r.status,r.headers,r.read()
             except urllib.error.HTTPError as e: return e.code,e.headers,e.read()
         for _ in range(20):
             try:
                 if request("/")[0]==200: break
             except Exception: pass
             time.sleep(.25)
-        checks=[]
+        checks=["nginx-config-syntax"]
         for path in ["/api/internal/resource-hub/health","/api/qq-bot/health","/api/%69nternal/resource-hub/health","/api/internal;ignored/resource-hub/health","/.env","/actuator/health","/media/private.txt","/media/secret/file.jpg"]:
             assert request(path)[0]==404,path; checks.append(path)
         status,headers,body=request("/api/test.js",headers={"X-Forwarded-For":"1.2.3.4"})
@@ -66,13 +71,40 @@ threading.Event().wait()
         assert request("/media/mv/fixture/384.avif",method="POST")[0] in (403,405); checks.append("media-read-only")
         statuses=[request("/api/auth/login",method="POST")[0] for _ in range(12)]
         assert 429 in statuses; checks.append("nginx-auth-rate-limit")
-        print(json.dumps({"status":"PASS","checks":checks,"nginx_uid":docker("exec",nginx,"id","-u")},indent=2))
+        baidu_path="/api/admin/resource-hub/baidu/backfill/run"
+        def delayed_request(path,method="GET",headers=None):
+            started=time.monotonic()
+            result=request(path,method=method,headers=headers,timeout=45)
+            return result,time.monotonic()-started
+        forged_headers={"Host":"fixture.example","X-Forwarded-For":"1.2.3.4","CF-Connecting-IP":"5.6.7.8"}
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            baidu=pool.submit(delayed_request,baidu_path+"?fixture_delay=31","POST",forged_headers)
+            ordinary=pool.submit(delayed_request,"/api/test.js?fixture_delay=31")
+            (status,headers,body),baidu_elapsed=baidu.result()
+            (ordinary_status,_,_),ordinary_elapsed=ordinary.result()
+        data=json.loads(body)
+        assert status==200 and baidu_elapsed>=30 and data["port"]==8880 and data["path"]==baidu_path+"?fixture_delay=31"
+        assert data["xff"]==data["real"] and data["xff"]!="1.2.3.4" and not data["cf"] and data["proto"]=="https"
+        assert data["host"]=="fixture.example" and data["http_version"]=="HTTP/1.1" and headers.get("X-Content-Type-Options")=="nosniff"
+        checks.append("baidu-run-over-30s-routing-and-header-sanitization")
+        assert ordinary_status==504 and ordinary_elapsed>=29
+        checks.append("ordinary-api-30s-read-timeout")
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            statuses=list(pool.map(lambda _: request(baidu_path,method="POST")[0],range(64)))
+        assert 429 in statuses and all(status in (200,429) for status in statuses)
+        checks.append("baidu-run-inherited-api-rate-limit")
+        result={"status":"PASS","checks":checks,"timeout_observations":{"baidu_run_status":status,"baidu_run_seconds":round(baidu_elapsed,3),"ordinary_api_status":ordinary_status,"ordinary_api_seconds":round(ordinary_elapsed,3),"baidu_run_rate_limited_requests":statuses.count(429)},"nginx_uid":docker("exec",nginx,"id","-u")}
     except Exception:
         print(docker("logs", "--tail", "30", nginx, check=False))
         raise
     finally:
         for name in (nginx,upstream): docker("rm","-f",name,check=False)
         docker("network","rm",network,check=False)
+        remaining_containers=docker("container","ls","-a","--filter",f"name=^/{prefix}","--format","{{.Names}}")
+        remaining_networks=docker("network","ls","--filter",f"name={network}","--format","{{.Name}}")
+        assert not remaining_containers and not remaining_networks,"Fixture cleanup incomplete"
+    result["cleanup"]={"containers":[nginx,upstream],"network":network,"remaining_containers":[],"remaining_networks":[]}
+    print(json.dumps(result,indent=2))
 
 
 if __name__=="__main__": main()
