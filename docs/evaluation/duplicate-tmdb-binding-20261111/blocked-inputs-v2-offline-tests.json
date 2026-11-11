@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "tests": 33,
+  "failures": 0,
+  "errors": 0,
+  "allTestsPassed": true,
+  "productionIoCalls": 0,
+  "mockOnly": true,
+  "wrapper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2.py",
+    "sha256": "78af22e5308b84fb55b30ef10dcdac8cdc75f326fd58ee9cbdd5999517bf3114"
+  },
+  "testsFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2Tests.py",
+    "sha256": "7fd69c1fa3e968e9457e7eb32a58880b24a70823033add1b8b6880b7091f2111"
+  }
+}

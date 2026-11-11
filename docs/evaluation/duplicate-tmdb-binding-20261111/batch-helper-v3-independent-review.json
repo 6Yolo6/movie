@@ -1,0 +1,100 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T06:12:23.322873+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_OFFLINE_STATIC_AND_FROZEN_CHAIN",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v3-binding.json",
+    "sha256": "379d2d90dd78761c885b886312d14457aa33fac834bde356d0396524af68f5c9"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+      "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV2.py",
+      "sha256": "61c8022c91586517faa173a2af7e3b81d78833f7d85bf9f421524ea1763a4230"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "previousBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v2-binding.json",
+    "sha256": "edb8540f998a22eac3ca8723f1f949b14ace6fe87f2ee3d048920c638d63dfab"
+  },
+  "priorAttemptInputs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-failure-99bb91258df645abaad0abb167ebd925.json",
+      "sha256": "5c1165874e384675fe373283f59629b4506c4c67a8888e00f7da2fb006c7f640"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-preview-reservation.json",
+      "sha256": "c54f084a62da5eb272859171d9256af5cceb9633db43cc883c495269be19b392"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-primary-readonly-verification.json",
+      "sha256": "db08ec203889d4c2a0dac0b94a951ca7ded56c57f369c37a185c0e510e7d6d5b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\resume-blocked-primary.json",
+      "sha256": "35183fce47bd5588287498004b146cdf5851922fe3f7b0478f2fcc661c59ce69"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-preimage.json",
+      "sha256": "53df435cd41f2b48019030b6f4741c3b7e9931d03d3f8738c398ca2611a5a632"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-rows-before.json.age",
+      "sha256": "f8c23cca69329525ff3945e6001a616f6cfd9c66479b093a3c8ec76e9a751e24"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\subset-preview-authentication.json",
+      "sha256": "809e73beee004c1c0f9a5956ecf1460fb41451560f0ebbc9e3eea5ef2a0fedf5"
+    }
+  ],
+  "allFrozenChainReferencesPassed": true,
+  "v2OriginalInputCount": 17,
+  "priorAdditionalInputCount": 7,
+  "independentTests": {
+    "tests": 60,
+    "failures": 0,
+    "errors": 0,
+    "allPassed": true,
+    "v2RegressionTests": 39,
+    "newTests": 21
+  },
+  "checks": {
+    "explicitExactBindingBeforeRuntime": true,
+    "oldMaterialNotRewritten": true,
+    "provenBeforeSendFailureOnly": true,
+    "originalPrimaryNotReissued": true,
+    "originalBlockedReviewNeverMerged": true,
+    "exactOriginalEighteenPairsAndDirection": true,
+    "twoAbsenceChecksBeforeNewPreview": true,
+    "maxNewPreviewPosts": 1,
+    "maxTotalBatchPreviewPosts": 2,
+    "maxMergePosts": 1,
+    "freshSameActorSameExistingDevice300SecondAuth": true,
+    "freshEncryptedPreimageAndImmediateProvenanceAndStateChecks": true,
+    "newReviewActorPairsImpactsDeadlineValidated": true,
+    "oldReviewRejected": true,
+    "sharedReadOnlyNaturalIdleWaitSeconds": 120,
+    "onlyExactOriginalIdleGateWaits": true,
+    "unknownOnlyReadOnlyVerificationNeverReplay": true,
+    "createOnceRequestAndJournalFiles": true,
+    "genericMergeVerifierCompatibleWithPresendPreimage": true,
+    "defaultAndUnarmedNoRuntimeIo": true
+  },
+  "operationalFollowup": [
+    "Before and after actual merge, root must independently verify both original blocked-pair projections against the primary encrypted preimage.",
+    "Actual production results and preserved baseline verification remain unverified by this offline review."
+  ],
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0
+}

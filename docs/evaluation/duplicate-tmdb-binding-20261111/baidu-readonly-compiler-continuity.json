@@ -1,0 +1,234 @@
+{
+  "status": "OFFLINE_COMPILER_WINDOW_VERIFIED",
+  "startedAt": "2026-11-11T05:33:38.817063+00:00",
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "network": "none",
+  "productionCredentials": false,
+  "maintenanceLockHeldDuringCompile": true,
+  "productionGenerationsBefore": {
+    "/gying-movie-backend-1": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-11T05:24:08.901986855Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-frontend-1": {
+      "id": "4ecb31cd5521b122f29041aeb1ae9414d25c55b56cc3fe6b25b28fe219d889d4",
+      "image": "sha256:7e172578b6f954bb368e973a7dca5331747e99b0963a6d6b74896942b42e52ad",
+      "startedAt": "2026-11-10T04:34:59.00883902Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "6484372ccd7c23da8f0bf3b7507035ab803359357ff109ff9edfcd9a8b7209e3",
+      "image": "sha256:4cdba6fee3813bf625e85bbd243b294efae49861a4c38174c320cf17428e5018",
+      "startedAt": "2026-11-09T11:03:00.889598807Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "4ca46c07f8121c818f6b2aabed1d7adfeadd7a6d4b31c8e39d7063c866dc5891",
+      "image": "sha256:dc5af8a7d3c59b86c266641a8e61dc862aeb73b4f54a280cf1c8cc7ce03e1555",
+      "startedAt": "2026-11-09T10:38:35.238615165Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-social-publisher-1": {
+      "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+      "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+      "startedAt": "2026-11-10T04:34:58.995394392Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-quark-auto-save-1": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-10T04:34:58.982932964Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-gying-source-1": {
+      "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+      "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+      "startedAt": "2026-11-10T04:34:59.004066406Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-xunlei-path-probe-20261006": {
+      "id": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+      "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+      "startedAt": "2026-10-06T12:51:15.863953362Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-nginx-1": {
+      "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+      "image": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+      "startedAt": "2026-11-10T05:13:37.497774057Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/openclaw-openclaw-gateway-1": {
+      "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+      "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+      "startedAt": "2026-11-10T04:34:58.971957657Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-redis-1": {
+      "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+      "image": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "startedAt": "2026-11-10T04:34:58.965467027Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-pansou-1": {
+      "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+      "image": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+      "startedAt": "2026-11-10T04:34:58.897857161Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/minio-server": {
+      "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+      "image": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "startedAt": "2026-11-10T10:07:45.553755563Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    }
+  },
+  "compilerExit": 0,
+  "compilerStderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "compiler": {
+    "status": "offline-compile-passed",
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\reconcile-build-attempts\\f77ed83f37aa47b18726aaa9d3581042\\compile-completed.json",
+    "sha256": "cfb82ae98536be8351bd55ea9f48f2bad6e7882af6cdf30e3589cb07080417be",
+    "gate": null
+  },
+  "productionGenerationsAfter": {
+    "/gying-movie-backend-1": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-11T05:24:08.901986855Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-frontend-1": {
+      "id": "4ecb31cd5521b122f29041aeb1ae9414d25c55b56cc3fe6b25b28fe219d889d4",
+      "image": "sha256:7e172578b6f954bb368e973a7dca5331747e99b0963a6d6b74896942b42e52ad",
+      "startedAt": "2026-11-10T04:34:59.00883902Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-baidu-share-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "6484372ccd7c23da8f0bf3b7507035ab803359357ff109ff9edfcd9a8b7209e3",
+      "image": "sha256:4cdba6fee3813bf625e85bbd243b294efae49861a4c38174c320cf17428e5018",
+      "startedAt": "2026-11-09T11:03:00.889598807Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-baidu-upload-probe-748d2e7e229848a698f6f6c52a1d07fa": {
+      "id": "4ca46c07f8121c818f6b2aabed1d7adfeadd7a6d4b31c8e39d7063c866dc5891",
+      "image": "sha256:dc5af8a7d3c59b86c266641a8e61dc862aeb73b4f54a280cf1c8cc7ce03e1555",
+      "startedAt": "2026-11-09T10:38:35.238615165Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-social-publisher-1": {
+      "id": "7cc7f5b50c33ad61a0661ee9a6510cedd08244341017ee679666f63ae9368cf7",
+      "image": "sha256:8b6dd6e77fa93f012add7fb7cc6f17082d13fa937a9d5b21bfb62697185381cb",
+      "startedAt": "2026-11-10T04:34:58.995394392Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-quark-auto-save-1": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-10T04:34:58.982932964Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-gying-source-1": {
+      "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+      "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+      "startedAt": "2026-11-10T04:34:59.004066406Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-xunlei-path-probe-20261006": {
+      "id": "63faa9f10028710288586cc9351914a6787f74f84dd1b1ab2248494b68250b3f",
+      "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+      "startedAt": "2026-10-06T12:51:15.863953362Z",
+      "restarts": 0,
+      "running": false,
+      "oomKilled": false
+    },
+    "/gying-movie-nginx-1": {
+      "id": "597ccdf922360332f4601df99f350ff31f584203797bd19c651bd3ee87bb3d53",
+      "image": "sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6",
+      "startedAt": "2026-11-10T05:13:37.497774057Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/openclaw-openclaw-gateway-1": {
+      "id": "552c8ca45d600dce1d9cc704c6eeb091723b43bf8764b14132d6263fefc4125a",
+      "image": "sha256:3814fb1f62f9cfc5944de088c5817c68c88b5d721feebe36420b666a90a61ce7",
+      "startedAt": "2026-11-10T04:34:58.971957657Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-redis-1": {
+      "id": "d1f7476316b67709e937593676f43eb89ea19bc5619e48141575b22bde2a7d2c",
+      "image": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "startedAt": "2026-11-10T04:34:58.965467027Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/gying-movie-pansou-1": {
+      "id": "c4a5526d4b272e37c634cbeb27053400998ff208be9a06f4383d2c63fced069d",
+      "image": "sha256:be601cc820d76ea6409f0efa0800533d95fb0dd0b6569fac1d43708b660b21f5",
+      "startedAt": "2026-11-10T04:34:58.897857161Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    },
+    "/minio-server": {
+      "id": "3d8b79bbac44b8a9baa780fb0f84a8244d456968344bb12232be33b45dbb3262",
+      "image": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "startedAt": "2026-11-10T10:07:45.553755563Z",
+      "restarts": 0,
+      "running": true,
+      "oomKilled": false
+    }
+  },
+  "allThirteenProductionGenerationsRetained": true,
+  "backendConfigAndHostConfigRetained": true,
+  "backendSourceVerifiedAfter": "65fd377de0f055c6377c623e763d245e991241f8",
+  "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+  "completedAt": "2026-11-11T05:34:06.267745+00:00"
+}

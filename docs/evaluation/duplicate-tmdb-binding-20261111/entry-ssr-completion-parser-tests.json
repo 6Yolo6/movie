@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "status": "PASS",
+  "allTestsPassed": true,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntrySsrCompletion.py",
+      "sha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05"
+    }
+  ],
+  "testScript": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntrySsrCompletion.py",
+    "sha256": "a7510fa3f8d5c705e6ae6e8f2cd8d877d5eec3b86278a9ed430bb99eb2d22c11"
+  },
+  "testsRun": 8,
+  "failureCount": 0,
+  "errorCount": 0,
+  "productionPosts": 0,
+  "productionSql": 0,
+  "productionApiRequests": 0,
+  "dockerActions": 0,
+  "oldSuitesRun": 0,
+  "testOutput": "test_default_main_performs_no_runtime_io (__main__.ParserTests) ... ok\ntest_english_numeric_suffix_and_independent_year (__main__.ParserTests) ... ok\ntest_exactly_one_matching_span_is_required (__main__.ParserTests) ... ok\ntest_react_comments_nested_nodes_and_void_tags (__main__.ParserTests) ... ok\ntest_script_and_style_text_are_excluded (__main__.ParserTests) ... ok\ntest_wrong_and_partial_year_spans_are_rejected (__main__.ParserTests) ... ok\ntest_year_span_outside_h2_is_rejected (__main__.ParserTests) ... ok\ntest_year_substring_without_span_is_rejected (__main__.ParserTests) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.099s\n\nOK\n"
+}

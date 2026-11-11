@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "testsRun": 4,
+  "failures": 0,
+  "errors": 0,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntrySsrCompletion.py",
+      "sha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05"
+    }
+  ],
+  "testScript": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\TestEntrySsrCompletionFlow.py",
+    "sha256": "41afc0fce543dc3320d435e34b5ff915b6e01bc798775d6ed7eb6160360c0a6b"
+  },
+  "productionPosts": 0,
+  "productionSqlQueries": 0,
+  "productionHttpRequests": 0,
+  "runtimeDockerRequests": 0,
+  "cloudActions": 0,
+  "mockActualCompletionFlowExecuted": true,
+  "originalPassedSuitesRepeated": false,
+  "mockFixturesNeverUsedAsProductionEvidence": true,
+  "results": [
+    "test_final_full_row_change_overrides_four_ssr_pass (__main__.FlowTests) ... ok",
+    "test_four_only_ssr_complete_and_all_final_guards_pass (__main__.FlowTests) ... ok",
+    "test_scoped_getter_rejects_api_unknown_json_and_fifth_get (__main__.FlowTests) ... ok",
+    "test_wrong_exact_year_stops_first_get_with_final_guard (__main__.FlowTests) ... ok",
+    "",
+    "----------------------------------------------------------------------",
+    "Ran 4 tests in 0.033s",
+    "",
+    "OK"
+  ]
+}

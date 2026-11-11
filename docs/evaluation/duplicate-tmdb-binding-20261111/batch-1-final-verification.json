@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "pairs": 18,
+  "historyRows": 220,
+  "movedReferences": 184,
+  "favoriteDeletes": 0,
+  "favoriteHistoryRows": 0,
+  "exactRowDeltasVerified": true,
+  "exactHistoryCoverageVerified": true,
+  "historyFingerprintSha256FormatVerified": true,
+  "historyOriginalFingerprintRecomputed": false,
+  "nativeJsonPayloadCompatible": true,
+  "sourceMetadataPreserved": true,
+  "targetOnlyTmdbBindingAndResourceStatusChanged": true,
+  "sourceIdentityOnlyMovieIdMoved": true,
+  "afterSha256": "598f38a4b83b04fb3dba29e06e123cf86d0cee6185a8e8e7761da89a6f03615f",
+  "legacyResourceUpdateAtRows": 4,
+  "legacyUpdateAtNarrowMergeWindowVerified": true,
+  "at": "2026-11-11T06:30:36.919206+00:00",
+  "reviewId": "7657dee5-ed38-4fb9-a30d-e4c605f0e9ad",
+  "idempotencyKey": "3d7ffa2a-8ddf-4066-9600-253cdd233104",
+  "batch": 1,
+  "protectedBaiduAndConfigurationUnchanged": true,
+  "allThirteenContainerGenerationsUnchanged": true,
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0,
+  "readOnlyRecoveryVerification": true,
+  "automaticReplay": false,
+  "legacyResourceSchemaClockAndTriggerVerified": true,
+  "legacyUpdateWindow": {
+    "requestAt": "2026-11-11T06:13:55.217607+00:00",
+    "completedAt": "2026-11-11 06:14:04.249535",
+    "ackAt": "2026-11-11T06:14:04.267063+00:00",
+    "offsetSeconds": 28800,
+    "precisionSeconds": 1
+  },
+  "verifierBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  }
+}

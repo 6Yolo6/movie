@@ -1,0 +1,48 @@
+{
+  "version": 7,
+  "status": "PASS",
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "testsRun": 19,
+  "failures": 0,
+  "errors": 0,
+  "testFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchSplitOfflineTestsV7.py",
+    "sha256": "8ab4e78172a6dea7b77906f43a59721c11426476fd2297df14291195d4d1719f"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchSplitMergeV7.py",
+      "sha256": "6a4e7394ca5ae358442fc812554e0c6349d4e9289b2dab9a2739ba7c1b7836da"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchIdleMergeV6.py",
+      "sha256": "e2eca4318acb5c784e99db0166166abd96e2a23ed1c35416cec8d6f18f5bef9a"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentMergeV5.py",
+      "sha256": "8b3948610433cbe5f54efac4e53f05c24cb03f1cb46e0670f9dc4df712209c1f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\ObserveUnusedBatch2.py",
+      "sha256": "2bcf8ac904d00b9a84ea0e200543179d2552d8e1e81b3ebdc7238279427fa7bb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlocked.py",
+      "sha256": "6dd461319dd876c33c74aea8397a648068bfbb01b7386189d039ea0be7a2bc42"
+    }
+  ],
+  "testScope": "Pure input validation and fully mocked new child control flow; no live state proof"
+}

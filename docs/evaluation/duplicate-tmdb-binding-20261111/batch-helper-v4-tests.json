@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "tests": 42,
+  "failures": 0,
+  "errors": 0,
+  "originalDeltaTests": 14,
+  "timestampRegressionTests": 7,
+  "productionPosts": 0,
+  "runtimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "files": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchOfflineTestsV4.py",
+      "sha256": "43f04af9560be37d621fa3a2a01de4c17d280dd60497693cfb2efb15dbfd740d"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-schema.json",
+      "sha256": "58e16e67b3973eb9b00dc68a0f808c8f7c5ea9f4c4835b2c6a1e15b010474ce1"
+    }
+  ]
+}

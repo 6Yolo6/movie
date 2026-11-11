@@ -1,0 +1,68 @@
+{
+  "version": 5,
+  "status": "PASS",
+  "at": "2026-11-11T06:43:04.170782+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_OFFLINE_STATIC_AND_MOCK_V5",
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentMergeV5.py",
+      "sha256": "8b3948610433cbe5f54efac4e53f05c24cb03f1cb46e0670f9dc4df712209c1f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "testReceipt": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v5-tests-pass.json",
+    "sha256": "62e4a1f4a45dde45daa817e59f524a41af7f0da0151cf1aff3b15beef87768ad"
+  },
+  "testFile": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentOfflineTestsV5.py",
+    "sha256": "2cb888316d6b7109f2b4835cc426589895e663d46d06d2a53f88fa0e3fad0338"
+  },
+  "independentTests": {
+    "testsRun": 9,
+    "failures": 0,
+    "errors": 0,
+    "runtimeLoadAndExecutionAndPostFailClosed": true
+  },
+  "checks": {
+    "batch2Only": true,
+    "twoOldAcknowledgedPreviewsRetainedAndAuthenticated": true,
+    "allPrimaryAndSubsetPreimagesAuthenticatedAndEqualBeforeContinuation": true,
+    "nineteenEligibleOneBlockedAndBlockedPrimaryNeverMerged": true,
+    "originalSubsetReviewAndIdempotencyKeyPreserved": true,
+    "noNewPreviewAndAtMostOneFirstMerge": true,
+    "anyPriorMergeAttemptOrUnknownOutcomeRejected": true,
+    "originalFailureReservationAndIntentBound": true,
+    "freshAuthenticationUsesSameExistingAdminDeviceAndUnsentMergeTag": true,
+    "sharedReadOnlyIdleWaitBudget120Seconds": true,
+    "exactOriginalIdleGateOnly": true,
+    "schemaClockAndProvenanceGuardsRetained": true,
+    "expiryMustRemainOver90SecondsAtBothChecks": true,
+    "exactImmediateSubsetStateBeforePost": true,
+    "originalEvidenceNotOverwritten": true,
+    "exactNineteenSuccessAndReplayedFalseRequired": true,
+    "v4ExactRowsAndHistoryVerifierRetained": true,
+    "genericMergeTagAndVerificationOutcomeCompatibleWithEntry": true,
+    "defaultImportAndUnarmedNoRuntimeIo": true
+  },
+  "bindingValidationPending": true,
+  "productionResultVerifiedByThisReview": false
+}

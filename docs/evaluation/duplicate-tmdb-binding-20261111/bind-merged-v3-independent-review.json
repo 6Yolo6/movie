@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T07:58:07.281623+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_COMPLETE_AST_FROZEN_REAL_INPUT_AUTHENTICATION_AND_SYNTHETIC_FLOW_MOCKS",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV3.py",
+    "sha256": "e8e2c2a056102eed1ad64c80d7a09c534b136bde0380c2797ee31fff5e709304"
+  },
+  "applicationPermission": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-application-privileges-v2-f673bd889b57417591b4de5e97bf86ec.json",
+    "sha256": "45331a57a2da17dabe163c25f85c35035e18637e1a34502f11077eaece6b445d"
+  },
+  "realV3Prepared": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-v3-prepared.json",
+    "sha256": "e132d72f7c719bcf9cf82a87e34b79dfb8d105ecc1c37857f29512a631f9253f"
+  },
+  "independentChecks": {
+    "passed": 16,
+    "failures": 0,
+    "errors": 0,
+    "checks": [
+      "local_authentication_actual_frozen_v2_permission_and_v3_prepared_without_runtime_or_decryption",
+      "unchanged_transaction_framing_predicates_full_rows_and_static_two_field_update_ast",
+      "all_25_complete_projection_queries_equal_v2_including_empty_owner_scans",
+      "exact_2_metadata_exclusive_and_23_shared_including_complete_excluded_owner_join",
+      "mock_apply_success_and_reservation_blocks_replay",
+      "mock_apply_preimage_drift_and_reservation_blocks_replay",
+      "mock_apply_update_eof_and_reservation_blocks_replay",
+      "mock_apply_row_count_zero_and_reservation_blocks_replay",
+      "mock_apply_after_drift_and_reservation_blocks_replay",
+      "mock_apply_commit_unknown_and_reservation_blocks_replay",
+      "mock_apply_post_commit_drift_and_reservation_blocks_replay",
+      "mock_apply_lock_eof_and_reservation_blocks_replay",
+      "mock_readonly_verify_before",
+      "mock_readonly_verify_after",
+      "mock_readonly_verify_drift",
+      "mock_readonly_verify_runtime_drift"
+    ],
+    "unchangedAstFunctionsAndClasses": 25,
+    "projectionCount": 25,
+    "exclusiveMetadataProjectionCount": 2,
+    "sharedProtectionProjectionCount": 23,
+    "allFrozenV2InputsPreserved": true
+  },
+  "scopeDecision": {
+    "authenticatedOriginalV2CiphertextReuseAccepted": true,
+    "freshBothIdentitiesFullPreimageEqualityRequired": true,
+    "newCiphertextWasDesignSuggestionOnly": true,
+    "independentV3CreateOncePreparationReservationResultVerification": true,
+    "existingApplicationIdentityAndPinnedTlsOnly": true,
+    "noGrantCredentialSchemaIdentityMergeOrCloudExpansion": true
+  },
+  "minimalRequiredChanges": [],
+  "originalSelfTests": {
+    "reportedPass": 11,
+    "notReexecutedByThisReview": true
+  },
+  "productionRuntimeIo": 0,
+  "credentialReads": 0,
+  "decryption": 0,
+  "childProcesses": 0,
+  "productionSqlStatements": 0,
+  "productionPosts": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "actualV3PrepareIndependentlyLocallyAuthenticated": true,
+  "actualV3ApplyOrEntryVerifiedByThisReview": false
+}

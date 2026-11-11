@@ -1,0 +1,68 @@
+{
+  "status": "VERIFIED_READONLY_MANIFEST",
+  "identity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "matchStatus": "AUTO",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "expectedFolder": "/GYing Resource Hub/mv/霸王别姬（x3xX）/磁力种子",
+  "fileCount": 4,
+  "totalBytes": 143163,
+  "files": [
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.txt",
+      "type": "MAGNET",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 150,
+      "sha256": "4f8bfb1bf2a434c1d492275f18721ba8ebae7ae6de28da7b4a3f7852b878cd68",
+      "md5": "4c04c00e35cf85df0b6f9d96fcf0dad4",
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e"
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.txt",
+      "type": "MAGNET",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 147,
+      "sha256": "6dcacbacbbb2c165cd3687bff5a3a41191368989c356592adfb67eb315b5c93e",
+      "md5": "34121b4bcccfce12ffbfbb05de7d4930",
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935"
+    },
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.torrent",
+      "type": "TORRENT",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 23603,
+      "sha256": "14887510865f037a2d12f05e824fe441a67b897e4c23a6f7f87ed03730a8a7ad",
+      "md5": "85fb42bf2b66e2934d0df2636dc5013b",
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e"
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.torrent",
+      "type": "TORRENT",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 119263,
+      "sha256": "6c8763cbd0f0baf8c9ca27b70a6859370953cc62d65b848e60aafff4681cbfa7",
+      "md5": "881a07aaa2e4fe7d44d270c0aaa40062",
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935"
+    }
+  ],
+  "evidence": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T054057.200743Z.json",
+    "sha256": "078384920cc6df497f4590cadb74ede4bb1d31739578e3e4573b1c41140ce014"
+  },
+  "contentOrUrlsOrCredentialsWritten": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0
+}

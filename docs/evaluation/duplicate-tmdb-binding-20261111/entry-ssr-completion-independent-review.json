@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "status": "PASS",
+  "at": "2026-11-11T09:12:14.410611+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_SSR_COMPLETION_FROZEN_CHAIN_ONLY",
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-binding.json",
+    "sha256": "404db6d1b3a75ed37d59f968bcd28f281e62a2e910523aa03e2b4996d3931218"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntrySsrCompletion.py",
+      "sha256": "4561ba6cd314e2b3dfe39597649ee4b652b7d57d4a5998702f31bee86ef32f05"
+    }
+  ],
+  "entryV3Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v3-binding.json",
+    "sha256": "515fdb2615a3cd7ced1b4afeabaa5c2c10f33509985932292bf5089e489e8305"
+  },
+  "entryV3StoppedReceipt": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T084740.641181Z.json",
+    "sha256": "5250df4151fd79272cabefcc4238c2b52f6bae2ad9f7908adbea4371582c9d25"
+  },
+  "headerObservation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T085216.348398Z.json",
+    "sha256": "3a04e6ea924672f5d135a0aa2561d27e59a96910dc5d41d9322c546a6bced2a6"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-tests-complete.json",
+    "sha256": "f4281d4beaeb092458373c113c10e0ef1240c41f77147f5d44c050f865f7c6a0"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-offline-review.json",
+    "sha256": "3750fbbff501a62d238f88daab91e0467ec784a5d858ec48db33c71ab527e2ea"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-ssr-completion-derivation.json",
+    "sha256": "ddf4d356bfcd5e487c1a5bce7b029d9f5bbdfd13df54fad51e0593b0cad0ed04"
+  },
+  "scope": {
+    "actualPairs": 67,
+    "reusedDetailChecks": 67,
+    "reusedListChecks": 67,
+    "reusedMovieSsrChecks": 2,
+    "remainingSsrIds": [
+      "tmdb_tv_93740",
+      "4YNV",
+      "tmdb_tv_247718",
+      "1YKW"
+    ],
+    "maximumAnonymousSsrGets": 4,
+    "apiDetailGets": 0,
+    "apiListGets": 0,
+    "postRequests": 0,
+    "operatorDirectSqlWrites": 0,
+    "cloudActions": 0,
+    "yearMustBeIndependentH2Span": true,
+    "allSelectedRowsBaiduBlockedAndThirteenGenerationsRequired": true
+  },
+  "allFrozenChainReferencesPassed": true,
+  "fullSupplementAndInheritedV3V2V7RevisionBindingsPassed": true,
+  "realPrior67Detail67ListTwoMovieSsrPassAndFourFinallyGuardsVerified": true,
+  "newParser8AndFlow4PassedResultsReusedNotRerun": true,
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "productionGets": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "credentialValuesRead": false,
+  "decryptOrChildProcessesUsed": false,
+  "offlineAuditBlocksNetworkProcessesCredentialsAndOutOfScopeWrites": true,
+  "blockedAuditEvents": [],
+  "actualFourRemainingProductionSsrVerifiedByThisReview": false
+}

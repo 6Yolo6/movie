@@ -1,0 +1,169 @@
+{
+  "status": "FIRST48_ALL_FILES_VERIFIED",
+  "startedAt": "2026-11-11T05:40:47.870509+00:00",
+  "scriptSha256": "792961d7d0dc9749d6a9c3a11a32b01b46d26fbece4c1995515644cd05a16a5d",
+  "resourceGetRequests": 1,
+  "torrentGetRequests": 2,
+  "sqlWrites": 0,
+  "cloudWrites": 0,
+  "archiveRunRequests": 0,
+  "settingsPutRequests": 0,
+  "contentOrUrlsOrCredentialsWritten": false,
+  "files": [
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.txt",
+      "type": "MAGNET",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 150,
+      "sha256": "4f8bfb1bf2a434c1d492275f18721ba8ebae7ae6de28da7b4a3f7852b878cd68",
+      "md5": "4c04c00e35cf85df0b6f9d96fcf0dad4",
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e",
+      "proof": {
+        "generatedFromFreshSourceMagnet": true
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.txt",
+      "type": "MAGNET",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 147,
+      "sha256": "6dcacbacbbb2c165cd3687bff5a3a41191368989c356592adfb67eb315b5c93e",
+      "md5": "34121b4bcccfce12ffbfbb05de7d4930",
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935",
+      "proof": {
+        "generatedFromFreshSourceMagnet": true
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "1080P_中文字幕_f4d9129250d1.torrent",
+      "type": "TORRENT",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 23603,
+      "sha256": "14887510865f037a2d12f05e824fe441a67b897e4c23a6f7f87ed03730a8a7ad",
+      "md5": "85fb42bf2b66e2934d0df2636dc5013b",
+      "infoHash": "f4d9129250d1fbaa208d733068818cd55854e124",
+      "sourceReferenceSha256": "a592d8a9e5c1b37656335b6f30434d3682f7d9a47b6a5a5f169d15f5eac9891e",
+      "proof": {
+        "originalInfoBytesBtiHashVerified": true,
+        "pairedMagnetHashVerified": true,
+        "sourceDeclaredSha256Verified": true,
+        "read": {
+          "responseBytes": 31661,
+          "responseSha256": "d68177641c9b878d3a16ab258ad7bfc8caf4328c438d1d2ed2cd48bc7b357a60",
+          "httpStatus": 200,
+          "method": "GET",
+          "requestPathSha256": "33a1bdf910b5b25dee6bad4763387a407b65eca42355e67865e364f5f8e2ad60",
+          "bodyOrCredentialsSaved": false
+        }
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "4K_中文字幕_30dea15de96f.torrent",
+      "type": "TORRENT",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 119263,
+      "sha256": "6c8763cbd0f0baf8c9ca27b70a6859370953cc62d65b848e60aafff4681cbfa7",
+      "md5": "881a07aaa2e4fe7d44d270c0aaa40062",
+      "infoHash": "30dea15de96f61be6d280a95d7e0c3e1b7101c31",
+      "sourceReferenceSha256": "df950c7062c5e03437eb48a7522604cc384d375f978ede9979ae18bfa6439935",
+      "proof": {
+        "originalInfoBytesBtiHashVerified": true,
+        "pairedMagnetHashVerified": true,
+        "sourceDeclaredSha256Verified": true,
+        "read": {
+          "responseBytes": 159210,
+          "responseSha256": "4da6d450a67da9623fea73e418de8e34e128ff9972532a434224badf11784d9a",
+          "httpStatus": 200,
+          "method": "GET",
+          "requestPathSha256": "bd4350594b7f466a69b2376835f2ffd4330344d557999b1f8190a29f258c682a",
+          "bodyOrCredentialsSaved": false
+        }
+      },
+      "contentWritten": false
+    }
+  ],
+  "source48Receipt": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\readonly-preparation-20261111T053033.427456Z.json",
+    "sha256": "3dbf103e1ef9dfa7266fb3939167392c53133fcd3426b0b5c107eab50bf1101a"
+  },
+  "backend": {
+    "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z"
+  },
+  "source": {
+    "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+    "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+    "startedAt": "2026-11-10T04:34:59.004066406Z"
+  },
+  "sourceResourcesRead": {
+    "responseBytes": 53276,
+    "responseSha256": "3d8c55bc2f0475eff8a8cc091bb19007c555b84ea9fc151c02e1a68700d692e4",
+    "httpStatus": 200,
+    "method": "GET",
+    "requestPathSha256": "eb059728dced944afae84b4f1c84d107084a3159f3bca02fdd75ac2748c4e824",
+    "bodyOrCredentialsSaved": false
+  },
+  "derivedSelectionSha256": "b51caad02287d365ee28b96cb9586f535e8b2d9e09e0e17a7d7875c4932ed0ed",
+  "sourceResourceCount": 146,
+  "productionTorrentParser": {
+    "sourceFile": "D:\\gying-movie\\movie\\crawler\\gying_crawler.py",
+    "sourceFileSha256": "1e7ea85ac4682234d09bf51c4c0f67256413a9e3977a615c2f216064841f0b6a",
+    "function": "torrent_info_hash",
+    "originalInfoBytesHashed": true,
+    "maximumBytes": 2097152
+  },
+  "identity": {
+    "identityId": 48,
+    "movieId": "x3xX",
+    "sourceType": "mv",
+    "externalId": "x3xX",
+    "matchStatus": "AUTO",
+    "titleCn": "霸王别姬",
+    "year": "1993"
+  },
+  "expectedFolder": "/GYing Resource Hub/mv/霸王别姬（x3xX）/磁力种子",
+  "fileCount": 4,
+  "totalBytes": 143163,
+  "protectedBefore": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedAfter": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedRowsRetained": true,
+  "allGenerationsRetained": true,
+  "completeBackendRuntimeRetained": true,
+  "completedAt": "2026-11-11T05:40:57.200743+00:00"
+}

@@ -1,0 +1,23 @@
+{
+  "status": "CLARIFICATION_ORIGINAL_RETAINED",
+  "at": "2026-11-11T07:03:27.023637+00:00",
+  "reviewer": "review_data_helpers",
+  "originalIndependentReview": {
+    "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-helper-v5-independent-review.json",
+    "sha256": "068ba30c7524a4c6fec496ad3e7673dbe015a303209bd99dde9b8d0abaaf0d1b"
+  },
+  "originalIntent": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\merge-intent.json",
+    "sha256": "f1f3475f1074d45a72cb69ae3b91c5e60aad62d96e934cd085b47f6b6dad6c32"
+  },
+  "originalReviewExpiresAtExact": "2026-11-11T06:43:05.795209697Z",
+  "originalExpiryWasPreviouslyReportedAtWholeSecondPrecision": true,
+  "requiredRemainingSecondsGreaterThan": 90,
+  "lastPermittedSendTimeStrictlyBeforeExact": "2026-11-11T06:41:35.795209697Z",
+  "helperUtcTimestampPrecisionMicroseconds": true,
+  "executionDecisionUnchanged": "V5_NOT_EXECUTED",
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0
+}

@@ -1,0 +1,13 @@
+{
+  "status": "STOPPED_PRESERVE_STATE",
+  "at": "2026-11-11T06:33:25.958609+00:00",
+  "batch": 2,
+  "exceptionType": "GateError",
+  "gate": "New in-flight tasks or maintenance; no stop or replay",
+  "mergePostReserved": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "nextAction": "Read-only verify; never repeat attempted requests",
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0
+}

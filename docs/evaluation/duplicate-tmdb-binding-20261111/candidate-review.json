@@ -1,0 +1,2699 @@
+{
+  "inputScanSha256": "ea30de01c6e83b73e16a84c52bd47a25f356d5b7700344d2a25e6b161d2c9914",
+  "inputAuditSha256": "8f4faa2373d228dbdd7248c74e05ba326f786ce19a302e581f1b0a927fb5c75b",
+  "scannedMovies": 15788,
+  "candidatePairs": 145,
+  "confirmedPairs": 74,
+  "excludedOrUnprovedPairs": 71,
+  "confirmed": [
+    {
+      "fromMovieId": "tmdb_tv_247718",
+      "toMovieId": "1YKW",
+      "scanIndex": 0,
+      "fromTitle": "MobLand",
+      "toTitle": "黑帮领地 第一季",
+      "tmdbId": 247718,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        2951
+      ],
+      "retainedGyingIdentityIds": [
+        1651
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": true
+    },
+    {
+      "fromMovieId": "tmdb_tv_93740",
+      "toMovieId": "4YNV",
+      "scanIndex": 1,
+      "fromTitle": "Foundation",
+      "toTitle": "基地 第一季",
+      "tmdbId": 93740,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        7058
+      ],
+      "retainedGyingIdentityIds": [
+        8337
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_95480",
+      "toMovieId": "5pay",
+      "scanIndex": 2,
+      "fromTitle": "Slow Horses",
+      "toTitle": "流人 第一季",
+      "tmdbId": 95480,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        5472
+      ],
+      "retainedGyingIdentityIds": [
+        2207
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_95396",
+      "toMovieId": "B2kG",
+      "scanIndex": 5,
+      "fromTitle": "Severance",
+      "toTitle": "人生切割术 第一季",
+      "tmdbId": 95396,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        3206
+      ],
+      "retainedGyingIdentityIds": [
+        1726
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_225171",
+      "toMovieId": "D4b7",
+      "scanIndex": 7,
+      "fromTitle": "Pluribus",
+      "toTitle": "同乐者 第一季",
+      "tmdbId": 225171,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        6034
+      ],
+      "retainedGyingIdentityIds": [
+        6067
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_220102",
+      "toMovieId": "EVrv",
+      "scanIndex": 9,
+      "fromTitle": "“暗影蜘蛛”",
+      "toTitle": "暗影蜘蛛侠",
+      "tmdbId": 220102,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        3925
+      ],
+      "retainedGyingIdentityIds": [
+        8174
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_90282",
+      "toMovieId": "Lvlx",
+      "scanIndex": 10,
+      "fromTitle": "The Morning Show",
+      "toTitle": "早间新闻 第一季",
+      "tmdbId": 90282,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        7171
+      ],
+      "retainedGyingIdentityIds": [
+        5172
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_94997",
+      "toMovieId": "P5P2",
+      "scanIndex": 11,
+      "fromTitle": "权力的游戏前传：龙族",
+      "toTitle": "龙之家族 第一季",
+      "tmdbId": 94997,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        393
+      ],
+      "retainedGyingIdentityIds": [
+        2872
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_202411",
+      "toMovieId": "g1E4",
+      "scanIndex": 14,
+      "fromTitle": "Monarch: Legacy of Monsters",
+      "toTitle": "帝王计划：怪兽遗产 第一季",
+      "tmdbId": 202411,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        7042
+      ],
+      "retainedGyingIdentityIds": [
+        14772
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_34307",
+      "toMovieId": "gKYE",
+      "scanIndex": 15,
+      "fromTitle": "无耻之徒",
+      "toTitle": "无耻之徒(美版) 第一季",
+      "tmdbId": 34307,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        371
+      ],
+      "retainedGyingIdentityIds": [
+        568
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_14310",
+      "toMovieId": "gying_mv_0YK0",
+      "scanIndex": 22,
+      "fromTitle": "无间道Ⅲ：终极无间",
+      "toTitle": "无间道3：终极无间",
+      "tmdbId": 14310,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        15181
+      ],
+      "retainedGyingIdentityIds": [
+        7379
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1386315",
+      "toMovieId": "gying_mv_0x42y",
+      "scanIndex": 23,
+      "fromTitle": "生死时限",
+      "toTitle": "逃亡者",
+      "tmdbId": 1386315,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        1565
+      ],
+      "retainedGyingIdentityIds": [
+        1387
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_508439",
+      "toMovieId": "gying_mv_6bZ7",
+      "scanIndex": 25,
+      "fromTitle": "二分之一的魔法",
+      "toTitle": "1/2的魔法",
+      "tmdbId": 508439,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        6128
+      ],
+      "retainedGyingIdentityIds": [
+        12093
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_646",
+      "toMovieId": "gying_mv_7r6b",
+      "scanIndex": 27,
+      "fromTitle": "007：诺博士",
+      "toTitle": "007之诺博士",
+      "tmdbId": 646,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        14754
+      ],
+      "retainedGyingIdentityIds": [
+        15574
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_575264",
+      "toMovieId": "gying_mv_9RLD",
+      "scanIndex": 28,
+      "fromTitle": "碟中谍7：致命清算（上）",
+      "toTitle": "碟中谍7：致命清算",
+      "tmdbId": 575264,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        7334
+      ],
+      "retainedGyingIdentityIds": [
+        5571
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_158445",
+      "toMovieId": "gying_mv_AYWz",
+      "scanIndex": 29,
+      "fromTitle": "七号房的礼物",
+      "toTitle": "7号房的礼物",
+      "tmdbId": 158445,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        4411
+      ],
+      "retainedGyingIdentityIds": [
+        3591
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_348350",
+      "toMovieId": "gying_mv_AYjk",
+      "scanIndex": 30,
+      "fromTitle": "星球大战外传2：游侠索罗",
+      "toTitle": "游侠索罗：星球大战外传",
+      "tmdbId": 348350,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        18059
+      ],
+      "retainedGyingIdentityIds": [
+        12028
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1892",
+      "toMovieId": "gying_mv_AYxk",
+      "scanIndex": 31,
+      "fromTitle": "星球大战6：绝地归来",
+      "toTitle": "星球大战3：绝地归来",
+      "tmdbId": 1892,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        4292
+      ],
+      "retainedGyingIdentityIds": [
+        2337
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1895",
+      "toMovieId": "gying_mv_DKzO",
+      "scanIndex": 32,
+      "fromTitle": "星球大战3：西斯的复仇",
+      "toTitle": "星球大战前传3：西斯的反击",
+      "tmdbId": 1895,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        7673
+      ],
+      "retainedGyingIdentityIds": [
+        3704
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_87",
+      "toMovieId": "gying_mv_DgG8",
+      "scanIndex": 33,
+      "fromTitle": "夺宝奇兵2：魔域奇兵",
+      "toTitle": "夺宝奇兵2",
+      "tmdbId": 87,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        10274
+      ],
+      "retainedGyingIdentityIds": [
+        5567
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_718930",
+      "toMovieId": "gying_mv_GGm7",
+      "scanIndex": 34,
+      "fromTitle": "杀手疾风号",
+      "toTitle": "子弹列车",
+      "tmdbId": 718930,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        8660
+      ],
+      "retainedGyingIdentityIds": [
+        4957
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_89",
+      "toMovieId": "gying_mv_KA5v",
+      "scanIndex": 35,
+      "fromTitle": "夺宝奇兵3：圣战奇兵",
+      "toTitle": "夺宝奇兵3",
+      "tmdbId": 89,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        4637
+      ],
+      "retainedGyingIdentityIds": [
+        3481
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_294254",
+      "toMovieId": "gying_mv_KLyE",
+      "scanIndex": 36,
+      "fromTitle": "移动迷宫2：烧痕审判",
+      "toTitle": "移动迷宫2",
+      "tmdbId": 294254,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17020
+      ],
+      "retainedGyingIdentityIds": [
+        15923
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_85",
+      "toMovieId": "gying_mv_L2x9",
+      "scanIndex": 37,
+      "fromTitle": "夺宝奇兵：法柜奇兵",
+      "toTitle": "夺宝奇兵",
+      "tmdbId": 85,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        4167
+      ],
+      "retainedGyingIdentityIds": [
+        3273
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1894",
+      "toMovieId": "gying_mv_LbYD",
+      "scanIndex": 38,
+      "fromTitle": "星球大战2：克隆人的进攻",
+      "toTitle": "星球大战前传2：克隆人的进攻",
+      "tmdbId": 1894,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17774
+      ],
+      "retainedGyingIdentityIds": [
+        7595
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1734",
+      "toMovieId": "gying_mv_Lbpk",
+      "scanIndex": 39,
+      "fromTitle": "木乃伊2：木乃伊归来",
+      "toTitle": "木乃伊归来",
+      "tmdbId": 1734,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        18787
+      ],
+      "retainedGyingIdentityIds": [
+        11357
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1893",
+      "toMovieId": "gying_mv_MGY1",
+      "scanIndex": 40,
+      "fromTitle": "星球大战1：幽灵的威胁",
+      "toTitle": "星球大战前传1：幽灵的威胁",
+      "tmdbId": 1893,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17854
+      ],
+      "retainedGyingIdentityIds": [
+        4958
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_950",
+      "toMovieId": "gying_mv_OEjg",
+      "scanIndex": 41,
+      "fromTitle": "冰川时代2：融冰之灾",
+      "toTitle": "冰川时代2",
+      "tmdbId": 950,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17011
+      ],
+      "retainedGyingIdentityIds": [
+        7586
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_80321",
+      "toMovieId": "gying_mv_RvRP",
+      "scanIndex": 42,
+      "fromTitle": "马达加斯加3：欧洲通缉犯",
+      "toTitle": "马达加斯加3",
+      "tmdbId": 80321,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17470
+      ],
+      "retainedGyingIdentityIds": [
+        9436
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_38142",
+      "toMovieId": "gying_mv_VE3b",
+      "scanIndex": 43,
+      "fromTitle": "秒速五厘米",
+      "toTitle": "秒速5厘米",
+      "tmdbId": 38142,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        10537
+      ],
+      "retainedGyingIdentityIds": [
+        4207
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_10617",
+      "toMovieId": "gying_mv_VjXb",
+      "scanIndex": 44,
+      "fromTitle": "黄飞鸿之一：壮志凌云",
+      "toTitle": "黄飞鸿",
+      "tmdbId": 10617,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        13213
+      ],
+      "retainedGyingIdentityIds": [
+        10602
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_241259",
+      "toMovieId": "gying_mv_VvmW",
+      "scanIndex": 45,
+      "fromTitle": "爱丽丝梦游仙境：镜中奇遇记",
+      "toTitle": "爱丽丝梦游仙境2：镜中奇遇记",
+      "tmdbId": 241259,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        17924
+      ],
+      "retainedGyingIdentityIds": [
+        15151
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1891",
+      "toMovieId": "gying_mv_WOYP",
+      "scanIndex": 46,
+      "fromTitle": "星球大战5：帝国反击战",
+      "toTitle": "星球大战2：帝国反击战",
+      "tmdbId": 1891,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        241
+      ],
+      "retainedGyingIdentityIds": [
+        2966
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM",
+      "scanIndex": 47,
+      "fromTitle": "无间道Ⅱ",
+      "toTitle": "无间道2",
+      "tmdbId": 11647,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        10777
+      ],
+      "retainedGyingIdentityIds": [
+        3786
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_330459",
+      "toMovieId": "gying_mv_Yg8L",
+      "scanIndex": 48,
+      "fromTitle": "星球大战外传1：侠盗一号",
+      "toTitle": "星球大战外传：侠盗一号",
+      "tmdbId": 330459,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        7191
+      ],
+      "retainedGyingIdentityIds": [
+        3825
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1268",
+      "toMovieId": "gying_mv_aP1j",
+      "scanIndex": 49,
+      "fromTitle": "憨豆先生的黄金周",
+      "toTitle": "憨豆的黄金周",
+      "tmdbId": 1268,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        18838
+      ],
+      "retainedGyingIdentityIds": [
+        11951
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_710",
+      "toMovieId": "gying_mv_d7Vo",
+      "scanIndex": 50,
+      "fromTitle": "007：黄金眼",
+      "toTitle": "007之黄金眼",
+      "tmdbId": 710,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        16031
+      ],
+      "retainedGyingIdentityIds": [
+        12179
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_37686",
+      "toMovieId": "gying_mv_e900",
+      "scanIndex": 51,
+      "fromTitle": "超级8",
+      "toTitle": "超级八",
+      "tmdbId": 37686,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        16753
+      ],
+      "retainedGyingIdentityIds": [
+        11129
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_56292",
+      "toMovieId": "gying_mv_g7Pp",
+      "scanIndex": 52,
+      "fromTitle": "碟中谍4：幽灵协议",
+      "toTitle": "碟中谍4",
+      "tmdbId": 56292,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        13039
+      ],
+      "retainedGyingIdentityIds": [
+        3446
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_57800",
+      "toMovieId": "gying_mv_gWxp",
+      "scanIndex": 53,
+      "fromTitle": "冰川时代4：大陆漂移",
+      "toTitle": "冰川时代4",
+      "tmdbId": 57800,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        18919
+      ],
+      "retainedGyingIdentityIds": [
+        9278
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_10045",
+      "toMovieId": "gying_mv_m9wB",
+      "scanIndex": 54,
+      "fromTitle": "暴力街区13",
+      "toTitle": "暴力街区",
+      "tmdbId": 10045,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        16502
+      ],
+      "retainedGyingIdentityIds": [
+        13399
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_8355",
+      "toMovieId": "gying_mv_ngMn",
+      "scanIndex": 55,
+      "fromTitle": "冰川时代3：恐龙的黎明",
+      "toTitle": "冰川时代3",
+      "tmdbId": 8355,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        16757
+      ],
+      "retainedGyingIdentityIds": [
+        4320
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_646380",
+      "toMovieId": "gying_mv_nzEy",
+      "scanIndex": 56,
+      "fromTitle": "Don't Look Up",
+      "toTitle": "不要抬头",
+      "tmdbId": 646380,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        13847
+      ],
+      "retainedGyingIdentityIds": [
+        5052
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_986056",
+      "toMovieId": "gying_mv_onzr",
+      "scanIndex": 57,
+      "fromTitle": "雷霆特攻队",
+      "toTitle": "雷霆特攻队*",
+      "tmdbId": 986056,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        7494
+      ],
+      "retainedGyingIdentityIds": [
+        11451
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_290859",
+      "toMovieId": "gying_mv_oxgd",
+      "scanIndex": 58,
+      "fromTitle": "终结者6：黑暗命运",
+      "toTitle": "终结者：黑暗命运",
+      "tmdbId": 290859,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        18813
+      ],
+      "retainedGyingIdentityIds": [
+        15261
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_114",
+      "toMovieId": "gying_mv_pPGZ",
+      "scanIndex": 59,
+      "fromTitle": "风月俏佳人",
+      "toTitle": "漂亮女人",
+      "tmdbId": 114,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        8218
+      ],
+      "retainedGyingIdentityIds": [
+        7995
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_11",
+      "toMovieId": "gying_mv_v26R",
+      "scanIndex": 60,
+      "fromTitle": "星球大战4：新希望",
+      "toTitle": "星球大战",
+      "tmdbId": 11,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        2836
+      ],
+      "retainedGyingIdentityIds": [
+        2962
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_420809",
+      "toMovieId": "gying_mv_z7gB",
+      "scanIndex": 62,
+      "fromTitle": "沉睡魔咒2：恶魔夫人",
+      "toTitle": "沉睡魔咒2",
+      "tmdbId": 420809,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        10550
+      ],
+      "retainedGyingIdentityIds": [
+        16012
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_73375",
+      "toMovieId": "gying_tv_6lx7",
+      "scanIndex": 64,
+      "fromTitle": "杰克・莱恩",
+      "toTitle": "杰克·莱恩 第一季",
+      "tmdbId": 73375,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        7291
+      ],
+      "retainedGyingIdentityIds": [
+        5394
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_92830",
+      "toMovieId": "gying_tv_EbN3",
+      "scanIndex": 65,
+      "fromTitle": "Obi-Wan Kenobi",
+      "toTitle": "欧比旺",
+      "tmdbId": 92830,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        10574
+      ],
+      "retainedGyingIdentityIds": [
+        6789
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_222766",
+      "toMovieId": "gying_tv_GdXQ",
+      "scanIndex": 66,
+      "fromTitle": "豺狼之日",
+      "toTitle": "豺狼的日子 第一季",
+      "tmdbId": 222766,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        4264
+      ],
+      "retainedGyingIdentityIds": [
+        3751
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_196454",
+      "toMovieId": "gying_tv_LK28",
+      "scanIndex": 67,
+      "fromTitle": "夏洛特王后：布里杰顿家族前传",
+      "toTitle": "夏洛特王后：布里奇顿前传",
+      "tmdbId": 196454,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        5772
+      ],
+      "retainedGyingIdentityIds": [
+        11070
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_65150",
+      "toMovieId": "gying_tv_M6Dv",
+      "scanIndex": 68,
+      "fromTitle": "副校长的逆袭",
+      "toTitle": "副校长 第一季",
+      "tmdbId": 65150,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9759
+      ],
+      "retainedGyingIdentityIds": [
+        13859
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_50878",
+      "toMovieId": "gying_tv_M9de",
+      "scanIndex": 69,
+      "fromTitle": "甄嬛传",
+      "toTitle": "后宫·甄嬛传",
+      "tmdbId": 50878,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        2878
+      ],
+      "retainedGyingIdentityIds": [
+        1639
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_222023",
+      "toMovieId": "gying_tv_N60E",
+      "scanIndex": 70,
+      "fromTitle": "陪审员义务",
+      "toTitle": "陪审义务",
+      "tmdbId": 222023,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        7774
+      ],
+      "retainedGyingIdentityIds": [
+        10962
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_157065",
+      "toMovieId": "gying_tv_NkdW",
+      "scanIndex": 71,
+      "fromTitle": "亚瑟府的没落",
+      "toTitle": "厄舍府的崩塌",
+      "tmdbId": 157065,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        8038
+      ],
+      "retainedGyingIdentityIds": [
+        7030
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_199318",
+      "toMovieId": "gying_tv_P5YL",
+      "scanIndex": 72,
+      "fromTitle": "Bad Sisters",
+      "toTitle": "坏姐妹 第一季",
+      "tmdbId": 199318,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        8381
+      ],
+      "retainedGyingIdentityIds": [
+        9407
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_314",
+      "toMovieId": "gying_tv_R7Lk",
+      "scanIndex": 73,
+      "fromTitle": "星际迷航：进取号",
+      "toTitle": "星际旅行：进取号 第一季",
+      "tmdbId": 314,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        8318
+      ],
+      "retainedGyingIdentityIds": [
+        12496
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_96102",
+      "toMovieId": "gying_tv_W7Mr",
+      "scanIndex": 74,
+      "fromTitle": "机智的医生生活",
+      "toTitle": "机智医生生活",
+      "tmdbId": 96102,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        1785
+      ],
+      "retainedGyingIdentityIds": [
+        3454
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_39859",
+      "toMovieId": "gying_tv_Zx5b",
+      "scanIndex": 75,
+      "fromTitle": "懵懂少女",
+      "toTitle": "囧女珍娜 第一季",
+      "tmdbId": 39859,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        8826
+      ],
+      "retainedGyingIdentityIds": [
+        14546
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_77169",
+      "toMovieId": "gying_tv_eD8Q",
+      "scanIndex": 76,
+      "fromTitle": "Cobra Kai",
+      "toTitle": "眼镜蛇 第一季",
+      "tmdbId": 77169,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        4607
+      ],
+      "retainedGyingIdentityIds": [
+        4141
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_79680",
+      "toMovieId": "gying_tv_g5pw",
+      "scanIndex": 77,
+      "fromTitle": "雪国列车",
+      "toTitle": "雪国列车(剧版) 第一季",
+      "tmdbId": 79680,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9096
+      ],
+      "retainedGyingIdentityIds": [
+        13627
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_85271",
+      "toMovieId": "gying_tv_kdBP",
+      "scanIndex": 78,
+      "fromTitle": "WandaVision",
+      "toTitle": "旺达幻视",
+      "tmdbId": 85271,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        4729
+      ],
+      "retainedGyingIdentityIds": [
+        3451
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_114461",
+      "toMovieId": "gying_tv_pvjG",
+      "scanIndex": 79,
+      "fromTitle": "Ahsoka",
+      "toTitle": "阿索卡 第一季",
+      "tmdbId": 114461,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        8841
+      ],
+      "retainedGyingIdentityIds": [
+        8236
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_91602",
+      "toMovieId": "gying_tv_qdoZ",
+      "scanIndex": 81,
+      "fromTitle": "现代爱情",
+      "toTitle": "摩登情爱 第一季",
+      "tmdbId": 91602,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9046
+      ],
+      "retainedGyingIdentityIds": [
+        4588
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_83867",
+      "toMovieId": "gying_tv_xnbR",
+      "scanIndex": 82,
+      "fromTitle": "Andor",
+      "toTitle": "安多 第一季",
+      "tmdbId": 83867,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        3990
+      ],
+      "retainedGyingIdentityIds": [
+        3674
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_91239",
+      "toMovieId": "jb1n",
+      "scanIndex": 83,
+      "fromTitle": "布里杰顿家族",
+      "toTitle": "布里奇顿 第一季",
+      "tmdbId": 91239,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        5482
+      ],
+      "retainedGyingIdentityIds": [
+        5987
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_259731",
+      "toMovieId": "kxXd",
+      "scanIndex": 85,
+      "fromTitle": "他和她的，谎",
+      "toTitle": "他和她的谎",
+      "tmdbId": 259731,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9313
+      ],
+      "retainedGyingIdentityIds": [
+        13119
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_103540",
+      "toMovieId": "o2J4",
+      "scanIndex": 86,
+      "fromTitle": "Percy Jackson and the Olympians",
+      "toTitle": "波西·杰克逊 第一季",
+      "tmdbId": 103540,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9572
+      ],
+      "retainedGyingIdentityIds": [
+        15668
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_196322",
+      "toMovieId": "rPNl",
+      "scanIndex": 87,
+      "fromTitle": "Dark Matter",
+      "toTitle": "人生复本 第一季",
+      "tmdbId": 196322,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        6619
+      ],
+      "retainedGyingIdentityIds": [
+        1396
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_1062722",
+      "toMovieId": "YEK1",
+      "scanIndex": 89,
+      "fromTitle": "Frankenstein",
+      "toTitle": "弗兰肯斯坦",
+      "tmdbId": 1062722,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        6360
+      ],
+      "retainedGyingIdentityIds": [
+        10407
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_617126",
+      "toMovieId": "W3A6",
+      "scanIndex": 133,
+      "fromTitle": "神奇四侠：初露锋芒",
+      "toTitle": "神奇4侠：初露锋芒",
+      "tmdbId": 617126,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        15602
+      ],
+      "retainedGyingIdentityIds": [
+        13662
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_movie_661374",
+      "toMovieId": "zMGW",
+      "scanIndex": 134,
+      "fromTitle": "利刃出鞘2：抽丝剥茧",
+      "toTitle": "利刃出鞘2",
+      "tmdbId": 661374,
+      "tmdbType": "movie",
+      "season": 0,
+      "sourceIdentityIds": [
+        14314
+      ],
+      "retainedGyingIdentityIds": [
+        9182
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    },
+    {
+      "fromMovieId": "tmdb_tv_241554",
+      "toMovieId": "xKke",
+      "scanIndex": 144,
+      "fromTitle": "Murderbot",
+      "toTitle": "杀戮人机 第一季",
+      "tmdbId": 241554,
+      "tmdbType": "tv",
+      "season": 1,
+      "sourceIdentityIds": [
+        9223
+      ],
+      "retainedGyingIdentityIds": [
+        894
+      ],
+      "independentlyReviewed": true,
+      "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+      "alreadyMerged": false
+    }
+  ],
+  "excludedOrUnproved": [
+    {
+      "fromMovieId": "tmdb_movie_1440050",
+      "fromTitle": "The Breadwinner",
+      "toMovieId": "8DLR",
+      "toTitle": "一家之主",
+      "fromResources": 1,
+      "toResources": 1,
+      "resources": 1,
+      "category": "mv",
+      "year": 2026,
+      "season": 0,
+      "matchedTitle": "thebreadwinner",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 3,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "BOTH_SOURCE_IDENTITIES_MISSING"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1218925",
+      "fromTitle": "电锯人剧场版：蕾塞篇",
+      "toMovieId": "Amnz",
+      "toTitle": "链锯人剧场版：蕾塞篇",
+      "fromResources": 0,
+      "toResources": 5,
+      "resources": 0,
+      "category": "mv",
+      "year": 2025,
+      "season": 0,
+      "matchedTitle": "劇場版チェンソーマンレゼ篇",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 4,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "RETAINED_GYING_IDENTITY_MISSING"
+    },
+    {
+      "fromMovieId": "tmdb_movie_736526",
+      "fromTitle": "Troll",
+      "toMovieId": "D0nk",
+      "toTitle": "山怪巨魔",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2022,
+      "season": 0,
+      "matchedTitle": "troll",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 6,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "RETAINED_GYING_IDENTITY_MISSING"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1252037",
+      "fromTitle": "猛虎战车",
+      "toMovieId": "DnVK",
+      "toTitle": "猛虎末路",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2025,
+      "season": 0,
+      "matchedTitle": "dertiger",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 8,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "RETAINED_GYING_IDENTITY_MISSING"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1114967",
+      "fromTitle": "好运连连",
+      "toMovieId": "b8D8",
+      "toTitle": "好运",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2025,
+      "season": 0,
+      "matchedTitle": "goodfortune",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 12,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "RETAINED_GYING_IDENTITY_MISSING"
+    },
+    {
+      "fromMovieId": "tmdb_movie_383498",
+      "fromTitle": "死侍2",
+      "toMovieId": "d7wo",
+      "toTitle": "死侍2：我爱我家",
+      "fromResources": 0,
+      "toResources": 8,
+      "resources": 0,
+      "category": "mv",
+      "year": 2018,
+      "season": 0,
+      "matchedTitle": "deadpool2",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 13,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_DEADPOOL_CUT_AND_TMDB_ID"
+    },
+    {
+      "fromMovieId": "gying_ac_KgR5",
+      "fromTitle": "关于我转生变成史莱姆这档事 第二季",
+      "toMovieId": "gying_ac_ARWy",
+      "toTitle": "关于我转生变成史莱姆这档事 第二季 Part.2",
+      "fromResources": 6,
+      "toResources": 6,
+      "resources": 6,
+      "category": "ac",
+      "year": 2021,
+      "season": 2,
+      "matchedTitle": "关于我转生变成史莱姆这档事",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 16,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "ANIME_SECOND_COUR_SCOPE"
+    },
+    {
+      "fromMovieId": "gying_ac_AY3D",
+      "fromTitle": "石纪元 第四季 Part.2",
+      "toMovieId": "tmdb_tv_86031_s4",
+      "toTitle": "石纪元 第四季",
+      "fromResources": 4,
+      "toResources": 5,
+      "resources": 4,
+      "category": "ac",
+      "year": 2025,
+      "season": 4,
+      "matchedTitle": "石纪元",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 17,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "ANIME_PART2_VS_WHOLE_SEASON"
+    },
+    {
+      "fromMovieId": "gying_ac_KgdE",
+      "fromTitle": "排球少年 第四季 Part.2",
+      "toMovieId": "gying_ac_kL4w",
+      "toTitle": "排球少年 第四季",
+      "fromResources": 4,
+      "toResources": 5,
+      "resources": 4,
+      "category": "ac",
+      "year": 2020,
+      "season": 4,
+      "matchedTitle": "排球少年",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 18,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "ANIME_PART2_VS_WHOLE_SEASON"
+    },
+    {
+      "fromMovieId": "gying_ac_YQyB",
+      "fromTitle": "魔法使的新娘 第二季 Part.2",
+      "toMovieId": "gying_ac_MJZ7",
+      "toTitle": "魔法使的新娘 第二季",
+      "fromResources": 4,
+      "toResources": 4,
+      "resources": 4,
+      "category": "ac",
+      "year": 2023,
+      "season": 2,
+      "matchedTitle": "魔法使的新娘",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 19,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "ANIME_PART2_VS_WHOLE_SEASON"
+    },
+    {
+      "fromMovieId": "gying_ac_dVWx",
+      "fromTitle": "石纪元 第三季 Part 2",
+      "toMovieId": "tmdb_tv_86031_s3",
+      "toTitle": "石纪元 第三季",
+      "fromResources": 4,
+      "toResources": 5,
+      "resources": 4,
+      "category": "ac",
+      "year": 2023,
+      "season": 3,
+      "matchedTitle": "石纪元",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 20,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "ANIME_PART2_VS_WHOLE_SEASON"
+    },
+    {
+      "fromMovieId": "gying_mv_XpJM",
+      "fromTitle": "无间道2",
+      "toMovieId": "gying_mv_0YK0",
+      "toTitle": "无间道3：终极无间",
+      "fromResources": 6,
+      "toResources": 6,
+      "resources": 6,
+      "category": "mv",
+      "year": 2003,
+      "season": 0,
+      "matchedTitle": "无间道",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 21,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "INFERNAL_AFFAIRS_II_VS_III"
+    },
+    {
+      "fromMovieId": "gying_mv_p903",
+      "fromTitle": "黑客帝国2：重装上阵",
+      "toMovieId": "gying_mv_5aee",
+      "toTitle": "黑客帝国3：矩阵革命",
+      "fromResources": 5,
+      "toResources": 6,
+      "resources": 5,
+      "category": "mv",
+      "year": 2003,
+      "season": 0,
+      "matchedTitle": "黑客帝国",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 24,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "MATRIX_RELOADED_VS_REVOLUTIONS"
+    },
+    {
+      "fromMovieId": "gying_mv_PZwg",
+      "fromTitle": "鹿鼎记",
+      "toMovieId": "gying_mv_7Ekb",
+      "toTitle": "鹿鼎记2",
+      "fromResources": 4,
+      "toResources": 6,
+      "resources": 4,
+      "category": "mv",
+      "year": 1992,
+      "season": 0,
+      "matchedTitle": "鹿鼎记",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 26,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "THE_DEER_AND_CAULDRON_I_VS_II"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1516698",
+      "fromTitle": "最后的曙光",
+      "toMovieId": "gying_mv_yM0zp",
+      "toTitle": "最后的日出",
+      "fromResources": 2,
+      "toResources": 2,
+      "resources": 2,
+      "category": "mv",
+      "year": 2026,
+      "season": 0,
+      "matchedTitle": "thelastsunrise",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 61,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "BILINGUAL_PERSON_IDENTITY_MAPPING_UNPROVED"
+    },
+    {
+      "fromMovieId": "tmdb_tv_119051",
+      "fromTitle": "Wednesday",
+      "toMovieId": "gying_tv_67Xw",
+      "toTitle": "星期三 第一季",
+      "fromResources": 0,
+      "toResources": 5,
+      "resources": 0,
+      "category": "tv",
+      "year": 2022,
+      "season": 1,
+      "matchedTitle": "wednesday",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 63,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "SOURCE_HAS_CONFLICTING_CONFIRMED_TMDB_IDENTITIES"
+    },
+    {
+      "fromMovieId": "tmdb_tv_72748",
+      "fromTitle": "神探科莫兰",
+      "toMovieId": "gying_tv_qKNn",
+      "toTitle": "斯特莱克探案集：布谷鸟的呼唤 第一季",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "tv",
+      "year": 2017,
+      "season": 1,
+      "matchedTitle": "strike:thecuckoo'scalling",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 80,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "SERIES_VS_STORY_ARC_SCOPE_UNPROVED"
+    },
+    {
+      "fromMovieId": "WQLa",
+      "fromTitle": "间谍过家家 第一季 Part.2",
+      "toMovieId": "kLPp",
+      "toTitle": "间谍过家家 第一季",
+      "fromResources": 7,
+      "toResources": 9,
+      "resources": 7,
+      "category": "ac",
+      "year": 2022,
+      "season": 1,
+      "matchedTitle": "间谍过家家",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 84,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "SPY_FAMILY_PART2_VS_WHOLE_SEASON"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1010821",
+      "fromTitle": "我是格鲁特：小树人大变身",
+      "toMovieId": "tmdb_movie_1010818",
+      "toTitle": "我是格鲁特：小树人养成记",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2022,
+      "season": 0,
+      "matchedTitle": "我是格鲁特(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 88,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_109",
+      "fromTitle": "蓝白红三部曲之白",
+      "toMovieId": "tmdb_movie_110",
+      "toTitle": "蓝白红三部曲之红",
+      "fromResources": 4,
+      "toResources": 6,
+      "resources": 4,
+      "category": "mv",
+      "year": 1994,
+      "season": 0,
+      "matchedTitle": "蓝白红(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 90,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_118412",
+      "fromTitle": "剑风传奇 黄金时代篇2：多尔多雷攻略",
+      "toMovieId": "tmdb_movie_113082",
+      "toTitle": "剑风传奇 黄金时代篇1：霸王之卵",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2012,
+      "season": 0,
+      "matchedTitle": "剑风传奇黄金时代篇(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 91,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1147416",
+      "fromTitle": "奇迹少女伦敦篇",
+      "toMovieId": "tmdb_movie_1147400",
+      "toTitle": "奇迹少女 双面人生",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2024,
+      "season": 0,
+      "matchedTitle": "奇迹少女番外",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 92,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1209288",
+      "fromTitle": "正义联盟：无限地球危机（中）",
+      "toMovieId": "tmdb_movie_1155089",
+      "toTitle": "正义联盟：无限地球危机（上）",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2024,
+      "season": 0,
+      "matchedTitle": "正义联盟明日宇宙(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 93,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1209290",
+      "fromTitle": "正义联盟：无限地球危机（下）",
+      "toMovieId": "tmdb_movie_1155089",
+      "toTitle": "正义联盟：无限地球危机（上）",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2024,
+      "season": 0,
+      "matchedTitle": "正义联盟明日宇宙(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 94,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_14310",
+      "fromTitle": "无间道Ⅲ：终极无间",
+      "toMovieId": "tmdb_movie_11647",
+      "toTitle": "无间道Ⅱ",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2003,
+      "season": 0,
+      "matchedTitle": "无间道(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 95,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1172675",
+      "fromTitle": "天鹅",
+      "toMovieId": "tmdb_movie_1172674",
+      "toTitle": "捕鼠人",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 96,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1172676",
+      "fromTitle": "毒",
+      "toMovieId": "tmdb_movie_1172674",
+      "toTitle": "捕鼠人",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 97,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_923939",
+      "fromTitle": "亨利·休格的神奇故事",
+      "toMovieId": "tmdb_movie_1172674",
+      "toTitle": "捕鼠人",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 98,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1172676",
+      "fromTitle": "毒",
+      "toMovieId": "tmdb_movie_1172675",
+      "toTitle": "天鹅",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 99,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_923939",
+      "fromTitle": "亨利·休格的神奇故事",
+      "toMovieId": "tmdb_movie_1172675",
+      "toTitle": "天鹅",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 100,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_923939",
+      "fromTitle": "亨利·休格的神奇故事",
+      "toMovieId": "tmdb_movie_1172676",
+      "toTitle": "毒",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "thewonderfulstoryofhenrysugarandthreemore",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 101,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1209290",
+      "fromTitle": "正义联盟：无限地球危机（下）",
+      "toMovieId": "tmdb_movie_1209288",
+      "toTitle": "正义联盟：无限地球危机（中）",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2024,
+      "season": 0,
+      "matchedTitle": "正义联盟明日宇宙(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 102,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_12717",
+      "fromTitle": "母亲的城堡",
+      "toMovieId": "tmdb_movie_12716",
+      "toTitle": "父亲的荣耀",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1990,
+      "season": 0,
+      "matchedTitle": "马塞尔·帕尼奥尔之儿时记忆(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 103,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_13253",
+      "fromTitle": "飞出个未来大电影3：班德的游戏",
+      "toMovieId": "tmdb_movie_12889",
+      "toTitle": "飞出个未来大电影2：万背之兽",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2008,
+      "season": 0,
+      "matchedTitle": "飞出个未来(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 104,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_13001",
+      "fromTitle": "星际之门：真理之盒",
+      "toMovieId": "tmdb_movie_12914",
+      "toTitle": "星际之门：时空连续",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2008,
+      "season": 0,
+      "matchedTitle": "星际之门(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 105,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_43650",
+      "fromTitle": "睡谷传奇",
+      "toMovieId": "tmdb_movie_13465",
+      "toTitle": "伊老师与小蟾蜍大历险",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1949,
+      "season": 0,
+      "matchedTitle": "thelegendofsleepyhollow",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 106,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_15362",
+      "fromTitle": "头号公敌2",
+      "toMovieId": "tmdb_movie_13635",
+      "toTitle": "头号公敌",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2008,
+      "season": 0,
+      "matchedTitle": "头号公敌(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 107,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_14611",
+      "fromTitle": "终极复仇者2：黑豹的崛起",
+      "toMovieId": "tmdb_movie_14609",
+      "toTitle": "终极复仇者",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2006,
+      "season": 0,
+      "matchedTitle": "最后的复仇者们(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 108,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_24253",
+      "fromTitle": "玩火的女孩",
+      "toMovieId": "tmdb_movie_15472",
+      "toTitle": "龙纹身的女孩",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2009,
+      "season": 0,
+      "matchedTitle": "千禧年(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 109,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_33613",
+      "fromTitle": "捅马蜂窝的女孩",
+      "toMovieId": "tmdb_movie_15472",
+      "toTitle": "龙纹身的女孩",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2009,
+      "season": 0,
+      "matchedTitle": "千禧年(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 110,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1682",
+      "fromTitle": "摩斯拉决战哥斯拉",
+      "toMovieId": "tmdb_movie_15766",
+      "toTitle": "三大怪兽 地球最大的决战",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1964,
+      "season": 0,
+      "matchedTitle": "哥斯拉(昭和系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 111,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_16140",
+      "fromTitle": "死亡笔记：最后的名字",
+      "toMovieId": "tmdb_movie_16007",
+      "toTitle": "死亡笔记",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2006,
+      "season": 0,
+      "matchedTitle": "死亡笔记(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 112,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_297270",
+      "fromTitle": "小叮当：永无兽传奇",
+      "toMovieId": "tmdb_movie_175112",
+      "toTitle": "小叮当与海盗仙子",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2014,
+      "season": 0,
+      "matchedTitle": "小叮当(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 113,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_221732",
+      "fromTitle": "浪客剑心：传说的完结篇",
+      "toMovieId": "tmdb_movie_221731",
+      "toTitle": "浪客剑心：京都大火篇",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2014,
+      "season": 0,
+      "matchedTitle": "浪客剑心(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 114,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_33613",
+      "fromTitle": "捅马蜂窝的女孩",
+      "toMovieId": "tmdb_movie_24253",
+      "toTitle": "玩火的女孩",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2009,
+      "season": 0,
+      "matchedTitle": "千禧年(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 115,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_39102",
+      "fromTitle": "龙珠Z剧场版4：超级赛亚人孙悟空",
+      "toMovieId": "tmdb_movie_24752",
+      "toTitle": "龙珠Z剧场版5：最强对最强",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1991,
+      "season": 0,
+      "matchedTitle": "龙珠z剧场版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 116,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_258216",
+      "fromTitle": "女性瘾者：第一部",
+      "toMovieId": "tmdb_movie_249397",
+      "toTitle": "女性瘾者：第二部",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2013,
+      "season": 0,
+      "matchedTitle": "女性瘾者(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 117,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_340382",
+      "fromTitle": "进击的巨人真人版：后篇·世界终结",
+      "toMovieId": "tmdb_movie_295830",
+      "toTitle": "进击的巨人真人版：前篇",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2015,
+      "season": 0,
+      "matchedTitle": "进击的巨人真人版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 118,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_39105",
+      "fromTitle": "龙珠Z剧场版9：银河面临危机!! 身手不凡的高手!!",
+      "toMovieId": "tmdb_movie_34433",
+      "toTitle": "龙珠Z剧场版8：燃烧吧!!热战·烈战·超激战",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1993,
+      "season": 0,
+      "matchedTitle": "龙珠z剧场版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 119,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_39101",
+      "fromTitle": "龙珠Z剧场版3：地球超级大决战",
+      "toMovieId": "tmdb_movie_39100",
+      "toTitle": "龙珠Z剧场版2：世界最强的高手",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1990,
+      "season": 0,
+      "matchedTitle": "龙珠z剧场版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 120,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_39104",
+      "fromTitle": "龙珠Z剧场版7：极限之战!! 三大超级赛亚人",
+      "toMovieId": "tmdb_movie_39103",
+      "toTitle": "龙珠Z剧场版6：激突!!100亿能量的战士们",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1992,
+      "season": 0,
+      "matchedTitle": "龙珠z剧场版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 121,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_39108",
+      "fromTitle": "龙珠Z剧场版13：龙拳爆发!! 悟空舍我其谁",
+      "toMovieId": "tmdb_movie_39107",
+      "toTitle": "龙珠Z剧场版12：复活的融合!! 悟空和贝吉塔",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1995,
+      "season": 0,
+      "matchedTitle": "龙珠z剧场版(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 122,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_439584",
+      "fromTitle": "玩命毒师3：荣誉之名",
+      "toMovieId": "tmdb_movie_406385",
+      "toTitle": "玩命毒师2：大师班",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2017,
+      "season": 0,
+      "matchedTitle": "玩命毒师(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 123,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_520736",
+      "fromTitle": "他们2",
+      "toMovieId": "tmdb_movie_417670",
+      "toTitle": "他们",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2018,
+      "season": 0,
+      "matchedTitle": "他们(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 124,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "LORO_2_VS_LORO1_AND_TARGET_IDENTITY_CONFLICT"
+    },
+    {
+      "fromMovieId": "tmdb_movie_4481",
+      "fromTitle": "甘泉玛侬",
+      "toMovieId": "tmdb_movie_4480",
+      "toTitle": "恋恋山城",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 1986,
+      "season": 0,
+      "matchedTitle": "水源(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 125,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_487672",
+      "fromTitle": "超人王朝",
+      "toMovieId": "tmdb_movie_487670",
+      "toTitle": "超人之死",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2019,
+      "season": 0,
+      "matchedTitle": "超人陨落(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 126,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_536115",
+      "fromTitle": "哥斯拉：噬星者",
+      "toMovieId": "tmdb_movie_492719",
+      "toTitle": "哥斯拉：决战之都",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2018,
+      "season": 0,
+      "matchedTitle": "哥斯拉(动画电影系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 127,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_583268",
+      "fromTitle": "某处，某人",
+      "toMovieId": "tmdb_movie_566454",
+      "toTitle": "神秘的亨利·皮克",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2019,
+      "season": 0,
+      "matchedTitle": "(fff20)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 128,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "FILM_FESTIVAL_TAG_NOT_WORK_TITLE"
+    },
+    {
+      "fromMovieId": "tmdb_movie_591274",
+      "fromTitle": "恐惧街2",
+      "toMovieId": "tmdb_movie_591273",
+      "toTitle": "恐惧街",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "恐惧街(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 129,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_591275",
+      "fromTitle": "恐惧街3",
+      "toMovieId": "tmdb_movie_591273",
+      "toTitle": "恐惧街",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "恐惧街(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 130,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_591275",
+      "fromTitle": "恐惧街3",
+      "toMovieId": "tmdb_movie_591274",
+      "toTitle": "恐惧街2",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "恐惧街(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 131,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_672322",
+      "fromTitle": "浪客剑心最终章：追忆篇",
+      "toMovieId": "tmdb_movie_602063",
+      "toTitle": "浪客剑心最终章：人诛篇",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "浪客剑心(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 132,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_724089",
+      "fromTitle": "加百列的地狱：第二部",
+      "toMovieId": "tmdb_movie_696374",
+      "toTitle": "加百列的地狱",
+      "fromResources": 0,
+      "toResources": 1,
+      "resources": 0,
+      "category": "mv",
+      "year": 2020,
+      "season": 0,
+      "matchedTitle": "加百列的地狱(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 135,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_761053",
+      "fromTitle": "加百列的地狱：第三部",
+      "toMovieId": "tmdb_movie_696374",
+      "toTitle": "加百列的地狱",
+      "fromResources": 0,
+      "toResources": 1,
+      "resources": 0,
+      "category": "mv",
+      "year": 2020,
+      "season": 0,
+      "matchedTitle": "加百列的地狱(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 136,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_761053",
+      "fromTitle": "加百列的地狱：第三部",
+      "toMovieId": "tmdb_movie_724089",
+      "toTitle": "加百列的地狱：第二部",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2020,
+      "season": 0,
+      "matchedTitle": "加百列的地狱(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 137,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_736074",
+      "fromTitle": "蝙蝠侠：漫长的万圣节（下）",
+      "toMovieId": "tmdb_movie_736073",
+      "toTitle": "蝙蝠侠：漫长的万圣节（上）",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "蝙蝠侠:漫长的万圣节",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 138,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_760104",
+      "fromTitle": "X",
+      "toMovieId": "tmdb_movie_949423",
+      "toTitle": "珀尔",
+      "fromResources": 0,
+      "toResources": 3,
+      "resources": 0,
+      "category": "mv",
+      "year": 2022,
+      "season": 0,
+      "matchedTitle": "x(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 139,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_845111",
+      "fromTitle": "三个火枪手：米莱迪",
+      "toMovieId": "tmdb_movie_796185",
+      "toTitle": "三个火枪手：达达尼昂",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2023,
+      "season": 0,
+      "matchedTitle": "三个火枪手(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 140,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_874300",
+      "fromTitle": "南方公园：新冠之后：新冠回归",
+      "toMovieId": "tmdb_movie_874299",
+      "toTitle": "南方公园：新冠之后",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2021,
+      "season": 0,
+      "matchedTitle": "南方公园新冠篇(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 141,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_movie_8881",
+      "fromTitle": "切·格瓦拉传：阿根廷人",
+      "toMovieId": "tmdb_movie_8880",
+      "toTitle": "切·格瓦拉传：游击队",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "mv",
+      "year": 2008,
+      "season": 0,
+      "matchedTitle": "切·格瓦拉(系列)",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 142,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    },
+    {
+      "fromMovieId": "tmdb_tv_3611",
+      "fromTitle": "鸡与牛",
+      "toMovieId": "tmdb_tv_177",
+      "toTitle": "黄鼠狼威索",
+      "fromResources": 0,
+      "toResources": 0,
+      "resources": 0,
+      "category": "tv",
+      "year": 1997,
+      "season": 1,
+      "matchedTitle": "iamweasel",
+      "evidence": "NAME_AND_PEOPLE",
+      "reviewRequired": true,
+      "scanIndex": 143,
+      "reviewDecision": "DO_NOT_MERGE",
+      "reason": "DIFFERENT_WORK_PART_SEQUEL_COLLECTION_OR_CONFLICTING_TMDB_ID"
+    }
+  ],
+  "operatorProductionWrites": 0,
+  "directionsPreferActualGyingIdentity": true,
+  "multiRecordChainsNotUsedAsIdentityEvidence": true
+}

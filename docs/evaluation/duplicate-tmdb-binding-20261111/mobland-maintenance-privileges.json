@@ -1,0 +1,643 @@
+{
+  "status": "READ_ONLY_FACTS",
+  "at": "2026-11-11T07:41:51.656878+00:00",
+  "preparedSha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696",
+  "helperSha256": "0b77aadd1f90db6a6778832860c9e443c76f2319be389ece5712ffcbb14c8a45",
+  "operatorDirectSqlWrites": 0,
+  "updatesAttempted": 0,
+  "commitsAttempted": 0,
+  "credentialsPrinted": false,
+  "grantTextPrinted": false,
+  "usernamePrinted": false,
+  "fullRowsPrinted": false,
+  "mysqlVersion": "8.0.28",
+  "activeRolesPresent": false,
+  "schemaColumns": {
+    "baidu_temporary_cleanup_job": [
+      "id",
+      "transfer_task_id",
+      "scope_key",
+      "movie_id",
+      "discovery_result_id",
+      "resource_link_id",
+      "original_url",
+      "original_url_hash",
+      "share_url_hash",
+      "account_uid",
+      "target_path",
+      "directory_id",
+      "plan_json",
+      "evidence_json",
+      "recycle_evidence",
+      "delete_mode",
+      "status",
+      "attempts",
+      "last_error",
+      "lease_owner",
+      "lease_until",
+      "share_confirmed_at",
+      "delete_after",
+      "finished_at",
+      "created_at",
+      "updated_at"
+    ],
+    "baidu_transfer_task": [
+      "id",
+      "discovery_result_id",
+      "movie_id",
+      "original_url",
+      "original_url_hash",
+      "account_uid",
+      "saved_path",
+      "share_url",
+      "share_url_hash",
+      "status",
+      "phase",
+      "attempts",
+      "last_error",
+      "request_payload",
+      "response_payload",
+      "remote_task_id",
+      "lease_owner",
+      "lease_until",
+      "started_at",
+      "finished_at",
+      "created_at",
+      "updated_at",
+      "scope_key",
+      "search_request_hash",
+      "share_confirmed_at",
+      "cleanup_evidence"
+    ],
+    "comment": [
+      "id",
+      "relate_id",
+      "comment_type",
+      "user_id",
+      "nickname",
+      "content",
+      "status",
+      "upvotes",
+      "parent_id",
+      "ip_address",
+      "created_at"
+    ],
+    "movie_duplicate_review": [
+      "id",
+      "actor_id",
+      "plan_json",
+      "fingerprint",
+      "eligible",
+      "status",
+      "idempotency_key",
+      "result_json",
+      "created_at",
+      "expires_at",
+      "completed_at"
+    ],
+    "movie_merge_alias": [
+      "source_movie_id",
+      "canonical_movie_id",
+      "review_id",
+      "actor_id",
+      "created_at"
+    ],
+    "movie_merge_favorite_history": [
+      "review_id",
+      "original_favorite_id",
+      "user_id",
+      "original_movie_id",
+      "canonical_movie_id",
+      "original_created_at",
+      "retained_favorite_id",
+      "recorded_at"
+    ],
+    "movie_merge_reference_history": [
+      "review_id",
+      "reference_table",
+      "reference_row_id",
+      "original_movie_id",
+      "canonical_movie_id",
+      "original_fingerprint",
+      "recorded_at"
+    ],
+    "movie_metadata": [
+      "id",
+      "tmdb_id",
+      "tmdb_type",
+      "title_cn",
+      "title_en",
+      "series_name",
+      "season",
+      "year",
+      "runtime",
+      "directors",
+      "actors",
+      "genres",
+      "regions",
+      "languages",
+      "release_dates",
+      "aliases",
+      "poster_url",
+      "douban_score",
+      "imdb_score",
+      "tmdb_popularity",
+      "tmdb_vote_average",
+      "rt_score",
+      "summary",
+      "status",
+      "resource_status",
+      "popularity",
+      "tmdb_last_sync_at",
+      "created_at",
+      "updated_at",
+      "deleted_at",
+      "category"
+    ],
+    "movie_source_identity": [
+      "id",
+      "movie_id",
+      "source",
+      "source_type",
+      "external_id",
+      "season",
+      "confidence",
+      "match_method",
+      "match_status",
+      "evidence_json",
+      "created_at",
+      "updated_at"
+    ],
+    "qq_bot_search_log": [
+      "id",
+      "user_key",
+      "keyword",
+      "status",
+      "movie_id",
+      "resource_count",
+      "reply_preview",
+      "failure_reason",
+      "created_at"
+    ],
+    "qq_channel_post_log": [
+      "id",
+      "resource_link_id",
+      "movie_id",
+      "title",
+      "link_url",
+      "channel_type",
+      "channel_id",
+      "status",
+      "error_message",
+      "posted_at",
+      "created_at"
+    ],
+    "qq_transfer_cleanup_job": [
+      "id",
+      "provider",
+      "transfer_task_id",
+      "discovery_result_id",
+      "movie_id",
+      "saved_path",
+      "target_path",
+      "resource_link_id",
+      "status",
+      "attempts",
+      "last_error",
+      "delete_after",
+      "created_at",
+      "updated_at",
+      "finished_at"
+    ],
+    "quark_transfer_task": [
+      "id",
+      "discovery_result_id",
+      "movie_id",
+      "original_url",
+      "original_url_hash",
+      "saved_path",
+      "share_url",
+      "share_url_hash",
+      "status",
+      "attempts",
+      "last_error",
+      "request_payload",
+      "response_payload",
+      "started_at",
+      "finished_at",
+      "created_at",
+      "updated_at"
+    ],
+    "resource_discovery_result": [
+      "id",
+      "task_id",
+      "movie_id",
+      "source",
+      "source_ref",
+      "title",
+      "provider",
+      "resource_type",
+      "original_url",
+      "original_url_hash",
+      "share_url",
+      "share_url_hash",
+      "code",
+      "quality",
+      "subtitle",
+      "file_size",
+      "version_note",
+      "confidence",
+      "status",
+      "failure_reason",
+      "resource_link_id",
+      "created_at",
+      "updated_at"
+    ],
+    "resource_hub_task": [
+      "id",
+      "task_type",
+      "movie_id",
+      "tmdb_id",
+      "tmdb_type",
+      "keyword",
+      "source",
+      "status",
+      "priority",
+      "attempts",
+      "max_attempts",
+      "last_error",
+      "payload",
+      "scheduled_at",
+      "started_at",
+      "finished_at",
+      "created_at",
+      "updated_at"
+    ],
+    "resource_link": [
+      "id",
+      "movie_id",
+      "name",
+      "type",
+      "provider",
+      "url",
+      "url_hash",
+      "code",
+      "uploader_id",
+      "audit_status",
+      "remark",
+      "created_at",
+      "updated_at",
+      "update_at",
+      "deleted_at",
+      "status",
+      "link_status",
+      "report_count",
+      "source",
+      "source_ref",
+      "source_url",
+      "auto_collected",
+      "validated_at",
+      "last_check_error",
+      "quality",
+      "subtitle",
+      "file_size",
+      "version_note",
+      "reject_reason"
+    ],
+    "resource_operation_log": [
+      "id",
+      "user_id",
+      "visitor_hash",
+      "movie_id",
+      "resource_link_id",
+      "operation_type",
+      "provider",
+      "status",
+      "error_message",
+      "created_at"
+    ],
+    "social_post_log": [
+      "id",
+      "target_id",
+      "platform",
+      "resource_link_id",
+      "movie_id",
+      "title",
+      "status",
+      "external_url",
+      "error_message",
+      "posted_at",
+      "created_at",
+      "updated_at"
+    ],
+    "sys_config": [
+      "id",
+      "config_key",
+      "config_value",
+      "description",
+      "created_at",
+      "updated_at"
+    ],
+    "user_favorite": [
+      "id",
+      "user_id",
+      "movie_id",
+      "created_at"
+    ],
+    "user_notification": [
+      "id",
+      "user_id",
+      "type",
+      "title",
+      "content",
+      "target_type",
+      "target_id",
+      "read_flag",
+      "created_at"
+    ],
+    "xunlei_transfer_task": [
+      "id",
+      "discovery_result_id",
+      "movie_id",
+      "original_url",
+      "original_url_hash",
+      "saved_path",
+      "share_url",
+      "share_url_hash",
+      "status",
+      "attempts",
+      "last_error",
+      "request_payload",
+      "response_payload",
+      "started_at",
+      "finished_at",
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "globalPrivileges": {
+    "SELECT": false,
+    "UPDATE": false,
+    "DELETE": false,
+    "LOCK TABLES": false
+  },
+  "schemaPrivileges": {
+    "SELECT": true,
+    "UPDATE": false,
+    "DELETE": false,
+    "LOCK TABLES": false
+  },
+  "tablePrivileges": {
+    "baidu_temporary_cleanup_job": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "baidu_transfer_task": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "comment": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_duplicate_review": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_merge_alias": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_merge_favorite_history": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_merge_reference_history": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_metadata": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "movie_source_identity": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "qq_bot_search_log": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "qq_channel_post_log": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "qq_transfer_cleanup_job": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "quark_transfer_task": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "resource_discovery_result": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "resource_hub_task": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "resource_link": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "resource_operation_log": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "social_post_log": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "sys_config": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "user_favorite": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "user_notification": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    },
+    "xunlei_transfer_task": {
+      "SELECT": true,
+      "UPDATE": false,
+      "DELETE": false,
+      "LOCK TABLES": false
+    }
+  },
+  "metadataColumnUpdate": {
+    "tmdb_id": false,
+    "tmdb_type": false
+  },
+  "effectivePrivilegesVerified": true,
+  "forShareVersionAllowsSelectOnly": true,
+  "lockingReadSupport": {
+    "baidu_temporary_cleanup_job": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "baidu_transfer_task": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "comment": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_duplicate_review": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_merge_alias": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_merge_favorite_history": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_merge_reference_history": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_metadata": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "movie_source_identity": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "qq_bot_search_log": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "qq_channel_post_log": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "qq_transfer_cleanup_job": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "quark_transfer_task": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "resource_discovery_result": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "resource_hub_task": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "resource_link": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "resource_operation_log": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "social_post_log": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "sys_config": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "user_favorite": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "user_notification": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    },
+    "xunlei_transfer_task": {
+      "select": true,
+      "forUpdatePrivilegeAvailable": false,
+      "forSharePrivilegeAvailable": true
+    }
+  },
+  "metadataExactTwoFieldUpdateAvailable": false
+}

@@ -1,0 +1,155 @@
+{
+  "status": "final-read-only-verified",
+  "startedAt": "2026-11-11T05:30:39.711637+00:00",
+  "sourceCommit": "65fd377de0f055c6377c623e763d245e991241f8",
+  "pin": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111\\host-pin-20261111T052829.065233Z.json",
+    "sha256": "73e0cdcfd5b9adc208b0ffea4b130d3e501e404caaa2953802299bb472965740"
+  },
+  "daily": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111\\daily-apply-20261111T053009.777307Z.json",
+    "sha256": "adc5ea497774bcce9c48ee542caa9072a441d1a326ca4bfc4dc1ef24a06135c8"
+  },
+  "productionChanges": 0,
+  "productionMergePerformed": false,
+  "cloudWrites": 0,
+  "sqlWrites": 0,
+  "newPreviewRequests": 0,
+  "naturalBackupVerified": false,
+  "idleBefore": {
+    "at": "2026-11-11T05:30:43.727125+00:00",
+    "phase": "Final read-only verification",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "runtimeAndHostBeforeVerifiedByBoundDailyInputs": true,
+  "additionalLocalAnonymousGets": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=2",
+      "status": 200,
+      "bytes": 4091,
+      "sha256": "93905bc6e8a00a9fbbdfd256bc742c2f44223ff12d257a6efa46b7385e559842"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/movie/1YKW",
+      "status": 200,
+      "bytes": 245262,
+      "sha256": "d990c4216499372b940f8207949b593ea76f9af4f6a9b96768aeba0b3879bf58"
+    }
+  ],
+  "dockerLogs": {
+    "scope": "Docker stdout/stderr from candidate startup through until, tail at most 2000 lines; application file logs not inspected",
+    "since": "2026-11-11T05:24:08.901986855Z",
+    "until": "2026-11-11T05:30:43.994409+00:00",
+    "maxTailLines": 2000,
+    "streams": {
+      "stdout": {
+        "bytes": 1621,
+        "sha256": "96e57013165100305d51ae0a9e5ebb5ee0fd6a56558ca206a4805c4e73f3ed2e",
+        "errorExceptionOomMatches": 0
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "errorExceptionOomMatches": 0
+      }
+    }
+  },
+  "runtimeFinally": {
+    "verifiedAt": "2026-11-11T05:30:51.254015+00:00",
+    "completeOldConfigAuthenticated": true,
+    "oldEnvSequenceRetained": true,
+    "oldFullLabelsRetained": true,
+    "allConfigFieldsVerified": true,
+    "semanticEnvironmentExact": true,
+    "environmentVariables": 153,
+    "environmentMapSha256": "7351e37d8a625cca24d7a752690bf3c36f7986f32b4c58880bdb76a75d9a18c0",
+    "oldEnvironmentOrderSha256": "4ff882f88d8cce37d0800132601914d5218e22014d4948feb65d3458d66a347b",
+    "currentEnvironmentOrderSha256": "20fc4a132c9ce2d4b47b66d303ca7310a5c11d23d83c633266103a58b3768ea9",
+    "environmentSequenceEqual": false,
+    "actualRuntime": {
+      "configurationSha256": "b7299b168cae42b98b4aa89dbbd6193ab51b8267bc57a004402c34cc41eeec3b",
+      "hostConfigurationSha256": "b6ebf05a0a65aa304007d6bd3c4e71b7d4590ceb5a74e2ed05b007fd7a6c7820",
+      "networks": [
+        "gying-movie_cache-net",
+        "gying-movie_gying-net"
+      ],
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-data",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-data/_data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_backend-logs",
+          "Source": "/var/lib/docker/volumes/gying-movie_backend-logs/_data",
+          "Destination": "/app/logs",
+          "RW": true
+        },
+        {
+          "Type": "volume",
+          "Name": "gying-movie_ai-state-key",
+          "Source": "/var/lib/docker/volumes/gying-movie_ai-state-key/_data",
+          "Destination": "/run/gying-ai",
+          "RW": false
+        }
+      ]
+    },
+    "fields": {
+      "checkedConfigFields": [
+        "AttachStderr",
+        "AttachStdin",
+        "AttachStdout",
+        "Cmd",
+        "Domainname",
+        "Entrypoint",
+        "Env",
+        "ExposedPorts",
+        "Hostname",
+        "Image",
+        "Labels",
+        "OpenStdin",
+        "StdinOnce",
+        "Tty",
+        "User",
+        "Volumes",
+        "WorkingDir"
+      ],
+      "modeledNonEnvironmentFieldsSha256": "cf63ae5dce067443688c2ba4736c93262a8ce8e156c710119435b77c9f248e98",
+      "bakedAndCustomLabelsSha256": "65419681611833d9ab1f034a6ad8cf66211ef7f50ed5fccb8b75733a5b293edd",
+      "generatedComposeLabelsSha256": "86f4ef8f8675b7d947eb2c4d643badbb0c487e9878cc3b67dc814cd7869b9369",
+      "candidatePlatformManifest": "sha256:f7664c25907fbb2331061f6c2aea415d98c1c8cbec28a79d28c4dff288f6a76e",
+      "fullFieldsetVerified": true,
+      "generatedReplacementLabelExplicit": "backend-1"
+    },
+    "actualJarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "unrelatedTwelveRetained": true,
+    "protectedHistoryAndSysConfigRetained": true,
+    "additionalServiceActivations": 0,
+    "productionMergePerformed": false
+  },
+  "idleAfter": {
+    "at": "2026-11-11T05:31:03.244677+00:00",
+    "phase": "After final read-only verification",
+    "activeBusinessJobs": 0,
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "moviePending": 0,
+    "movieRunning": 0
+  },
+  "configurationSha256": "47401b8ec6960c5b180704adb33436b815a421dc106ad3f4e87f91d73f211a0e",
+  "dailyConfigurationSha256": "8d5b26578064af2de5fc42ed2c7f2e7a60ce855e09cfa7ea21ab14fdaa36ea0c",
+  "dailyArtifactCount": 46,
+  "hostTaskXmlFullAclAndFilesRetained": true,
+  "protectedHistoryAndSysConfigRetained": true,
+  "unrelatedTwelveGenerationsRetained": true,
+  "completedAt": "2026-11-11T05:31:03.244677+00:00"
+}

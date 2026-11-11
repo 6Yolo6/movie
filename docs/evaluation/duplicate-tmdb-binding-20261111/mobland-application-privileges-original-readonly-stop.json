@@ -1,0 +1,12 @@
+{
+  "status": "STOPPED_READ_ONLY",
+  "operatorDirectSqlWrites": 0,
+  "updatesAttempted": 0,
+  "commitsAttempted": 0,
+  "credentialsPrinted": false,
+  "grantTextPrinted": false,
+  "usernamePrinted": false,
+  "fullRowsPrinted": false,
+  "exceptionType": "Gate",
+  "gate": "EXISTING_BACKEND_DATASOURCE_KEYS_REQUIRED"
+}

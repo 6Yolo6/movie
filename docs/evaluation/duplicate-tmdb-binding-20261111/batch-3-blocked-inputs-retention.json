@@ -1,0 +1,33 @@
+{
+  "allSealedPrimaryInputsRetained": true,
+  "at": "2026-11-11T06:54:15.308618+00:00",
+  "automaticRetry": false,
+  "batch": 3,
+  "blockedPairCount": 4,
+  "childOutput": {
+    "exitCode": 0,
+    "stderrBytes": 0,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdoutBytes": 329,
+    "stdoutSha256": "72117f09ce467e6b714db7f39bcd628b4aa05016513ef71e2f534a0aa0a3c96d"
+  },
+  "cloudActions": 0,
+  "frozenVerifierResult": {
+    "batch": 3,
+    "blockedPairCount": 4,
+    "newPosts": 0,
+    "sqlWrites": 0,
+    "status": "PASS",
+    "verification": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\blocked-retention-4217be67192141e286138a427b7e4bc2.json",
+      "sha256": "f5c04e57f8147ba5430569fc366a010c64c3e398e51f758464b6281597d7f481"
+    }
+  },
+  "newPosts": 0,
+  "sealedPrimaryInputs": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\blocked-inputs-v2-sealed-2a6e7c20803f413cb1400463be884132.json",
+    "sha256": "9801502fe90038cf920f3a68ed8d52d76bc12a03ab53c93299785774a1c258db"
+  },
+  "sqlWrites": 0,
+  "status": "PASS"
+}

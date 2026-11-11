@@ -1,0 +1,61 @@
+{
+  "version": 6,
+  "status": "PASS",
+  "at": "2026-11-11T06:49:37.085486+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_V6_FROZEN_CHAIN_ONLY",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-binding.json",
+    "sha256": "5406cf761032ef90b42add9a1257d15ac1b97631bef3cf5bbda20b625e2b9573"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchIdleMergeV6.py",
+      "sha256": "e2eca4318acb5c784e99db0166166abd96e2a23ed1c35416cec8d6f18f5bef9a"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    }
+  ],
+  "previousBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-offline-review.json",
+    "sha256": "e3625079180c3d93a68c5d9c65969d91ea80b945ef3603e637b3c71f4a9e85b7"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-derivation.json",
+    "sha256": "fe537bdb2fb37b16e5e89dcccb6f9ce529026b31506b3fabd29ff753e6e6cb15"
+  },
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-tests.json",
+    "sha256": "b03ea716ccc6d73ed72e49d7c2c6c4ab1c2f569eff3ecfc2fb02524fab0ce1ca"
+  },
+  "allFrozenChainReferencesPassed": true,
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "runtimeLoadExecutionAndPostFailClosed": true,
+  "productionResultVerifiedByThisReview": false,
+  "mutationScope": [
+    3,
+    4
+  ],
+  "onlyPristineUnreservedBatchesAllowed": true,
+  "exactNativeIdleWaitBudgetSeconds": 120,
+  "allOriginalV4GuardsAndBudgetsRetained": true
+}

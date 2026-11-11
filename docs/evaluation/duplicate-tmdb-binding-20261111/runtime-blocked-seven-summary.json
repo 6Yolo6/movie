@@ -1,0 +1,181 @@
+{
+  "status": "ORIGINAL_RUNTIME_BLOCKER_SNAPSHOTS_RETAINED",
+  "at": "2026-11-11T07:31:08.325231+00:00",
+  "originalBatchBlockedPairCounts": {
+    "1": 2,
+    "2": 1,
+    "3": 4,
+    "4": 0
+  },
+  "unmergedPairs": 7,
+  "blockerCodeCountsAtOriginalPreviews": {
+    "ACTIVE_OR_UNKNOWN_TASK": 7,
+    "PART_NUMBER_CONFLICT": 1,
+    "TEMPORARY_SCOPE": 4,
+    "SERIES_ONLY_MATCH": 1
+  },
+  "blockedPairs": [
+    {
+      "fromMovieId": "tmdb_tv_95396",
+      "toMovieId": "B2kG",
+      "originalBatch": 1,
+      "originalPrimaryReviewId": "d2b6ee86-121d-407f-90d0-af3956e938f4",
+      "originalPreviewBlockers": [
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_tv_220102",
+      "toMovieId": "EVrv",
+      "originalBatch": 1,
+      "originalPrimaryReviewId": "d2b6ee86-121d-407f-90d0-af3956e938f4",
+      "originalPreviewBlockers": [
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM",
+      "originalBatch": 2,
+      "originalPrimaryReviewId": "396ae73f-3947-407b-b1f1-e463358ca96b",
+      "originalPreviewBlockers": [
+        {
+          "reference": "movie_metadata",
+          "code": "PART_NUMBER_CONFLICT",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_movie_986056",
+      "toMovieId": "gying_mv_onzr",
+      "originalBatch": 3,
+      "originalPrimaryReviewId": "fd8c7392-ec6e-49ab-b093-260fe093b663",
+      "originalPreviewBlockers": [
+        {
+          "reference": "qq_transfer_cleanup_job",
+          "code": "TEMPORARY_SCOPE",
+          "count": 3
+        },
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_tv_73375",
+      "toMovieId": "gying_tv_6lx7",
+      "originalBatch": 3,
+      "originalPrimaryReviewId": "fd8c7392-ec6e-49ab-b093-260fe093b663",
+      "originalPreviewBlockers": [
+        {
+          "reference": "qq_transfer_cleanup_job",
+          "code": "TEMPORARY_SCOPE",
+          "count": 3
+        },
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 3
+        },
+        {
+          "reference": "resource_hub_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_tv_50878",
+      "toMovieId": "gying_tv_M9de",
+      "originalBatch": 3,
+      "originalPrimaryReviewId": "fd8c7392-ec6e-49ab-b093-260fe093b663",
+      "originalPreviewBlockers": [
+        {
+          "reference": "movie_metadata",
+          "code": "SERIES_ONLY_MATCH",
+          "count": 1
+        },
+        {
+          "reference": "qq_transfer_cleanup_job",
+          "code": "TEMPORARY_SCOPE",
+          "count": 2
+        },
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "fromMovieId": "tmdb_tv_96102",
+      "toMovieId": "gying_tv_W7Mr",
+      "originalBatch": 3,
+      "originalPrimaryReviewId": "fd8c7392-ec6e-49ab-b093-260fe093b663",
+      "originalPreviewBlockers": [
+        {
+          "reference": "qq_transfer_cleanup_job",
+          "code": "TEMPORARY_SCOPE",
+          "count": 2
+        },
+        {
+          "reference": "quark_transfer_task",
+          "code": "ACTIVE_OR_UNKNOWN_TASK",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "originalPrimaryPreviewReferences": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\primary-preview-response.json",
+      "sha256": "a866b8779d1eb5f042e74e3507b80c1b4ce817ac908b9aa5b72f67d078228466"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response.json",
+      "sha256": "d198e4b7651b28d7537702066342c3597da35cfe54f41b3feb7769e16be6145b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\primary-preview-response.json",
+      "sha256": "22a54a26b7a0b8c93b4ecab1877e92b8ecd1695e27138ffefa4899ab32c984e2"
+    }
+  ],
+  "authenticatedRetentionReceipts": [
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-1-blocked-retention-current.json",
+      "sha256": "920c6010dab156e6f4c4f918f0f9b97e1a4f3f2b7fab234bb48a65aeb8ddb368"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-3-blocked-inputs-retention.json",
+      "sha256": "a48ff3d687f3c490dc62a0a3e67323d2674a03ffda89ab4fdbac9e6c052e4860"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-3-blocked-retention.json",
+      "sha256": "f5c04e57f8147ba5430569fc366a010c64c3e398e51f758464b6281597d7f481"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-2-unused-expired-observation.json",
+      "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\batch-2-split-202-final-verification.json",
+      "sha256": "5b0fe3a72d1c82f996b3995dec17d1601c6685ae598e50c3263a8979361dfb0d"
+    }
+  ],
+  "freshPreviewNotExecutedByThisSummary": true,
+  "independentLiveIo": false,
+  "productionPosts": 0,
+  "operatorDirectSqlWrites": 0,
+  "cloudActions": 0
+}

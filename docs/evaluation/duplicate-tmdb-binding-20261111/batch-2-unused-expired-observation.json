@@ -1,0 +1,67 @@
+{
+  "allOriginalRequestResponseAuthenticationAndCiphertextBytesRetained": true,
+  "allThirteenContainerGenerationsUnchanged": true,
+  "at": "2026-11-11T07:02:19.369162+00:00",
+  "automaticRestore": false,
+  "automaticRetry": false,
+  "batch": 2,
+  "blockedPairCount": 1,
+  "bothAcknowledgedReviewsUnusedAndExpired": true,
+  "cloudActions": 0,
+  "databaseUtcAfter": "2026-11-11 07:02:15.640079",
+  "databaseUtcBefore": "2026-11-11 07:01:58.120949",
+  "eligibleSubsetPairCount": 19,
+  "fullPrimaryAndSubsetStateEquality": true,
+  "mutationExpiryGatesUnmodifiedAndUncalled": true,
+  "newPosts": 0,
+  "observerBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\unused-batch2-observer-binding.json",
+    "sha256": "60ac7e9fb02f232b8d85c720f7951383bdc5db655a10049f0957a8aceccaf9e3"
+  },
+  "oldMergePosts": 0,
+  "oldPreviewPosts": 2,
+  "operatorDirectSqlWrites": 0,
+  "originalFailureAndIntentRetained": true,
+  "originalIdempotencyKey": "30349a87-913a-4024-a7f8-e04199b9923c",
+  "originalIntentReviewId": "416c0008-1c63-4c36-b20e-162a79a8e00f",
+  "primaryCompleteStateSha256": "98ccc08f5b4dc48800d6a097f6cfa6677d27b05f36b6583c099c4c6785de85f7",
+  "primaryPairCount": 20,
+  "primaryPreimage": {
+    "authenticatedDecryption": true,
+    "dbUtcBefore": "2026-11-11 06:31:37.732450",
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-rows-before.json.age",
+    "plaintextSha256": "eab2033b316309c12ed81313afc4492fac3b8511bbc26ba10f2b390de7514c78",
+    "plaintextWritten": false,
+    "sha256": "fac9bde4cca99b0a868eb8b7a4bb4d0a147334590c83a7face397d8f9c5b77d4",
+    "size": 255536,
+    "stateSha256": "98ccc08f5b4dc48800d6a097f6cfa6677d27b05f36b6583c099c4c6785de85f7"
+  },
+  "protectedBaiduAndConfigurationUnchanged": true,
+  "reviewObservations": [
+    {
+      "completeRowSha256": "873066cbedadc8272f239600f4e58661c94f0f929bddd250968cf4d286c84ea7",
+      "expiresAt": "2026-11-11 06:42:13.689978",
+      "id": "396ae73f-3947-407b-b1f1-e463358ca96b",
+      "status": "PREVIEWED"
+    },
+    {
+      "completeRowSha256": "604cd075c95518cb059552cc06c97ddf35f6736dda976115a22f0fbfdc147e5b",
+      "expiresAt": "2026-11-11 06:43:05.795210",
+      "id": "416c0008-1c63-4c36-b20e-162a79a8e00f",
+      "status": "PREVIEWED"
+    }
+  ],
+  "sqlWrites": 0,
+  "status": "UNSENT_EXPIRED_FULL_PREIMAGE_VERIFIED",
+  "subsetCompleteStateSha256": "e438ba1a173c8ffac545a933ad29c1147cb483df0f135b0517fbfc3121f06cd5",
+  "subsetPreimage": {
+    "authenticatedDecryption": true,
+    "dbUtcBefore": "2026-11-11 06:32:32.807825",
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\subset-rows-before.json.age",
+    "plaintextSha256": "0b6555d1f3f57fe26b9a03c701ec7ea86a5a5ae0130a918ab986eb48312eaa18",
+    "plaintextWritten": false,
+    "sha256": "411689578fc999d682faafa7bd73246f7993b6ceb195741317808c3dfceebde3",
+    "size": 242394,
+    "stateSha256": "e438ba1a173c8ffac545a933ad29c1147cb483df0f135b0517fbfc3121f06cd5"
+  }
+}

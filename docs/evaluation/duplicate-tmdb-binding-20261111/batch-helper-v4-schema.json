@@ -1,0 +1,345 @@
+{
+  "version": 4,
+  "resourceColumns": [
+    {
+      "table": "resource_link",
+      "column": "id",
+      "dataType": "bigint",
+      "columnType": "bigint",
+      "datetimePrecision": "NULL",
+      "nullable": "NO",
+      "default": "<NULL>",
+      "extra": "auto_increment"
+    },
+    {
+      "table": "resource_link",
+      "column": "movie_id",
+      "dataType": "varchar",
+      "columnType": "varchar(64)",
+      "datetimePrecision": "NULL",
+      "nullable": "NO",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "name",
+      "dataType": "varchar",
+      "columnType": "varchar(255)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "type",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "DISK",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "provider",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "url",
+      "dataType": "text",
+      "columnType": "text",
+      "datetimePrecision": "NULL",
+      "nullable": "NO",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "url_hash",
+      "dataType": "char",
+      "columnType": "char(64)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "code",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "uploader_id",
+      "dataType": "bigint",
+      "columnType": "bigint",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "audit_status",
+      "dataType": "int",
+      "columnType": "int",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "0",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "remark",
+      "dataType": "varchar",
+      "columnType": "varchar(255)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "created_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "CURRENT_TIMESTAMP",
+      "extra": "DEFAULT_GENERATED"
+    },
+    {
+      "table": "resource_link",
+      "column": "updated_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "CURRENT_TIMESTAMP",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "table": "resource_link",
+      "column": "update_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "CURRENT_TIMESTAMP",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "table": "resource_link",
+      "column": "deleted_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "status",
+      "dataType": "varchar",
+      "columnType": "varchar(20)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "ACTIVE",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "link_status",
+      "dataType": "varchar",
+      "columnType": "varchar(20)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "NORMAL",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "report_count",
+      "dataType": "int",
+      "columnType": "int",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "0",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "source",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "USER",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "source_ref",
+      "dataType": "varchar",
+      "columnType": "varchar(100)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "source_url",
+      "dataType": "text",
+      "columnType": "text",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "auto_collected",
+      "dataType": "tinyint",
+      "columnType": "tinyint(1)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "0",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "validated_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "last_check_error",
+      "dataType": "varchar",
+      "columnType": "varchar(1000)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "quality",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "subtitle",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "file_size",
+      "dataType": "varchar",
+      "columnType": "varchar(50)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "version_note",
+      "dataType": "varchar",
+      "columnType": "varchar(255)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    },
+    {
+      "table": "resource_link",
+      "column": "reject_reason",
+      "dataType": "varchar",
+      "columnType": "varchar(255)",
+      "datetimePrecision": "NULL",
+      "nullable": "YES",
+      "default": "<NULL>",
+      "extra": ""
+    }
+  ],
+  "resourceTriggers": [
+    {
+      "name": "gying_merge_resource_link_insert",
+      "table": "resource_link",
+      "event": "INSERT",
+      "timing": "BEFORE",
+      "statementSha256": "455a046318a69975615bae79c12bb389780e99cd4630c4d2f75cafc557c11e82"
+    },
+    {
+      "name": "gying_merge_resource_link_update",
+      "table": "resource_link",
+      "event": "UPDATE",
+      "timing": "BEFORE",
+      "statementSha256": "455a046318a69975615bae79c12bb389780e99cd4630c4d2f75cafc557c11e82"
+    }
+  ],
+  "legacyColumns": [
+    {
+      "table": "resource_link",
+      "column": "updated_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "CURRENT_TIMESTAMP",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "table": "resource_link",
+      "column": "update_at",
+      "dataType": "datetime",
+      "columnType": "datetime",
+      "datetimePrecision": "0",
+      "nullable": "YES",
+      "default": "CURRENT_TIMESTAMP",
+      "extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "clock": {
+    "globalTimeZone": "SYSTEM",
+    "sessionTimeZone": "SYSTEM",
+    "offsetSeconds": 28800
+  },
+  "deployedServiceSource": {
+    "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\MovieDuplicateMergeService.java",
+    "sha256": "03117ce17b20610961ec3650e6b96415625214e8e7419207c18aeb2c028b90e2"
+  },
+  "legacyField": "update_at",
+  "preservedField": "updated_at",
+  "policy": "Only source movie_id migration may refresh legacy update_at, at bound database local clock in floor-to-second request-to-completed single-merge window; complete all other row/column equality required."
+}

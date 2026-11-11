@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "status": "PASS",
+  "at": "2026-11-11T08:34:53.715236+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_ENTRY_V3_NEW_SEMANTICS_AND_MINIMAL_AST_DIFF",
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py",
+      "sha256": "b02d75746158c96c49f1adf143a5a8775d360699bd9aece0be0ebf3b01e54f91"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceCoreV3.py",
+      "sha256": "af5618beaf19427cd7e354a28898ba9e4f1a6616c803c1b86269fa45dda2c04f"
+    }
+  ],
+  "frozenPreviousHelpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2.py",
+      "sha256": "61a3fe371d45175a27046398978f60293bbb98acbadd4c955fca161652b23797"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptance.py",
+      "sha256": "f8d371647ea0ba69f13f70d9e636657b08d47f8c248b1130ca605006335f6ea1"
+    }
+  ],
+  "allTestsPassed": true,
+  "testsRun": 7,
+  "assertions": 45,
+  "checks": [
+    {
+      "name": "MOVIE_ORIGINAL_PART_PRESERVED",
+      "status": "PASS"
+    },
+    {
+      "name": "MOVIE_NULL_REMAINS_NULL",
+      "status": "PASS"
+    },
+    {
+      "name": "MOVIE_CONFIRMED_NAMESPACE_ZERO_REQUIRED",
+      "status": "PASS"
+    },
+    {
+      "name": "TV_POSITIVE_REVIEW_METADATA_AND_IDENTITY_SEASON_EXACT",
+      "status": "PASS"
+    },
+    {
+      "name": "BOOLEAN_AND_TYPE_DRIFT_REJECTED",
+      "status": "PASS"
+    },
+    {
+      "name": "MISSING_WRONG_OR_CONFLICTING_CONFIRMED_IDENTITY_REJECTED",
+      "status": "PASS"
+    },
+    {
+      "name": "API_AND_LIST_RAW_METADATA_SEASON_CANNOT_NORMALIZE_OR_DRIFT",
+      "status": "PASS"
+    }
+  ],
+  "astProtection": {
+    "allOriginalCoreDefinitionsExceptExecuteUnchanged": true,
+    "onlyThreePureFunctionsAdded": true,
+    "coreExecuteNormalizedExactOldAst": true,
+    "fourExpectedExecuteChanges": {
+      "metadataGuard": 1,
+      "dtoSeason": 1,
+      "listSeason": 1,
+      "summary": 1
+    },
+    "wholeCoreNormalizedExactOldAst": true,
+    "unchangedWrapperFunctions": [
+      "pairs_valid",
+      "json_value",
+      "success_matches",
+      "validate_split_terminal",
+      "load_plan",
+      "load_records",
+      "load_original",
+      "completions",
+      "execute"
+    ],
+    "blockedFinalSaveTailExactOldAst": true,
+    "fullRowsBaiduRuntimeSsrHttpAndV7CurrentReviewGuardsRetained": true
+  },
+  "testMethod": "Compile only the three new pure AST functions with a local Gate/need; no helper module import, Runtime, credentials, subprocess, decrypt, SQL or HTTP",
+  "old18TestsReusedNotRerun": true,
+  "productionPosts": 0,
+  "productionGets": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "bindingReviewPending": true,
+  "productionEntryAcceptanceVerifiedByThisReview": false
+}

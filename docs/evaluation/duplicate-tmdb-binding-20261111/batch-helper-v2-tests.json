@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "tests": 39,
+  "failures": 0,
+  "errors": 0,
+  "originalTests": 14,
+  "runtimeIo": 0,
+  "productionPosts": 0,
+  "sql": 0,
+  "http": 0,
+  "cloud": 0,
+  "mockOnlyProductionCallPaths": true,
+  "files": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+      "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV2.py",
+      "sha256": "61c8022c91586517faa173a2af7e3b81d78833f7d85bf9f421524ea1763a4230"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchOfflineTestsV2.py",
+      "sha256": "a18ff99a36334755dbd46d0c9fa433e6d970dc5ccd29401bb113758e3aa802dd"
+    }
+  ]
+}

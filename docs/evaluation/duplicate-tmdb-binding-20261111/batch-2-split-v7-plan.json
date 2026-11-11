@@ -1,0 +1,1116 @@
+{
+  "version": 7,
+  "status": "SPLIT_PREPARED",
+  "generation": "batch2-split-v7",
+  "parentBatch": 2,
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatchIds": [
+      201,
+      202
+    ],
+    "subbatchSizes": [
+      10,
+      9
+    ],
+    "originalAuthorizedRemainingPairs": 73,
+    "newCandidatePairs": 0,
+    "originalEligiblePairs": 19,
+    "originalBlockedPairsPermanentlyExcluded": 1,
+    "realUnusedExpiredObserverPassRequired": true,
+    "maxPreviewPostsPerSubbatch": 2,
+    "maxMergePostsPerSubbatch": 1,
+    "allFreshPreviewPairsMustBeEligible": true,
+    "oldBodiesAndKeysNeverReused": true,
+    "newAuthenticatedAgePerSubbatch": true,
+    "maxExactIdleReadOnlyWaitSeconds": 120,
+    "sharedIdleDeadlinePerExecution": true,
+    "verifierVersion": 4,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "cloudActions": 0,
+    "operatorDirectSqlWrites": 0
+  },
+  "confirmSelector": {
+    "source": "originalConfirmed73PairStage",
+    "originalCandidateReview": {
+      "path": "E:\\gying-tools\\releases\\mobland-merge-apply-20261110\\candidate-review.json",
+      "sha256": "5fb28364a03a93655edfa71334a9fcf65f4b72b6619b0cd6676dbb826932e63d"
+    },
+    "parentBatch": 2,
+    "eligiblePairCount": 19,
+    "partitionSizes": [
+      10,
+      9
+    ],
+    "newCandidatePairs": 0,
+    "excludedBlockedPairs": [
+      {
+        "fromMovieId": "tmdb_movie_11647",
+        "toMovieId": "gying_mv_XpJM"
+      }
+    ],
+    "selectedPairsSha256": "03cd7298d80b0578dd117b830385a092e0ffacad3cae70e4f230b52dacd7ff75",
+    "allOriginalEligiblePairsCovered": true
+  },
+  "originalStagePlan": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\stage-plan.json",
+    "sha256": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+  },
+  "originalPrepared": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\prepared.json",
+    "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+  },
+  "observer": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\unused-expired-observation-4b13f5e8de0940bd84f2e1db9ba084c6.json",
+    "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+  },
+  "observerBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\unused-batch2-observer-binding.json",
+    "sha256": "60ac7e9fb02f232b8d85c720f7951383bdc5db655a10049f0957a8aceccaf9e3"
+  },
+  "originalIntent": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\merge-intent.json",
+    "sha256": "f1f3475f1074d45a72cb69ae3b91c5e60aad62d96e934cd085b47f6b6dad6c32"
+  },
+  "originalPrimaryPreimage": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preimage.json",
+    "sha256": "b656fd5fe07f3692ae4bb33284e705c5993ddef1cb4bdf1607b38a0211099e37"
+  },
+  "originalSubsetPreimage": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\subset-preimage.json",
+    "sha256": "e7d0063eb627565b13462f489550988a517daa06d25d39f3d66168dd1c196a18"
+  },
+  "originalPrimaryPreviewResponse": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-response.json",
+    "sha256": "d198e4b7651b28d7537702066342c3597da35cfe54f41b3feb7769e16be6145b"
+  },
+  "originalSubsetPreviewResponse": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\subset-preview-response.json",
+    "sha256": "707a0265961190aaebb85b38ad329b21726c95aeecd2ffdaac7d3bbbb691f7eb"
+  },
+  "oldPreviewRequests": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\primary-preview-request.json",
+      "sha256": "1f60fefe23e831e7baa2b5b4dfa6ca869cf69d6d51913c4fe136a57f2f66dc29"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\subset-preview-request.json",
+      "sha256": "6feac7d0b64d4c470b60ac9eea2d3aecee5b2af88b055fa076cbd189903dbd8c"
+    }
+  ],
+  "originalPrimaryReviewId": "396ae73f-3947-407b-b1f1-e463358ca96b",
+  "originalSubsetReviewId": "416c0008-1c63-4c36-b20e-162a79a8e00f",
+  "oldIdempotencyKey": "30349a87-913a-4024-a7f8-e04199b9923c",
+  "eligiblePairs": [
+    {
+      "fromMovieId": "tmdb_movie_89",
+      "toMovieId": "gying_mv_KA5v"
+    },
+    {
+      "fromMovieId": "tmdb_movie_294254",
+      "toMovieId": "gying_mv_KLyE"
+    },
+    {
+      "fromMovieId": "tmdb_movie_85",
+      "toMovieId": "gying_mv_L2x9"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1894",
+      "toMovieId": "gying_mv_LbYD"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1734",
+      "toMovieId": "gying_mv_Lbpk"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1893",
+      "toMovieId": "gying_mv_MGY1"
+    },
+    {
+      "fromMovieId": "tmdb_movie_950",
+      "toMovieId": "gying_mv_OEjg"
+    },
+    {
+      "fromMovieId": "tmdb_movie_80321",
+      "toMovieId": "gying_mv_RvRP"
+    },
+    {
+      "fromMovieId": "tmdb_movie_38142",
+      "toMovieId": "gying_mv_VE3b"
+    },
+    {
+      "fromMovieId": "tmdb_movie_10617",
+      "toMovieId": "gying_mv_VjXb"
+    },
+    {
+      "fromMovieId": "tmdb_movie_241259",
+      "toMovieId": "gying_mv_VvmW"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1891",
+      "toMovieId": "gying_mv_WOYP"
+    },
+    {
+      "fromMovieId": "tmdb_movie_330459",
+      "toMovieId": "gying_mv_Yg8L"
+    },
+    {
+      "fromMovieId": "tmdb_movie_1268",
+      "toMovieId": "gying_mv_aP1j"
+    },
+    {
+      "fromMovieId": "tmdb_movie_710",
+      "toMovieId": "gying_mv_d7Vo"
+    },
+    {
+      "fromMovieId": "tmdb_movie_37686",
+      "toMovieId": "gying_mv_e900"
+    },
+    {
+      "fromMovieId": "tmdb_movie_56292",
+      "toMovieId": "gying_mv_g7Pp"
+    },
+    {
+      "fromMovieId": "tmdb_movie_57800",
+      "toMovieId": "gying_mv_gWxp"
+    },
+    {
+      "fromMovieId": "tmdb_movie_10045",
+      "toMovieId": "gying_mv_m9wB"
+    }
+  ],
+  "blockedPairs": [
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM"
+    }
+  ],
+  "subbatches": [
+    {
+      "batch": 201,
+      "parentBatch": 2,
+      "index": 1,
+      "directory": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201",
+      "pairs": [
+        {
+          "fromMovieId": "tmdb_movie_89",
+          "toMovieId": "gying_mv_KA5v"
+        },
+        {
+          "fromMovieId": "tmdb_movie_294254",
+          "toMovieId": "gying_mv_KLyE"
+        },
+        {
+          "fromMovieId": "tmdb_movie_85",
+          "toMovieId": "gying_mv_L2x9"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1894",
+          "toMovieId": "gying_mv_LbYD"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1734",
+          "toMovieId": "gying_mv_Lbpk"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1893",
+          "toMovieId": "gying_mv_MGY1"
+        },
+        {
+          "fromMovieId": "tmdb_movie_950",
+          "toMovieId": "gying_mv_OEjg"
+        },
+        {
+          "fromMovieId": "tmdb_movie_80321",
+          "toMovieId": "gying_mv_RvRP"
+        },
+        {
+          "fromMovieId": "tmdb_movie_38142",
+          "toMovieId": "gying_mv_VE3b"
+        },
+        {
+          "fromMovieId": "tmdb_movie_10617",
+          "toMovieId": "gying_mv_VjXb"
+        }
+      ],
+      "reviewed": [
+        {
+          "fromMovieId": "tmdb_movie_89",
+          "toMovieId": "gying_mv_KA5v",
+          "scanIndex": 35,
+          "fromTitle": "夺宝奇兵3：圣战奇兵",
+          "toTitle": "夺宝奇兵3",
+          "tmdbId": 89,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            4637
+          ],
+          "retainedGyingIdentityIds": [
+            3481
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_294254",
+          "toMovieId": "gying_mv_KLyE",
+          "scanIndex": 36,
+          "fromTitle": "移动迷宫2：烧痕审判",
+          "toTitle": "移动迷宫2",
+          "tmdbId": 294254,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17020
+          ],
+          "retainedGyingIdentityIds": [
+            15923
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_85",
+          "toMovieId": "gying_mv_L2x9",
+          "scanIndex": 37,
+          "fromTitle": "夺宝奇兵：法柜奇兵",
+          "toTitle": "夺宝奇兵",
+          "tmdbId": 85,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            4167
+          ],
+          "retainedGyingIdentityIds": [
+            3273
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1894",
+          "toMovieId": "gying_mv_LbYD",
+          "scanIndex": 38,
+          "fromTitle": "星球大战2：克隆人的进攻",
+          "toTitle": "星球大战前传2：克隆人的进攻",
+          "tmdbId": 1894,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17774
+          ],
+          "retainedGyingIdentityIds": [
+            7595
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1734",
+          "toMovieId": "gying_mv_Lbpk",
+          "scanIndex": 39,
+          "fromTitle": "木乃伊2：木乃伊归来",
+          "toTitle": "木乃伊归来",
+          "tmdbId": 1734,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18787
+          ],
+          "retainedGyingIdentityIds": [
+            11357
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1893",
+          "toMovieId": "gying_mv_MGY1",
+          "scanIndex": 40,
+          "fromTitle": "星球大战1：幽灵的威胁",
+          "toTitle": "星球大战前传1：幽灵的威胁",
+          "tmdbId": 1893,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17854
+          ],
+          "retainedGyingIdentityIds": [
+            4958
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_950",
+          "toMovieId": "gying_mv_OEjg",
+          "scanIndex": 41,
+          "fromTitle": "冰川时代2：融冰之灾",
+          "toTitle": "冰川时代2",
+          "tmdbId": 950,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17011
+          ],
+          "retainedGyingIdentityIds": [
+            7586
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_80321",
+          "toMovieId": "gying_mv_RvRP",
+          "scanIndex": 42,
+          "fromTitle": "马达加斯加3：欧洲通缉犯",
+          "toTitle": "马达加斯加3",
+          "tmdbId": 80321,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17470
+          ],
+          "retainedGyingIdentityIds": [
+            9436
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_38142",
+          "toMovieId": "gying_mv_VE3b",
+          "scanIndex": 43,
+          "fromTitle": "秒速五厘米",
+          "toTitle": "秒速5厘米",
+          "tmdbId": 38142,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            10537
+          ],
+          "retainedGyingIdentityIds": [
+            4207
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_10617",
+          "toMovieId": "gying_mv_VjXb",
+          "scanIndex": 44,
+          "fromTitle": "黄飞鸿之一：壮志凌云",
+          "toTitle": "黄飞鸿",
+          "tmdbId": 10617,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            13213
+          ],
+          "retainedGyingIdentityIds": [
+            10602
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        }
+      ]
+    },
+    {
+      "batch": 202,
+      "parentBatch": 2,
+      "index": 2,
+      "directory": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202",
+      "pairs": [
+        {
+          "fromMovieId": "tmdb_movie_241259",
+          "toMovieId": "gying_mv_VvmW"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1891",
+          "toMovieId": "gying_mv_WOYP"
+        },
+        {
+          "fromMovieId": "tmdb_movie_330459",
+          "toMovieId": "gying_mv_Yg8L"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1268",
+          "toMovieId": "gying_mv_aP1j"
+        },
+        {
+          "fromMovieId": "tmdb_movie_710",
+          "toMovieId": "gying_mv_d7Vo"
+        },
+        {
+          "fromMovieId": "tmdb_movie_37686",
+          "toMovieId": "gying_mv_e900"
+        },
+        {
+          "fromMovieId": "tmdb_movie_56292",
+          "toMovieId": "gying_mv_g7Pp"
+        },
+        {
+          "fromMovieId": "tmdb_movie_57800",
+          "toMovieId": "gying_mv_gWxp"
+        },
+        {
+          "fromMovieId": "tmdb_movie_10045",
+          "toMovieId": "gying_mv_m9wB"
+        }
+      ],
+      "reviewed": [
+        {
+          "fromMovieId": "tmdb_movie_241259",
+          "toMovieId": "gying_mv_VvmW",
+          "scanIndex": 45,
+          "fromTitle": "爱丽丝梦游仙境：镜中奇遇记",
+          "toTitle": "爱丽丝梦游仙境2：镜中奇遇记",
+          "tmdbId": 241259,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17924
+          ],
+          "retainedGyingIdentityIds": [
+            15151
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1891",
+          "toMovieId": "gying_mv_WOYP",
+          "scanIndex": 46,
+          "fromTitle": "星球大战5：帝国反击战",
+          "toTitle": "星球大战2：帝国反击战",
+          "tmdbId": 1891,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            241
+          ],
+          "retainedGyingIdentityIds": [
+            2966
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_330459",
+          "toMovieId": "gying_mv_Yg8L",
+          "scanIndex": 48,
+          "fromTitle": "星球大战外传1：侠盗一号",
+          "toTitle": "星球大战外传：侠盗一号",
+          "tmdbId": 330459,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            7191
+          ],
+          "retainedGyingIdentityIds": [
+            3825
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1268",
+          "toMovieId": "gying_mv_aP1j",
+          "scanIndex": 49,
+          "fromTitle": "憨豆先生的黄金周",
+          "toTitle": "憨豆的黄金周",
+          "tmdbId": 1268,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18838
+          ],
+          "retainedGyingIdentityIds": [
+            11951
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_710",
+          "toMovieId": "gying_mv_d7Vo",
+          "scanIndex": 50,
+          "fromTitle": "007：黄金眼",
+          "toTitle": "007之黄金眼",
+          "tmdbId": 710,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16031
+          ],
+          "retainedGyingIdentityIds": [
+            12179
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_37686",
+          "toMovieId": "gying_mv_e900",
+          "scanIndex": 51,
+          "fromTitle": "超级8",
+          "toTitle": "超级八",
+          "tmdbId": 37686,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16753
+          ],
+          "retainedGyingIdentityIds": [
+            11129
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_56292",
+          "toMovieId": "gying_mv_g7Pp",
+          "scanIndex": 52,
+          "fromTitle": "碟中谍4：幽灵协议",
+          "toTitle": "碟中谍4",
+          "tmdbId": 56292,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            13039
+          ],
+          "retainedGyingIdentityIds": [
+            3446
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_57800",
+          "toMovieId": "gying_mv_gWxp",
+          "scanIndex": 53,
+          "fromTitle": "冰川时代4：大陆漂移",
+          "toTitle": "冰川时代4",
+          "tmdbId": 57800,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18919
+          ],
+          "retainedGyingIdentityIds": [
+            9278
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_10045",
+          "toMovieId": "gying_mv_m9wB",
+          "scanIndex": 54,
+          "fromTitle": "暴力街区13",
+          "toTitle": "暴力街区",
+          "tmdbId": 10045,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16502
+          ],
+          "retainedGyingIdentityIds": [
+            13399
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        }
+      ]
+    }
+  ],
+  "batches": [
+    {
+      "batch": 201,
+      "parentBatch": 2,
+      "index": 1,
+      "directory": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201",
+      "pairs": [
+        {
+          "fromMovieId": "tmdb_movie_89",
+          "toMovieId": "gying_mv_KA5v"
+        },
+        {
+          "fromMovieId": "tmdb_movie_294254",
+          "toMovieId": "gying_mv_KLyE"
+        },
+        {
+          "fromMovieId": "tmdb_movie_85",
+          "toMovieId": "gying_mv_L2x9"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1894",
+          "toMovieId": "gying_mv_LbYD"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1734",
+          "toMovieId": "gying_mv_Lbpk"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1893",
+          "toMovieId": "gying_mv_MGY1"
+        },
+        {
+          "fromMovieId": "tmdb_movie_950",
+          "toMovieId": "gying_mv_OEjg"
+        },
+        {
+          "fromMovieId": "tmdb_movie_80321",
+          "toMovieId": "gying_mv_RvRP"
+        },
+        {
+          "fromMovieId": "tmdb_movie_38142",
+          "toMovieId": "gying_mv_VE3b"
+        },
+        {
+          "fromMovieId": "tmdb_movie_10617",
+          "toMovieId": "gying_mv_VjXb"
+        }
+      ],
+      "reviewed": [
+        {
+          "fromMovieId": "tmdb_movie_89",
+          "toMovieId": "gying_mv_KA5v",
+          "scanIndex": 35,
+          "fromTitle": "夺宝奇兵3：圣战奇兵",
+          "toTitle": "夺宝奇兵3",
+          "tmdbId": 89,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            4637
+          ],
+          "retainedGyingIdentityIds": [
+            3481
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_294254",
+          "toMovieId": "gying_mv_KLyE",
+          "scanIndex": 36,
+          "fromTitle": "移动迷宫2：烧痕审判",
+          "toTitle": "移动迷宫2",
+          "tmdbId": 294254,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17020
+          ],
+          "retainedGyingIdentityIds": [
+            15923
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_85",
+          "toMovieId": "gying_mv_L2x9",
+          "scanIndex": 37,
+          "fromTitle": "夺宝奇兵：法柜奇兵",
+          "toTitle": "夺宝奇兵",
+          "tmdbId": 85,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            4167
+          ],
+          "retainedGyingIdentityIds": [
+            3273
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1894",
+          "toMovieId": "gying_mv_LbYD",
+          "scanIndex": 38,
+          "fromTitle": "星球大战2：克隆人的进攻",
+          "toTitle": "星球大战前传2：克隆人的进攻",
+          "tmdbId": 1894,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17774
+          ],
+          "retainedGyingIdentityIds": [
+            7595
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1734",
+          "toMovieId": "gying_mv_Lbpk",
+          "scanIndex": 39,
+          "fromTitle": "木乃伊2：木乃伊归来",
+          "toTitle": "木乃伊归来",
+          "tmdbId": 1734,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18787
+          ],
+          "retainedGyingIdentityIds": [
+            11357
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1893",
+          "toMovieId": "gying_mv_MGY1",
+          "scanIndex": 40,
+          "fromTitle": "星球大战1：幽灵的威胁",
+          "toTitle": "星球大战前传1：幽灵的威胁",
+          "tmdbId": 1893,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17854
+          ],
+          "retainedGyingIdentityIds": [
+            4958
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_950",
+          "toMovieId": "gying_mv_OEjg",
+          "scanIndex": 41,
+          "fromTitle": "冰川时代2：融冰之灾",
+          "toTitle": "冰川时代2",
+          "tmdbId": 950,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17011
+          ],
+          "retainedGyingIdentityIds": [
+            7586
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_80321",
+          "toMovieId": "gying_mv_RvRP",
+          "scanIndex": 42,
+          "fromTitle": "马达加斯加3：欧洲通缉犯",
+          "toTitle": "马达加斯加3",
+          "tmdbId": 80321,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17470
+          ],
+          "retainedGyingIdentityIds": [
+            9436
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_38142",
+          "toMovieId": "gying_mv_VE3b",
+          "scanIndex": 43,
+          "fromTitle": "秒速五厘米",
+          "toTitle": "秒速5厘米",
+          "tmdbId": 38142,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            10537
+          ],
+          "retainedGyingIdentityIds": [
+            4207
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_10617",
+          "toMovieId": "gying_mv_VjXb",
+          "scanIndex": 44,
+          "fromTitle": "黄飞鸿之一：壮志凌云",
+          "toTitle": "黄飞鸿",
+          "tmdbId": 10617,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            13213
+          ],
+          "retainedGyingIdentityIds": [
+            10602
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        }
+      ]
+    },
+    {
+      "batch": 202,
+      "parentBatch": 2,
+      "index": 2,
+      "directory": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202",
+      "pairs": [
+        {
+          "fromMovieId": "tmdb_movie_241259",
+          "toMovieId": "gying_mv_VvmW"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1891",
+          "toMovieId": "gying_mv_WOYP"
+        },
+        {
+          "fromMovieId": "tmdb_movie_330459",
+          "toMovieId": "gying_mv_Yg8L"
+        },
+        {
+          "fromMovieId": "tmdb_movie_1268",
+          "toMovieId": "gying_mv_aP1j"
+        },
+        {
+          "fromMovieId": "tmdb_movie_710",
+          "toMovieId": "gying_mv_d7Vo"
+        },
+        {
+          "fromMovieId": "tmdb_movie_37686",
+          "toMovieId": "gying_mv_e900"
+        },
+        {
+          "fromMovieId": "tmdb_movie_56292",
+          "toMovieId": "gying_mv_g7Pp"
+        },
+        {
+          "fromMovieId": "tmdb_movie_57800",
+          "toMovieId": "gying_mv_gWxp"
+        },
+        {
+          "fromMovieId": "tmdb_movie_10045",
+          "toMovieId": "gying_mv_m9wB"
+        }
+      ],
+      "reviewed": [
+        {
+          "fromMovieId": "tmdb_movie_241259",
+          "toMovieId": "gying_mv_VvmW",
+          "scanIndex": 45,
+          "fromTitle": "爱丽丝梦游仙境：镜中奇遇记",
+          "toTitle": "爱丽丝梦游仙境2：镜中奇遇记",
+          "tmdbId": 241259,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            17924
+          ],
+          "retainedGyingIdentityIds": [
+            15151
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1891",
+          "toMovieId": "gying_mv_WOYP",
+          "scanIndex": 46,
+          "fromTitle": "星球大战5：帝国反击战",
+          "toTitle": "星球大战2：帝国反击战",
+          "tmdbId": 1891,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            241
+          ],
+          "retainedGyingIdentityIds": [
+            2966
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_330459",
+          "toMovieId": "gying_mv_Yg8L",
+          "scanIndex": 48,
+          "fromTitle": "星球大战外传1：侠盗一号",
+          "toTitle": "星球大战外传：侠盗一号",
+          "tmdbId": 330459,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            7191
+          ],
+          "retainedGyingIdentityIds": [
+            3825
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_1268",
+          "toMovieId": "gying_mv_aP1j",
+          "scanIndex": 49,
+          "fromTitle": "憨豆先生的黄金周",
+          "toTitle": "憨豆的黄金周",
+          "tmdbId": 1268,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18838
+          ],
+          "retainedGyingIdentityIds": [
+            11951
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_710",
+          "toMovieId": "gying_mv_d7Vo",
+          "scanIndex": 50,
+          "fromTitle": "007：黄金眼",
+          "toTitle": "007之黄金眼",
+          "tmdbId": 710,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16031
+          ],
+          "retainedGyingIdentityIds": [
+            12179
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_37686",
+          "toMovieId": "gying_mv_e900",
+          "scanIndex": 51,
+          "fromTitle": "超级8",
+          "toTitle": "超级八",
+          "tmdbId": 37686,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16753
+          ],
+          "retainedGyingIdentityIds": [
+            11129
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_56292",
+          "toMovieId": "gying_mv_g7Pp",
+          "scanIndex": 52,
+          "fromTitle": "碟中谍4：幽灵协议",
+          "toTitle": "碟中谍4",
+          "tmdbId": 56292,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            13039
+          ],
+          "retainedGyingIdentityIds": [
+            3446
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_57800",
+          "toMovieId": "gying_mv_gWxp",
+          "scanIndex": 53,
+          "fromTitle": "冰川时代4：大陆漂移",
+          "toTitle": "冰川时代4",
+          "tmdbId": 57800,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            18919
+          ],
+          "retainedGyingIdentityIds": [
+            9278
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        },
+        {
+          "fromMovieId": "tmdb_movie_10045",
+          "toMovieId": "gying_mv_m9wB",
+          "scanIndex": 54,
+          "fromTitle": "暴力街区13",
+          "toTitle": "暴力街区",
+          "tmdbId": 10045,
+          "tmdbType": "movie",
+          "season": 0,
+          "sourceIdentityIds": [
+            16502
+          ],
+          "retainedGyingIdentityIds": [
+            13399
+          ],
+          "independentlyReviewed": true,
+          "evidence": "DIRECT_WORK_TITLE_YEAR_CATEGORY_SEASON_PEOPLE_AND_SOURCE_PROVENANCE",
+          "alreadyMerged": false
+        }
+      ]
+    }
+  ],
+  "generationPrepared": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\prepared.json",
+    "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+  },
+  "preparation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\preparation.json",
+    "sha256": "38de6438b959b26ba6dc2751dda16ff96bed22e74c073d970c58f5a266ccacca"
+  }
+}

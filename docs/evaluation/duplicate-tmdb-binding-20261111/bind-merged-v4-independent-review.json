@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T08:09:56.993478+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "MINIMAL_AST_DIFF_AND_NEW_UNRESERVED_RESULT_REPLAY_REGRESSION_ONLY",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV4.py",
+    "sha256": "9b8e68fe63049302ec032bdd33d039c2166f468c00499188f6b6fd83044a2b3f"
+  },
+  "source": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BindMergedV3.py",
+    "sha256": "e8e2c2a056102eed1ad64c80d7a09c534b136bde0380c2797ee31fff5e709304"
+  },
+  "reusedIndependentReview": {
+    "path": "D:\\gying-movie\\movie\\docs\\evaluation\\duplicate-tmdb-binding-20261111\\bind-merged-v3-independent-review.json",
+    "sha256": "971f20cf2fbb14bd915e664e0d149ef0426d2ca06f35598dc6a37ec7845348b3",
+    "independentChecksPassed": 16,
+    "rerun": false
+  },
+  "originalSelfTests": {
+    "reportedPassed": 11,
+    "unchangedAst": true,
+    "rerun": false
+  },
+  "realV4Prepared": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-v4-prepared.json",
+    "sha256": "f37655c3f3b01fcc8b784379f63643474b39aa894ff1c9e11d0202a8d7d0c398"
+  },
+  "independentChecks": {
+    "passed": 7,
+    "failures": 0,
+    "errors": 0,
+    "checks": [
+      "byte_equivalent_ast_transaction_tls_application_permissions_snapshot_and_self_tests_reused",
+      "normalized_minimal_diff_only_generation_names_version_result_gate_and_safe_diagnostics",
+      "actual_eight_prior_hashes_v3_unreserved_no_update_proof_and_fresh_v4_preparation_locally_authenticated",
+      "frozen_v3_unreserved_result_control_gap_confirmed_without_any_connection_or_update",
+      "v4_unreserved_result_blocks_before_prepared_context_credentials_and_update",
+      "v4_reservation_blocks_before_prepared_context_credentials_and_update",
+      "new_actual_unreserved_preflight_failure_path_result_created_then_replay_blocked_with_safe_hash_phase_only"
+    ],
+    "unchangedAstFunctionsAndClasses": 29,
+    "priorInputShaCount": 8,
+    "priorFilesUnchangedAtStartAndEnd": true
+  },
+  "newObservedGapAndFix": {
+    "realV3ApplyStoppedBeforeReservation": true,
+    "realV3UpdateAndCommitAttempted": false,
+    "oldV3CodePreserved": true,
+    "v4RefusesExistingResultOrReservationBeforeAnyRuntime": true,
+    "v4FailurePhaseAndMessageHashWithoutRawVariables": true,
+    "sameFirstStaticTwoFieldUpdateScope": true
+  },
+  "minimalRequiredChanges": [],
+  "productionRuntimeIo": 0,
+  "credentialReads": 0,
+  "decryption": 0,
+  "childProcesses": 0,
+  "productionSqlStatements": 0,
+  "productionPosts": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "actualV4ApplyOrEntryVerifiedByThisReview": false
+}

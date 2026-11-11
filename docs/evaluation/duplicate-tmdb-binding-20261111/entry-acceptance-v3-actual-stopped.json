@@ -1,0 +1,6035 @@
+{
+  "version": 3,
+  "status": "STOPPED",
+  "startedAt": "2026-11-11T08:39:46.996558+00:00",
+  "helperSha256": "af5618beaf19427cd7e354a28898ba9e4f1a6616c803c1b86269fa45dda2c04f",
+  "nginxHttpGetRequests": 204,
+  "httpReads": [
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_93740",
+      "actualRequestPathSha256": "fa63c3c5e3b7267fa57845e8d1a244f529cd58f7c30458902d6a4d90596609b1",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5455,
+      "sha256": "3cb341f6587b42de6d2cc25f6742c9934836236a6f924ece636d9bc20cee7d0a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/4YNV",
+      "actualRequestPathSha256": "898d5c6b6d4e904a0816cfba977654da16dd0725a345bd08abc4df3d3e0b7ad5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5455,
+      "sha256": "3cb341f6587b42de6d2cc25f6742c9934836236a6f924ece636d9bc20cee7d0a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:d6daaf695953d4f01c3ef4b60add9d912058fa47ff314c75ca85647eaa5f322d]&year=2021",
+      "actualRequestPathSha256": "b8f0c8fdf6a24a63b18276d4aa800705258e29c6bfdcf7f34c88b7f313a9b66b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1799,
+      "sha256": "a4b0165cc6bc05393db41bba1b9c38b1e2e564abc7334e7644a4b6ae2d1b6eb5",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_95480",
+      "actualRequestPathSha256": "8b8276946f24fbf378a2446a8338a1f0500f5136864f9fba7611ccac675ad83c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7379,
+      "sha256": "46ccc34d9b4ebb49799835159a53f03cd462032cfc0cc3ec2e4a495af1bdc7a2",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/5pay",
+      "actualRequestPathSha256": "d66e6c803a8687c674c3cb74c998555293fcffa6c32992e8b1c79bc9d02ba52f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7379,
+      "sha256": "46ccc34d9b4ebb49799835159a53f03cd462032cfc0cc3ec2e4a495af1bdc7a2",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:e915e19dea320aa69fa9e50654fce5d314cfc4df688ff309c462d04b3e256cae]&year=2022",
+      "actualRequestPathSha256": "ab385bc962400cdcea6ea6f9fdf4fdef48a49e0ce74cccf1ac147231f33e5719",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1851,
+      "sha256": "825eff5966faa1169d84d18be8fa4a2d80b3add34a9e831b1c8efa7e9acb8daa",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_225171",
+      "actualRequestPathSha256": "26e15b98c6e318c75112423d7f809dd5cf981201952c631e222c0c4627968ade",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 9257,
+      "sha256": "780ee67fe60ae5d10eb114c5e378da54d38d072b53cc2e3cc85f0e366169d756",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/D4b7",
+      "actualRequestPathSha256": "bca7d62246048900a282afb72de3e7ccf7f150a3759c060ded239bfb6e0a3843",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 9257,
+      "sha256": "780ee67fe60ae5d10eb114c5e378da54d38d072b53cc2e3cc85f0e366169d756",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:2c658d12166a9380c11876201ed4cf68c3fc99172239cc20e08b657cb19f517d]&year=2025",
+      "actualRequestPathSha256": "672c43c5d52bcd7be4bc4ca201fbb347c9604533b599b2a0c6a13ab9921760c3",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1782,
+      "sha256": "54d178bea102e492b2690235310f29c700b58f6aa737aa6f814435de3ecb8b1d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_90282",
+      "actualRequestPathSha256": "071772a31295b19ed075233928d9fa082274290c6ee6a3f9820513d53e248689",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6671,
+      "sha256": "124584ee6241fb4cfa82f6465ed45038d074c8b672608f692546f595c9a8974c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/Lvlx",
+      "actualRequestPathSha256": "ee14961661c751907244f7ee86d24e087658a2c6197db0ed2df6096a1d624887",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6671,
+      "sha256": "124584ee6241fb4cfa82f6465ed45038d074c8b672608f692546f595c9a8974c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:229c3fed9fd57c46d02151c1f179984cae9251d4216c44c1c57c734111885cce]&year=2019",
+      "actualRequestPathSha256": "09f1bfe3122becf2c1e2e8b29356dc70349e637883d86ef3ac0a12f1d8b618ec",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2083,
+      "sha256": "1dde89ee86134217dd58982175cbad9434307fb9fa7911c78c5a8439ed6aab16",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_94997",
+      "actualRequestPathSha256": "4459ffe5290ef37d722c6327e83a7ccd87dd65511141e3a44625bdc584b0ad31",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 47974,
+      "sha256": "ce2c8a11ce2786e10ffb9e45a79b426fa7ddd86610783de7c08d842a3ca1e11d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/P5P2",
+      "actualRequestPathSha256": "36ff51a5f17766f11f9575f4892be4b6bdd8f21785765b66c6117caa582be900",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 47974,
+      "sha256": "ce2c8a11ce2786e10ffb9e45a79b426fa7ddd86610783de7c08d842a3ca1e11d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:bceb05ef93d05c0f9f12c777be63265705b6a78eeda89b1d91fd0d511b893c35]&year=2022",
+      "actualRequestPathSha256": "649c20ca1db84cc9d577cab8ca99904c8e1c4d432622ee74ca7de93c35444b4a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2438,
+      "sha256": "0e18184b640da6fe9ad1ce7dea899eae4b45de98d5ac63d6f9bef14881bdb662",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_202411",
+      "actualRequestPathSha256": "952414ff0dbdbe6aea59adfdd85cbc56f338a9100dcd854c87bf4d042e825103",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6090,
+      "sha256": "296f39130fd0335a16d8ad30183015966190f225ecb900bf077bd0eefaa92df4",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/g1E4",
+      "actualRequestPathSha256": "572a2366fb786cf2bca1908c40f2fe5ba1497e3aa33bfb0a00931c666b650299",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6090,
+      "sha256": "296f39130fd0335a16d8ad30183015966190f225ecb900bf077bd0eefaa92df4",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:28eec7e86055a21ec04b22c024e533702b5695c2776c1c6ff600517f737caa33]&year=2023",
+      "actualRequestPathSha256": "27afbb2abd5ca78ea8b19800541e431042d9b2a26a8698763c3419dfcce7c904",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1676,
+      "sha256": "24aa804ac6a216fe4b10a43a069164ce764575dc68f977bfe0889f6f33314566",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_34307",
+      "actualRequestPathSha256": "9d3f6b8247f0caf465bc8298a5a15a484fa46076ee86a7401c4496c619632673",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7344,
+      "sha256": "2a19e1b21b25e7ab35cc55830bbc17aaa04404571532f6783b2fafe6c3282be8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gKYE",
+      "actualRequestPathSha256": "4a96084649be670006dc8959b67c0bd3de9ffeaf28467aa8c177380b94a350f0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7344,
+      "sha256": "2a19e1b21b25e7ab35cc55830bbc17aaa04404571532f6783b2fafe6c3282be8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:c862546a40cba491f09cea6036924940f66520e80247f73122eb4da1163a8701]&year=2011",
+      "actualRequestPathSha256": "3da23cf19326817f251576aad892070f4ef91f147c283efb517cf732d7a3983d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1755,
+      "sha256": "ffb92f0927728b9fddb8e5104dc6374bcb2fa02d5cabea127bcfe36eebe31259",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_14310",
+      "actualRequestPathSha256": "6b4908d5edf68d922791acd6f8bbf25d655e0f320bed7eb9d915235ba4e04468",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5472,
+      "sha256": "1e8e7413e9a9a5e2ecfd4ee192d4ad70597daf0f651355dbf39d6502e701a02d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_0YK0",
+      "actualRequestPathSha256": "89b3d15af6bfaa5264cb15257e817077e63cd01cbab99ac4f51cf31a26d20ef5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5472,
+      "sha256": "1e8e7413e9a9a5e2ecfd4ee192d4ad70597daf0f651355dbf39d6502e701a02d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb]&year=2003",
+      "actualRequestPathSha256": "6bb7d2ac5a6da3b7b1587488b3e7d256c197c6b67928150d3b86f730a8cc0afb",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1995,
+      "sha256": "ca1ff239c8f975e570c25f948e3a0d4f58c90a54775c512c092ffff689957372",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1386315",
+      "actualRequestPathSha256": "6ded8db5082dcdf6276cbda2f9ce3df97c389f0a88e3d010b76642c0550ac9c0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2726,
+      "sha256": "38dc21cea00a139c08b774922d380f4660f634a60105f21d80e787849230a17f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_0x42y",
+      "actualRequestPathSha256": "32a6b0514a07a5497a916b603f59e4a91d696cb53c970367191413e53f481e3a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2726,
+      "sha256": "38dc21cea00a139c08b774922d380f4660f634a60105f21d80e787849230a17f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:cf50c6b39b832c22d7a8d813ab201840272b79f88a8b244272a7b4e3c7065316]&year=2026",
+      "actualRequestPathSha256": "a4e1fd9c73e2c52a63e830dd21c36cfaf3a6e0669d791de913a29f5bcb782929",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1228,
+      "sha256": "d3d4f9860d32a5c4b1a97eef3373ade3e8c0f35745dbaa4b02bf051bca2a7482",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_508439",
+      "actualRequestPathSha256": "59d1b76c2bcdfad4b916e3962476ae91c69807e9b2a29d88196088460edc6db7",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5040,
+      "sha256": "0da331041e910311c9e1bd85b2f98de05cfaf9e75f904ab4b43fe1dc835723bf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_6bZ7",
+      "actualRequestPathSha256": "944396ad8f0d07706a0e6b93bc70318822e6c9c82abf75c249485791228ab46b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5040,
+      "sha256": "0da331041e910311c9e1bd85b2f98de05cfaf9e75f904ab4b43fe1dc835723bf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:a1603ef38bb668ddcfc6f240dd8b77c56c9b694d7bdce02c3dcaec7aed2d119e]&year=2020",
+      "actualRequestPathSha256": "a2af48f969e73e2baa1166b74426b6f5048bed60e5b9807213004b094ed6baa8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1662,
+      "sha256": "2d8b77d6a09fafbd6a73727dcd87dddb5efb5f4cd572f22423ef599f4fe4733e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_646",
+      "actualRequestPathSha256": "5d61c95a987fb0d1528a9036b4c0cc1ec05a626378351106952d87ada0fb5e9c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4583,
+      "sha256": "4f97a86e805ab64b8f5fb446f7895ad15c301866efcd74cc029673e3cac6ace9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_7r6b",
+      "actualRequestPathSha256": "4025f3efdd408a157fd1ae6e4466eb9d87fe40eb27107a65f27b7bc1416b207b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4583,
+      "sha256": "4f97a86e805ab64b8f5fb446f7895ad15c301866efcd74cc029673e3cac6ace9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:bf0b8fab06d70933fb5a14f01a4fc30b761a6143ae3121b6fddc295b498d8a4b]&year=1962",
+      "actualRequestPathSha256": "8b4dd7ebb2cbb86187c339d303385b691849c4977fa51054276895bc887a6145",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2093,
+      "sha256": "8c6e4b04c375c316ab13d7a90cd4ea43b1587612247d81bfcfa3d4af2a7ed708",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_575264",
+      "actualRequestPathSha256": "1177c70c46598b601589b30cb1c30b9847af1459a6e7d85243a512165b06899d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6260,
+      "sha256": "1185106c33ca3700c85c1e63ef5d887adfb9133c0b0c6b2c7b1453a9cae8eb05",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_9RLD",
+      "actualRequestPathSha256": "d857931cb9ad482152afc3662cba38bbfcabda02d2203ed2d6f6493fcadf0a20",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6260,
+      "sha256": "1185106c33ca3700c85c1e63ef5d887adfb9133c0b0c6b2c7b1453a9cae8eb05",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:1d98b5d254b61c7c986d8dff146f686bd9e24049e2241cd33dbc5aed73ebe632]&year=2023",
+      "actualRequestPathSha256": "1303bbaf7f3d0e9533d3bcbb382362a1c5f875504deb40c6dae537fc86c0591c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2774,
+      "sha256": "ea9c72347b65464ca0225ad9f2dbe627aeca8b9bfde4bd942f3177b6b80cf1b4",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_158445",
+      "actualRequestPathSha256": "cdb1b2bc245fcc40d730c747b5742cff4754b07cd4956c4f3945a84b10b8ed36",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4289,
+      "sha256": "c9c64879ba8e623fdbbb41e6d1dfd9b7e8815e89e02d6d780894430495c56a5b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_AYWz",
+      "actualRequestPathSha256": "96c36793b5a0777bfd392d38b73ff15590b7a7b59332c80de7eba23bff8e186e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4289,
+      "sha256": "c9c64879ba8e623fdbbb41e6d1dfd9b7e8815e89e02d6d780894430495c56a5b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:69dd7d77fe3abb74fc8245709cc532c68f80ca5196540eb546f1dad77b293b8b]&year=2013",
+      "actualRequestPathSha256": "05111ac8c92fa6647c013160d561bd5e52c836ebd3ef06deba20e96d5e5e94c8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1682,
+      "sha256": "6566ebb23bcd6604156f4006253b6f1b85b4da3087ec7a295b35bbccffcfe713",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_348350",
+      "actualRequestPathSha256": "3eda578c9b10bd1245d72a617b33581ee334928414ca98a501a132e450ed065d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4999,
+      "sha256": "a514deebd96f5b82285fad0e198145e6f4dd3cd75df991e6aac5e2bc37e1c83b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_AYjk",
+      "actualRequestPathSha256": "a842555d5e214cf8af8c060b3a7c0221039bc7bc82a3545f405b09f245700bda",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4999,
+      "sha256": "a514deebd96f5b82285fad0e198145e6f4dd3cd75df991e6aac5e2bc37e1c83b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:1d89f83fa7a5a11af99f6971fd73b49dcf0b872d7471a7880c6c6ab916e66daa]&year=2018",
+      "actualRequestPathSha256": "21f3c00ec35a9c32e2057d9f31f3b2f8f86f54cc647aed48fe1c7fe5846966a0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1504,
+      "sha256": "68e1a2730c611ee795076bc8d08eed6cc80314f35e2b2b5c664138ae433e87cf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1892",
+      "actualRequestPathSha256": "50b68eceb6e86006f1bd0a95e07b01a74285bd55e576eb01fd308be8c85f0ffc",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2931,
+      "sha256": "e49e581e04aee55a304e6fb53de1d274847ab2f5ef363c4c4b90d681b1ff3669",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_AYxk",
+      "actualRequestPathSha256": "01bd48555ab9aebd03eda148a35abb92f2c68955901c4d27b93400277eb46c22",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2931,
+      "sha256": "e49e581e04aee55a304e6fb53de1d274847ab2f5ef363c4c4b90d681b1ff3669",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:5aaa2784405aaf115fb67d82f8b2c8d540c8b1f85c649a0a784bf746273667da]&year=1983",
+      "actualRequestPathSha256": "8cdd681b9625e3dbfede53230ef39730646de7d0f2e206285adbf6fca823cde2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2962,
+      "sha256": "d1b361f5222cfa9dd0aaa8d40c3a7d2d77f22a5bbf823ef60061a132ba2892a5",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1895",
+      "actualRequestPathSha256": "b0a418b2ac2c4b4cc179678d04b62eca975b04fd94264efb10d97c4d6dda457c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6316,
+      "sha256": "8f7dfc2d102c15bcc2c48e0d26ebab93d6d5755261c644485062149407cd1f7c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_DKzO",
+      "actualRequestPathSha256": "f5c441accb0d3b0e469526f2aed5aa7e38dd0c8d6658258c3cc4b8048cf2782a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6316,
+      "sha256": "8f7dfc2d102c15bcc2c48e0d26ebab93d6d5755261c644485062149407cd1f7c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:d78bd031434fdf1a1f74b75d1a53a5b2ac9eca680ebcf7feefe20b0b4ac00ff8]&year=2005",
+      "actualRequestPathSha256": "2481612f20235649127b7a29b398ad4ecd279eda02acb44f26160ffb7a051fff",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2817,
+      "sha256": "e2b5e996a1afadf92b3a5ee9baf9d81ea53a9cb359df0bc0845d3f0d66196590",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_87",
+      "actualRequestPathSha256": "9b491ec6fa1e75a45269b14231be20f942a203be691085628b2d5502655ccd63",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5294,
+      "sha256": "f17014923eff3ef94383d4cb3d7674150fbfd1104e880878f50762b9c1ec3ef0",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_DgG8",
+      "actualRequestPathSha256": "a070e405518e9e71ccec1edda1ff7aab7ee00088e30ae33ad7ecdc3a0d610db2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5294,
+      "sha256": "f17014923eff3ef94383d4cb3d7674150fbfd1104e880878f50762b9c1ec3ef0",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:088c4a72bc0cd77cfdda722ed2ab638f256fecdf4bd8bee0381f85c05b1c33f3]&year=1984",
+      "actualRequestPathSha256": "e2e4cfc13309b7a72fb2c979e6173dd9e95d759d45fc399a566b4d519566552d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1839,
+      "sha256": "5c38a3088ad0bf3c9a6ea8e5d971385abd7e6e1134db887595005a1c439770d0",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_718930",
+      "actualRequestPathSha256": "bb388fb677c095f65ffb2076950c949cf2627b4b5eb4985cae6b33abbee2520e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5605,
+      "sha256": "7a12c43e2be8cf9c474a9c7500cc8bb8033f6499675afeba104130142b3a2f0e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_GGm7",
+      "actualRequestPathSha256": "b25c56fda0882acd357e22cdd734878e8fb20e4b9883367321010a7c625ebceb",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5605,
+      "sha256": "7a12c43e2be8cf9c474a9c7500cc8bb8033f6499675afeba104130142b3a2f0e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:dce771d576a9dc62ac51fd80e2a446dea6f50d7fa4d0d0c7b4fc88087aabd72a]&year=2022",
+      "actualRequestPathSha256": "09d4131bc52a09b22f0fdc6316e60128c75c04a6f01089410f8ae083751d743d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2204,
+      "sha256": "5b8a65b4a045fdc6b5200d1923dd844ace51fd5e87f4653299d0210bda2b6558",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_8355",
+      "actualRequestPathSha256": "dec9936872288ce51b20f1d9ac2d5f6813c029d974225d099c4b20c59032ede4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5694,
+      "sha256": "9a9483c1eba18226582f04f4371a1ce9fa26c6c93644e3a690a0995d5d374855",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_ngMn",
+      "actualRequestPathSha256": "1d78ebd1bd021016d5c782df1163f98d59f6b0ffbbdcc2f0a69acb5c7a2b17f4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5694,
+      "sha256": "9a9483c1eba18226582f04f4371a1ce9fa26c6c93644e3a690a0995d5d374855",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:55c976f47cab1b21b567605eb3d1c51e3f265d5c95fe1cdfee879f94de8a4dcd]&year=2009",
+      "actualRequestPathSha256": "1072d636a98ba4b72f008d88421ddf3eea2215c12de7fa5a42a00cae6ba8f4ee",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2258,
+      "sha256": "5a2637b7555b311a1bd5ef227fe6e2075ea7065fe54d2e61559218961ec23873",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_646380",
+      "actualRequestPathSha256": "f14c2f0b1e9d0de511d91f6d0024917f62becd5ea6a21ba5132fcb532465a8cd",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5935,
+      "sha256": "ddfc12efa7dd8b8f616698a6cd7c265503849c71a27ad0fb1005a47ee8475726",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_nzEy",
+      "actualRequestPathSha256": "eda5645e0ed75e35a9f3dd5efd9d66e7038e762c1fab8d2c3b5cffa467612d91",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5935,
+      "sha256": "ddfc12efa7dd8b8f616698a6cd7c265503849c71a27ad0fb1005a47ee8475726",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:8b3a2c9d7fa950f532e812836fc7c492b29d65995fb697c53e5d705dc6e88d36]&year=2021",
+      "actualRequestPathSha256": "42ca39d3d35aa65f3870d3bc591f87a4718f35dbfe962f21db03a56185362975",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2506,
+      "sha256": "b5214781f730e0621ee0254dce7ba4327b72e4499a7e71b01a3b2cbecaa2c2c3",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_290859",
+      "actualRequestPathSha256": "026328942dd862ec2c607a405fee68933fa47a3d725875863c0ed04ef134b43f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5195,
+      "sha256": "6f50c6c517e7bcef5b93367861a0d65b18a22b9622c01ec17e56577b4bb18f8b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_oxgd",
+      "actualRequestPathSha256": "cad790bb8d0843c5a644847dccc9d3da8409db7a2ce6e99b9f432edea87120ae",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5195,
+      "sha256": "6f50c6c517e7bcef5b93367861a0d65b18a22b9622c01ec17e56577b4bb18f8b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:d08bf1fc34553e4185b746e9bb9350dbc93d26106958cdfd0ae28463ac708cfe]&year=2019",
+      "actualRequestPathSha256": "e942c96f4a59baf803b77ba1d951b0c874c314b66b8a80e0455635e4f7381897",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1704,
+      "sha256": "77b3fecc86ae6780c7909b0ddd256f2758ff1a462c8638f693454d258a7f1f1f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_114",
+      "actualRequestPathSha256": "852bcedc891a1d2502c73784c4387c774d5a6cba9e76f9bb8c40ed826493c2fe",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4881,
+      "sha256": "5d70c14604791be83d17756f2ee151cc5cbeeb6aa24552c018064f0971c4dec9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_pPGZ",
+      "actualRequestPathSha256": "7bf44ebd710920ecbec163c8d7a52401ef25cac4b372c72e53999047f24a4297",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4881,
+      "sha256": "5d70c14604791be83d17756f2ee151cc5cbeeb6aa24552c018064f0971c4dec9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:f66586019e04424cc9eefecdbd05fa92bb375caf4bd4e2f16dde267961ea0fa3]&year=1990",
+      "actualRequestPathSha256": "4734ec96275005cd0677326d1ab66634f1d960dead3f754f2f1058e31e97eaf5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2385,
+      "sha256": "4a51059a939818a062fd619f02db1ef01fed8d173ed05ee23e40c85fa7cd0749",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_11",
+      "actualRequestPathSha256": "729fc38a379f5c0e36d8ba2faa2d8c8e61cb8ce75be9c2850a245bdb1b4cd1ec",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1767,
+      "sha256": "13e43c2aeefdd527d6954dca617fce292033f4bcd5a5ec16b275d0f9bd610782",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_v26R",
+      "actualRequestPathSha256": "18b586dd19a5cb82b0ad04710ddde4104e9dcc869d27a821d4e260efe21d990d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1767,
+      "sha256": "13e43c2aeefdd527d6954dca617fce292033f4bcd5a5ec16b275d0f9bd610782",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:f0aee35694322b2f41b39e25b4a910986d9ea6f733b1a61e070f53f483e7b8a6]&year=1977",
+      "actualRequestPathSha256": "18b6829da9a9c0636b008e949b9cb8dce29eeb97034128456abb403f6caee420",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1798,
+      "sha256": "d96dfcfe2ea26f276fae8f3cbc183ff95d07afcc120e2a2e1260e567a2e508c4",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_420809",
+      "actualRequestPathSha256": "00b691a0cec20c6b9a05b7a956f60fad467c70233c5685f89badd2127ba59c99",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5025,
+      "sha256": "c77bbba4e9c24d480bc00fc8eff8d6cb75e07f4ca1b4ed0549ac98c2e3fa8a45",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_z7gB",
+      "actualRequestPathSha256": "6a3f84af22df52bb37dbb632e7e7d1822c12017db0a58555976291daa3879680",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5025,
+      "sha256": "c77bbba4e9c24d480bc00fc8eff8d6cb75e07f4ca1b4ed0549ac98c2e3fa8a45",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:6696b60fcce0a98a80e03e2b04e69c31a18a9b19ae6e9577a53db84dd8b1be42]&year=2019",
+      "actualRequestPathSha256": "060ff0210256696bba3aaa42653e331a9905f7f00209b13619f7bf27b9edd27a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1589,
+      "sha256": "e02d6b19e389478283e1037487730d1d38609e8b7a3f15b8cd1166cda4a5bd07",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_92830",
+      "actualRequestPathSha256": "0d9327b225e395abc695b2010161b1a941dacf982e825737bf02850d6509d5b5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5424,
+      "sha256": "e74666421f55042b0b200d1f77f22e2ef8532f9c36f74499cbe8cf25191fb4a9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_EbN3",
+      "actualRequestPathSha256": "7d6ef3cf93a27be805dd091742d34ec04268cee31d3934bf18e215b55605c7d8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5424,
+      "sha256": "e74666421f55042b0b200d1f77f22e2ef8532f9c36f74499cbe8cf25191fb4a9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:86a405a8d8144b9627c1d3f7404214abda4687d65c6c17bfe7d6cc51bee741a8]&year=2022",
+      "actualRequestPathSha256": "9def5ff2d8ac638f413e9e22ed573e7f685a750ae1e09dd0b79b56ed3df7b28b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1949,
+      "sha256": "f1564126df631fd3ad461c719e997a7d1d93b111a8dcfca3b08d01b77584e340",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_222766",
+      "actualRequestPathSha256": "15adfa7998976ff231c143d9ca84c2c5634ca61df1a0a56b77ad30de55b3452d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5664,
+      "sha256": "1506cab0570e4d5530b3892a6b98d1737a2ae2e8f9817a6ebe3f2719852b7749",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_GdXQ",
+      "actualRequestPathSha256": "9c2bae8f8bf2c4e3f35edf5a1a088f430c277c3367889c70403f9b6aea644ffd",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5664,
+      "sha256": "1506cab0570e4d5530b3892a6b98d1737a2ae2e8f9817a6ebe3f2719852b7749",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:1e333c3a6249686307b485a5e781c2a21fef40755729ba31fbb69cf5666add61]&year=2024",
+      "actualRequestPathSha256": "ca7b661a16e8cda47ce1acc210f40111975de63dae528836964127b85592815c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2208,
+      "sha256": "c629103414f4e6af32ee1e106566ab3e60ec0685a3e884f7924318efd11dac79",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_196454",
+      "actualRequestPathSha256": "3c79e79493aa632f54a4d3f52bd1f6c8c83dc53c1ce2dd5dbe5e32c7ebd3c049",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5232,
+      "sha256": "b86e36ce529f6c4b85aa0b2eaea67e7fb03e3d344f7405f949783f85b27134e1",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_LK28",
+      "actualRequestPathSha256": "aeae7b27d3cd3f51a4c391556e0df4d71a4cfccdba1f57efba24ed23bbd7c351",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5232,
+      "sha256": "b86e36ce529f6c4b85aa0b2eaea67e7fb03e3d344f7405f949783f85b27134e1",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:7313cb5e3415b33ea54716bdf127cb6cae47d5b917772729c0f8decfebb73256]&year=2023",
+      "actualRequestPathSha256": "ce0f84c41517c04b477c2ce522a2f3293293c42586d54c2bc5bd61af7b40642b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1794,
+      "sha256": "a4f64b670664894b5458f7c85b4bd740efe50f700bf67bd884b24581fb94e7e1",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_65150",
+      "actualRequestPathSha256": "a45438b54cfc9f87aa71f6432e303a43440034bb153dbc91f0ac410c0ef77ccc",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4057,
+      "sha256": "2d750060540946adbfc708d0b151e6a45addbc3191f19750a87f3ab54109f237",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_M6Dv",
+      "actualRequestPathSha256": "909cc08190d7b599f0b39006a98ad84444a950d9203129b9b8b48b22e6336502",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4057,
+      "sha256": "2d750060540946adbfc708d0b151e6a45addbc3191f19750a87f3ab54109f237",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:01811dff8b13e1c95c26c3dca2698608479f8a1927086f685398e2571f78066a]&year=2016",
+      "actualRequestPathSha256": "f0118cd1b7feecd2519a70d3d9e5b05e584abded01afebad8bb4f24e5bed4aad",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1459,
+      "sha256": "3d359a3fdd5bffbf0668f3ab6bd848dc560f272bb5b6a2fbc56a09509ce6200f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_222023",
+      "actualRequestPathSha256": "013f15f80ac6418c5e64a2e8ea45dfe48eff14587f43f2e85ac0b152630b34d3",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6029,
+      "sha256": "da6edb726562725e2a7ad9628a375bbb2b25ee48259a89e03ef2afb21c25c952",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_N60E",
+      "actualRequestPathSha256": "d839f9c2f7e0c82e4bec7c4cddf5ae141eb8bf315d9a2105a22e50992b0577a1",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6029,
+      "sha256": "da6edb726562725e2a7ad9628a375bbb2b25ee48259a89e03ef2afb21c25c952",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:bd22aa9e007c2c17cd5dcc088c293a334d9622eb0e80476ddec54b601a1629bb]&year=2023",
+      "actualRequestPathSha256": "af76b1ae14520ebf1e21a80a44ec621eec2f8a1a8a911cba2a9dd8012e559835",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2621,
+      "sha256": "07ff61aca023c33d087cdddd0328378570a77d25311d557ee3ee09fc148d0ddf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_157065",
+      "actualRequestPathSha256": "2f00bb5b5b71bfac1bf934da5e8649917df8386b512e5cf66f54629bab1570e6",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5089,
+      "sha256": "a790e1e1c22043db4a11b2bf2a8c5e4d412a1f2e265be98112329ca1ab4b968e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_NkdW",
+      "actualRequestPathSha256": "b623649c3b7f62b15ec1ad4cf6e7b6076aa6724f861c9ef49b26072c8d2eb897",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5089,
+      "sha256": "a790e1e1c22043db4a11b2bf2a8c5e4d412a1f2e265be98112329ca1ab4b968e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:9c8cb7caec9bd4c932071fc2d4e6ad9496f832edd3a8c01b27397218f639f4a3]&year=2023",
+      "actualRequestPathSha256": "5bf7a340c06ae742cd205450ccfb625afe4e39953b4da07999055865a6932e3a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1627,
+      "sha256": "ae66935324a284efcdbf28ed8434efa6b5d0e6ba7cc9da4372128161e155d29d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_199318",
+      "actualRequestPathSha256": "c07268c3212f9abfa09de51bfb4b553ab8d5438a96f51e43cb90ce9677279060",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5089,
+      "sha256": "a1b8adc1983ded69de6b262a9931948d4c2c5577e9b1c082c526c61721c0b94c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_P5YL",
+      "actualRequestPathSha256": "f9e2500f307f844bc48442002594ccecd5bc8af4cf84da25e3731eb36437cc4e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5089,
+      "sha256": "a1b8adc1983ded69de6b262a9931948d4c2c5577e9b1c082c526c61721c0b94c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:b6ab96b99e5a5da3328f8a5ed5bb18f43300b5b039e84867f40f7bc358aef113]&year=2022",
+      "actualRequestPathSha256": "068e1336bd2f4c245429eb725931a75621472e24e10990b6209cbfa6e7d91a3c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1649,
+      "sha256": "639a7fce0f905f8d3a7c9088dfc4e49d0bd16ad66d22c88ece921f042575b5fc",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_314",
+      "actualRequestPathSha256": "123255e2eebc7d8b708a3e3972bab3aaf107324c08bc58ffe853acf364402775",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4829,
+      "sha256": "f8441662174007aa3de598809f15acb8e00a996bb7f40e72a9f40341e4081f32",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_R7Lk",
+      "actualRequestPathSha256": "20e28b1a9c0cd4b36af68e6bac5c94f132e8a8aaa43db6fb7534dcb67d1ad3c0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4829,
+      "sha256": "f8441662174007aa3de598809f15acb8e00a996bb7f40e72a9f40341e4081f32",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:4ce6145926845264d5d593340041f3000b42107d735aa7fc8d7b25c5825cf482]&year=2001",
+      "actualRequestPathSha256": "830f665aba19f3063f71e0b6b79e3dc6fb60c1cdb250eeb08c2b93debe12c9de",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4860,
+      "sha256": "11b9ae14205baa82fca803023767ad4a168f26633ac245c04b6148021094bf4d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_39859",
+      "actualRequestPathSha256": "f058243db30af0834e7e68234474237ff913cf670f476516e340020e8620d068",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1468,
+      "sha256": "421f040e34f0296991eac9ad4bedf0cdeaa897010be38e60304f88b1ed42426a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_Zx5b",
+      "actualRequestPathSha256": "7254b3477733822a600f2a6435052d6c7849f60e930b7fde717af5f5e1bf3a40",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1468,
+      "sha256": "421f040e34f0296991eac9ad4bedf0cdeaa897010be38e60304f88b1ed42426a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:279dd759d23ea51933078e2232fe4bd5970cd6eae4d22a4aa1f2e6ad1bbb4d1a]&year=2011",
+      "actualRequestPathSha256": "c4cdc0ad40913fd7c22e7b0f30c7ae644b2e0e375760f0b3bd1bdd85bb820a1f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1499,
+      "sha256": "ff9c762e8684dd8d2068610ef470eb5130a62660f33a949195d7e6b709cce0e6",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_77169",
+      "actualRequestPathSha256": "6814b70d11da4c1c4c4a10f20f29994ca88b18adfaef9763ff266175239df6fb",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4984,
+      "sha256": "b9f32abd20bb416a7c0635926d8a744e8b7a5bc0f7575f7e5a72bce35ef86cc2",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_eD8Q",
+      "actualRequestPathSha256": "055b057c81e9bdc1cc0b78a712c463ed778f8f3201cb8a695ab3766300542afd",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4984,
+      "sha256": "b9f32abd20bb416a7c0635926d8a744e8b7a5bc0f7575f7e5a72bce35ef86cc2",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:53d839f8b29ba655c990d3a3746b48ce5f6af216025f48aa4011098bd16d07f8]&year=2018",
+      "actualRequestPathSha256": "7008a46d3f4d85abda0ecf52a21409966b2c69def5961ab3866afee6af56be9f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1558,
+      "sha256": "e0b1615f9d60f40f2e033c919a187b4c0201435fe54f85febaeb9ccb2f180e23",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_79680",
+      "actualRequestPathSha256": "db07f2fb826fe49147ca5d69af2cfc1fa242395499db2fa486ae78f61e88e916",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5273,
+      "sha256": "ebfbcfaa675db7f7ca162a7f6f31c14d4fab231aa60fdffcfd7da77b4a0de0cc",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_g5pw",
+      "actualRequestPathSha256": "42d8ee9e9f84634861b5a55217b601ee2faf74b668b81d10af8f8fd1f3de2e21",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5273,
+      "sha256": "ebfbcfaa675db7f7ca162a7f6f31c14d4fab231aa60fdffcfd7da77b4a0de0cc",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:e0be49ba1ae8fc2ac99dec7e4cb0a8eda5270b60b6a972faac3d5ff868ddf13e]&year=2020",
+      "actualRequestPathSha256": "48b24fff07a61d86cd373ac30e280f8e8f29500b2f151be688244f51c77e5c38",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1791,
+      "sha256": "0f05f55b92457e3516bbfc1a8d6be11035f80b60acacb3a18459733fd4984e36",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_85271",
+      "actualRequestPathSha256": "255373d033ea93597ff02a0b9b2c2ff9859a3815c3ed61f80fa1d466108e077a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5151,
+      "sha256": "5d4e323be869649c251e09eaaa5daf550f43831e74617f32c6e04d07c62398da",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_kdBP",
+      "actualRequestPathSha256": "ad59edfb6d51287af1b2617a599319b137689c9dfde1161f07ed7e1fa040769c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5151,
+      "sha256": "5d4e323be869649c251e09eaaa5daf550f43831e74617f32c6e04d07c62398da",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:cd55a9fb47f00e407f1543504d5e20261d164781b757dd0c3a865bd7d64776d7]&year=2021",
+      "actualRequestPathSha256": "5be1e1d04028eb139460750bfa29776c3d708cedd4c2ac5bce42dc5647825fcd",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1673,
+      "sha256": "63efb7a1fef7dd1012a5cd64700de3e166e0b8fc40bded53309bfbba179c6a06",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_114461",
+      "actualRequestPathSha256": "e50f92042777c200a2ea58b077cab187d6399bef3034a520db39866303de8571",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3962,
+      "sha256": "900019b8efc0a80e1e2f62f033777bf1eb571f3dae3c12f786e118b0130bac61",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_pvjG",
+      "actualRequestPathSha256": "92f7f804d64e974e48eeee69ada92e6fd56e0ef9d775d650cb96e19949124e98",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3962,
+      "sha256": "900019b8efc0a80e1e2f62f033777bf1eb571f3dae3c12f786e118b0130bac61",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:dd2504b820b091f7ddbc31f091b0b278aa20bf9f39b8ecd6618a609ff7ff12fd]&year=2023",
+      "actualRequestPathSha256": "4ee4d1d9c46813d0b83cdb18b662d5769c4fb1b768cee769a903c66fc7ba922b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1456,
+      "sha256": "8ba74ff8df6f9a222952a414bb14c1e36c6fb205457629d725e45514ab343917",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_91602",
+      "actualRequestPathSha256": "a9c119e7af9fbd111a6e1fbcb702dcd14eb932aac3e5977ca4638fd4e64b1628",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4799,
+      "sha256": "53e6b5ba6a0e2dadad1fe7ac5cd33cc9ffab3c6f5efec9394c96352b7ebbb6c0",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_qdoZ",
+      "actualRequestPathSha256": "5b6823606cb1f0d5d2258a3c00ba94a68798067a15ecf9a47f4c54ca7e66b35f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4799,
+      "sha256": "53e6b5ba6a0e2dadad1fe7ac5cd33cc9ffab3c6f5efec9394c96352b7ebbb6c0",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:a79afaecdc01e902562d6839477a84c9b6ad5548cc0935306d4a2c13792f3d08]&year=2019",
+      "actualRequestPathSha256": "cd432bbb974605e6fd642ae7967dbbbf2da84b9514b103e9409695bc608fc237",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1337,
+      "sha256": "a0cbe27677b4cf1aba72a310f769d282f083eac8df49bf869f13aeae60f6da02",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_83867",
+      "actualRequestPathSha256": "ee690fcb59da2bafe4b0520c0bc489de1f5d2c6594c197b13cde1e683b3ca415",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5746,
+      "sha256": "2f68015881ae292756c1a281ea7a4075710e74c14b65bc71f581c8092c6a5d9d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_tv_xnbR",
+      "actualRequestPathSha256": "c510f92a79c147cd093a531883f0f28aa3c0aac86d32e52dafa164e62ffb2e26",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5746,
+      "sha256": "2f68015881ae292756c1a281ea7a4075710e74c14b65bc71f581c8092c6a5d9d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:c32bdd7b15fa60b4dc395db1bedbfad3fd91c74cccff89550d4b9be585f77c9a]&year=2022",
+      "actualRequestPathSha256": "007c0d91390eed1e7bd3180b5f6c62d90f6fd44469e32ea590e684d6504306da",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2266,
+      "sha256": "ea5c2f63bce0437a227bad7fa02b5f95b2550bca483295620b0d1130fb72e351",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_91239",
+      "actualRequestPathSha256": "192d839843b74aa3ca42e73ced0455f6c0c03f1d1bf977befe70108bce273887",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 8521,
+      "sha256": "c0ffb82aea17cef6540dec356de1e9ee8e9522507ae2f26b5eeee3d841ec638d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/jb1n",
+      "actualRequestPathSha256": "460f7f86b0f9eb03258fc4990b7f989086a0e08f0573858b7fc9a2ea7fa5070a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 8521,
+      "sha256": "c0ffb82aea17cef6540dec356de1e9ee8e9522507ae2f26b5eeee3d841ec638d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:bfe47b8182e125d7a9ee93e5c453c42b98ed7933a52c886edeee3227af49fe22]&year=2020",
+      "actualRequestPathSha256": "1287df9c073d2f1fe7d2c139d4c577359b417dc003d67a90e8c69177ce262172",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3255,
+      "sha256": "47a8b6774dd4b342e8580f1c1096e4bcc22d13443331827cd78e3d54d8f93b77",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_259731",
+      "actualRequestPathSha256": "5a139d25c55a34bbe544792870242958bc16dd433a6f592b18b0f23b7c3d6b53",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6004,
+      "sha256": "3436dadb9d5e70e03ddaf263ae68df86be396dd1aaa85b97221e7d095a7f8611",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/kxXd",
+      "actualRequestPathSha256": "9dd513e8ce31ef6ac13361f7a02634f9b8507e740168dab1d082df0a3afec0f4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6004,
+      "sha256": "3436dadb9d5e70e03ddaf263ae68df86be396dd1aaa85b97221e7d095a7f8611",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:60e80f610f3c892d07c3749d91c31ec2e360a7c7f80634861c93826f70c37d06]&year=2026",
+      "actualRequestPathSha256": "53b2e1f2c66fc83107f90824b99d3b39c9a083b892019010ffbfe0deb5bbc110",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1688,
+      "sha256": "aa8c6b1b305637d75f9fc6788211df4515a96e3c93ad0b89d9075bd836868567",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_103540",
+      "actualRequestPathSha256": "be45e17c9153d0ab65adc55c8dd266513c55c33562c42fe322ecde5c2762ff62",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7037,
+      "sha256": "7f931a9c7c9ae3c0d64e2b0e93afabaaae9d3566108ccbbba5ad3af35c70f9b7",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/o2J4",
+      "actualRequestPathSha256": "0a55a98c6b2b81a34d7a49e4574e7a073fe581999035c72e251db69919214163",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7037,
+      "sha256": "7f931a9c7c9ae3c0d64e2b0e93afabaaae9d3566108ccbbba5ad3af35c70f9b7",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:672f5822fc1641b8a01d6af75e60642b02bdfcf4a1222fb00680e358ed5c0428]&year=2023",
+      "actualRequestPathSha256": "dcebc1f6792df618c96a84b2b3f5127207b2791a21b320b8d49542699ebd3996",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1985,
+      "sha256": "3f61db683925c8b3e45fbe3a3a4ef2ba2c2ec5806342603da44ab7d3c870395d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_196322",
+      "actualRequestPathSha256": "d8b2c89d34652185a1b1462405686ee13f72548a76f1342717d9508564db4cbd",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7312,
+      "sha256": "6df7de3df2c99b395336ba2172283ca6203bc7b8c832d40ead3cc259b9ac144b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/rPNl",
+      "actualRequestPathSha256": "8cb4d0ac26b5d6992fcd13262581f959581168af8dd77b0e5b71f7ff3360b64b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 7312,
+      "sha256": "6df7de3df2c99b395336ba2172283ca6203bc7b8c832d40ead3cc259b9ac144b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:7e80e7ecd8b6ba2c7a9bac3f8e3499f31ea00906adee61da85d42307d4ceec74]&year=2024",
+      "actualRequestPathSha256": "bac23c21c1897a54bf4a7b9c593f0f0fe7e70fce11c4dbf758c2d27b862f1aee",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1851,
+      "sha256": "b18aa4a0ec7b26901bd6bb4d361b35daaf7e4424fbbdafadbb361c62f4640c79",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1062722",
+      "actualRequestPathSha256": "a7d1c43352cfe0b4b8b4f7510d906b58e49c5d6b38722f5db2e856a819554222",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6144,
+      "sha256": "ea0d40cd4a4f5bcc917d9baa7b04ff2167bd0827e2d41fc60304b00bb8eee0e6",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/YEK1",
+      "actualRequestPathSha256": "baff474c060a5a8de5150564e4585b2cf5d558f70d9bbbf4eb9dc6dbfcf78b85",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6144,
+      "sha256": "ea0d40cd4a4f5bcc917d9baa7b04ff2167bd0827e2d41fc60304b00bb8eee0e6",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:a45da8e1001e5268477558b50db96cd35c7c3b2c39dab25b7c43aaf60faf656a]&year=2025",
+      "actualRequestPathSha256": "127c7e48e85a227c57c87b786c2d7d9ea4722d2f6524036ba5ecc2e63af9d75f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1622,
+      "sha256": "c65ffd11f5acca94b4eab14d20eaf34a9c2a5f9c92124b61c50bd5a1b07512b5",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_617126",
+      "actualRequestPathSha256": "0f3abe5a2c8260f2125471b914ea50b175cee0ee73929d838187c63fe79f66e7",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6181,
+      "sha256": "62d00039ab913500bec9dfbd85aef983b527f1d456f5a75c9dbbf729e5758a6f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/W3A6",
+      "actualRequestPathSha256": "df49aab932ad085c01e4f845f0534a43da983ea5b9332c13a82c5c3f51c353d2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6181,
+      "sha256": "62d00039ab913500bec9dfbd85aef983b527f1d456f5a75c9dbbf729e5758a6f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:e8050f94541c4546cf84a6dd86f22862f8d8e96e6100cbda2e6f37c4f942dae3]&year=2025",
+      "actualRequestPathSha256": "04364ddef2db02b597001d1a99e1d482b50f4cd6f17e8cf226cad1e097943ca4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1861,
+      "sha256": "43c03f615af93097a9f3d82e582c819b48889a8821750ec14ddd46d9d0560e77",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_661374",
+      "actualRequestPathSha256": "89714bc22610b6989eb222d0d84c1ce1d1b662be7792f7f183984701f8387e0e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6978,
+      "sha256": "5f181c99196c3dc5a6f6f3587142a6428714199e6a130d617101e05d49775faf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/zMGW",
+      "actualRequestPathSha256": "d1a5a800c1a8a4453cdaae3e1707afbf65e39d6580b972dd4f34482af3721616",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6978,
+      "sha256": "5f181c99196c3dc5a6f6f3587142a6428714199e6a130d617101e05d49775faf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:0fc23cb15af89bb364df1f0526073111d9be7c0b06f57b3e7c873795558b8790]&year=2022",
+      "actualRequestPathSha256": "d90669f207ba6c81215c4dc6d3c45bbeacd9674e37721d545f88c5b3e60464bf",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1735,
+      "sha256": "ba9d30448f2a40eda4a9504fb828542ff93c22f94a45b2da43c4f6658e99be2c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_241554",
+      "actualRequestPathSha256": "49994df673a06025a4a5fb6cc7cf4a6ad4f1a59f4aec7e86aae03bdf9fb61398",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6314,
+      "sha256": "e31865ae89d6c658d73127ab5d3be204b57d127151c1333b29321b047df831ac",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/xKke",
+      "actualRequestPathSha256": "59a741cc6e5ef7357399242bd6208334d9ac005d2d8ab520855ca73a172389a3",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6314,
+      "sha256": "e31865ae89d6c658d73127ab5d3be204b57d127151c1333b29321b047df831ac",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:01f967145e3dd27150b61f30fa05b298ff012dfea3f256bf327bc00201ea310d]&year=2025",
+      "actualRequestPathSha256": "fd73662dbc7e54a15044fc01933358a3d25a884bf54c8eb949e6aa6aeb122e5b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1569,
+      "sha256": "c7ee91b64d9e4ae4be6c32f22e7158a4b9b75cc04516abcae4f75ca5b2b2addd",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_tv_247718",
+      "actualRequestPathSha256": "8fe0dbc272635575f533c88a70cd716907e64583b61ae706124edde4fae3ec6c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6490,
+      "sha256": "f74ee115c19abb91b7e5063d5bedb246c6041f1d9679e56b7fb0288e65beefde",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/1YKW",
+      "actualRequestPathSha256": "f9ac1d0bb04c1133f5eb0731bf48c6799faae5c369b4758bfc9ed77f3cbf1a8b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6490,
+      "sha256": "f74ee115c19abb91b7e5063d5bedb246c6041f1d9679e56b7fb0288e65beefde",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=tv&keyword=[SHA256:1be0b6fe995ed15cf2a02f729d5ab36c762e5dce5d4da5083cb06880bad03925]&year=2025",
+      "actualRequestPathSha256": "9202089d40a06fe6dc3a09fe4eae370f7b902076ce4111129b18a704eabfe9c5",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1677,
+      "sha256": "594d357a7ffa3c5bc485f2e1a422a8a433ddea5123c0ac6b288f3dc1be992fb2",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_89",
+      "actualRequestPathSha256": "8b87f372bbd9bb88b3f87be0fd9f82b0b9325f252d59c1188151029abae2ef9d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4410,
+      "sha256": "a277f0ea34c70fe41d37f0c4770da21e065666df26d85cdec2283e9094df986e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_KA5v",
+      "actualRequestPathSha256": "4a1fc118f64e15e4f893f26b89e44150aa538b5edbd4e2c553d06b46b1170929",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4410,
+      "sha256": "a277f0ea34c70fe41d37f0c4770da21e065666df26d85cdec2283e9094df986e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:6ef00abe180a13e846b398bf9c655da9bb421582346c68dbf956efdf71105635]&year=1989",
+      "actualRequestPathSha256": "f805d226cf3246219e94c7127dfc1fea4a9800039a4824ea7ca9b9c9c63f61c6",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1876,
+      "sha256": "990ab1b239d4e12501a031a8266612409bf89b8e2822a04ffe671c446d29bb1d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_294254",
+      "actualRequestPathSha256": "3f645eb53f85a18454c87535e47a4c0cafff466831cca9a4950eb37511738e0f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5373,
+      "sha256": "c035cfb9ba9d52dd1b6a7e12256ab1cb9e74ec6d89f6bbbca556fa7d39e6de2a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_KLyE",
+      "actualRequestPathSha256": "0752a3112b4c49f2624a99bde6b931bc5c89b39c58f6079526f2e3f520015d1a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5373,
+      "sha256": "c035cfb9ba9d52dd1b6a7e12256ab1cb9e74ec6d89f6bbbca556fa7d39e6de2a",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:c327e61d9d78be5f6ba418a77b0da79124486731c7c21a8e02ed849c55d32f04]&year=2015",
+      "actualRequestPathSha256": "a008a47319c49ddcd2ec5c4ab1ea683078527db00cb2dbbaa0c4ff416ee8556f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1937,
+      "sha256": "3646a440082c4f39ed3ce00235c63239712c77d7a69c924ef6f943c26883c69f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_85",
+      "actualRequestPathSha256": "0f4b62d0b67ffdc3d40c9c2e891e5d52531755b72c489c1939faf8a4ea91d610",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5230,
+      "sha256": "a13f73cf22b04149b973c2e3a92027158afd9d7d60d10b666d5bac52979fcdaf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_L2x9",
+      "actualRequestPathSha256": "a41165299a4cc5f446d0b5f79120d57bf3f791c9dc994a5abf6c7741e58d347f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5230,
+      "sha256": "a13f73cf22b04149b973c2e3a92027158afd9d7d60d10b666d5bac52979fcdaf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:0f6a6644bfb7047fe920ebdd4801685f31996d96184f92b6f8bf24633253b827]&year=1981",
+      "actualRequestPathSha256": "1f9ed2cb73ddb0fc1500a8b2c22a9e70b3e3a0650e52049c5281abda51bedfa2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1807,
+      "sha256": "85047a2fba1d2d4a1a98c619b9bace067772de994bc436f93a79756ae33ec682",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1894",
+      "actualRequestPathSha256": "c9c0ba00d4b76044d3bbfe2d01c0bca93d03dafcfccc8170d52b3065a24efca9",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4694,
+      "sha256": "ba18befc4c297a3e10c3840d6c5f9a7173fbe8c03e216d73510ea2ec198e5b56",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_LbYD",
+      "actualRequestPathSha256": "9141fcb57d086e574a510f31df42e5bac59f335b4acba56184381f22ed48a00f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4694,
+      "sha256": "ba18befc4c297a3e10c3840d6c5f9a7173fbe8c03e216d73510ea2ec198e5b56",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:c878215fabe0d96b68f8fb435b921190d539e32422c28816714e3d46045d0bae]&year=2002",
+      "actualRequestPathSha256": "4d025a218e03d4d2d1ef13ca4ff39934ca9895b5efc52aeaa0e5e94519cdd8f9",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2164,
+      "sha256": "50ad6af0b60adf6254daf738c0b7f4f8064253640baf79db65a9ec6a6fa5d405",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1734",
+      "actualRequestPathSha256": "213733a1ddee67f8e236a36ff7560bb720d6279d92f98658e87cb78a2bafd8b4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5610,
+      "sha256": "118731528df0978e60d323e3f37397e2c29772a709fd66173be40cb60cd2f1cf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_Lbpk",
+      "actualRequestPathSha256": "928a2261cdc0cf979d620a00c003188d8fb21028fa6b30f5ea4292b77ad79e35",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5610,
+      "sha256": "118731528df0978e60d323e3f37397e2c29772a709fd66173be40cb60cd2f1cf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:748503383cea1d0606b337b6c3ee253eaf486b3538dac700a71adc68cc32ef38]&year=2001",
+      "actualRequestPathSha256": "c8ec6ad1b1e345921cd25bd9b7a4546a249b27b5741f47ea7923bbbb05c0ddf2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2154,
+      "sha256": "f00fcec21c8e029c250cf2783d1cfc8b9b7ac4c0420fce843f146d7ca47d0748",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1893",
+      "actualRequestPathSha256": "164eade42d65f5c1c4af2bf401c24c933481d246a756fb14e312718be3d1486c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5397,
+      "sha256": "1b87c2061e01e746e3d090a05251a770355c09a3e8e1c1fa06fd20de005faca8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_MGY1",
+      "actualRequestPathSha256": "8889b225b8bf52f2c78e65565bec1c0ec67405bf646ba71b8178359c7b6d122f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5397,
+      "sha256": "1b87c2061e01e746e3d090a05251a770355c09a3e8e1c1fa06fd20de005faca8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:37204dbc81f3298c3e98e6ee681ffe3dab10f719d408dcd45e08ecb227505bec]&year=1999",
+      "actualRequestPathSha256": "3e3702b2310ac74c39deacb39aede5fd1e47a040885b35de5acc27404e055072",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1917,
+      "sha256": "66701a9730bddde242a1547c48e1c141401611355ab784a0858158a889e7429f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_950",
+      "actualRequestPathSha256": "622b4b8af8fbca831e5ccac5db8d32cd0f22db59510ea5771db77fce21bc6818",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4248,
+      "sha256": "417042881c452910859d7e23a0dc35336f4ed7f32c7d05574c625ad1047ac1fa",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_OEjg",
+      "actualRequestPathSha256": "c17c75e0a2f4ed9bfd02837177e867f1da4750943e97b5d19c32863fe9064241",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4248,
+      "sha256": "417042881c452910859d7e23a0dc35336f4ed7f32c7d05574c625ad1047ac1fa",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:32c3d9316a727e7bbb7ffa92563e3d429bb17e9cd302a966e716474a97572818]&year=2006",
+      "actualRequestPathSha256": "03d0132de5d63ead37f9f2ef73d1049bd0ba8597a7d9e10b9bda069457844a5f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1716,
+      "sha256": "759be88cc44d0a1f5cfc5acbcc53cea6ffb0f70836e697f4ddf9b526a2d7964e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_80321",
+      "actualRequestPathSha256": "0697eedf9e567e448ff8c7fc70a422cc0c60bcfd3833a8506453e12a322132e0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3765,
+      "sha256": "d14943b093fee3b45c2eaeb1c11d2f35fedc173b3acd4116272c09641c0e53bf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_RvRP",
+      "actualRequestPathSha256": "a86655b7f63ab52dfd50c54c176361a1f679a896d1c1892adee4375fa548d67b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3765,
+      "sha256": "d14943b093fee3b45c2eaeb1c11d2f35fedc173b3acd4116272c09641c0e53bf",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:47413a1903c5f2167ec5a1ccadbfe90c9127728adeec22a0eebedf27e97007db]&year=2012",
+      "actualRequestPathSha256": "fd27e0bdadf64fa2ef16a35daa2ea58c04832cd2706ce750e19ebbf63141cf5b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2067,
+      "sha256": "3678b0c47133754a201fc9139f578f286cd5dc1f9f08cf8f3efc3b7a4f24303d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_38142",
+      "actualRequestPathSha256": "2ffd80af8403ff849a9499595c735d5074a64daa5ce6ced2babedbb5e000f6cf",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4503,
+      "sha256": "a3ebfab3384ed106e3f12e9289e4d0bd614f882ccd59a49828a8c18990361702",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_VE3b",
+      "actualRequestPathSha256": "fa26b3b9189331ce02ff13f7c32be77e1c400a5898af0318cc509124808c3b27",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4503,
+      "sha256": "a3ebfab3384ed106e3f12e9289e4d0bd614f882ccd59a49828a8c18990361702",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:a067ad84f47d9bf2da80610a1c7827904a56fdca8cb939b9008f2e2f2a3b2e77]&year=2007",
+      "actualRequestPathSha256": "5e39721a96869e68c82273ff055c80103b4d3de6927fa78bc17f443e07e0486b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1911,
+      "sha256": "48abc2404cc63f820f77d662c5f555c642cd162f68f220e98fb23d28c9b94545",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_10617",
+      "actualRequestPathSha256": "2b255ac25e3a5eb46f566ce541a6f7c49e13558f67e7313bf253edf238665e3b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5088,
+      "sha256": "ec3094c9b9ea9da60ce1090782633d2d868117819c0224aff8eaa2288334ce61",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_VjXb",
+      "actualRequestPathSha256": "5f5cfa919a4d87980e0a4b5237f43fd93ac03f61f2344c76703b018f8a27677f",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5088,
+      "sha256": "ec3094c9b9ea9da60ce1090782633d2d868117819c0224aff8eaa2288334ce61",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:071aab6a349100912b92ffc12a98e82f5b7a18ce09ecfe9ebb02e5a4c9886d10]&year=1991",
+      "actualRequestPathSha256": "b79e67e233e144901fa072999ebc2e41ac8cf53f9b9c67cc9fa95a89ad2a57ff",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1639,
+      "sha256": "9291f37eec887ebd6bbc6e3834c1bbbbdd367e875547a58fae54d750b7363f47",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_241259",
+      "actualRequestPathSha256": "d01a3d34c2cad80be04ed2d2e9469af58b10e580f4c23dbd57cec11540d7162c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5486,
+      "sha256": "f44bf618e76a487a2d3d58c02b02febfb3c5978aa7f05424d2315e542f54d255",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_VvmW",
+      "actualRequestPathSha256": "cf9507dbbc26d6affc3c85e5418a2c8bab4bcc06d5644b699586a9c46784e4af",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5486,
+      "sha256": "f44bf618e76a487a2d3d58c02b02febfb3c5978aa7f05424d2315e542f54d255",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:83c9d1a5d45766708fae78907196e941af461aa451be6132dc441f9454caf8b0]&year=2016",
+      "actualRequestPathSha256": "107e861a9da73b166891efb16231a1f11e2be308db844612561100401674a058",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1927,
+      "sha256": "8465da8000d5a5dac66ad586e395a56542b207650abc27e390cf118023f2c7f8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1891",
+      "actualRequestPathSha256": "290d6d0b5ab1c0601d3409a887be9470463e4385581ec784f16bdd827575378d",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2996,
+      "sha256": "bac5b6e842600676e29efd944af282681c450224003b1fe8ae4754488190dbd9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_WOYP",
+      "actualRequestPathSha256": "62f6fe0961309a66d8376ded5ec9d003571da9ffa17399eb136a2c7e4529330e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2996,
+      "sha256": "bac5b6e842600676e29efd944af282681c450224003b1fe8ae4754488190dbd9",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:af413f562b141e33aa162107ae81ed9246727b74ded45fce4b91a91dd000ceab]&year=1980",
+      "actualRequestPathSha256": "4e646891638720b152a058cc7c851666fc61b49ae10f258508edaf133ab4a0da",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2194,
+      "sha256": "291629ec2d94086eea710625fecaf3ad6006769262466b2f7bd022e9eef71d21",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_330459",
+      "actualRequestPathSha256": "d8ac0091f5a595f88bc183c3516add7616624ade9897f1e608f5effc7dc6ca4b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5723,
+      "sha256": "b99b1bf3131efe9f4b716ba893d62f41b3f02c118058e35ade04c976bb57dc7e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_Yg8L",
+      "actualRequestPathSha256": "678fff21b2cb2a2a18ab8cfdf42c82a42db101a11befe1d508ef4ca7cc3fdd48",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5723,
+      "sha256": "b99b1bf3131efe9f4b716ba893d62f41b3f02c118058e35ade04c976bb57dc7e",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:e2bf56fe5666adae0d3da6779303a349fbc6cbe3532cf08c938e92819d520b15]&year=2016",
+      "actualRequestPathSha256": "07771660687d8759c6b003ec454d548164af844194dee3b3734a474f2a8e38e1",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2217,
+      "sha256": "8170cc28b04e6436f3c5407ca25aaeb1b73fb9f052002912db5c4e5165faa02d",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_1268",
+      "actualRequestPathSha256": "7c45cf3bf343cf6a22bc99996243c9cddbf62670d8e8546d976265e0adb62b19",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5068,
+      "sha256": "5f64ef05e3f6c70f2bab57c13373a0cde371e7b803062cc9b6d262c6969ffe1f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_aP1j",
+      "actualRequestPathSha256": "b053c97db82dafcccf8d950989c115fb65dbf5de8ec2fa83be258320d8876b7e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5068,
+      "sha256": "5f64ef05e3f6c70f2bab57c13373a0cde371e7b803062cc9b6d262c6969ffe1f",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:fd0dfa6279305711f05f7040fbc7590dced7677e1bca3f6a61916cf97a524dbb]&year=2007",
+      "actualRequestPathSha256": "78ba59ade77303243b296763b38528bb6f2239c46f9e71fb4db32e1a73a7254b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1621,
+      "sha256": "09bbe8321c6e40ca0a106aa5a0d9d57a62ccc582c6e413ebb15bd75267e253aa",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_710",
+      "actualRequestPathSha256": "4c27444bd96dc34ffaca9065e801c9cfb81a06e277a6af8b3f417ec3d41a9c7c",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5383,
+      "sha256": "e08c97162109978b8605ae40611e1ca33034587e1a87d7ee13db284fd52fbaac",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_d7Vo",
+      "actualRequestPathSha256": "678ffcbf56aea58573d10cd9dc85d5f0bb1fb9fc50557235a9a8ae2b33aedd05",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5383,
+      "sha256": "e08c97162109978b8605ae40611e1ca33034587e1a87d7ee13db284fd52fbaac",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:ab1f9d96a4567e02af7f83de2990c16755e6296005b0839d791ba77919fdcdd6]&year=1995",
+      "actualRequestPathSha256": "7322cbf18064cc6de68b45130295ec57870aed128f921afeb03406714f4c2ca8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1971,
+      "sha256": "69fa5ee203ed1c7bb64486cf513870ca3af6d67719254594a0fa7dbe2eb5ccc1",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_37686",
+      "actualRequestPathSha256": "373f26a948c2c04a329741529f220c622cb03d72d798123dfe7de2333b72087a",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6055,
+      "sha256": "f7abd8b5e2773d2389c460a25b1eaa1d3857935d44861a872a0b59e4d8e5f182",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_e900",
+      "actualRequestPathSha256": "7bdc836a9fcaad6a77c27a3b086b4abff7dcede55ab730e7321d6c0a93eb5f2b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6055,
+      "sha256": "f7abd8b5e2773d2389c460a25b1eaa1d3857935d44861a872a0b59e4d8e5f182",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:a3208cd13fac75ad2c1ae465117cbffc0f56f14504b4be2c8de686e82d8ff135]&year=2011",
+      "actualRequestPathSha256": "9e18d0d4d6e6cf58ec5ffaf958447eae6a65187ef0732d3fad26efbc6b313db2",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2687,
+      "sha256": "1326a492d803ef8d0f0cd783ded06221a518c00341a784ecce6559749889127b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_56292",
+      "actualRequestPathSha256": "69833df02fbd1a3606f204c66570c4cacfa8403aa7bf87dd854b9772831ab882",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6220,
+      "sha256": "de4448ec8830620d918cbab6f8940d21e366156ca4fa6bee1d03def69b1c0809",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_g7Pp",
+      "actualRequestPathSha256": "28e6a5c8206fd188f5a816638bef6128cb05df1f365f23395542eda8456cb47b",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6220,
+      "sha256": "de4448ec8830620d918cbab6f8940d21e366156ca4fa6bee1d03def69b1c0809",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:8285945fb8c672cb94fa2c504fa05ee8f6031d9b78a452509679f2a64edb2540]&year=2011",
+      "actualRequestPathSha256": "6ef7cd4c7e709f9678d4da69f0de01b21281280ed0d183054a5de6be691557f7",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2758,
+      "sha256": "fad08ddd90d2e824ea95b58f3fdcccda70bd84544fd05e9a85f5bde20074172b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_57800",
+      "actualRequestPathSha256": "81191d4cbe145235f6016e58d89a5eed473777eb1b44dd73c48cd56d6300d3d0",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5390,
+      "sha256": "a04c147dcad005ff92e34f7bb2d480365b4380d5bc48409db0491d4b5bbd0224",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_gWxp",
+      "actualRequestPathSha256": "0d48829f27ea41eb679e2e09c6fd0711c82078961b7df564bf058d4b942a9259",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 5390,
+      "sha256": "a04c147dcad005ff92e34f7bb2d480365b4380d5bc48409db0491d4b5bbd0224",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:acfeb7cb24ba5fc650f7afb3085d65781a229adff782b07d59c59b67e2941763]&year=2012",
+      "actualRequestPathSha256": "47acce8faa34649bc03b11401d46a6c5dbd452cb3387fb7fda4e34a2ebe4c1b4",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1928,
+      "sha256": "b2725bda450ee193f7452d7684cb5259645842288d0c2d30f0f769017eca8be7",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/tmdb_movie_10045",
+      "actualRequestPathSha256": "518711f7b3751bc518fd54bf178812c797be9ec01a76bd086f8e87495d15a026",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4525,
+      "sha256": "9a7a6600f8d1c649689fa41bf80c73946f29e98002e31eda52caf248ab84e448",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/gying_mv_m9wB",
+      "actualRequestPathSha256": "48ca10843bf1ee646fe6f79bb8922b88b53ba858c33893afcd049985dbd20d77",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 4525,
+      "sha256": "9a7a6600f8d1c649689fa41bf80c73946f29e98002e31eda52caf248ab84e448",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/api/movies/list?page=1&size=60&category=mv&keyword=[SHA256:5dea2e28ceff13bfe93a33d1fa486c04fb1728b4e2538852b24a70c05e39dda1]&year=2004",
+      "actualRequestPathSha256": "f352db385082bf62a962e284c8b13f0c4e41d498634ede6d7d06479d95bb1bff",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1964,
+      "sha256": "de1392aa8b4fbc98664f23d3d523ecced307ca3d4f71c3292fe4bc58545c1584",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/tmdb_movie_14310",
+      "actualRequestPathSha256": "ceab21ff27e3ff77203e0ffab7441369d305cf69094f4fd08d91aa9c66d25b2e",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244662,
+      "sha256": "6643fbaf6e4326fb9eb15e490b702490edb5acd02c61c3d87421fef1cb97f4e8",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/gying_mv_0YK0",
+      "actualRequestPathSha256": "59e76fae82d89c34f8de9bfd60852efe2120dbe35d1b209904a055540774e590",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244656,
+      "sha256": "c7def8d26613eae3bf2045ac895fa894bcd6ea2a01f94715858c5ee5014e0c0c",
+      "responseBodyWritten": false,
+      "attempts": 1
+    },
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/tmdb_tv_93740",
+      "actualRequestPathSha256": "391285efc1268958369d636ff64aa3eaf3cbbec22f895b5befd0f13846f61df8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244883,
+      "sha256": "7b662ccf2ab8243272ce2e98033a0f730b1466cb219d19008738c9cff996db6b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    }
+  ],
+  "pairChecks": [
+    {
+      "sourceId": "tmdb_tv_93740",
+      "targetId": "4YNV",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "4YNV",
+        "tmdbId": 93740,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2021,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          935,
+          936,
+          14926,
+          14928,
+          14952
+        ],
+        "resourceCount": 5,
+        "fullDtoSha256": "c00d8b02c39634aa20c5d07e23b060583d019c64bb19644733d608035c6d425e"
+      },
+      "expectedResourceIds": [
+        935,
+        936,
+        14926,
+        14928,
+        14952
+      ],
+      "expectedResourceCount": 5,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_95480",
+      "targetId": "5pay",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "5pay",
+        "tmdbId": 95480,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          3068,
+          3069,
+          3074,
+          8122,
+          8124,
+          8190,
+          8191
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "6de0ea7d92b8746b150360926e656563da2387f1745902eedc761ab5bf6c8d95"
+      },
+      "expectedResourceIds": [
+        3068,
+        3069,
+        3074,
+        8122,
+        8124,
+        8190,
+        8191
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_225171",
+      "targetId": "D4b7",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "D4b7",
+        "tmdbId": 225171,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          142,
+          143,
+          144,
+          269,
+          270,
+          273,
+          274,
+          11490,
+          11492,
+          11540,
+          11541
+        ],
+        "resourceCount": 11,
+        "fullDtoSha256": "b66feba36000975a07528058a01c6d1754a5b9ad17ff6a691bb1a2f73f7cf6f6"
+      },
+      "expectedResourceIds": [
+        142,
+        143,
+        144,
+        269,
+        270,
+        273,
+        274,
+        11490,
+        11492,
+        11540,
+        11541
+      ],
+      "expectedResourceCount": 11,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_90282",
+      "targetId": "Lvlx",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "Lvlx",
+        "tmdbId": 90282,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2019,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          824,
+          825,
+          10030,
+          10032,
+          10080,
+          10081
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "224ee83aae393bcb316d7152936b210c22e192cf9d2b6c193f3dcd11dfbcc3ee"
+      },
+      "expectedResourceIds": [
+        824,
+        825,
+        10030,
+        10032,
+        10080,
+        10081
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_94997",
+      "targetId": "P5P2",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "P5P2",
+        "tmdbId": 94997,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          441,
+          3091,
+          3093,
+          4035,
+          4037,
+          4039,
+          4041,
+          4043,
+          4045,
+          4047,
+          4049,
+          4051,
+          4053,
+          4055,
+          4057,
+          4059,
+          4061,
+          4063,
+          4065,
+          4067,
+          4069,
+          4071,
+          4073,
+          4075,
+          4077,
+          4079,
+          4081,
+          4083,
+          4085,
+          4087,
+          4089,
+          4091,
+          4093,
+          4095,
+          4097,
+          4099,
+          4101,
+          4103,
+          4105,
+          4107,
+          4109,
+          4111,
+          4113,
+          4115,
+          4117,
+          4119,
+          4121,
+          4123,
+          4125,
+          4127,
+          4129,
+          4131,
+          4133,
+          4135,
+          4137,
+          4139,
+          4141,
+          4396,
+          4397
+        ],
+        "resourceCount": 59,
+        "fullDtoSha256": "983c37c665604084531f54238df08e475b4e125435c891152acd45cc250b9d14"
+      },
+      "expectedResourceIds": [
+        441,
+        3091,
+        3093,
+        4035,
+        4037,
+        4039,
+        4041,
+        4043,
+        4045,
+        4047,
+        4049,
+        4051,
+        4053,
+        4055,
+        4057,
+        4059,
+        4061,
+        4063,
+        4065,
+        4067,
+        4069,
+        4071,
+        4073,
+        4075,
+        4077,
+        4079,
+        4081,
+        4083,
+        4085,
+        4087,
+        4089,
+        4091,
+        4093,
+        4095,
+        4097,
+        4099,
+        4101,
+        4103,
+        4105,
+        4107,
+        4109,
+        4111,
+        4113,
+        4115,
+        4117,
+        4119,
+        4121,
+        4123,
+        4125,
+        4127,
+        4129,
+        4131,
+        4133,
+        4135,
+        4137,
+        4139,
+        4141,
+        4396,
+        4397
+      ],
+      "expectedResourceCount": 59,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_202411",
+      "targetId": "g1E4",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "g1E4",
+        "tmdbId": 202411,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          1419,
+          1420,
+          1421,
+          26144,
+          26145,
+          26174
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "c31adb2e8fcf63b92f81ee4d3d78412b85b3451cf41bb6f4afb8057e45eaeb1e"
+      },
+      "expectedResourceIds": [
+        1419,
+        1420,
+        1421,
+        26144,
+        26145,
+        26174
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_34307",
+      "targetId": "gKYE",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gKYE",
+        "tmdbId": 34307,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2011,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          952,
+          5704,
+          5766,
+          13770,
+          21831,
+          21858,
+          21859
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "570680e031a00a6cd48c3c355cf1630c03c0ff86bcd47a13169ed538166abfab"
+      },
+      "expectedResourceIds": [
+        952,
+        5704,
+        5766,
+        13770,
+        21831,
+        21858,
+        21859
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_14310",
+      "targetId": "gying_mv_0YK0",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_0YK0",
+        "tmdbId": 14310,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 2003,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          13290,
+          13292,
+          13350,
+          13351
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "8b1908d2ddcc3942f9f6378efc7d658d44109869252d8fbbf8f7d39cfb8fff8e"
+      },
+      "expectedResourceIds": [
+        13290,
+        13292,
+        13350,
+        13351
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1386315",
+      "targetId": "gying_mv_0x42y",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_0x42y",
+        "tmdbId": 1386315,
+        "tmdbType": "movie",
+        "season": null,
+        "year": 2026,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2371,
+          2379
+        ],
+        "resourceCount": 2,
+        "fullDtoSha256": "3c675838a64e4d9c9187dd32a64d70fb4d1f2395fff76c5aa9a071784cb4b783"
+      },
+      "expectedResourceIds": [
+        2371,
+        2379
+      ],
+      "expectedResourceCount": 2,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": null,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_508439",
+      "targetId": "gying_mv_6bZ7",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_6bZ7",
+        "tmdbId": 508439,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2020,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          21751,
+          21752,
+          21784,
+          21785
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "6d58225fb5a3685fd84b606d4cdb27949df31a778945f510e85675fecb2673d4"
+      },
+      "expectedResourceIds": [
+        21751,
+        21752,
+        21784,
+        21785
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_646",
+      "targetId": "gying_mv_7r6b",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_7r6b",
+        "tmdbId": 646,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1962,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          27528,
+          27529,
+          27536
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "2afc1565129db4d6233abe28452c567ff0a41b185fce7b74678bd3eebb5e4317"
+      },
+      "expectedResourceIds": [
+        27528,
+        27529,
+        27536
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_575264",
+      "targetId": "gying_mv_9RLD",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_9RLD",
+        "tmdbId": 575264,
+        "tmdbType": "movie",
+        "season": 7,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          10861,
+          10863,
+          10917,
+          10918
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "c64a5d810fc449cf7180c2f594b264d215b4ec9225cd54476e9d7edc3f9cea2d"
+      },
+      "expectedResourceIds": [
+        10861,
+        10863,
+        10917,
+        10918
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 7,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_158445",
+      "targetId": "gying_mv_AYWz",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_AYWz",
+        "tmdbId": 158445,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2013,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          6052,
+          6070,
+          6071
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "98ec27d3d5bbd4240e388f9528ebaf37d719af04762787565417f9bc9daeeefc"
+      },
+      "expectedResourceIds": [
+        6052,
+        6070,
+        6071
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_348350",
+      "targetId": "gying_mv_AYjk",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_AYjk",
+        "tmdbId": 348350,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2018,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          21626,
+          21627,
+          21639,
+          21640
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "c50a7cd8469673ecf9983b70db5816370750896812fedff5b21c83cb0c3a00b2"
+      },
+      "expectedResourceIds": [
+        21626,
+        21627,
+        21639,
+        21640
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1892",
+      "targetId": "gying_mv_AYxk",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_AYxk",
+        "tmdbId": 1892,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 1983,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [],
+        "resourceCount": 0,
+        "fullDtoSha256": "3e1eef04aac4e9976bd52de01e038adb71a89f0ac069dac6007fb494752b149c"
+      },
+      "expectedResourceIds": [],
+      "expectedResourceCount": 0,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1895",
+      "targetId": "gying_mv_DKzO",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_DKzO",
+        "tmdbId": 1895,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 2005,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          6531,
+          6533,
+          6591,
+          6592
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "2ec504d64ed8f4dd666157725c901f71e00fe76703e074d46ca3cebfa75923da"
+      },
+      "expectedResourceIds": [
+        6531,
+        6533,
+        6591,
+        6592
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_87",
+      "targetId": "gying_mv_DgG8",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_DgG8",
+        "tmdbId": 87,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 1984,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          10843,
+          10845,
+          10907,
+          10908
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "9b0ed20b04e2031ed5659bea21a0e138fd78839ca982d7542b9ceb211c9d1074"
+      },
+      "expectedResourceIds": [
+        10843,
+        10845,
+        10907,
+        10908
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_718930",
+      "targetId": "gying_mv_GGm7",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_GGm7",
+        "tmdbId": 718930,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          9604,
+          9606,
+          9650,
+          9651
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "1eef6c762b95b1ff8c1332f8d4f81d21a4839af8026693bc52db9f258e212713"
+      },
+      "expectedResourceIds": [
+        9604,
+        9606,
+        9650,
+        9651
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_8355",
+      "targetId": "gying_mv_ngMn",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_ngMn",
+        "tmdbId": 8355,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 2009,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          8354,
+          8356,
+          8398,
+          8399
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "9e0b8660b2a735c7bd732f1e3e6d10986b2a4eca626f02a5d22f8248c7c516e6"
+      },
+      "expectedResourceIds": [
+        8354,
+        8356,
+        8398,
+        8399
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_646380",
+      "targetId": "gying_mv_nzEy",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_nzEy",
+        "tmdbId": 646380,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2021,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          9805,
+          9807,
+          9863,
+          9864
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "892e812abf4277c715741f5174ec7ea79016a12f807f487916c2bf913a50703d"
+      },
+      "expectedResourceIds": [
+        9805,
+        9807,
+        9863,
+        9864
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_290859",
+      "targetId": "gying_mv_oxgd",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_oxgd",
+        "tmdbId": 290859,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2019,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          26990,
+          26991,
+          27021,
+          27022
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "660fd93069b30603c56e304fe4e771a0dcafdbf6ac01aa2eb4bf66b1f30ad0f0"
+      },
+      "expectedResourceIds": [
+        26990,
+        26991,
+        27021,
+        27022
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_114",
+      "targetId": "gying_mv_pPGZ",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_pPGZ",
+        "tmdbId": 114,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1990,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          14335,
+          14337,
+          14363
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "f5e692965128f45c6487e4c431b8c4a96c38758970836c58ac615f7c3e1bfeea"
+      },
+      "expectedResourceIds": [
+        14335,
+        14337,
+        14363
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_11",
+      "targetId": "gying_mv_v26R",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_v26R",
+        "tmdbId": 11,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1977,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [],
+        "resourceCount": 0,
+        "fullDtoSha256": "5770e7f90b1638cbf7a73b2830a3d68e965743f033028c0a63f7a1a949632a91"
+      },
+      "expectedResourceIds": [],
+      "expectedResourceCount": 0,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_420809",
+      "targetId": "gying_mv_z7gB",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_z7gB",
+        "tmdbId": 420809,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 2019,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          28099,
+          28100,
+          28131,
+          28132
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "ec241a6d8c919589c4d9d45fe246fddf35154adb279871f6931a2e3ed30333ed"
+      },
+      "expectedResourceIds": [
+        28099,
+        28100,
+        28131,
+        28132
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_92830",
+      "targetId": "gying_tv_EbN3",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_EbN3",
+        "tmdbId": 92830,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          12418,
+          12420,
+          12452,
+          12453
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "83170ec6edf2ca4caf5e0902a0a6d6a4aa14beef8323eaa48c84e4d3f928c433"
+      },
+      "expectedResourceIds": [
+        12418,
+        12420,
+        12452,
+        12453
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_222766",
+      "targetId": "gying_tv_GdXQ",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_GdXQ",
+        "tmdbId": 222766,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2024,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          6812,
+          6814,
+          6862,
+          6863
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "99f780a2c1507804ef09889219a23d9ee0204829019587e9c191150857e0d29b"
+      },
+      "expectedResourceIds": [
+        6812,
+        6814,
+        6862,
+        6863
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_196454",
+      "targetId": "gying_tv_LK28",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_LK28",
+        "tmdbId": 196454,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          20253,
+          20254,
+          20285,
+          20286
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "dab2bb328788e16efb03be0a3b4ceabfbc7da2a88a2ed273c3ae318bc885027a"
+      },
+      "expectedResourceIds": [
+        20253,
+        20254,
+        20285,
+        20286
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_65150",
+      "targetId": "gying_tv_M6Dv",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_M6Dv",
+        "tmdbId": 65150,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2016,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          24760,
+          24790,
+          24791
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "0c955764c2fed36e104283b35ac6651a7cca10e5889e7ee6e322706fa463f665"
+      },
+      "expectedResourceIds": [
+        24760,
+        24790,
+        24791
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_222023",
+      "targetId": "gying_tv_N60E",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_N60E",
+        "tmdbId": 222023,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          20073,
+          20074,
+          20110,
+          20111
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "dc2787e26db28ae173445f0bbc6ae4073f58f7086295341fa5ce5cef340f8d9e"
+      },
+      "expectedResourceIds": [
+        20073,
+        20074,
+        20110,
+        20111
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_157065",
+      "targetId": "gying_tv_NkdW",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_NkdW",
+        "tmdbId": 157065,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          12752,
+          12754,
+          12789,
+          12790
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "960b9f710313b70350b7d47115f0152accf84e9ad75c804b15990d3bfc26a4b8"
+      },
+      "expectedResourceIds": [
+        12752,
+        12754,
+        12789,
+        12790
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_199318",
+      "targetId": "gying_tv_P5YL",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_P5YL",
+        "tmdbId": 199318,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          17007,
+          17009,
+          17041,
+          17042
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "020269d1b67d686f61f8594d1c990d2b3ac350de038afc8af6e580ecb6bfa5e8"
+      },
+      "expectedResourceIds": [
+        17007,
+        17009,
+        17041,
+        17042
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_314",
+      "targetId": "gying_tv_R7Lk",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_R7Lk",
+        "tmdbId": 314,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2001,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [],
+        "resourceCount": 0,
+        "fullDtoSha256": "47469a1cc15fa8aa08d921d740aa57c7022fde31c6e38ea12c71bfb1b50b428f"
+      },
+      "expectedResourceIds": [],
+      "expectedResourceCount": 0,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_39859",
+      "targetId": "gying_tv_Zx5b",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_Zx5b",
+        "tmdbId": 39859,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2011,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [],
+        "resourceCount": 0,
+        "fullDtoSha256": "85427a585e0740fb206f422f3a0eeca841c327d0860187392769dd0109aaa4cf"
+      },
+      "expectedResourceIds": [],
+      "expectedResourceCount": 0,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_77169",
+      "targetId": "gying_tv_eD8Q",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_eD8Q",
+        "tmdbId": 77169,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2018,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          7973,
+          7975,
+          7991,
+          7992
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "33800712996271ab4ea47e220c403a12e2248e3470d615a194ca945ea82343f6"
+      },
+      "expectedResourceIds": [
+        7973,
+        7975,
+        7991,
+        7992
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_79680",
+      "targetId": "gying_tv_g5pw",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_g5pw",
+        "tmdbId": 79680,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2020,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          24379,
+          24380,
+          24414,
+          24415
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "cf373d517e04af94c54082b34b77b0ff3e50e08cccdd92c3a1cfe4dc80abb9f7"
+      },
+      "expectedResourceIds": [
+        24379,
+        24380,
+        24414,
+        24415
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_85271",
+      "targetId": "gying_tv_kdBP",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_kdBP",
+        "tmdbId": 85271,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2021,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          5103,
+          5105,
+          5163,
+          5164
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "0de03814c992ea3aeb0f58fb1a967eed4ca247cb98af7426fa906d9ec4a485a5"
+      },
+      "expectedResourceIds": [
+        5103,
+        5105,
+        5163,
+        5164
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_114461",
+      "targetId": "gying_tv_pvjG",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_pvjG",
+        "tmdbId": 114461,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          14752,
+          14754,
+          14773
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "ea7a21faa2ec838b5355de8c1092ead73c09a88147b361cd945400136e0242be"
+      },
+      "expectedResourceIds": [
+        14752,
+        14754,
+        14773
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_91602",
+      "targetId": "gying_tv_qdoZ",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_qdoZ",
+        "tmdbId": 91602,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2019,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          8821,
+          8823,
+          8858,
+          8859
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "2d4b08d358da48e0fe4224bcea4d4791dcd975b693fc8bf16ed8e5235a73d480"
+      },
+      "expectedResourceIds": [
+        8821,
+        8823,
+        8858,
+        8859
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_83867",
+      "targetId": "gying_tv_xnbR",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_tv_xnbR",
+        "tmdbId": 83867,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          6373,
+          6375,
+          6433,
+          6434
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "06fde22bd58cf442a393dd44978a99ecce5ce4b00084dbb76e8426b967b4bf55"
+      },
+      "expectedResourceIds": [
+        6373,
+        6375,
+        6433,
+        6434
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_91239",
+      "targetId": "jb1n",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "jb1n",
+        "tmdbId": 91239,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2020,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          1536,
+          1537,
+          1538,
+          11404,
+          11406,
+          11442,
+          11443
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "8f8296a1720a63ffa3b5406dcf291a23c8abe2169361c846f6cdd7a2cb459179"
+      },
+      "expectedResourceIds": [
+        1536,
+        1537,
+        1538,
+        11404,
+        11406,
+        11442,
+        11443
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_259731",
+      "targetId": "kxXd",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "kxXd",
+        "tmdbId": 259731,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2026,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          1133,
+          1134,
+          1135,
+          23544,
+          23545,
+          23560
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "0ddc8ea9195abbeddf1f64e37ebaad4544c268890b0f91ee7bf99258c63c5dd2"
+      },
+      "expectedResourceIds": [
+        1133,
+        1134,
+        1135,
+        23544,
+        23545,
+        23560
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_103540",
+      "targetId": "o2J4",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "o2J4",
+        "tmdbId": 103540,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2023,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          498,
+          499,
+          500,
+          501,
+          27648,
+          27649,
+          27665
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "ab583075e5fdaaaac8ec570d38d7043b7278d561704ee6556cee70343bd713a1"
+      },
+      "expectedResourceIds": [
+        498,
+        499,
+        500,
+        501,
+        27648,
+        27649,
+        27665
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_196322",
+      "targetId": "rPNl",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "rPNl",
+        "tmdbId": 196322,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2024,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2384,
+          2385,
+          14036,
+          14038,
+          14074,
+          25844,
+          25858
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "20ecf706a12d7bebe6a0078b133967b003560f59062ee951f092f7241c045854"
+      },
+      "expectedResourceIds": [
+        2384,
+        2385,
+        14036,
+        14038,
+        14074,
+        25844,
+        25858
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1062722",
+      "targetId": "YEK1",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "YEK1",
+        "tmdbId": 1062722,
+        "tmdbType": "movie",
+        "season": null,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          836,
+          837,
+          19177,
+          19179,
+          19227,
+          19228
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "68aa4c7980dce93fae1e5b55c392af1316da91f56ddb8bb38eb4de4cfe344155"
+      },
+      "expectedResourceIds": [
+        836,
+        837,
+        19177,
+        19179,
+        19227,
+        19228
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": null,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_617126",
+      "targetId": "W3A6",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "W3A6",
+        "tmdbId": 617126,
+        "tmdbType": "movie",
+        "season": null,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          927,
+          928,
+          929,
+          24438,
+          24439,
+          24473
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "8fa725b9bb24f685cb24e1ae4086b75e74cd8eb788fda9f45e6f355b09053257"
+      },
+      "expectedResourceIds": [
+        927,
+        928,
+        929,
+        24438,
+        24439,
+        24473
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": null,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_661374",
+      "targetId": "zMGW",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "zMGW",
+        "tmdbId": 661374,
+        "tmdbType": "movie",
+        "season": null,
+        "year": 2022,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          669,
+          670,
+          671,
+          16495,
+          16497,
+          16551,
+          16552
+        ],
+        "resourceCount": 7,
+        "fullDtoSha256": "0fab870faa7d3a0d9f3bd24c1d03fcf89efdccdf746fc82d8c81d22d784037eb"
+      },
+      "expectedResourceIds": [
+        669,
+        670,
+        671,
+        16495,
+        16497,
+        16551,
+        16552
+      ],
+      "expectedResourceCount": 7,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": null,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_241554",
+      "targetId": "xKke",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "xKke",
+        "tmdbId": 241554,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2093,
+          2094,
+          24228,
+          24229,
+          24254,
+          24273
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "1b9446b6366157258b8a81f941f3cc8f90783c66341487afe427bef2f3895109"
+      },
+      "expectedResourceIds": [
+        2093,
+        2094,
+        24228,
+        24229,
+        24254,
+        24273
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_tv_247718",
+      "targetId": "1YKW",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "1YKW",
+        "tmdbId": 247718,
+        "tmdbType": "tv",
+        "season": 1,
+        "year": 2025,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          2528,
+          2529,
+          12530,
+          12532,
+          12568,
+          12569
+        ],
+        "resourceCount": 6,
+        "fullDtoSha256": "5147e64efc03a7e0e6ca74b4d9fee78213ddb66e7fa7b2da8a97a479d5301485"
+      },
+      "expectedResourceIds": [
+        2528,
+        2529,
+        12530,
+        12532,
+        12568,
+        12569
+      ],
+      "expectedResourceCount": 6,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 1,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_89",
+      "targetId": "gying_mv_KA5v",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_KA5v",
+        "tmdbId": 89,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 1989,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          5295,
+          5297,
+          5325
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "929988b4755d0f2c10142f722a28da0f079c1e68bc8b2b1c065cca353feb5e1d"
+      },
+      "expectedResourceIds": [
+        5295,
+        5297,
+        5325
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_294254",
+      "targetId": "gying_mv_KLyE",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_KLyE",
+        "tmdbId": 294254,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 2015,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          27981,
+          27982,
+          27985,
+          27986
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "f2a54b68cc355f96f293af9a4f9e761ac29420633aae0760e12bdc07f8d03415"
+      },
+      "expectedResourceIds": [
+        27981,
+        27982,
+        27985,
+        27986
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_85",
+      "targetId": "gying_mv_L2x9",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_L2x9",
+        "tmdbId": 85,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1981,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          4437,
+          4439,
+          4490,
+          4491
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "9de8312a8fb623c8c142ccb4e030c8af9da2fe87aa1158bc85a8419634f970d8"
+      },
+      "expectedResourceIds": [
+        4437,
+        4439,
+        4490,
+        4491
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1894",
+      "targetId": "gying_mv_LbYD",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_LbYD",
+        "tmdbId": 1894,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 2002,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          13686,
+          13688,
+          13714
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "acf60104b410725fb9ec53091e7c1c86b01ba307330b98a0c0a09cee3561b37f"
+      },
+      "expectedResourceIds": [
+        13686,
+        13688,
+        13714
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1734",
+      "targetId": "gying_mv_Lbpk",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_Lbpk",
+        "tmdbId": 1734,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2001,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          20617,
+          20618,
+          20653,
+          20654
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "51234184f62c842065dfe71b2bda09400e4111dbfa2413b7ca14d047e1ac304b"
+      },
+      "expectedResourceIds": [
+        20617,
+        20618,
+        20653,
+        20654
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1893",
+      "targetId": "gying_mv_MGY1",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_MGY1",
+        "tmdbId": 1893,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1999,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          9608,
+          9610,
+          9652,
+          9653
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "c7c3ecdc65507faa509f72949e81310bd506ab15d8151d529f628c0d3436c2c4"
+      },
+      "expectedResourceIds": [
+        9608,
+        9610,
+        9652,
+        9653
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_950",
+      "targetId": "gying_mv_OEjg",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_OEjg",
+        "tmdbId": 950,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 2006,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          13650,
+          13652,
+          13705
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "f3e52d84bfeb7056ea1e5cb2153d3ba0e413853ca98e899868c13a53219f4d75"
+      },
+      "expectedResourceIds": [
+        13650,
+        13652,
+        13705
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_80321",
+      "targetId": "gying_mv_RvRP",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_RvRP",
+        "tmdbId": 80321,
+        "tmdbType": "movie",
+        "season": 3,
+        "year": 2012,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          17128,
+          17152
+        ],
+        "resourceCount": 2,
+        "fullDtoSha256": "2ac41a5e48c30d0db0e6cb389cbcca20fef87cdfd5102399629c14f3c3746ad0"
+      },
+      "expectedResourceIds": [
+        17128,
+        17152
+      ],
+      "expectedResourceCount": 2,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 3,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_38142",
+      "targetId": "gying_mv_VE3b",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_VE3b",
+        "tmdbId": 38142,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2007,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          8080,
+          8102,
+          8103
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "127588889149179bb8ba604a1485f5c7e5149719ad0701bd7381ea1eaeaab850"
+      },
+      "expectedResourceIds": [
+        8080,
+        8102,
+        8103
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_10617",
+      "targetId": "gying_mv_VjXb",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_VjXb",
+        "tmdbId": 10617,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1991,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          19526,
+          19528,
+          19582,
+          19583
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "07eb2d4051e4016dd3420f545132947f36e29414ee6755dfab87fcf399ac7762"
+      },
+      "expectedResourceIds": [
+        19526,
+        19528,
+        19582,
+        19583
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_241259",
+      "targetId": "gying_mv_VvmW",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_VvmW",
+        "tmdbId": 241259,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 2016,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          26718,
+          26719,
+          26755,
+          26756
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "27582b997fea4476bbdd9adec73a8706d09f7911b15e59395b38874765e63df4"
+      },
+      "expectedResourceIds": [
+        26718,
+        26719,
+        26755,
+        26756
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1891",
+      "targetId": "gying_mv_WOYP",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_WOYP",
+        "tmdbId": 1891,
+        "tmdbType": "movie",
+        "season": 2,
+        "year": 1980,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          1789
+        ],
+        "resourceCount": 1,
+        "fullDtoSha256": "8a26e1c9223c8368d523f3202ba22d3f328407a5ab1d80bcf1fc4772b99c41aa"
+      },
+      "expectedResourceIds": [
+        1789
+      ],
+      "expectedResourceCount": 1,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 2,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_330459",
+      "targetId": "gying_mv_Yg8L",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_Yg8L",
+        "tmdbId": 330459,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2016,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          7227,
+          7229,
+          7285,
+          7286
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "b083b85b7a1f97a69a80aa5a2bd03268618727c971ad272df39dd92cc7a3aa9e"
+      },
+      "expectedResourceIds": [
+        7227,
+        7229,
+        7285,
+        7286
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_1268",
+      "targetId": "gying_mv_aP1j",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_aP1j",
+        "tmdbId": 1268,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2007,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          21504,
+          21505,
+          21538,
+          21539
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "742e1c11f0d3be3032b49cdc03263e3c9ce69bd14f56ea47ac58ee81637021ba"
+      },
+      "expectedResourceIds": [
+        21504,
+        21505,
+        21538,
+        21539
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_710",
+      "targetId": "gying_mv_d7Vo",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_d7Vo",
+        "tmdbId": 710,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 1995,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          21894,
+          21895,
+          21928,
+          21929
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "5e43713f34736edf30f5c9fcb5339115a05454f03fb2b1fbe252eb490878fd7e"
+      },
+      "expectedResourceIds": [
+        21894,
+        21895,
+        21928,
+        21929
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_37686",
+      "targetId": "gying_mv_e900",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_e900",
+        "tmdbId": 37686,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2011,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          20329,
+          20330,
+          20344,
+          20345
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "bc7c823b6bb0284972a2d53a44390d9db7c87bc74f085c1d95d6620fb5dfe428"
+      },
+      "expectedResourceIds": [
+        20329,
+        20330,
+        20344,
+        20345
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_56292",
+      "targetId": "gying_mv_g7Pp",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_g7Pp",
+        "tmdbId": 56292,
+        "tmdbType": "movie",
+        "season": 4,
+        "year": 2011,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          5033,
+          5035,
+          5081,
+          5082
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "a73c34cbdbe9da89ab96813d89a6a904e916f353febc10397ddcd4f0cb8627f0"
+      },
+      "expectedResourceIds": [
+        5033,
+        5035,
+        5081,
+        5082
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 4,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_57800",
+      "targetId": "gying_mv_gWxp",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_gWxp",
+        "tmdbId": 57800,
+        "tmdbType": "movie",
+        "season": 4,
+        "year": 2012,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          16677,
+          16679,
+          16749,
+          16750
+        ],
+        "resourceCount": 4,
+        "fullDtoSha256": "a89bc9c5cb6b140a807938f6afa4e54dbff43094740710bdacd39adc79749f7f"
+      },
+      "expectedResourceIds": [
+        16677,
+        16679,
+        16749,
+        16750
+      ],
+      "expectedResourceCount": 4,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 4,
+      "confirmedTmdbIdentityCount": 1
+    },
+    {
+      "sourceId": "tmdb_movie_10045",
+      "targetId": "gying_mv_m9wB",
+      "status": "PASS",
+      "dto": {
+        "canonicalId": "gying_mv_m9wB",
+        "tmdbId": 10045,
+        "tmdbType": "movie",
+        "season": 1,
+        "year": 2004,
+        "status": "ACTIVE",
+        "deletedAt": null,
+        "resourceIds": [
+          23999,
+          24014,
+          24015
+        ],
+        "resourceCount": 3,
+        "fullDtoSha256": "61a937b6101e232b2a22a53b7725503c14c2e92de3169bdbccfa08dc620dd337"
+      },
+      "expectedResourceIds": [
+        23999,
+        24014,
+        24015
+      ],
+      "expectedResourceCount": 3,
+      "sourceDtoCompleteEqualsTarget": true,
+      "namespaceSeason": 0,
+      "metadataSeason": 1,
+      "confirmedTmdbIdentityCount": 1
+    }
+  ],
+  "listChecks": [
+    {
+      "sourceId": "tmdb_tv_93740",
+      "targetId": "4YNV",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "4YNV"
+      ],
+      "actualTitleSha256": "d6daaf695953d4f01c3ef4b60add9d912058fa47ff314c75ca85647eaa5f322d",
+      "category": "tv",
+      "year": 2021,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_95480",
+      "targetId": "5pay",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "5pay"
+      ],
+      "actualTitleSha256": "e915e19dea320aa69fa9e50654fce5d314cfc4df688ff309c462d04b3e256cae",
+      "category": "tv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_225171",
+      "targetId": "D4b7",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "D4b7"
+      ],
+      "actualTitleSha256": "2c658d12166a9380c11876201ed4cf68c3fc99172239cc20e08b657cb19f517d",
+      "category": "tv",
+      "year": 2025,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_90282",
+      "targetId": "Lvlx",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "Lvlx"
+      ],
+      "actualTitleSha256": "229c3fed9fd57c46d02151c1f179984cae9251d4216c44c1c57c734111885cce",
+      "category": "tv",
+      "year": 2019,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_94997",
+      "targetId": "P5P2",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "P5P2"
+      ],
+      "actualTitleSha256": "bceb05ef93d05c0f9f12c777be63265705b6a78eeda89b1d91fd0d511b893c35",
+      "category": "tv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_202411",
+      "targetId": "g1E4",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "g1E4"
+      ],
+      "actualTitleSha256": "28eec7e86055a21ec04b22c024e533702b5695c2776c1c6ff600517f737caa33",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_34307",
+      "targetId": "gKYE",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gKYE"
+      ],
+      "actualTitleSha256": "c862546a40cba491f09cea6036924940f66520e80247f73122eb4da1163a8701",
+      "category": "tv",
+      "year": 2011,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_14310",
+      "targetId": "gying_mv_0YK0",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_0YK0"
+      ],
+      "actualTitleSha256": "0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb",
+      "category": "mv",
+      "year": 2003,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1386315",
+      "targetId": "gying_mv_0x42y",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_0x42y"
+      ],
+      "actualTitleSha256": "cf50c6b39b832c22d7a8d813ab201840272b79f88a8b244272a7b4e3c7065316",
+      "category": "mv",
+      "year": 2026,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_508439",
+      "targetId": "gying_mv_6bZ7",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_6bZ7"
+      ],
+      "actualTitleSha256": "a1603ef38bb668ddcfc6f240dd8b77c56c9b694d7bdce02c3dcaec7aed2d119e",
+      "category": "mv",
+      "year": 2020,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_646",
+      "targetId": "gying_mv_7r6b",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_7r6b"
+      ],
+      "actualTitleSha256": "bf0b8fab06d70933fb5a14f01a4fc30b761a6143ae3121b6fddc295b498d8a4b",
+      "category": "mv",
+      "year": 1962,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_575264",
+      "targetId": "gying_mv_9RLD",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_9RLD"
+      ],
+      "actualTitleSha256": "1d98b5d254b61c7c986d8dff146f686bd9e24049e2241cd33dbc5aed73ebe632",
+      "category": "mv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_158445",
+      "targetId": "gying_mv_AYWz",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_AYWz"
+      ],
+      "actualTitleSha256": "69dd7d77fe3abb74fc8245709cc532c68f80ca5196540eb546f1dad77b293b8b",
+      "category": "mv",
+      "year": 2013,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_348350",
+      "targetId": "gying_mv_AYjk",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_AYjk"
+      ],
+      "actualTitleSha256": "1d89f83fa7a5a11af99f6971fd73b49dcf0b872d7471a7880c6c6ab916e66daa",
+      "category": "mv",
+      "year": 2018,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1892",
+      "targetId": "gying_mv_AYxk",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_AYxk"
+      ],
+      "actualTitleSha256": "5aaa2784405aaf115fb67d82f8b2c8d540c8b1f85c649a0a784bf746273667da",
+      "category": "mv",
+      "year": 1983,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1895",
+      "targetId": "gying_mv_DKzO",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_DKzO"
+      ],
+      "actualTitleSha256": "d78bd031434fdf1a1f74b75d1a53a5b2ac9eca680ebcf7feefe20b0b4ac00ff8",
+      "category": "mv",
+      "year": 2005,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_87",
+      "targetId": "gying_mv_DgG8",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_DgG8"
+      ],
+      "actualTitleSha256": "088c4a72bc0cd77cfdda722ed2ab638f256fecdf4bd8bee0381f85c05b1c33f3",
+      "category": "mv",
+      "year": 1984,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_718930",
+      "targetId": "gying_mv_GGm7",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_GGm7"
+      ],
+      "actualTitleSha256": "dce771d576a9dc62ac51fd80e2a446dea6f50d7fa4d0d0c7b4fc88087aabd72a",
+      "category": "mv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_8355",
+      "targetId": "gying_mv_ngMn",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_ngMn"
+      ],
+      "actualTitleSha256": "55c976f47cab1b21b567605eb3d1c51e3f265d5c95fe1cdfee879f94de8a4dcd",
+      "category": "mv",
+      "year": 2009,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_646380",
+      "targetId": "gying_mv_nzEy",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_nzEy"
+      ],
+      "actualTitleSha256": "8b3a2c9d7fa950f532e812836fc7c492b29d65995fb697c53e5d705dc6e88d36",
+      "category": "mv",
+      "year": 2021,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_290859",
+      "targetId": "gying_mv_oxgd",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_oxgd"
+      ],
+      "actualTitleSha256": "d08bf1fc34553e4185b746e9bb9350dbc93d26106958cdfd0ae28463ac708cfe",
+      "category": "mv",
+      "year": 2019,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_114",
+      "targetId": "gying_mv_pPGZ",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_pPGZ"
+      ],
+      "actualTitleSha256": "f66586019e04424cc9eefecdbd05fa92bb375caf4bd4e2f16dde267961ea0fa3",
+      "category": "mv",
+      "year": 1990,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_11",
+      "targetId": "gying_mv_v26R",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_v26R"
+      ],
+      "actualTitleSha256": "f0aee35694322b2f41b39e25b4a910986d9ea6f733b1a61e070f53f483e7b8a6",
+      "category": "mv",
+      "year": 1977,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_420809",
+      "targetId": "gying_mv_z7gB",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_z7gB"
+      ],
+      "actualTitleSha256": "6696b60fcce0a98a80e03e2b04e69c31a18a9b19ae6e9577a53db84dd8b1be42",
+      "category": "mv",
+      "year": 2019,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_92830",
+      "targetId": "gying_tv_EbN3",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_EbN3"
+      ],
+      "actualTitleSha256": "86a405a8d8144b9627c1d3f7404214abda4687d65c6c17bfe7d6cc51bee741a8",
+      "category": "tv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_222766",
+      "targetId": "gying_tv_GdXQ",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_GdXQ"
+      ],
+      "actualTitleSha256": "1e333c3a6249686307b485a5e781c2a21fef40755729ba31fbb69cf5666add61",
+      "category": "tv",
+      "year": 2024,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_196454",
+      "targetId": "gying_tv_LK28",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_LK28"
+      ],
+      "actualTitleSha256": "7313cb5e3415b33ea54716bdf127cb6cae47d5b917772729c0f8decfebb73256",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_65150",
+      "targetId": "gying_tv_M6Dv",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_M6Dv"
+      ],
+      "actualTitleSha256": "01811dff8b13e1c95c26c3dca2698608479f8a1927086f685398e2571f78066a",
+      "category": "tv",
+      "year": 2016,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_222023",
+      "targetId": "gying_tv_N60E",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_N60E"
+      ],
+      "actualTitleSha256": "bd22aa9e007c2c17cd5dcc088c293a334d9622eb0e80476ddec54b601a1629bb",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_157065",
+      "targetId": "gying_tv_NkdW",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_NkdW"
+      ],
+      "actualTitleSha256": "9c8cb7caec9bd4c932071fc2d4e6ad9496f832edd3a8c01b27397218f639f4a3",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_199318",
+      "targetId": "gying_tv_P5YL",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_P5YL"
+      ],
+      "actualTitleSha256": "b6ab96b99e5a5da3328f8a5ed5bb18f43300b5b039e84867f40f7bc358aef113",
+      "category": "tv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_314",
+      "targetId": "gying_tv_R7Lk",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_R7Lk"
+      ],
+      "actualTitleSha256": "4ce6145926845264d5d593340041f3000b42107d735aa7fc8d7b25c5825cf482",
+      "category": "tv",
+      "year": 2001,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_39859",
+      "targetId": "gying_tv_Zx5b",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_Zx5b"
+      ],
+      "actualTitleSha256": "279dd759d23ea51933078e2232fe4bd5970cd6eae4d22a4aa1f2e6ad1bbb4d1a",
+      "category": "tv",
+      "year": 2011,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_77169",
+      "targetId": "gying_tv_eD8Q",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_eD8Q"
+      ],
+      "actualTitleSha256": "53d839f8b29ba655c990d3a3746b48ce5f6af216025f48aa4011098bd16d07f8",
+      "category": "tv",
+      "year": 2018,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_79680",
+      "targetId": "gying_tv_g5pw",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_g5pw"
+      ],
+      "actualTitleSha256": "e0be49ba1ae8fc2ac99dec7e4cb0a8eda5270b60b6a972faac3d5ff868ddf13e",
+      "category": "tv",
+      "year": 2020,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_85271",
+      "targetId": "gying_tv_kdBP",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_kdBP"
+      ],
+      "actualTitleSha256": "cd55a9fb47f00e407f1543504d5e20261d164781b757dd0c3a865bd7d64776d7",
+      "category": "tv",
+      "year": 2021,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_114461",
+      "targetId": "gying_tv_pvjG",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_pvjG"
+      ],
+      "actualTitleSha256": "dd2504b820b091f7ddbc31f091b0b278aa20bf9f39b8ecd6618a609ff7ff12fd",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_91602",
+      "targetId": "gying_tv_qdoZ",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_qdoZ"
+      ],
+      "actualTitleSha256": "a79afaecdc01e902562d6839477a84c9b6ad5548cc0935306d4a2c13792f3d08",
+      "category": "tv",
+      "year": 2019,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_83867",
+      "targetId": "gying_tv_xnbR",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_tv_xnbR"
+      ],
+      "actualTitleSha256": "c32bdd7b15fa60b4dc395db1bedbfad3fd91c74cccff89550d4b9be585f77c9a",
+      "category": "tv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_91239",
+      "targetId": "jb1n",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "jb1n"
+      ],
+      "actualTitleSha256": "bfe47b8182e125d7a9ee93e5c453c42b98ed7933a52c886edeee3227af49fe22",
+      "category": "tv",
+      "year": 2020,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_259731",
+      "targetId": "kxXd",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "kxXd"
+      ],
+      "actualTitleSha256": "60e80f610f3c892d07c3749d91c31ec2e360a7c7f80634861c93826f70c37d06",
+      "category": "tv",
+      "year": 2026,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_103540",
+      "targetId": "o2J4",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "o2J4"
+      ],
+      "actualTitleSha256": "672f5822fc1641b8a01d6af75e60642b02bdfcf4a1222fb00680e358ed5c0428",
+      "category": "tv",
+      "year": 2023,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_196322",
+      "targetId": "rPNl",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "rPNl"
+      ],
+      "actualTitleSha256": "7e80e7ecd8b6ba2c7a9bac3f8e3499f31ea00906adee61da85d42307d4ceec74",
+      "category": "tv",
+      "year": 2024,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1062722",
+      "targetId": "YEK1",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "YEK1"
+      ],
+      "actualTitleSha256": "a45da8e1001e5268477558b50db96cd35c7c3b2c39dab25b7c43aaf60faf656a",
+      "category": "mv",
+      "year": 2025,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_617126",
+      "targetId": "W3A6",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "W3A6"
+      ],
+      "actualTitleSha256": "e8050f94541c4546cf84a6dd86f22862f8d8e96e6100cbda2e6f37c4f942dae3",
+      "category": "mv",
+      "year": 2025,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_661374",
+      "targetId": "zMGW",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "zMGW"
+      ],
+      "actualTitleSha256": "0fc23cb15af89bb364df1f0526073111d9be7c0b06f57b3e7c873795558b8790",
+      "category": "mv",
+      "year": 2022,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_241554",
+      "targetId": "xKke",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "xKke"
+      ],
+      "actualTitleSha256": "01f967145e3dd27150b61f30fa05b298ff012dfea3f256bf327bc00201ea310d",
+      "category": "tv",
+      "year": 2025,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_tv_247718",
+      "targetId": "1YKW",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "1YKW"
+      ],
+      "actualTitleSha256": "1be0b6fe995ed15cf2a02f729d5ab36c762e5dce5d4da5083cb06880bad03925",
+      "category": "tv",
+      "year": 2025,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_89",
+      "targetId": "gying_mv_KA5v",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_KA5v"
+      ],
+      "actualTitleSha256": "6ef00abe180a13e846b398bf9c655da9bb421582346c68dbf956efdf71105635",
+      "category": "mv",
+      "year": 1989,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_294254",
+      "targetId": "gying_mv_KLyE",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_KLyE"
+      ],
+      "actualTitleSha256": "c327e61d9d78be5f6ba418a77b0da79124486731c7c21a8e02ed849c55d32f04",
+      "category": "mv",
+      "year": 2015,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_85",
+      "targetId": "gying_mv_L2x9",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_L2x9"
+      ],
+      "actualTitleSha256": "0f6a6644bfb7047fe920ebdd4801685f31996d96184f92b6f8bf24633253b827",
+      "category": "mv",
+      "year": 1981,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1894",
+      "targetId": "gying_mv_LbYD",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_LbYD"
+      ],
+      "actualTitleSha256": "c878215fabe0d96b68f8fb435b921190d539e32422c28816714e3d46045d0bae",
+      "category": "mv",
+      "year": 2002,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1734",
+      "targetId": "gying_mv_Lbpk",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_Lbpk"
+      ],
+      "actualTitleSha256": "748503383cea1d0606b337b6c3ee253eaf486b3538dac700a71adc68cc32ef38",
+      "category": "mv",
+      "year": 2001,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1893",
+      "targetId": "gying_mv_MGY1",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_MGY1"
+      ],
+      "actualTitleSha256": "37204dbc81f3298c3e98e6ee681ffe3dab10f719d408dcd45e08ecb227505bec",
+      "category": "mv",
+      "year": 1999,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_950",
+      "targetId": "gying_mv_OEjg",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_OEjg"
+      ],
+      "actualTitleSha256": "32c3d9316a727e7bbb7ffa92563e3d429bb17e9cd302a966e716474a97572818",
+      "category": "mv",
+      "year": 2006,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_80321",
+      "targetId": "gying_mv_RvRP",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_RvRP"
+      ],
+      "actualTitleSha256": "47413a1903c5f2167ec5a1ccadbfe90c9127728adeec22a0eebedf27e97007db",
+      "category": "mv",
+      "year": 2012,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_38142",
+      "targetId": "gying_mv_VE3b",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_VE3b"
+      ],
+      "actualTitleSha256": "a067ad84f47d9bf2da80610a1c7827904a56fdca8cb939b9008f2e2f2a3b2e77",
+      "category": "mv",
+      "year": 2007,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_10617",
+      "targetId": "gying_mv_VjXb",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_VjXb"
+      ],
+      "actualTitleSha256": "071aab6a349100912b92ffc12a98e82f5b7a18ce09ecfe9ebb02e5a4c9886d10",
+      "category": "mv",
+      "year": 1991,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_241259",
+      "targetId": "gying_mv_VvmW",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_VvmW"
+      ],
+      "actualTitleSha256": "83c9d1a5d45766708fae78907196e941af461aa451be6132dc441f9454caf8b0",
+      "category": "mv",
+      "year": 2016,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1891",
+      "targetId": "gying_mv_WOYP",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_WOYP"
+      ],
+      "actualTitleSha256": "af413f562b141e33aa162107ae81ed9246727b74ded45fce4b91a91dd000ceab",
+      "category": "mv",
+      "year": 1980,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_330459",
+      "targetId": "gying_mv_Yg8L",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_Yg8L"
+      ],
+      "actualTitleSha256": "e2bf56fe5666adae0d3da6779303a349fbc6cbe3532cf08c938e92819d520b15",
+      "category": "mv",
+      "year": 2016,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_1268",
+      "targetId": "gying_mv_aP1j",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_aP1j"
+      ],
+      "actualTitleSha256": "fd0dfa6279305711f05f7040fbc7590dced7677e1bca3f6a61916cf97a524dbb",
+      "category": "mv",
+      "year": 2007,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_710",
+      "targetId": "gying_mv_d7Vo",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_d7Vo"
+      ],
+      "actualTitleSha256": "ab1f9d96a4567e02af7f83de2990c16755e6296005b0839d791ba77919fdcdd6",
+      "category": "mv",
+      "year": 1995,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_37686",
+      "targetId": "gying_mv_e900",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_e900"
+      ],
+      "actualTitleSha256": "a3208cd13fac75ad2c1ae465117cbffc0f56f14504b4be2c8de686e82d8ff135",
+      "category": "mv",
+      "year": 2011,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_56292",
+      "targetId": "gying_mv_g7Pp",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_g7Pp"
+      ],
+      "actualTitleSha256": "8285945fb8c672cb94fa2c504fa05ee8f6031d9b78a452509679f2a64edb2540",
+      "category": "mv",
+      "year": 2011,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_57800",
+      "targetId": "gying_mv_gWxp",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_gWxp"
+      ],
+      "actualTitleSha256": "acfeb7cb24ba5fc650f7afb3085d65781a229adff782b07d59c59b67e2941763",
+      "category": "mv",
+      "year": 2012,
+      "status": "PASS"
+    },
+    {
+      "sourceId": "tmdb_movie_10045",
+      "targetId": "gying_mv_m9wB",
+      "total": 1,
+      "firstPageCount": 1,
+      "targetPresent": true,
+      "sourcePresent": false,
+      "firstPageIds": [
+        "gying_mv_m9wB"
+      ],
+      "actualTitleSha256": "5dea2e28ceff13bfe93a33d1fa486c04fb1728b4e2538852b24a70c05e39dda1",
+      "category": "mv",
+      "year": 2004,
+      "status": "PASS"
+    }
+  ],
+  "ssrChecks": [
+    {
+      "requestedId": "tmdb_movie_14310",
+      "targetId": "gying_mv_0YK0",
+      "kind": "batch",
+      "category": "mv",
+      "titleSha256": "0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb",
+      "year": 2003,
+      "h1ProjectionSha256": "24178645e7ccc865748d31b3698bf73022b626803ecf5fa1eb214cf2af188c21",
+      "rscMatchingCanonicalDtoCount": 1,
+      "status": "PASS",
+      "canonicalId": "gying_mv_0YK0",
+      "tmdbId": 14310,
+      "tmdbType": "movie",
+      "resourceIds": [
+        13290,
+        13292,
+        13350,
+        13351
+      ],
+      "resourceCount": 4,
+      "actualTitleAndYearRendered": true
+    },
+    {
+      "requestedId": "gying_mv_0YK0",
+      "targetId": "gying_mv_0YK0",
+      "kind": "batch",
+      "category": "mv",
+      "titleSha256": "0c30df0a82e32a05c90f26c8491d64c8d14c3eb1ac2c56aaa02b55b7a5b177bb",
+      "year": 2003,
+      "h1ProjectionSha256": "24178645e7ccc865748d31b3698bf73022b626803ecf5fa1eb214cf2af188c21",
+      "rscMatchingCanonicalDtoCount": 1,
+      "status": "PASS",
+      "canonicalId": "gying_mv_0YK0",
+      "tmdbId": 14310,
+      "tmdbType": "movie",
+      "resourceIds": [
+        13290,
+        13292,
+        13350,
+        13351
+      ],
+      "resourceCount": 4,
+      "actualTitleAndYearRendered": true
+    }
+  ],
+  "operatorDirectSqlWrites": 0,
+  "postRequests": 0,
+  "cloudActions": 0,
+  "credentialsReadForAuthenticatedHttp": false,
+  "anonymousOnly": true,
+  "responseBodiesOrProviderUrlsWritten": false,
+  "normalMonitoringWritesMayOccur": [
+    "resource_operation_log VIEW",
+    "site_search_log keyword search",
+    "redis hot-search",
+    "nginx/access logs"
+  ],
+  "ssrInternalDetailGetsMayOccur": 6,
+  "crossServiceAtomicSnapshot": false,
+  "completedInputs": [
+    {
+      "batch": 1,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\merge-intent.json",
+        "sha256": "68390eb4e3a0731e2cffed7b2525dc2e01022d8a0afb894f1dade78ffb221105"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0001\\read-only-verification-0b2af9c5f5724daa989e0062bbb8d769.json",
+        "sha256": "b5c03c78ca7eaf562451700a67b70b06463a6a1d26e1bbb1f020619282f98ec3"
+      },
+      "actualMergedPairs": 18
+    },
+    {
+      "batch": 3,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\merge-intent.json",
+        "sha256": "76c259beffc4017df2096daff872567de53c33a623a84fd0a6aa7d5db128f890"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0003\\verification.json",
+        "sha256": "0dd344a82a7e747077c781bc7621ce5ef131a28c6fdd4702958a5d4ef0399aed"
+      },
+      "actualMergedPairs": 16
+    },
+    {
+      "batch": 4,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0004\\merge-intent.json",
+        "sha256": "0ea593f9b8468659626089e9f9aed1a59c0a3aaa0fe6db1ab33b02f41d80659d"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0004\\verification.json",
+        "sha256": "0ca74e509714af1c9af34b72f57d83febeabb59b5c6b59785b8baceb84729af6"
+      },
+      "actualMergedPairs": 13
+    },
+    {
+      "kind": "MobLand",
+      "binding": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-v4-read-only-verification-74c4339cbcf24c449b3153a1c1d37223.json",
+        "sha256": "7c7397a343e3faaf484ab379ac9ac803170cab2a3f3f0796dce6240e3678df2a"
+      },
+      "bindingPrepared": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\mobland-binding-prepared.json",
+        "sha256": "53e3d3631b1f08a988f0cafdf5b9dbc6a683420419747c6a9634024f715cb696"
+      },
+      "historicalMerge": {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-apply-20261110\\merge-result.json",
+        "sha256": "8864f7723141e9f738a9b4363c8a33b952654b5695ca2a761fc846c5a2edf7e5"
+      },
+      "historicalVerification": {
+        "path": "E:\\gying-tools\\releases\\mobland-merge-apply-20261110\\verification.json",
+        "sha256": "f8bfcd5f1b8da18481cb2cb249d402ffab7e726f61d8b7372d238cfa8f6d779d"
+      }
+    },
+    {
+      "batch": 2,
+      "splitBatch": 201,
+      "actualMergedPairs": 10,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\merge-intent.json",
+        "sha256": "f2d52ff64cfc021fd5bd985acb6b85aad436247cd692e6d9bf3e2a31b07b3dad"
+      },
+      "mergeRequest": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\merge-request.json",
+        "sha256": "bb3f6d6b2f9bad76b02517c2d253c6efb9bf21641026e3d3ca7f9ba27a957332"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0201\\verification.json",
+        "sha256": "b9bb33d90ebfcaacf8ad63aacc912893a7bed449491a198c813fb8b458aa85fa"
+      },
+      "currentReviewSha256": "89e84f4c932c8bd2fe491adf2d0fb86840a0f524e9785688940037a1551245f3"
+    },
+    {
+      "batch": 2,
+      "splitBatch": 202,
+      "actualMergedPairs": 9,
+      "mergeIntent": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\merge-intent.json",
+        "sha256": "43ab0c2566b31109dd28dc01bb3b126c11226343a3fa00e47faab61ee617a6d6"
+      },
+      "mergeRequest": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\merge-request.json",
+        "sha256": "6c37eb78622e404ad9cbd30c7dc5f0c054c131c042e209acf42ac6fcb1ed4703"
+      },
+      "verification": {
+        "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\batches\\0202\\verification.json",
+        "sha256": "5b0fe3a72d1c82f996b3995dec17d1601c6685ae598e50c3263a8979361dfb0d"
+      },
+      "currentReviewSha256": "7d7c85fde476377b16f04c5fe866a780dd28a98cf0b972bf7389a9d9434a48a6"
+    }
+  ],
+  "actualMergedPairs": 67,
+  "unmergedStagedPairs": [
+    {
+      "fromMovieId": "tmdb_tv_95396",
+      "toMovieId": "B2kG"
+    },
+    {
+      "fromMovieId": "tmdb_tv_220102",
+      "toMovieId": "EVrv"
+    },
+    {
+      "fromMovieId": "tmdb_movie_986056",
+      "toMovieId": "gying_mv_onzr"
+    },
+    {
+      "fromMovieId": "tmdb_tv_73375",
+      "toMovieId": "gying_tv_6lx7"
+    },
+    {
+      "fromMovieId": "tmdb_tv_50878",
+      "toMovieId": "gying_tv_M9de"
+    },
+    {
+      "fromMovieId": "tmdb_tv_96102",
+      "toMovieId": "gying_tv_W7Mr"
+    },
+    {
+      "fromMovieId": "tmdb_movie_11647",
+      "toMovieId": "gying_mv_XpJM"
+    }
+  ],
+  "allStagedBatchesTerminalVerified": true,
+  "selectedFullRowsBefore": {
+    "movie_metadata": {
+      "rows": 134,
+      "sha256": "e2625e68b72b695ee799feb00893d57ad6d5ca1b34b1012360e180ce5b493f62"
+    },
+    "movie_source_identity": {
+      "rows": 136,
+      "sha256": "4fb90cb715a27ba2c7f80631d2595add821baaaceebf3a6e0a7f2fc5bae50628"
+    },
+    "resource_link": {
+      "rows": 461,
+      "sha256": "3405626324b9db55fef058c9e7fca9bc0aa90e18b24a7f1af95ba60208a41ba0"
+    },
+    "movie_merge_alias": {
+      "rows": 67,
+      "sha256": "861426fd0a7f3da894fc0c6eb69b18004f134a8d8131007748326663f876bc51"
+    }
+  },
+  "baiduBefore": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "runtimeBefore": {
+    "backendId": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fullConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "fullHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "completeRuntimeSha256": "4364c07c6d43ded2ff7ffc91ec77964309acd585d2331f1c54ebc7f66738cc8a",
+    "allThirteenGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "allThirteenGenerationsRetained": true
+  },
+  "failure": {
+    "type": "Gate",
+    "code": "SSR_RENDERED_ACTUAL_TITLE_AND_YEAR"
+  },
+  "selectedFullRowsFinally": {
+    "movie_metadata": {
+      "rows": 134,
+      "sha256": "e2625e68b72b695ee799feb00893d57ad6d5ca1b34b1012360e180ce5b493f62"
+    },
+    "movie_source_identity": {
+      "rows": 136,
+      "sha256": "4fb90cb715a27ba2c7f80631d2595add821baaaceebf3a6e0a7f2fc5bae50628"
+    },
+    "resource_link": {
+      "rows": 461,
+      "sha256": "3405626324b9db55fef058c9e7fca9bc0aa90e18b24a7f1af95ba60208a41ba0"
+    },
+    "movie_merge_alias": {
+      "rows": 67,
+      "sha256": "861426fd0a7f3da894fc0c6eb69b18004f134a8d8131007748326663f876bc51"
+    }
+  },
+  "selectedCompleteRowsFinallyRetained": true,
+  "baiduFinally": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "oldBaiduStateFinallyRetained": true,
+  "runtimeFinally": {
+    "backendId": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "backendImage": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "jarSha256": "d766f376c4c1b411b133632835b4eab327d0cfeeea11a590e5d49e4dd49fd3f9",
+    "fullConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "fullHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "completeRuntimeSha256": "4364c07c6d43ded2ff7ffc91ec77964309acd585d2331f1c54ebc7f66738cc8a",
+    "allThirteenGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "allThirteenGenerationsRetained": true
+  },
+  "runtimeFinallyRetained": true,
+  "completedAt": "2026-11-11T08:47:38.320083+00:00",
+  "entryV3Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v3-binding.json",
+    "sha256": "515fdb2615a3cd7ced1b4afeabaa5c2c10f33509985932292bf5089e489e8305"
+  },
+  "entryV3Helper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py",
+    "sha256": "b02d75746158c96c49f1adf143a5a8775d360699bd9aece0be0ebf3b01e54f91"
+  },
+  "previousEntryV2Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v2-binding.json",
+    "sha256": "7447eeee0b7111d227b3f3dce6343acbdb2978e7b71cfc680e3d7162b5f5e012"
+  },
+  "splitGenerationPlan": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch2-split-v7\\split-plan.json",
+    "sha256": "61c351ddc6dd384caf2998a28c280b65a633edc8b1e6161dd3437040c295f889"
+  },
+  "originalEntryGuardsPreserved": true,
+  "currentSplitDatabaseReviewsVerified": true,
+  "permanentBlockedCompleteRowsBefore": {
+    "baidu_temporary_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "baidu_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "42e474a42a225315f97fd62421947da1ac9b05af3e0ab3c48321773fab29323e"
+    },
+    "qq_bot_search_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_channel_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_transfer_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quark_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_discovery_result": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_hub_task": {
+      "rows": 2,
+      "sha256": "703164b1166f7e75f9639c8b81b09812c8301ded7cb8929f0f4e815e74c56ecd"
+    },
+    "resource_link": {
+      "rows": 6,
+      "sha256": "ec787d8b0010fbeaba163110dcb474a7277cf13634b5288c2563b4130278e87d"
+    },
+    "resource_operation_log": {
+      "rows": 1,
+      "sha256": "f91ba41881d62f7acaf9785b0ac2b6cd4baf6b474a6fc5ccd296684f85f86f91"
+    },
+    "social_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_favorite": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xunlei_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "comment": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_notification": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "d421b1fb23385fa297ca9f2161eaa7846f4522fc5b321dadf92f08671bdf24bc"
+    },
+    "movie_merge_alias": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "permanentBlockedCompleteRowsFinally": {
+    "baidu_temporary_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "baidu_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_source_identity": {
+      "rows": 2,
+      "sha256": "42e474a42a225315f97fd62421947da1ac9b05af3e0ab3c48321773fab29323e"
+    },
+    "qq_bot_search_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_channel_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "qq_transfer_cleanup_job": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "quark_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_discovery_result": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "resource_hub_task": {
+      "rows": 2,
+      "sha256": "703164b1166f7e75f9639c8b81b09812c8301ded7cb8929f0f4e815e74c56ecd"
+    },
+    "resource_link": {
+      "rows": 6,
+      "sha256": "ec787d8b0010fbeaba163110dcb474a7277cf13634b5288c2563b4130278e87d"
+    },
+    "resource_operation_log": {
+      "rows": 1,
+      "sha256": "f91ba41881d62f7acaf9785b0ac2b6cd4baf6b474a6fc5ccd296684f85f86f91"
+    },
+    "social_post_log": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_favorite": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "xunlei_transfer_task": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "comment": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_notification": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "movie_metadata": {
+      "rows": 2,
+      "sha256": "d421b1fb23385fa297ca9f2161eaa7846f4522fc5b321dadf92f08671bdf24bc"
+    },
+    "movie_merge_alias": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "permanentOriginalBlockedPairCompleteRowsRetained": true
+}

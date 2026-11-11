@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "status": "FRESH_BASELINE_VERIFIED_ADDITIONAL_AUTHORIZATION_PENDING",
+  "createdAt": "2026-11-11T09:12:06.588278+00:00",
+  "sourceBaseline": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\baseline.json",
+    "sha256": "24717bfee5ccd446609e8578cefded672fe9a082700087ba77d67d0aa60afee1",
+    "bytes": 11300,
+    "status": "FRESH_BAIDU_BASELINE_VERIFIED",
+    "createdAt": "2026-11-11T09:12:06.588278+00:00"
+  },
+  "planSha256": "666d2cf7ae8ddeed5fc77e5d280c74c413a7b0abadfdcfbaca788ad4e2ddfa22",
+  "scriptSha256": "da752867e57b3c79c5ffa1b3ecc8e9a12da276de46a96720bf36a9e03caf7a47",
+  "afterParentDataStages": true,
+  "parent": {
+    "taskId": 17583,
+    "revision": 63,
+    "settingsRevision": 5,
+    "status": "PAUSED",
+    "enabled": false,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "identityCursor": 46,
+    "identityMaxId": 18820,
+    "processed": 5,
+    "skipped": 5,
+    "succeeded": 0,
+    "failed": 0,
+    "deferredCount": 3,
+    "deferredItemsSha256": "b040e843171b6ead3c67c397d0b8b6acc9fa383095025192abf1f232728f71cc",
+    "payloadSha256": "823876a1f2d7ed6a4139152d134eb766f522cc2f06a2c941b35faae89abc2301"
+  },
+  "unknownChildren": [
+    {
+      "id": 17584,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "62bfcad59b7c4f41c3fbd44c9e217628cd6e6873b627c343e39cecd5ac0339e5"
+    },
+    {
+      "id": 17606,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "3fd6ade6767a0184eabd9101328914067ad61ff44eae388cc0a748a564c512fa"
+    },
+    {
+      "id": 17622,
+      "status": "UNKNOWN",
+      "attempts": 1,
+      "payloadSha256": "2e6cf9e2990b321198a52c6f12f45c42dd3d78c357bf71a11b2c2f1cfd37b19e"
+    }
+  ],
+  "protectedCompleteRows": {
+    "resource_hub_task": {
+      "rows": 4,
+      "sha256": "013e57ccce190d2197180157a960b1914ad6d5047f82fa7eb70cdbecc4527ff4"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "candidateIdentityMetadataSha256": "9348b4f102b680ead0ab3b5e21a563e065414e48c4fd5e6c4cfc26532b8a99ab",
+  "candidateResourceScopes": {
+    "0WG4": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "x3xX": {
+      "rows": 1,
+      "sha256": "2f020c05c53f2f62befa34cf2cd772526234e4875616c28bce4091196abcd661"
+    },
+    "r7yR": {
+      "rows": 1,
+      "sha256": "758cc55ba489ffe14d58a80bdefd63cdf9eae41125e678efe44dafee303702ce"
+    },
+    "M9m6": {
+      "rows": 6,
+      "sha256": "443b802fc964cd4a5f87e165db9f1b1705da8d07a93985aaad500644908aaeb3"
+    },
+    "738A": {
+      "rows": 1,
+      "sha256": "bdc09b750085d14aaf37d3ead95e31531132b51078f4210ba2c1dea106a1835b"
+    }
+  },
+  "runtime": {
+    "allContainerCount": 13,
+    "allContainerGenerationsSha256": "50d7443c175fdcfe6b4969528ca99efa66e857fe2fdaa472430ce181a898edff",
+    "completeRuntimeSnapshotSha256": "b5f1ac84c433d39c613f1d6afc268ec489ec7e39e2c3ebc4a8cd6761dd505f2e",
+    "completeBackendConfigSha256": "b754f7b22008dcda2f89daa2fc83cc48c8787cab0043cc8df0fa6cf83e22b98b",
+    "completeBackendHostConfigSha256": "1fb1a61ead76570c19fbc969eec160f028495909c202ec8e6982685e68229281",
+    "hostConfigSha256": "47401b8ec6960c5b180704adb33436b815a421dc106ad3f4e87f91d73f211a0e",
+    "dailyConfigSha256": "8d5b26578064af2de5fc42ed2c7f2e7a60ce855e09cfa7ea21ab14fdaa36ea0c"
+  },
+  "encryptedFullRows": {
+    "path": "E:\\gying-tools\\releases\\baidu-workflow-continuation-20261111\\execution-ledger\\fresh-fullrows-95f42d5bd74d49a69ec49d8b704cd70d.tar.age",
+    "sha256": "75c6cefb6cccdb51afb034bf63a3b4a494f3378c724ff68976b246361b72ee0a",
+    "plaintextSha256": "c5ec68c64cab4281cf9182d5f447b350d41bcb5a5ea6822b91409a9fe774ebfc",
+    "plaintextWritten": false,
+    "authenticatedExactContent": true,
+    "fullRowScopes": {
+      "baiduTasks": {
+        "rows": 5,
+        "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+      },
+      "baiduTransfer": {
+        "rows": 1,
+        "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+      },
+      "sysConfig": {
+        "rows": 89,
+        "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+      },
+      "candidateIdentities": {
+        "rows": 5,
+        "sha256": "ba1b66e4f6156c69004f80326a3f54862e1044cd6227660c2b75a93a0f159e90"
+      },
+      "candidateMovies": {
+        "rows": 5,
+        "sha256": "15b072fd554cf3fdb23bb0f34ed5dfafb1e567ee30365524505dc6b2d28c4630"
+      },
+      "candidateResources": {
+        "rows": 9,
+        "sha256": "426c0b797596b4197d6ec387bcca3905fdc7790c7433b55be22f25b4f3a671cf"
+      }
+    }
+  },
+  "rawBaselineAndRuntimeRemainOutsideRepository": true,
+  "fullBusinessRowsProviderUrlsAndCredentialValuesWritten": false,
+  "directSqlWrites": 0,
+  "cloudWrites": 0,
+  "routineExistingAdminLastSeenMayChange": true,
+  "authorization": {
+    "status": "ONE_ADDITIONAL_REQUEST_SENT_USER_RESPONSE_PENDING",
+    "userResponseReceived": false,
+    "approvalReceived": false,
+    "authorizationArtifactCreatedByThisReview": false,
+    "proposedRequestSummary": "追加4个手动候选槽位/最多1次实际归档；成功官方对账后才恢复enabled=true、10分钟1条，并观察自然一轮正常保持",
+    "oldNewMovieBudgetExhausted": "3/3",
+    "oldUnknownAttemptsNeverReplayed": true
+  },
+  "archiveActionsExecuted": 0,
+  "naturalScheduleRestored": false,
+  "naturalRoundExecuted": false,
+  "gitActions": 0
+}

@@ -1,0 +1,13 @@
+{
+  "status": "STOPPED_PRESERVE_STATE",
+  "at": "2026-11-11T05:41:43.974933+00:00",
+  "batch": 1,
+  "exceptionType": "ValueError",
+  "gate": "LOCAL_PHASE_FAILURE",
+  "mergePostReserved": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "nextAction": "Read-only verify; never repeat attempted requests",
+  "cloudActions": 0,
+  "operatorDirectSqlWrites": 0
+}

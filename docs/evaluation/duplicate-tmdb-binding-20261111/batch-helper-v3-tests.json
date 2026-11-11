@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "allTestsPassed": true,
+  "tests": 60,
+  "failures": 0,
+  "errors": 0,
+  "v2RegressionTests": 39,
+  "productionPosts": 0,
+  "runtimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "mockOnlyProductionPaths": true,
+  "files": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendOfflineTests.py",
+      "sha256": "2eaaa44261e260d09436b5a08fa03a79f16165c858c43ddb490382a09c2ddc6f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchOfflineTestsV2.py",
+      "sha256": "a18ff99a36334755dbd46d0c9fa433e6d970dc5ccd29401bb113758e3aa802dd"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV2.py",
+      "sha256": "2e42955e32eee229c6c24c34884d12b06258cc3a713cfef38ce53b85a1c968a5"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV2.py",
+      "sha256": "61c8022c91586517faa173a2af7e3b81d78833f7d85bf9f421524ea1763a4230"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "type": "SSR_HEADER_READ_ONLY_OBSERVATION",
+  "startedAt": "2026-11-11T08:52:16.148636+00:00",
+  "nginxHttpGetRequests": 1,
+  "httpReads": [
+    {
+      "entry": "local-nginx-loopback",
+      "path": "/movie/tmdb_tv_93740",
+      "actualRequestPathSha256": "391285efc1268958369d636ff64aa3eaf3cbbec22f895b5befd0f13846f61df8",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 244883,
+      "sha256": "7b662ccf2ab8243272ce2e98033a0f730b1466cb219d19008738c9cff996db6b",
+      "responseBodyWritten": false,
+      "attempts": 1
+    }
+  ],
+  "directSqlWrites": 0,
+  "postRequests": 0,
+  "cloudActions": 0,
+  "responseBodiesOrProviderUrlsWritten": false,
+  "observation": {
+    "canonicalId": "4YNV",
+    "titleSha256": "d6daaf695953d4f01c3ef4b60add9d912058fa47ff314c75ca85647eaa5f322d",
+    "year": 2021,
+    "h1Count": 1,
+    "h2Count": 2,
+    "actualTitleInH1": true,
+    "oldBoundedYearRegexMatches": false,
+    "yearSubstringInH2": true,
+    "titleEnEndsDigit": true,
+    "exactRenderedYearSpanPresent": true,
+    "h1ProjectionSha256": "69195f8e19db6e781189040835dad063ab9a01c6308c24938688252c7b5edbc8",
+    "h2ProjectionSha256": "8ae3779e867a41ac67ffcc827eb968a1e6028a30732dfc11c11fe6f3d7c5e25b",
+    "canonicalDtoProjection": {
+      "canonicalId": "4YNV",
+      "tmdbId": 93740,
+      "tmdbType": "tv",
+      "season": 1,
+      "year": 2021,
+      "status": "ACTIVE",
+      "deletedAt": null,
+      "resourceIds": [
+        935,
+        936,
+        14926,
+        14928,
+        14952
+      ],
+      "resourceCount": 5,
+      "fullDtoSha256": "c00d8b02c39634aa20c5d07e23b060583d019c64bb19644733d608035c6d425e"
+    }
+  },
+  "completedAt": "2026-11-11T08:52:16.348398+00:00",
+  "status": "READ_ONLY_OBSERVED"
+}

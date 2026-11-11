@@ -1,0 +1,55 @@
+{
+  "frozenInputs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\stage-plan.json",
+      "sha256": "1559cfa56d77efeabbcbbd84a861c53cbe17d67d974bb0d3a588d1f940e29014"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\prepared.json",
+      "sha256": "fc0189345c29505f08b899a745a0b0e9163782b623bf6d86b88d04e5627c5707"
+    }
+  ],
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\blocked-inputs-v2-offline-tests.json",
+    "sha256": "fa001f320d447a81b4cc7025d3875f6c7d4523793064db30a7386ead49f380c2"
+  },
+  "scope": {
+    "automaticRestore": false,
+    "automaticRetry": false,
+    "batches": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "cloudActions": 0,
+    "freezeInputsBeforeRuntime": true,
+    "frozenBlockedVerifierOnly": true,
+    "newPosts": 0,
+    "sqlWrites": 0,
+    "strictPrimaryEligibility": true
+  },
+  "sourceHelpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlocked.py",
+      "sha256": "6dd461319dd876c33c74aea8397a648068bfbb01b7386189d039ea0be7a2bc42"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMerge.py",
+      "sha256": "377a6525234a7a55931e51ada638f52985c4f97032a03bc47ed26d208b6e3412"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerify.py",
+      "sha256": "b92efd33cd11d682c5bcdbc8efb641dc7265cd92f5b96b284ef0e8f71655404e"
+    }
+  ],
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2Tests.py",
+    "sha256": "7fd69c1fa3e968e9457e7eb32a58880b24a70823033add1b8b6880b7091f2111"
+  },
+  "version": 2,
+  "wrapper": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlockedInputsV2.py",
+    "sha256": "78af22e5308b84fb55b30ef10dcdac8cdc75f326fd58ee9cbdd5999517bf3114"
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "version": 3,
+  "status": "DERIVED_FROM_FROZEN_ENTRY_V2",
+  "at": "2026-11-11T08:36:54.576168+00:00",
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py",
+      "sha256": "b02d75746158c96c49f1adf143a5a8775d360699bd9aece0be0ebf3b01e54f91"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceCoreV3.py",
+      "sha256": "af5618beaf19427cd7e354a28898ba9e4f1a6616c803c1b86269fa45dda2c04f"
+    }
+  ],
+  "previousEntryV2Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v2-binding.json",
+    "sha256": "7447eeee0b7111d227b3f3dce6343acbdb2978e7b71cfc680e3d7162b5f5e012"
+  },
+  "frozenEntryV2HelperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV2.py",
+      "sha256": "61a3fe371d45175a27046398978f60293bbb98acbadd4c955fca161652b23797"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptance.py",
+      "sha256": "f8d371647ea0ba69f13f70d9e636657b08d47f8c248b1130ca605006335f6ea1"
+    }
+  ],
+  "previousV7Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-binding.json",
+    "sha256": "3d6dc081547fcc0694aee8f658c71afe1d8f0f4a1479b43093e29efb74bda00e"
+  },
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatches": [
+      201,
+      202
+    ],
+    "pairCounts": [
+      10,
+      9
+    ],
+    "actualMergedPairs": 19,
+    "originalBlockedPairs": 1,
+    "allSubbatchPairsRequired": true,
+    "currentDatabaseSuccessRequired": true,
+    "originalEntryHttpAndFinalGuardsPreserved": true,
+    "maximumActualMergedPairs": 74,
+    "postRequests": 0,
+    "operatorDirectSqlWrites": 0,
+    "cloudActions": 0,
+    "namespaceSeasonContract": "movie0_tvPositive",
+    "metadataAndDtoSeasonPreserved": true,
+    "confirmedCanonicalTmdbIdentityRequired": true
+  },
+  "readOnlyObservationReceipts": {
+    "previousStoppedEntryReceipt": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-20261111T081408.527366Z.json",
+      "sha256": "e9a889865c80b56585329bb2508917f9babd89df387ac28371246b96f50641df"
+    },
+    "metadataSeasonObservation": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-season-read-only-observation-3a93ac0ee1234c5c96cb1f0ad403fffe.json",
+      "sha256": "70e13ffdab5923081ee98b3bd69c6aedb69d4dc5150e2ca1e94cb5bec1847479"
+    },
+    "confirmedNamespaceObservation": {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-namespace-read-only-observation-f32d1f5446b3436b9d0dc8c0b20dc2e2.json",
+      "sha256": "8f40cc87a83891279c956861881df4d9297605e6af9277ab5cdd0938a80fcdaa"
+    }
+  },
+  "deployedSourceContract": [
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\MovieDuplicateMergeService.java",
+      "sha256": "03117ce17b20610961ec3650e6b96415625214e8e7419207c18aeb2c028b90e2",
+      "lines": [
+        264,
+        265,
+        277,
+        280,
+        281
+      ]
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\MovieCollectionCompletion.java",
+      "sha256": "bb0732e43e613ed5b7c63591f1e42cde694fe14f83033071f91a6fd1bdbca987",
+      "lines": [
+        101,
+        110
+      ]
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\controller\\MovieController.java",
+      "sha256": "50b6f2187ef2b9e66658874fe3df429c5c582b721b3d1cf7bf4425e5b9aa6591",
+      "lines": [
+        112,
+        117,
+        137,
+        145
+      ]
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\entity\\MovieMetadata.java",
+      "sha256": "f1916218daa57125ff066f38af2def3c26ec1f3171f5d54e787855faffe0a2bb",
+      "lines": [
+        30
+      ]
+    }
+  ],
+  "minimalCoreChange": {
+    "newPureFunctions": [
+      "exact_metadata_season",
+      "namespace_season",
+      "target_binding"
+    ],
+    "changedExecuteStatements": 4,
+    "namespaceSeasonMovie": 0,
+    "namespaceSeasonTv": "positive exact metadata season",
+    "rawMetadataSeasonPreserved": true,
+    "detailAndListSeasonEqualsRawMetadata": true,
+    "allRetainedConfirmedCanonicalTmdbIdentitiesRequired": true,
+    "movieMetadataPartsOrNullNeverNormalizedOrWritten": true
+  },
+  "originalHttpResourceSsrAndFinalGuardAstUnchanged": true,
+  "originalV7SplitReviewAndBlockedFinalGuardsUnchanged": true,
+  "staticDiffs": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceCoreV3.py.static.diff",
+      "sha256": "5a755e84712bbdeb162dbf7e777da6c122c0a9c463b1fbddc2d8f4dcdbc7e770"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\EntryAcceptanceV3.py.static.diff",
+      "sha256": "3182439c74bc18c1844a4acbdd280da8e57ec30afafc4e8bfc94f2f9e187824f"
+    }
+  ],
+  "minimalTests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\entry-acceptance-v3-tests-complete.json",
+    "sha256": "c87167981cd939ce371775a241f9b10ea719d1266a6ce4a55d6f891f9cdd9348"
+  },
+  "originalFrozenHelpersAndReceiptsChanged": false,
+  "productionPosts": 0,
+  "productionSqlQueries": 0,
+  "productionHttpRequests": 0,
+  "runtimeDockerRequests": 0,
+  "cloudActions": 0
+}

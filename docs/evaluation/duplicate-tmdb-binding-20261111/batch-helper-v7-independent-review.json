@@ -1,0 +1,112 @@
+{
+  "status": "PASS",
+  "at": "2026-11-11T07:13:23.338944+00:00",
+  "reviewer": "review_data_helpers",
+  "reviewType": "INDEPENDENT_V7_FROZEN_CHAIN_ONLY",
+  "revisionBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-binding.json",
+    "sha256": "3d6dc081547fcc0694aee8f658c71afe1d8f0f4a1479b43093e29efb74bda00e"
+  },
+  "helperFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchSplitMergeV7.py",
+      "sha256": "6a4e7394ca5ae358442fc812554e0c6349d4e9289b2dab9a2739ba7c1b7836da"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchMergeV4.py",
+      "sha256": "b346f82f4548cc9e491424df5c2f985850cd33ff3d28669aee2e3b743bfdfbfb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchVerifyV4.py",
+      "sha256": "c2938ba847727afe1bf727733a0af1d5aa99a71aab38c30d781cb99e344c4f28"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchIdleMergeV6.py",
+      "sha256": "e2eca4318acb5c784e99db0166166abd96e2a23ed1c35416cec8d6f18f5bef9a"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchPresendResume.py",
+      "sha256": "da75b6cdeab288b9689e4a25ec8118720d1ffab270bb61abcb28ce5ff9dc4266"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\BatchUnsentMergeV5.py",
+      "sha256": "8b3948610433cbe5f54efac4e53f05c24cb03f1cb46e0670f9dc4df712209c1f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\ObserveUnusedBatch2.py",
+      "sha256": "2bcf8ac904d00b9a84ea0e200543179d2552d8e1e81b3ebdc7238279427fa7bb"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\VerifyBlocked.py",
+      "sha256": "6dd461319dd876c33c74aea8397a648068bfbb01b7386189d039ea0be7a2bc42"
+    }
+  ],
+  "tests": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-tests-final.json",
+    "sha256": "4b62fe2b6af11cb6ce0f90f8e2a20c697469fd8e5ecdfa4b7740732f1dff6a53"
+  },
+  "offlineReview": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-offline-review.json",
+    "sha256": "9beb0a5404d91afa7f123eb6505806e42436d84fc041f8796e44c13146935523"
+  },
+  "derivation": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v7-derivation.json",
+    "sha256": "80abaf8b0f38edc45dc6d8846f8feae93d42ecfca733c167252886cc9d78da1b"
+  },
+  "allFrozenChainReferencesPassed": true,
+  "allTestsPassed": true,
+  "productionPosts": 0,
+  "productionGets": 0,
+  "productionRuntimeIo": 0,
+  "sqlWrites": 0,
+  "cloudActions": 0,
+  "gitActions": 0,
+  "runtimeExecutionAndHttpFailClosed": true,
+  "productionResultVerifiedByThisReview": false,
+  "generationPlanValidationNotYetRun": true,
+  "requiredRealObserver": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batches\\0002\\unused-expired-observation-4b13f5e8de0940bd84f2e1db9ba084c6.json",
+    "sha256": "dfe60a595c51553d3d67857ce89588a13438c40d67a2d583b0f04f246c17c9d3"
+  },
+  "previousV4Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v4-binding.json",
+    "sha256": "de37382a454a06b5d2b24b62b0b95d3406405f40571e1c750045f26b2bebdb33"
+  },
+  "previousV6Binding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\batch-helper-v6-binding.json",
+    "sha256": "5406cf761032ef90b42add9a1257d15ac1b97631bef3cf5bbda20b625e2b9573"
+  },
+  "observerBinding": {
+    "path": "E:\\gying-tools\\releases\\duplicate-tmdb-binding-20261111-data\\unused-batch2-observer-binding.json",
+    "sha256": "60ac7e9fb02f232b8d85c720f7951383bdc5db655a10049f0957a8aceccaf9e3"
+  },
+  "scope": {
+    "parentBatch": 2,
+    "generation": "batch2-split-v7",
+    "subbatchIds": [
+      201,
+      202
+    ],
+    "subbatchSizes": [
+      10,
+      9
+    ],
+    "originalAuthorizedRemainingPairs": 73,
+    "newCandidatePairs": 0,
+    "originalEligiblePairs": 19,
+    "originalBlockedPairsPermanentlyExcluded": 1,
+    "realUnusedExpiredObserverPassRequired": true,
+    "maxPreviewPostsPerSubbatch": 2,
+    "maxMergePostsPerSubbatch": 1,
+    "allFreshPreviewPairsMustBeEligible": true,
+    "oldBodiesAndKeysNeverReused": true,
+    "newAuthenticatedAgePerSubbatch": true,
+    "maxExactIdleReadOnlyWaitSeconds": 120,
+    "sharedIdleDeadlinePerExecution": true,
+    "verifierVersion": 4,
+    "automaticRequestRetry": false,
+    "automaticRestore": false,
+    "cloudActions": 0,
+    "operatorDirectSqlWrites": 0
+  }
+}

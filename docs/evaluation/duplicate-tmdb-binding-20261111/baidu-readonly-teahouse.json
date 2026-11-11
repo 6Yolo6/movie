@@ -1,0 +1,464 @@
+{
+  "status": "READONLY_PREPARATION_VERIFIED",
+  "startedAt": "2026-11-11T05:25:51.377419+00:00",
+  "scriptSha256": "d79606ab1670d1559c651736d833a5349e707b2acb29b8d4e97ae8e279324e95",
+  "resourceGetRequests": 3,
+  "torrentGetRequests": 2,
+  "operatorDirectSqlWrites": 0,
+  "cloudWrites": 0,
+  "archiveRunRequests": 0,
+  "settingsPutRequests": 0,
+  "unknownReplayedOrResolved": false,
+  "schedulerRestored": false,
+  "rawCredentialsOrResponsesWritten": false,
+  "previousBudget": {
+    "used": 3,
+    "maximum": 3
+  },
+  "sourceObservations": [
+    {
+      "identity": {
+        "identityId": 50,
+        "movieId": "M9m6",
+        "sourceType": "mv",
+        "externalId": "M9m6",
+        "matchStatus": "AUTO",
+        "titleCn": "茶馆",
+        "year": "1982"
+      },
+      "requestedAt": "2026-11-11T05:25:52.479741+00:00",
+      "http": {
+        "responseBytes": 15046,
+        "responseSha256": "588cc4bb64664765bdd2af5b9eb6d95e23eb532fb11ec6726bd8589a91ff1426",
+        "httpStatus": 200,
+        "method": "GET",
+        "requestPathSha256": "a33a3812df201276208472e76a1073a4da6b3880b03f8016ab65744115fa233a",
+        "bodyOrCredentialsSaved": false
+      },
+      "frozenProjection": {
+        "safeProjection": [
+          {
+            "type": "MAGNET",
+            "quality": "1080P",
+            "subtitleChinese": true,
+            "accountDownload": false,
+            "archiveTorrent": true,
+            "stableReference": true,
+            "sourceReferenceSha256": "775ff492b544b45e38e2e342ed3f3962a49a039478b2929be7705262243f07e8",
+            "magnetInfoHashValid": true
+          },
+          {
+            "type": "MAGNET",
+            "quality": "4K",
+            "subtitleChinese": true,
+            "accountDownload": false,
+            "archiveTorrent": true,
+            "stableReference": true,
+            "sourceReferenceSha256": "45fc274b4e5bfa6ba47b491c68b4fb7c9a651e289c1c706e7db3dda2e409f173",
+            "magnetInfoHashValid": true
+          }
+        ],
+        "resourceTotalCount": 43,
+        "p2pCount": 2,
+        "torrentCount": 0,
+        "magnetCount": 2,
+        "explicitChineseCount": 2,
+        "estimatedSelectedMetadataCount": 4,
+        "eligibilityFixedCodes": [],
+        "eligible": true
+      },
+      "productionSelection": {
+        "resourceTotalCount": 43,
+        "metadataCount": 4,
+        "reasons": [],
+        "eligibleBeforeTorrentDownload": true,
+        "safeFiles": [
+          {
+            "type": "MAGNET",
+            "quality": "1080P",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "775ff492b544b45e38e2e342ed3f3962a49a039478b2929be7705262243f07e8",
+            "validV1Magnet": true
+          },
+          {
+            "type": "MAGNET",
+            "quality": "4K",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "45fc274b4e5bfa6ba47b491c68b4fb7c9a651e289c1c706e7db3dda2e409f173",
+            "validV1Magnet": true
+          },
+          {
+            "type": "TORRENT",
+            "quality": "1080P",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "775ff492b544b45e38e2e342ed3f3962a49a039478b2929be7705262243f07e8",
+            "validV1Magnet": null
+          },
+          {
+            "type": "TORRENT",
+            "quality": "4K",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "45fc274b4e5bfa6ba47b491c68b4fb7c9a651e289c1c706e7db3dda2e409f173",
+            "validV1Magnet": null
+          }
+        ]
+      },
+      "allTargetFilesVerified": true,
+      "status": "VERIFIED",
+      "completedAt": "2026-11-11T05:25:59.055329+00:00"
+    },
+    {
+      "identity": {
+        "identityId": 48,
+        "movieId": "x3xX",
+        "sourceType": "mv",
+        "externalId": "x3xX",
+        "matchStatus": "AUTO",
+        "titleCn": "霸王别姬",
+        "year": "1993"
+      },
+      "requestedAt": "2026-11-11T05:25:59.055329+00:00",
+      "http": {
+        "responseBytes": 53274,
+        "responseSha256": "7bddba43d27019b862faae050df26e05e325590ac0e12462e079bb713416900d",
+        "httpStatus": 200,
+        "method": "GET",
+        "requestPathSha256": "eb059728dced944afae84b4f1c84d107084a3159f3bca02fdd75ac2748c4e824",
+        "bodyOrCredentialsSaved": false
+      },
+      "frozenProjectionFailure": {
+        "type": "Gate",
+        "module": "original_projection_gate_observer",
+        "code": "SOURCE_RESOURCE_LIST_SHAPE"
+      },
+      "status": "STOPPED",
+      "failure": {
+        "type": "Gate",
+        "module": "__main__",
+        "code": "SOURCE_RESOURCE_LIST_SHAPE"
+      },
+      "completedAt": "2026-11-11T05:26:00.439377+00:00"
+    },
+    {
+      "identity": {
+        "identityId": 49,
+        "movieId": "r7yR",
+        "sourceType": "mv",
+        "externalId": "r7yR",
+        "matchStatus": "AUTO",
+        "titleCn": "控方证人",
+        "year": "1957"
+      },
+      "requestedAt": "2026-11-11T05:26:00.439377+00:00",
+      "http": {
+        "responseBytes": 30490,
+        "responseSha256": "3b6a05ad2ca4097027e8ade1e1a3f33bae678e8a68d1cd153be678179f6ab4c9",
+        "httpStatus": 200,
+        "method": "GET",
+        "requestPathSha256": "21df45d30641d2459a40367519cb259190c3439a03fee16492dc0fee4927d8ff",
+        "bodyOrCredentialsSaved": false
+      },
+      "frozenProjection": {
+        "safeProjection": [
+          {
+            "type": "MAGNET",
+            "quality": "1080P",
+            "subtitleChinese": true,
+            "accountDownload": false,
+            "archiveTorrent": true,
+            "stableReference": true,
+            "sourceReferenceSha256": "f3fd94d67c7b759bfa054b9cf98bff6ca93f2e65b70fe943014fa51ffae6e60e",
+            "magnetInfoHashValid": true
+          },
+          {
+            "type": "MAGNET",
+            "quality": "4K",
+            "subtitleChinese": false,
+            "accountDownload": false,
+            "archiveTorrent": true,
+            "stableReference": true,
+            "sourceReferenceSha256": "2536430ecbd97a17abaca7fb66c8603fd96e2ec5cde84973ad1eca3d30bb18be",
+            "magnetInfoHashValid": true
+          }
+        ],
+        "resourceTotalCount": 84,
+        "p2pCount": 2,
+        "torrentCount": 0,
+        "magnetCount": 2,
+        "explicitChineseCount": 1,
+        "estimatedSelectedMetadataCount": 4,
+        "eligibilityFixedCodes": [],
+        "eligible": true
+      },
+      "productionSelection": {
+        "resourceTotalCount": 84,
+        "metadataCount": 4,
+        "reasons": [],
+        "eligibleBeforeTorrentDownload": true,
+        "safeFiles": [
+          {
+            "type": "MAGNET",
+            "quality": "1080P",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "f3fd94d67c7b759bfa054b9cf98bff6ca93f2e65b70fe943014fa51ffae6e60e",
+            "validV1Magnet": true
+          },
+          {
+            "type": "MAGNET",
+            "quality": "4K",
+            "explicitChineseSubtitle": false,
+            "sourceReferenceSha256": "2536430ecbd97a17abaca7fb66c8603fd96e2ec5cde84973ad1eca3d30bb18be",
+            "validV1Magnet": true
+          },
+          {
+            "type": "TORRENT",
+            "quality": "1080P",
+            "explicitChineseSubtitle": true,
+            "sourceReferenceSha256": "f3fd94d67c7b759bfa054b9cf98bff6ca93f2e65b70fe943014fa51ffae6e60e",
+            "validV1Magnet": null
+          },
+          {
+            "type": "TORRENT",
+            "quality": "4K",
+            "explicitChineseSubtitle": false,
+            "sourceReferenceSha256": "2536430ecbd97a17abaca7fb66c8603fd96e2ec5cde84973ad1eca3d30bb18be",
+            "validV1Magnet": null
+          }
+        ]
+      },
+      "status": "VERIFIED",
+      "completedAt": "2026-11-11T05:26:01.233099+00:00"
+    }
+  ],
+  "files": [
+    {
+      "filename": "1080P_中文字幕_d33f2dd1f21f.txt",
+      "type": "MAGNET",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 144,
+      "sha256": "52c034d58c8da0746fed35f4f6ae6fe2f3f1d8d49dde12f527824d7984ddafeb",
+      "md5": "b9f6094c6ce18995953c09a0c78f86ec",
+      "infoHash": "d33f2dd1f21ffd8e1c105466412b563ee45f7e89",
+      "sourceReferenceSha256": "775ff492b544b45e38e2e342ed3f3962a49a039478b2929be7705262243f07e8",
+      "proof": {
+        "kind": "GENERATED_FROM_FRESH_SOURCE_MAGNET",
+        "torrentRead": false
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "4K_中文字幕_39d09ef820d3.txt",
+      "type": "MAGNET",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 141,
+      "sha256": "c9afd123eb7c4f59102b95d838c691fbbf4a08a9b6ea062f84563a2faee7959b",
+      "md5": "e340f304f55605b99a8ebf7fd0622958",
+      "infoHash": "39d09ef820d3baf262df3df8474946d671455f50",
+      "sourceReferenceSha256": "45fc274b4e5bfa6ba47b491c68b4fb7c9a651e289c1c706e7db3dda2e409f173",
+      "proof": {
+        "kind": "GENERATED_FROM_FRESH_SOURCE_MAGNET",
+        "torrentRead": false
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "1080P_中文字幕_d33f2dd1f21f.torrent",
+      "type": "TORRENT",
+      "quality": "1080P",
+      "explicitChineseSubtitle": true,
+      "bytes": 20647,
+      "sha256": "a0182166413e8b5b4fc7ce8fd155a93f0f516f51fb7ef39e184199ad586159e3",
+      "md5": "e0b611bcb6c75512dbf8b07e9fadaed1",
+      "infoHash": "d33f2dd1f21ffd8e1c105466412b563ee45f7e89",
+      "sourceReferenceSha256": "775ff492b544b45e38e2e342ed3f3962a49a039478b2929be7705262243f07e8",
+      "proof": {
+        "kind": "LIVE_SOURCE_TORRENT_READ_ONLY",
+        "torrentRead": true,
+        "read": {
+          "responseBytes": 27721,
+          "responseSha256": "cc2c468d1ef919270f377a224bb0a1f788b231c759ee66980cf150d8d05ccc60",
+          "httpStatus": 200,
+          "method": "GET",
+          "requestPathSha256": "2841d28a30acff976e1cabcf9c066566490f3570bfdc300b2c30aa652e275b44",
+          "bodyOrCredentialsSaved": false
+        },
+        "originalInfoBytesBtiHashVerified": true,
+        "pairedMagnetHashVerified": true,
+        "sourceSha256Verified": true
+      },
+      "contentWritten": false
+    },
+    {
+      "filename": "4K_中文字幕_39d09ef820d3.torrent",
+      "type": "TORRENT",
+      "quality": "4K",
+      "explicitChineseSubtitle": true,
+      "bytes": 12322,
+      "sha256": "6b82ac764cbb2ceec40039c2ea058d344ca1de59bea7cbbebadd29f6aab3ec7b",
+      "md5": "5e99ade24b0c42e52787e71d03ffb6bd",
+      "infoHash": "39d09ef820d3baf262df3df8474946d671455f50",
+      "sourceReferenceSha256": "45fc274b4e5bfa6ba47b491c68b4fb7c9a651e289c1c706e7db3dda2e409f173",
+      "proof": {
+        "kind": "LIVE_SOURCE_TORRENT_READ_ONLY",
+        "torrentRead": true,
+        "read": {
+          "responseBytes": 16621,
+          "responseSha256": "b14fce628a74521c7858916712b951099601d6a62185f2875d0c51ac60e6164b",
+          "httpStatus": 200,
+          "method": "GET",
+          "requestPathSha256": "7bf842136ba3eb50fae1d974157f571d6a786704d5864025ed2722e7a3d6eb0b",
+          "bodyOrCredentialsSaved": false
+        },
+        "originalInfoBytesBtiHashVerified": true,
+        "pairedMagnetHashVerified": true,
+        "sourceSha256Verified": true
+      },
+      "contentWritten": false
+    }
+  ],
+  "protectedBefore": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "parent": {
+    "taskId": 17583,
+    "status": "PAUSED",
+    "revision": 63,
+    "enabled": false,
+    "identityCursor": 46,
+    "identityMaxId": 18820,
+    "intervalMinutes": 10,
+    "batchLimit": 1,
+    "processed": 5,
+    "skipped": 5,
+    "succeeded": 0,
+    "failed": 0,
+    "currentChildId": null,
+    "currentIdentityId": null,
+    "leaseOwner": null,
+    "leaseUntil": null,
+    "nextRunAt": null,
+    "deferredCount": 3
+  },
+  "unknowns": [
+    {
+      "id": 17584,
+      "status": "UNKNOWN",
+      "attempts": 1
+    },
+    {
+      "id": 17606,
+      "status": "UNKNOWN",
+      "attempts": 1
+    },
+    {
+      "id": 17622,
+      "status": "UNKNOWN",
+      "attempts": 1
+    }
+  ],
+  "backendBefore": {
+    "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "running": true
+  },
+  "sourceBefore": {
+    "id": "711354de91c2996ae1234bc3c0495f75fd5b1eb13b3f0f02af332a3a22fe0980",
+    "image": "sha256:76fe318b24b1c1222a6615918f5aedc83f772357d6ba01ed1e94458d63bdb58a",
+    "startedAt": "2026-11-10T04:34:59.004066406Z"
+  },
+  "configuredSavePath": "/GYing Resource Hub",
+  "continuousCandidates": [
+    {
+      "identityId": 47,
+      "movieId": "0WG4",
+      "sourceType": "mv",
+      "externalId": "0WG4",
+      "matchStatus": "AUTO",
+      "titleCn": "拯救生命演唱会",
+      "year": "1985"
+    },
+    {
+      "identityId": 48,
+      "movieId": "x3xX",
+      "sourceType": "mv",
+      "externalId": "x3xX",
+      "matchStatus": "AUTO",
+      "titleCn": "霸王别姬",
+      "year": "1993"
+    },
+    {
+      "identityId": 49,
+      "movieId": "r7yR",
+      "sourceType": "mv",
+      "externalId": "r7yR",
+      "matchStatus": "AUTO",
+      "titleCn": "控方证人",
+      "year": "1957"
+    },
+    {
+      "identityId": 50,
+      "movieId": "M9m6",
+      "sourceType": "mv",
+      "externalId": "M9m6",
+      "matchStatus": "AUTO",
+      "titleCn": "茶馆",
+      "year": "1982"
+    }
+  ],
+  "candidate": {
+    "identityId": 50,
+    "movieId": "M9m6",
+    "sourceType": "mv",
+    "externalId": "M9m6",
+    "matchStatus": "AUTO",
+    "titleCn": "茶馆",
+    "year": "1982"
+  },
+  "candidateOutstandingBaiduTasks": [],
+  "productionTorrentParser": {
+    "sourceFile": "D:\\gying-movie\\movie\\crawler\\gying_crawler.py",
+    "sourceFileSha256": "1e7ea85ac4682234d09bf51c4c0f67256413a9e3977a615c2f216064841f0b6a",
+    "function": "torrent_info_hash",
+    "originalInfoBytesHashed": true,
+    "maximumBytes": 2097152
+  },
+  "targetFolder": "/GYing Resource Hub/mv/茶馆（M9m6）/磁力种子",
+  "protectedAfter": {
+    "resource_hub_task": {
+      "rows": 5,
+      "sha256": "ea9c1e5dd64940d2337b2b2bcba77c7fedaa3fac3b6c9e4a0350ee5f6bda7297"
+    },
+    "baidu_transfer_task": {
+      "rows": 1,
+      "sha256": "adc9e900c2598d1eeb6d1c581dd1cd7bd8a49f71ced6bf33a2a830ae49b4d520"
+    },
+    "sys_config": {
+      "rows": 89,
+      "sha256": "3d4ba2ff789b1dbd95d3193071f7f0e20d6e792c766cb9a70b7e733c0f40724a"
+    }
+  },
+  "protectedRowsRetained": true,
+  "backendAfter": {
+    "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+    "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+    "startedAt": "2026-11-11T05:24:08.901986855Z",
+    "running": true
+  },
+  "sourceGenerationRetained": true,
+  "backendGenerationChangedDuringRootDeployment": false,
+  "completedAt": "2026-11-11T05:26:01.888355+00:00"
+}
