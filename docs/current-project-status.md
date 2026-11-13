@@ -1,6 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-11-11
+更新时间：2026-11-13
+
+11月13日13:31入口恢复：凌晨虚拟内存不足事件后Docker WSL异常退出/自动恢复，nginx残留固定IP与夸克冲突，另backend/MinIO宿主端口空响应。已清除nginx固定IP并启动原容器，backend与MinIO分别正常TERM/原容器启动；三者原ID、镜像、完整Config/HostConfig保持，其它服务未在本窗口重启。真实本机/公网首页、片库、详情SSR、海报及20项入口、Redis认证PING/PanSou TCP通过，Tunnel HA4。Quark2262前代RUNNING全字段保持、未重放；内存提交约85%、代理信任IP失配及远端任务对账保留待处理。[恢复与边界](evaluation/entrypoint-recovery-20261113/README.md)。
 
 11月11日23:03迅雷主机Token刷新已修复并经原计划任务验证：官方/risk初始化误拦截已精确修正，补固定登录导航/有界iframe等待；62 Node/21 Windows通过。旧官方401→已有独立会话自然续期→非root原子写回→官方200及后台expired=false，到期11月12日10:49:07，本轮0密码提交。原两小时任务启用/Ready，百度true/10/1和13容器代次保持；应用镜像未替换，DPAPI旧状态认证及脚本回退已核验。[本轮记录](evaluation/xunlei-token-refresh-20261111/README.md)。
 
@@ -75,6 +77,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 资源绑定使用bindingVersion，更新同组/新增绑定但不删除取消勾选的历史；来源身份区分canonical与外部id，保留utf8mb4_bin。自动视频资源先验证自有分享再入库，不确定匹配待审。高频Worker只处理元数据，不消费旧视频/发布队列；旧夸克追更与三个周榜分开。
 
 ## 当前部署与恢复基线
+
+11月13日恢复仅影响nginx网络端点/启动及backend、MinIO原容器正常重启；原镜像、Config、HostConfig和数据卷保持。nginx 2026-11-13 13:17:41、backend 2026-11-13 13:27:00、MinIO 2026-11-13 13:26:14（Asia/Shanghai）为本次实际启动代次，覆盖下文11月11日及以前的历史启动记录。DPAPI认证配置回退材料在 `E:/gying-tools/releases/entrypoint-recovery-20261113/`，未导入SQL或恢复数据。[本次恢复](evaluation/entrypoint-recovery-20261113/README.md)。
 
 11月11日13:24:08仅backend一次激活固定 `65fd377de0f055c6377c623e763d245e991241f8`，Compose23层；frontend12层和其余12代次保持。完整旧Config/Env顺序/labels认证保留、17字段与153Env映射/HostConfig/网络挂载及实际image/JAR通过，Env原始顺序不同。正常TERM后七age `G:/gying-backups/duplicate-tmdb-binding-20261111-20261111T052216.834247Z` 完整认证（75配置/882host/1374ACL/MySQL31表1过程34触发器/队列与百度会话），未导入SQL，不称跨服务原子快照。13:28:29hostpin唯一CAS仅新image，post `G:/gying-backups/duplicate-tmdb-binding-post-pin-20261111-20261111T052748.133234Z` 三age完整认证与原任务/权限保持；13:30:09日常45→46仅增加本release，唯一CAS/native三次dry-run及权限保持，自然完整备份未验。13:31:03终验实际运行/host/daily/保护历史保持；应用回退保留当前SQL/data/state/key，数据变更后重新核对兼容性。[部署与恢复证据](evaluation/duplicate-tmdb-binding-20261111/README.md)。
 
@@ -153,6 +157,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
+| 11月13日运行态 | 网站/服务入口已恢复；宿主内存提交约85%、前置资源耗尽仍需观察；Quark2262前代RUNNING未重放，远端结果待独立对账；backend原APP_TRUSTED_PROXIES地址已失配，后续精确修正，不扩大子网信任。[证据](evaluation/entrypoint-recovery-20261113/README.md) |
 | 百度/文件选择 | 现役65fd377归档前后逐文件/fileId校验保留。47正常SKIP；48原HTTP504/transport UNKNOWN不改，17650实际SUCCEEDED/COMPLETE/4文件143163B已耗唯一手动归档额度。21:27:38 V5官方同根owner/前后账户与完整content-fileId-manifest/active ownshare/目录FSID只读对账PASS。21:41:04唯一获准自然轮次成功，17655/identity49/r7yR SUCCEEDED/COMPLETE/attempts1/4文件35236B，enable PUT1/pause0；父17583 rev77/settings6/PENDING/true10分钟1条/cursor49/8-6-2-0/deferred3按授权保持开启。21:42:58独立fresh完整after及ADMIN同SQLparent、既有device/无登录通过，原保护行/13runtime/三个旧UNKNOWN与17650全文、V5源/549产物保持。所有旧STOP/UNKNOWN/ACK未恢复，manual3/4未执行，不重放；自然一次与手动额度分开。外部发布false、临时删除/配额释放/GYING发布未验，provider原子性/永久完整性不作保证 | [本轮证据](evaluation/duplicate-tmdb-binding-20261111/README.md) |
 | 片库重复 | 11月11日仅backend上线可信TMDB绑定与canonical消费者修复，suite1462项零失败（1Redis跳过），真实merge MySQL30/30。前夜MobLand `tmdb_tv_247718 -> 1YKW` 已一次合并、19关联/21history/8资源保留；本轮canonical一行两字段已由V4于16:11首次UPDATE、16:12独立只读精确增量通过；此前首次prepare因无id历史排序/MySQL1054只读失败，V2 prepare通过但锁读1142停止、UPDATE/COMMIT未尝试，15:31:17原像只读保持，原失败保留。15788/145 scan经独立复核74确认（含MobLand）/71排除；本轮第1/3/4批18/16/13加201/202十/九对共66对精确PASS，380关联/512history/7legacy旧update_at单次merge窄窗，原B1三次失败保留。第2批14:33:25已ACK原20/19preview、idle停止无merge-request，原审核自然过期，V5离线9通过但未执行；Observer离线31/独审及15:02:19实际只读PASS，原20/19全部state/两unused-expired review/字节保持，0新POST/SQL/cloud。V6仅pristine3/4、12mock/全链通过、原请求预算/UNKNOWN禁重发保持；已完成批次6阻塞完整相关投影保持，另B2一条part冲突15:02:19完整state保持，共余7运行态阻塞未合并。V7新generation只读prepare与两子批actual exactPASS，MobLand既有应用身份权限通过、V3前置RuntimeError未写/原像保持，V4两字段已提交且updated_at/全行/历史/百度/config/13代次保持；Entry V2实际仅7/67详情/列表与21显式GET通过后停止，全67只读TMDB两字段正确，39 movie season差异为原部数/NULL与身份0混同，无需数据修复；新EntryV3 13mock+7类45断言及完整冻结链通过、旧保护AST保持，唯一实际入口67详情/67列表和两个电影SSR通过、204GET后TV SSR标题/年份门禁STOP，finally全行/百度/13代次/永久阻塞保持；16:52同正文SHA观察标题/年份span正确、旧h2无分隔拼接数字假阻塞，无需改网页/数据；17:10唯一4GET/4SSR补验PASS，67详情/67列表/6代表SSR闭环，全行/百度/13代次/永久阻塞保持 | [本轮证据](evaluation/duplicate-tmdb-binding-20261111/README.md) |
 | AI质量 | 11月4日电影身份与主题候选代码已完成：Movie973项942通过/31环境跳过、Agent202/202、verify/compile与真实SQL12/12通过。最终定向7/7 completed，模型复核满足3/部分有用1/证据不足2/未满足1、事实null4、真人0；音乐三轮保留条件与较早列表指代，版本身份和影院核心主题仍缺证，影院第二轮另有文学摘录偏题。本轮获用户“可上线”限定授权，Movie backend于2026-11-04 22:39:17、Agent backend于2026-11-04 22:42:34（Asia/Shanghai）按先Movie后Agent顺序上线；实际image/JAR、受管身份、真实入口与独立只读复核通过。安全58 PASS/11 FAIL/1 UNKNOWN及G01–G11仍未关闭，第一阶段未完成。 [电影身份与主题候选](evaluation/identity-theme-20261104/README.md)；11月3日作者/数字、固定core+引文、可信四轮/TTL与幂等候选完成；15 completed，模型满足5/部分2/澄清2/未满足4/缺证2，三维完整12、真人0；原始对白/原作/官方公告仍有未知。旧观测中的胶片修复、电影院核心主题、徒步ac/空及mv与电视特辑冲突已补机制上线，正式主题回答与真人验收仍待补；候选已保守拒绝缺证片目，但正向身份/主题资料与联网相关性仍不足；同句作者兼主演/执导审查补丁另验，未重跑模型。21:12 Agent/21:47 Movie已上线，网站4机械通过而模型满足2/未满足1/缺证1，电影身份问题未解、真人0；第一阶段未完成。[查询修复](evaluation/query-quality-20261103/README.md)；此前正文/卡片、现役USER15轮/test清理和非浏览器/密码登录边界保留[原记录](evaluation/answer-quality-20261103/README.md) |
