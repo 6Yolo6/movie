@@ -1,5 +1,7 @@
 # 网盘工作流配置
 
+2026-11-13 21:07（Asia/Shanghai）按用户要求在线关闭迅雷全部工作流：视频、种子、发现、转存、分享、GYING发布均false。真实后台/SQL和跨30秒复核一致，夸克与百度保持原配置；近20条迅雷转存15条明确空间不足，精确配额未取得。当前保持暂停，未清理或重放旧任务。[本次核查与回退](evaluation/xunlei-workflow-pause-20261113/README.md)。
+
 开发分支：`codex/cloud-drive-workflows`。2026-11-09 backend于22:39:17、frontend于22:48:50启动固定`048795f`，22:49:07完成两服务上线：百度上传/分享兼容、QQ/网站独立临时搜索与默认十分钟精确清理、全有效片库重复候选扫描。实际Compose17/11、固定image/JAR/375产物与本机公网资产核验通过；部署类+实库只读快照15366有效/144待审候选/完整、MobLand0/8和分页通过；用户实际新登录后23:05真实ADMIN四次dryRun API扫描15366/144候选、完整/MobLand0/8/144对资源数和分页通过；原22:53无设备FAIL保留，真实归档/转存清理/配额和已认证浏览器UI待验。[本轮上线与边界](evaluation/baidu-search-duplicate-20261109/README.md)。
 
 早先13:54:51按GYING ID补种子上线b55080d8；14:24单影片首个磁力文本上传为UNKNOWN，自动补全保持关闭、十分钟一条。后续e6370cb上传/分享兼容候选1254项及真实61字节合成文本/同目录一次分享核验通过，当时idle/旧consumer门禁FAIL、未部署；兼容代码现随048795f上线，原17583/17584与意图保留，尚未证明真实影视归档成功。[原种子验收](evaluation/baidu-torrent-backfill-20261109/README.md)、[上传实测](evaluation/baidu-share-compat-fix-20261109/README.md)。

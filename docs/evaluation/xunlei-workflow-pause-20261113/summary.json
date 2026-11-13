@@ -1,0 +1,152 @@
+{
+  "operationAt": "2026-11-13T13:07:28.364749+00:00",
+  "completedAt": "2026-11-13T13:07:29.381651+00:00",
+  "verifiedAt": "2026-11-13T13:08:49.756360+00:00",
+  "timezone": "Asia/Shanghai",
+  "operation": "Only six XUNLEI workflow switches changed from true to false via one authenticated config PUT",
+  "before": {
+    "provider": "XUNLEI",
+    "videoEnabled": true,
+    "torrentEnabled": true,
+    "discoveryEnabled": true,
+    "transferEnabled": true,
+    "shareEnabled": true,
+    "gyingPublishEnabled": true
+  },
+  "after": {
+    "provider": "XUNLEI",
+    "videoEnabled": false,
+    "torrentEnabled": false,
+    "discoveryEnabled": false,
+    "transferEnabled": false,
+    "shareEnabled": false,
+    "gyingPublishEnabled": false
+  },
+  "recent20Categories": {
+    "INVALID_ARGUMENT": "1",
+    "SOURCE_NO_VIDEO": "2",
+    "SPACE_NOT_ENOUGH": "15",
+    "TARGET_CONTENT_MISMATCH": "2"
+  },
+  "historicalSpaceErrors": 52,
+  "taskEvidence": [
+    [
+      "822",
+      "FAILED",
+      "2026-11-07 20:27:34",
+      "2026-11-07 20:27:36",
+      "1",
+      "0"
+    ],
+    [
+      "824",
+      "FAILED",
+      "2026-11-12 23:22:47",
+      "2026-11-12 23:22:52",
+      "1",
+      "0"
+    ],
+    [
+      "825",
+      "FAILED",
+      "2026-11-13 19:33:54",
+      "2026-11-13 19:33:55",
+      "0",
+      "1"
+    ]
+  ],
+  "exactQuotaObtained": false,
+  "unrelatedConfigPreserved": true,
+  "unrelatedConfigRows": 89,
+  "otherDriveWorkflowsPreserved": true,
+  "savePathAndBatchLimitPreserved": true,
+  "containerCount": 13,
+  "containerGenerationsPreserved": true,
+  "taskSummaryBeforeEqualsAfter": true,
+  "tasks": [
+    [
+      "xunlei_p2p_task",
+      "FAILED",
+      "1283",
+      "2026-11-04 23:10:49"
+    ],
+    [
+      "xunlei_p2p_task",
+      "SUCCEEDED",
+      "4512",
+      "2026-11-08 19:40:00"
+    ],
+    [
+      "xunlei_transfer_task",
+      "CANCELED",
+      "11",
+      "2026-08-17 15:18:07"
+    ],
+    [
+      "xunlei_transfer_task",
+      "FAILED",
+      "405",
+      "2026-11-13 19:33:55"
+    ],
+    [
+      "xunlei_transfer_task",
+      "RUNNING",
+      "1",
+      "2026-09-28 20:45:54"
+    ],
+    [
+      "xunlei_transfer_task",
+      "SUBMITTED",
+      "1",
+      "2026-08-19 09:05:59"
+    ],
+    [
+      "xunlei_transfer_task",
+      "SUCCEEDED",
+      "389",
+      "2026-10-31 09:51:01"
+    ],
+    [
+      "xunlei_transfer_task",
+      "WAITING_SHARE",
+      "18",
+      "2026-11-02 18:57:40"
+    ]
+  ],
+  "health": [
+    {
+      "url": "http://127.0.0.1/",
+      "httpStatus": 200
+    },
+    {
+      "url": "http://127.0.0.1:8880/api/qq-bot/health",
+      "httpStatus": 200
+    }
+  ],
+  "boundedDockerLogs": {
+    "since": "2026-11-13T13:07:28Z",
+    "maxLines": 300,
+    "bytes": 0,
+    "errorLines": 0
+  },
+  "backup": {
+    "directory": "G:\\gying-backups\\xunlei-workflow-pause-20261113-20261113T130722.887053Z",
+    "artifacts": 2,
+    "authenticated": true,
+    "manifestSha256": "204edd808004fcf1ad5185a1711c8bab56479fd2179388ce4d3ecce0b55d872c"
+  },
+  "newLogins": 0,
+  "directSqlWrites": 0,
+  "cloudWrites": 0,
+  "externalReportsDirectory": "E:\\gying-tools\\releases\\xunlei-workflow-pause-20261113",
+  "rollbackScript": "E:\\gying-tools\\releases\\xunlei-workflow-pause-20261113\\operate.py",
+  "rollbackReport": "E:\\gying-tools\\releases\\xunlei-workflow-pause-20261113\\disabled-1cbd15eb78524d1b900ba8ca96c6e09a.json",
+  "independentVerification": {
+    "checkedAt": "2026-11-13T13:12:05.761270+00:00",
+    "status": "INDEPENDENT_READONLY_PASS",
+    "bothOtherDriveWorkflowsMatchAuthenticatedPreimage": true,
+    "allUpdatedAtAndCreatedAtPrecedePause": true,
+    "coveredTasks": 6620,
+    "allContainerGenerationsPreserved": true
+  }
+}

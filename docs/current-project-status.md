@@ -2,6 +2,8 @@
 
 更新时间：2026-11-13
 
+11月13日21:07迅雷工作流已按用户要求在线全关：视频/种子/发现/转存/自有分享/GYING发布六开关均false，真实ADMIN与SQL、跨30秒复核通过。最近20条转存15条明确空间不足、其余5条为源无视频/目标内容/参数问题；登录有效，精确容量被captcha查询门禁阻断。夸克/百度、其他89配置、13容器代次及旧任务保持，两份变更前加密备份完整认证；未重启、清理网盘或重放。[核查与回退](evaluation/xunlei-workflow-pause-20261113/README.md)。
+
 11月13日13:31入口恢复：凌晨虚拟内存不足事件后Docker WSL异常退出/自动恢复，nginx残留固定IP与夸克冲突，另backend/MinIO宿主端口空响应。已清除nginx固定IP并启动原容器，backend与MinIO分别正常TERM/原容器启动；三者原ID、镜像、完整Config/HostConfig保持，其它服务未在本窗口重启。真实本机/公网首页、片库、详情SSR、海报及20项入口、Redis认证PING/PanSou TCP通过，Tunnel HA4。Quark2262前代RUNNING全字段保持、未重放；内存提交约85%、代理信任IP失配及远端任务对账保留待处理。[恢复与边界](evaluation/entrypoint-recovery-20261113/README.md)。
 
 11月11日23:03迅雷主机Token刷新已修复并经原计划任务验证：官方/risk初始化误拦截已精确修正，补固定登录导航/有界iframe等待；62 Node/21 Windows通过。旧官方401→已有独立会话自然续期→非root原子写回→官方200及后台expired=false，到期11月12日10:49:07，本轮0密码提交。原两小时任务启用/Ready，百度true/10/1和13容器代次保持；应用镜像未替换，DPAPI旧状态认证及脚本回退已核验。[本轮记录](evaluation/xunlei-token-refresh-20261111/README.md)。
@@ -170,7 +172,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 | TMDB高分剧集 | 11月2日17:43上游131页/2610条、所设360–500；10月23日21:05后104轮空跑历史保留。19:08 fe042692两应用已上线实测末页/24小时复查/跳过冷却榜，范围保持，电影任务17300原next252保持。19:15:57创建/19:15:59完成的自然任务17301保存EMPTY_RANGE、131页/2610条，11月3日19:15:59复查；本机/公网入口与新bundle通过，短日志无新异常。下一电影自然执行、跨重启冷却、次日复查与上游增长待发生时验。配置更新时间upsert问题另保留，未在本次修改。[修复](evaluation/tmdb-empty-range-20261102/README.md)、[历史](evaluation/platform-diagnosis-20261102/README.md) |
 | 历史任务 | 10月8旧58条耗尽归档失败、两条精确旧RUNNING和自然元数据失败隔离未实证；不批量重置 |
 | 上游/配图 | GYING两个发布RuntimeError原因不明；源图只读存在、实际复制/分享未验 |
-| 迅雷 | 11月11日23:03官方/risk初始化误拦截、登录导航及iframe等待修复已激活；62 Node/21 Windows通过，原任务exit0/自然续期/0密码，23:04官方200、同账户完整状态、10001:10001/600及后台expired=false，到期11月12日10:49:07。原两小时任务启用，应用镜像不变；真实验证码/短信及空白profile密码提交按发生时验，旧目录/重复/乱码须逐批dry-run。[本轮证据](evaluation/xunlei-token-refresh-20261111/README.md) |
+| 迅雷 | 2026-11-13 21:07用户要求暂停：网盘工作流六开关全部false，后台/SQL及跨30秒验证一致，保持关闭。近20任务15条空间不足，精确配额查询被captcha拒绝；旧任务保留，网盘未清理。当前登录有效/官方files200，原两小时续期任务保留；真实验证码/短信及空白profile密码提交仍待发生时验，旧目录/重复/乱码继续逐批dry-run。[本轮暂停](evaluation/xunlei-workflow-pause-20261113/README.md)、[此前Token修复](evaluation/xunlei-token-refresh-20261111/README.md) |
 | 依赖宿主端口/MinIO路径 | 原11月10日16:46宿主5005/9000/18789三个GET RemoteDisconnected、16:51内部路径通过及frontend peer MinIO ECONNRESET保留，具体组件原因不定。23:07部署前fresh配置DB应用身份/Redis认证PING及source/quark/publisher GET通过，PanSou只核backend TCP可达；当前backend endpoint/S3凭据由既有frontend Node peer在backend网络对host.docker.internal:9000既存对象GET200/155434B jpeg，0object write/provider网盘请求、未改配置或重启依赖。20:03同类读取为历史；peer认证读不代backend本进程读取/上传业务或全部published端点闭环。百度归档另经11月11日V5官方对账与唯一自然轮次成功；该结果不代MinIO本进程边界。[本轮依赖](evaluation/baidu-archive-file-guard-20261110/README.md)、[原异常](evaluation/baidu-runtime-merge-metadata-20261110/README.md) |
 | UI/入口/邮件 | 真机/真实已读编辑事务、Tunnel故障再现、同片跨版本/海报缓存；Gmail免费域拒收，其他邮箱旧投递不代全部可用 |
 | 日志 | 10月18 QQ空值500和GYING503独立保留；后续短窗口正常不证明原边界已修，[问题台账](history/issues.md) |
