@@ -1,0 +1,7 @@
+{
+  "status": "stopped-preserve-current-state",
+  "errorType": "GateError",
+  "gate": "NEW_BUSY_JOB_DURING_GATE",
+  "automaticRetry": false,
+  "automaticSqlRestore": false
+}

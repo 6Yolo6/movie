@@ -1,0 +1,8 @@
+{
+  "status": "stopped-preserve-current-state",
+  "at": "2026-11-14T12:33:35.191208+00:00",
+  "errorType": "RuntimeError",
+  "gate": "HOSTCONFIG_CHANGED",
+  "automaticRetry": false,
+  "automaticSqlRestore": false
+}

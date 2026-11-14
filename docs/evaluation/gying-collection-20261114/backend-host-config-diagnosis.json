@@ -1,0 +1,67 @@
+{
+  "at": "2026-11-14T12:34:56.843861+00:00",
+  "backend": {
+    "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+    "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+    "running": true
+  },
+  "hostConfigDifferences": [
+    {
+      "field": "Binds",
+      "oldSha256": "1cd95ee758d58aa31affb333bed89e02fe95f6d67b1c637823a6c9484e4e6c66",
+      "newSha256": "f554466fe40757e0c6b570f91d654f5c36152ca70c49410b41d33cf82aae798c",
+      "oldType": "list",
+      "newType": "list",
+      "oldCount": 3,
+      "newCount": 3,
+      "identicalListElementsReordered": true
+    },
+    {
+      "field": "Dns",
+      "oldSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "newSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "oldType": "list",
+      "newType": "NoneType",
+      "oldCount": 0,
+      "newCount": null,
+      "identicalListElementsReordered": false
+    },
+    {
+      "field": "DnsOptions",
+      "oldSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "newSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "oldType": "list",
+      "newType": "NoneType",
+      "oldCount": 0,
+      "newCount": null,
+      "identicalListElementsReordered": false
+    },
+    {
+      "field": "DnsSearch",
+      "oldSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "newSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "oldType": "list",
+      "newType": "NoneType",
+      "oldCount": 0,
+      "newCount": null,
+      "identicalListElementsReordered": false
+    }
+  ],
+  "currentLiveWorkerEnabled": false,
+  "entries": [
+    {
+      "origin": "http://127.0.0.1:8880",
+      "path": "/api/qq-bot/health",
+      "status": 200,
+      "bytes": 15,
+      "sha256": "a29ee2b15c494311c52521766e44af56a3ad2248e7a8ab465e5206463c13d288"
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 68036,
+      "sha256": "3ad4bfe92d95b720d409279e8217de4fc879ae69a70819240ef039df0ef96881"
+    }
+  ]
+}

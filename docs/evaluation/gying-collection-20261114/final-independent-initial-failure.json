@@ -1,0 +1,26 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-11-14T13:25:20.716598+00:00",
+  "scope": "Independent read-only production verification; create-only safe summary. No deployment, restart, worker PUT, SQL update, config replacement or repeat native backup dry run.",
+  "frozenInputs": {
+    "PostDeployment.py": "721f25436fe72e85e80fbe795ef774b15522b6f6c7efc7fb521fd1b7f85ea034",
+    "Continuation.py": "347d8df4fce792b7f56cb88979753f9c56dbf3ef9e77933b2e1f8d470afccec6",
+    "Guard.py": "94bd5eb62f5e38e74b7dd0c3f70300e88f8173ff09a72798e1016c628ca36777",
+    "scheduler-delta-proof.json": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84",
+    "receipt.json": "040779b610bec223e91df451add63997d647dcaee4b49cb3a22dd0a16827c1ee",
+    "post-declaration.json": "76114cef06f7f1198754494687560ceabfcc22d68e312de739d2cfa884ee81f5",
+    "host-prepared.json": "ccd4552d9e7e42b7752bb7f5f47897d63ddb1945c67dc7d01c93427340fba91b",
+    "host-apply-20261114T131634.003215Z.json": "e154df56fe1a69acd4261b6ad5880426fc11926a9a40fd917ba76c40ef1cb829",
+    "daily-prepared.json": "4902a2d7390172edea1e271c08d9de218be89e0880bfffc3583efec8aefb9872",
+    "daily-apply-20261114T131930.914362Z.json": "16425f9663fb312935bf0406c462d50c4ecea152c287fc2a9dd9dad875d61b91"
+  },
+  "productionBusinessWrites": 0,
+  "serviceActivations": 0,
+  "workerPuts": 0,
+  "nativeDryRunsRepeated": 0,
+  "credentialOutput": false,
+  "existingDeviceLastSeenMayChange": true,
+  "errorType": "RuntimeError",
+  "gate": "FROZEN_FILE_CHANGED",
+  "completedAt": "2026-11-14T13:25:20.977304+00:00"
+}

@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "status": "PASS_NATURAL_BAIDU_PARENT_SCHEDULER_DELTA",
+  "capturedAt": "2026-11-14T12:52:56.472879+00:00",
+  "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+  "planSha256": "71795a03423cd4f4d708c84665be55dd1e5762123340cf1aa1b61f3d3dbc80df",
+  "progressSha256": "cf18d0f929f8a0ced00bb159e4c8f328681bbc84926af836d3f07679a2472c5a",
+  "protectedRowsBaselineSha256": "1f0ebdbc2921a0a7f56d62aa97f7474ef4092af41e3922b5ad2c58a062aeb1c2",
+  "archives": {
+    "preDeployment": {
+      "directory": "G:\\gying-backups\\gying-collection-predeploy-20261114-20261114T123052.082980Z",
+      "manifestSha256": "5187397506e120e825ec9101c0b625e2e36000f50fe4a622f750bcc0d0716889",
+      "sqlAgeSha256": "10936cd0ab517c18fbbe227fa7f8378bf063553c2d87ea3b2eb34760b3bdbe66",
+      "authenticatedThroughEof": true,
+      "dumpCompletedMarker": true,
+      "decryptedBytesScanned": 112322863
+    },
+    "stoppedBackend": {
+      "directory": "G:\\gying-backups\\gying-collection-stopped-backend-20261114-20261114T123258.691176Z",
+      "manifestSha256": "b9251682de29aa3c15abfd78c53422c770e1d49617b5b263463ffd3e20e119d0",
+      "sqlAgeSha256": "d1a83ed899d6c9df745883ba70ff5c377e42009549f031ba0a33c47e9ba4e847",
+      "authenticatedThroughEof": true,
+      "dumpCompletedMarker": true,
+      "decryptedBytesScanned": 112323652
+    }
+  },
+  "originalSevenRowsCanonicalSha256": "fc3aac4ec839f020bc7acdb4b4735c094af5876b3d1e61c786be26873c008412",
+  "currentSevenRowsCanonicalSha256": "edb404a890e5d9352044185c6ff6b445d53b839c3fc72cd3b9c9a7b2ac2c70a2",
+  "preAndStoppedRowsEqual": true,
+  "datetimeNormalization": "All DATETIME/TIMESTAMP values use YYYY-MM-DD HH:MM:SS.ffffff; matches MySQL JSON_OBJECT output",
+  "schema": [
+    [
+      "id",
+      "bigint",
+      "0"
+    ],
+    [
+      "task_type",
+      "varchar",
+      "0"
+    ],
+    [
+      "movie_id",
+      "varchar",
+      "0"
+    ],
+    [
+      "tmdb_id",
+      "bigint",
+      "0"
+    ],
+    [
+      "tmdb_type",
+      "varchar",
+      "0"
+    ],
+    [
+      "keyword",
+      "varchar",
+      "0"
+    ],
+    [
+      "source",
+      "varchar",
+      "0"
+    ],
+    [
+      "status",
+      "varchar",
+      "0"
+    ],
+    [
+      "priority",
+      "int",
+      "0"
+    ],
+    [
+      "attempts",
+      "int",
+      "0"
+    ],
+    [
+      "max_attempts",
+      "int",
+      "0"
+    ],
+    [
+      "last_error",
+      "varchar",
+      "0"
+    ],
+    [
+      "payload",
+      "json",
+      "0"
+    ],
+    [
+      "scheduled_at",
+      "datetime",
+      "0"
+    ],
+    [
+      "started_at",
+      "datetime",
+      "0"
+    ],
+    [
+      "finished_at",
+      "datetime",
+      "0"
+    ],
+    [
+      "created_at",
+      "datetime",
+      "0"
+    ],
+    [
+      "updated_at",
+      "datetime",
+      "0"
+    ]
+  ],
+  "historicalRows": {
+    "7803": {
+      "preAndStoppedCanonicalSha256": "f2a425f83930d1f3ce9a383ef66f57dc9203042b5cc2c70784efb62525cf0495"
+    },
+    "7804": {
+      "preAndStoppedCanonicalSha256": "6b579d097ffdbaa80d0d21c4a446c152a566886b86d439efdea336bcc6fd682d"
+    },
+    "17580": {
+      "preAndStoppedCanonicalSha256": "b9e66992373bad09530c0a25c762c19439acac35cf7ee7da80f73aa584fbd320"
+    },
+    "17584": {
+      "preAndStoppedCanonicalSha256": "5bcfd3282419de82e39d1daf1dbdb8a2488028cdbdd10c766de20b732929db2c"
+    },
+    "17606": {
+      "preAndStoppedCanonicalSha256": "6c3f6d29d823637f6805487eda800609f775ec0703edb0406c677753648e1b3b"
+    },
+    "17622": {
+      "preAndStoppedCanonicalSha256": "c4ec9129288b6a4cd71be3ce88003265aa78a262f5d0bfabe92cba4c38d71848"
+    }
+  },
+  "parent": {
+    "id": 17583,
+    "rawRowChanged": true,
+    "originalCanonicalSha256": "8cd1e1d4c3edab233d85f5eb94834305e1254e0f6ba031d7aca077950957f1e9",
+    "currentCanonicalSha256": "9fac5073a0ba3c2ee3b9e54794b32ffd77f32084dbed15ead814ef5529c779a4",
+    "invariantProjectionSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "allowedRowFields": [
+      "payload",
+      "scheduled_at",
+      "updated_at",
+      "last_error"
+    ],
+    "allowedPayloadFields": [
+      "blockedReason",
+      "revision",
+      "nextRunAt"
+    ],
+    "baselineRevision": 1500,
+    "baselineUpdatedAt": "2026-11-14 20:24:30.000000",
+    "baselineNextRunAt": "2026-11-14T20:34:30",
+    "invariants": {
+      "source": "BAIDU",
+      "taskType": "CLOUD_DRIVE_BACKFILL",
+      "status": "BLOCKED",
+      "phase": "GYING_TORRENTS",
+      "enabled": true,
+      "intervalMinutes": 10,
+      "batchLimit": 1,
+      "currentChildId": 17761,
+      "leaseOwner": null,
+      "leaseUntil": null
+    },
+    "observedDelta": {
+      "blockedReason": {
+        "before": "CHILD_FAILED",
+        "after": "WORKER_DISABLED"
+      },
+      "revision": {
+        "before": 1500,
+        "after": 1504
+      },
+      "nextRunAt": {
+        "before": "2026-11-14T20:34:30",
+        "after": "2026-11-14T20:54:37"
+      },
+      "scheduledAt": {
+        "before": "2026-11-14 20:34:30.000000",
+        "after": "2026-11-14 20:54:37.000000"
+      },
+      "updatedAt": {
+        "before": "2026-11-14 20:24:30.000000",
+        "after": "2026-11-14 20:44:37.000000"
+      },
+      "lastErrorCanonicalSha256": {
+        "before": "c7d9d92c0207ad87a9435f58d7e618144e766dc67e4b7374aba223d31fc84149",
+        "after": "d0a874c355d5ad0340ff2c6a3a25d56848cba0ca01ee5d5ca3bfd2d2cc5a4484"
+      }
+    }
+  },
+  "currentChild": {
+    "id": 17761,
+    "preAndStoppedCanonicalSha256": "4d13d8f770b4439c9f255572e8b06613b2769e64908d6d81e852dc37945fbd46",
+    "currentCanonicalSha256": "4d13d8f770b4439c9f255572e8b06613b2769e64908d6d81e852dc37945fbd46",
+    "status": "FAILED",
+    "attempts": 3,
+    "maxAttempts": 3,
+    "source": "BAIDU",
+    "taskType": "P2P_ARCHIVE",
+    "parentId": 17583
+  },
+  "sourceFiles": {
+    "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\BaiduBackfillService.java": "d3371ac4964babd3522e01f2fa30e3ab251f67e461d7d63cd024e978314d1f21",
+    "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\BaiduBackfillTaskStore.java": "9e12735b3e89a3490c1a25f0caa333523ce053a22f98d41c61e84550e4a9bfd0"
+  },
+  "sourceRulesVerified": {
+    "claimRevisionAndLease": true,
+    "finishRevisionClearLeaseScheduleInterval": true,
+    "workerDisabledBlocksBeforeProcessing": true,
+    "exhaustedChildBlocksBeforeSubmitOne": true
+  },
+  "productionSqlWrites": 0,
+  "cloudRequests": 0,
+  "baselineOrPlanChanges": false
+}

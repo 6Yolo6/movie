@@ -1,0 +1,775 @@
+{
+  "status": "deployed-and-verified",
+  "startedAt": "2026-11-14T12:32:30.422982+00:00",
+  "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+  "planSha256": "71795a03423cd4f4d708c84665be55dd1e5762123340cf1aa1b61f3d3dbc80df",
+  "affectedServices": [
+    "backend",
+    "frontend"
+  ],
+  "activationAttempts": {
+    "backend": 1,
+    "frontend": 1
+  },
+  "checkpoints": {
+    "preDeployment": {
+      "directory": "G:\\gying-backups\\gying-collection-predeploy-20261114-20261114T123052.082980Z",
+      "artifacts": 4,
+      "authenticated": true,
+      "manifestSha256": "5187397506e120e825ec9101c0b625e2e36000f50fe4a622f750bcc0d0716889"
+    },
+    "stoppedBackend": {
+      "directory": "G:\\gying-backups\\gying-collection-stopped-backend-20261114-20261114T123258.691176Z",
+      "artifacts": 3,
+      "authenticated": true,
+      "manifestSha256": "b9251682de29aa3c15abfd78c53422c770e1d49617b5b263463ffd3e20e119d0"
+    }
+  },
+  "directSqlWrites": 0,
+  "manualCloudRequests": 0,
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "gateBeforePause": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T12:32:37.875019+00:00",
+    "phase": "before worker pause",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-13T05:27:00.80354556Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T12:32:33.742855+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "phase": "Worker restored checking legacy rows",
+  "workerPause": {
+    "at": "2026-11-14T12:32:43.216862+00:00",
+    "workerEnabled": false,
+    "writeCount": 1,
+    "existingAdminReused": true,
+    "newLoginDevices": 0
+  },
+  "gateBeforeTerm": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T12:32:49.489719+00:00",
+    "phase": "worker paused before normal TERM",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-13T05:27:00.80354556Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T12:32:45.498690+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "signalProof": {
+    "signal": "SIGTERM",
+    "pid1": "java",
+    "receiver": "handler"
+  },
+  "oldBackendStoppedNormally": true,
+  "gateAfterTerm": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T12:32:57.104725+00:00",
+    "phase": "backend stopped preserving orphan task",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-13T05:27:00.80354556Z",
+      "running": false
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T12:32:53.171960+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "gateBeforeActivation": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T12:33:10.660658+00:00",
+    "phase": "before fixed images activation",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "993bc5bac12d83ee522c660ba7bfd31f4bed44050ff47eff260219dadc03ad0a",
+      "image": "sha256:b7134d36c9eb8b36ef99471623ab4599ad837288b612d38ec04eb1a672dad2bb",
+      "startedAt": "2026-11-13T05:27:00.80354556Z",
+      "running": false
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T12:33:06.261242+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "liveServices": {
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z"
+    },
+    "frontend": {
+      "id": "e901160d28c1291e61e3ebcfde2bb9fe30eca546c46eacbdf596afb61e839527",
+      "image": "sha256:3dad5be604c4467e97ca52d408323420f2a863edd4ff14cb95a483bd49daa578",
+      "startedAt": "2026-11-14T13:00:37.375874417Z"
+    }
+  },
+  "verification": {
+    "runtime": {
+      "backend": {
+        "at": "2026-11-14T13:14:00.926596+00:00",
+        "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+        "configFieldsVerified": 17,
+        "allEnvValuesPreserved": true,
+        "envCount": 153,
+        "hostConfig": {
+          "rawExact": false,
+          "semanticExact": true,
+          "representationDifferences": [
+            {
+              "field": "Binds",
+              "exactItemsPreserved": true,
+              "onlyOrderChanged": true,
+              "count": 3
+            },
+            {
+              "field": "Dns",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            },
+            {
+              "field": "DnsOptions",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            },
+            {
+              "field": "DnsSearch",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            }
+          ],
+          "allOtherFieldsExact": true
+        },
+        "fullEffectiveMountsPreserved": true,
+        "networkNamesAndNonvolatileConfigPreserved": true,
+        "nativeComposeHashVerified": true,
+        "imageAndCustomLabelsExact": true,
+        "resolver": {
+          "embeddedDockerDns": true,
+          "sha256": "f6aaa04386497cfbeead0b72766138cb74e1bcb0940130bb9c894dfcca2e459a",
+          "noCustomSearch": true
+        },
+        "jarSha256": "0a536d7f471e1f375da26d7168d2c23bda259fd6c51befea079d916fe7b229b2"
+      },
+      "frontend": {
+        "at": "2026-11-14T13:14:03.060904+00:00",
+        "image": "sha256:3dad5be604c4467e97ca52d408323420f2a863edd4ff14cb95a483bd49daa578",
+        "configFieldsVerified": 17,
+        "allEnvValuesPreserved": true,
+        "envCount": 8,
+        "hostConfig": {
+          "rawExact": false,
+          "semanticExact": true,
+          "representationDifferences": [
+            {
+              "field": "Dns",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            },
+            {
+              "field": "DnsOptions",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            },
+            {
+              "field": "DnsSearch",
+              "oldRepresentation": "[]",
+              "newRepresentation": "null",
+              "effectiveComposeOverrideAbsent": true
+            }
+          ],
+          "allOtherFieldsExact": true
+        },
+        "fullEffectiveMountsPreserved": true,
+        "networkNamesAndNonvolatileConfigPreserved": true,
+        "nativeComposeHashVerified": true,
+        "imageAndCustomLabelsExact": true,
+        "resolver": {
+          "embeddedDockerDns": true,
+          "sha256": "f6aaa04386497cfbeead0b72766138cb74e1bcb0940130bb9c894dfcca2e459a",
+          "noCustomSearch": true
+        }
+      }
+    },
+    "entries": [
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/",
+        "status": 200,
+        "bytes": 73643,
+        "sha256": "770481c8e59563bc168560e142bf9f6b9c0835b4e6cd4230a5f4ead3e237c01d"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/movies/list?page=1&size=1",
+        "status": 200,
+        "bytes": 1056,
+        "sha256": "ae743e16225e1db33f60bea661aa5bceaf9a0179aeb4069149b1247e051d846f"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/movie/gying_ac_E4P6",
+        "status": 200,
+        "bytes": 238157,
+        "sha256": "f912ec210c7b34a23dc8faef9dbff77332f062ae6e7e8a0ccc9d76f6cb603a1c"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/",
+        "status": 200,
+        "bytes": 74010,
+        "sha256": "54cf561cd4004cf8c6addc89d34b23a938426d08e8578946305748e60ef398c7"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/api/movies/list?page=1&size=1",
+        "status": 200,
+        "bytes": 1056,
+        "sha256": "ae743e16225e1db33f60bea661aa5bceaf9a0179aeb4069149b1247e051d846f"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/movie/gying_ac_E4P6",
+        "status": 200,
+        "bytes": 238524,
+        "sha256": "bf323a99babced2f8faa19b94d672dbef61f413d8f47af773dac96eba257e75d"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/admin/resource-hub/config",
+        "status": 401,
+        "bytes": 60,
+        "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328"
+      },
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/api/qq-bot/health",
+        "status": 404,
+        "bytes": 146,
+        "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0"
+      }
+    ],
+    "frontendArtifacts": {
+      "actualFilesVerified": 642,
+      "sha256SizeUidGidMatched": true,
+      "readOnlyDockerCopy": true,
+      "verificationContainersCreated": 0,
+      "manifestSha256": "ba51a2437be0da10c3f8c6dbd33e52e323914ccb83853c6fe4b8b499577b8959"
+    },
+    "freshEntries": [
+      {
+        "origin": "http://127.0.0.1",
+        "path": "/",
+        "status": 200,
+        "bytes": 73643,
+        "sha256": "770481c8e59563bc168560e142bf9f6b9c0835b4e6cd4230a5f4ead3e237c01d"
+      },
+      {
+        "origin": "https://gyinghub.dpdns.org",
+        "path": "/",
+        "status": 200,
+        "bytes": 74010,
+        "sha256": "54cf561cd4004cf8c6addc89d34b23a938426d08e8578946305748e60ef398c7"
+      }
+    ]
+  },
+  "continuation": {
+    "startedAt": "2026-11-14T13:00:26.648645+00:00",
+    "helperSha256": "347d8df4fce792b7f56cb88979753f9c56dbf3ef9e77933b2e1f8d470afccec6",
+    "originalEvidence": {
+      "DeploymentControl.py": "3eee3b2b3665d4939943de00a869b3201165887eaaf590854d2bb434c85db64b",
+      "plan.json": "71795a03423cd4f4d708c84665be55dd1e5762123340cf1aa1b61f3d3dbc80df",
+      "progress.json": "cf18d0f929f8a0ced00bb159e4c8f328681bbc84926af836d3f07679a2472c5a",
+      "failure.json": "9320cb1d2f3cefec6082ed7bb437e2a051af7b07e1e0cb9d777c49948edcd887",
+      "backend-host-config-failure-diagnosis.json": "02d9b7314bc57a28b71cf436a83520d306195e4d3ed3a28e58fe286060fe3b57",
+      "Guard.py": "94bd5eb62f5e38e74b7dd0c3f70300e88f8173ff09a72798e1016c628ca36777",
+      "scheduler-delta-proof.json": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84",
+      "reservation.json": "6fa3f8ef0ebebf5a4565b932d69c01dd32478a4d68a088a4e9363e098d664c1a"
+    },
+    "originalFailurePreserved": true,
+    "backendActivations": 0
+  },
+  "gateContinuation": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T13:00:26.636636+00:00",
+    "phase": "frontend only continuation preflight",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T13:00:22.571257+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "frontendSignalProof": {
+    "signal": "SIGTERM",
+    "pid1": "next-server (v",
+    "receiver": "handler"
+  },
+  "oldFrontendStoppedNormally": true,
+  "gateBeforeFrontendActivation": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T13:00:36.361596+00:00",
+    "phase": "normal frontend stopped before activation",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T13:00:32.203251+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "gateAfterFrontend": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T13:00:50.601176+00:00",
+    "phase": "frontend activation verification",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T13:00:46.433226+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "protectedRowsUnchanged": false,
+  "protectedHistoricalRowsUnchanged": true,
+  "baiduParentSchedulerProjectionVerified": true,
+  "schedulerVerification": {
+    "parentRawRowChanged": true,
+    "parentCurrentCanonicalSha256": "811d6d002f0ae9016bdc66fca2992ca144dca487ccd5b5d21fb39460137e6907",
+    "parentInvariantProjectionSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "parentRevision": 1509,
+    "parentBlockedReason": "CHILD_FAILED",
+    "historicalSixFullRowsUnchanged": true,
+    "currentChildFullRowUnchanged": true,
+    "childSubmissionPreventedByExhaustedCheckpoint": true,
+    "status": "PASS_NATURAL_BAIDU_PARENT_SCHEDULER_DELTA",
+    "capturedAt": "2026-11-14T13:14:10.318801+00:00",
+    "otherProtectedSectionsExact": true,
+    "workerEnabled": true,
+    "protectedRowsUnchanged": false,
+    "protectedHistoricalRowsUnchanged": true,
+    "baiduParentSchedulerProjectionVerified": true,
+    "proof": {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\scheduler-delta-proof.json",
+      "sha256": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84"
+    },
+    "productionSqlWrites": 0,
+    "cloudRequests": 0,
+    "baselineOrPlanChanges": false
+  },
+  "schedulerProof": {
+    "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\scheduler-delta-proof.json",
+    "sha256": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84"
+  },
+  "workerRestore": {
+    "at": "2026-11-14T13:01:10.936637+00:00",
+    "workerEnabled": true,
+    "writeCount": 1,
+    "existingAdminReused": true,
+    "newLoginDevices": 0
+  },
+  "workerRestored": true,
+  "gateAfterWorkerRestore": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "capturedAt": "2026-11-14T13:14:08.768903+00:00",
+    "phase": "natural collection settled read only finish",
+    "commonIdle": {
+      "status": "FAIL_PRESERVED_BY_UNCHANGED_BUSY_RULE",
+      "invoked": false,
+      "activeRowsOutsideOriginalStaleAllowlist": 1
+    },
+    "legacyCheckpoint": {
+      "taskId": 2262,
+      "status": "RUNNING",
+      "cloudOutcome": "UNKNOWN_NOT_CLOSED",
+      "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+      "discoveryId": 9904,
+      "discoveryRowSha256": "dc0f3d58be7ee784b4582d683f040ffff1411979cf6e3778fd2e25723c5149cb",
+      "predatesCurrentBackend": true
+    },
+    "originalStaleAllowlistUnchanged": true,
+    "historicalStaleRowsPreserved": 2,
+    "startupReplayReview": {
+      "status": "PASS_FROZEN_SOURCE_REVIEW",
+      "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+      "reviewedFiles": 10,
+      "legacyRunningQuarkAutomaticallyRecovered": false
+    },
+    "backend": {
+      "id": "9239e03222057de70ba9b9b5fb05c9f1dd3ec9bb8ac74e7566d5e7e635c9b8ec",
+      "image": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+      "startedAt": "2026-11-14T12:33:15.591897086Z",
+      "running": true
+    },
+    "qas": {
+      "id": "745766c57b469fda5fa6f582f4b105c59e37f93606176917be8f4e1782e880a6",
+      "image": "sha256:4d97439c0cd095c5fb8ef7133ca4726c8a3f996fa319f8c049180270b61c29be",
+      "startedAt": "2026-11-12T16:25:52.05782569Z",
+      "processObservedAt": "2026-11-14T13:14:03.945700+00:00",
+      "transferScripts": 0,
+      "otherPythonProcesses": 0
+    },
+    "queues": {
+      "metadataOrP2pPendingRunning": 0,
+      "qqCleanupQueuedOrActive": 0,
+      "quark2262AssociatedCleanup": 0
+    },
+    "pendingMaintenance": 0,
+    "runningHostBusinessTasks": 0,
+    "aiCounts": {
+      "moviePending": 0,
+      "movieRunning": 0
+    },
+    "workerPauseVerificationRequiredFromCaller": true,
+    "workerPauseVerifiedHere": false,
+    "externalCloudRequests": 0,
+    "productionStateWrites": 0,
+    "taskRewrites": 0,
+    "allowlistChanges": 0
+  },
+  "readOnlyFinalization": {
+    "at": "2026-11-14T13:14:17.643949+00:00",
+    "helperSha256": "62e1a9ab1349aae34803a55c951bff0652525325430e257ab9134b9d0ee386ee",
+    "frozenProgressAndFailure": {
+      "Continuation.py": "347d8df4fce792b7f56cb88979753f9c56dbf3ef9e77933b2e1f8d470afccec6",
+      "continuation-progress.json": "e3261a8beb05123493dade714d5fca4ecbeda46e24af24830489184125bbc01c",
+      "worker-restore-reservation.json": "65fb1d5bd23a88133be00fc3d3ff1303d23f328e07d5091bdbaa27f14a8d7713",
+      "continuation-failure-1794661275922239700.json": "9b725de9f68aedff98a0af55f4d3b8d40139f814135dbeabe2122f4618982ab6"
+    },
+    "serviceActivations": 0,
+    "workerPuts": 0,
+    "cloudRequests": 0,
+    "directBusinessWrites": 0,
+    "existingDeviceLastSeenMayChange": true,
+    "originalFailurePreserved": true,
+    "postRestoreNaturalWorkObserved": true
+  },
+  "completedAt": "2026-11-14T13:14:17.643949+00:00"
+}

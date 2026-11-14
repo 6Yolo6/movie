@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "sourceCommit": "0ce354e89664c4e3b768753c5b7452f721a8109c",
+  "helperSha256": "721f25436fe72e85e80fbe795ef774b15522b6f6c7efc7fb521fd1b7f85ea034",
+  "receipt": {
+    "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\receipt.json",
+    "sha256": "040779b610bec223e91df451add63997d647dcaee4b49cb3a22dd0a16827c1ee"
+  },
+  "baseline": {
+    "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\baseline\\baseline.json",
+    "sha256": "cd2dece94f300739ada6315c607b2983f80d67363d6abf94e8324334b137099c"
+  },
+  "hostConfigurationSha256": "47401b8ec6960c5b180704adb33436b815a421dc106ad3f4e87f91d73f211a0e",
+  "dailyConfigurationSha256": "8d5b26578064af2de5fc42ed2c7f2e7a60ce855e09cfa7ea21ab14fdaa36ea0c",
+  "expectedBackendImage": "sha256:807798b99d0054bca76f98126b960a010333e672d1675a05abb2b252631f77c4",
+  "baselineHostMetadataSha256": "66c818e75ecb0a83ae0232a98e2e2be66b5a5fa94993833ccac7103bd8cb82ce",
+  "releaseFiles": [
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\candidate.json",
+      "sha256": "65656b44252abfb65af6d03a2f7424f21a0aec7b118c46e938ad3489ed312223"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\rollback.json",
+      "sha256": "e5629b562e06fa1dd41d05441ac9721a9a7fdae2e5041588403a044fdc867870"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\backend\\candidate.json",
+      "sha256": "658e787d2bc51b7975b876621de292491549fa9906d21358a87b0107e3cfa7bd"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\frontend\\candidate.json",
+      "sha256": "07387ac4bc253a27b3204fb612c9cff9bf2a0c1f69d28d9668572e7432324873"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\plan.json",
+      "sha256": "71795a03423cd4f4d708c84665be55dd1e5762123340cf1aa1b61f3d3dbc80df"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\DeploymentControl.py",
+      "sha256": "3eee3b2b3665d4939943de00a869b3201165887eaaf590854d2bb434c85db64b"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\Continuation.py",
+      "sha256": "347d8df4fce792b7f56cb88979753f9c56dbf3ef9e77933b2e1f8d470afccec6"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\Guard.py",
+      "sha256": "94bd5eb62f5e38e74b7dd0c3f70300e88f8173ff09a72798e1016c628ca36777"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\scheduler-delta-proof.json",
+      "sha256": "8ba5b9f52b9acad2d56831a1db8cc875b7f276404959f8dc3d2f29f0ee8daf84"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\gying-collection-20261114\\deployment\\FinishReadOnly.py",
+      "sha256": "62e1a9ab1349aae34803a55c951bff0652525325430e257ab9134b9d0ee386ee"
+    }
+  ]
+}
