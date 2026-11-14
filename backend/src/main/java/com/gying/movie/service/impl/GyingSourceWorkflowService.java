@@ -1,7 +1,10 @@
 package com.gying.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
 import com.gying.movie.client.PanSouClient.LinkCheckResult;
@@ -13,6 +16,7 @@ import com.gying.movie.service.IBaiduTransferTaskService;
 import com.gying.movie.service.IBaiduTransferRunnerService;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.MovieSearchCandidate;
+import com.gying.movie.dto.MetadataCrawlRange;
 import com.gying.movie.dto.DiscoveredResource;
 import com.gying.movie.dto.QuarkTransferRunResult;
 import com.gying.movie.dto.ResourceHubPublishResult;
@@ -61,6 +65,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class GyingSourceWorkflowService {
+    private static final ObjectMapper CATALOG_MAPPER = new ObjectMapper();
+    private static final int MAX_CATALOG_PAGES = MetadataCrawlRange.maxPages("GYING");
+    private static final String CATALOG_CHECKPOINT = "catalogCollection";
     private static final Set<String> TYPE_CODES = Set.of("mv", "tv", "ac");
     private static final Pattern RELEASE_YEAR_PATTERN = Pattern.compile("(?<!\\d)((?:18|19|20)\\d{2})(?!\\d)");
     private static final Pattern QUALITY_PATTERN = Pattern.compile(
@@ -260,13 +267,15 @@ public class GyingSourceWorkflowService {
     public Map<String, Object> syncCatalogMetadata(String source, int page, int limit, Integer offset) {
         String normalizedSource = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
         String typeCode = switch (normalizedSource) {
-            case "HITS_MOVIE", "CSCORE_MOVIE" -> "mv";
-            case "HITS_TV", "CSCORE_TV" -> "tv";
-            case "HITS_ANIME", "CSCORE_ANIME" -> "ac";
+            case "HITS_MOVIE", "CSCORE_MOVIE", "TIME_MOVIE", "SCORE_MOVIE" -> "mv";
+            case "HITS_TV", "CSCORE_TV", "TIME_TV", "SCORE_TV" -> "tv";
+            case "HITS_ANIME", "CSCORE_ANIME", "TIME_ANIME", "SCORE_ANIME" -> "ac";
             default -> throw new IllegalArgumentException("Unsupported GYING catalog source: " + source);
         };
-        String sort = normalizedSource.startsWith("CSCORE_") ? "cscore" : "hits";
-        int safePage = Math.min(Math.max(page, 1), 500);
+        String sort = normalizedSource.startsWith("CSCORE_") ? "cscore"
+                : normalizedSource.startsWith("TIME_") ? "time"
+                : normalizedSource.startsWith("SCORE_") ? "score" : "hits";
+        int safePage = Math.min(Math.max(page, 1), MAX_CATALOG_PAGES);
         int safeLimit = Math.min(Math.max(limit, 1), 20);
         List<Map<String, Object>> pageItems = fetchCatalogCandidates(typeCode, sort, safePage,
                 offset == null ? safeLimit : 100);
@@ -275,6 +284,8 @@ public class GyingSourceWorkflowService {
         int inserted = 0;
         int linked = 0;
         int failed = 0;
+        int skipped = 0;
+        Map<String, String> completedInBatch = new LinkedHashMap<>();
         int directResourceLinks = 0;
         int directResourceFailures = 0;
         Set<String> movieIds = new LinkedHashSet<>();
@@ -286,6 +297,17 @@ public class GyingSourceWorkflowService {
         for (Map<String, Object> candidate : candidates) {
             String mid = stringValue(candidate.get("mid"));
             try {
+                if (offset != null) {
+                    String fingerprint = catalogFingerprint(typeCode, candidate);
+                    String completedMovieId = completedInBatch.get(fingerprint);
+                    if (completedMovieId == null) completedMovieId = completedCatalogMovie(typeCode, candidate);
+                    if (completedMovieId != null) {
+                        skipped++;
+                        movieIds.add(completedMovieId);
+                        completedInBatch.put(fingerprint, completedMovieId);
+                        continue;
+                    }
+                }
                 CatalogMovie resolved = resolveCatalogMovie(typeCode, candidate);
                 String movieId = resolved.movieId();
                 movieIds.add(movieId);
@@ -297,7 +319,11 @@ public class GyingSourceWorkflowService {
                 }
                 if (resolved.inserted() || !hasActiveDiskResource(movieId)) resourceDiscoveryMovieIds.add(movieId);
                 try {
-                    directResourceLinks += syncGyingDirectResources(movieId, typeCode, mid);
+                    directResourceLinks += syncGyingDirectResources(movieId, typeCode, mid, offset != null);
+                    if (offset != null) {
+                        recordCatalogCompletion(movieId, typeCode, candidate);
+                        completedInBatch.put(catalogFingerprint(typeCode, candidate), movieId);
+                    }
                 } catch (Exception resourceError) {
                     directResourceFailures++;
                     failedItems.add(catalogFailure(typeCode, candidate, "P2P", resourceError));
@@ -314,7 +340,8 @@ public class GyingSourceWorkflowService {
         result.put("source", normalizedSource);
         result.put("page", safePage);
         result.put("requested", safeLimit);
-        result.put("processed", inserted + linked);
+        result.put("processed", inserted + linked + skipped);
+        result.put("skipped", skipped);
         result.put("inserted", inserted);
         result.put("linked", linked);
         result.put("movieIds", List.copyOf(movieIds));
@@ -326,6 +353,91 @@ public class GyingSourceWorkflowService {
         result.put("errors", errors);
         result.put("failedItems", failedItems);
         return result;
+    }
+
+    /** Exact source identity plus durable collection evidence; title matching alone never skips a crawl. */
+    private String completedCatalogMovie(String typeCode, Map<String, Object> candidate) {
+        MovieSourceIdentity identity = exactCatalogIdentity(typeCode, candidate);
+        if (identity == null) return null;
+        MovieMetadata movie = movieService.getById(identity.getMovieId());
+        if (movie == null || !identity.getMovieId().equals(movie.getId()) || movie.getDeletedAt() != null
+                || !"ACTIVE".equals(movie.getStatus()) || !GyingMetadataMatcher.typeCompatible(movie.getCategory(), typeCode)) return null;
+        ObjectNode evidence = catalogEvidence(identity);
+        JsonNode checkpoint = evidence.path(CATALOG_CHECKPOINT);
+        if (!checkpoint.isMissingNode()) {
+            return "COMPLETE".equals(checkpoint.path("status").asText())
+                    && movie.getId().equals(checkpoint.path("movieId").asText())
+                    && catalogFingerprint(typeCode, candidate).equals(checkpoint.path("fingerprint").asText())
+                    ? movie.getId() : null;
+        }
+        // A usable owned archive proves legacy collection completed beyond individual link writes.
+        // Partial P2P writes and failed archive enqueue must retain their automatic retry path.
+        var source = new GyingMetadataMatcher.SourceMetadata(typeCode, stringValue(candidate.get("title")),
+                integerValue(candidate.get("year")), integerValue(candidate.get("season")), List.of(), List.of());
+        if (!GyingMetadataMatcher.score(movie, source).autoMatch()) return null;
+        return resourceLinkService.count(new QueryWrapper<ResourceLink>()
+                .eq("movie_id", movie.getId()).eq("status", "ACTIVE").eq("link_status", "NORMAL")
+                .eq("auto_collected", true).isNull("deleted_at").isNotNull("validated_at")
+                .eq("source", "GYING_P2P_ARCHIVE").eq("type", "TORRENT")) > 0 ? movie.getId() : null;
+    }
+
+    private MovieSourceIdentity exactCatalogIdentity(String typeCode, Map<String, Object> candidate) {
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        required(stringValue(candidate.get("title")), "GYING movie title");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        Integer candidateSeason = "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season")));
+        int safeSeason = candidateSeason == null ? 0 : candidateSeason;
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("source_type", typeCode).eq("external_id", mid).eq("season", safeSeason)
+                .apply("BINARY external_id = BINARY {0}", mid).in("match_status", List.of("AUTO", "CONFIRMED"))
+                .orderByDesc("confidence").last("LIMIT 1"), false);
+        if (identity == null || identity.getId() == null || !"GYING".equals(identity.getSource())
+                || !typeCode.equals(identity.getSourceType()) || !mid.equals(identity.getExternalId())
+                || !Set.of("AUTO", "CONFIRMED").contains(identity.getMatchStatus()) || !hasText(identity.getMovieId())) return null;
+        return Objects.equals(safeSeason, identity.getSeason()) ? identity : null;
+    }
+
+    private void recordCatalogCompletion(String movieId, String typeCode, Map<String, Object> candidate) {
+        MovieSourceIdentity identity = exactCatalogIdentity(typeCode, candidate);
+        if (identity == null || !movieId.equals(identity.getMovieId())) {
+            throw new IllegalStateException("Collected GYING identity was not persisted");
+        }
+        ObjectNode evidence = catalogEvidence(identity);
+        ObjectNode checkpoint = evidence.putObject(CATALOG_CHECKPOINT);
+        checkpoint.put("status", "COMPLETE");
+        checkpoint.put("movieId", movieId);
+        checkpoint.put("fingerprint", catalogFingerprint(typeCode, candidate));
+        checkpoint.put("collectedAt", LocalDateTime.now().toString());
+        UpdateWrapper<MovieSourceIdentity> update = new UpdateWrapper<MovieSourceIdentity>()
+                .eq("id", identity.getId()).eq("movie_id", movieId).apply("BINARY movie_id = BINARY {0}", movieId)
+                .eq("source", "GYING").eq("source_type", typeCode).eq("external_id", identity.getExternalId())
+                .eq("season", identity.getSeason()).apply("BINARY external_id = BINARY {0}", identity.getExternalId())
+                .in("match_status", List.of("AUTO", "CONFIRMED"));
+        if (identity.getEvidenceJson() == null) update.isNull("evidence_json");
+        else update.apply("BINARY CAST(evidence_json AS CHAR) = BINARY {0}", identity.getEvidenceJson());
+        if (!sourceIdentityService.update(update.set("evidence_json", evidence.toString()).set("updated_at", LocalDateTime.now()))) {
+            throw new IllegalStateException("GYING collection checkpoint was not persisted");
+        }
+    }
+
+    private ObjectNode catalogEvidence(MovieSourceIdentity identity) {
+        if (hasText(identity.getEvidenceJson())) {
+            try {
+                JsonNode evidence = CATALOG_MAPPER.readTree(identity.getEvidenceJson());
+                if (evidence instanceof ObjectNode object) return object;
+            } catch (Exception ignored) { }
+        }
+        return CATALOG_MAPPER.createObjectNode();
+    }
+
+    private String catalogFingerprint(String typeCode, Map<String, Object> candidate) {
+        ObjectNode fingerprint = CATALOG_MAPPER.createObjectNode();
+        fingerprint.put("typeCode", typeCode);
+        fingerprint.put("mid", required(stringValue(candidate.get("mid")), "GYING movie id"));
+        fingerprint.put("title", required(stringValue(candidate.get("title")), "GYING movie title"));
+        fingerprint.put("year", integerValue(candidate.get("year")));
+        fingerprint.put("season", "mv".equals(typeCode) ? null : GyingMetadataMatcher.validSeason(integerValue(candidate.get("season"))));
+        return ResourceHubHashUtils.sha256(fingerprint.toString());
     }
 
     private record CatalogMovie(String movieId, boolean inserted) {}
@@ -471,7 +583,11 @@ public class GyingSourceWorkflowService {
     }
 
     private int syncGyingDirectResources(String movieId, String typeCode, String mid) {
-        P2pCollection collected = collectGyingDirectResources(movieId, typeCode, mid, false, null);
+        return syncGyingDirectResources(movieId, typeCode, mid, false);
+    }
+
+    private int syncGyingDirectResources(String movieId, String typeCode, String mid, boolean requireValidResponse) {
+        P2pCollection collected = collectGyingDirectResources(movieId, typeCode, mid, false, null, requireValidResponse);
         if (p2pArchiveTaskService != null && !collected.selected().isEmpty()) {
             p2pArchiveTaskService.enqueue(movieId, typeCode, mid, collected.selected());
         }
@@ -479,9 +595,18 @@ public class GyingSourceWorkflowService {
     }
 
     private P2pCollection collectGyingDirectResources(String movieId, String typeCode, String mid, boolean ownedOnly, Long identityId) {
+        return collectGyingDirectResources(movieId, typeCode, mid, ownedOnly, identityId, ownedOnly);
+    }
+
+    private P2pCollection collectGyingDirectResources(String movieId, String typeCode, String mid, boolean ownedOnly, Long identityId,
+            boolean requireValidResponse) {
         Map<String, Object> payload = gyingSourceClient.get("/resources/" + typeCode + "/" + mid);
+        if (requireValidResponse && (!(payload.get("resources") instanceof List<?>)
+                || (hasText(stringValue(payload.get("mid"))) && !mid.equals(stringValue(payload.get("mid"))))
+                || (hasText(stringValue(payload.get("typeCode"))) && !typeCode.equals(stringValue(payload.get("typeCode")))))) {
+            throw new IllegalStateException("Invalid GYING resource response");
+        }
         if (ownedOnly) {
-            if (!(payload.get("resources") instanceof List<?>)) throw new IllegalStateException("Invalid GYING resource response");
             MovieSourceIdentity current = sourceIdentityService.getById(identityId);
             if (current == null || !Objects.equals(movieId, current.getMovieId()) || !"GYING".equals(current.getSource())
                     || !Set.of("AUTO", "CONFIRMED").contains(current.getMatchStatus()) || !Objects.equals(typeCode, current.getSourceType())
@@ -643,7 +768,7 @@ public class GyingSourceWorkflowService {
     public List<Map<String, Object>> catalogCandidates(String typeCode, String sort, int page, int limit) {
         String safeType = normalizeTypeCode(typeCode);
         String safeSort = Set.of("score", "time", "hits", "cscore").contains(sort) ? sort : "score";
-        int safePage = Math.min(Math.max(page, 1), 500);
+        int safePage = Math.min(Math.max(page, 1), MAX_CATALOG_PAGES);
         int safeLimit = Math.min(Math.max(limit, 1), 60);
         List<Map<String, Object>> items = fetchCatalogCandidates(
                 safeType, safeSort, safePage, safeLimit);
@@ -3075,8 +3200,10 @@ public class GyingSourceWorkflowService {
         identity.setConfidence(BigDecimal.valueOf(confidence));
         identity.setMatchMethod(method);
         identity.setMatchStatus(status);
-        identity.setEvidenceJson("{\"score\":" + confidence + ",\"reasons\":\""
-                + String.join(",", reasons) + "\"}");
+        ObjectNode evidence = catalogEvidence(identity);
+        evidence.put("score", confidence);
+        evidence.put("reasons", String.join(",", reasons));
+        identity.setEvidenceJson(evidence.toString());
         identity.setUpdatedAt(now);
         if (!(identity.getId() == null ? sourceIdentityService.save(identity) : sourceIdentityService.updateById(identity))) {
             throw new IllegalStateException("Source identity was not persisted");

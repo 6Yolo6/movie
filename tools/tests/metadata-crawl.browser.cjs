@@ -20,11 +20,11 @@ async function main() {
    const page=await context.newPage(),errors=[],saved=[];
    page.on('pageerror',e=>errors.push(e.message));
    let config={enabled:true,autoApprove:true,tmdbConfigured:true,tmdbAutoSyncEnabled:true,tmdbAutoSyncSources:'POPULAR_MOVIE,POPULAR_TV',tmdbAutoSyncPage:3,tmdbAutoSyncMaxItems:15,tmdbAutoSyncIntervalHours:2,tmdbAutoDiscoveryEnabled:false,tmdbDiscoveryMaxResults:10,tmdbDiscoveryCooldownHours:24,gyingDiscoveryEnabled:true,gyingAutoSyncEnabled:true,gyingAutoSyncSources:'HITS_MOVIE,HITS_TV',gyingAutoSyncPage:3,gyingAutoSyncMaxItems:15,gyingAutoSyncIntervalHours:2,workerEnabled:true,workerTaskLimit:5,workerQuarkLimit:5,workerPublishLimit:20,discoveredRetryEnabled:false,discoveredRetryLimit:20,discoveredRetryDelayMs:5000,discoveredRetryCron:'0 30 8 * * *'};
-   if(!scenario.legacy)Object.assign(config,{tmdbAutoSyncEndPage:500,gyingAutoSyncEndPage:300,tmdbAutoSyncRanges:{POPULAR_MOVIE:{startPage:100,endPage:500},POPULAR_TV:{startPage:100,endPage:400}},gyingAutoSyncRanges:{HITS_MOVIE:{startPage:50,endPage:300},HITS_TV:{startPage:40,endPage:200}},weeklyTransferSchedules:['mv','tv','ac'].map(typeCode=>({typeCode,enabled:true,intervalDays:7,maxItems:5,nextRunAt:'2026-10-11T20:00:00',lastStatus:'NOT_STARTED'})),metadataCrawlProgress:[
+   if(!scenario.legacy)Object.assign(config,{tmdbAutoSyncEndPage:500,gyingAutoSyncEndPage:50,tmdbAutoSyncRanges:{POPULAR_MOVIE:{startPage:100,endPage:500},POPULAR_TV:{startPage:100,endPage:400}},gyingAutoSyncRanges:{HITS_MOVIE:{startPage:20,endPage:50},HITS_TV:{startPage:40,endPage:50}},weeklyTransferSchedules:['mv','tv','ac'].map(typeCode=>({typeCode,enabled:true,intervalDays:7,maxItems:5,nextRunAt:'2026-10-11T20:00:00',lastStatus:'NOT_STARTED'})),metadataCrawlProgress:[
     {provider:'TMDB',source:'POPULAR_MOVIE',startPage:100,endPage:500,nextPage:150,nextItem:16,status:'SUCCEEDED'},
     {provider:'TMDB',source:'POPULAR_TV',startPage:100,endPage:400,nextPage:121,nextItem:8,status:'FAILED'},
-    {provider:'GYING',source:'HITS_MOVIE',startPage:50,endPage:300,nextPage:80,nextItem:1,status:'RETRY'},
-    {provider:'GYING',source:'HITS_TV',startPage:40,endPage:200,nextPage:60,nextItem:1,status:'SUCCEEDED'}]});
+    {provider:'GYING',source:'HITS_MOVIE',startPage:20,endPage:50,nextPage:30,nextItem:1,status:'RETRY'},
+    {provider:'GYING',source:'HITS_TV',startPage:40,endPage:50,nextPage:45,nextItem:1,status:'SUCCEEDED'}]});
    // All API requests are mocked; no production API authentication or writes.
    await page.route('**/*',async route=>{
     const url=new URL(route.request().url());
@@ -51,7 +51,9 @@ async function main() {
    await page.goto(baseURL+'/admin/resource-hub',{waitUntil:'domcontentloaded'});
    const start=page.locator('#tmdbAutoSyncRanges_POPULAR_MOVIE_startPage'),end=page.locator('#tmdbAutoSyncRanges_POPULAR_MOVIE_endPage');
    await end.waitFor();assert.equal(await end.inputValue(),scenario.legacy?'3':'500');
-   assert.equal(await page.locator('#gyingAutoSyncRanges_HITS_MOVIE_endPage').inputValue(),scenario.legacy?'3':'300');
+   assert.equal(await page.locator('#gyingAutoSyncRanges_HITS_MOVIE_endPage').inputValue(),scenario.legacy?'3':'50');
+   assert.equal(await page.locator('#gyingAutoSyncRanges_HITS_MOVIE_endPage').getAttribute('aria-valuemax'),'50');
+   assert.equal(await end.getAttribute('aria-valuemax'),'500');
    const weekly=page.getByTestId('weekly-transfer-settings');await weekly.waitFor();
    assert.equal(await weekly.locator('[role=switch]').count(),3);
    assert.equal(await page.locator('#tmdbAutoDiscoveryEnabled, #gyingDiscoveryEnabled, #discoveredRetryEnabled').count(),0);
@@ -77,7 +79,7 @@ async function main() {
    await days.fill('14');
    await start.fill('6');await end.fill('5');
    await page.locator('form').filter({has:start}).locator('button[type=submit]').click();
-   await page.getByText(t.resourceHubCrawlRangeInvalid,{exact:true}).first().waitFor();
+   await page.getByText(t.resourceHubCrawlRangeInvalid.replace('{{max}}','500'),{exact:true}).first().waitFor();
    assert.equal(saved.length,0,'Invalid range must not be sent');
    await start.fill('1');await end.fill('12');
    await page.locator('#gyingAutoSyncRanges_HITS_MOVIE_startPage').fill('2');await page.locator('#gyingAutoSyncRanges_HITS_MOVIE_endPage').fill('20');
@@ -86,7 +88,7 @@ async function main() {
    assert.deepEqual(saved[0].tmdbAutoSyncRanges.POPULAR_TV,scenario.legacy?{startPage:3,endPage:3}:{startPage:100,endPage:400});
    assert.equal(saved[0].tmdbAutoSyncPage,undefined);assert.equal(saved[0].tmdbAutoSyncEndPage,undefined);
    assert.deepEqual(saved[0].gyingAutoSyncRanges.HITS_MOVIE,{startPage:2,endPage:20});
-   assert.deepEqual(saved[0].gyingAutoSyncRanges.HITS_TV,scenario.legacy?{startPage:3,endPage:3}:{startPage:40,endPage:200});
+   assert.deepEqual(saved[0].gyingAutoSyncRanges.HITS_TV,scenario.legacy?{startPage:3,endPage:3}:{startPage:40,endPage:50});
    assert.equal(saved[0].gyingAutoSyncPage,undefined);assert.equal(saved[0].gyingAutoSyncEndPage,undefined);
    assert.deepEqual(saved[0].weeklyTransferSchedules.map(s=>s.intervalDays),[14,3,7]);
    assert.deepEqual(saved[0].weeklyTransferSchedules.map(s=>s.maxItems),[5,5,2]);

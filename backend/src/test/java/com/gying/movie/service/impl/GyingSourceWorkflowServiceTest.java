@@ -591,7 +591,15 @@ class GyingSourceWorkflowServiceTest {
                         Map.of("mid", "NEW2", "title", "续采电影", "year", 2026))));
         when(movieService.list(any(Wrapper.class))).thenReturn(List.of());
         when(movieService.getById("gying_mv_NEW2")).thenReturn(saved);
-        when(gyingSourceClient.post(eq("/ingest"), any())).thenReturn(Map.of("movieId", saved.getId()));
+        MovieSourceIdentity identity = catalogIdentity(saved.getId(), "mv", "NEW2");
+        AtomicReference<MovieSourceIdentity> visibleIdentity = new AtomicReference<>();
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> visibleIdentity.get());
+        when(sourceIdentityService.update(any(Wrapper.class))).thenReturn(true);
+        when(gyingSourceClient.get("/resources/mv/NEW2")).thenReturn(Map.of("resources", List.of()));
+        when(gyingSourceClient.post(eq("/ingest"), any())).thenAnswer(call -> {
+            visibleIdentity.set(identity);
+            return Map.of("movieId", saved.getId());
+        });
         Map<String, Object> result = service.syncCatalogMetadata("HITS_MOVIE", 3, 1, 1);
         assertEquals(2, result.get("pageSize"));
         assertEquals(1, result.get("processed"));
@@ -599,6 +607,251 @@ class GyingSourceWorkflowServiceTest {
         verify(gyingSourceClient).post(eq("/ingest"), payload.capture());
         assertEquals("NEW2", payload.getValue().get("mid"));
         assertEquals(false, payload.getValue().get("includeResources"));
+    }
+
+    @Test
+    void automaticCatalogImmediatelySkipsPreviouslyCollectedExactIdentity() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, result.get("processed"));
+        assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("linked"));
+        assertEquals(0, result.get("directResourceLinks"));
+        assertEquals(List.of("canonical"), result.get("movieIds"));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+        verify(gyingSourceClient, never()).get("/movie/mv/DONE1");
+        verify(gyingSourceClient, never()).post(anyString(), anyMap());
+        verify(sourceIdentityService, never()).updateById(any(MovieSourceIdentity.class));
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+        ArgumentCaptor<Wrapper<MovieSourceIdentity>> query = ArgumentCaptor.forClass(Wrapper.class);
+        verify(sourceIdentityService).getOne(query.capture(), eq(false));
+        assertTrue(query.getValue().getSqlSegment().contains("BINARY external_id"));
+        assertEquals("{\"score\":80,\"reasons\":\"EXACT_TITLE,TYPE,YEAR\"}", identity.getEvidenceJson());
+    }
+
+    @Test
+    void accountOnlyLegacyTorrentRowsCannotProveCompletedAutomaticCollection() {
+        stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> {
+            Wrapper<ResourceLink> query = call.getArgument(0);
+            String sql = query.getSqlSegment();
+            var values = ((com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>) query).getParamNameValuePairs().values();
+            if (values.contains("DISK")) return 0L;
+            assertFalse(sql.contains("type IN"), "Legacy GYING torrents may contain account-only /dbt tickets");
+            assertFalse(values.contains("MAGNET"));
+            assertTrue(values.contains("GYING_P2P_ARCHIVE"));
+            assertTrue(values.contains("TORRENT"));
+            return 0L; // Only old account-only torrents exist; no qualifying magnet or owned archive.
+        });
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, result.get("skipped"));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void partialMagnetPersistenceWithoutOwnedArchiveRetainsTheAutomaticRetry() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> legacyMagnetOnlyCount(call.getArgument(0)));
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(
+                catalogMagnet("a", "1080P"), catalogMagnet("b", "4K"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true, false, true, true);
+        var partial = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, partial.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+    }
+
+    @Test
+    void failedArchiveEnqueueAfterMagnetPersistenceDoesNotSkipTheNextAutomaticAttempt() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenAnswer(call -> legacyMagnetOnlyCount(call.getArgument(0)));
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(catalogMagnet("a", "1080P"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(true);
+        var archives = mock(P2pArchiveTaskService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "p2pArchiveTaskService", archives);
+        org.mockito.Mockito.doThrow(new IllegalStateException("fixture enqueue unavailable")).doNothing()
+                .when(archives).enqueue(eq("canonical"), eq("mv"), eq("DONE1"), any());
+        var failed = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, failed.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(archives, times(2)).enqueue(eq("canonical"), eq("mv"), eq("DONE1"), any());
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void exactCatalogIdentityChoosesTheRequestedSeasonBeforeTheConfidenceLimit() {
+        MovieMetadata movie = movie("canonical3", "同一剧 第三季", "tv", "AVAILABLE");
+        movie.setYear(2026); movie.setSeason(3);
+        MovieSourceIdentity season2 = catalogIdentity("canonical2", "tv", "SERIES1"); season2.setSeason(2);
+        MovieSourceIdentity season3 = catalogIdentity("canonical3", "tv", "SERIES1"); season3.setSeason(3); season3.setId(813L);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenAnswer(call -> {
+            var query = (com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<MovieSourceIdentity>) call.getArgument(0);
+            String sql = query.getSqlSegment();
+            return sql.contains("season =") && query.getParamNameValuePairs().containsValue(3) ? season3 : season2;
+        });
+        when(movieService.getById("canonical3")).thenReturn(movie);
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        when(gyingSourceClient.get("/catalog?typeCode=tv&sort=hits&page=1&limit=100"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "SERIES1", "title", "同一剧 第三季", "year", 2026, "season", 3))));
+        var result = service.syncCatalogMetadata("HITS_TV", 1, 10, 0);
+        assertEquals(1, result.get("skipped"));
+        assertEquals(0, result.get("failed"));
+        assertEquals(List.of("canonical3"), result.get("movieIds"));
+        verify(gyingSourceClient, never()).get("/resources/tv/SERIES1");
+    }
+
+    private long legacyMagnetOnlyCount(Wrapper<ResourceLink> wrapper) {
+        wrapper.getSqlSegment();
+        var parameters = ((com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<ResourceLink>) wrapper).getParamNameValuePairs();
+        return parameters.containsValue("GYING_P2P_ARCHIVE") ? 0L : 1L;
+    }
+
+    private Map<String, Object> catalogMagnet(String hashCharacter, String quality) {
+        return Map.of("type", "MAGNET", "provider", "P2P", "quality", quality,
+                "url", "magnet:?xt=urn:btih:" + hashCharacter.repeat(40), "source_ref", "BT" + quality);
+    }
+
+    @Test
+    void automaticEmptyResourceCollectionIsCheckpointedAndSkippedAcrossCatalogs() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        var first = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, first.get("skipped"));
+        assertEquals(0, first.get("directResourceFailures"));
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+        var second = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(1, second.get("skipped"));
+        assertEquals(1, second.get("processed"));
+        verify(gyingSourceClient, times(1)).get("/resources/mv/DONE1");
+        verify(sourceIdentityService, times(1)).update(any(Wrapper.class));
+        verifyNoInteractions(transferTaskService, transferRunnerService, xunleiTransferTaskService,
+                xunleiTransferRunnerService, publishService);
+    }
+
+    @Test
+    void catalogChangesInvalidateTheSuccessfulCollectionFingerprint() {
+        stubAutomaticCatalogMovie();
+        service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=2&limit=100"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "DONE1", "title", "电影别名", "year", 2026))));
+        MovieMetadata movie = movie("canonical", "已采集电影", "mv", "AVAILABLE");
+        movie.setTitleEn("电影别名"); movie.setYear(2026);
+        when(movieService.getById("canonical")).thenReturn(movie);
+        var changed = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, changed.get("skipped"));
+        assertEquals(0, changed.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"upstream", "malformed", "identity", "checkpoint"})
+    void incompleteAutomaticResourceCollectionCannotBecomeACompletedDuplicate(String failure) {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        if ("upstream".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenThrow(new IllegalStateException("fixture source unavailable")).thenReturn(Map.of("resources", List.of()));
+        if ("malformed".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenReturn(Map.of()).thenReturn(Map.of("resources", List.of()));
+        if ("identity".equals(failure)) when(gyingSourceClient.get("/resources/mv/DONE1"))
+                .thenReturn(Map.of("mid", "OTHER", "resources", List.of())).thenReturn(Map.of("resources", List.of()));
+        if ("checkpoint".equals(failure)) org.mockito.Mockito.doReturn(false)
+                .doAnswer(call -> saveCatalogEvidence(call.getArgument(0), identity))
+                .when(sourceIdentityService).update(any(Wrapper.class));
+        var failed = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(1, failed.get("directResourceFailures"));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        var retry = service.syncCatalogMetadata("CSCORE_MOVIE", 2, 10, 0);
+        assertEquals(0, retry.get("skipped"));
+        assertEquals(0, retry.get("directResourceFailures"));
+        verify(gyingSourceClient, times(2)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void repeatedCatalogIdentityConsumesItsOffsetWithoutRepeatingResourceRequests() {
+        stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=100"))
+                .thenReturn(Map.of("items", List.of(candidate, candidate)));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(2, result.get("processed"));
+        assertEquals(1, result.get("linked"));
+        assertEquals(1, result.get("skipped"));
+        assertEquals(2, result.get("pageSize"));
+        verify(gyingSourceClient, times(1)).get("/resources/mv/DONE1");
+    }
+
+    @Test
+    void manualCatalogCollectionStillRefreshesPreviouslyCollectedFilms() {
+        stubAutomaticCatalogMovie();
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=10"))
+                .thenReturn(Map.of("items", List.of(Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026))));
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10);
+        assertEquals(0, result.get("skipped"));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+    }
+
+    @Test
+    void sourceIdentityCaseCollisionIsNeverTreatedAsACompletedDuplicate() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        identity.setExternalId("done1");
+        when(resourceLinkService.count(any(Wrapper.class))).thenReturn(1L);
+        var result = service.syncCatalogMetadata("HITS_MOVIE", 1, 10, 0);
+        assertEquals(0, result.get("skipped"));
+        assertEquals(1, result.get("failed"));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"TIME_MOVIE,mv,time", "TIME_TV,tv,time", "TIME_ANIME,ac,time",
+            "SCORE_MOVIE,mv,score", "SCORE_TV,tv,score", "SCORE_ANIME,ac,score"})
+    void newCatalogSourcesUseCorrectTypeAndNeverRequestBeyondPage50(String source, String type, String sort) {
+        when(gyingSourceClient.get("/catalog?typeCode=" + type + "&sort=" + sort + "&page=50&limit=100"))
+                .thenReturn(Map.of("items", List.of()));
+        var result = service.syncCatalogMetadata(source, 51, 10, 0);
+        assertEquals(50, result.get("page"));
+        assertEquals(0, result.get("processed"));
+        verify(gyingSourceClient).get("/catalog?typeCode=" + type + "&sort=" + sort + "&page=50&limit=100");
+    }
+
+    private MovieSourceIdentity catalogIdentity(String movieId, String type, String mid) {
+        MovieSourceIdentity identity = new MovieSourceIdentity();
+        identity.setId(810L); identity.setMovieId(movieId); identity.setSource("GYING");
+        identity.setSourceType(type); identity.setExternalId(mid); identity.setSeason("mv".equals(type) ? 0 : 1);
+        identity.setMatchStatus("AUTO"); identity.setConfidence(java.math.BigDecimal.valueOf(80));
+        identity.setEvidenceJson("{\"score\":80,\"reasons\":\"EXACT_TITLE,TYPE,YEAR\"}");
+        return identity;
+    }
+
+    private MovieSourceIdentity stubAutomaticCatalogMovie() {
+        MovieMetadata movie = movie("canonical", "已采集电影", "mv", "AVAILABLE"); movie.setYear(2026);
+        MovieSourceIdentity identity = catalogIdentity("canonical", "mv", "DONE1");
+        when(movieService.getById("canonical")).thenReturn(movie);
+        when(sourceIdentityService.getOne(any(Wrapper.class), eq(false))).thenReturn(identity);
+        when(sourceIdentityService.update(any(Wrapper.class))).thenAnswer(call -> saveCatalogEvidence(call.getArgument(0), identity));
+        Map<String, Object> response = Map.of("items", List.of(Map.of("mid", "DONE1", "title", "已采集电影", "year", 2026)));
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=hits&page=1&limit=100")).thenReturn(response);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=cscore&page=2&limit=100")).thenReturn(response);
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of()));
+        return identity;
+    }
+
+    private boolean saveCatalogEvidence(Wrapper<MovieSourceIdentity> wrapper, MovieSourceIdentity identity) {
+        String where = wrapper.getSqlSegment();
+        assertTrue(where.contains("BINARY CAST(evidence_json AS CHAR) = BINARY"));
+        assertTrue(where.contains("BINARY movie_id = BINARY"));
+        var parameters = ((com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<MovieSourceIdentity>) wrapper).getParamNameValuePairs();
+        String evidence = parameters.values().stream().filter(value -> value instanceof String text && text.contains("catalogCollection"))
+                .map(String::valueOf).findFirst().orElseThrow();
+        identity.setEvidenceJson(evidence);
+        return true;
     }
 
     @Test

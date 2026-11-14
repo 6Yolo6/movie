@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
+import com.gying.movie.dto.MetadataCrawlRange;
 import com.gying.movie.dto.TmdbSyncResult;
 import com.gying.movie.entity.ResourceLink;
 import com.gying.movie.entity.ResourceHubTask;
@@ -25,7 +26,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
 
-    private static final Set<String> SOURCES = Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
+    private static final int MAX_CATALOG_PAGES = MetadataCrawlRange.maxPages("GYING");
+    private static final Set<String> SOURCES = Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME",
+            "TIME_MOVIE", "TIME_TV", "TIME_ANIME", "SCORE_MOVIE", "SCORE_TV", "SCORE_ANIME");
 
     private final ResourceHubProperties properties;
     private final IResourceHubTaskService taskService;
@@ -64,7 +67,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
     public ResourceHubTask enqueueAutomatic(String source) {
         var config = properties.getGying();
         var range = config.rangeFor(source);
-        var position = crawlPlanner.next("GYING", source, range.startPage(), range.endPage());
+        var position = crawlPlanner.next("GYING", source, clamp(range.startPage(), 1, MAX_CATALOG_PAGES), clamp(range.endPage(), 1, MAX_CATALOG_PAGES));
         return enqueue(source, position.page(), config.getAutoSyncMaxItems(), position);
     }
 
@@ -106,6 +109,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
                             crawlPlanner.offset(task))
                     : workflowService.syncCatalogMetadata(payload.source(), payload.page(), payload.maxItems());
             result.setProcessed(number(synced.get("processed")));
+            result.setSkipped(number(synced.get("skipped")));
             result.setInserted(number(synced.get("inserted")));
             result.setUpdated(number(synced.get("linked")));
             result.setFailed(number(synced.get("failed")));
@@ -129,6 +133,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             crawlPlanner.completed(task, number(synced.get("pageSize")),
                     result.getProcessed() + result.getFailed(), failures, retryIds.size());
             Map<String, Object> audit = objectMapper.readValue(task.getPayload(), new TypeReference<Map<String, Object>>() {});
+            audit.put("skipped", result.getSkipped());
             audit.put("directResourceLinks", number(synced.get("directResourceLinks")));
             audit.put("directResourceFailures", p2pFailures);
             if (!retryIds.isEmpty()) audit.put("itemRetryTaskIds", retryIds);
@@ -162,7 +167,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         if (!SOURCES.contains(normalized)) {
             throw new IllegalArgumentException("Unsupported GYING catalog source: " + source);
         }
-        return new SyncPayload(normalized, clamp(page, 1, 500), clamp(maxItems, 1, 20));
+        return new SyncPayload(normalized, clamp(page, 1, MAX_CATALOG_PAGES), clamp(maxItems, 1, 20));
     }
 
     private SyncPayload readPayload(ResourceHubTask task) {

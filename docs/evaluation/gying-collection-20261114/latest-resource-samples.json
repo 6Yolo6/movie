@@ -1,0 +1,58 @@
+{
+  "capturedAt": "2026-11-14T18:32:03.529629+08:00",
+  "results": [
+    {
+      "typeCode": "mv",
+      "mid": "eGEjV",
+      "http": 200,
+      "resourceCount": 1,
+      "p2pMagnetCount": 1,
+      "boundedChineseMagnetCount": 1,
+      "archiveCandidatePresent": true,
+      "qualities": [
+        "1080P"
+      ],
+      "archiveTorrentMarkedCount": 1
+    },
+    {
+      "typeCode": "mv",
+      "mid": "0xDmL",
+      "http": 200,
+      "resourceCount": 1,
+      "p2pMagnetCount": 1,
+      "boundedChineseMagnetCount": 1,
+      "archiveCandidatePresent": true,
+      "qualities": [
+        "1080P"
+      ],
+      "archiveTorrentMarkedCount": 1
+    },
+    {
+      "typeCode": "tv",
+      "mid": "4dyq",
+      "http": 200,
+      "resourceCount": 4,
+      "p2pMagnetCount": 1,
+      "boundedChineseMagnetCount": 1,
+      "archiveCandidatePresent": true,
+      "qualities": [
+        "1080P"
+      ],
+      "archiveTorrentMarkedCount": 1
+    },
+    {
+      "typeCode": "ac",
+      "mid": "E4P6",
+      "http": 200,
+      "resourceCount": 1,
+      "p2pMagnetCount": 1,
+      "boundedChineseMagnetCount": 1,
+      "archiveCandidatePresent": true,
+      "qualities": [
+        "1080P"
+      ],
+      "archiveTorrentMarkedCount": 1
+    }
+  ],
+  "authorization": "GET resources only; no archive/transfer/share/publication/retry/SQL write"
+}

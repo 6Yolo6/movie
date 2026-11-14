@@ -1,0 +1,175 @@
+{
+  "exit": 0,
+  "maven_exit": 0,
+  "full_suite": true,
+  "compile_verified": true,
+  "cleanup": [
+    {
+      "id": "ad434b84a7a16123c6f77c9337912a511a9a56f5e6658694e7860f98efa13fb1",
+      "removed": true
+    },
+    {
+      "id": "af91db4a8cc0ab5a348af1008cce58e9c3bd49e8e631f13683668b1ac4d84f6a",
+      "removed": true
+    }
+  ],
+  "sourceManifestSha256": "dead108ed408407d4f0a848d775fb451279f269496fa14cb683a585275dd77b0",
+  "resultSha256": "c9373cc84b56dab15969c68631dd038d811dcfa0719078109d3e7296eb8ef1c1",
+  "test_summary": {
+    "totals": {
+      "tests": 1494,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 1493
+    },
+    "required_sql_verified": true,
+    "selected_classes": {
+      "GyingSourceClientTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubAdminControllerDuplicateScanTest": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubAdminControllerPauseTest": {
+        "tests": 15,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubAdminControllerRetryTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubAdminControllerTransfersTest": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "BaiduBackfillTaskStoreMySqlTest": {
+        "tests": 29,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "BaiduTemporaryCleanupMySqlTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "BaiduTemporaryTransferMySqlTest": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "BaiduTransferTaskMySqlTest": {
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingMetadataItemRetryServiceTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingMetadataSyncServiceImplTest": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingSourceWorkflowServiceTest": {
+        "tests": 102,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingWeeklyTransferServiceTest": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingWeeklyTransferSettingsTest": {
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MetadataCrawlPlannerTest": {
+        "tests": 26,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MetadataCrawlRecoveryTest": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MonitoringServiceMySqlTest": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "MovieDuplicateMergeMySqlTest": {
+        "tests": 30,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "P2pArchiveTaskServiceTest": {
+        "tests": 76,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "QueryBoundaryMySqlTest": {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubConfigServiceImplTest": {
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubPublishServiceImplTest": {
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ResourceHubWorkerServiceImplTest": {
+        "tests": 32,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "GyingMetadataMatcherTest": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "stage": "D:\\gying-movie\\movie\\tmp\\query-boundaries-mysql-517fda4e8f1a"
+}

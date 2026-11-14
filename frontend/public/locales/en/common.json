@@ -586,7 +586,13 @@
     "HITS_ANIME": "Popular anime",
     "CSCORE_MOVIE": "Composite-score movies",
     "CSCORE_TV": "Composite-score TV",
-    "CSCORE_ANIME": "Composite-score anime"
+    "CSCORE_ANIME": "Composite-score anime",
+    "TIME_MOVIE": "Recently updated movies",
+    "TIME_TV": "Recently updated TV",
+    "TIME_ANIME": "Recently updated anime",
+    "SCORE_MOVIE": "Score-ranked movies",
+    "SCORE_TV": "Score-ranked TV",
+    "SCORE_ANIME": "Score-ranked anime"
   },
   "resourceHubTaskType": {
     "WEEKLY_TRANSFER": "Weekly popular transfers",
@@ -967,8 +973,9 @@
   "resourceBindSelectedCount": "{{count}} selected",
   "resourceHubCrawlStartPage": "Start page",
   "resourceHubCrawlEndPage": "End page (inclusive)",
-  "resourceHubCrawlRangeInvalid": "Use integers from 1 to 500; end page must be at least start page",
+  "resourceHubCrawlRangeInvalid": "Use integers from 1 to {{max}}; end page must be at least start page",
   "resourceHubCrawlRangesHelp": "Set bounds independently for each catalog. Editing one leaves the others unchanged. The start page is the loop boundary; see the current position below.",
+  "resourceHubGyingCatalogHelp": "Each GYING chart has at most 50 pages. Use recently updated charts to find new titles, or score charts to expand coverage. Automatic collection skips previously completed titles.",
   "resourceHubCrawlHelp": "Rotate catalogs and process a bounded batch each round. Each catalog has its own range and durable page/item checkpoint. Range edits preserve an in-range position; only an out-of-range position starts at that catalog’s new beginning. Wrap at the end or an empty page; extending the end continues forward. Queued tasks finish with their original bounds, failures retain their position, and ingestion deduplicates movies.",
   "resourceHubCrawlProgress": "Automatic collection progress",
   "resourceHubCrawlProgressHelp": "Shows the next position within each catalog’s own range, or the current running batch. Manual single-page sync does not change these checkpoints.",

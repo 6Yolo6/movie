@@ -114,7 +114,7 @@ class ResourceHubConfigServiceImplTest {
 
     @Test
     void rejectsOutOfBoundsAndReversedGyingRanges() {
-        for (int[] range : new int[][] {{0, 2}, {1, 501}, {3, 2}}) {
+        for (int[] range : new int[][] {{0, 2}, {1, 51}, {1, 501}, {3, 2}}) {
             var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), mock(ISysConfigService.class));
             var request = new ResourceHubConfigRequest();
             request.setGyingAutoSyncPage(range[0]);
@@ -142,8 +142,8 @@ class ResourceHubConfigServiceImplTest {
                 "POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(151, 500),
                 "POPULAR_TV", new com.gying.movie.dto.MetadataCrawlRange(121, 400)));
         request.setGyingAutoSyncRanges(java.util.Map.of(
-                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(80, 300),
-                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(45, 200)));
+                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(20, 40),
+                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(45, 50)));
         service.updateConfig(request);
         request = new ResourceHubConfigRequest();
         request.setTmdbAutoSyncRanges(java.util.Map.of("POPULAR_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(160, 500)));
@@ -152,7 +152,7 @@ class ResourceHubConfigServiceImplTest {
         var response = new ResourceHubConfigServiceImpl(restarted, storage).getConfig();
         assertEquals(160, response.getTmdbAutoSyncRanges().get("POPULAR_MOVIE").startPage());
         assertEquals(121, restarted.getTmdb().rangeFor("POPULAR_TV").startPage());
-        assertEquals(80, restarted.getGying().rangeFor("HITS_MOVIE").startPage());
+        assertEquals(20, restarted.getGying().rangeFor("HITS_MOVIE").startPage());
         assertEquals(45, restarted.getGying().rangeFor("HITS_TV").startPage());
         assertEquals(1, restarted.getTmdb().rangeFor("TOP_RATED_TV").startPage());
     }
@@ -200,7 +200,7 @@ class ResourceHubConfigServiceImplTest {
         var storage = pauseStorage(values);
         var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
         var pauses = service.getConfig().getGyingAutoSyncPausedSources();
-        assertEquals(6, pauses.size());
+        assertEquals(12, pauses.size());
         assertTrue(pauses.values().stream().noneMatch(Boolean::booleanValue));
         assertTrue(values.keySet().stream().noneMatch(key -> key.startsWith("resource.hub.gying.auto_sync_paused.")));
     }
@@ -220,8 +220,8 @@ class ResourceHubConfigServiceImplTest {
         var restarted = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
         assertEquals(false, restarted.getGyingAutoSyncPausedSources().get("HITS_MOVIE"));
         assertEquals(true, restarted.getGyingAutoSyncPausedSources().get("CSCORE_TV"));
-        assertEquals(80, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").startPage());
-        assertEquals(500, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").endPage());
+        assertEquals(50, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").startPage());
+        assertEquals(50, restarted.getGyingAutoSyncRanges().get("HITS_MOVIE").endPage());
         org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> restarted.getGyingAutoSyncPausedSources().put("HITS_TV", true));
     }
@@ -258,13 +258,100 @@ class ResourceHubConfigServiceImplTest {
         String original = checkpoint.getPayload();
         var position = service.getConfig().getMetadataCrawlProgress().get(0);
         assertEquals("PAUSED", position.status()); assertEquals(45, position.nextPage());
-        assertEquals(13, position.nextItem()); assertEquals(500, position.endPage()); assertEquals(91L, position.taskId());
+        assertEquals(13, position.nextItem()); assertEquals(50, position.endPage()); assertEquals(91L, position.taskId());
         assertEquals(original, checkpoint.getPayload());
         org.mockito.Mockito.verify(tasks, org.mockito.Mockito.never()).updateById(org.mockito.ArgumentMatchers.any());
     }
 
+    @Test void newCatalogSourcesHaveIndependentRangesAndPausesWithoutChangingOtherSources() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.gying.auto_sync_paused.CSCORE_MOVIE", "true");
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), pauseStorage(values));
+        var request = new ResourceHubConfigRequest();
+        request.setGyingAutoSyncSources("TIME_MOVIE,TIME_TV,TIME_ANIME,SCORE_MOVIE,SCORE_TV,SCORE_ANIME");
+        request.setGyingAutoSyncRanges(java.util.Map.of(
+                "TIME_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(1, 2),
+                "SCORE_TV", new com.gying.movie.dto.MetadataCrawlRange(1, 50)));
+        service.updateConfig(request);
+        service.setGyingSourcePaused("TIME_TV", true);
+        var fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), pauseStorage(values)).getConfig();
+        assertEquals(request.getGyingAutoSyncSources(), fresh.getGyingAutoSyncSources());
+        assertEquals(2, fresh.getGyingAutoSyncRanges().get("TIME_MOVIE").endPage());
+        assertEquals(50, fresh.getGyingAutoSyncRanges().get("SCORE_TV").endPage());
+        assertTrue(fresh.getGyingAutoSyncPausedSources().get("TIME_TV"));
+        assertTrue(fresh.getGyingAutoSyncPausedSources().get("CSCORE_MOVIE"));
+        assertEquals(false, fresh.getGyingAutoSyncPausedSources().get("TIME_MOVIE"));
+    }
+
+    @Test void legacyGyingRangeReadsAreBoundedWithoutWritingSavedConfigurationAndTmdbKeeps500Pages() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.gying.auto_sync_page", "80");
+        values.put("resource.hub.gying.auto_sync_end_page", "500");
+        values.put("resource.hub.gying.auto_sync_ranges", "{\"CSCORE_MOVIE\":{\"startPage\":80,\"endPage\":500}}");
+        values.put("resource.hub.tmdb.auto_sync_end_page", "500");
+        var original = new java.util.HashMap<>(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), pauseStorage(values));
+        var config = service.getConfig();
+        assertEquals(50, config.getGyingAutoSyncPage());
+        assertEquals(50, config.getGyingAutoSyncEndPage());
+        assertEquals(50, config.getGyingAutoSyncRanges().get("CSCORE_MOVIE").startPage());
+        assertEquals(50, config.getGyingAutoSyncRanges().get("CSCORE_MOVIE").endPage());
+        assertEquals(500, config.getTmdbAutoSyncEndPage());
+        original.forEach((key, value) -> assertEquals(value, values.get(key)));
+    }
+
+    @Test void gyingSourceSpecificPage51IsRejectedBeforeAnyConfigurationOrCredentialWrite() {
+        var properties = new ResourceHubProperties();
+        var storage = mock(ISysConfigService.class);
+        var service = new ResourceHubConfigServiceImpl(properties, storage);
+        var request = new ResourceHubConfigRequest();
+        request.setEnabled(true);
+        request.setXunleiAuthorization("replacement");
+        request.setGyingAutoSyncRanges(java.util.Map.of("TIME_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(1, 51)));
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> service.updateConfig(request));
+        org.junit.jupiter.api.Assertions.assertFalse(properties.isEnabled());
+        org.junit.jupiter.api.Assertions.assertNull(properties.getXunlei().getAuthorization());
+        verifyNoInteractions(storage);
+    }
+
+    @Test void latestChartDefaultsUseFirstTwoPagesAndExplicitRangesAndOtherProvidersKeepTheirScope() {
+        var properties = new ResourceHubProperties();
+        properties.getGying().setAutoSyncPage(11);
+        properties.getGying().setAutoSyncEndPage(50);
+        properties.getTmdb().setAutoSyncPage(151);
+        properties.getTmdb().setAutoSyncEndPage(500);
+        for (String source : java.util.List.of("TIME_MOVIE", "TIME_TV", "TIME_ANIME")) {
+            assertEquals(new com.gying.movie.dto.MetadataCrawlRange(1, 2), properties.getGying().rangeFor(source));
+        }
+        for (String source : java.util.List.of("HITS_MOVIE", "CSCORE_TV", "SCORE_ANIME")) {
+            assertEquals(new com.gying.movie.dto.MetadataCrawlRange(11, 50), properties.getGying().rangeFor(source));
+        }
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(151, 500), properties.getTmdb().rangeFor("POPULAR_TV"));
+        properties.getGying().setAutoSyncRanges(java.util.Map.of(
+                "TIME_TV", new com.gying.movie.dto.MetadataCrawlRange(3, 8),
+                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(17, 29)));
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(3, 8), properties.getGying().rangeFor("TIME_TV"));
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(17, 29), properties.getGying().rangeFor("HITS_MOVIE"));
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(1, 2), properties.getGying().rangeFor("TIME_MOVIE"));
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.gying.auto_sync_page", "11");
+        values.put("resource.hub.gying.auto_sync_end_page", "50");
+        values.put("resource.hub.gying.auto_sync_ranges", "{\"TIME_TV\":{\"startPage\":3,\"endPage\":8}}");
+        var fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), pauseStorage(values)).getConfig();
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(1, 2), fresh.getGyingAutoSyncRanges().get("TIME_MOVIE"));
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(3, 8), fresh.getGyingAutoSyncRanges().get("TIME_TV"));
+        assertEquals(new com.gying.movie.dto.MetadataCrawlRange(11, 50), fresh.getGyingAutoSyncRanges().get("CSCORE_TV"));
+    }
+
     private ISysConfigService pauseStorage(java.util.Map<String, String> values) {
         var storage = mock(ISysConfigService.class);
+        org.mockito.Mockito.when(storage.count(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
+            com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<?> query = call.getArgument(0);
+            query.getSqlSegment();
+            String key = (String) query.getParamNameValuePairs().values().iterator().next();
+            return values.containsKey(key) ? 1L : 0L;
+        });
         org.mockito.Mockito.when(storage.getConfigValue(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString()))
                 .thenAnswer(call -> values.getOrDefault(call.getArgument(0), call.getArgument(1)));
         org.mockito.Mockito.when(storage.getOne(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {

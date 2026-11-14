@@ -1,0 +1,116 @@
+{
+  "mode": "restored-latest",
+  "checkedAt": "2026-11-14T10:34:47.957135+00:00",
+  "before": {
+    "gyingAutoSyncSources": "CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME",
+    "gyingAutoSyncRanges": {
+      "HITS_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "HITS_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "HITS_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      }
+    }
+  },
+  "protected": {
+    "otherConfigCount": 93,
+    "otherConfigSha256": "81f87fbea11189208c32affa928d54511dee4b11a370ed356dc94c21cce934e2",
+    "oldQuark2262Sha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056"
+  },
+  "servicesChanged": 0,
+  "directSqlWrites": 0,
+  "queueReplays": 0,
+  "cloudRequestsByOperator": 0,
+  "target": {
+    "gyingAutoSyncSources": "HITS_MOVIE,HITS_TV,HITS_ANIME",
+    "gyingAutoSyncRanges": {
+      "HITS_MOVIE": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_TV": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_ANIME": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "CSCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      }
+    }
+  },
+  "backup": {
+    "directory": "G:\\gying-backups\\gying-latest-config-20261114-20261114T103447.957645Z",
+    "artifacts": 2,
+    "authenticated": true,
+    "manifestSha256": "9112470ddd377580f07fb7f37363ffb4648f1f110482983d1573a2563be794ad"
+  },
+  "after": {
+    "gyingAutoSyncSources": "HITS_MOVIE,HITS_TV,HITS_ANIME",
+    "gyingAutoSyncRanges": {
+      "HITS_MOVIE": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_TV": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "HITS_ANIME": {
+        "startPage": 1,
+        "endPage": 2
+      },
+      "CSCORE_MOVIE": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_TV": {
+        "startPage": 11,
+        "endPage": 50
+      },
+      "CSCORE_ANIME": {
+        "startPage": 11,
+        "endPage": 50
+      }
+    }
+  },
+  "intentPath": "E:\\gying-tools\\releases\\gying-collection-20261114\\intent-e3d6b77d026d4d25a13e5f19bf9bec0c.json",
+  "writeCount": 1,
+  "finishedAt": "2026-11-14T10:34:53.399517+00:00",
+  "protectedAfter": {
+    "otherConfigCount": 93,
+    "otherConfigSha256": "81f87fbea11189208c32affa928d54511dee4b11a370ed356dc94c21cce934e2",
+    "oldQuark2262Sha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056"
+  },
+  "generationCount": 13,
+  "allRuntimeGenerationsPreserved": true
+}

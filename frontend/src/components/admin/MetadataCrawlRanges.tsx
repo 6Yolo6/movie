@@ -18,8 +18,13 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
     const { t } = useTranslation();
     const sources: string[] = Form.useWatch(`${provider}AutoSyncSources`) || [];
     const field = `${provider}AutoSyncRanges`;
+    const maxPage = provider === 'gying' ? 50 : 500;
+    const rangeInvalid = t('resourceHubCrawlRangeInvalid', { max: maxPage });
     return <div data-testid={`${provider}-crawl-ranges`}>
         <Typography.Text type="secondary">{t('resourceHubCrawlRangesHelp')}</Typography.Text>
+        {provider === 'gying' && <Typography.Paragraph type="secondary" className="!mb-0 mt-2">
+            {t('resourceHubGyingCatalogHelp')}
+        </Typography.Paragraph>}
         {provider === 'gying' && onPauseChange && <Typography.Paragraph type="secondary" className="!mb-0 mt-2">
             {t('resourceHubGyingPauseHelp')}
         </Typography.Paragraph>}
@@ -47,8 +52,8 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
                 </Col>
                 <Col xs={12} md={8}>
                     <Form.Item name={[field, option.value, 'startPage']} label={t('resourceHubCrawlStartPage')}
-                        rules={[{ required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') }]}>
-                        <InputNumber min={1} max={500} precision={0} className="w-full"
+                        rules={[{ required: true, type: 'integer', min: 1, max: maxPage, message: rangeInvalid }]}>
+                        <InputNumber min={1} max={maxPage} precision={0} className="w-full"
                             aria-label={`${option.label} ${t('resourceHubCrawlStartPage')}`} />
                     </Form.Item>
                 </Col>
@@ -56,16 +61,16 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
                     <Form.Item name={[field, option.value, 'endPage']} label={t('resourceHubCrawlEndPage')}
                         dependencies={[[field, option.value, 'startPage']]}
                         rules={[
-                            { required: true, type: 'integer', min: 1, max: 500, message: t('resourceHubCrawlRangeInvalid') },
+                            { required: true, type: 'integer', min: 1, max: maxPage, message: rangeInvalid },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     return value >= getFieldValue([field, option.value, 'startPage'])
                                         ? Promise.resolve()
-                                        : Promise.reject(new Error(t('resourceHubCrawlRangeInvalid')));
+                                        : Promise.reject(new Error(rangeInvalid));
                                 },
                             }),
                         ]}>
-                        <InputNumber min={1} max={500} precision={0} className="w-full"
+                        <InputNumber min={1} max={maxPage} precision={0} className="w-full"
                             aria-label={`${option.label} ${t('resourceHubCrawlEndPage')}`} />
                     </Form.Item>
                 </Col>

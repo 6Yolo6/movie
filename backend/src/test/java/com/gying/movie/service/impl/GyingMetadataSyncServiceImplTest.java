@@ -199,11 +199,51 @@ class GyingMetadataSyncServiceImplTest {
         org.junit.jupiter.api.Assertions.assertFalse(mapper.readTree(task.getPayload()).path("crawl").has("nextPage"));
         if (!"persistence".equals(failureMode)) org.mockito.Mockito.verifyNoInteractions(retries);
     }
+    @Test
+    void allDuplicateAutomaticBatchAdvancesAndReportsSkippedItems() throws Exception {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true);
+        var tasks = mock(IResourceHubTaskService.class);
+        var workflow = mock(GyingSourceWorkflowService.class);
+        var mapper = new ObjectMapper();
+        var planner = new MetadataCrawlPlanner(tasks, mapper);
+        var task = new ResourceHubTask(); task.setId(33L); task.setTaskType("METADATA_SYNC"); task.setSource("GYING");
+        task.setPayload(planner.attach("{\"source\":\"TIME_MOVIE\",\"page\":2,\"maxItems\":20}",
+                new MetadataCrawlPlanner.Position(1, 50, 2, 40, "PENDING", null)));
+        when(tasks.getById(33L)).thenReturn(task);
+        when(workflow.syncCatalogMetadata("TIME_MOVIE", 2, 20, 40)).thenReturn(Map.of(
+                "pageSize", 48, "processed", 8, "skipped", 8, "failed", 0));
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, workflow,
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        var result = service.runTask(33L);
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(8, result.getSkipped());
+        assertEquals(8, result.getProcessed());
+        var audit = mapper.readTree(task.getPayload());
+        assertEquals(8, audit.path("skipped").asInt());
+        assertEquals(3, audit.path("crawl").path("nextPage").asInt());
+        assertEquals(0, audit.path("crawl").path("nextOffset").asInt());
+    }
+
+    @Test
+    void legacyOutOfBoundsGyingRangeIsClampedToWebsitePage50() throws Exception {
+        var properties = new ResourceHubProperties(); properties.setEnabled(true);
+        properties.getGying().setAutoSyncRanges(Map.of("TIME_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(80, 300)));
+        var tasks = mock(IResourceHubTaskService.class);
+        when(tasks.enqueue(any())).thenAnswer(call -> call.getArgument(0));
+        var mapper = new ObjectMapper();
+        var service = new GyingMetadataSyncServiceImpl(properties, tasks, mock(GyingSourceWorkflowService.class),
+                mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
+        var payload = mapper.readTree(service.enqueueAutomatic("TIME_MOVIE").getPayload());
+        assertEquals(50, payload.path("page").asInt());
+        assertEquals(50, payload.path("crawl").path("startPage").asInt());
+        assertEquals(50, payload.path("crawl").path("endPage").asInt());
+    }
+
     @Test void automaticEnqueueUsesIndependentMovieAndTvRanges() throws Exception {
         var properties = new ResourceHubProperties(); properties.setEnabled(true);
         properties.getGying().setAutoSyncRanges(Map.of(
-                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(80, 300),
-                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(45, 200)));
+                "HITS_MOVIE", new com.gying.movie.dto.MetadataCrawlRange(20, 40),
+                "HITS_TV", new com.gying.movie.dto.MetadataCrawlRange(30, 50)));
         var tasks = mock(IResourceHubTaskService.class);
         when(tasks.enqueue(any())).thenAnswer(call -> call.getArgument(0));
         var mapper = new ObjectMapper();
@@ -211,8 +251,8 @@ class GyingMetadataSyncServiceImplTest {
                 mock(IResourceDiscoveryService.class), mock(IResourceLinkService.class), mapper);
         var movie = mapper.readTree(service.enqueueAutomatic("HITS_MOVIE").getPayload());
         var tv = mapper.readTree(service.enqueueAutomatic("HITS_TV").getPayload());
-        assertEquals(80, movie.path("page").asInt());
-        assertEquals(45, tv.path("page").asInt());
-        assertEquals(200, tv.path("crawl").path("endPage").asInt());
+        assertEquals(20, movie.path("page").asInt());
+        assertEquals(30, tv.path("page").asInt());
+        assertEquals(50, tv.path("crawl").path("endPage").asInt());
     }
 }

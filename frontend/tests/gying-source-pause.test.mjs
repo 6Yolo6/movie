@@ -137,6 +137,28 @@ async function pauseSuite({ React, createRoot, loadPage, loadModule, readApiErro
         same(f.all('Button').filter(props => String(props['data-testid']).startsWith('tmdb-pause-')).length, 0, 'no TMDB controls');
         same(f.button('HITS_MOVIE').children, 'resourceHubGyingPause', 'initial action');
     });
+    await check('new latest and score charts can be selected and use GYING bounds while TMDB retains 500', async f => {
+        const added = ['TIME_MOVIE', 'TIME_TV', 'TIME_ANIME', 'SCORE_MOVIE', 'SCORE_TV', 'SCORE_ANIME'];
+        const selector = f.all('Select').find(props => props.options?.some(option => option.value === 'TIME_MOVIE'));
+        same(added.every(source => selector.options.some(option => option.value === source && option.label === 'resourceHubGyingSource.' + source)), true, 'all new translated options');
+        await f.act(() => f.forms[0].setFieldsValue({ gyingAutoSyncSources: [...sources, ...added] }));
+        same(f.all('Button').filter(props => String(props['data-testid']).startsWith('gying-pause-')).length, 12, 'all selected catalogs have pause controls');
+        const inputs = f.all('InputNumber').filter(props => String(props['aria-label']).startsWith('resourceHubGyingSource.'));
+        same(inputs.length, 24, 'two bounds per chart');
+        same(inputs.every(props => props.max === 50 && props.min === 1), true, 'GYING limits');
+        const tmdb = f.all('InputNumber').filter(props => String(props['aria-label']).startsWith('resourceHubSource.'));
+        same(tmdb.length, 2, 'TMDB bounds');
+        same(tmdb.every(props => props.max === 500), true, 'TMDB limit unchanged');
+    });
+    await check('new latest chart pause writes only its source and preserves existing chart state', async f => {
+        await f.act(() => f.forms[0].setFieldsValue({ gyingAutoSyncSources: [...sources, 'TIME_MOVIE'] }));
+        await f.pause('TIME_MOVIE');
+        const writes = f.calls.filter(call => call.options.method === 'PUT');
+        same(writes.length, 1, 'one scoped write');
+        same(writes[0].url, '/api/admin/resource-hub/gying/sources/TIME_MOVIE/pause', 'new source endpoint');
+        same(JSON.parse(writes[0].options.body), { paused: true }, 'strict pause');
+        same(f.button('CSCORE_MOVIE').children, 'resourceHubGyingPause', 'existing source retained');
+    });
     await check('one strict pause write, no optimistic change or duplicate write', async f => {
         const button = f.button('HITS_MOVIE');
         await f.act(() => { button.onClick(); button.onClick(); });
@@ -301,6 +323,6 @@ test('GYING pause controls: real React, source-scoped mocked API', { timeout: 60
         baiduBackfill: 'src/components/admin/BaiduBackfillControls.tsx',
         driveWorkflows: 'src/lib/cloudDriveWorkflows.ts',
     });
-    assert.equal(results.length, 14);
+    assert.equal(results.length, 16);
     for (const result of results) await t.test(result.name, () => assert.ok(result.ok, result.error));
 });

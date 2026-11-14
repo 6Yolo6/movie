@@ -1,0 +1,155 @@
+{
+  "capturedAt": "2026-11-14T18:35:36.976883+08:00",
+  "status": "READ_ONLY_AUDIT_COMPLETE",
+  "latest": {
+    "checkedItems": 144,
+    "withoutVerifiedGyingIdentity": 118,
+    "meaning": "118条来源身份未绑定，不等于118部全新影片；可能已有TMDB/canonical片目，采集必须严格消歧及复用",
+    "boards": [
+      {
+        "typeCode": "mv",
+        "count": 48,
+        "existing": 0,
+        "missingCount": 48,
+        "quarkArchived": 0
+      },
+      {
+        "typeCode": "tv",
+        "count": 48,
+        "existing": 11,
+        "missingCount": 37,
+        "quarkArchived": 1
+      },
+      {
+        "typeCode": "ac",
+        "count": 48,
+        "existing": 15,
+        "missingCount": 33,
+        "quarkArchived": 3
+      }
+    ]
+  },
+  "sorts": {
+    "allThreeTypesHitsEqualTime": true,
+    "allThreeTypesScoreDistinctFromTimeAndCscore": true,
+    "navigationLimit": "合法sort导航未独立读取；新进程浏览器验证被阻断，未进行新登录或PoW提交"
+  },
+  "pagination": {
+    "pageSize": 48,
+    "allSixTimeCscoreChecksPage51Equals50": true,
+    "meaning": "网站第51页返回第50页内容，配置>50会重复采末页",
+    "batchOffsetConfirmed": true,
+    "rangeCompletionLoopsToStart": true,
+    "plannerEvidence": "backend/src/main/java/com/gying/movie/service/impl/MetadataCrawlPlanner.java:138"
+  },
+  "resourceSamples": {
+    "count": 4,
+    "allFourHaveChinese1080pMagnetAndTorrentCandidate": true,
+    "results": [
+      {
+        "typeCode": "mv",
+        "mid": "eGEjV",
+        "http": 200,
+        "resourceCount": 1,
+        "p2pMagnetCount": 1,
+        "boundedChineseMagnetCount": 1,
+        "archiveCandidatePresent": true,
+        "qualities": [
+          "1080P"
+        ],
+        "archiveTorrentMarkedCount": 1
+      },
+      {
+        "typeCode": "mv",
+        "mid": "0xDmL",
+        "http": 200,
+        "resourceCount": 1,
+        "p2pMagnetCount": 1,
+        "boundedChineseMagnetCount": 1,
+        "archiveCandidatePresent": true,
+        "qualities": [
+          "1080P"
+        ],
+        "archiveTorrentMarkedCount": 1
+      },
+      {
+        "typeCode": "tv",
+        "mid": "4dyq",
+        "http": 200,
+        "resourceCount": 4,
+        "p2pMagnetCount": 1,
+        "boundedChineseMagnetCount": 1,
+        "archiveCandidatePresent": true,
+        "qualities": [
+          "1080P"
+        ],
+        "archiveTorrentMarkedCount": 1
+      },
+      {
+        "typeCode": "ac",
+        "mid": "E4P6",
+        "http": 200,
+        "resourceCount": 1,
+        "p2pMagnetCount": 1,
+        "boundedChineseMagnetCount": 1,
+        "archiveCandidatePresent": true,
+        "qualities": [
+          "1080P"
+        ],
+        "archiveTorrentMarkedCount": 1
+      }
+    ]
+  },
+  "quark2262": {
+    "status": "RUNNING",
+    "origin": "QQ_BOT",
+    "updatedAt": "2026-11-13 00:23:32.000000",
+    "rowSha256": "5edd50616905b9209e3b695341d0d622953e46a54bc9dbd99fa2c0f093e19861",
+    "remoteTaskIdCount": 0,
+    "savedPathPresent": false,
+    "shareUrlPresent": false,
+    "responseCheckpointPresent": false,
+    "qasConfigHttp": 200,
+    "qasTaskCount": 1361,
+    "matchingConfiguredTaskCount": 0,
+    "liveQuarkScriptProcessCount": 0,
+    "outcome": "UNKNOWN;无持久远端task_id或完成凭证；一次QQ任务本就不加入tasklist，进程/配置缺席不能证明云端结果；保留RUNNING和部署门禁"
+  },
+  "authorizedNextStep": "仅恢复现役支持的HITS_MOVIE/HITS_TV/HITS_ANIME（实测最新time）；1..2页/1小时/每批20，末页回1页循环；保持原CSCORE暂停和2262历史。根代理负责配置备份/修改/自然轮次验收。",
+  "actions": {
+    "sourceGets": true,
+    "qasConfigGet": true,
+    "sqlSelectOnly": true,
+    "accountLogin": false,
+    "archiveTransferSharePublicationRetry": false,
+    "productionConfigurationWrite": false,
+    "productionSqlWrite": false,
+    "deployment": false
+  },
+  "evidence": [
+    {
+      "file": "first-pages.json",
+      "sha256": "121f55e316005989901a31d0006a4395ee20ce5cf12d0723d934de68be0238fa"
+    },
+    {
+      "file": "latest-vs-library.json",
+      "sha256": "3a16fc1bead219c87f2f1ade2c44911ebc3e83384895e710b69a95d9fcd33736"
+    },
+    {
+      "file": "boundary-pages.json",
+      "sha256": "cf856a7e83a64142d8ea562870b2c837287ffa67b0dbab7f90b1d08b11d4b18d"
+    },
+    {
+      "file": "latest-resource-samples.json",
+      "sha256": "4d2e1344198802730bcc8bca4f2e45e3884e6d63a73f82d74b9655b4840f1e8d"
+    },
+    {
+      "file": "quark-2262-local.json",
+      "sha256": "72b9d9b1eacdc6cdccfed55606c9ed8825ab843c336100f718ef1e81c5344b8e"
+    },
+    {
+      "file": "quark-2262-upstream.json",
+      "sha256": "cd76091c8ef9d075b8991797f9195412f3a97a37a2a323ac657d847872e08153"
+    }
+  ]
+}

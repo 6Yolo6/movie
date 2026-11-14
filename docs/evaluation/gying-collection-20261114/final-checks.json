@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-11-14T11:05:07.633455+00:00",
+  "backendSourceFilesVerified": 417,
+  "backendSourceMismatchCount": 0,
+  "backendJarHashVerified": true,
+  "frontendLogsHashVerified": true,
+  "priorQuarkAttemptsHashVerified": true,
+  "readmeLinksVerified": true,
+  "jsonParsePassed": true,
+  "deployed": false,
+  "deploymentBlocker": "quark_transfer_task 2262 RUNNING without independently reconciled completion evidence",
+  "frontendBrowserScriptHashVerified": true,
+  "logArtifactsWhitespaceNormalized": true
+}

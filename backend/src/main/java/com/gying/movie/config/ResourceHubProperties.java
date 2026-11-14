@@ -142,7 +142,12 @@ public class ResourceHubProperties {
         private Map<String, MetadataCrawlRange> autoSyncRanges = Map.of();
 
         public MetadataCrawlRange rangeFor(String source) {
-            return autoSyncRanges.getOrDefault(source, new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage()));
+            MetadataCrawlRange configured = autoSyncRanges.get(source);
+            if (configured != null) return configured;
+            if (java.util.Set.of("TIME_MOVIE", "TIME_TV", "TIME_ANIME").contains(source)) {
+                return new MetadataCrawlRange(1, 2);
+            }
+            return new MetadataCrawlRange(autoSyncPage, getAutoSyncEndPage());
         }
 
         // Missing range configuration preserves the legacy single-page scope.

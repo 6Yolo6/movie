@@ -1,0 +1,143 @@
+{
+  "recorded_at": "2026-11-14T19:01:29+08:00",
+  "exit": 0,
+  "build_passed": true,
+  "build_attempts": [
+    {
+      "command": "npm run build",
+      "exit": 1,
+      "passed": false,
+      "environment_override_keys": [],
+      "failure_stage": "Next.js global configuration initialization before compilation",
+      "error_code": "EXDEV",
+      "error_syscall": "rename",
+      "log_path": "docs/evaluation/gying-collection-20261114/frontend-build-initial-exdev.txt",
+      "log_provenance": "retained tool-response failure with user-config paths omitted",
+      "log_sha256": "9c5e645e33804a91576ba0e07ce008310006e1d89aa7fad4aa166cdb3eac2d69"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "passed": true,
+      "environment_override_keys": [
+        "NEXT_TELEMETRY_DISABLED"
+      ],
+      "telemetry_disabled": true,
+      "environment_scope": "build subprocess only; original child-shell environment restored in finally",
+      "log_path": "docs/evaluation/gying-collection-20261114/frontend-build-telemetry-disabled.txt",
+      "log_sha256": "523381c20c3835f9488aa2db11688b29435a3429d393d971d6210e468daf03f9",
+      "next_version": "16.3.5",
+      "compilation_passed": true,
+      "build_typescript_passed": true,
+      "static_pages_generated": 28
+    }
+  ],
+  "existing_checks": {
+    "typescript": {
+      "command": "npx tsc --noEmit",
+      "passed": true,
+      "exit": 0,
+      "provenance": "previously completed in this task"
+    },
+    "targeted_eslint": {
+      "command": "npx eslint src/app/admin/resource-hub/page.tsx src/components/admin/MetadataCrawlRanges.tsx",
+      "passed": true,
+      "exit": 0,
+      "provenance": "previously completed in this task"
+    },
+    "react_pause_and_range_regressions": {
+      "command": "node --test tests/gying-source-pause.test.mjs",
+      "passed": true,
+      "tests": 17,
+      "passed_tests": 17,
+      "failures": 0,
+      "provenance": "previously completed in this task"
+    },
+    "diff_whitespace": {
+      "command": "git diff --check",
+      "passed": true,
+      "exit": 0,
+      "provenance": "previously completed in this task"
+    }
+  },
+  "production_changed_by_build": false,
+  "code_changed_during_retry": false,
+  "browser_regressions": {
+    "command": "node tools/tests/metadata-crawl.browser.cjs",
+    "exit": 0,
+    "passed": true,
+    "scenarios": 4,
+    "passed_scenarios": 4,
+    "scenario_results": [
+      "PASS zh-1440",
+      "PASS en-1440",
+      "PASS zh-390",
+      "PASS en-390-legacy"
+    ],
+    "log_path": "docs/evaluation/gying-collection-20261114/frontend-browser.txt",
+    "log_sha256": "e97237ab879103058555caef3a6cb8aefa41c559ee09aa9d22bd819a1f2ac97e",
+    "script_sha256": "d6a6b39d17ba2aaec79c352c65430bace4242ee1fa3921c46ba1ef3c56344712",
+    "production_build_html_sha256": "e90759f10abab9d3ebb72354e139ac1bb48e7c3af66522e2f6101d080ea15ff9",
+    "environment_override_keys": [
+      "PLAYWRIGHT_MODULE",
+      "METADATA_CRAWL_BUILD_DIR",
+      "METADATA_CRAWL_BASE_URL",
+      "METADATA_CRAWL_OUTPUT_DIR"
+    ],
+    "environment_scope": "test subprocess only via spawn env object",
+    "mode": "offline production build; virtual loopback origin; HTML and static assets read from the new build",
+    "all_api_requests_mocked": true,
+    "external_requests_aborted": true,
+    "real_http_server_started": false,
+    "browser_closed_in_finally": true,
+    "dynamic_ssr_tested": false,
+    "verified": [
+      "GYING aria-valuemax 50",
+      "TMDB aria-valuemax 500",
+      "independent saved ranges and reload persistence",
+      "legacy saved bounds fallback",
+      "invalid ranges and missing weekly intervals not submitted",
+      "weekly schedule edits persist after reload",
+      "no page errors or horizontal document overflow"
+    ],
+    "attempts": [
+      {
+        "exit": 1,
+        "passed": false,
+        "log_path": "docs/evaluation/gying-collection-20261114/frontend-browser-initial-assertion.txt",
+        "failure": "Fixture asserted native max; AntD 6 renders InputNumber max as aria-valuemax",
+        "correction": "Two browser fixture assertions now read aria-valuemax; business code unchanged",
+        "log_sha256": "f0f72f4ca06a5dd206049fbc7e683e55bc2bb67210485d390ad08a88c04a76d2"
+      },
+      {
+        "exit": 0,
+        "passed": true,
+        "log_path": "docs/evaluation/gying-collection-20261114/frontend-browser.txt",
+        "passed_scenarios": 4,
+        "log_sha256": "e97237ab879103058555caef3a6cb8aefa41c559ee09aa9d22bd819a1f2ac97e"
+      }
+    ]
+  },
+  "global_configuration_changed_during_build_retry": false,
+  "log_artifact_normalization": {
+    "changes": "Trailing whitespace and extra terminal blank lines removed; LF line endings; log content and failures retained",
+    "files": {
+      "docs/evaluation/gying-collection-20261114/frontend-browser-initial-assertion.txt": {
+        "originalSha256": "f0f72f4ca06a5dd206049fbc7e683e55bc2bb67210485d390ad08a88c04a76d2",
+        "normalizedSha256": "f0f72f4ca06a5dd206049fbc7e683e55bc2bb67210485d390ad08a88c04a76d2"
+      },
+      "docs/evaluation/gying-collection-20261114/frontend-browser.txt": {
+        "originalSha256": "e97237ab879103058555caef3a6cb8aefa41c559ee09aa9d22bd819a1f2ac97e",
+        "normalizedSha256": "e97237ab879103058555caef3a6cb8aefa41c559ee09aa9d22bd819a1f2ac97e"
+      },
+      "docs/evaluation/gying-collection-20261114/frontend-build-initial-exdev.txt": {
+        "originalSha256": "22bee98dd9ecd3d612df8406e9f96f6d8bbec4f2236df9a184635422e54b8dc6",
+        "normalizedSha256": "9c5e645e33804a91576ba0e07ce008310006e1d89aa7fad4aa166cdb3eac2d69"
+      },
+      "docs/evaluation/gying-collection-20261114/frontend-build-telemetry-disabled.txt": {
+        "originalSha256": "33ede7d3550178f0789c5dd667b7d446fd9a74fd68f508ccbe1d7dcb1ac16974",
+        "normalizedSha256": "523381c20c3835f9488aa2db11688b29435a3429d393d971d6210e468daf03f9"
+      }
+    }
+  }
+}

@@ -487,7 +487,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         if (!hasText(raw)) {
             return List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
         }
-        List<String> supported = List.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
+        List<String> supported = MetadataCrawlRange.sources("GYING");
         return List.of(raw.split(",")).stream()
                 .map(String::trim)
                 .filter(this::hasText)

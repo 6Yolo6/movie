@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-11-14T18:33:35.357623+08:00",
+  "origin": "QQ_BOT",
+  "taskIdCheckpointPresent": false,
+  "configGetAttempted": true,
+  "remoteOfficialTaskGetAttempted": false,
+  "configHttp": 200,
+  "configSuccess": true,
+  "configTaskCount": 1361,
+  "matchingConfiguredTasks": [],
+  "configuredTaskMatchesAreNotCompletionProof": true,
+  "liveProcesses": {
+    "observedAt": "2026-11-14T18:33:35.655328+08:00",
+    "quarkScriptProcesses": [],
+    "processReadErrors": 0
+  },
+  "conclusion": "NO_PROVIDER_TASK_ID_OR_DURABLE_COMPLETION_CHECKPOINT; absence from config/process does not prove cloud transfer outcome; keep RUNNING and deployment gate"
+}

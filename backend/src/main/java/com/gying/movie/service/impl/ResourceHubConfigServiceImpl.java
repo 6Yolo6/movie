@@ -129,9 +129,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
         gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
         gying.setAutoSyncPausedSources(readGyingPausedSources());
-        gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, 500));
+        gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, MetadataCrawlRange.maxPages("GYING")));
         gying.setAutoSyncEndPage(Math.max(gying.getAutoSyncPage(),
-                readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, 500)));
+                readInt(KEY_GYING_AUTO_SYNC_END_PAGE, gying.getAutoSyncEndPage(), 1, MetadataCrawlRange.maxPages("GYING"))));
         gying.setAutoSyncRanges(readRanges(KEY_GYING_AUTO_SYNC_RANGES, "GYING", gying.getAutoSyncRanges()));
         gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
         gying.setAutoSyncIntervalHours(readInt(
@@ -198,9 +198,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
             weeklyTransferSettings.validate(request.getWeeklyTransferSchedules());
         }
-        int[] tmdbRange = resolveRange(request.getTmdbAutoSyncPage(), request.getTmdbAutoSyncEndPage(),
+        int[] tmdbRange = resolveRange("TMDB", request.getTmdbAutoSyncPage(), request.getTmdbAutoSyncEndPage(),
                 tmdb.getAutoSyncPage(), tmdb.getAutoSyncEndPage());
-        int[] gyingRange = resolveRange(request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
+        int[] gyingRange = resolveRange("GYING", request.getGyingAutoSyncPage(), request.getGyingAutoSyncEndPage(),
                 gying.getAutoSyncPage(), gying.getAutoSyncEndPage());
 
         var tmdbRanges = mergeRanges("TMDB", tmdb.getAutoSyncRanges(), request.getTmdbAutoSyncRanges());
@@ -685,15 +685,27 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private Map<String, MetadataCrawlRange> readRanges(String key, String provider,
             Map<String, MetadataCrawlRange> defaults) {
         String json = sysConfigService.getConfigValue(key, "");
-        if (json == null || json.isBlank()) return defaults;
+        if (json == null || json.isBlank()) return normalizeSavedRanges(provider, defaults);
         try {
             var type = objectMapper.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, MetadataCrawlRange.class);
             Map<String, MetadataCrawlRange> stored = objectMapper.readValue(json, type);
             if (stored == null) throw new IllegalArgumentException("Missing ranges");
-            return mergeRanges(provider, Map.of(), stored);
+            return normalizeSavedRanges(provider, stored);
         } catch (Exception e) {
             throw new IllegalStateException("Invalid saved metadata ranges: " + key, e);
         }
+    }
+
+    private Map<String, MetadataCrawlRange> normalizeSavedRanges(String provider, Map<String, MetadataCrawlRange> stored) {
+        var bounded = new LinkedHashMap<String, MetadataCrawlRange>();
+        stored.forEach((source, range) -> {
+            if (range == null) throw new IllegalArgumentException("Missing saved metadata range");
+            // Old GYING ranges allowed 500; retain their saved bytes and limit runtime reads to the site's 50 pages.
+            resolveRange("TMDB", range.startPage(), range.endPage(), 1, 1);
+            int maxPage = MetadataCrawlRange.maxPages(provider);
+            bounded.put(source, new MetadataCrawlRange(Math.min(range.startPage(), maxPage), Math.min(range.endPage(), maxPage)));
+        });
+        return mergeRanges(provider, Map.of(), bounded);
     }
 
     private Map<String, MetadataCrawlRange> mergeRanges(String provider, Map<String, MetadataCrawlRange> current,
@@ -704,7 +716,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             if (!MetadataCrawlRange.sources(provider).contains(source) || range == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "采集来源或页码范围无效");
             }
-            resolveRange(range.startPage(), range.endPage(), 1, 1);
+            resolveRange(provider, range.startPage(), range.endPage(), 1, 1);
             ranges.put(source, range);
         });
         return Map.copyOf(ranges);
@@ -718,14 +730,15 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         }
     }
 
-    private int[] resolveRange(Integer requestedStart, Integer requestedEnd, int currentStart, int currentEnd) {
+    private int[] resolveRange(String provider, Integer requestedStart, Integer requestedEnd, int currentStart, int currentEnd) {
         int start = requestedStart == null ? currentStart : requestedStart;
         // Old clients editing a single page keep single-page behavior.
         int end = requestedEnd == null
                 ? (currentStart == currentEnd && requestedStart != null ? start : currentEnd) : requestedEnd;
-        if (start < 1 || end > 500 || end < start) {
+        int maxPage = MetadataCrawlRange.maxPages(provider);
+        if (start < 1 || end > maxPage || end < start) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "采集页码范围无效：须满足 1 ≤ 起始页 ≤ 结束页 ≤ 500");
+                    "采集页码范围无效：须满足 1 ≤ 起始页 ≤ 结束页 ≤ " + maxPage);
         }
         return new int[] {start, end};
     }
@@ -743,7 +756,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         try {
             return clamp(Integer.parseInt(value), min, max);
         } catch (NumberFormatException e) {
-            return defaultValue;
+            return clamp(defaultValue, min, max);
         }
     }
 
@@ -803,7 +816,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         if (!hasText(raw)) {
             return "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         }
-        java.util.Set<String> supported = java.util.Set.of("HITS_MOVIE", "HITS_TV", "HITS_ANIME", "CSCORE_MOVIE", "CSCORE_TV", "CSCORE_ANIME");
+        java.util.Set<String> supported = java.util.Set.copyOf(MetadataCrawlRange.sources("GYING"));
         String normalized = String.join(",", java.util.Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(this::hasText)

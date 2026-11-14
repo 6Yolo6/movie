@@ -131,6 +131,22 @@ class ResourceHubWorkerServiceImplTest {
         verify(fixture.gyingService, never()).enqueueAutomatic(any());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"TIME_MOVIE", "TIME_TV", "TIME_ANIME", "SCORE_MOVIE", "SCORE_TV", "SCORE_ANIME"})
+    void schedulesEachNewChartAndHonorsItsOwnPause(String source) {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncEnabled(false);
+        fixture.properties.getGying().setAutoSyncEnabled(true);
+        fixture.properties.getGying().setAutoSyncSources(source);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        fixture.service.runOnce();
+        verify(fixture.gyingService).enqueueAutomatic(source);
+        Mockito.clearInvocations(fixture.gyingService);
+        fixture.properties.getGying().setAutoSyncPausedSources(java.util.Map.of(source, true));
+        fixture.service.runOnce();
+        Mockito.verifyNoInteractions(fixture.gyingService);
+    }
+
     @Test void scheduledRetryDoesNotTouchAnyQueue() {
         Fixture fixture = new Fixture();
         var result = fixture.service.retryDiscoveredTransfers(false);

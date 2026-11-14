@@ -1,0 +1,622 @@
+{
+  "checkedAt": "2026-11-14T10:29:24.404790+00:00",
+  "boards": [
+    {
+      "typeCode": "mv",
+      "count": 48,
+      "existing": 0,
+      "missingCount": 48,
+      "quarkArchived": 0,
+      "missing": [
+        {
+          "mid": "mpXZ4",
+          "title": "七月又十四之信不信由你",
+          "year": 1999
+        },
+        {
+          "mid": "9DLrB",
+          "title": "爱你爱我",
+          "year": 2001
+        },
+        {
+          "mid": "eGEjV",
+          "title": "体面方案",
+          "year": 2026
+        },
+        {
+          "mid": "0xDmL",
+          "title": "猫与鸡",
+          "year": 2024
+        },
+        {
+          "mid": "Xm5b4",
+          "title": "消逝之人",
+          "year": 2026
+        },
+        {
+          "mid": "3KJG0",
+          "title": "别洛韦日森林：野牛布布利克大逃亡",
+          "year": 2025
+        },
+        {
+          "mid": "bLDvy",
+          "title": "神之乐团",
+          "year": 2025
+        },
+        {
+          "mid": "4OayX",
+          "title": "有人说爱我",
+          "year": 2001
+        },
+        {
+          "mid": "ZnRxd",
+          "title": "冰释雪融",
+          "year": 2026
+        },
+        {
+          "mid": "VebRP",
+          "title": "电竞女孩",
+          "year": 2025
+        },
+        {
+          "mid": "akPK5",
+          "title": "阿比盖尔·哈姆",
+          "year": 2012
+        },
+        {
+          "mid": "rwLE9",
+          "title": "Seytan-i Racim 2: Ifrit",
+          "year": 2015
+        },
+        {
+          "mid": "85zRr",
+          "title": "Kutsal Damacana",
+          "year": 2007
+        },
+        {
+          "mid": "B8jWe",
+          "title": "心乡迷踪",
+          "year": 2026
+        },
+        {
+          "mid": "wnkYp",
+          "title": "闹鬼",
+          "year": 2013
+        },
+        {
+          "mid": "J4YXg",
+          "title": "猛鬼乐园",
+          "year": 2026
+        },
+        {
+          "mid": "1zaPX",
+          "title": "Organik Ask Hikayeleri",
+          "year": 2017
+        },
+        {
+          "mid": "2GY7o",
+          "title": "深夜的翅膀",
+          "year": 2009
+        },
+        {
+          "mid": "6XRnA",
+          "title": "成为休曼",
+          "year": 2026
+        },
+        {
+          "mid": "K2b0E",
+          "title": "废柴救国",
+          "year": 2026
+        },
+        {
+          "mid": "DMK61",
+          "title": "轮回永生",
+          "year": 2025
+        },
+        {
+          "mid": "L7be8",
+          "title": "忏悔",
+          "year": 2026
+        },
+        {
+          "mid": "MbG95",
+          "title": "危机",
+          "year": 1992
+        },
+        {
+          "mid": "ABYAb",
+          "title": "Gipsy Kings Featuring Tonino Baliardo",
+          "year": 2026
+        },
+        {
+          "mid": "WbOxO",
+          "title": "她声铿锵",
+          "year": 2026
+        },
+        {
+          "mid": "vA2YP",
+          "title": "The Man Who Wanted to See It All",
+          "year": 2021
+        },
+        {
+          "mid": "ze0Yn",
+          "title": "哀悼：Cin Tarikati",
+          "year": 2020
+        },
+        {
+          "mid": "j5LYG",
+          "title": "考洛乔之恋",
+          "year": 2026
+        },
+        {
+          "mid": "o0evd",
+          "title": "交换身份过圣诞",
+          "year": 2026
+        },
+        {
+          "mid": "xXdYX",
+          "title": "绝境反击",
+          "year": 2026
+        },
+        {
+          "mid": "5vaOr",
+          "title": "艾伦",
+          "year": 2026
+        },
+        {
+          "mid": "pX92G",
+          "title": "驭马圣诞缘",
+          "year": 2025
+        },
+        {
+          "mid": "R4bKP",
+          "title": "街头霸王",
+          "year": 2026
+        },
+        {
+          "mid": "g17ZJ",
+          "title": "恐怖城堡",
+          "year": 1963
+        },
+        {
+          "mid": "nE0wx",
+          "title": "人间乐园",
+          "year": 2025
+        },
+        {
+          "mid": "OwbKB",
+          "title": "黑色圣诞福音",
+          "year": 2026
+        },
+        {
+          "mid": "GMb5Y",
+          "title": "老千：别西卜之歌",
+          "year": 2026
+        },
+        {
+          "mid": "7pr7K",
+          "title": "Yugo驶向美国",
+          "year": 2025
+        },
+        {
+          "mid": "PPB4M",
+          "title": "80 dühös újságíró",
+          "year": 2025
+        },
+        {
+          "mid": "mpXj4",
+          "title": "9 Lunas",
+          "year": 2026
+        },
+        {
+          "mid": "9DLyB",
+          "title": "社交清算",
+          "year": 2026
+        },
+        {
+          "mid": "eGEvV",
+          "title": "地理补习课",
+          "year": 2026
+        },
+        {
+          "mid": "0xDdL",
+          "title": "泥面人",
+          "year": 2026
+        },
+        {
+          "mid": "Xm5K4",
+          "title": "浅浅一墨",
+          "year": 2026
+        },
+        {
+          "mid": "do7zB",
+          "title": "附带伤亡",
+          "year": 2026
+        },
+        {
+          "mid": "knkLV",
+          "title": "活死人归来：余劫",
+          "year": 2026
+        },
+        {
+          "mid": "3KJe0",
+          "title": "捉拿继父",
+          "year": 2026
+        },
+        {
+          "mid": "YOKB0",
+          "title": "昭告世人",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "typeCode": "tv",
+      "count": 48,
+      "existing": 11,
+      "missingCount": 37,
+      "quarkArchived": 1,
+      "missing": [
+        {
+          "mid": "bRpr",
+          "title": "茜茜皇后 第三季",
+          "year": 2026
+        },
+        {
+          "mid": "4dyq",
+          "title": "再次奔向你",
+          "year": 2026
+        },
+        {
+          "mid": "XEoq",
+          "title": "厄运宝贝",
+          "year": 2026
+        },
+        {
+          "mid": "vBNv",
+          "title": "心动制造所",
+          "year": 2026
+        },
+        {
+          "mid": "dRlK",
+          "title": "枕边杀局",
+          "year": 2026
+        },
+        {
+          "mid": "Da4B",
+          "title": "好女儿",
+          "year": 2026
+        },
+        {
+          "mid": "xG1D",
+          "title": "奇思妙探 第四季",
+          "year": 2026
+        },
+        {
+          "mid": "JvXn",
+          "title": "12 12 12",
+          "year": 2026
+        },
+        {
+          "mid": "EaXv",
+          "title": "百日谎言",
+          "year": 2026
+        },
+        {
+          "mid": "eWv3",
+          "title": "谎言",
+          "year": 2026
+        },
+        {
+          "mid": "yBKy",
+          "title": "再婚皇后",
+          "year": 2026
+        },
+        {
+          "mid": "9anQ",
+          "title": "找春天 第一季",
+          "year": 2026
+        },
+        {
+          "mid": "GByX",
+          "title": "丰臣兄弟！",
+          "year": 2026
+        },
+        {
+          "mid": "2Qv6",
+          "title": "保罗",
+          "year": 2026
+        },
+        {
+          "mid": "P4GP",
+          "title": "不是你的恋爱",
+          "year": 2026
+        },
+        {
+          "mid": "2QG6",
+          "title": "校园接送恋曲",
+          "year": 2026
+        },
+        {
+          "mid": "LaD3",
+          "title": "无间兄弟情",
+          "year": 2026
+        },
+        {
+          "mid": "RXpP",
+          "title": "玫瑰战争",
+          "year": 2026
+        },
+        {
+          "mid": "n4R5",
+          "title": "少年，注意",
+          "year": 2026
+        },
+        {
+          "mid": "03yl",
+          "title": "极北以北 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "BDXV",
+          "title": "魔女之城",
+          "year": 2015
+        },
+        {
+          "mid": "w847",
+          "title": "绝命杀手 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "V0P3",
+          "title": "围城困局",
+          "year": 2026
+        },
+        {
+          "mid": "1kYk",
+          "title": "黑鸽 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "Q2q4",
+          "title": "麻木医生",
+          "year": 2026
+        },
+        {
+          "mid": "keB7",
+          "title": "被夺走的女儿：娜塔莉·霍洛威失踪案",
+          "year": 2026
+        },
+        {
+          "mid": "P47R",
+          "title": "地震之后",
+          "year": 2025
+        },
+        {
+          "mid": "oRjB",
+          "title": "至伟者",
+          "year": 2026
+        },
+        {
+          "mid": "lajX",
+          "title": "走马上任",
+          "year": 2026
+        },
+        {
+          "mid": "gR2E",
+          "title": "美国人质",
+          "year": 2026
+        },
+        {
+          "mid": "pBKV",
+          "title": "权力交锋",
+          "year": 2026
+        },
+        {
+          "mid": "qBKq",
+          "title": "权力移植",
+          "year": 2025
+        },
+        {
+          "mid": "73bW",
+          "title": "遗产",
+          "year": 2025
+        },
+        {
+          "mid": "rJ9N",
+          "title": "村庄：阿雉阿拉的祕密",
+          "year": 2015
+        },
+        {
+          "mid": "35Gv",
+          "title": "阿波罗陷落",
+          "year": 2026
+        },
+        {
+          "mid": "Yd8E",
+          "title": "危险心动",
+          "year": 2026
+        },
+        {
+          "mid": "4dVq",
+          "title": "慢投垒球",
+          "year": 2026
+        }
+      ]
+    },
+    {
+      "typeCode": "ac",
+      "count": 48,
+      "existing": 15,
+      "missingCount": 33,
+      "quarkArchived": 3,
+      "missing": [
+        {
+          "mid": "E4P6",
+          "title": "嘟吉的狗狗屋",
+          "year": 2026
+        },
+        {
+          "mid": "WWQa",
+          "title": "FX战士久留美",
+          "year": 2026
+        },
+        {
+          "mid": "JzPg",
+          "title": "巴斯×机甲",
+          "year": 2026
+        },
+        {
+          "mid": "p8Y8",
+          "title": "降世神通：七净土 第一季",
+          "year": 2026
+        },
+        {
+          "mid": "j9Pb",
+          "title": "令和的超级偶像铃铛猫娘",
+          "year": 2022
+        },
+        {
+          "mid": "Mgb6",
+          "title": "炒翻天",
+          "year": 2026
+        },
+        {
+          "mid": "RNOG",
+          "title": "Let's Go 怪奇组",
+          "year": 2026
+        },
+        {
+          "mid": "GnPA",
+          "title": "财神窦占龙",
+          "year": 2026
+        },
+        {
+          "mid": "okaE",
+          "title": "极恶老大 第三季",
+          "year": 2026
+        },
+        {
+          "mid": "5Apw",
+          "title": "闹鬼酒店 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "WWjJ",
+          "title": "探险活宝：支线任务 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "822K",
+          "title": "冰剑的魔术师将要统一世界 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "kddw",
+          "title": "魔法少女育成计划restart",
+          "year": 2026
+        },
+        {
+          "mid": "NAA2",
+          "title": "超巡！超条前辈",
+          "year": 2026
+        },
+        {
+          "mid": "p88A",
+          "title": "苍蓝传承",
+          "year": 2026
+        },
+        {
+          "mid": "RNNz",
+          "title": "魔法★探险家",
+          "year": 2026
+        },
+        {
+          "mid": "766P",
+          "title": "战车椅子",
+          "year": 2026
+        },
+        {
+          "mid": "GnnK",
+          "title": "女友的朋友",
+          "year": 2026
+        },
+        {
+          "mid": "okk3",
+          "title": "朱色的面具",
+          "year": 2026
+        },
+        {
+          "mid": "X5Qd",
+          "title": "雷霆三人行",
+          "year": 2026
+        },
+        {
+          "mid": "WWWa",
+          "title": "乐高航海王",
+          "year": 2026
+        },
+        {
+          "mid": "lKK7",
+          "title": "兽王武神丹帝拜恩",
+          "year": 2026
+        },
+        {
+          "mid": "xEEj",
+          "title": "佐佐木与文鸟小哔 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "822e",
+          "title": "青蛙军曹☆",
+          "year": 2026
+        },
+        {
+          "mid": "kddr",
+          "title": "大叔喜欢可爱小玩意",
+          "year": 2026
+        },
+        {
+          "mid": "NAAD",
+          "title": "世界最强魔女，始动",
+          "year": 2026
+        },
+        {
+          "mid": "3PPy",
+          "title": "侦探已死 第二季",
+          "year": 2026
+        },
+        {
+          "mid": "Ybb7",
+          "title": "装备我最强",
+          "year": 2026
+        },
+        {
+          "mid": "b99r",
+          "title": "来自远方",
+          "year": 2026
+        },
+        {
+          "mid": "4XXn",
+          "title": "异人酒店2",
+          "year": 2026
+        },
+        {
+          "mid": "Vl4k",
+          "title": "乡巴佬希尔一家的幸福生活 第十二季",
+          "year": 2007
+        },
+        {
+          "mid": "ZPPE",
+          "title": "斗球儿弹子",
+          "year": 2026
+        },
+        {
+          "mid": "6ddG",
+          "title": "黑猫和魔女的课堂",
+          "year": 2026
+        }
+      ]
+    }
+  ]
+}
