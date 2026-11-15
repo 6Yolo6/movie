@@ -39,9 +39,11 @@ class MetadataUpdatesProvidersTest {
         ResourceHubTask task = new MetadataUpdatesCheckpoint(tasks, mapper).enqueue(provider, List.of("TIME_MOVIE"), 20);
         when(tasks.getById(9L)).thenReturn(task); return task;
     }
+    final TmdbGyingResourceFollowUpService followups = mock(TmdbGyingResourceFollowUpService.class);
     TmdbMetadataSyncServiceImpl tmdbService() {
+        when(followups.persistMetadataAndEnqueue(anyLong(), any(), any())).thenAnswer(call -> ((java.util.function.Supplier<?>) call.getArgument(1)).get());
         return new TmdbMetadataSyncServiceImpl(tmdb, mock(PosterStorageService.class), properties, movies, identities,
-                tasks, discoveries, mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class), mapper);
+                tasks, discoveries, mock(IResourceDiscoveryResultService.class), mock(IResourceLinkService.class), mapper, followups);
     }
     GyingMetadataSyncServiceImpl gyingService() {
         return new GyingMetadataSyncServiceImpl(properties, tasks, workflow, discoveries, mock(IResourceLinkService.class), mapper);
@@ -71,6 +73,7 @@ class MetadataUpdatesProvidersTest {
         for (String source : List.of("TRENDING_MOVIE_DAY", "TRENDING_TV_DAY", "UPCOMING_MOVIE"))
             for (int page = 1; page <= 2; page++) verify(tmdb).fetchListPage(source, page);
         verify(tmdb, times(10)).fetchDetails(anyString(), anyLong());
+        verify(followups, times(10)).persistMetadataAndEnqueue(eq(9L), any(), any());
         assertEquals(26, mapper.readTree(task.getPayload()).path("crawl").path("pending").size());
         verify(tasks, never()).updateById(any()); verifyNoInteractions(discoveries);
     }
@@ -88,6 +91,7 @@ class MetadataUpdatesProvidersTest {
         assertEquals("SUCCEEDED", result.getStatus()); assertEquals(1, result.getSkipped()); assertEquals(0, result.getProcessed());
         verify(tmdb, never()).fetchDetails(anyString(), anyLong());
         verify(movies, never()).save(any()); verify(movies, never()).updateById(any());
+        verifyNoInteractions(followups);
     }
 
     @Test void tmdbPopularityMovementDoesNotRefreshButStableTitleChangeDoes() {

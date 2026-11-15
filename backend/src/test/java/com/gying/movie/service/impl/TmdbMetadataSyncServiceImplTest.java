@@ -25,7 +25,7 @@ class TmdbMetadataSyncServiceImplTest {
         properties.setEnabled(true); properties.getTmdb().setApiKey("test-only-placeholder");
         return new TmdbMetadataSyncServiceImpl(client,mock(PosterStorageService.class),properties,movies,identities,
             mock(IResourceHubTaskService.class),mock(IResourceDiscoveryService.class),mock(IResourceDiscoveryResultService.class),
-            mock(IResourceLinkService.class),json);
+            mock(IResourceLinkService.class),json,mock(TmdbGyingResourceFollowUpService.class));
     }
     private MovieSearchCandidate candidate(String type) throws Exception {
         when(client.fetchDetails(type,247718L)).thenReturn(json.readTree("""

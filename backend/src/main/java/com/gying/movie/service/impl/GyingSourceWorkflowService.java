@@ -3016,6 +3016,138 @@ public class GyingSourceWorkflowService {
         return item;
     }
 
+    /** Automatic TMDB follow-up only: exact anchors, aggregate uniqueness, and search-only discovery. */
+    public MovieSourceIdentity resolveTmdbUpdateGyingIdentity(String movieId) {
+        MovieMetadata movie = movieService.getById(required(movieId, "local movie id"));
+        if (!strictAutomaticMovie(movie)) throw new IllegalStateException("GYING_STRICT_LOCAL_METADATA_REQUIRED");
+        List<MovieSourceIdentity> known = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("movie_id", movieId).eq("source", "GYING").in("match_status", List.of("AUTO", "CONFIRMED")));
+        if (!known.isEmpty()) {
+            if (known.size() != 1 || !strictAutomaticIdentity(movie, known.get(0)))
+                throw new IllegalStateException("GYING_STRICT_IDENTITY_REVIEW_REQUIRED");
+            MovieSourceIdentity identity = known.get(0);
+            Map<String, Object> snapshot = gyingSourceClient.get("/movie/" + identity.getSourceType() + "/" + identity.getExternalId());
+            if (snapshot == null || !identity.getExternalId().equals(snapshot.get("mid"))
+                    || !identity.getSourceType().equals(snapshot.get("typeCode")))
+                throw new IllegalStateException("GYING_STRICT_DETAIL_IDENTITY_CHANGED");
+            if (!strictAutomaticCandidate(movie, snapshot, identity.getSourceType()) || !strictAutomaticCanonical(movie, snapshot))
+                throw new IllegalStateException("GYING_STRICT_DETAIL_REVIEW_REQUIRED");
+            return identity;
+        }
+        LinkedHashSet<String> queries = new LinkedHashSet<>();
+        for (String title : new String[] {movie.getSeriesName(), movie.getTitleCn(), movie.getTitleEn()})
+            if (hasText(title)) queries.add(title.trim());
+        Map<String, Map<String, Object>> matches = new LinkedHashMap<>();
+        for (String type : gyingTypeCodes(movie)) {
+            for (String query : queries) {
+                Map<String, Object> response = gyingSourceClient.get("/search", Map.of("q", query, "typeCode", type, "mode", 3, "limit", 20));
+                if (response == null || !(response.get("items") instanceof List<?> items))
+                    throw new IllegalStateException("GYING_SEARCH_RESPONSE_INVALID");
+                for (Object raw : items) {
+                    if (!(raw instanceof Map<?, ?>)) throw new IllegalStateException("GYING_SEARCH_ITEM_INVALID");
+                    @SuppressWarnings("unchecked") Map<String, Object> candidate = (Map<String, Object>) raw;
+                    if (!strictAutomaticCandidate(movie, candidate, type)) continue;
+                    String key = type + "/" + candidate.get("mid");
+                    Map<String, Object> previous = matches.putIfAbsent(key, candidate);
+                    if (previous != null && (!Objects.equals(previous.get("year"), candidate.get("year"))
+                            || !Objects.equals(previous.get("season"), candidate.get("season"))))
+                        throw new IllegalStateException("GYING_SEARCH_METADATA_CONFLICT");
+                }
+            }
+        }
+        if (matches.isEmpty()) throw new IllegalStateException("GYING_NO_STRICT_MATCH");
+        if (matches.size() != 1) throw new IllegalStateException("GYING_AMBIGUOUS_STRICT_MATCH");
+        Map<String, Object> candidate = matches.values().iterator().next();
+        if (!strictAutomaticCanonical(movie, candidate)) throw new IllegalStateException("GYING_CANONICAL_REVIEW_REQUIRED");
+        String type = (String) candidate.get("typeCode");
+        String mid = (String) candidate.get("mid");
+        MovieSourceIdentity saved = saveIdentity(movie.getId(), "GYING", type, mid,
+                "mv".equals(type) ? 0 : strictAutomaticInteger(candidate.get("season")), 100,
+                "TMDB_UPDATE_EXACT_SEARCH", "AUTO", List.of("EXACT_TITLE", "EXACT_TYPE", "EXACT_YEAR", "EXACT_SEASON", "UNIQUE_MID", "CANONICAL"));
+        if (saved.getId() == null) throw new IllegalStateException("GYING_IDENTITY_NOT_PERSISTED");
+        MovieSourceIdentity persisted = sourceIdentityService.getById(saved.getId());
+        if (!strictAutomaticIdentity(movie, persisted) || !type.equals(persisted.getSourceType()) || !mid.equals(persisted.getExternalId()))
+            throw new IllegalStateException("GYING_IDENTITY_ACK_INVALID");
+        return persisted;
+    }
+
+    private boolean strictAutomaticMovie(MovieMetadata movie) {
+        return movie != null && hasText(movie.getId()) && movie.getDeletedAt() == null && "ACTIVE".equals(movie.getStatus())
+                && movie.getTmdbId() != null && movie.getTmdbId() > 0 && movie.getTmdbLastSyncAt() != null
+                && movie.getYear() != null && movie.getYear() >= 1801 && movie.getYear() <= LocalDateTime.now().getYear() + 5
+                && (("movie".equals(movie.getTmdbType()) && "mv".equals(movie.getCategory()))
+                    || ("tv".equals(movie.getTmdbType()) && Set.of("tv", "ac").contains(Objects.toString(movie.getCategory(), ""))
+                        && GyingMetadataMatcher.validSeason(movie.getSeason()) != null));
+    }
+
+    private boolean strictAutomaticIdentity(MovieMetadata movie, MovieSourceIdentity identity) {
+        if (identity == null || identity.getId() == null || !movie.getId().equals(identity.getMovieId())
+                || !"GYING".equals(identity.getSource()) || !Set.of("AUTO", "CONFIRMED").contains(Objects.toString(identity.getMatchStatus(), ""))
+                || !gyingTypeCodes(movie).contains(identity.getSourceType()) || identity.getExternalId() == null
+                || !identity.getExternalId().matches("[A-Za-z0-9]{1,100}")
+                || !Objects.equals("mv".equals(identity.getSourceType()) ? 0 : movie.getSeason(), identity.getSeason())) return false;
+        List<MovieSourceIdentity> owners = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("external_id", identity.getExternalId())
+                .apply("BINARY external_id = BINARY {0}", identity.getExternalId())
+                .eq("season", identity.getSeason()).in("match_status", List.of("AUTO", "CONFIRMED")));
+        return owners.size() == 1 && Objects.equals(identity.getId(), owners.get(0).getId())
+                && movie.getId().equals(owners.get(0).getMovieId()) && identity.getSourceType().equals(owners.get(0).getSourceType())
+                && "GYING".equals(owners.get(0).getSource()) && identity.getExternalId().equals(owners.get(0).getExternalId())
+                && Objects.equals(identity.getSeason(), owners.get(0).getSeason())
+                && Set.of("AUTO", "CONFIRMED").contains(Objects.toString(owners.get(0).getMatchStatus(), ""));
+    }
+
+    private Integer strictAutomaticInteger(Object value) {
+        if (!(value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long)) return null;
+        long number = ((Number) value).longValue();
+        return number >= Integer.MIN_VALUE && number <= Integer.MAX_VALUE ? (int) number : null;
+    }
+
+    private boolean strictAutomaticCandidate(MovieMetadata movie, Map<String, Object> candidate, String requestedType) {
+        Integer year = strictAutomaticInteger(candidate.get("year"));
+        Integer season = strictAutomaticInteger(candidate.get("season"));
+        return requestedType.equals(candidate.get("typeCode")) && gyingTypeCodes(movie).contains(requestedType)
+                && candidate.get("mid") instanceof String mid && mid.matches("[A-Za-z0-9]{1,100}")
+                && candidate.get("title") instanceof String title && MovieTitleMatcher.isExactMatch(movie, title)
+                && year != null && year.equals(movie.getYear())
+                && ("mv".equals(requestedType) ? true
+                    : season != null && season >= 1 && season <= 99 && season.equals(movie.getSeason()));
+    }
+
+    /** Recheck all canonical owners using the same exact anchors before creating any binding. */
+    private String strictAutomaticNormalizedTitle(String value) {
+        return value.trim().toLowerCase(Locale.ROOT).replaceAll("[\\s\\p{Punct}，。！？、：；（）《》【】「」『』·]+", "");
+    }
+
+    private boolean strictAutomaticCanonical(MovieMetadata movie, Map<String, Object> candidate) {
+        String mid = (String) candidate.get("mid");
+        String type = (String) candidate.get("typeCode");
+        int season = "mv".equals(type) ? 0 : strictAutomaticInteger(candidate.get("season"));
+        List<MovieSourceIdentity> owners = sourceIdentityService.list(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "GYING").eq("external_id", mid).apply("BINARY external_id = BINARY {0}", mid).eq("season", season));
+        if (owners.stream().anyMatch(owner -> !movie.getId().equals(owner.getMovieId()) || !type.equals(owner.getSourceType())
+                || !"GYING".equals(owner.getSource()) || !mid.equals(owner.getExternalId()) || !Objects.equals(season, owner.getSeason()))) return false;
+        MovieMetadata byId = movieService.getById(mid);
+        if (byId != null && !movie.getId().equals(byId.getId())) return false;
+        String title = (String) candidate.get("title");
+        SeasonSearchUtils.SeasonQuery parsed = SeasonSearchUtils.parse(title);
+        String base = parsed == null ? title : parsed.baseTitle();
+        String normalized = strictAutomaticNormalizedTitle(title);
+        String normalizedBase = strictAutomaticNormalizedTitle(base);
+        String normalizeSql = "LOWER(REGEXP_REPLACE(COALESCE(%s,''), '[[:space:][:punct:]，。！？、：；（）《》【】「」『』·]+', ''))";
+        List<MovieMetadata> local = movieService.list(new QueryWrapper<MovieMetadata>().eq("status", "ACTIVE").isNull("deleted_at")
+                .eq("year", movie.getYear()).in("category", gyingTypeCodes(movie))
+                .and(q -> q.apply(normalizeSql.formatted("title_cn") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("title_en") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("series_name") + " IN ({0},{1})", normalized, normalizedBase)
+                        .or().apply(normalizeSql.formatted("aliases") + " LIKE {0}", "%" + normalized + "%")
+                        .or().apply(normalizeSql.formatted("aliases") + " LIKE {0}", "%" + normalizedBase + "%")).last("LIMIT 31"));
+        if (local.size() > 30) return false;
+        List<MovieMetadata> exact = local.stream().filter(item -> item != null && item.getDeletedAt() == null && "ACTIVE".equals(item.getStatus()))
+                .filter(item -> strictAutomaticCandidate(item, candidate, type)).toList();
+        return exact.size() == 1 && movie.getId().equals(exact.get(0).getId());
+    }
+
     private MovieSourceIdentity findGyingIdentity(String movieId) {
         return sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
                 .eq("movie_id", movieId)

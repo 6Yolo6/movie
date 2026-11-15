@@ -26,7 +26,7 @@ class TmdbMetadataCrawlTest {
         return new TmdbMetadataSyncServiceImpl(client, mock(PosterStorageService.class), properties,
                 movies, mock(IMovieSourceIdentityService.class), tasks,
                 mock(IResourceDiscoveryService.class), mock(IResourceDiscoveryResultService.class),
-                mock(IResourceLinkService.class), mapper);
+                mock(IResourceLinkService.class), mapper, mock(TmdbGyingResourceFollowUpService.class));
     }
 
     private ResourceHubTask batch() throws Exception {

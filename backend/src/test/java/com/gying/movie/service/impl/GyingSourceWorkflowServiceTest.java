@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gying.movie.client.GyingSourceClient;
 import com.gying.movie.client.PanSouClient;
@@ -1881,6 +1882,110 @@ class GyingSourceWorkflowServiceTest {
         assertEquals("QQ_BOT", clone.getSource()); assertEquals("BAIDU_TEMP:" + TEMP_SCOPE, clone.getSourceRef());
         verify(discoveryService, never()).updateById(any()); verify(runner).submitOne(992L);
         verifyNoInteractions(gyingSourceClient, transferRunnerService, xunleiTransferRunnerService);
+    }
+
+    private MovieMetadata strictUpdateMovie(String type) {
+        MovieMetadata movie = new MovieMetadata(); movie.setId("tmdb-canonical"); movie.setStatus("ACTIVE");
+        movie.setCategory(type); movie.setTmdbId(9876L); movie.setTmdbType("mv".equals(type) ? "movie" : "tv");
+        movie.setYear(2026); movie.setSeason("mv".equals(type) ? 3 : 2); movie.setTitleCn("Strict Film");
+        movie.setTitleEn("Strict Original"); movie.setTmdbLastSyncAt(java.time.LocalDateTime.now());
+        when(movieService.getById(movie.getId())).thenReturn(movie); when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie));
+        return movie;
+    }
+    private Map<String, Object> strictSource(String type, String mid, int year, int season) {
+        return Map.of("typeCode", type, "mid", mid, "title", "Strict Film", "year", year, "season", season);
+    }
+    private void acknowledgeStrictIdentity() {
+        AtomicReference<MovieSourceIdentity> persisted = new AtomicReference<>();
+        when(sourceIdentityService.list(any(Wrapper.class))).thenAnswer(c -> persisted.get() == null ? List.of() : List.of(persisted.get()));
+        when(sourceIdentityService.save(any())).thenAnswer(c -> {
+            MovieSourceIdentity identity = c.getArgument(0); identity.setId(88L); persisted.set(identity); return true;
+        });
+        when(sourceIdentityService.getById(88L)).thenAnswer(c -> persisted.get());
+    }
+
+    @Test void automaticStrictMovieSearchAcceptsMoviePartAndRequiresPersistedUniqueCanonicalIdentity() {
+        var movie = strictUpdateMovie("mv"); acknowledgeStrictIdentity();
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MiD1", 2026, 1))));
+        MovieSourceIdentity identity = service.resolveTmdbUpdateGyingIdentity(movie.getId());
+        assertEquals("MiD1", identity.getExternalId()); assertEquals(0, identity.getSeason());
+        assertEquals("TMDB_UPDATE_EXACT_SEARCH", identity.getMatchMethod());
+        verify(gyingSourceClient, times(2)).get(eq("/search"), anyMap());
+        verifyNoInteractions(resourceLinkService, transferTaskService, transferRunnerService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchAggregatesAmbiguityAcrossChineseAndOriginalQueriesBeforeBinding() {
+        var movie = strictUpdateMovie("mv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenAnswer(c -> {
+            Map<String, Object> query = c.getArgument(1);
+            return Map.of("items", List.of(strictSource("mv", "Strict Film".equals(query.get("q")) ? "MID1" : "MID2", 2026, 1)));
+        });
+        assertEquals("GYING_AMBIGUOUS_STRICT_MATCH", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictTvRejectsWrongYearMissingSeasonAndWrongReturnedTypeWithoutBinding() {
+        var movie = strictUpdateMovie("tv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(
+                strictSource("tv", "WRONGYEAR", 2020, 2),
+                Map.of("typeCode", "tv", "mid", "NOSEASON", "title", "Strict Film", "year", 2026),
+                strictSource("mv", "WRONGTYPE", 2026, 2), strictSource("tv", "WRONGSEASON", 2026, 1),
+                Map.of("typeCode", "tv", "mid", "FLOAT", "title", "Strict Film", "year", 2026.0, "season", 2))));
+        assertEquals("GYING_NO_STRICT_MATCH", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchDistinguishesMalformedResponseFromEmptyResultAndNeverFallsBackToCatalog() {
+        var movie = strictUpdateMovie("mv");
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("error", "upstream"));
+        assertEquals("GYING_SEARCH_RESPONSE_INVALID", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(gyingSourceClient).get(eq("/search"), anyMap()); verifyNoMoreInteractions(gyingSourceClient);
+        verify(sourceIdentityService, never()).save(any());
+    }
+
+    @Test void automaticStrictSearchRejectsDuplicateLocalCanonicalOwnersBeforeWritingIdentity() {
+        var movie = strictUpdateMovie("mv"); var duplicate = strictUpdateMovie("mv"); duplicate.setId("another-canonical");
+        when(movieService.getById(movie.getId())).thenReturn(movie); when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie, duplicate));
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any());
+    }
+
+    @Test void automaticStrictTrustedMidStillRequiresExactLiveYearBeforeAnyCollection() {
+        var movie = strictUpdateMovie("tv"); MovieSourceIdentity identity = new MovieSourceIdentity(); identity.setId(77L);
+        identity.setMovieId(movie.getId()); identity.setSource("GYING"); identity.setSourceType("tv"); identity.setExternalId("KNOWN");
+        identity.setSeason(2); identity.setMatchStatus("CONFIRMED"); when(sourceIdentityService.list(any(Wrapper.class))).thenReturn(List.of(identity));
+        when(gyingSourceClient.get("/movie/tv/KNOWN")).thenReturn(strictSource("tv", "KNOWN", 2020, 2));
+        assertEquals("GYING_STRICT_DETAIL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(gyingSourceClient, never()).get(eq("/search"), anyMap()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictSearchTreatsOriginalGyingMovieWithoutTmdbBindingAsCanonicalConflict() {
+        var movie = strictUpdateMovie("mv"); MovieMetadata original = new MovieMetadata(); original.setId("gying_mv_MID1");
+        original.setStatus("ACTIVE"); original.setCategory("mv"); original.setTitleCn("Strict Film"); original.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenReturn(List.of(movie, original));
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any()); verifyNoInteractions(resourceLinkService, panSouClient);
+    }
+
+    @Test void automaticStrictCanonicalQueryIncludesNormalizedTitlesOfLegacyMovies() {
+        var movie = strictUpdateMovie("mv"); MovieMetadata original = new MovieMetadata(); original.setId("old-gying");
+        original.setStatus("ACTIVE"); original.setCategory("mv"); original.setTitleCn("Strict-Film"); original.setYear(2026);
+        when(movieService.list(any(Wrapper.class))).thenAnswer(c -> {
+            QueryWrapper<MovieMetadata> query = c.getArgument(0); assertTrue(query.getSqlSegment().contains("REGEXP_REPLACE"));
+            return List.of(movie, original);
+        });
+        when(gyingSourceClient.get(eq("/search"), anyMap())).thenReturn(Map.of("items", List.of(strictSource("mv", "MID1", 2026, 1))));
+        assertEquals("GYING_CANONICAL_REVIEW_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> service.resolveTmdbUpdateGyingIdentity(movie.getId())).getMessage());
+        verify(sourceIdentityService, never()).save(any());
     }
 
 }

@@ -59,6 +59,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private final ObjectMapper objectMapper;
     private final MetadataCrawlPlanner crawlPlanner;
     private final MetadataUpdatesCheckpoint updatesCheckpoint;
+    private final TmdbGyingResourceFollowUpService resourceFollowUps;
 
     public TmdbMetadataSyncServiceImpl(
             TmdbClient tmdbClient,
@@ -70,7 +71,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             IResourceDiscoveryService resourceDiscoveryService,
             IResourceDiscoveryResultService discoveryResultService,
             IResourceLinkService resourceLinkService,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            TmdbGyingResourceFollowUpService resourceFollowUps) {
         this.tmdbClient = tmdbClient;
         this.posterStorageService = posterStorageService;
         this.resourceHubProperties = resourceHubProperties;
@@ -81,6 +83,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         this.discoveryResultService = discoveryResultService;
         this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
+        this.resourceFollowUps = resourceFollowUps;
         this.crawlPlanner = new MetadataCrawlPlanner(taskService, objectMapper);
         this.updatesCheckpoint = new MetadataUpdatesCheckpoint(taskService, objectMapper);
     }
@@ -217,7 +220,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
                         if (details == null || !details.path("id").isIntegralNumber()
                                 || details.path("id").asLong() != item.getTmdbId())
                             throw new IllegalStateException("TMDB update detail identity changed");
-                        MovieUpsertResult saved = upsertMovie(item, details, true);
+                        MovieUpsertResult saved = resourceFollowUps.persistMetadataAndEnqueue(task.getId(),
+                                () -> upsertMovie(item, details, true), MovieUpsertResult::movie);
                         if (saved.inserted()) result.setInserted(result.getInserted() + 1);
                         else result.setUpdated(result.getUpdated() + 1);
                     });
