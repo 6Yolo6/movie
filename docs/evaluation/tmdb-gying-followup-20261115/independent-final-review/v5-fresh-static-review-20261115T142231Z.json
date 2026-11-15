@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "scope": "INDEPENDENT_STATIC_V5_MINIMAL_FIX_AND_FRESH_RUN_ISOLATION",
+  "at": "2026-11-15T14:22:31.773950+00:00",
+  "freshDirectory": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z",
+  "hashes": {
+    "BackendRollout.py": "5e8b69858e0ac69eb9acc7aa35e3d67de17f606cb1fa6f7f6f47bdd108e86ee8",
+    "FollowUpDeclarations.py": "c9d6b1e7e4ba37a6e79ae57638eae4f241d596ab524ddec87a705430d18a4418",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "deployment-binding.json": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "astChanges": [
+    {
+      "file": "BackendRollout.py",
+      "changes": [
+        {
+          "line": 206,
+          "from": "/run/gying-ai-key",
+          "to": "/run/gying-ai"
+        },
+        {
+          "line": 205,
+          "from": "/run/gying-ai-key",
+          "to": "/run/gying-ai"
+        }
+      ]
+    },
+    {
+      "file": "FollowUpDeclarations.py",
+      "changes": [
+        {
+          "line": 10,
+          "from": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+          "to": "5e8b69858e0ac69eb9acc7aa35e3d67de17f606cb1fa6f7f6f47bdd108e86ee8"
+        }
+      ]
+    }
+  ],
+  "oldV4FrozenHashesExact": true,
+  "freshFourOrdinaryFilesOnly": true,
+  "freshReservationsAbsent": true,
+  "freshPreparedAbsent": true,
+  "adapterAndBindingUnchanged": true,
+  "backupArchiveNameUnchanged": "ai-state-key.tar.age",
+  "volumeTypeRequirementUnchanged": true,
+  "originalGateAndActionOrderingUnchanged": true,
+  "runtimeIo": 0,
+  "productionMutations": 0,
+  "helperImports": 0,
+  "businessTestsRerun": false,
+  "mockExecutionReviewedHere": false
+}

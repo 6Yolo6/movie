@@ -1,12 +1,12 @@
 # TMDB 新增影片的 GYING 种子跟进：2026-11-15 验收记录
 
-当前状态：本轮 TMDB→GYING 资源跟进候选尚未上线。20:43 的 after-host-idle execute 以 Gate／gate=null 安全停止，仅保留 deployment reservation，本 run 未暂停 Worker、发送 TERM 或激活候选版本；具体原 Gate 原因仍 UNKNOWN。21:00 的只读运行态确认 13 个原容器世代与后端镜像保持、后端 Running，SQL 中 Worker 与 TMDB／GYING Updates-only 标志为 true，但 admin 仍未满足安全校验、后台 API 完整配置复验结果为 null。20:55 聚合证明当前已有管理员设备均过期，需刷新登录；20:59 轻量内存观测回升至 commit 89.86%、余量 3373.7 MiB，不能代替完整 readiness。后续需刷新后台登录，再次核对内存和全部原门禁后使用 fresh run；原 334 项业务和 85 项运维测试、候选产物继续有效，无需重建或重测。自然资源轮次验收仍 pending，所有历史失败与旧 pause→restore 证据分别保留。
+当前状态：2026-11-15 22:33:00（Asia/Shanghai）本轮已仅backend上线并完成host/daily收尾，状态为BACKEND_HOST_AND_DAILY_VERIFIED_NATURAL_ACCEPTANCE_PENDING；22:33:45独立真实只读终验PASS。源码 `b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6`、镜像 `sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95`、2026-11-15 22:27:42启动/Compose26。正常TERM143、候选激活/nginx进程内reload各1，Worker暂停/恢复各PUT1，Worker/两个Updates-only=true；6份age完整认证、host pin单次CAS与日常48→49单次CAS/native dry-run通过，完整配置/保护历史/其它12代次/真实8入口保持。原334项业务及85项运维测试不重跑；V5最小修复另有15项全依赖mock回归。今天已完成UPDATES未重跑，未回填旧片或制造资源验收任务；新资源意图/预算仍0，自然新种子/上传及完整自然备份pending，ARCHIVE_QUEUED不代表上传成功。22:11旧V4 key路径门禁停止后已恢复原backend/Worker，新V5仅修helper两处目的路径及F哈希绑定；旧failure/预约/候选报告原字节保持。下列早前V1–V4停止与当时管理员过期记录属于历史，不代表当前上线结果。
 
 ## 本轮实现与验收范围
 
 本轮补齐 TMDB `UPDATES` 新增影片保存之后的资源跟进：持久保存跟进任务，先从 GYING 严格匹配影片身份，再将允许的 P2P 元数据文件交给现有归档链路。新任务类型为 `TMDB_GYING_RESOURCE`，使用独立的终态 `TMDB_GYING_RESOURCE_BUDGET` 账本限制每 24 小时最多 10 次资源采集尝试。历史 `RANGE` 全量游标与历史 `UNKNOWN` 任务保持原状。
 
-业务代码已冻结至提交 `b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6`。独立代码审核核对 423 个 Git blobs 与原始源码清单，17 项检查通过；原始源码清单 SHA-256 为 `4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98`。V4 已完成 13 个相关测试类、334 项测试，失败／错误／跳过均为 0，其中真实 MySQL 检查 18 项。使用新建隔离环境、无网络、无宿主端口，未复用编译缓存或旧测试报告；Maven 退出码 0 在输出日志前记录，2 个测试容器已清理，生产未改变。测试证明已绑定冻结提交与全部 423 个源码文件。后端 JAR 打包退出码为 0，JAR SHA-256 为 `5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e`，`BOOT-INF/classes` 下 448 个文件与隔离阶段目录匹配；本次打包没有重复运行测试。候选后端镜像 `sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95` 已构建，镜像内 JAR 哈希通过校验，构建期间生产容器世代保持不变。首次部署执行随后在 `AUTHENTICATED_EXACT_EFFECTIVE_BACKEND_MODEL` 门禁处停止，后续上线仍待新回执。本目录 V1 的 16 项与 11 项检查，V2 的 28 项、V3 的 69 项与 V4 的 85 项检查，均针对运维辅助脚本或离线逻辑，不计为业务测试，也不证明实际网盘转存、分享或上传成功。
+业务代码已冻结至提交 `b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6`。独立代码审核核对 423 个 Git blobs 与原始源码清单，17 项检查通过；原始源码清单 SHA-256 为 `4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98`。V4 已完成 13 个相关测试类、334 项测试，失败／错误／跳过均为 0，其中真实 MySQL 检查 18 项。使用新建隔离环境、无网络、无宿主端口，未复用编译缓存或旧测试报告；Maven 退出码 0 在输出日志前记录，2 个测试容器已清理，生产未改变。测试证明已绑定冻结提交与全部 423 个源码文件。后端 JAR 打包退出码为 0，JAR SHA-256 为 `5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e`，`BOOT-INF/classes` 下 448 个文件与隔离阶段目录匹配；本次打包没有重复运行测试。候选后端镜像 `sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95` 已构建，镜像内 JAR 哈希通过校验，构建期间生产容器世代保持不变。首次部署执行随后在 `AUTHENTICATED_EXACT_EFFECTIVE_BACKEND_MODEL` 门禁处停止，旧失败保留，后续fresh V5实际上线见本次续接回执。本目录 V1 的 16 项与 11 项检查，V2 的 28 项、V3 的 69 项与 V4 的 85 项检查，均针对运维辅助脚本或离线逻辑，不计为业务测试，也不证明实际网盘转存、分享或上传成功。
 
 其他元数据源按用户选择先整理可用来源和建议；本轮不会据此自动接入新采集源。影片种子仍优先从 GYING 搜索获取。沿用[可用来源研究](../metadata-update-watch-20261115/sources/metadata-sources-research.md)中的 TVmaze、Wikidata 等建议；该文档对 TMDB 资源链的说明适用于其记录的上一轮代码基准，本轮跟进由本目录验收。
 
@@ -14,13 +14,36 @@
 
 | 文件 | 结果 | 适用范围 |
 | --- | --- | --- |
+| [runtime-after-backup-stop-2026-11-15T140833.907967_0000.json](runtime-after-backup-stop-2026-11-15T140833.907967_0000.json) | 22:08重新登录后配置复验 | 原13代次/Worker/两UPDATES保持true；reservation检查看旧after-host-idle run，不代本次execute |
+| [host-memory-20261115T140415Z.json](host-memory-20261115T140415Z.json) | 轻量内存只读观测 | 只证明该次commit/物理余量，未代完整readiness |
+| [resume-fresh-run-independent-review-20261115T140629884Z.json](resume-fresh-run-independent-review-20261115T140629884Z.json) | 独立范围内审核PASS | 静态检查边界见报告，不代生产业务验收 |
+| [resume-admin-session-20261115T141235Z.json](resume-admin-session-20261115T141235Z.json) | 22:12聚合1有效ADMIN | expiry11/16 22:08:12，未输出会话正文；不代百度验证 |
+| [rollout-v4-after-admin-relogin-20261115T140629884Z/failure-2026-11-15T141147.250637_0000.json](rollout-v4-after-admin-relogin-20261115T140629884Z/failure-2026-11-15T141147.250637_0000.json) | 旧V4 key路径门禁停止 | 已Worker pause/TERM143，候选激活0，原失败保持 |
+| [old-backend-recovered-after-key-mount-stop-20261115T1411.json](old-backend-recovered-after-key-mount-stop-20261115T1411.json) | 原backend/Worker恢复通过 | 原container/image/Config保持，backend StartedAt已变，其它12代次保持 |
+| [host-memory-20261115T141910Z.json](host-memory-20261115T141910Z.json) | 轻量内存只读观测 | 只证明该次commit/物理余量，未代完整readiness |
+| [fresh-v5-run-creation-20261115T142029Z.json](fresh-v5-run-creation-20261115T142029Z.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [independent-final-review/v5-fresh-static-review-20261115T142231Z.json](independent-final-review/v5-fresh-static-review-20261115T142231Z.json) | 独立范围内审核PASS | 静态检查边界见报告，不代生产业务验收 |
+| [rollout-v5-verification/result.json](rollout-v5-verification/result.json) | 15项mock检查PASS | 8次原execute AST mock，全runtime依赖替身、生产I/O0 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json](rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json) | 实际backend部署通过 | TERM143、一次激活、六age认证；入队不等于上传成功 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/backend-term-result.json](rollout-v5-after-key-path-fix-20261115T142029Z/backend-term-result.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/worker-pause-ack.json](rollout-v5-after-key-path-fix-20261115T142029Z/worker-pause-ack.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/worker-restore-ack.json](rollout-v5-after-key-path-fix-20261115T142029Z/worker-restore-ack.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [independent-final-review/v5-deployment-static-review-20261115T143000Z.json](independent-final-review/v5-deployment-static-review-20261115T143000Z.json) | 独立范围内审核PASS | 静态检查边界见报告，不代生产业务验收 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/host-applied.json](rollout-v5-after-key-path-fix-20261115T142029Z/host-applied.json) | host pin单次CAS通过 | 仅image变更，权限/taskXML/ACL保持 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/daily-applied.json](rollout-v5-after-key-path-fix-20261115T142029Z/daily-applied.json) | 日常48→49单次CAS通过 | 只追加release父目录/native dry-run；未代自然完整备份 |
+| [rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json](rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json) | backend/host/daily实际终验通过 | 自然资源验收及完整自然备份pending |
+| [resume-post-deployment-ops-snapshot-20261115T1433.md](resume-post-deployment-ops-snapshot-20261115T1433.md) | 22:33标准运维快照 | 原UTF-8 BOM/CRLF；当时HEAD2f46aa3与旧文档，为本次文档更新前范围 |
+| [independent-final-review/fresh-final-review-20261115T143345Z.json](independent-final-review/fresh-final-review-20261115T143345Z.json) | 独立真实只读终验PASS | 新image/JAR、其它12代次、完整配置/保护历史、host/daily49/8入口；无重跑F.final |
+| [rollout-v4-after-admin-relogin-20261115T140629884Z/backend-term-result.json](rollout-v4-after-admin-relogin-20261115T140629884Z/backend-term-result.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [rollout-v4-after-admin-relogin-20261115T140629884Z/worker-pause-ack.json](rollout-v4-after-admin-relogin-20261115T140629884Z/worker-pause-ack.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
+| [rollout-v4-after-admin-relogin-20261115T140629884Z/old-backend-worker-restore-ack.json](rollout-v4-after-admin-relogin-20261115T140629884Z/old-backend-worker-restore-ack.json) | 安全回执原字节保存 | 状态/次数/哈希引用；边界以原报告为准 |
 | [qq-baidu-reason-observation.json](qq-baidu-reason-observation.json) | 只读观测完成 | 区分 17:25 的旧不可用回复与 17:26 的最新百度额外验证要求 |
 | [qq-baidu-current-config.json](qq-baidu-current-config.json) | 本地配置就绪 | 会话已保存，未验证当前官方登录有效性 |
 | [gying-live-year-schema-readonly-v2.json](gying-live-year-schema-readonly-v2.json) | 一个可信既有身份的详情 GET 通过 | 年份字段实际为整数；仅覆盖该样本，不代表全部 GYING 数据 |
 | [host-memory-20261115T125919Z.json](host-memory-20261115T125919Z.json) | 20:59 轻量内存余量回升 | commit 89.86%、余量 3373.7 MiB；未完整复验 readiness，未停进程或写配置 |
-| [runtime-after-backup-stop-2026-11-15T130008.487232_0000.json](runtime-after-backup-stop-2026-11-15T130008.487232_0000.json) | 21:00 最新原运行态保持 | 原 13 世代／镜像／Running、Worker 与两 Updates 为 true；admin 仍失败、stableConfigurationExact=null |
-| [rollout-v4-after-host-idle/deployment-execute-safe-stop.json](rollout-v4-after-host-idle/deployment-execute-safe-stop.json) | 20:43 最新 execute 安全停止 | Gate／gate=null，仅 deployment reservation；原 Gate UNKNOWN、本 run 无 pause／TERM／激活 |
-| [admin-device-expiry-aggregate-20261115T125519Z.json](admin-device-expiry-aggregate-20261115T125519Z.json) | 20:55 当前管理员认证失效的聚合只读证明 | 88 个未撤销设备均过期，eligible=0；历史 execute Gate／owner 和所选设备仍 UNKNOWN |
+| [runtime-after-backup-stop-2026-11-15T130008.487232_0000.json](runtime-after-backup-stop-2026-11-15T130008.487232_0000.json) | 21:00 当时原运行态保持 | 原 13 世代／镜像／Running、Worker 与两 Updates 为 true；admin 仍失败、stableConfigurationExact=null |
+| [rollout-v4-after-host-idle/deployment-execute-safe-stop.json](rollout-v4-after-host-idle/deployment-execute-safe-stop.json) | 20:43 当时 execute 安全停止 | Gate／gate=null，仅 deployment reservation；原 Gate UNKNOWN、本 run 无 pause／TERM／激活 |
+| [admin-device-expiry-aggregate-20261115T125519Z.json](admin-device-expiry-aggregate-20261115T125519Z.json) | 20:55 当时管理员认证失效的聚合只读证明 | 88 个未撤销设备均过期，eligible=0；历史 execute Gate／owner 和所选设备仍 UNKNOWN |
 | [host-memory-20261115T124826Z.json](host-memory-20261115T124826Z.json) | 20:48 宿主内存压力只读观测 | commit 98.49%、可用 501.5 MiB；未停进程或改配置，不直接证明旧 Gate 根因 |
 | [runtime-after-backup-stop-2026-11-15T125434.483633_0000.json](runtime-after-backup-stop-2026-11-15T125434.483633_0000.json) | 20:54 原运行态保持 | 13 世代／原镜像／Running、Worker 和两 Updates 标志为 true；stableConfigurationExact=null，API 完整复验未成立 |
 | [host-idle-window-independent-review.json](host-idle-window-independent-review.json) | 20:40 观测窗口独立复核通过 | 距最近固定业务 NextRun 6796.61 秒；未复查后续实时状态或推断历史 Running 身份 |
@@ -175,7 +198,7 @@ V4 使用独立 `rollout-v4/` 文件与新 run。最终实现独审通过，固�
 
 20:40 原固定任务窗口的独审只核对既有投影与配置摘要、固定集合和 NextRun 计算：距最近计划业务运行 6796.61 秒。独审没有重查真实任务，未证明之后所有实时 gates，也没有推断旧历史 Running／QR 身份。因此本轮候选仍未上线；此时提出释放内存与刷新后台登录后以 fresh run 再执行全部原门禁的条件。随后内存余量已有回升，最新恢复条件见后续记录。旧 run 不重试、SQL 不恢复、旧任务不重放；同一已测业务源码、334 项业务测试、85 项运维检查、JAR 与候选镜像无需重建或重测。
 
-## 当前管理员设备过期的聚合证明
+## 20:55管理员设备过期的聚合证明（历史）
 
 20:55:19（北京时间）的安全只读聚合报告确认当前启用管理员的未撤销设备 88 个，实际已过期 88 个，当前未过期与超过 now+10 分钟门槛的 eligible 数量均为 0；当前最新未撤销 expiry 为 20:52:49。因此当前认证失败和当前设备真实过期已获聚合证明，需要刷新后台登录。报告只保留计数、时间、定义、引用哈希与确定性边界；没有输出 device ID、JTI、Token、Cookie、用户行或原 SQL 数据，没有登录或写入操作。
 
@@ -183,13 +206,25 @@ V4 使用独立 `rollout-v4/` 文件与新 run。最终实现独审通过，固�
 
 报告对引用 prepared、失败、清单、运行态和内存证据的路径／哈希分别保留，仅安全聚合 JSON 原字节进入仓库。清单 complete／认证 flags 与 SQL 密文元数据不能独立证明 checkpoint finish 正常返回；此前失败边界保持。
 
-## 最新轻量内存回升与运行态保持
+## 20:59–21:00轻量内存与运行态（历史）
 
 20:59:19（北京时间）的轻量内存报告显示 commit 29887.6 MiB／limit 33261.4 MiB，使用率 89.86%，余量 3373.7 MiB，物理可用 2580.2 MiB。相比 20:48 的压力观测余量已有回升；该报告没有写配置或停止进程，只证明当次资源数值，未完成全部宿主／备份／空闲 readiness 校验。
 
 21:00:08 的最新只读运行态再次确认 13 个原容器世代完全相同、原后端镜像一致且 Running，SQL Worker 和 TMDB／GYING Updates-only 标志均为 true，本 run pause／TERM／activation reservation 均缺失。既有管理员设备仍返回 `EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED`，`stableConfigurationExact=null`；没有新登录、provider 请求或配置写入，仍不能宣称完整后台 API 配置后验。
 
-本轮以未上线的证据交付结束。后台登录问题仍 pending；刷新登录后，还须重新检查最新内存余量与全部原宿主、空闲、备份和配置门禁，使用 fresh run。内存回升不是上线成功回执，不重用旧失败 run；自然资源验收继续 pending，已冻结源码和已通过测试不重建或重测。
+21:00的上一阶段以未上线的证据交付结束。后台登录问题仍 pending；刷新登录后，还须重新检查最新内存余量与全部原宿主、空闲、备份和配置门禁，使用 fresh run。内存回升不是上线成功回执，不重用旧失败 run；自然资源验收继续 pending，已冻结源码和已通过测试不重建或重测。
+
+## 重新登录后的路径门禁停止、恢复和实际上线
+
+22:08重新登录后完整稳定API配置复验通过；22:12安全聚合证明1个有效且超过10分钟的ADMIN设备，expiry11月16日22:08:12。22:11:47 fresh V4 execute在 `EXACT_BACKEND_STATE_AND_KEY_MOUNTS` 停止，已有Worker pause与正常TERM143，候选activation为0。实际key volume目的路径为 `/run/gying-ai`，helper错写 `/run/gying-ai-key`，不是volume类型问题。22:15:17先启动原backend容器/镜像，22:15:54恢复回执确认完整Config/HostConfig、其它12代次与Worker=true及八入口；原backend StartedAt已改变，不能称全部13代次保持。旧失败/ACK/预约原字节保留，不重试旧run或恢复SQL。
+
+V5仅修改BackendRollout两处key目的路径及FollowUpDeclarations绑定哈希；HostReadyAdapter、binding、volume类型要求、归档/空闲/Worker/CAS/激活顺序保持。独立静审和15项全依赖mock检查通过（8次mock execute、生产I/O0）；334项业务与85项原辅助检查未重复，业务源码/JAR/image未重建。fresh目录 `rollout-v5-after-key-path-fix-20261115T142029Z`，prepared SHA `f90d9d62bb438578cba7a7404e9f1832479741c126dc9eb1105631b7ed16dfeb` 仅引用，不复制正文。
+
+实际2026-11-15 22:27:42（Asia/Shanghai）backend `bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb` 启动，image `sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95`，Compose26；22:28:20部署回执 `BACKEND_DEPLOYED_VERIFIED`。TERM的wait/inspect均143，候选activation/nginx reload各1、Worker pause/restore各PUT1且outcome已知。完整Config/Env、HostConfig raw/语义、有效挂载网络/native hash和JAR `5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e` 均通过。预部署三age `G:/gying-backups/tmdb-gying-predeploy-20261115-20261115T142612.040527Z`、停机三age `G:/gying-backups/tmdb-gying-stopped-backend-20261115-20261115T142733.365466Z` 经实际execute完整认证；独立静审另stream核六密文hash/size，完整认证来自实际执行，未另解大型密文。非跨服务原子快照，未恢复SQL。
+
+22:29:57 host仅expectedBackendImage单次CAS，22:32:17日常48→49仅追加整个release父目录单次CAS/native dry-run，权限/taskXML/ACL与原规则保持。22:33:00收尾状态为 `BACKEND_HOST_AND_DAILY_VERIFIED_NATURAL_ACCEPTANCE_PENDING`；22:33:45独立真实只读终验PASS，新backend/JAR、Hub/Worker/两个UPDATES=true、其它12代次、旧RANGE与保护历史、host/daily49、八入口通过。独立终验另认证host/daily小型原像，未重跑F.final或生产任务。Docker启动至22:33:45仅tail200/2241B，ERROR/Exception/OOM均0，应用文件日志未验；newTaskSummary counts/resources/budget均空，未证明资源已实际上传。原候选报告deployed=false保留为构建时事实。
+
+今天已完成UPDATES未重跑，旧片未回填、未制造验收任务或手工云操作。下一自然新TMDB资源意图/严格GYING匹配/种子下载/上传，以及完整自然日常备份仍pending；`ARCHIVE_QUEUED` 仅为归档入队，不是上传完成。标准22:33:37快照原UTF-8 BOM/CRLF保存，其HEAD2f46aa3与旧状态文档属于本次文档修改前范围，不当作文档更新后回执。
 
 ## 隔离测试阶段记录
 
@@ -210,12 +245,12 @@ V4 使用独立 `rollout-v4/` 文件与新 run。最终实现独审通过，固�
 
 配置报告中的 `CONNECTED`、`credentialConfigured=true` 和 `baiduTemporaryLocalReady=true` 只证明已保存的本地会话与开关满足本地判断，未进行当前官方登录验证。GYING 永久归档任务 `18069` 属于另一条工作流，不能用来归因 QQ 临时请求。调查未重放 QQ 请求、未发消息、未转存、未清理，也未修改配置。
 
-## 后续恢复条件与尚待真实回执
+## 本轮收尾与尚待自然验收
 
-用户刷新后台登录后，重新检查资源余量、既有管理员设备与全部原空闲／宿主门禁，再使用 fresh run。最新轻量内存余量已有回升，完整 readiness 尚未复验。当前候选不重建，已通过的 334 项业务和 85 项运维检查不重复运行；历史失败保留，不重试旧 run 或恢复 SQL。
+backend部署、正常TERM、六age完整认证、真实入口及host/daily CAS/native dry-run均已有真实回执，独立真实只读终验通过。旧V1–V4失败/UNKNOWN保持，过去未保存的具体Gate/stderr不补造原因；V5成功不改写旧失败。
 
-- backend 的真实部署回执、正常 TERM 退出结果、6 个加密回退产物的完整认证及门禁验证，以及真实入口验收。
-- 主机镜像指向替换回执、每日备份 48→49 的真实 native dry-run、新 run 完整配置后验与日志摘要。
-- 下一次自然更新轮次中的新任务、严格匹配和归档结果。未强制创建或重放任务来制造验收；自然轮次待验也不等于新影片已完成上传。
+- 下一自然TMDB UPDATES新增资源意图、严格GYING匹配、种子下载/归档及实际上传；不重跑今天已完成的更新、不回填旧片、不制造验收任务。
+- 完整自然日常备份及次日冷却/实际重复跳过/长期积压行为；49项native dry-run不能代这些结果。
+- QQ百度最新CHALLENGE_REQUIRED需按百度页面完成验证，更早BAIDU_NOT_READY具体原因未知；后台ADMIN与百度登录分别处理，未重放QQ请求或发送群消息。
 
-本目录仅保留字段、状态、布尔值、必要任务 ID、检查数量、SHA-256 和安全摘要。原 SQL、配置值、env、Token、Cookie、provider 响应正文和日志正文留在私有环境，不进入仓库。
+本目录仅保留字段、状态、布尔值、必要任务ID、检查数量、SHA-256和安全摘要。原SQL、配置值、prepared正文、env、Token、Cookie、provider响应正文和日志正文留在私有环境，不进入仓库。

@@ -1,0 +1,70 @@
+{
+  "status": "PASS_STATIC_FRESH_RUN_ISOLATION_RUNTIME_GATES_PENDING",
+  "reviewedAt": "2026-11-15T14:07:48.885Z",
+  "freshDirectory": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v4-after-admin-relogin-20261115T140629884Z",
+  "frozenOriginalDirectory": "E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v4",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "affectedServices": [
+    "backend"
+  ],
+  "files": [
+    {
+      "file": "BackendRollout.py",
+      "bytes": 24938,
+      "sha256": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+      "regularFile": true,
+      "symlink": false,
+      "originalFrozenBytesExact": true
+    },
+    {
+      "file": "deployment-binding.json",
+      "bytes": 1117,
+      "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921",
+      "regularFile": true,
+      "symlink": false,
+      "originalFrozenBytesExact": true
+    },
+    {
+      "file": "FollowUpDeclarations.py",
+      "bytes": 25652,
+      "sha256": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9",
+      "regularFile": true,
+      "symlink": false,
+      "originalFrozenBytesExact": true
+    },
+    {
+      "file": "HostReadyAdapter.py",
+      "bytes": 8997,
+      "sha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+      "regularFile": true,
+      "symlink": false,
+      "originalFrozenBytesExact": true
+    }
+  ],
+  "exactFourRegularFiles": true,
+  "allFrozenOriginalBytesExact": true,
+  "symlinksPresent": false,
+  "sameReleaseParent": true,
+  "priorV2HostBaselineReferenceRetained": true,
+  "dailyAdditionOriginalReleaseParentRetained": true,
+  "oldOverlayPreparedAckReceiptOrReservationCopied": false,
+  "preparedPlanPresent": false,
+  "independentCliStillRequired": true,
+  "existingAdminReadinessVerified": false,
+  "fullRuntimeGatesVerified": false,
+  "deploymentExecuted": false,
+  "helpersImportedOrExecuted": false,
+  "newTestsExecuted": 0,
+  "serviceReads": 0,
+  "serviceWrites": 0,
+  "productionOperations": 0,
+  "repositoryWrites": 0,
+  "oldHelpersModified": false,
+  "sourceCodeModified": false,
+  "reportWriteOnlyOutsideFreshDirectory": true,
+  "limits": [
+    "This review verifies local file inventory, raw bytes, references, and sibling placement only.",
+    "User login and the original host, idle, backup, and configuration gates must still be verified by the root before deployment.",
+    "No old reserved run may be retried; all stage inputs must use the fresh run actual returned path and SHA."
+  ]
+}

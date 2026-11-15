@@ -1,0 +1,144 @@
+{
+  "status": "BACKEND_DEPLOYED_VERIFIED",
+  "at": "2026-11-15T14:28:20.647924+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "plan": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\prepared.json",
+    "sha256": "f90d9d62bb438578cba7a7404e9f1832479741c126dc9eb1105631b7ed16dfeb"
+  },
+  "backend": {
+    "id": "bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb",
+    "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+    "startedAt": "2026-11-15T14:27:42.010101121Z"
+  },
+  "composeFiles": 26,
+  "runtime": {
+    "at": "2026-11-15T14:27:57.029362+00:00",
+    "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+    "allConfigFieldsAndEnvValuesPreserved": true,
+    "hostConfig": {
+      "rawExact": true,
+      "semanticExact": true,
+      "representationDifferences": [],
+      "allOtherFieldsExact": true
+    },
+    "fullEffectiveMountsAndNetworksPreserved": true,
+    "nativeComposeHashVerified": true,
+    "customLabelsExact": true,
+    "resolverSha256": "f6aaa04386497cfbeead0b72766138cb74e1bcb0940130bb9c894dfcca2e459a",
+    "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e"
+  },
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 67942,
+      "sha256": "133efe434fdd9bf48d2e1dfa886149ab746b6ae27824830eb29a244c143d7ae2",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1188,
+      "sha256": "9acd764588c7c765d893a05a936645babdc619d2243205d7dcd2b5ace4eca380",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/admin/resource-hub/config",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/",
+      "status": 200,
+      "bytes": 68309,
+      "sha256": "e8c7ad4760f7bfa62764d68af82c8b267fbf423b61f2ba69b035481100a3ccd2",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1188,
+      "sha256": "9acd764588c7c765d893a05a936645babdc619d2243205d7dcd2b5ace4eca380",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/admin/resource-hub/config",
+      "status": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "exactCloudflareAccessRedirect": true,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 513,
+      "sha256": "f2d95ed95fbf26a018fc563471c34988ba5e344cd6ab801beb0618654b2323f4",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    }
+  ],
+  "protected": {
+    "otherConfigurationAndLegacyFullRowsExact": true,
+    "historicalFullRowsExact": true,
+    "parentRawChanged": true,
+    "parentRevision": 1956,
+    "parentBlockedReason": "CHILD_FAILED",
+    "parentInvariantSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "otherElevenGenerationsExact": true
+  },
+  "preCheckpoint": {
+    "directory": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T142612.040527Z",
+    "artifacts": 3,
+    "authenticated": true,
+    "manifestSha256": "0c3be1c81db2a9559e2c758f5ced6bb4d24e2b983e65e0d5b8674ad6da8cfbe0"
+  },
+  "stoppedCheckpoint": {
+    "directory": "G:\\gying-backups\\tmdb-gying-stopped-backend-20261115-20261115T142733.365466Z",
+    "artifacts": 3,
+    "authenticated": true,
+    "manifestSha256": "17ea3592de45498ea0128bddfbac79b254c54f225a1ada43832956edc53d745b"
+  },
+  "normalTermResult": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\backend-term-result.json",
+    "sha256": "ba916b6d7816124ffa84abd46d2c0e29240fd05acb167fb80a8151a181036212"
+  },
+  "workerPause": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-pause-ack.json",
+    "sha256": "2c8a5ba77d9a20c72c44a6fee75d8ee5361020723dd458c64d961ce8d0257c8e"
+  },
+  "workerRestore": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-restore-ack.json",
+    "sha256": "97c42e7eaf838367ec14fafc8f29310648be4ae46485eb9092159d9a49b017ea"
+  },
+  "activationAttempts": 1,
+  "nginxReloadAttempts": 1,
+  "manualCloudActions": 0,
+  "newTaskNaturalAcceptancePending": true,
+  "automaticRetry": false,
+  "automaticSqlRestore": false
+}

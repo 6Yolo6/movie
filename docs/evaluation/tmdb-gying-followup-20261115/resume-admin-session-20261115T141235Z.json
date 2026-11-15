@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-15T14:12:35.604392+00:00",
+  "status": "EXISTING_SESSION_AGGREGATE_OBSERVED",
+  "aggregate": {
+    "dbNow": "2026-11-15 22:12:35",
+    "dbUtcNow": "2026-11-15 14:12:35",
+    "dbSessionTimeZone": "SYSTEM",
+    "joinedDeviceCount": "124",
+    "unrevokedEnabledAdminDevices": "89",
+    "unexpiredEnabledAdminDevices": "1",
+    "adminDevicesMoreThanTenMinutes": "1",
+    "latestAdminDeviceExpiry": "2026-11-16 22:08:12",
+    "unexpiredNonAdminDevices": "0"
+  },
+  "readOnlySqlTransactions": true,
+  "loginRequests": 0,
+  "newDevicesCreatedByAssistant": 0,
+  "configurationWrites": 0,
+  "providerRequests": 0,
+  "credentialOrUserRowsPrinted": false
+}

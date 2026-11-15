@@ -1,5 +1,5 @@
 {
-  "status": "SAFE_EVIDENCE_DEPLOYMENT_STOPPED_FRESH_RUN_REQUIRED",
+  "status": "SAFE_EVIDENCE_BACKEND_DEPLOYED_NATURAL_ACCEPTANCE_PENDING",
   "directory": "docs/evaluation/tmdb-gying-followup-20261115",
   "files": [
     {
@@ -46,8 +46,8 @@
     },
     {
       "file": "README.md",
-      "sha256": "7da05cbbefc371f12711525d40d27449b1d98893f9e2482145a46f670dc69990",
-      "byteCount": 37304,
+      "sha256": "997a5f438c0a8764973d16e341fdb73074f63c86c8e9ddf8d8f330e3a465f22b",
+      "byteCount": 46157,
       "secretScannerFindings": 0
     },
     {
@@ -383,12 +383,173 @@
       "sha256": "308a40fa1d89ae5ea4390b4c9b46a0108b09f171f07898f25d451fa0c69c4e9f",
       "byteCount": 72,
       "secretScannerFindings": 0
+    },
+    {
+      "file": "runtime-after-backup-stop-2026-11-15T140833.907967_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\runtime-after-backup-stop-2026-11-15T140833.907967_0000.json",
+      "sha256": "0754ed1f06636e8d9ef2fe17fb36ba17031bb9f84bcc6dbf62ed159753ff616a",
+      "byteCount": 602,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T140415Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T140415Z.json",
+      "sha256": "86f0d7858195f7e36d0ae1cf2666649ea41719088e97a54b788a68b94829ee37",
+      "byteCount": 306,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-fresh-run-independent-review-20261115T140629884Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-fresh-run-independent-review-20261115T140629884Z.json",
+      "sha256": "e110fec537924d16c4c9c7c0ebb26f48b9782e6a5d045fc7ae4aacbd790f92c1",
+      "byteCount": 2557,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-admin-session-20261115T141235Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-admin-session-20261115T141235Z.json",
+      "sha256": "c72e92af35fb31c8f66b2d81b1ab5b35d3d3a6e556a2ecb39f6a5606d9fc723c",
+      "byteCount": 665,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/failure-2026-11-15T141147.250637_0000.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\failure-2026-11-15T141147.250637_0000.json",
+      "sha256": "9f71938d16113be11e7c4b86ffd0b8c42def2664e7a78f8eb31a2c53ec0d56e1",
+      "byteCount": 451,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "old-backend-recovered-after-key-mount-stop-20261115T1411.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\old-backend-recovered-after-key-mount-stop-20261115T1411.json",
+      "sha256": "12614fe64381cf1adfd7b03d4c6794a0070ee62f4ded76f74e995ea5aa802bf4",
+      "byteCount": 3628,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "host-memory-20261115T141910Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-memory-20261115T141910Z.json",
+      "sha256": "f20606e3a318226de661d363a5adae6abf65b11cfb35a8c3f266f7d3ba1119e7",
+      "byteCount": 306,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "fresh-v5-run-creation-20261115T142029Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\fresh-v5-run-creation-20261115T142029Z.json",
+      "sha256": "cd4733967734deb5dd7e98a75c6f54cb1c7fe02568b25b9aeb98da4f65f1dce1",
+      "byteCount": 979,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/v5-fresh-static-review-20261115T142231Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\v5-fresh-static-review-20261115T142231Z.json",
+      "sha256": "e9a6bff79bef31ea9924a7593399a075824ddd57394b709145a88cf8bb9751d4",
+      "byteCount": 1749,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-verification/result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-verification\\result.json",
+      "sha256": "49ea48e72b3918384aa1478ac9a2dcd424d128c5f4f2aeb1668aac8379574a1e",
+      "byteCount": 3786,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\deployment-receipt.json",
+      "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787",
+      "byteCount": 5563,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/backend-term-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\backend-term-result.json",
+      "sha256": "ba916b6d7816124ffa84abd46d2c0e29240fd05acb167fb80a8151a181036212",
+      "byteCount": 293,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/worker-pause-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-pause-ack.json",
+      "sha256": "2c8a5ba77d9a20c72c44a6fee75d8ee5361020723dd458c64d961ce8d0257c8e",
+      "byteCount": 187,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/worker-restore-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\worker-restore-ack.json",
+      "sha256": "97c42e7eaf838367ec14fafc8f29310648be4ae46485eb9092159d9a49b017ea",
+      "byteCount": 186,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/v5-deployment-static-review-20261115T143000Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\v5-deployment-static-review-20261115T143000Z.json",
+      "sha256": "89f473f1e55f7b1e34af45988740b4eb890cfb36548c1a052b40e02cb1aa3fe5",
+      "byteCount": 3826,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/host-applied.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\host-applied.json",
+      "sha256": "5fdb557150db628dca12dbe2dba813951ce7fabd00e531df7454b541473d09ee",
+      "byteCount": 1250,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/daily-applied.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\daily-applied.json",
+      "sha256": "7c96cbd935ce7b78ef9db717b527da0980cbb2ed776015795586bfb883d7967f",
+      "byteCount": 8606,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\final-verification.json",
+      "sha256": "108ded3a3214743a3b76d8b25ac697a0e8b3f8a5e44faae21fa43390bc077aff",
+      "byteCount": 8227,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "resume-post-deployment-ops-snapshot-20261115T1433.md",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\resume-post-deployment-ops-snapshot-20261115T1433.md",
+      "sha256": "47dd7da67e54604a5122ac0126a80dc36970cb0c177341bc693e879931a74f9a",
+      "byteCount": 9339,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "independent-final-review/fresh-final-review-20261115T143345Z.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\independent-final-review\\fresh-final-review-20261115T143345Z.json",
+      "sha256": "accf79e22014dd41aefe2753e5a6b748d5d6df768a7455998a4a4d11dd0cd377",
+      "byteCount": 8706,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/backend-term-result.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\backend-term-result.json",
+      "sha256": "3a8d44e478cba93da38d32120c03af1333796f4c6cb194ede204457d60ebc1f0",
+      "byteCount": 293,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/worker-pause-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\worker-pause-ack.json",
+      "sha256": "51c23f8a33c13b43e0376053b417a4ae9c5432aa960429a9795d5af074dac448",
+      "byteCount": 187,
+      "secretScannerFindings": 0
+    },
+    {
+      "file": "rollout-v4-after-admin-relogin-20261115T140629884Z/old-backend-worker-restore-ack.json",
+      "sourcePath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-after-admin-relogin-20261115T140629884Z\\old-backend-worker-restore-ack.json",
+      "sha256": "395c039b3f511bad8ee7c3d559ac73fdd71a754f599ff756003341932a26b890",
+      "byteCount": 186,
+      "secretScannerFindings": 0
     }
   ],
   "copiedSourceBytesExact": true,
   "secretScannerFindings": 0,
   "rawSqlOrCredentialOrLogBodiesCopied": false,
-  "deploymentVerified": false,
+  "deploymentVerified": true,
   "newTaskNaturalAcceptancePending": true,
   "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
   "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
@@ -464,7 +625,6 @@
   "v4IdleRetryServiceStops": 0,
   "v4IdleRetryServiceActivations": 0,
   "v4IdleRetryProviderRequests": 0,
-  "originalHostTaskGateCurrentReadOnlyPass": true,
   "historicalHostRunningTaskIdentityConfirmed": false,
   "qrIncludedInFixedTaskNames": false,
   "v4AfterHostIdleRunIsolationReviewed": true,
@@ -489,38 +649,92 @@
   "hostCommitAvailableMiBObserved": 501.5,
   "hostMemoryObservationProvesEarlierGateCause": false,
   "powershellLaunchResourceFailureReportedByRoot": "0x800705AF",
-  "currentOriginalThirteenGenerationsPreserved": true,
-  "currentBackendOriginalImageExact": true,
-  "currentBackendRunning": true,
-  "currentSqlWorkerEnabled": true,
-  "currentSqlTmdbUpdatesOnly": true,
-  "currentSqlGyingUpdatesOnly": true,
-  "currentStableConfigurationExact": null,
-  "currentExistingAdminFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
   "adminFailureCodeProvesExpiredCredential": false,
   "candidateRebuildOrRepeatedTestsRequired": false,
   "resourceUploadSucceededVerified": false,
-  "currentAdminEligibilityFailureConfirmed": true,
-  "currentAdminExpiryVerifiedFromAggregate": true,
-  "currentAdminAggregateObservedAt": "2026-11-15T12:55:19Z",
-  "currentUnrevokedAdminDevicesObserved": 88,
-  "currentExpiredUnrevokedAdminDevicesObserved": 88,
-  "currentEligibleAdminDevicesAboveTenMinutesObserved": 0,
-  "currentLatestUnrevokedAdminExpiryObserved": "2026-11-15 20:52:49",
-  "adminRefreshRequiredFromCurrentAggregate": true,
-  "currentAggregateDoesNotIdentifyHistoricalAdminDevice": true,
   "historicalAdminExpiryRevocationRoleAndEnabledStateUnchangedEstablished": false,
-  "currentAggregateCompatibleWithTenMinuteMarginExhaustionBetweenPreparedAndStop": true,
-  "currentAggregateProvesEarlierExecuteSpecificGate": false,
   "priorFollowupConditionsIncludedUserMemoryReleaseAndAdminRefresh": true,
-  "latestHostMemoryObservedAt": "2026-11-15T12:59:19.939049+00:00",
-  "latestHostCommitPercentObserved": 89.86,
-  "latestHostCommitAvailableMiBObserved": 3373.7,
-  "latestLightweightMemoryHeadroomImproved": true,
-  "latestLightweightMemoryObservationProvesFullReadiness": false,
-  "currentRuntimeObservedAt": "2026-11-15T13:00:08.486232+00:00",
-  "currentAdminRefreshRequired": true,
-  "adminRefreshAndAllReadinessGatesRequiredBeforeFreshRun": true,
-  "memoryMustBeRecheckedBeforeFreshRun": true,
-  "furtherUserMemoryReleaseRequiredEstablished": false
+  "historicalPreResumeObservations": {
+    "scope": "20:40 through 21:00 on 2026-11-15 Asia/Shanghai; superseded as current facts by fresh V5 receipts",
+    "observations": {
+      "originalHostTaskGateCurrentReadOnlyPass": true,
+      "currentOriginalThirteenGenerationsPreserved": true,
+      "currentBackendOriginalImageExact": true,
+      "currentBackendRunning": true,
+      "currentSqlWorkerEnabled": true,
+      "currentSqlTmdbUpdatesOnly": true,
+      "currentSqlGyingUpdatesOnly": true,
+      "currentStableConfigurationExact": null,
+      "currentExistingAdminFailureCode": "EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED",
+      "currentAdminEligibilityFailureConfirmed": true,
+      "currentAdminExpiryVerifiedFromAggregate": true,
+      "currentAdminAggregateObservedAt": "2026-11-15T12:55:19Z",
+      "currentUnrevokedAdminDevicesObserved": 88,
+      "currentExpiredUnrevokedAdminDevicesObserved": 88,
+      "currentEligibleAdminDevicesAboveTenMinutesObserved": 0,
+      "currentLatestUnrevokedAdminExpiryObserved": "2026-11-15 20:52:49",
+      "adminRefreshRequiredFromCurrentAggregate": true,
+      "currentAggregateDoesNotIdentifyHistoricalAdminDevice": true,
+      "currentAggregateCompatibleWithTenMinuteMarginExhaustionBetweenPreparedAndStop": true,
+      "currentAggregateProvesEarlierExecuteSpecificGate": false,
+      "latestHostMemoryObservedAt": "2026-11-15T12:59:19.939049+00:00",
+      "latestHostCommitPercentObserved": 89.86,
+      "latestHostCommitAvailableMiBObserved": 3373.7,
+      "latestLightweightMemoryHeadroomImproved": true,
+      "latestLightweightMemoryObservationProvesFullReadiness": false,
+      "currentRuntimeObservedAt": "2026-11-15T13:00:08.486232+00:00",
+      "currentAdminRefreshRequired": true,
+      "adminRefreshAndAllReadinessGatesRequiredBeforeFreshRun": true,
+      "memoryMustBeRecheckedBeforeFreshRun": true,
+      "furtherUserMemoryReleaseRequiredEstablished": false
+    },
+    "previousManifestStatus": "SAFE_EVIDENCE_DEPLOYMENT_STOPPED_FRESH_RUN_REQUIRED"
+  },
+  "currentDeployment": {
+    "observedAt": "2026-11-15T14:33:45.800018+00:00",
+    "status": "BACKEND_HOST_AND_DAILY_VERIFIED_NATURAL_ACCEPTANCE_PENDING",
+    "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+    "backend": {
+      "id": "bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb",
+      "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+      "startedAt": "2026-11-15T14:27:42.010101121Z"
+    },
+    "composeFiles": 26,
+    "deploymentReceipt": {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/deployment-receipt.json",
+      "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787"
+    },
+    "finalReceipt": {
+      "file": "rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json",
+      "sha256": "108ded3a3214743a3b76d8b25ac697a0e8b3f8a5e44faae21fa43390bc077aff"
+    },
+    "independentReceipt": {
+      "file": "independent-final-review/fresh-final-review-20261115T143345Z.json",
+      "sha256": "accf79e22014dd41aefe2753e5a6b748d5d6df768a7455998a4a4d11dd0cd377"
+    },
+    "actualFlags": {
+      "enabled": true,
+      "workerEnabled": true,
+      "tmdbAutoSyncUpdatesOnly": true,
+      "gyingAutoSyncUpdatesOnly": true
+    },
+    "otherTwelveGenerationsExact": true,
+    "hostPinAppliedVerified": true,
+    "dailyCoverageCount": 49,
+    "naturalBackupPending": true,
+    "newResourceNaturalAcceptancePending": true,
+    "newResourceTaskAndBudgetCountsEmpty": true
+  },
+  "resumeV5MinimalFix": {
+    "backendOnlyTwoKeyDestinationLiteralsChanged": true,
+    "declarationsOnlyBackendHashChanged": true,
+    "adapterAndBindingRawBytesRetained": true,
+    "mockTests": 15,
+    "businessTestsRepeated": false,
+    "candidateRebuilt": false,
+    "preparedSha256": "f90d9d62bb438578cba7a7404e9f1832479741c126dc9eb1105631b7ed16dfeb",
+    "oldStoppedRunsPreserved": true,
+    "oldV4OriginalBackendRecoveredVerified": true,
+    "oldV4RecoveryChangedBackendStartedAt": true
+  }
 }

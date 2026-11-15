@@ -1,0 +1,105 @@
+{
+  "status": "PASS",
+  "at": "2026-11-15T14:24:11.596812+00:00",
+  "verificationScope": "Pure AST-extracted original execute and declaration hash gate with every runtime dependency mocked",
+  "tests": 15,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "cases": [
+    {
+      "test": "__main__.Regression.test_actual_fresh_directory_exact_four_regular_frozen_files",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_adapter_and_binding_original_bytes_retained",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_backend_two_literal_only_raw_and_full_ast_delta",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_bind_key_not_treated_as_volume",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_declarations_single_hash_only_raw_and_full_ast_delta",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_key_archive_error_stops_before_activation",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_missing_canonical_key_still_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_missing_data_still_rejected",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_new_declarations_accept_exact_new_backend_sha",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_new_declarations_reject_stale_backend_sha",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_old_declarations_reject_new_backend_sha",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_stopped_archive_authentication_error_stops_before_activation",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_v4_reproduces_real_destination_gate_after_term_without_activation",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_v5_actual_execute_selects_data_and_canonical_key_only",
+      "status": "PASS"
+    },
+    {
+      "test": "__main__.Regression.test_wrong_key_suffix_still_rejected",
+      "status": "PASS"
+    }
+  ],
+  "mockExecuteHarnesses": 8,
+  "productionExecuteStages": 0,
+  "deploymentModulesImported": false,
+  "allProductionDependenciesMocked": true,
+  "businessTestsRepeated": false,
+  "v4HashesPreserved": {
+    "BackendRollout.py": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+    "FollowUpDeclarations.py": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "deployment-binding.json": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "v5HashesVerified": {
+    "BackendRollout.py": "5e8b69858e0ac69eb9acc7aa35e3d67de17f606cb1fa6f7f6f47bdd108e86ee8",
+    "FollowUpDeclarations.py": "c9d6b1e7e4ba37a6e79ae57638eae4f241d596ab524ddec87a705430d18a4418",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "deployment-binding.json": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "v5BackendOnlyTwoKeyDestinationLiteralsChanged": true,
+  "v5DeclarationOnlyBackendHashChanged": true,
+  "adapterAndBindingRawBytesRetained": true,
+  "freshDirectory": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z",
+  "freshDirectoryFourFileBytesExact": true,
+  "serviceReads": 0,
+  "serviceWrites": 0,
+  "dockerCommandsExecuted": 0,
+  "providerRequests": 0,
+  "audit": {
+    "subprocessAttempts": 0,
+    "socketAttempts": 0,
+    "otherWriteAttempts": 0,
+    "reportWrites": 0
+  },
+  "scriptSha256": "a99f5699cc3e87800d1986f47db038539f82e019c35c5915e8f02bde31ac90b3",
+  "failureTraceWritten": false
+}

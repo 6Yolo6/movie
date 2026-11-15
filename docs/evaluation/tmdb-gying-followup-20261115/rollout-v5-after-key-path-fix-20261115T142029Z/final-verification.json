@@ -1,0 +1,214 @@
+{
+  "status": "BACKEND_HOST_AND_DAILY_VERIFIED_NATURAL_ACCEPTANCE_PENDING",
+  "at": "2026-11-15T14:33:00.457483+00:00",
+  "helperSha256": "c9d6b1e7e4ba37a6e79ae57638eae4f241d596ab524ddec87a705430d18a4418",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "deploymentReceipt": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\deployment-receipt.json",
+    "sha256": "5f95fec76266521a8af2d9185219108fe0ec286d84e89b1ec6dc43833594b787"
+  },
+  "hostApplied": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\host-applied.json",
+    "sha256": "5fdb557150db628dca12dbe2dba813951ce7fabd00e531df7454b541473d09ee"
+  },
+  "dailyApplied": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v5-after-key-path-fix-20261115T142029Z\\daily-applied.json",
+    "sha256": "7c96cbd935ce7b78ef9db717b527da0980cbb2ed776015795586bfb883d7967f"
+  },
+  "backend": {
+    "id": "bd827f2dbbac2bf30c285f7f95976f910e784c39f9f84e43c29adc44d18b6eeb",
+    "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+    "startedAt": "2026-11-15T14:27:42.010101121Z"
+  },
+  "protected": {
+    "otherConfigurationAndLegacyFullRowsExact": true,
+    "historicalFullRowsExact": true,
+    "parentRawChanged": true,
+    "parentRevision": 1956,
+    "parentBlockedReason": "CHILD_FAILED",
+    "parentInvariantSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "otherElevenGenerationsExact": true
+  },
+  "runtime": {
+    "at": "2026-11-15T14:32:55.905215+00:00",
+    "image": "sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95",
+    "allConfigFieldsAndEnvValuesPreserved": true,
+    "hostConfig": {
+      "rawExact": true,
+      "semanticExact": true,
+      "representationDifferences": [],
+      "allOtherFieldsExact": true
+    },
+    "fullEffectiveMountsAndNetworksPreserved": true,
+    "nativeComposeHashVerified": true,
+    "customLabelsExact": true,
+    "resolverSha256": "f6aaa04386497cfbeead0b72766138cb74e1bcb0940130bb9c894dfcca2e459a",
+    "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e"
+  },
+  "otherTwelveServiceGenerationsExact": true,
+  "otherSysConfigRowsExact": true,
+  "legacyRangeRowsExact": true,
+  "hostMetadataExact": true,
+  "hostPinOnlyExpectedBackendImageChanged": true,
+  "dailyOnlySingleReleasePathAdded": true,
+  "dailyDryRun": {
+    "mode": "dry-run",
+    "artifactCount": 49,
+    "artifacts": [
+      "mysql.sql.age",
+      "environment.tar.age",
+      "compose.tar.age",
+      "cloudflared.tar.age",
+      "minio-data.tar.age",
+      "minio-config.tar.age",
+      "openclaw-auth-config.tar.age",
+      "ai-reviewed-deploy.tar.age",
+      "local-ai-state-key.tar.age",
+      "local-ai-state.tar.age",
+      "ai-query-plan-reviewed-deploy.tar.age",
+      "local-ai-environment.tar.age",
+      "local-ai-semantic-index.tar.age",
+      "container-init-reviewed-deploy.tar.age",
+      "metadata-source-pause-runtime-20261029.tar.age",
+      "ai-quality-backend-override-20261031.tar.age",
+      "publishing-recovery-override-20261101.tar.age",
+      "tmdb-empty-range-runtime-20261102.tar.age",
+      "ai-query-quality-backend-runtime-20261103.tar.age",
+      "qq-prada-transfer-runtime-20261103.tar.age",
+      "qq-prada-transfer-runtime-20261103-rollback.tar.age",
+      "ai-identity-theme-runtime-20261104.tar.age",
+      "ai-identity-theme-runtime-20261104-rollback.tar.age",
+      "cloud-drive-workflows-runtime-20261108.tar.age",
+      "baidu-file-selection-runtime-20261109.tar.age",
+      "baidu-file-selection-backup-helpers-20261109.tar.age",
+      "baidu-file-selection-deploy-helpers-20261109.tar.age",
+      "baidu-login-install-materials-20261109.tar.age",
+      "baidu-login-private-host.tar.age",
+      "baidu-backfill-release-20261109.tar.age",
+      "baidu-torrent-backfill-release-20261109.tar.age",
+      "baidu-search-duplicate-release-20261109.tar.age",
+      "baidu-console-window-fix-20261109.tar.age",
+      "baidu-recovery-merge-release-20261110.tar.age",
+      "baidu-runtime-merge-metadata-release-20261110.tar.age",
+      "baidu-upload-id-compat-release-20261110.tar.age",
+      "mobland-merge-compat-release-20261110.tar.age",
+      "baidu-archive-file-guard-release-20261110.tar.age",
+      "duplicate-tmdb-binding-release-20261111.tar.age",
+      "gying-collection-release-20261114.tar.age",
+      "metadata-update-watch-release-20261115.tar.age",
+      "tmdb-gying-followup-release-20261115.tar.age",
+      "backend-data.tar.age",
+      "quark-config.tar.age",
+      "social-qq.tar.age",
+      "social-weibo.tar.age",
+      "openclaw-home.tar.age",
+      "openclaw-state.tar.age",
+      "ai-state-key.tar.age"
+    ],
+    "allScopedPathsVerified": true,
+    "fullBackupExecuted": false,
+    "naturalBackupVerified": false
+  },
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 67942,
+      "sha256": "133efe434fdd9bf48d2e1dfa886149ab746b6ae27824830eb29a244c143d7ae2",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1188,
+      "sha256": "9acd764588c7c765d893a05a936645babdc619d2243205d7dcd2b5ace4eca380",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/admin/resource-hub/config",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/",
+      "status": 200,
+      "bytes": 68309,
+      "sha256": "e8c7ad4760f7bfa62764d68af82c8b267fbf423b61f2ba69b035481100a3ccd2",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1188,
+      "sha256": "9acd764588c7c765d893a05a936645babdc619d2243205d7dcd2b5ace4eca380",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/admin/resource-hub/config",
+      "status": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "exactCloudflareAccessRedirect": true,
+      "bodyOrLocationQueryWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 513,
+      "sha256": "f2d95ed95fbf26a018fc563471c34988ba5e344cd6ab801beb0618654b2323f4",
+      "exactCloudflareAccessRedirect": false,
+      "bodyOrLocationQueryWritten": false
+    }
+  ],
+  "newTaskSummary": {
+    "counts": [],
+    "recentResources": [],
+    "budgetLedgers": [],
+    "providerUrlsOrPayloadsWritten": false,
+    "productionWrites": 0
+  },
+  "backendLogSummary": {
+    "since": "2026-11-15T14:27:42.010101121Z",
+    "until": "2026-11-15T14:32:48.727974+00:00",
+    "tailLimit": 200,
+    "bytes": 2006,
+    "sha256": "23ca2ebf1ea4cd04258f3693777be663378c6332c255eda0c741b568fd1d6a79",
+    "errorMarkerCount": 0,
+    "exceptionMarkerCount": 0,
+    "oomMarkerCount": 0,
+    "rawLogsWritten": false
+  },
+  "activationAttempts": 1,
+  "workerPauseAttempts": 1,
+  "workerRestoreAttempts": 1,
+  "nginxReloadAttempts": 1,
+  "manualCloudActions": 0,
+  "oldTasksReplayed": false,
+  "naturalBackupVerified": false,
+  "newTaskNaturalAcceptancePending": true,
+  "automaticRetry": false,
+  "automaticSqlRestore": false
+}
