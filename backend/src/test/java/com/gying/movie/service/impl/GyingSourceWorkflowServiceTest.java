@@ -821,6 +821,41 @@ class GyingSourceWorkflowServiceTest {
         verify(gyingSourceClient).get("/catalog?typeCode=" + type + "&sort=" + sort + "&page=50&limit=100");
     }
 
+    @Test void dailyUpdateSeedRequiresCompleteCollectionBeyondMetadataOrPartialP2p() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("typeCode", "mv", "mid", "DONE1", "title",
+                movieService.getById("canonical").getTitleCn(), "year", 2026);
+        assertFalse(service.catalogUpdateComplete(candidate));
+        verify(gyingSourceClient, never()).get("/resources/mv/DONE1");
+        assertFalse(service.collectCatalogUpdate(candidate));
+        assertTrue(identity.getEvidenceJson().contains("catalogCollection"));
+        assertTrue(service.catalogUpdateComplete(candidate));
+        verify(gyingSourceClient).get("/resources/mv/DONE1");
+    }
+
+    @Test void dailyUpdateP2pFailureNeverRecordsCompletionAndKeepsExactIdentityForRetry() {
+        MovieSourceIdentity identity = stubAutomaticCatalogMovie();
+        Map<String, Object> candidate = Map.of("typeCode", "mv", "mid", "DONE1", "title",
+                movieService.getById("canonical").getTitleCn(), "year", 2026);
+        when(gyingSourceClient.get("/resources/mv/DONE1")).thenReturn(Map.of("resources", List.of(catalogMagnet("a", "1080P"))));
+        when(resourceLinkService.save(any(ResourceLink.class))).thenReturn(false);
+        assertThrows(IllegalStateException.class, () -> service.collectCatalogUpdate(candidate));
+        assertFalse(identity.getEvidenceJson().contains("catalogCollection"));
+        assertFalse(service.catalogUpdateComplete(candidate));
+        verify(sourceIdentityService, never()).update(any(Wrapper.class));
+    }
+
+    @Test void dailyUpdateHeadFetchHasNoPerMovieEnrichmentAndRejectsMissingItems() {
+        Map<String,Object> candidate = Map.of("mid", "HEAD1", "title", "Head Film", "year", 2026);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=time&page=1&limit=100")).thenReturn(Map.of("items", List.of(candidate)));
+        assertEquals(List.of(candidate), service.catalogUpdateHead("TIME_MOVIE", 1));
+        verifyNoInteractions(tmdbClient, movieService, sourceIdentityService, resourceLinkService, discoveryService,
+                transferTaskService, transferRunnerService, publishService);
+        when(gyingSourceClient.get("/catalog?typeCode=mv&sort=time&page=2&limit=100")).thenReturn(Map.of());
+        assertThrows(IllegalStateException.class, () -> service.catalogUpdateHead("TIME_MOVIE", 2));
+        assertThrows(IllegalArgumentException.class, () -> service.catalogUpdateHead("TIME_MOVIE", 3));
+    }
+
     private MovieSourceIdentity catalogIdentity(String movieId, String type, String mid) {
         MovieSourceIdentity identity = new MovieSourceIdentity();
         identity.setId(810L); identity.setMovieId(movieId); identity.setSource("GYING");

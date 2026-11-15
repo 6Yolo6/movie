@@ -1,0 +1,100 @@
+{
+  "reportKind": "observed-prior-tool-results-with-current-source-hashes",
+  "recordedAt": "2026-11-15T08:35:53.142412+00:00",
+  "observer": "/root/source_lists",
+  "provenance": {
+    "results": "Successful tool results observed in the preceding conversation segment and retained in the context handoff; this record does not rerun commands.",
+    "originalProcessLogsRetained": false,
+    "observationTimestampRetained": false,
+    "sourceHashes": "Captured when writing this report; these frontend files have not been edited by this agent after the observed successful test/lint runs.",
+    "reproductionCommandsExecutedNow": false
+  },
+  "tests": {
+    "observedCommand": [
+      "node",
+      "--max-old-space-size=256",
+      "--test",
+      "tests/metadata-updates-only.test.mjs"
+    ],
+    "cwd": "D:/gying-movie/movie/frontend",
+    "exit": 0,
+    "passed": 8,
+    "failed": 0,
+    "passedBoolean": true,
+    "usesActualJsxAndConfigSaveCallback": true,
+    "domUsed": false,
+    "browserUsed": false,
+    "realServerOrCredentialsUsed": false
+  },
+  "lint": {
+    "observedScope": [
+      "src/app/admin/resource-hub/page.tsx",
+      "src/components/admin/MetadataCrawlRanges.tsx",
+      "tests/metadata-updates-only.test.mjs"
+    ],
+    "cwd": "D:/gying-movie/movie/frontend",
+    "exit": 0,
+    "passed": true,
+    "exactInvocationRetained": false,
+    "reproductionCommand": [
+      "node",
+      "--max-old-space-size=256",
+      "node_modules/eslint/bin/eslint.js",
+      "src/app/admin/resource-hub/page.tsx",
+      "src/components/admin/MetadataCrawlRanges.tsx",
+      "tests/metadata-updates-only.test.mjs"
+    ],
+    "initialFailure": "Next rule rejected a temporary variable named module; renamed to record before the final passing runs."
+  },
+  "diffCheck": {
+    "observedCommand": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "frontend"
+    ],
+    "exit": 0,
+    "passed": true
+  },
+  "sourceHashes": [
+    {
+      "path": "frontend/src/app/admin/resource-hub/page.tsx",
+      "sha256": "5870f13c6f11dbfe4980c7d0b10119517b8f8f948e47fa0a641ba8687fa9c94a",
+      "bytes": 121820
+    },
+    {
+      "path": "frontend/src/components/admin/MetadataCrawlRanges.tsx",
+      "sha256": "917c8a8368a581f9ea5328f941ed2b964d174066ca0d0dcc0d415f06e19dc28d",
+      "bytes": 5037
+    },
+    {
+      "path": "frontend/public/locales/zh/common.json",
+      "sha256": "90baaca8ef7f3cac615d54912acb9d3ddb51fd140ec2f34d5cbe0966e020c646",
+      "bytes": 86611
+    },
+    {
+      "path": "frontend/public/locales/en/common.json",
+      "sha256": "c656fa82cb016c72dd8b62dc7a5b9d2cacedc3a01c0aab1e69dda39813410e10",
+      "bytes": 89441
+    },
+    {
+      "path": "frontend/tests/metadata-updates-only.test.mjs",
+      "sha256": "d6d1442a0896e275b6d4aaf7ed35371727f6dca5dfd2a4d5d9bbe03480c89c59",
+      "bytes": 14248
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "f54fa150a0b97c2d164b851d0fc8f360d3d76ac51aeace32b4e992252428f5ed",
+      "bytes": 890
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "509a89570bf57e9496fd22dd33cfd4b0e019af723728e88cbf22c35bec0d1995",
+      "bytes": 280512
+    }
+  ],
+  "fullProductionBuildObservedByThisAgent": false,
+  "projectWideTypeScriptCheckObservedByThisAgent": false,
+  "productionActionsPerformedByThisAgent": false
+}

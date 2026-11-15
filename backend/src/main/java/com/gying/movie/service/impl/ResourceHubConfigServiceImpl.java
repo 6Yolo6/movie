@@ -43,6 +43,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_ENABLED = "resource.hub.enabled";
     private static final String KEY_AUTO_APPROVE = "resource.hub.auto_approve";
     private static final String KEY_TMDB_AUTO_SYNC_ENABLED = "resource.hub.tmdb.auto_sync_enabled";
+    private static final String KEY_TMDB_AUTO_SYNC_UPDATES_ONLY = "resource.hub.tmdb.auto_sync_updates_only";
     private static final String KEY_TMDB_AUTO_SYNC_SOURCES = "resource.hub.tmdb.auto_sync_sources";
     private static final String KEY_TMDB_AUTO_SYNC_RANGES = "resource.hub.tmdb.auto_sync_ranges";
     private static final String KEY_TMDB_AUTO_SYNC_PAGE = "resource.hub.tmdb.auto_sync_page";
@@ -54,6 +55,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_TMDB_DISCOVERY_COOLDOWN_HOURS = "resource.hub.tmdb.discovery_cooldown_hours";
     private static final String KEY_GYING_DISCOVERY_ENABLED = "resource.hub.gying.discovery_enabled";
     private static final String KEY_GYING_AUTO_SYNC_ENABLED = "resource.hub.gying.auto_sync_enabled";
+    private static final String KEY_GYING_AUTO_SYNC_UPDATES_ONLY = "resource.hub.gying.auto_sync_updates_only";
     private static final String KEY_GYING_AUTO_SYNC_SOURCES = "resource.hub.gying.auto_sync_sources";
     private static final String KEY_GYING_SOURCE_PAUSED_PREFIX = "resource.hub.gying.auto_sync_paused.";
     private static final String KEY_GYING_AUTO_SYNC_RANGES = "resource.hub.gying.auto_sync_ranges";
@@ -115,6 +117,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         properties.setEnabled(readBoolean(KEY_ENABLED, properties.isEnabled()));
         properties.setAutoApprove(readBoolean(KEY_AUTO_APPROVE, properties.isAutoApprove()));
         tmdb.setAutoSyncEnabled(readBoolean(KEY_TMDB_AUTO_SYNC_ENABLED, tmdb.isAutoSyncEnabled()));
+        tmdb.setAutoSyncUpdatesOnly(readBoolean(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, tmdb.isAutoSyncUpdatesOnly()));
         tmdb.setAutoSyncSources(readString(KEY_TMDB_AUTO_SYNC_SOURCES, tmdb.getAutoSyncSources()));
         tmdb.setAutoSyncPage(readInt(KEY_TMDB_AUTO_SYNC_PAGE, tmdb.getAutoSyncPage(), 1, 500));
         tmdb.setAutoSyncEndPage(Math.max(tmdb.getAutoSyncPage(),
@@ -127,6 +130,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         tmdb.setDiscoveryCooldownHours(readInt(KEY_TMDB_DISCOVERY_COOLDOWN_HOURS, tmdb.getDiscoveryCooldownHours(), 1, 720));
         gying.setDiscoveryEnabled(readBoolean(KEY_GYING_DISCOVERY_ENABLED, gying.isDiscoveryEnabled()));
         gying.setAutoSyncEnabled(readBoolean(KEY_GYING_AUTO_SYNC_ENABLED, gying.isAutoSyncEnabled()));
+        gying.setAutoSyncUpdatesOnly(readBoolean(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, gying.isAutoSyncUpdatesOnly()));
         gying.setAutoSyncSources(readString(KEY_GYING_AUTO_SYNC_SOURCES, gying.getAutoSyncSources()));
         gying.setAutoSyncPausedSources(readGyingPausedSources());
         gying.setAutoSyncPage(readInt(KEY_GYING_AUTO_SYNC_PAGE, gying.getAutoSyncPage(), 1, MetadataCrawlRange.maxPages("GYING")));
@@ -230,6 +234,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             tmdb.setAutoSyncEnabled(request.getTmdbAutoSyncEnabled());
             upsert(KEY_TMDB_AUTO_SYNC_ENABLED, Boolean.toString(request.getTmdbAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据");
         }
+        if (request.getTmdbAutoSyncUpdatesOnly() != null) {
+            tmdb.setAutoSyncUpdatesOnly(request.getTmdbAutoSyncUpdatesOnly());
+            upsert(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, Boolean.toString(request.getTmdbAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新");
+        }
         if (request.getTmdbAutoSyncSources() != null) {
             String value = normalizeSources(request.getTmdbAutoSyncSources());
             tmdb.setAutoSyncSources(value);
@@ -278,6 +286,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             gying.setAutoSyncEnabled(request.getGyingAutoSyncEnabled());
             upsert(KEY_GYING_AUTO_SYNC_ENABLED, Boolean.toString(request.getGyingAutoSyncEnabled()),
                     "是否按计划从 GYING 自动同步影片元数据");
+        }
+        if (request.getGyingAutoSyncUpdatesOnly() != null) {
+            gying.setAutoSyncUpdatesOnly(request.getGyingAutoSyncUpdatesOnly());
+            upsert(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, Boolean.toString(request.getGyingAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新");
         }
         if (request.getGyingAutoSyncSources() != null) {
             String value = normalizeGyingSources(request.getGyingAutoSyncSources());
@@ -382,6 +394,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setAutoApprove(properties.isAutoApprove());
         response.setTmdbConfigured(hasText(tmdb.getApiKey()));
         response.setTmdbAutoSyncEnabled(tmdb.isAutoSyncEnabled());
+        response.setTmdbAutoSyncUpdatesOnly(tmdb.isAutoSyncUpdatesOnly());
         response.setTmdbAutoSyncSources(tmdb.getAutoSyncSources());
         var tmdbRanges = new LinkedHashMap<String, MetadataCrawlRange>();
         MetadataCrawlRange.sources("TMDB").forEach(source -> tmdbRanges.put(source, tmdb.rangeFor(source)));
@@ -395,6 +408,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setTmdbDiscoveryCooldownHours(tmdb.getDiscoveryCooldownHours());
         response.setGyingDiscoveryEnabled(gying.isDiscoveryEnabled());
         response.setGyingAutoSyncEnabled(gying.isAutoSyncEnabled());
+        response.setGyingAutoSyncUpdatesOnly(gying.isAutoSyncUpdatesOnly());
         response.setGyingAutoSyncSources(gying.getAutoSyncSources());
         var paused = new LinkedHashMap<String, Boolean>();
         MetadataCrawlRange.sources("GYING").forEach(source -> paused.put(source, gying.isAutoSyncSourcePaused(source)));
@@ -628,6 +642,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_ENABLED, values(Boolean.toString(properties.isEnabled()), "影视资源中心总开关"));
         defaults.put(KEY_AUTO_APPROVE, values(Boolean.toString(properties.isAutoApprove()), "影视资源中心自动入库资源是否直接通过审核"));
         defaults.put(KEY_TMDB_AUTO_SYNC_ENABLED, values(Boolean.toString(properties.getTmdb().isAutoSyncEnabled()), "是否按计划从 TMDB 自动同步影片元数据"));
+        defaults.put(KEY_TMDB_AUTO_SYNC_UPDATES_ONLY, values(Boolean.toString(properties.getTmdb().isAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新"));
         defaults.put(KEY_TMDB_AUTO_SYNC_SOURCES, values(properties.getTmdb().getAutoSyncSources(), "TMDB 自动同步的数据源类型列表"));
         defaults.put(KEY_TMDB_AUTO_SYNC_PAGE, values(Integer.toString(properties.getTmdb().getAutoSyncPage()), "TMDB 自动同步读取的目录页码"));
         defaults.put(KEY_TMDB_AUTO_SYNC_END_PAGE, values(
@@ -643,6 +658,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_GYING_AUTO_SYNC_ENABLED, values(
                 Boolean.toString(properties.getGying().isAutoSyncEnabled()),
                 "是否按计划从 GYING 自动同步影片元数据"));
+        defaults.put(KEY_GYING_AUTO_SYNC_UPDATES_ONLY, values(Boolean.toString(properties.getGying().isAutoSyncUpdatesOnly()), "是否暂停全量采集并仅检查每日更新"));
         defaults.put(KEY_GYING_AUTO_SYNC_SOURCES, values(
                 properties.getGying().getAutoSyncSources(), "GYING 自动同步的数据源类型列表"));
         defaults.put(KEY_GYING_AUTO_SYNC_PAGE, values(

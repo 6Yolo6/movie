@@ -1573,5 +1573,16 @@
       "movie_metadata": "Movie records",
       "resource_hub_task.payload": "Resource Hub task contents"
     }
-  }
+  },
+  "resourceHubUpdatesOnlySwitch": "{{provider}}: pause full collection, check updates only",
+  "resourceHubUpdatesOnlyHelp": "After saving, retain full ranges and cursors and check pages 1–2 of the selected lists only. Disabling automatic collection pauses all automatic checks; manual refresh remains available.",
+  "resourceHubUpdatesOnlyMode": "Check updates only",
+  "resourceHubUpdatesOnlyPaused": "Automatic update checks are paused",
+  "resourceHubUpdatesOnlySchedule": "Check every {{hours}} hours, processing at most {{limit}} details per round across all selected lists.",
+  "resourceHubUpdatesOnlyIntervalHelp": "Update checks use an interval of at least 24 hours and process at most 10 details per round. Full ranges and cursors are retained and do not control update checks.",
+  "resourceHubFullCrawlRangesRetainedHelp": "Retained full ranges: update mode checks pages 1–2 of the selected lists and does not run the ranges below.",
+  "resourceHubFullProgressRetained": "Retained full progress; this range is not run in update mode",
+  "resourceHubFullProgressPositionRetained": "Retained full cursor: {{position}}",
+  "resourceHubFullCollectionPausedForUpdates": "Full collection paused (update mode)",
+  "resourceHubUpdatesOnlyPausedHelp": "Automatic collection is disabled, so update checks are not running. Update mode and full collection settings are retained."
 }

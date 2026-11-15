@@ -1,0 +1,135 @@
+{
+  "runId": "83bfe9bf4963",
+  "stage": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce",
+  "productionChanged": false,
+  "network": "none",
+  "hostPorts": [],
+  "startedAt": "2026-11-15T08:41:42.554675+00:00",
+  "containers": [
+    {
+      "id": "a5080532261444ac96d378dcaae42c50d861dfb234cc7a831d8454677d7198aa",
+      "name": "/gying-updates-mysql-83bfe9bf4963",
+      "network": "none",
+      "memory": 402653184,
+      "user": "999:999",
+      "mounts": []
+    },
+    {
+      "id": "8d270c00306a20cdf0e5b52afca03a7505e1da04822a9877c4948bbf771a49dc",
+      "name": "/gying-updates-maven-83bfe9bf4963",
+      "network": "container:a5080532261444ac96d378dcaae42c50d861dfb234cc7a831d8454677d7198aa",
+      "memory": 805306368,
+      "user": "10001:10001",
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\backend",
+          "Destination": "/workspace",
+          "Mode": "",
+          "RW": true,
+          "Propagation": "rprivate"
+        },
+        {
+          "Type": "bind",
+          "Source": "C:/Users/ASUS/.m2/repository",
+          "Destination": "/m2",
+          "Mode": "",
+          "RW": false,
+          "Propagation": "rprivate"
+        },
+        {
+          "Type": "bind",
+          "Source": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\maven-settings.xml",
+          "Destination": "/fixture-settings.xml",
+          "Mode": "",
+          "RW": false,
+          "Propagation": "rprivate"
+        }
+      ]
+    }
+  ],
+  "mavenContainer": "8d270c00306a20cdf0e5b52afca03a7505e1da04822a9877c4948bbf771a49dc",
+  "mysqlContainer": "a5080532261444ac96d378dcaae42c50d861dfb234cc7a831d8454677d7198aa",
+  "exitCode": 0,
+  "tests": {
+    "totals": {
+      "tests": 232,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "classes": {
+      "com.gying.movie.service.impl.GyingMetadataItemRetryServiceTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.GyingMetadataSyncServiceImplTest": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.GyingSourceWorkflowServiceTest": {
+        "tests": 105,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataCrawlRecoveryTest": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesCheckpointMySqlTest": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesCheckpointTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.MetadataUpdatesProvidersTest": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.ResourceHubConfigServiceImplTest": {
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.ResourceHubWorkerServiceImplTest": {
+        "tests": 44,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.TmdbMetadataCrawlTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "com.gying.movie.service.impl.TmdbMetadataSyncServiceImplTest": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "cleanup": [
+    "8d270c00306a20cdf0e5b52afca03a7505e1da04822a9877c4948bbf771a49dc",
+    "a5080532261444ac96d378dcaae42c50d861dfb234cc7a831d8454677d7198aa"
+  ],
+  "finishedAt": "2026-11-15T08:46:52.349989+00:00"
+}

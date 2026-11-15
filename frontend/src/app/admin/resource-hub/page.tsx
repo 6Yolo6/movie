@@ -95,6 +95,7 @@ interface ResourceHubConfig {
     autoApprove: boolean;
     tmdbConfigured: boolean;
     tmdbAutoSyncEnabled: boolean;
+    tmdbAutoSyncUpdatesOnly?: boolean;
     tmdbAutoSyncSources: string;
     tmdbAutoSyncRanges?: Record<string, { startPage: number; endPage: number }>;
     tmdbAutoSyncPage: number;
@@ -106,6 +107,7 @@ interface ResourceHubConfig {
     tmdbDiscoveryCooldownHours: number;
     gyingDiscoveryEnabled: boolean;
     gyingAutoSyncEnabled: boolean;
+    gyingAutoSyncUpdatesOnly?: boolean;
     gyingAutoSyncSources: string;
     gyingAutoSyncPausedSources?: Record<string, boolean>;
     gyingAutoSyncRanges?: Record<string, { startPage: number; endPage: number }>;
@@ -329,6 +331,40 @@ function completedCrawlAvailability(task: ResourceHubTask) {
     }
 }
 
+function MetadataUpdatesOnlySettings({ provider }: { provider: 'tmdb' | 'gying' }) {
+    const { t } = useTranslation();
+    const updatesOnly = Boolean(Form.useWatch(`${provider}AutoSyncUpdatesOnly`));
+    const enabled = Boolean(Form.useWatch(`${provider}AutoSyncEnabled`));
+    const hours = Math.max(24, Number(Form.useWatch(`${provider}AutoSyncIntervalHours`)) || 24);
+    const limit = Math.min(10, Math.max(1, Number(Form.useWatch(`${provider}AutoSyncMaxItems`)) || 10));
+    return <div data-testid={`${provider}-updates-only-settings`}>
+        <Form.Item name={`${provider}AutoSyncUpdatesOnly`} valuePropName="checked"
+            label={t('resourceHubUpdatesOnlySwitch', { provider: provider.toUpperCase() })}
+            extra={t('resourceHubUpdatesOnlyHelp')}>
+            <Switch data-testid={`${provider}-updates-only-switch`}
+                aria-label={t('resourceHubUpdatesOnlySwitch', { provider: provider.toUpperCase() })} />
+        </Form.Item>
+        {updatesOnly && <Alert className="mb-4" type={enabled ? 'info' : 'warning'} showIcon
+            title={t(enabled ? 'resourceHubUpdatesOnlyMode' : 'resourceHubUpdatesOnlyPaused')}
+            description={<>
+                <div>{enabled ? t('resourceHubUpdatesOnlySchedule', { hours, limit }) : t('resourceHubUpdatesOnlyPausedHelp')}</div>
+                <div>{t('resourceHubFullCrawlRangesRetainedHelp')}</div>
+            </>} />}
+    </div>;
+}
+
+function MetadataSyncIntervalHelp({ provider }: { provider: 'tmdb' | 'gying' }) {
+    const { t } = useTranslation();
+    const updatesOnly = Boolean(Form.useWatch(`${provider}AutoSyncUpdatesOnly`));
+    return <Text type="secondary">{t(updatesOnly ? 'resourceHubUpdatesOnlyIntervalHelp'
+        : provider === 'tmdb' ? 'resourceHubSyncIntervalHelp' : 'resourceHubGyingSyncHelp')}</Text>;
+}
+
+function providerUpdatesOnly(config: ResourceHubConfig | undefined, provider: string) {
+    return provider === 'TMDB' ? Boolean(config?.tmdbAutoSyncUpdatesOnly)
+        : provider === 'GYING' && Boolean(config?.gyingAutoSyncUpdatesOnly);
+}
+
 export default function ResourceHubAdminPage() {
     const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
     const { user, token } = useAuthStore();
@@ -406,6 +442,8 @@ export default function ResourceHubAdminPage() {
         delete fields.driveWorkflows;
         return {
             ...fields,
+            tmdbAutoSyncUpdatesOnly: config.tmdbAutoSyncUpdatesOnly ?? false,
+            gyingAutoSyncUpdatesOnly: config.gyingAutoSyncUpdatesOnly ?? false,
             weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
                 typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
             })),
@@ -1492,6 +1530,9 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
+                                                        <MetadataUpdatesOnlySettings provider="tmdb" />
+                                                    </Col>
+                                                    <Col xs={24}>
                                                         <Form.Item name="tmdbAutoSyncSources" label={t('resourceHubTmdbSources')}>
                                                             <Select mode="multiple" options={tmdbSourceOptions} />
                                                         </Form.Item>
@@ -1507,10 +1548,13 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <Text type="secondary">{t('resourceHubSyncIntervalHelp')}</Text>
+                                                        <MetadataSyncIntervalHelp provider="tmdb" />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <MetadataCrawlRanges provider="tmdb" options={tmdbSourceOptions} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <MetadataUpdatesOnlySettings provider="gying" />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Form.Item name="gyingAutoSyncSources" label={t('resourceHubGyingSources')}>
@@ -1528,7 +1572,7 @@ export default function ResourceHubAdminPage() {
                                                         </Form.Item>
                                                     </Col>
                                                     <Col xs={24}>
-                                                        <Text type="secondary">{t('resourceHubGyingSyncHelp')}</Text>
+                                                        <MetadataSyncIntervalHelp provider="gying" />
                                                     </Col>
                                                     <Col xs={24}>
                                                         <MetadataCrawlRanges provider="gying" options={gyingSourceOptions}
@@ -1551,11 +1595,19 @@ export default function ResourceHubAdminPage() {
                                                                 { title: t('resourceHubCrawlSource'), key: 'source', render: (_, row) => `${row.provider} / ${t(`${row.provider === 'GYING' ? 'resourceHubGyingSource' : 'resourceHubSource'}.${row.source}`, { defaultValue: row.source })}` },
                                                                 { title: t('resourceHubCrawlRange'), key: 'range', width: 180, render: (_, row) => <div>
                                                                     <div>{`${row.startPage}–${row.endPage}`}</div>
+                                                                    {providerUpdatesOnly(overview?.config, row.provider) && <Text type="secondary">
+                                                                        {t('resourceHubFullProgressRetained')}
+                                                                    </Text>}
                                                                     {Number.isInteger(row.observedTotalPages) && (row.observedTotalPages as number) >= 0
                                                                         && <Text type="secondary">{t('resourceHubCrawlObservedLastPage')}: {row.observedTotalPages}</Text>}
                                                                 </div> },
-                                                                { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem }) },
+                                                                { title: t('resourceHubCrawlNext'), key: 'next', render: (_, row) => {
+                                                                    const position = t('resourceHubCrawlPosition', { page: row.nextPage, item: row.nextItem });
+                                                                    return providerUpdatesOnly(overview?.config, row.provider)
+                                                                        ? t('resourceHubFullProgressPositionRetained', { position }) : position;
+                                                                 } },
                                                                 { title: t('resourceHubCrawlState'), dataIndex: 'status', render: (value: string, row) => {
+                                                                    if (providerUpdatesOnly(overview?.config, row.provider)) return t('resourceHubFullCollectionPausedForUpdates');
                                                                     const paused = overview?.config.gyingAutoSyncPausedSources?.[row.source];
                                                                     const status = row.provider === 'GYING' && paused ? 'PAUSED'
                                                                         : row.provider === 'GYING' && value === 'PAUSED' ? 'RESUMED' : value;

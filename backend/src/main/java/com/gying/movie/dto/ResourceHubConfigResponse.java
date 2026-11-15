@@ -15,6 +15,7 @@ public class ResourceHubConfigResponse {
     private boolean autoApprove;
     private boolean tmdbConfigured;
     private boolean tmdbAutoSyncEnabled;
+    private boolean tmdbAutoSyncUpdatesOnly;
     private String tmdbAutoSyncSources;
     private java.util.Map<String, MetadataCrawlRange> tmdbAutoSyncRanges;
     private int tmdbAutoSyncPage;
@@ -26,6 +27,7 @@ public class ResourceHubConfigResponse {
     private int tmdbDiscoveryCooldownHours;
     private boolean gyingDiscoveryEnabled;
     private boolean gyingAutoSyncEnabled;
+    private boolean gyingAutoSyncUpdatesOnly;
     private String gyingAutoSyncSources;
     private java.util.Map<String, Boolean> gyingAutoSyncPausedSources;
     private java.util.Map<String, MetadataCrawlRange> gyingAutoSyncRanges;

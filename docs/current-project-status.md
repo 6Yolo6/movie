@@ -1,6 +1,8 @@
 # 当前项目状态
 
-更新时间：2026-11-14
+更新时间：2026-11-15
+
+11月15日16:16已按用户要求暂停TMDB/GYING全量自动翻页，Worker保持true，16:20独立只读复核无在途元数据且暂停后无新增；旧范围/CSCORE暂停图和其他配置、历史任务保持。TMDB旧电影范围曾到500后回绕，500是请求上限而非全片库完成证据；GYING前两页重复循环也不证明无更新。每日所选榜前2页/每平台最多10次详情的独立UPDATES模式正在验证，尚未上线；两age回退材料及暂停证据见[本轮记录](evaluation/metadata-update-watch-20261115/README.md)。
 
 11月14日自动采集去重与TIME/SCORE榜单已仅backend/frontend上线固定 `0ce354e`：20:33:15/21:00:37各启动一次，21:01:10 Worker恢复true。原三个选定CSCORE榜均暂停，网站最新三类首页144条中118条无可信GYING绑定，不能认定全站采完；HITS三类实测最新顺序，1..2页循环、20条/小时，原CSCORE暂停保持。12个GYING榜单独立配置、最多50页，自动目录以精确来源身份/季数/canonical和完成凭证跳过重复；同片仅新增集数/清晰度仍需手动刷新。21:13复核：GYING17873已成功20项，夸克7/百度7归档均首次成功、每盘20份元数据文件，重复跳过0；21:28:26独立只读终验PASS。后端1493过/1既有Redis跳过，前端build/17React/4mock与4真实线上视口、76资产SHA通过；七age回退材料及host/daily两份原像认证，日常46→47 native dry-run通过、完整自然备份未验。旧Quark2262全行保留且云端UNKNOWN，百度父17583仍BLOCKED/CHILD_FAILED、child17761 FAILED3/3，未重放或修复。[上线与验收边界](evaluation/gying-collection-20261114/README.md)。
 

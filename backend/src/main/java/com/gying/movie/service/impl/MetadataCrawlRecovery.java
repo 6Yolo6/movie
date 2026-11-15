@@ -34,5 +34,13 @@ public class MetadataCrawlRecovery {
                 .set("status", "FAILED").set("finished_at", LocalDateTime.now())
                 .set("updated_at", LocalDateTime.now())
                 .set("last_error", "Automatic metadata crawl interrupted by backend restart; checkpoint retained"));
+        // Daily update checkpoints have their own backlog and retry budget; never overwrite RANGE state.
+        tasks.update(new UpdateWrapper<ResourceHubTask>()
+                .eq("task_type", "METADATA_SYNC").in("source", "TMDB", "GYING").eq("keyword", "UPDATES")
+                .eq("status", "RUNNING").lt("started_at", processStartedAt)
+                .apply("JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')) = 'UPDATES'")
+                .set("status", "FAILED").set("finished_at", LocalDateTime.now())
+                .set("updated_at", LocalDateTime.now())
+                .set("last_error", "Daily metadata updates interrupted by backend restart; backlog retained"));
     }
 }

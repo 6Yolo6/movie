@@ -3,6 +3,8 @@ package com.gying.movie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.ResourceDiscoveryRequest;
 import com.gying.movie.dto.MetadataCrawlRange;
@@ -15,6 +17,8 @@ import com.gying.movie.service.IResourceHubTaskService;
 import com.gying.movie.service.IResourceLinkService;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +41,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
     private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
     private final MetadataCrawlPlanner crawlPlanner;
+    private final MetadataUpdatesCheckpoint updatesCheckpoint;
     private GyingMetadataItemRetryService itemRetries;
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -56,6 +61,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
         this.crawlPlanner = new MetadataCrawlPlanner(taskService, objectMapper);
+        this.updatesCheckpoint = new MetadataUpdatesCheckpoint(taskService, objectMapper);
     }
 
     @Override
@@ -69,6 +75,14 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         var range = config.rangeFor(source);
         var position = crawlPlanner.next("GYING", source, clamp(range.startPage(), 1, MAX_CATALOG_PAGES), clamp(range.endPage(), 1, MAX_CATALOG_PAGES));
         return enqueue(source, position.page(), config.getAutoSyncMaxItems(), position);
+    }
+
+    @Override
+    public ResourceHubTask enqueueUpdates(List<String> sources) {
+        ensureEnabled();
+        List<String> normalized = sources.stream().map(source -> normalize(source, 1, 1).source())
+                .filter(source -> !properties.getGying().isAutoSyncSourcePaused(source)).distinct().toList();
+        return updatesCheckpoint.enqueue("GYING", normalized, properties.getGying().getAutoSyncMaxItems());
     }
 
     private ResourceHubTask enqueue(String source, int page, int maxItems, MetadataCrawlPlanner.Position position) {
@@ -96,6 +110,7 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is not a GYING metadata sync task");
         }
 
+        if (updatesCheckpoint.automatic(task)) return runUpdates(task);
         SyncPayload payload = readPayload(task);
         TmdbSyncResult result = new TmdbSyncResult();
         result.setTaskId(task.getId());
@@ -160,6 +175,85 @@ public class GyingMetadataSyncServiceImpl implements IGyingMetadataSyncService {
         }
         result.setStatus(task.getStatus());
         return result;
+    }
+
+    private TmdbSyncResult runUpdates(ResourceHubTask task) {
+        var config = properties.getGying();
+        TmdbSyncResult result = new TmdbSyncResult();
+        result.setTaskId(task.getId()); result.setSource("GYING_UPDATES"); result.setPage(1);
+        int budget = Math.min(Math.max(config.getAutoSyncMaxItems(), 1), 10); result.setRequested(budget);
+        if (!config.isAutoSyncEnabled() || !config.isAutoSyncUpdatesOnly()) {
+            result.setStatus(task.getStatus()); return result;
+        }
+        Set<String> sources = new LinkedHashSet<>();
+        for (String source : config.getAutoSyncSources().split(",")) {
+            String normalized = source.trim().toUpperCase(Locale.ROOT);
+            if (SOURCES.contains(normalized) && !config.isAutoSyncSourcePaused(normalized)) sources.add(normalized);
+        }
+        if (sources.isEmpty()) { result.setStatus(task.getStatus()); return result; }
+        if (!updatesCheckpoint.start(task)) { result.setStatus(task.getStatus()); return result; }
+        try {
+            List<MetadataUpdatesCheckpoint.Candidate> head = new ArrayList<>();
+            for (String source : sources) for (int page = 1; page <= MetadataUpdatesCheckpoint.HEAD_PAGES; page++)
+                for (Map<String, Object> item : workflowService.catalogUpdateHead(source, page))
+                    head.add(updateCandidate(source, item));
+            var round = updatesCheckpoint.run(task, head, sources, budget,
+                    candidate -> workflowService.catalogUpdateComplete(updateItem(candidate)), candidate -> {
+                        boolean inserted = workflowService.collectCatalogUpdate(updateItem(candidate));
+                        if (inserted) result.setInserted(result.getInserted() + 1);
+                        else result.setUpdated(result.getUpdated() + 1);
+                    });
+            result.setProcessed(round.processed()); result.setFailed(round.failed());
+            result.setSkipped(round.seeded() + round.skipped());
+            String error = round.failed() > 0 ? round.failed() + " GYING update item(s) retained for retry"
+                    : round.exhausted() > 0 ? round.exhausted() + " GYING update item(s) require review" : null;
+            updatesCheckpoint.finish(task, round.failed() > 0 || round.exhausted() > 0 ? "FAILED" : "SUCCEEDED", error);
+        } catch (Exception error) {
+            if (!(error instanceof MetadataUpdatesCheckpoint.CheckpointConflict)) {
+                try { updatesCheckpoint.finish(task, "FAILED", "GYING updates failed: " + error.getClass().getSimpleName()); }
+                catch (MetadataUpdatesCheckpoint.CheckpointConflict ownershipChanged) { /* Leave the current row untouched. */ }
+            }
+            result.setFailed(Math.max(result.getFailed(), 1)); result.getErrors().add(error.getClass().getSimpleName());
+        }
+        result.setStatus("RUNNING".equals(task.getStatus()) ? "FAILED" : task.getStatus()); return result;
+    }
+
+    private MetadataUpdatesCheckpoint.Candidate updateCandidate(String source, Map<String, Object> item) {
+        String type = GyingSourceWorkflowService.catalogUpdateType(source);
+        JsonNode raw = objectMapper.valueToTree(item);
+        String mid = raw.path("mid").asText(), title = raw.path("title").asText();
+        if (!raw.path("mid").isTextual() || !mid.matches("[A-Za-z0-9]{1,100}")
+                || !raw.path("title").isTextual() || title.isBlank())
+            throw new IllegalArgumentException("Invalid GYING update identity");
+        ObjectNode data = objectMapper.createObjectNode();
+        data.put("typeCode", type); data.put("mid", mid); data.put("title", title);
+        data.set("year", updateInteger(raw.path("year"), false));
+        JsonNode season = "mv".equals(type) ? objectMapper.nullNode() : updateInteger(raw.path("season"), true);
+        data.set("season", season);
+        return new MetadataUpdatesCheckpoint.Candidate(source, type + "/" + mid + "/" + season.asInt(0), data);
+    }
+
+    private JsonNode updateInteger(JsonNode value, boolean season) {
+        if (value.isNull() || value.isMissingNode() || (value.isTextual() && value.asText().isBlank())) return objectMapper.nullNode();
+        String text = value.asText();
+        if (!text.matches("[0-9]{1,4}")) throw new IllegalArgumentException("Invalid GYING update ordinal");
+        int number = Integer.parseInt(text);
+        if (season && (number < 1 || number > 99)) return objectMapper.nullNode();
+        if (!season && (number < 1800 || number > 2200)) throw new IllegalArgumentException("Invalid GYING update year");
+        return objectMapper.getNodeFactory().numberNode(number);
+    }
+
+    private Map<String, Object> updateItem(MetadataUpdatesCheckpoint.Candidate candidate) {
+        ObjectNode data = candidate.data();
+        if (data.size() != 5 || !data.path("typeCode").isTextual()
+                || !(data.path("year").isNull() || data.path("year").isIntegralNumber())
+                || !(data.path("season").isNull() || data.path("season").isIntegralNumber()))
+            throw new IllegalArgumentException("Invalid pending GYING update data");
+        Map<String, Object> item = objectMapper.convertValue(data, new TypeReference<Map<String, Object>>() {});
+        var safe = updateCandidate(candidate.source(), item);
+        if (!candidate.key().equals(safe.key()) || !data.equals(safe.data()))
+            throw new IllegalArgumentException("Pending GYING update identity changed");
+        return item;
     }
 
     private SyncPayload normalize(String source, int page, int maxItems) {

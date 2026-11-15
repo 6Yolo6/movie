@@ -100,6 +100,7 @@ public class ResourceHubProperties {
         private String baseUrl = "https://api.themoviedb.org/3";
         private String apiKey;
         private boolean autoSyncEnabled = false;
+        private boolean autoSyncUpdatesOnly = false;
         private String autoSyncSources = "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,POPULAR_MOVIE,POPULAR_TV";
         private int autoSyncPage = 1;
         private int autoSyncEndPage;
@@ -126,6 +127,7 @@ public class ResourceHubProperties {
     public static class Gying {
         private boolean discoveryEnabled = true;
         private boolean autoSyncEnabled = false;
+        private boolean autoSyncUpdatesOnly = false;
         private String autoSyncSources = "HITS_MOVIE,HITS_TV,HITS_ANIME,CSCORE_MOVIE,CSCORE_TV,CSCORE_ANIME";
         private volatile Map<String, Boolean> autoSyncPausedSources = Map.of();
 

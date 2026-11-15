@@ -17,11 +17,12 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
     pauseDisabled, onPauseChange }: Props) {
     const { t } = useTranslation();
     const sources: string[] = Form.useWatch(`${provider}AutoSyncSources`) || [];
+    const updatesOnly = Boolean(Form.useWatch(`${provider}AutoSyncUpdatesOnly`));
     const field = `${provider}AutoSyncRanges`;
     const maxPage = provider === 'gying' ? 50 : 500;
     const rangeInvalid = t('resourceHubCrawlRangeInvalid', { max: maxPage });
     return <div data-testid={`${provider}-crawl-ranges`}>
-        <Typography.Text type="secondary">{t('resourceHubCrawlRangesHelp')}</Typography.Text>
+        <Typography.Text type="secondary">{t(updatesOnly ? 'resourceHubFullCrawlRangesRetainedHelp' : 'resourceHubCrawlRangesHelp')}</Typography.Text>
         {provider === 'gying' && <Typography.Paragraph type="secondary" className="!mb-0 mt-2">
             {t('resourceHubGyingCatalogHelp')}
         </Typography.Paragraph>}
@@ -53,7 +54,7 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
                 <Col xs={12} md={8}>
                     <Form.Item name={[field, option.value, 'startPage']} label={t('resourceHubCrawlStartPage')}
                         rules={[{ required: true, type: 'integer', min: 1, max: maxPage, message: rangeInvalid }]}>
-                        <InputNumber min={1} max={maxPage} precision={0} className="w-full"
+                        <InputNumber disabled={updatesOnly} min={1} max={maxPage} precision={0} className="w-full"
                             aria-label={`${option.label} ${t('resourceHubCrawlStartPage')}`} />
                     </Form.Item>
                 </Col>
@@ -70,7 +71,7 @@ export default function MetadataCrawlRanges({ provider, options, pausedSources, 
                                 },
                             }),
                         ]}>
-                        <InputNumber min={1} max={maxPage} precision={0} className="w-full"
+                        <InputNumber disabled={updatesOnly} min={1} max={maxPage} precision={0} className="w-full"
                             aria-label={`${option.label} ${t('resourceHubCrawlEndPage')}`} />
                     </Form.Item>
                 </Col>

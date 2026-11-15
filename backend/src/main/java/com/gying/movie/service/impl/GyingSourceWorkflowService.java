@@ -355,6 +355,46 @@ public class GyingSourceWorkflowService {
         return result;
     }
 
+    /** Cheap heads used by daily updates; no per-movie enrichment or cloud work. */
+    public List<Map<String, Object>> catalogUpdateHead(String source, int page) {
+        String normalized = required(source, "GYING catalog source").toUpperCase(Locale.ROOT);
+        String typeCode = catalogUpdateType(normalized);
+        String sort = normalized.startsWith("CSCORE_") ? "cscore" : normalized.startsWith("TIME_") ? "time"
+                : normalized.startsWith("SCORE_") ? "score" : "hits";
+        if (page < 1 || page > MetadataUpdatesCheckpoint.HEAD_PAGES) throw new IllegalArgumentException("Invalid update head page");
+        Map<String, Object> response = gyingSourceClient.get("/catalog?typeCode=" + typeCode + "&sort=" + sort
+                + "&page=" + page + "&limit=100");
+        if (!(response.get("items") instanceof List<?> items) || items.size() > 100)
+            throw new IllegalStateException("GYING update catalog response is invalid");
+        for (Object item : items) if (!(item instanceof Map<?, ?>))
+            throw new IllegalStateException("GYING update catalog item is invalid");
+        return mapList(items);
+    }
+
+    public static String catalogUpdateType(String source) {
+        return switch (source) {
+            case "HITS_MOVIE", "CSCORE_MOVIE", "TIME_MOVIE", "SCORE_MOVIE" -> "mv";
+            case "HITS_TV", "CSCORE_TV", "TIME_TV", "SCORE_TV" -> "tv";
+            case "HITS_ANIME", "CSCORE_ANIME", "TIME_ANIME", "SCORE_ANIME" -> "ac";
+            default -> throw new IllegalArgumentException("Unsupported GYING update source");
+        };
+    }
+
+    public boolean catalogUpdateComplete(Map<String, Object> candidate) {
+        return completedCatalogMovie(normalizeTypeCode(stringValue(candidate.get("typeCode"))), candidate) != null;
+    }
+
+    /** COMPLETE requires the same successful metadata/P2P/archive path as automatic ranges. */
+    public boolean collectCatalogUpdate(Map<String, Object> candidate) {
+        String typeCode = normalizeTypeCode(stringValue(candidate.get("typeCode")));
+        String mid = required(stringValue(candidate.get("mid")), "GYING movie id");
+        if (!mid.matches("[A-Za-z0-9]{1,100}")) throw new IllegalArgumentException("Invalid GYING movie id");
+        CatalogMovie movie = resolveCatalogMovie(typeCode, candidate);
+        syncGyingDirectResources(movie.movieId(), typeCode, mid, true);
+        recordCatalogCompletion(movie.movieId(), typeCode, candidate);
+        return movie.inserted();
+    }
+
     /** Exact source identity plus durable collection evidence; title matching alone never skips a crawl. */
     private String completedCatalogMovie(String typeCode, Map<String, Object> candidate) {
         MovieSourceIdentity identity = exactCatalogIdentity(typeCode, candidate);

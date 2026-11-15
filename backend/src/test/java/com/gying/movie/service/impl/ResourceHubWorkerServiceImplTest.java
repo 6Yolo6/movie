@@ -173,6 +173,7 @@ class ResourceHubWorkerServiceImplTest {
     @Test void runnableQueryExcludesPausedAutomaticHeadsBeforeApplyingItsLimit() {
         Fixture fixture = new Fixture();
         fixture.properties.getTmdb().setAutoSyncEnabled(false);
+        fixture.properties.getGying().setAutoSyncEnabled(true);
         fixture.properties.getGying().setAutoSyncPausedSources(java.util.Map.of("HITS_MOVIE", true));
         when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
         fixture.service.runOnce();
@@ -189,7 +190,8 @@ class ResourceHubWorkerServiceImplTest {
 
     @Test void pauseAfterQueryLeavesPendingCheckpointUntouchedWhileManualAndTmdbTasksRun() {
         Fixture fixture = new Fixture();
-        fixture.properties.getTmdb().setAutoSyncEnabled(false);
+        fixture.properties.getTmdb().setAutoSyncEnabled(true);
+        fixture.properties.getGying().setAutoSyncEnabled(true);
         ResourceHubTask automatic = metadataTask(1L, "GYING", "HITS_MOVIE", "{\"page\":80,\"crawl\":{\"mode\":\"RANGE\",\"offset\":12}}");
         ResourceHubTask manual = metadataTask(2L, "GYING", "HITS_MOVIE", "{\"page\":2}");
         ResourceHubTask tmdb = metadataTask(3L, "TMDB", "POPULAR_MOVIE", "{\"crawl\":{\"mode\":\"RANGE\"}}");
@@ -214,6 +216,7 @@ class ResourceHubWorkerServiceImplTest {
 
     @Test void pauseAfterAutomaticTaskStartsAllowsItsResultToFinishNormally() {
         Fixture fixture = new Fixture(); fixture.properties.getTmdb().setAutoSyncEnabled(false);
+        fixture.properties.getGying().setAutoSyncEnabled(true);
         var automatic = metadataTask(1L, "GYING", "HITS_MOVIE", "{\"crawl\":{\"mode\":\"RANGE\"}}");
         when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of(automatic));
         when(fixture.gyingService.runTask(1L)).thenAnswer(call -> {
@@ -325,6 +328,227 @@ class ResourceHubWorkerServiceImplTest {
         Mockito.verifyNoMoreInteractions(fixture.tmdbService);
         assertEquals(0, result.getMetadataSyncTasksCreated());
         assertEquals(List.of("tmdb auto sync TOP_RATED_TV: Invalid metadata crawl checkpoint"), result.getErrors());
+    }
+
+    @Test
+    void updatesOnlyEnqueuesOneAggregateJobPerProviderForAllSelectedUnpausedSources() {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncUpdatesOnly(true);
+        fixture.properties.getTmdb().setAutoSyncSources("top_rated_movie,POPULAR_TV,TOP_RATED_MOVIE");
+        fixture.properties.getGying().setAutoSyncEnabled(true);
+        fixture.properties.getGying().setAutoSyncUpdatesOnly(true);
+        fixture.properties.getGying().setAutoSyncSources("TIME_MOVIE,HITS_TV,SCORE_ANIME,TIME_MOVIE");
+        fixture.properties.getGying().setAutoSyncPausedSources(java.util.Map.of("HITS_TV", true));
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        when(fixture.tmdbService.enqueueUpdates(List.of("TOP_RATED_MOVIE", "POPULAR_TV")))
+                .thenReturn(new ResourceHubTask());
+        when(fixture.gyingService.enqueueUpdates(List.of("TIME_MOVIE", "SCORE_ANIME")))
+                .thenReturn(new ResourceHubTask());
+
+        var result = fixture.service.runOnce();
+
+        verify(fixture.tmdbService).enqueueUpdates(List.of("TOP_RATED_MOVIE", "POPULAR_TV"));
+        verify(fixture.gyingService).enqueueUpdates(List.of("TIME_MOVIE", "SCORE_ANIME"));
+        verify(fixture.tmdbService, never()).enqueueAutomatic(any());
+        verify(fixture.gyingService, never()).enqueueAutomatic(any());
+        Mockito.verifyNoMoreInteractions(fixture.tmdbService, fixture.gyingService);
+        assertEquals(2, result.getMetadataSyncTasksCreated());
+        assertTrue(result.getErrors().isEmpty());
+    }
+
+
+    @Test
+    void updatesOnlyAllPausedGyingSourcesKeepTheAggregateQueuedWhileManualCollectionRuns() {
+        Fixture fixture = updatesFixture("GYING");
+        fixture.properties.getGying().setAutoSyncPausedSources(java.util.Map.of("HITS_MOVIE", true, "TIME_TV", true));
+        var updates = metadataTask(1L, "GYING", "UPDATES", "{\"crawl\":{\"mode\":\"UPDATES\"}}");
+        var manual = metadataTask(2L, "GYING", "HITS_MOVIE", "{\"page\":1}");
+        String payload = updates.getPayload(); LocalDateTime scheduled = updates.getScheduledAt();
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of(updates, manual));
+        var success = new com.gying.movie.dto.TmdbSyncResult(); success.setStatus("SUCCEEDED");
+        when(fixture.gyingService.runTask(2L)).thenReturn(success);
+
+        var result = fixture.service.runOnce();
+
+        verify(fixture.taskService, never()).count(any(Wrapper.class));
+        verify(fixture.gyingService, never()).enqueueUpdates(any());
+        verify(fixture.gyingService, never()).runTask(1L);
+        verify(fixture.gyingService).runTask(2L);
+        assertEquals(1, result.getTasksSucceeded());
+        assertEquals("PENDING", updates.getStatus());
+        assertEquals(payload, updates.getPayload());
+        assertEquals(4, updates.getAttempts());
+        assertEquals(scheduled, updates.getScheduledAt());
+        verify(fixture.taskService, never()).updateById(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"TMDB", "GYING"})
+    void updatesOnlyActiveProviderJobPreventsDuplicateEnqueue(String provider) {
+        Fixture fixture = updatesFixture(provider);
+        when(fixture.taskService.count(any(Wrapper.class))).thenReturn(1L);
+
+        var result = fixture.service.runOnce();
+
+        var capture = org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(fixture.taskService).count(capture.capture());
+        var query = capture.getValue();
+        assertTrue(query.getCustomSqlSegment().contains("$.crawl.mode"));
+        assertTrue(query.getCustomSqlSegment().contains("= 'UPDATES'"));
+        assertTrue(query.getParamNameValuePairs().containsValue(provider));
+        assertTrue(query.getParamNameValuePairs().containsValue("METADATA_SYNC"));
+        assertTrue(query.getParamNameValuePairs().containsValue("UPDATES"));
+        assertTrue(query.getParamNameValuePairs().containsValue("PENDING"));
+        assertTrue(query.getParamNameValuePairs().containsValue("RUNNING"));
+        verify(fixture.taskService, never()).getOne(any(Wrapper.class), eq(false));
+        Mockito.verifyNoInteractions(fixture.tmdbService, fixture.gyingService);
+        assertEquals(0, result.getMetadataSyncTasksCreated());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"TMDB", "GYING"})
+    void updatesOnlyRetainsAtLeast24HoursAndAnyLongerConfiguredInterval(String provider) {
+        for (int configuredHours : new int[] {0, 1, 23, 24, 48}) {
+            Fixture fixture = updatesFixture(provider);
+            fixture.properties.getTmdb().setAutoSyncIntervalHours(configuredHours);
+            fixture.properties.getGying().setAutoSyncIntervalHours(configuredHours);
+            var latest = new ResourceHubTask();
+            int effectiveHours = Math.max(configuredHours, 24);
+            latest.setCreatedAt(LocalDateTime.now().minusHours(effectiveHours - 1));
+            when(fixture.taskService.getOne(any(Wrapper.class), eq(false))).thenReturn(latest);
+            if ("TMDB".equals(provider)) {
+                when(fixture.tmdbService.enqueueUpdates(any())).thenReturn(new ResourceHubTask());
+            } else {
+                when(fixture.gyingService.enqueueUpdates(any())).thenReturn(new ResourceHubTask());
+            }
+
+            var blocked = fixture.service.runOnce(true);
+
+            assertEquals(0, blocked.getMetadataSyncTasksCreated());
+            Mockito.verifyNoInteractions(fixture.tmdbService, fixture.gyingService);
+            latest.setCreatedAt(LocalDateTime.now().minusHours(effectiveHours + 1));
+
+            var due = fixture.service.runOnce(true);
+
+            assertEquals(1, due.getMetadataSyncTasksCreated());
+            if ("TMDB".equals(provider)) {
+                verify(fixture.tmdbService).enqueueUpdates(List.of("TOP_RATED_MOVIE", "TOP_RATED_TV"));
+            } else {
+                verify(fixture.gyingService).enqueueUpdates(List.of("HITS_MOVIE", "TIME_TV"));
+            }
+            verify(fixture.tmdbService, never()).enqueueAutomatic(any());
+            verify(fixture.gyingService, never()).enqueueAutomatic(any());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void automaticModeQueryFiltersPausedRangeHeadsBeforeItsLimit(boolean enabled) {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncEnabled(enabled);
+        fixture.properties.getTmdb().setAutoSyncUpdatesOnly(true);
+        fixture.properties.getGying().setAutoSyncEnabled(enabled);
+        fixture.properties.getGying().setAutoSyncUpdatesOnly(true);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+
+        fixture.service.runOnce();
+
+        var capture = org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.query.QueryWrapper.class);
+        verify(fixture.taskService).list(capture.capture());
+        var query = capture.getValue();
+        String sql = query.getCustomSqlSegment();
+        String condition = enabled ? "<> 'RANGE'" : "NOT IN ('RANGE', 'UPDATES')";
+        assertTrue(sql.contains("JSON_VALID(payload)"));
+        assertTrue(sql.contains(condition));
+        assertTrue(sql.indexOf(condition) < sql.indexOf("LIMIT"));
+        assertTrue(query.getParamNameValuePairs().containsValue("TMDB"));
+        assertTrue(query.getParamNameValuePairs().containsValue("GYING"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void modeChangeAfterQueryPreservesQueuedRangesAndManualCollectionStillRuns(boolean enabled) {
+        Fixture fixture = new Fixture();
+        fixture.properties.getGying().setAutoSyncEnabled(true);
+        var tmdbRange = metadataTask(1L, "TMDB", "TOP_RATED_MOVIE",
+                "{\"page\":180,\"crawl\":{\"mode\":\"RANGE\",\"offset\":12}}");
+        var gyingRange = metadataTask(2L, "GYING", "HITS_MOVIE",
+                "{\"page\":45,\"crawl\":{\"mode\":\"RANGE\",\"offset\":7}}");
+        var tmdbManual = metadataTask(3L, "TMDB", "TOP_RATED_MOVIE", "{\"page\":2}");
+        var gyingManual = metadataTask(4L, "GYING", "HITS_MOVIE", "{\"page\":2}");
+        var tmdbUpdates = metadataTask(5L, "TMDB", "UPDATES", "{\"crawl\":{\"mode\":\"UPDATES\"}}");
+        var gyingUpdates = metadataTask(6L, "GYING", "UPDATES", "{\"crawl\":{\"mode\":\"UPDATES\"}}");
+        List<ResourceHubTask> automatic = List.of(tmdbRange, gyingRange, tmdbUpdates, gyingUpdates);
+        var savedPayloads = automatic.stream().map(ResourceHubTask::getPayload).toList();
+        var savedSchedules = automatic.stream().map(ResourceHubTask::getScheduledAt).toList();
+        when(fixture.taskService.count(any(Wrapper.class))).thenReturn(1L);
+        when(fixture.taskService.list(any(Wrapper.class))).thenAnswer(call -> {
+            fixture.properties.getTmdb().setAutoSyncUpdatesOnly(true);
+            fixture.properties.getGying().setAutoSyncUpdatesOnly(true);
+            fixture.properties.getTmdb().setAutoSyncEnabled(enabled);
+            fixture.properties.getGying().setAutoSyncEnabled(enabled);
+            return List.of(tmdbRange, gyingRange, tmdbManual, gyingManual, tmdbUpdates, gyingUpdates);
+        });
+        var success = new com.gying.movie.dto.TmdbSyncResult(); success.setStatus("SUCCEEDED");
+        when(fixture.tmdbService.runTask(3L)).thenReturn(success);
+        when(fixture.gyingService.runTask(4L)).thenReturn(success);
+        when(fixture.tmdbService.runTask(5L)).thenReturn(success);
+        when(fixture.gyingService.runTask(6L)).thenReturn(success);
+
+        var result = fixture.service.runOnce(true);
+
+        verify(fixture.tmdbService, never()).runTask(1L);
+        verify(fixture.gyingService, never()).runTask(2L);
+        verify(fixture.tmdbService).runTask(3L);
+        verify(fixture.gyingService).runTask(4L);
+        verify(fixture.tmdbService, Mockito.times(enabled ? 1 : 0)).runTask(5L);
+        verify(fixture.gyingService, Mockito.times(enabled ? 1 : 0)).runTask(6L);
+        assertEquals(enabled ? 4 : 2, result.getTasksProcessed());
+        assertEquals(enabled ? 4 : 2, result.getTasksSucceeded());
+        for (int i = 0; i < automatic.size(); i++) {
+            var task = automatic.get(i);
+            assertEquals("PENDING", task.getStatus());
+            assertEquals(savedPayloads.get(i), task.getPayload());
+            assertEquals(4, task.getAttempts());
+            assertEquals(savedSchedules.get(i), task.getScheduledAt());
+        }
+        verify(fixture.taskService, never()).updateById(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"TMDB", "GYING"})
+    void updatesTaskFailureDoesNotOverwriteItsOwnedCheckpointOrCancellation(String provider) {
+        Fixture fixture = updatesFixture(provider);
+        var task = metadataTask(1L, provider, "UPDATES", "{\"crawl\":{\"mode\":\"UPDATES\"}}");
+        String payload = task.getPayload(); LocalDateTime scheduled = task.getScheduledAt();
+        when(fixture.taskService.count(any(Wrapper.class))).thenReturn(1L);
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of(task));
+        org.mockito.stubbing.Answer<com.gying.movie.dto.TmdbSyncResult> canceled = call -> {
+            task.setStatus("CANCELED");
+            throw new IllegalStateException("checkpoint no longer owned");
+        };
+        if ("TMDB".equals(provider)) when(fixture.tmdbService.runTask(1L)).thenAnswer(canceled);
+        else when(fixture.gyingService.runTask(1L)).thenAnswer(canceled);
+
+        var result = fixture.service.runOnce();
+
+        assertEquals(1, result.getTasksFailed());
+        assertEquals("CANCELED", task.getStatus());
+        assertEquals(payload, task.getPayload());
+        assertEquals(4, task.getAttempts());
+        assertEquals(scheduled, task.getScheduledAt());
+        verify(fixture.taskService, never()).updateById(any());
+    }
+
+    private Fixture updatesFixture(String provider) {
+        Fixture fixture = new Fixture();
+        fixture.properties.getTmdb().setAutoSyncEnabled("TMDB".equals(provider));
+        fixture.properties.getTmdb().setAutoSyncUpdatesOnly(true);
+        fixture.properties.getGying().setAutoSyncEnabled("GYING".equals(provider));
+        fixture.properties.getGying().setAutoSyncUpdatesOnly(true);
+        fixture.properties.getGying().setAutoSyncSources("HITS_MOVIE,TIME_TV");
+        when(fixture.taskService.list(any(Wrapper.class))).thenReturn(List.of());
+        return fixture;
     }
 
     private ResourceHubTask metadataTask(Long id, String provider, String source, String payload) {

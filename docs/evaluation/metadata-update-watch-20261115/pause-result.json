@@ -1,0 +1,63 @@
+{
+  "status": "PAUSED_AND_VERIFIED",
+  "at": "2026-11-15T08:16:51.941007+00:00",
+  "helperSha256": "64d0feca5289b32ee1e39b1fbd29eb0204c01f8e8e42de06410dba424a001360",
+  "before": {
+    "tmdbAutoSyncEnabled": true,
+    "gyingAutoSyncEnabled": true
+  },
+  "target": {
+    "tmdbAutoSyncEnabled": false,
+    "gyingAutoSyncEnabled": false
+  },
+  "checkpoint": {
+    "directory": "G:\\gying-backups\\metadata-bulk-pause-20261115-20261115T081647.394767Z",
+    "artifacts": 2,
+    "authenticated": true,
+    "manifestSha256": "1b1559cd2efb08e1fe63c714deff71bf5eea56359b60706570e98171aaa5dfb5"
+  },
+  "authentication": {
+    "existingDeviceReused": true,
+    "newDeviceCreated": false,
+    "loginPerformed": false,
+    "jwtLifetimeSeconds": 300,
+    "deviceJtiSha256": "0ebc72961597ffca62e9cb9f07baa4b6e37a23e7b67920cc57f5f4e8d5b519bf"
+  },
+  "protectedBefore": {
+    "otherConfigurationRows": 93,
+    "otherConfigurationSha256": "da27f408768857f4dcc001a9e42ba6180d24b5ce6c5ebdd78a714f695265dabc",
+    "quark2262FullRowSha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056",
+    "discovery9904FullRowSha256": "473eb3187f141cd092dde7c0ed11019558d2ead8eba0ca24d0416a25d30d4814",
+    "historicalHubRowsSha256": "f674ecaa19773e4587b351f21374801bef851f8bd6cab3d60d3aa7fad6951fe6"
+  },
+  "sqlFlagsBefore": {
+    "rowCount": 2,
+    "sha256": "e50cbee4615b5e1c5b1818da03b87e9f4e67be8c8c57a4d649e5a71fbca714fc"
+  },
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "serviceChanges": 0,
+  "workerChanges": 0,
+  "directSqlWrites": 0,
+  "manualCloudRequests": 0,
+  "acknowledgedAt": "2026-11-15T08:16:52.026648+00:00",
+  "writeCount": 1,
+  "completedAt": "2026-11-15T08:16:52.997527+00:00",
+  "after": {
+    "tmdbAutoSyncEnabled": false,
+    "gyingAutoSyncEnabled": false
+  },
+  "configurationOutcomeUnknown": false,
+  "allServiceGenerationsRetained": true,
+  "protectedAfter": {
+    "otherConfigurationRows": 93,
+    "otherConfigurationSha256": "da27f408768857f4dcc001a9e42ba6180d24b5ce6c5ebdd78a714f695265dabc",
+    "quark2262FullRowSha256": "ee9c4cb2a66a5629097c7f5a34810000274ef1ca7ff1dfc687588c39c7f83056",
+    "discovery9904FullRowSha256": "473eb3187f141cd092dde7c0ed11019558d2ead8eba0ca24d0416a25d30d4814",
+    "historicalHubRowsSha256": "f674ecaa19773e4587b351f21374801bef851f8bd6cab3d60d3aa7fad6951fe6"
+  },
+  "sqlFlagsAfter": {
+    "rowCount": 2,
+    "sha256": "349339f66d09381880fcc0c3e8de61a28e95a91ab49315038cb8e7a7d99759b2"
+  }
+}

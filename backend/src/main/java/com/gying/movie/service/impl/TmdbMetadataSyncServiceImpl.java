@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gying.movie.client.TmdbClient;
 import com.gying.movie.config.ResourceHubProperties;
 import com.gying.movie.dto.MovieSearchCandidate;
@@ -57,6 +58,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     private final IResourceLinkService resourceLinkService;
     private final ObjectMapper objectMapper;
     private final MetadataCrawlPlanner crawlPlanner;
+    private final MetadataUpdatesCheckpoint updatesCheckpoint;
 
     public TmdbMetadataSyncServiceImpl(
             TmdbClient tmdbClient,
@@ -80,6 +82,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         this.resourceLinkService = resourceLinkService;
         this.objectMapper = objectMapper;
         this.crawlPlanner = new MetadataCrawlPlanner(taskService, objectMapper);
+        this.updatesCheckpoint = new MetadataUpdatesCheckpoint(taskService, objectMapper);
     }
 
     @Override
@@ -98,6 +101,13 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         request.setPage(position.page());
         request.setMaxItems(config.getAutoSyncMaxItems());
         return enqueue(request, position);
+    }
+
+    @Override
+    public ResourceHubTask enqueueUpdates(List<String> sources) {
+        ensureEnabled();
+        List<String> normalized = sources.stream().map(tmdbClient::normalizeSource).distinct().toList();
+        return updatesCheckpoint.enqueue("TMDB", normalized, resourceHubProperties.getTmdb().getAutoSyncMaxItems());
     }
 
     private ResourceHubTask enqueue(ResourceHubMetadataSyncRequest request, MetadataCrawlPlanner.Position position) {
@@ -125,6 +135,7 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Task is not a TMDB metadata sync task");
         }
 
+        if (updatesCheckpoint.automatic(task)) return runUpdates(task);
         SyncPayload payload = readPayload(task);
         TmdbSyncResult result = new TmdbSyncResult();
         result.setTaskId(task.getId());
@@ -174,6 +185,101 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             addError(result, e.getMessage());
             return result;
         }
+    }
+
+    private TmdbSyncResult runUpdates(ResourceHubTask task) {
+        var config = resourceHubProperties.getTmdb();
+        TmdbSyncResult result = new TmdbSyncResult();
+        result.setTaskId(task.getId()); result.setSource("TMDB_UPDATES"); result.setPage(1);
+        int budget = Math.min(Math.max(config.getAutoSyncMaxItems(), 1), 10);
+        result.setRequested(budget);
+        if (!config.isAutoSyncEnabled() || !config.isAutoSyncUpdatesOnly()) {
+            result.setStatus(task.getStatus()); return result;
+        }
+        if (!updatesCheckpoint.start(task)) { result.setStatus(task.getStatus()); return result; }
+        try {
+            Set<String> sources = new LinkedHashSet<>();
+            for (String source : config.getAutoSyncSources().split(","))
+                if (hasText(source)) sources.add(tmdbClient.normalizeSource(source.trim()));
+            if (sources.isEmpty()) throw new IllegalStateException("TMDB update sources are empty");
+            List<MetadataUpdatesCheckpoint.Candidate> head = new ArrayList<>();
+            for (String source : sources) {
+                for (int page = 1; page <= MetadataUpdatesCheckpoint.HEAD_PAGES; page++) {
+                    TmdbListPage list = java.util.Objects.requireNonNull(tmdbClient.fetchListPage(source, page),
+                            "TMDB update catalog page is missing");
+                    for (TmdbListItem item : list.items()) head.add(updateCandidate(source, item));
+                }
+            }
+            var round = updatesCheckpoint.run(task, head, sources, budget,
+                    this::trustedUpdateCompletion, candidate -> {
+                        TmdbListItem item = updateItem(candidate);
+                        JsonNode details = tmdbClient.fetchDetails(item.getMediaType(), item.getTmdbId());
+                        if (details == null || !details.path("id").isIntegralNumber()
+                                || details.path("id").asLong() != item.getTmdbId())
+                            throw new IllegalStateException("TMDB update detail identity changed");
+                        MovieUpsertResult saved = upsertMovie(item, details, true);
+                        if (saved.inserted()) result.setInserted(result.getInserted() + 1);
+                        else result.setUpdated(result.getUpdated() + 1);
+                    });
+            result.setProcessed(round.processed()); result.setFailed(round.failed());
+            result.setSkipped(round.seeded() + round.skipped());
+            String error = round.failed() > 0 ? round.failed() + " TMDB update item(s) retained for retry"
+                    : round.exhausted() > 0 ? round.exhausted() + " TMDB update item(s) require review" : null;
+            updatesCheckpoint.finish(task, round.failed() > 0 || round.exhausted() > 0 ? "FAILED" : "SUCCEEDED", error);
+        } catch (Exception error) {
+            if (!(error instanceof MetadataUpdatesCheckpoint.CheckpointConflict)) {
+                try { updatesCheckpoint.finish(task, "FAILED", "TMDB updates failed: " + error.getClass().getSimpleName()); }
+                catch (MetadataUpdatesCheckpoint.CheckpointConflict ownershipChanged) { /* Leave the current row untouched. */ }
+            }
+            result.setFailed(Math.max(result.getFailed(), 1));
+            addError(result, error.getClass().getSimpleName());
+        }
+        result.setStatus("RUNNING".equals(task.getStatus()) ? "FAILED" : task.getStatus()); return result;
+    }
+
+    private MetadataUpdatesCheckpoint.Candidate updateCandidate(String source, TmdbListItem item) {
+        if (item == null || item.getTmdbId() == null || item.getTmdbId() <= 0
+                || !Set.of("movie", "tv").contains(item.getMediaType()) || !hasText(item.getTitle()))
+            throw new IllegalArgumentException("Invalid TMDB update identity");
+        ObjectNode data = objectMapper.createObjectNode();
+        data.put("tmdbId", item.getTmdbId()); data.put("mediaType", item.getMediaType());
+        data.put("title", item.getTitle()); data.put("originalTitle", item.getOriginalTitle());
+        data.put("releaseDate", item.getReleaseDate());
+        return new MetadataUpdatesCheckpoint.Candidate(source, item.getMediaType() + "/" + item.getTmdbId(), data);
+    }
+
+    private TmdbListItem updateItem(MetadataUpdatesCheckpoint.Candidate candidate) {
+        JsonNode data = candidate.data();
+        if (data.size() != 5 || !data.path("tmdbId").isIntegralNumber() || !data.path("tmdbId").canConvertToLong()
+                || !data.path("mediaType").isTextual() || !data.path("title").isTextual()
+                || !(data.path("originalTitle").isNull() || data.path("originalTitle").isTextual())
+                || !(data.path("releaseDate").isNull() || data.path("releaseDate").isTextual()))
+            throw new IllegalArgumentException("Invalid pending TMDB update data");
+        TmdbListItem item = new TmdbListItem();
+        item.setTmdbId(data.path("tmdbId").asLong()); item.setMediaType(data.path("mediaType").asText());
+        item.setTitle(data.path("title").asText()); item.setOriginalTitle(data.path("originalTitle").asText(null));
+        item.setReleaseDate(data.path("releaseDate").asText(null));
+        if (!candidate.key().equals(updateCandidate(candidate.source(), item).key()))
+            throw new IllegalArgumentException("Pending TMDB update identity changed");
+        return item;
+    }
+
+    private boolean trustedUpdateCompletion(MetadataUpdatesCheckpoint.Candidate candidate) {
+        TmdbListItem item = updateItem(candidate);
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "TMDB").eq("source_type", item.getMediaType())
+                .eq("external_id", String.valueOf(item.getTmdbId())).eq("match_status", "CONFIRMED")
+                .orderByDesc("confidence").last("LIMIT 1"), false);
+        if (identity == null || identity.getId() == null || !"TMDB".equals(identity.getSource())
+                || !item.getMediaType().equals(identity.getSourceType())
+                || !String.valueOf(item.getTmdbId()).equals(identity.getExternalId())
+                || !"CONFIRMED".equals(identity.getMatchStatus()) || !hasText(identity.getMovieId())) return false;
+        MovieMetadata movie = movieService.getById(identity.getMovieId());
+        if (movie == null || !identity.getMovieId().equals(movie.getId()) || movie.getDeletedAt() != null
+                || !"ACTIVE".equals(movie.getStatus()) || movie.getTmdbLastSyncAt() == null
+                || !item.getTmdbId().equals(movie.getTmdbId()) || !item.getMediaType().equals(movie.getTmdbType())) return false;
+        int season = "movie".equals(item.getMediaType()) || movie.getSeason() == null ? 0 : movie.getSeason();
+        return java.util.Objects.equals(season, identity.getSeason());
     }
 
     @Override
@@ -263,6 +369,10 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     }
 
     private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details) {
+        return upsertMovie(item, details, false);
+    }
+
+    private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details, boolean requirePersistence) {
         MovieMetadata existing = findExistingMovie(item, details);
         MovieMetadata target = existing == null ? new MovieMetadata() : existing;
         boolean inserted = existing == null;
@@ -324,17 +434,28 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         target.setTmdbLastSyncAt(now);
         target.setUpdatedAt(now);
 
+        if (requirePersistence) {
+            int identitySeason = "movie".equals(item.getMediaType()) || target.getSeason() == null ? 0 : target.getSeason();
+            MovieSourceIdentity owned = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                    .eq("source", "TMDB").eq("source_type", item.getMediaType())
+                    .eq("external_id", String.valueOf(item.getTmdbId())).eq("season", identitySeason).last("LIMIT 1"), false);
+            if (owned != null && (!"TMDB".equals(owned.getSource()) || !item.getMediaType().equals(owned.getSourceType())
+                    || !String.valueOf(item.getTmdbId()).equals(owned.getExternalId())
+                    || !java.util.Objects.equals(identitySeason, owned.getSeason())
+                    || (owned.getMovieId() != null && !target.getId().equals(owned.getMovieId()))))
+                throw new IllegalStateException("TMDB update identity requires canonical review before metadata writes");
+        }
         if (inserted) {
-            movieService.save(target);
+            if (!movieService.save(target) && requirePersistence) throw new IllegalStateException("TMDB update was not saved");
         } else {
-            movieService.updateById(target);
+            if (!movieService.updateById(target) && requirePersistence) throw new IllegalStateException("TMDB update was not saved");
 
         }
-        bindTmdbIdentity(target);
+        bindTmdbIdentity(target, requirePersistence);
         return new MovieUpsertResult(target, inserted);
     }
 
-    private void bindTmdbIdentity(MovieMetadata movie) {
+    private void bindTmdbIdentity(MovieMetadata movie, boolean requirePersistence) {
         if (movie == null || movie.getTmdbId() == null || !hasText(movie.getTmdbType())) {
             return;
         }
@@ -351,6 +472,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
             identity = new MovieSourceIdentity();
             identity.setCreatedAt(now);
         }
+        if (requirePersistence && identity.getMovieId() != null && !movie.getId().equals(identity.getMovieId()))
+            throw new IllegalStateException("TMDB identity belongs to another canonical movie");
         identity.setMovieId(movie.getId());
         identity.setSource("TMDB");
         identity.setSourceType(movie.getTmdbType());
@@ -361,7 +484,8 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
         identity.setMatchStatus("CONFIRMED");
         identity.setEvidenceJson("{\"tmdbId\":" + movie.getTmdbId() + "}");
         identity.setUpdatedAt(now);
-        if (identity.getId() == null) sourceIdentityService.save(identity); else sourceIdentityService.updateById(identity);
+        if (!(identity.getId() == null ? sourceIdentityService.save(identity) : sourceIdentityService.updateById(identity))
+                && requirePersistence) throw new IllegalStateException("TMDB update identity was not saved");
     }
     private void enqueueDiscoveryTask(MovieMetadata movie, TmdbSyncResult result) {
         if (!resourceHubProperties.getTmdb().isAutoDiscoveryEnabled() || movie == null || !hasText(movie.getId())) {

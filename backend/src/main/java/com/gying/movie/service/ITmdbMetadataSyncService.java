@@ -12,6 +12,8 @@ public interface ITmdbMetadataSyncService {
 
     ResourceHubTask enqueueAutomatic(String source);
 
+    ResourceHubTask enqueueUpdates(java.util.List<String> sources);
+
     TmdbSyncResult runTask(Long taskId);
 
     MovieMetadata syncBestByKeyword(String keyword);

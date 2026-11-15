@@ -1573,5 +1573,16 @@
       "movie_metadata": "影片记录",
       "resource_hub_task.payload": "资源中心任务内容"
     }
-  }
+  },
+  "resourceHubUpdatesOnlySwitch": "{{provider}}：暂停全量，仅检查更新",
+  "resourceHubUpdatesOnlyHelp": "保存后保留全量范围与游标，只检查所选榜单的第1–2页。关闭自动采集开关会暂停所有自动检查，手动刷新不受影响。",
+  "resourceHubUpdatesOnlyMode": "仅检查更新",
+  "resourceHubUpdatesOnlyPaused": "自动更新检查已暂停",
+  "resourceHubUpdatesOnlySchedule": "每{{hours}}小时检查一次，每轮最多处理{{limit}}条详情，所有所选榜单共享额度。",
+  "resourceHubUpdatesOnlyIntervalHelp": "更新检查间隔不足24小时按24小时执行，每轮详情超过10条按10条执行；全量范围与游标保留，不参与更新检查。",
+  "resourceHubFullCrawlRangesRetainedHelp": "保留的全量范围：更新模式只检查所选榜单第1–2页，下列全量范围不执行。",
+  "resourceHubFullProgressRetained": "保留的全量进度，更新模式不执行此范围",
+  "resourceHubFullProgressPositionRetained": "保留的全量游标：{{position}}",
+  "resourceHubFullCollectionPausedForUpdates": "全量采集已暂停（更新模式）",
+  "resourceHubUpdatesOnlyPausedHelp": "自动采集开关已关闭，当前不执行更新检查；更新模式和全量设置均保留。"
 }

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +155,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             return;
         }
         List<String> sources = autoSyncSources(tmdb.getAutoSyncSources());
+        if (tmdb.isAutoSyncUpdatesOnly()) {
+            enqueueUpdates("TMDB", sources, tmdb.getAutoSyncIntervalHours(), result); return;
+        }
         if (sources.isEmpty() || hasActiveMetadataSyncTask(sources)) {
             return;
         }
@@ -410,6 +414,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         }
         List<String> sources = gyingAutoSyncSources(gying.getAutoSyncSources()).stream()
                 .filter(source -> !gying.isAutoSyncSourcePaused(source)).toList();
+        if (gying.isAutoSyncUpdatesOnly()) {
+            enqueueUpdates("GYING", sources, gying.getAutoSyncIntervalHours(), result); return;
+        }
         if (sources.isEmpty() || hasActiveGyingMetadataSyncTask(sources)) {
             return;
         }
@@ -430,6 +437,29 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         } catch (Exception error) {
             addError(result, "gying auto sync " + source + ": " + error.getMessage());
         }
+    }
+
+    private void enqueueUpdates(String provider, List<String> sources, int configuredHours, ResourceHubWorkerResult result) {
+        if (sources.isEmpty()) return;
+        var active = updatesQuery(provider).in("status", List.of("PENDING", "RUNNING"));
+        if (taskService.count(active) > 0) return;
+        ResourceHubTask latest = taskService.getOne(updatesQuery(provider).orderByDesc("created_at")
+                .orderByDesc("id").last("LIMIT 1"), false);
+        LocalDateTime since = LocalDateTime.now().minusHours(Math.max(configuredHours, 24));
+        if (latest != null && latest.getCreatedAt() != null && !latest.getCreatedAt().isBefore(since)) return;
+        try {
+            ResourceHubTask task = "TMDB".equals(provider) ? tmdbMetadataSyncService.enqueueUpdates(sources)
+                    : gyingMetadataSyncService.enqueueUpdates(sources);
+            if (task != null) result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+        } catch (Exception error) {
+            addError(result, provider + " updates: " + error.getClass().getSimpleName());
+        }
+    }
+
+    private QueryWrapper<ResourceHubTask> updatesQuery(String provider) {
+        return new QueryWrapper<ResourceHubTask>().eq("task_type", "METADATA_SYNC").eq("source", provider)
+                .eq("keyword", MetadataUpdatesCheckpoint.MODE)
+                .apply("JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')) = 'UPDATES'");
     }
 
     private boolean hasActiveGyingMetadataSyncTask(List<String> sources) {
@@ -502,6 +532,12 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
                 .eq("task_type", "METADATA_SYNC")
                 .eq("status", "PENDING")
                 .le("scheduled_at", LocalDateTime.now());
+        // Keep disabled/mismatched automatic checkpoints queued; filter before the bounded LIMIT.
+        filterAutomaticModes(query, "TMDB", resourceHubProperties.getTmdb().isAutoSyncEnabled(),
+                resourceHubProperties.getTmdb().isAutoSyncUpdatesOnly(), !autoSyncSources(resourceHubProperties.getTmdb().getAutoSyncSources()).isEmpty());
+        filterAutomaticModes(query, "GYING", resourceHubProperties.getGying().isAutoSyncEnabled(),
+                resourceHubProperties.getGying().isAutoSyncUpdatesOnly(), gyingAutoSyncSources(resourceHubProperties.getGying().getAutoSyncSources()).stream()
+                        .anyMatch(source -> !resourceHubProperties.getGying().isAutoSyncSourcePaused(source)));
         List<String> paused = MetadataCrawlRange.sources("GYING").stream()
                 .filter(resourceHubProperties.getGying()::isAutoSyncSourcePaused).toList();
         if (!paused.isEmpty()) {
@@ -516,6 +552,16 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         for (ResourceHubTask task : tasks) {
             runTask(task, result);
         }
+    }
+
+    private void filterAutomaticModes(QueryWrapper<ResourceHubTask> query, String provider,
+            boolean enabled, boolean updatesOnly, boolean hasSources) {
+        String mode = "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(payload), payload, '{}'), '$.crawl.mode')), '')";
+        String condition = !enabled ? mode + " NOT IN ('RANGE', 'UPDATES')"
+                : updatesOnly ? mode + " <> 'RANGE'" : mode + " <> 'UPDATES'";
+        query.and(allowed -> allowed.ne("source", provider).or().apply(condition));
+        if (updatesOnly && !hasSources)
+            query.and(allowed -> allowed.ne("source", provider).or().apply(mode + " <> 'UPDATES'"));
     }
 
     private void runTask(ResourceHubTask task, ResourceHubWorkerResult result) {
@@ -564,11 +610,22 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private boolean pausedAutomaticTask(ResourceHubTask task) {
-        if (!"GYING".equalsIgnoreCase(task.getSource())
-                || !resourceHubProperties.getGying().isAutoSyncSourcePaused(task.getKeyword())) return false;
         try {
-            return task.getPayload() != null && "RANGE".equals(CHECKPOINT_MAPPER.readTree(task.getPayload())
-                    .path("crawl").path("mode").asText());
+            String mode = task.getPayload() == null ? "" : CHECKPOINT_MAPPER.readTree(task.getPayload())
+                    .path("crawl").path("mode").asText();
+            if (!Set.of("RANGE", "UPDATES").contains(mode)) return false;
+            if ("TMDB".equalsIgnoreCase(task.getSource())) {
+                var config = resourceHubProperties.getTmdb();
+                return !config.isAutoSyncEnabled() || "UPDATES".equals(mode) != config.isAutoSyncUpdatesOnly();
+            }
+            if ("GYING".equalsIgnoreCase(task.getSource())) {
+                var config = resourceHubProperties.getGying();
+                return !config.isAutoSyncEnabled() || "UPDATES".equals(mode) != config.isAutoSyncUpdatesOnly()
+                        || ("RANGE".equals(mode) && config.isAutoSyncSourcePaused(task.getKeyword()))
+                        || ("UPDATES".equals(mode) && gyingAutoSyncSources(config.getAutoSyncSources()).stream()
+                                .noneMatch(source -> !config.isAutoSyncSourcePaused(source)));
+            }
+            return false;
         } catch (Exception invalid) {
             // Invalid payloads still follow the existing task failure handling.
             return false;
@@ -674,6 +731,11 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     }
 
     private void failTask(ResourceHubTask task, String message) {
+        // UPDATES owns its state with CAS; a worker exception cannot overwrite a cancellation.
+        try {
+            if (task.getPayload() != null && "UPDATES".equals(CHECKPOINT_MAPPER.readTree(task.getPayload())
+                    .path("crawl").path("mode").asText())) return;
+        } catch (Exception invalid) { /* Existing invalid-task handling remains below. */ }
         LocalDateTime now = LocalDateTime.now();
         task.setStatus("FAILED");
         task.setAttempts(task.getAttempts() == null ? 1 : task.getAttempts() + 1);

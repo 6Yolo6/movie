@@ -344,6 +344,116 @@ class ResourceHubConfigServiceImplTest {
         assertEquals(new com.gying.movie.dto.MetadataCrawlRange(11, 50), fresh.getGyingAutoSyncRanges().get("CSCORE_TV"));
     }
 
+    @Test
+    void missingUpdatesOnlyKeysDefaultToFalseWithoutChangingAutomaticSwitches() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.tmdb.auto_sync_enabled", "true");
+        values.put("resource.hub.gying.auto_sync_enabled", "true");
+        var original = new java.util.HashMap<>(values);
+        var properties = new ResourceHubProperties();
+        var service = new ResourceHubConfigServiceImpl(properties, pauseStorage(values));
+
+        var response = service.getConfig();
+
+        org.junit.jupiter.api.Assertions.assertFalse(response.isTmdbAutoSyncUpdatesOnly());
+        org.junit.jupiter.api.Assertions.assertFalse(response.isGyingAutoSyncUpdatesOnly());
+        org.junit.jupiter.api.Assertions.assertFalse(properties.getTmdb().isAutoSyncUpdatesOnly());
+        org.junit.jupiter.api.Assertions.assertFalse(properties.getGying().isAutoSyncUpdatesOnly());
+        assertTrue(response.isTmdbAutoSyncEnabled());
+        assertTrue(response.isGyingAutoSyncEnabled());
+        original.forEach((key, value) -> assertEquals(value, values.get(key), key));
+        assertEquals("false", values.get("resource.hub.tmdb.auto_sync_updates_only"));
+        assertEquals("false", values.get("resource.hub.gying.auto_sync_updates_only"));
+    }
+
+    @Test
+    void updatesOnlyFlagsPersistWithoutRewritingSavedCollectionScope() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.tmdb.auto_sync_enabled", "true");
+        values.put("resource.hub.tmdb.auto_sync_sources", "POPULAR_MOVIE,POPULAR_TV");
+        values.put("resource.hub.tmdb.auto_sync_page", "151");
+        values.put("resource.hub.tmdb.auto_sync_end_page", "500");
+        values.put("resource.hub.tmdb.auto_sync_ranges", "{\"POPULAR_MOVIE\":{\"startPage\":160,\"endPage\":480}}");
+        values.put("resource.hub.tmdb.auto_sync_interval_hours", "6");
+        values.put("resource.hub.tmdb.auto_sync_max_items", "80");
+        values.put("resource.hub.gying.auto_sync_enabled", "false");
+        values.put("resource.hub.gying.auto_sync_sources", "HITS_MOVIE,TIME_TV");
+        values.put("resource.hub.gying.auto_sync_page", "11");
+        values.put("resource.hub.gying.auto_sync_end_page", "50");
+        values.put("resource.hub.gying.auto_sync_ranges", "{\"HITS_MOVIE\":{\"startPage\":17,\"endPage\":39}}");
+        values.put("resource.hub.gying.auto_sync_interval_hours", "12");
+        values.put("resource.hub.gying.auto_sync_max_items", "20");
+        values.put("resource.hub.gying.auto_sync_paused.HITS_MOVIE", "true");
+        values.put("resource.hub.gying.auto_sync_paused.TIME_TV", "false");
+        var original = new java.util.HashMap<>(values);
+        var storage = pauseStorage(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
+        var before = service.getConfig();
+        int initializedRowCount = values.size();
+        var request = new ResourceHubConfigRequest();
+        request.setTmdbAutoSyncUpdatesOnly(true);
+        request.setGyingAutoSyncUpdatesOnly(true);
+
+        service.updateConfig(request);
+        var fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
+
+        assertTrue(fresh.isTmdbAutoSyncUpdatesOnly());
+        assertTrue(fresh.isGyingAutoSyncUpdatesOnly());
+        assertEquals("true", values.get("resource.hub.tmdb.auto_sync_updates_only"));
+        assertEquals("true", values.get("resource.hub.gying.auto_sync_updates_only"));
+        assertEquals(initializedRowCount, values.size());
+        original.forEach((key, value) -> assertEquals(value, values.get(key), key));
+        assertEquals(before.isTmdbAutoSyncEnabled(), fresh.isTmdbAutoSyncEnabled());
+        assertEquals(before.isGyingAutoSyncEnabled(), fresh.isGyingAutoSyncEnabled());
+        assertEquals(before.getTmdbAutoSyncSources(), fresh.getTmdbAutoSyncSources());
+        assertEquals(before.getGyingAutoSyncSources(), fresh.getGyingAutoSyncSources());
+        assertEquals(before.getTmdbAutoSyncRanges(), fresh.getTmdbAutoSyncRanges());
+        assertEquals(before.getGyingAutoSyncRanges(), fresh.getGyingAutoSyncRanges());
+        assertEquals(151, fresh.getTmdbAutoSyncPage());
+        assertEquals(500, fresh.getTmdbAutoSyncEndPage());
+        assertEquals(11, fresh.getGyingAutoSyncPage());
+        assertEquals(50, fresh.getGyingAutoSyncEndPage());
+        assertEquals(6, fresh.getTmdbAutoSyncIntervalHours());
+        assertEquals(12, fresh.getGyingAutoSyncIntervalHours());
+        assertEquals(80, fresh.getTmdbAutoSyncMaxItems());
+        assertEquals(20, fresh.getGyingAutoSyncMaxItems());
+        assertEquals(before.getGyingAutoSyncPausedSources(), fresh.getGyingAutoSyncPausedSources());
+    }
+
+    @Test
+    void partialProviderEditsKeepUpdatesOnlyFlagsUntilExplicitlyChanged() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.tmdb.auto_sync_updates_only", "true");
+        values.put("resource.hub.gying.auto_sync_updates_only", "true");
+        values.put("resource.hub.tmdb.auto_sync_enabled", "true");
+        values.put("resource.hub.gying.auto_sync_enabled", "true");
+        var storage = pauseStorage(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
+        service.getConfig();
+        var legacyRequest = new ResourceHubConfigRequest();
+        legacyRequest.setTmdbAutoSyncIntervalHours(9);
+        legacyRequest.setGyingAutoSyncEnabled(false);
+
+        service.updateConfig(legacyRequest);
+        var fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
+
+        assertTrue(fresh.isTmdbAutoSyncUpdatesOnly());
+        assertTrue(fresh.isGyingAutoSyncUpdatesOnly());
+        assertTrue(fresh.isTmdbAutoSyncEnabled());
+        org.junit.jupiter.api.Assertions.assertFalse(fresh.isGyingAutoSyncEnabled());
+        assertEquals(9, fresh.getTmdbAutoSyncIntervalHours());
+        var explicitRequest = new ResourceHubConfigRequest();
+        explicitRequest.setTmdbAutoSyncUpdatesOnly(false);
+        service.updateConfig(explicitRequest);
+        fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
+        org.junit.jupiter.api.Assertions.assertFalse(fresh.isTmdbAutoSyncUpdatesOnly());
+        assertTrue(fresh.isGyingAutoSyncUpdatesOnly());
+        assertEquals("false", values.get("resource.hub.tmdb.auto_sync_updates_only"));
+        assertEquals("true", values.get("resource.hub.gying.auto_sync_updates_only"));
+        assertEquals(9, fresh.getTmdbAutoSyncIntervalHours());
+        org.junit.jupiter.api.Assertions.assertFalse(fresh.isGyingAutoSyncEnabled());
+    }
+
     private ISysConfigService pauseStorage(java.util.Map<String, String> values) {
         var storage = mock(ISysConfigService.class);
         org.mockito.Mockito.when(storage.count(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
