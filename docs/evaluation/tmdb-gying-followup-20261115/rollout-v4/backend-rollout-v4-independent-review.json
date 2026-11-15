@@ -1,0 +1,89 @@
+{
+  "status": "PASS",
+  "scope": "FINAL_LOCAL_HELPER_REVIEW_OFFLINE_TESTS_AND_REFERENCED_READONLY_PROTOCOL_EVIDENCE",
+  "atUtc": "2026-11-15T12:19:18.027999+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "helpers": {
+    "BackendRollout.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\BackendRollout.py",
+      "sha256": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7"
+    },
+    "FollowUpDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\FollowUpDeclarations.py",
+      "sha256": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9"
+    },
+    "HostReadyAdapter.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\HostReadyAdapter.py",
+      "sha256": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625"
+    }
+  },
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\deployment-binding.json",
+    "sha256": "afc15bccadfe4f8654b016086d4fd04ff8a9f6e0b5338ad88b52a3ac4f746921"
+  },
+  "priorHostMetadataBaseline": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\prepared.json",
+    "sha256": "b7d627e72ed87910c2c160c266bba285db926f3572decdbfde1b0bfd55970c3c"
+  },
+  "independentTests": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\independent-offline-tests.json",
+    "sha256": "2e2461db80e6497df682e3774a88537504c5c65cb73c8c2986fada50626ed1f2"
+  },
+  "designReview": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-v4-design-independent-review.json",
+    "sha256": "533ffc67a24bb7149fa52faec9af670f3be33f27f0fce7745146cc6e8deaaa50"
+  },
+  "protocolEvidence": [
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-20261115T120846Z.json",
+      "sha256": "03fa297a768108e8a8e9d6974d795df23a4599b26ae2cb304f9f14cffc215f8f"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-output-text-20261115T120940Z.json",
+      "sha256": "835231334159757c3962053019181e94d9f28b1e9b7c0a041fa3fd054b1715db"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\host-probe-diagnostic-20261115\\probe-plain-command-20261115T121106Z.json",
+      "sha256": "703be5e04c214ba49dfb7401d631a054034ed5ef7528ef3d8bff8a552c4f6af4"
+    }
+  ],
+  "checks": {
+    "v3BackendFrozenBytesPreserved": true,
+    "v3DeclarationsFrozenBytesPreserved": true,
+    "v3AdapterFrozenBytesPreserved": true,
+    "v4BackendExactlyAdapterShaAndTwoUniqueModuleNameDeltas": true,
+    "v4DeclarationsExactlyBackendShaDelta": true,
+    "archiveWorkerExecuteIdlePreserveSaveModelEntryFunctionsUnchanged": true,
+    "allDeclarationFunctionBodiesUnchanged": true,
+    "priorBindingByteIdenticalToV3": true,
+    "priorV2ReferenceAndSourceUnchanged": true,
+    "strictPrivateProxySourceDeadlineSecondMessageFunctionsUnchanged": true,
+    "independent85TestsPassed": true,
+    "allSevenInputsFrozenAcrossIndependentTests": true
+  },
+  "adapterReview": {
+    "fixedPinnedProbeSourceOnlyRunningTermRemoved": true,
+    "plainCommandSourceSingleArgvNoShellOrDynamicDataInterpolation": true,
+    "returnCodeZeroAndEmptyStderrRemainMandatoryNoFiltering": true,
+    "runningOrReadyOnlyWithFullIdentityEnabledXmlAclAndExactAnchor": true,
+    "runningStateNormalizationOnlyUsedForDigestComparison": true,
+    "readyProbeOnlyTriggersAnotherOriginalStrictRead": true,
+    "actualOriginalStrictReadyMatchingAnchorOnlyReturnValue": true,
+    "secondMessageOriginalFailedResponseStillMustBeValidRunning": true,
+    "nonePrepareAnchorNeverReplacedAndDurableV2GatePreserved": true,
+    "monotonic45SecondsIncludesVerificationStrictProbeSleep": true,
+    "safeErrorOnlyPinnedUniqueV4ModuleExactClassEnum": true
+  },
+  "textFlagAloneVerifiedNotSufficient": true,
+  "plainCommandProtocolVerifiedStderrEmptyAndSameStdoutJson": true,
+  "historicalQrRunningConfirmed": false,
+  "readyLaterDoesNotProveEarlierTaskState": true,
+  "realPowershellProbeRepeatedByReviewer": false,
+  "productionPrepareOrExecuteInvokedByReviewer": false,
+  "mavenInvoked": false,
+  "sourceGetRepeated": false,
+  "productionMutationPerformed": false,
+  "liveV4CheckpointOrDeploymentGateValidated": false,
+  "oldExecuteRetriesPermitted": false,
+  "freshV4PreparedPlanAndAuthenticatedCheckpointRequired": true
+}

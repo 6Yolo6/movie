@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-15T12:21:33.723062+00:00",
+  "blockingCleanupJobs": [
+    {
+      "id": "415",
+      "provider": "QUARK",
+      "transferTaskId": "2287",
+      "discoveryResultId": "9591",
+      "status": "PENDING",
+      "attempts": "0",
+      "deleteAfter": "2026-11-15 20:29:05",
+      "createdAt": "2026-11-15 20:19:05",
+      "updatedAt": "2026-11-15 20:19:05",
+      "lastErrorPresent": "0",
+      "finishedAt": "NULL"
+    }
+  ],
+  "productionWrites": 0,
+  "providerRequests": 0,
+  "cleanupRequests": 0,
+  "rawPathsOrErrorBodiesWritten": false
+}

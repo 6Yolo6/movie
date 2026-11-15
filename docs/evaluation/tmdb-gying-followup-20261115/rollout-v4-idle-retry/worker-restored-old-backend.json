@@ -1,0 +1,17 @@
+{
+  "status": "ORIGINAL_WORKER_TRUE_RESTORED_OLD_BACKEND_UNCHANGED",
+  "at": "2026-11-15T12:34:43.404111+00:00",
+  "ack": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\worker-restore-after-host-idle-stop-ack.json",
+    "sha256": "28910cb86b48241eee282ee7356dc5c28d93e6024458a3494245e94a22d47d1c"
+  },
+  "plan": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4-idle-retry\\prepared.json",
+    "sha256": "fb5bffe9b00eb36a97ac5a8b55db7e76312e1d27e3df52952650d61d6d17b469"
+  },
+  "allThirteenGenerationsExact": true,
+  "serviceStops": 0,
+  "serviceActivations": 0,
+  "providerRequests": 0,
+  "automaticRetry": false
+}

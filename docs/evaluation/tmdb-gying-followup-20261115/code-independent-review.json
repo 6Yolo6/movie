@@ -1,0 +1,206 @@
+{
+  "status": "PASS",
+  "draft": false,
+  "reviewScope": "Independent source review; test execution and deployment are separate gates.",
+  "reviewedAt": "2026-11-15T11:02:09.499494+00:00",
+  "reviewer": "/root/tmdb_gying_review",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "manifestSHA": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "sourceManifest": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\freeze-sources-v3.json",
+    "sha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98"
+  },
+  "sourceFileCount": 423,
+  "allCurrentSourceBytesMatch": true,
+  "newResourceType": "TMDB_GYING_RESOURCE",
+  "newBudgetType": "TMDB_GYING_RESOURCE_BUDGET",
+  "oldRangeResumed": false,
+  "legacyUnknownReplayed": false,
+  "resourceAttemptBudgetPer24Hours": 10,
+  "resourceAttemptMaximumPerTask": 3,
+  "failedAttemptNextDelayHours": 24,
+  "consumerRespectsWorkerDisabled": true,
+  "startupCreatesTasks": false,
+  "startupReplaysLegacyTasks": false,
+  "budgetLedgerTerminal": true,
+  "budgetLedgerContract": {
+    "source": "GYING",
+    "keyword": "TMDB_UPDATES_RESOURCE_BUDGET_V1",
+    "status": "SUCCEEDED",
+    "maxAttempts": 0,
+    "consumer": false
+  },
+  "startupRecoveryContract": {
+    "onlyType": "TMDB_GYING_RESOURCE",
+    "onlySource": "GYING",
+    "onlyPayloadMode": "TMDB_UPDATES_RESOURCE_V1",
+    "fromStatus": "RUNNING",
+    "toStatus": "FAILED",
+    "delayedHours": 24,
+    "preservesAttempts": true,
+    "recoversUnknown": false,
+    "worksWhileWorkerDisabled": true
+  },
+  "checks": [
+    {
+      "check": "metadata_save_and_resource_intent_share_transaction_with_persisted_canonical_and_intent_ack",
+      "status": "PASS"
+    },
+    {
+      "check": "canonical_namespace_movie_zero_preserves_movie_part_and_tv_requires_positive_exact_season",
+      "status": "PASS"
+    },
+    {
+      "check": "stable_resource_key_never_recreates_any_existing_task_status",
+      "status": "PASS"
+    },
+    {
+      "check": "search_only_bounded_deduplicated_titles_type_year_tv_season_and_unique_mid",
+      "status": "PASS"
+    },
+    {
+      "check": "canonical_conflicts_include_unbound_gying_only_movies_and_normalized_title_alias_candidates",
+      "status": "PASS"
+    },
+    {
+      "check": "persisted_identity_readback_and_live_detail_revalidation_of_existing_identity",
+      "status": "PASS"
+    },
+    {
+      "check": "legacy_unfinished_archive_or_baidu_parent_blocks_collection_without_attempt",
+      "status": "PASS"
+    },
+    {
+      "check": "dedicated_named_lock_spans_separate_tx_commit_and_release_failure_retires_hikari_session",
+      "status": "PASS"
+    },
+    {
+      "check": "persistent_24h_budget_binary_json_cas_and_task_claim_same_transaction",
+      "status": "PASS"
+    },
+    {
+      "check": "claim_cas_preserves_admin_schedule_attempt_cap_identity_and_canceled_owner",
+      "status": "PASS"
+    },
+    {
+      "check": "budget_readback_validates_identity_terminal_state_attempt_cap_and_integral_overflow",
+      "status": "PASS"
+    },
+    {
+      "check": "worker_reload_prevents_next_job_and_collection_after_pause",
+      "status": "PASS"
+    },
+    {
+      "check": "existing_p2p_enqueue_has_durable_child_ack_before_resource_succeeded",
+      "status": "PASS"
+    },
+    {
+      "check": "archive_resource_ids_use_strict_long_value_compare_without_intnode_longnode_false_mismatch",
+      "status": "PASS"
+    },
+    {
+      "check": "missing_year_keeps_metadata_intent_for_review_without_tmdb_refetch_or_resource_budget",
+      "status": "PASS"
+    },
+    {
+      "check": "upcoming_known_release_date_defers_resource_intent_until_release",
+      "status": "PASS"
+    },
+    {
+      "check": "new_resource_work_never_fetches_tmdb_detail_or_starts_video_publish_workflows",
+      "status": "PASS"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\TmdbGyingResourceFollowUpService.java",
+      "sha256": "cd43cb58ffc7ffa510f84a5a53e5515a04d17c216155656e426cb80bfaafaa09"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\TmdbMetadataSyncServiceImpl.java",
+      "sha256": "0d283ea8a91cfdd38b6fe695ea0170cde2d4fc9e823015664ecbdcd191801e53"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\GyingSourceWorkflowService.java",
+      "sha256": "0fadcd37e0e6b6b89a89ba0de4061ea6f15e13847a7a504343cc91f2209cbe2c"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\MetadataUpdatesCheckpoint.java",
+      "sha256": "bf89f902c2f535ec2b7939dbe987df0c55311faf6d8ef6ce83f016e9add61cb2"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\P2pArchiveTaskService.java",
+      "sha256": "3690ce2523e7f82a29e262ca9fd533ab253a481b8bd58bb65a952b0eacd04722"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\ResourceHubTaskServiceImpl.java",
+      "sha256": "f0774aa50b41d2ca8582b749f109617f15b18da7cd53a7c415a4989a6b74ea2e"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\service\\impl\\ResourceHubWorkerServiceImpl.java",
+      "sha256": "4ec60da65cb90ab0ba4f28266bc6a58317471e89f49468e46c7a18973db67d76"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\java\\com\\gying\\movie\\client\\GyingSourceClient.java",
+      "sha256": "1809a742f5fa7e85cc2fd594d73f7bd7fe5d7b3eff14e77d686ee6a8c31471e9"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\GyingSourceWorkflowServiceTest.java",
+      "sha256": "24153f1a0c054cabbc59329453a552740caba2b61c245bc21130bb6b706015c2"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\MetadataUpdatesCheckpointMySqlTest.java",
+      "sha256": "95c9bce70c889e032c35beca387666c86c0930aac83e8ad1512278e0ddcdb806"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\MetadataUpdatesProvidersTest.java",
+      "sha256": "5a12f415e5581f601d9c173983bb685a97df957c74a0d0a2ac1f20a3cfc49ce1"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\TmdbMetadataCrawlTest.java",
+      "sha256": "19df49e040a55b2b86c010bfb02840c7d48661a8341690bb5fe9cbd6da973cf1"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\test\\java\\com\\gying\\movie\\service\\impl\\TmdbMetadataSyncServiceImplTest.java",
+      "sha256": "c08b972deb2ce4af78e169cfff4ec58d49abd5eecdfb64f4a35456656078fa97"
+    }
+  ],
+  "actualSqlTestsVerifiedByReviewer": false,
+  "mavenRunByReviewer": false,
+  "testExecutionStatus": "Root reports isolated business V4 tests in progress; actual SQL/test PASS evidence remains a separate required deployment gate.",
+  "liveSchemaEvidence": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\gying-live-year-schema-readonly-v2.json",
+    "sha256": "be631ef5e323c55d0e6cb1f2c7829a9bf406c85bf6e06616ba0d6823d3c8c317"
+  },
+  "reviewerProductionActions": {
+    "readOnlySql": true,
+    "authorizedExistingGyingDetailGetCount": 1,
+    "sourceSearchRequests": 0,
+    "transferRequests": 0,
+    "newLoginRequests": 0,
+    "configurationWrites": 0
+  },
+  "limitations": [
+    "Source review PASS does not replace isolated SQL/full suite/build/deployment gates.",
+    "Resource task SUCCEEDED means existing archive children were acknowledged, not cloud upload completed.",
+    "No safe single-new-candidate UPDATES API exists; natural next scheduled round remains live resource-chain acceptance.",
+    "Missing-year intent remains review-required even if metadata later acquires a year; no automatic mutation of prior anchor.",
+    "Live year schema inspected one existing trusted movie only; other source types and upstream strings were not tested."
+  ],
+  "finalizedAt": "2026-11-15T11:15:15.384419+00:00",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "sourceCommitBound": true,
+  "gitBlobInventoryMatchesManifest": true,
+  "gitBlobSourceBytesVerified": true,
+  "gitBlobByteComparison": {
+    "exactCount": 127,
+    "crlfToLfNormalizedCount": 296,
+    "count": 423,
+    "reason": "Repository core.autocrlf=true; working bytes remain bound by the raw SHA-256 manifest."
+  },
+  "backendWorkingTreeCleanAtFinalization": true,
+  "priorReviewDraft": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\code-independent-review-draft.json",
+    "sha256": "da07b8a7ab89dc924631193ca30b9da5073be6823c2035359bb3f5ecdde9bdca"
+  }
+}

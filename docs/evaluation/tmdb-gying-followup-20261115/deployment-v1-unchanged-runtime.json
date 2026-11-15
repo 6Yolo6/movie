@@ -1,0 +1,14 @@
+{
+  "status": "READ_ONLY_BASELINE_PRESERVED_AFTER_V1_SAFE_STOP",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "failure": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\failure-2026-11-15T112651.860985_0000.json",
+    "sha256": "6a7e9b925000b7e202ff8b85f4327dc3127544d029873303b79f09cbb58774e1"
+  },
+  "oldBackendImageExact": true,
+  "oldBackendContainerIdExact": true,
+  "workerUnchanged": true,
+  "noWorkerPauseOrBackendTermOrActivationReservation": true,
+  "protectedRowsAndOtherRuntimeVerifiedByRootReadOnlyPreserve": true,
+  "productionWrites": 0
+}

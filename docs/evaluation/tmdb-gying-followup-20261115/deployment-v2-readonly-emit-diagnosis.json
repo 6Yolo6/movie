@@ -1,0 +1,59 @@
+{
+  "status": "READ_ONLY_EMIT_COMPLETED",
+  "rawTarWritten": false,
+  "productionWrites": 0,
+  "executeRetries": 0,
+  "providerRequests": 0,
+  "events": [
+    {
+      "phase": "freeze",
+      "state": "start"
+    },
+    {
+      "phase": "freeze",
+      "state": "complete"
+    },
+    {
+      "phase": "container-inspect",
+      "state": "start"
+    },
+    {
+      "phase": "container-inspect",
+      "state": "complete"
+    },
+    {
+      "phase": "compose-model",
+      "state": "start"
+    },
+    {
+      "phase": "compose-model",
+      "state": "complete"
+    },
+    {
+      "phase": "host-snapshot",
+      "state": "start"
+    },
+    {
+      "phase": "host-snapshot",
+      "state": "complete"
+    },
+    {
+      "phase": "host-encoding",
+      "state": "start"
+    },
+    {
+      "phase": "host-encoding",
+      "state": "complete"
+    },
+    {
+      "phase": "host-encoding",
+      "state": "start"
+    },
+    {
+      "phase": "host-encoding",
+      "state": "complete"
+    }
+  ],
+  "discardedTarBytes": 1157120,
+  "discardedTarSha256": "8277f2381cee5c5dad0fc1696211545e4c1db048ad642876f78d860fec56318b"
+}

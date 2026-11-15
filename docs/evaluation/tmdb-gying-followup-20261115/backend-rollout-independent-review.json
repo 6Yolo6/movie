@@ -1,0 +1,353 @@
+{
+  "status": "PASS",
+  "reviewer": "evidence_pack independent static review",
+  "at": "2026-11-15T11:00:04.080673+00:00",
+  "helper": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\BackendRollout.py",
+  "helperSha256": "c94875de54314ac3810dfc3145e6d8c662c9b448e426252cb62101c285211e03",
+  "lines": 215,
+  "scope": "operational helper static review only; runtime gates must pass when root executes",
+  "findings": [
+    {
+      "check": "backend_only_complete_source_and_test_binding",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 34,
+          "gateOrMarker": "BACKEND_ONLY_CONCRETE_BINDING"
+        },
+        {
+          "line": 37,
+          "gateOrMarker": "REQUIRED_TESTS_PASS_AND_EXACT_SOURCE_BINDING"
+        },
+        {
+          "line": 44,
+          "gateOrMarker": "EXACT_COMPLETE_GIT_SOURCE_INVENTORY"
+        },
+        {
+          "line": 55,
+          "gateOrMarker": "NO_UNTRACKED_OR_UNCOMMITTED_BACKEND_SOURCES"
+        }
+      ]
+    },
+    {
+      "check": "consumer_worker_startup_no_creation_no_replay_review_required",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 41,
+          "gateOrMarker": "EXPLICIT_STARTUP_WORKER_AND_LEDGER_REVIEW"
+        }
+      ]
+    },
+    {
+      "check": "old_range_and_unknown_preserved",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 102,
+          "gateOrMarker": "LEGACY_RANGE"
+        },
+        {
+          "line": 40,
+          "gateOrMarker": "legacyUnknownReplayed"
+        }
+      ]
+    },
+    {
+      "check": "fixed_current_base_and_only_backend_image_change",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 94,
+          "gateOrMarker": "EXACT_STABLE_BACKEND_BASE"
+        },
+        {
+          "line": 106,
+          "gateOrMarker": "ONLY_BACKEND_IMAGE_CHANGES"
+        },
+        {
+          "line": 97,
+          "gateOrMarker": "CURRENT_BACKEND_25_COMPOSE_FILES"
+        }
+      ]
+    },
+    {
+      "check": "other_twelve_service_generations_and_frontend_full_runtime_guard",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 63,
+          "gateOrMarker": "FRONTEND_GENERATION_EXACT"
+        },
+        {
+          "line": 61,
+          "gateOrMarker": "FRONTEND_COMPLETE_RUNTIME_CONFIG_EXACT"
+        },
+        {
+          "line": 59,
+          "gateOrMarker": "G.preserve(R,C,p)"
+        }
+      ]
+    },
+    {
+      "check": "all_sys_config_except_only_worker_full_row_guard",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 60,
+          "gateOrMarker": "ALL_OTHER_SYS_CONFIG_ROWS_EXACT"
+        },
+        {
+          "line": 65,
+          "gateOrMarker": "ONLY_INTENDED_WORKER_CHANGE"
+        }
+      ]
+    },
+    {
+      "check": "new_resource_and_budget_inflight_gate",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 18,
+          "gateOrMarker": "RESOURCE_TYPE"
+        },
+        {
+          "line": 19,
+          "gateOrMarker": "BUDGET_TYPE"
+        },
+        {
+          "line": 77,
+          "gateOrMarker": "NO_NEW_METADATA_ARCHIVE_OR_RESOURCE_QUEUE"
+        }
+      ]
+    },
+    {
+      "check": "baidu_inflight_lease_submission_and_cleanup_gate",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 79,
+          "gateOrMarker": "NO_BAIDU_INFLIGHT_LEASE_OR_SUBMISSION"
+        },
+        {
+          "line": 81,
+          "gateOrMarker": "NO_QQ_CLEANUP_QUEUE"
+        }
+      ]
+    },
+    {
+      "check": "ai_host_maintenance_quark_process_idle",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 82,
+          "gateOrMarker": "NO_PENDING_MAINTENANCE"
+        },
+        {
+          "line": 83,
+          "gateOrMarker": "NO_RUNNING_HOST_BUSINESS_TASK"
+        },
+        {
+          "line": 84,
+          "gateOrMarker": "NO_AI_QUEUE"
+        },
+        {
+          "line": 87,
+          "gateOrMarker": "QAS_SERVER_ONLY_NO_TRANSFERS"
+        }
+      ]
+    },
+    {
+      "check": "generic_dependency_manifests_actual_post_helper_and_new_helper_frozen",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 112,
+          "gateOrMarker": "deps=R.dependencies()"
+        },
+        {
+          "line": 112,
+          "gateOrMarker": "R.ROOT/'dependencies.json'"
+        },
+        {
+          "line": 112,
+          "gateOrMarker": "R.ROOT/'BackendReadOnly.py'"
+        },
+        {
+          "line": 112,
+          "gateOrMarker": "G.OLD/'PostDeployment.py'"
+        },
+        {
+          "line": 112,
+          "gateOrMarker": "ROOT/'FollowUpDeclarations.py'"
+        }
+      ]
+    },
+    {
+      "check": "preimage_exact_runtime_archive_inventory_model_file_hashes",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 133,
+          "gateOrMarker": "COMPLETE_EXACT_RUNTIME_ARCHIVE_INVENTORY"
+        },
+        {
+          "line": 134,
+          "gateOrMarker": "AUTHENTICATED_EXACT_EFFECTIVE_BACKEND_MODEL"
+        },
+        {
+          "line": 137,
+          "gateOrMarker": "ALL_FROZEN_ARCHIVE_CONTENT_HASHES"
+        },
+        {
+          "line": 139,
+          "gateOrMarker": "FULL_AUTHENTICATED_OLD_CONFIG_ENV_HOST"
+        }
+      ]
+    },
+    {
+      "check": "six_authenticated_predeploy_stopped_archives",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 179,
+          "gateOrMarker": "pre.finish(3)"
+        },
+        {
+          "line": 194,
+          "gateOrMarker": "cp.finish(3)"
+        },
+        {
+          "line": 179,
+          "gateOrMarker": "D.checkpoint_valid"
+        },
+        {
+          "line": 192,
+          "gateOrMarker": "ai-state-key.tar.age"
+        }
+      ]
+    },
+    {
+      "check": "normal_term_wait_and_inspect_exit_persisted",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 186,
+          "gateOrMarker": "ACTUAL_NORMAL_STOP_EXIT"
+        },
+        {
+          "line": 187,
+          "gateOrMarker": "backend-term-result.json"
+        },
+        {
+          "line": 187,
+          "gateOrMarker": "exitObserved"
+        }
+      ]
+    },
+    {
+      "check": "worker_pause_restore_single_reserved_put",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 143,
+          "gateOrMarker": "putLimit"
+        },
+        {
+          "line": 181,
+          "gateOrMarker": "worker-pause"
+        },
+        {
+          "line": 201,
+          "gateOrMarker": "worker-restore"
+        },
+        {
+          "line": 150,
+          "gateOrMarker": "putAttempts"
+        }
+      ]
+    },
+    {
+      "check": "one_backend_activation_and_one_nginx_reload_reserved",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 196,
+          "gateOrMarker": "backend-activation-reservation.json"
+        },
+        {
+          "line": 197,
+          "gateOrMarker": "'up','-d','--no-deps','--no-build','--pull','never','backend'"
+        },
+        {
+          "line": 200,
+          "gateOrMarker": "nginx-reload-reservation.json"
+        },
+        {
+          "line": 200,
+          "gateOrMarker": "NGINX_GENERATION_PRESERVED"
+        }
+      ]
+    },
+    {
+      "check": "fixed_eight_gets_redirect_disabled_exact_public_access",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 156,
+          "gateOrMarker": "for origin in"
+        },
+        {
+          "line": 157,
+          "gateOrMarker": "for path in"
+        },
+        {
+          "line": 160,
+          "gateOrMarker": "method='GET'"
+        },
+        {
+          "line": 168,
+          "gateOrMarker": "EXACT_PUBLIC_ACCESS_REDIRECT"
+        },
+        {
+          "line": 170,
+          "gateOrMarker": "bodyOrLocationQueryWritten"
+        }
+      ]
+    },
+    {
+      "check": "failure_preserves_current_state_no_retry_restore_replay",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 205,
+          "gateOrMarker": "STOPPED_NO_RETRY_PRESERVE_CURRENT_STATE"
+        },
+        {
+          "line": 102,
+          "gateOrMarker": "automaticSqlRestore"
+        },
+        {
+          "line": 205,
+          "gateOrMarker": "oldTasksReplayed"
+        }
+      ]
+    },
+    {
+      "check": "explicit_pending_natural_business_acceptance",
+      "status": "PASS",
+      "evidence": [
+        {
+          "line": 203,
+          "gateOrMarker": "newTaskNaturalAcceptancePending"
+        }
+      ]
+    }
+  ],
+  "remainingBlockingFindings": [],
+  "defaultPlanHasProductionIO": false,
+  "runtimeChecksExecutedByReviewer": false,
+  "deploymentExecutedByReviewer": false,
+  "configurationWritesExecutedByReviewer": 0,
+  "providerCallsExecutedByReviewer": 0
+}

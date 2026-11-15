@@ -1,0 +1,141 @@
+{
+  "status": "LOCAL_V2_REPAIR_AND_OFFLINE_TESTS_PASS_PENDING_INDEPENDENT_REVIEW",
+  "at": "2026-11-15T11:35:08.971134+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "scope": "OPS_HELPERS_ONLY_NEW_ROLLOUT_V2_DIRECTORY",
+  "original": {
+    "BackendRollout.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\BackendRollout.py",
+      "sha256": "c94875de54314ac3810dfc3145e6d8c662c9b448e426252cb62101c285211e03",
+      "size": 22911
+    },
+    "FollowUpDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\FollowUpDeclarations.py",
+      "sha256": "ee4c082f187b9aa2375cf0e3c9ace11f59717e99e9b6aec153a4fa52f7c9d381",
+      "size": 25562
+    },
+    "TestRolloutGuards.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\TestRolloutGuards.py",
+      "sha256": "55ae183377855fd5e89c334b25b4589518b1218a378d1a6e1d831673d2bffb94",
+      "size": 4186
+    },
+    "TestDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\TestDeclarations.py",
+      "sha256": "e164e8b913e068e9425c8a0b8158fae87b2348e2fc824ee3d3f77c779e263372",
+      "size": 1742
+    }
+  },
+  "v2": {
+    "BackendRollout.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\BackendRollout.py",
+      "sha256": "af8e31955379458b9382c9c4cf47917eddfcbad16695cc37e95071413b4812a1",
+      "size": 22930
+    },
+    "FollowUpDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\FollowUpDeclarations.py",
+      "sha256": "e1ec332a24c6274f9b77655adc53b26236c26d8fd5d0900320b1f95df7aa53c8",
+      "size": 25576
+    },
+    "TestRolloutGuards.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\TestRolloutGuards.py",
+      "sha256": "bec89aa8ed8edbe778eb314bac2e942b32394430cce01ea6ebca50f15bad5cf6",
+      "size": 10290
+    },
+    "TestDeclarations.py": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\TestDeclarations.py",
+      "sha256": "275ed6b429934eb1a4533d2bada08d1eebcbdf9dc56321ac651791777a5a2b52",
+      "size": 6235
+    }
+  },
+  "minimalHelperDiff": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\minimal-helper-diff.txt",
+    "sha256": "20865dcee1ae26a429aa37dbc7115457052ae0023e09f48a29dd857731880e5c",
+    "size": 2234
+  },
+  "changes": [
+    {
+      "file": "BackendRollout.py",
+      "line": 124,
+      "change": "Only effective/backend.json serializer adds ensure_ascii=False so raw UTF-8 JSON SHA matches the unchanged G.digest(model) and unchanged authenticated byte-SHA gate."
+    },
+    {
+      "file": "FollowUpDeclarations.py",
+      "line": 10,
+      "change": "Fixed BACKEND_ROLLOUT_SHA updated to the exact cloned BackendRollout.py SHA."
+    },
+    {
+      "file": "FollowUpDeclarations.py",
+      "line": 11,
+      "change": "Same ADDITION.name, path=str(ROOT.parent) retains whole original release coverage including V1 failure and V2 artifacts."
+    },
+    {
+      "file": "FollowUpDeclarations.py",
+      "line": 117,
+      "change": "Duplicate path comparison uses ROOT.parent.resolve() to retain the original duplicate-path gate after relocation."
+    }
+  ],
+  "tests": {
+    "total": 28,
+    "originalTestsRetained": 16,
+    "newTests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "result": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\offline-ops-tests-attempt1.json",
+      "sha256": "b8fdce88b9414a73abe6553c06cfcf808d418865d4146f35f3b59ec7dd4cf975",
+      "size": 1486
+    },
+    "log": {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\offline-ops-tests-attempt1.log",
+      "sha256": "8403ad8a619a16804cfcc53735469d32cc173d2d141788458a744327e792e89c",
+      "size": 2645
+    },
+    "covered": [
+      "actual emit_runtime with synthetic Unicode and ASCII models and mocked production primitives/freeze/model/stdout",
+      "tar effective/backend.json raw SHA equals unchanged G.digest(model)",
+      "legacy Unicode escaping still rejected by unchanged archive_runtime authenticated byte-SHA gate",
+      "ASCII tar JSON bytes unchanged",
+      "zero-runtime-I/O default plan for both helpers",
+      "V1 helper byte SHA and strict 1+3 line helper delta",
+      "V2 fixed BackendRollout SHA and frozen-helper identity enforcement",
+      "original release ADDITION path and duplicate name or path rejection",
+      "synthetic 48 to 49 single path append retaining every original field",
+      "existing build/test/review guards, bounded entries, receipt and durable-CAS ACK guards retained"
+    ]
+  },
+  "preservation": {
+    "originalHelperAndTestBytesUnchanged": true,
+    "v1ExecutionMaterialReadOnlyReference": [
+      {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\deployment-reservation.json",
+        "sha256": "ad878260eb60ea5f5eb5ee1fc3afd2c28dbad06aaae0e6d4c41d71148317388d",
+        "size": 285
+      },
+      {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\failure-2026-11-15T112651.860985_0000.json",
+        "sha256": "6a7e9b925000b7e202ff8b85f4327dc3127544d029873303b79f09cbb58774e1",
+        "size": 351
+      }
+    ],
+    "originalFailureAndReservationFilesNotModified": true,
+    "allByteHashGatesAndMutationReservationOrderUnchanged": true,
+    "automaticRetry": false,
+    "automaticSqlRestore": false,
+    "legacyTasksReplayed": false,
+    "dailyArtifactGateBefore": 48,
+    "dailyArtifactGateAfter": 49,
+    "newOperationalReceiptRoot": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2",
+    "dailyAdditionPath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115"
+  },
+  "performedOperations": {
+    "localFileCreatesOnly": true,
+    "productionOperations": 0,
+    "mavenRuns": 0,
+    "deployPrepareRuns": 0,
+    "deployExecuteRuns": 0,
+    "bindingCopied": false
+  },
+  "nextOwner": "root: independent-review binding, create-only new run preparation, and separately gated execution"
+}

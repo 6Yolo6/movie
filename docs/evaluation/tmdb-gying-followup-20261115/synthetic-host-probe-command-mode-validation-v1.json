@@ -1,0 +1,121 @@
+{
+  "status": "SYNTHETIC_PLAIN_COMMAND_SUCCESS_AND_ERROR_WARNING_REJECTION_CONFIRMED",
+  "at": "2026-11-15T12:12:27.103387+00:00",
+  "scope": "SYSTEM_MODULE_IMPORT_ONLY_NO_HOST_TASK_DIRECTORY_OR_ACL_QUERY",
+  "reconcilesPriorComparison": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\synthetic-host-probe-invocation-comparison-v1.json",
+    "sha256": "e070370ce604cc97a65c8dcbdd88d93b2e28569425ae9793d0539b6b24260292",
+    "correction": "The prior hardcoded recommendation was premature. Its measured OutputFormat Text check is false and the option must not be used; plain -Command has measured empty stderr and identical synthetic JSON."
+  },
+  "experiments": [
+    {
+      "mode": "NORMAL",
+      "invocation": "FIXED_ARGV_POWERSHELL_NO_PROFILE_COMMAND_SINGLE_SOURCE_ARGUMENT_NO_SHELL",
+      "sourceUtf8Sha256": "461f05d8557bb0f2ebd265cfc1d2919e5d04c29bb0badef513bb0ad3e99c7f9e",
+      "sourceUtf16LeSha256": "1a59eef7bc439ae48ebc592ae2a0b645006f118cf7076913ebb3e02cb8689dd8",
+      "commandSha256": "ebd2324bf2eb6d18594c3ab4deff26a4e4c1db3a35fc7343672be5083b9a84e0",
+      "elapsedSeconds": 0.781,
+      "returncode": 0,
+      "stdoutBytes": 49,
+      "stdoutSha256": "effff0c975b4a6ba736dc8f2eab3bec1d5973a2534101581501abf4fc67b857c",
+      "stdoutSyntheticJsonExact": true,
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrFormat": "EMPTY",
+      "stderrClixmlParsed": false,
+      "fixedStreamCounts": {
+        "progress": 0,
+        "error": 0,
+        "warning": 0,
+        "verbose": 0,
+        "debug": 0,
+        "information": 0
+      },
+      "unknownStreamCount": 0,
+      "originalProbeReadPredicatePasses": true,
+      "strictReadAndJsonPredicatePasses": true,
+      "rawArgumentsOrOutputWritten": false
+    },
+    {
+      "mode": "EXPLICIT_ERROR",
+      "invocation": "FIXED_ARGV_POWERSHELL_NO_PROFILE_COMMAND_SINGLE_SOURCE_ARGUMENT_NO_SHELL",
+      "sourceUtf8Sha256": "65d92a2e03bda697d5810236604d0eebd7d9d16b670b90ed0fcc547ac7d84532",
+      "sourceUtf16LeSha256": "6f3c48bc462da29c361c82d4a6ef3b410bb942e5251d368ea7bfb83af36098bb",
+      "commandSha256": "6048a28d41222083c74f3512d3b2580dc2af5c56cc4004bdd9a582b2458096cc",
+      "elapsedSeconds": 0.828,
+      "returncode": 1,
+      "stdoutBytes": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSyntheticJsonExact": false,
+      "stderrBytes": 921,
+      "stderrSha256": "700a3865aed599207c24a44461e86a504fa1625b55e8a355ebe294bb46d30c16",
+      "stderrFormat": "NON_CLIXML",
+      "stderrClixmlParsed": false,
+      "fixedStreamCounts": {
+        "progress": 0,
+        "error": 0,
+        "warning": 0,
+        "verbose": 0,
+        "debug": 0,
+        "information": 0
+      },
+      "unknownStreamCount": 0,
+      "originalProbeReadPredicatePasses": false,
+      "strictReadAndJsonPredicatePasses": false,
+      "rawArgumentsOrOutputWritten": false
+    },
+    {
+      "mode": "EXPLICIT_WARNING",
+      "invocation": "FIXED_ARGV_POWERSHELL_NO_PROFILE_COMMAND_SINGLE_SOURCE_ARGUMENT_NO_SHELL",
+      "sourceUtf8Sha256": "7d2dca7f3c522df8a5d0a424604aef5bfe77b9d5af8e666f15b12a919b2ea3d2",
+      "sourceUtf16LeSha256": "2b855a806974ae03cd2fa04b8f374f2a0986e7f8b6e180babb2c250ef5454aad",
+      "commandSha256": "9240c9e2c1f535d5526b4de59b051b4cc1db6a418b5841103b918f7c41f3e5b2",
+      "elapsedSeconds": 0.812,
+      "returncode": 0,
+      "stdoutBytes": 87,
+      "stdoutSha256": "81bcb625ca018688047746ae42eb08fd2c5e45cc96f611adea9d1eee6ee0bf1f",
+      "stdoutSyntheticJsonExact": false,
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrFormat": "EMPTY",
+      "stderrClixmlParsed": false,
+      "fixedStreamCounts": {
+        "progress": 0,
+        "error": 0,
+        "warning": 0,
+        "verbose": 0,
+        "debug": 0,
+        "information": 0
+      },
+      "unknownStreamCount": 0,
+      "originalProbeReadPredicatePasses": true,
+      "strictReadAndJsonPredicatePasses": false,
+      "rawArgumentsOrOutputWritten": false
+    }
+  ],
+  "checks": {
+    "normalImportsProduceExactJsonAndEmptyStderr": true,
+    "explicitErrorRejectedByReturncodeOrStderr": true,
+    "explicitWarningRejectedByStrictReadOrJson": true,
+    "normalJsonMatchesPriorEncodedSyntheticBytes": true
+  },
+  "recommendation": "Next separately reviewed V4 should use the validated fixed argument list powershell, -NoProfile, -Command, original derived probe source as one argument; keep shell=False default, returncode/nonempty-stderr rejection, strict JSON and unchanged source/hash/identity/ACL gates. Do not ignore stderr.",
+  "warningControlDetail": "Warning can be rendered in stdout; full JSON decoding still rejects mixed warning text. No warning stream is silently accepted.",
+  "v3FilesBefore": {
+    "BackendRollout.py": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1",
+    "FollowUpDeclarations.py": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1",
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610"
+  },
+  "v3FilesAfter": {
+    "BackendRollout.py": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1",
+    "FollowUpDeclarations.py": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1",
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610"
+  },
+  "v3FilesUnchanged": true,
+  "hostMetadataReads": 0,
+  "productionMutations": 0,
+  "mavenRuns": 0,
+  "deployPrepareRuns": 0,
+  "deployExecuteRuns": 0,
+  "rawSensitiveBodiesWritten": false
+}

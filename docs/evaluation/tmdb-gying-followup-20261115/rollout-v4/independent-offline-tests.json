@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "startedAtUtc": "2026-11-15T12:18:25.562570+00:00",
+  "finishedAtUtc": "2026-11-15T12:18:26.693937+00:00",
+  "returnCode": 0,
+  "testCount": 85,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "inputsBefore": {
+    "BackendRollout.py": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+    "FollowUpDeclarations.py": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "TestRolloutGuards.py": "de56747c6cac54d7ce1026d34e2d045a0463633d12e36c13c264397db2b2bc09",
+    "TestDeclarations.py": "6fb4f88add95303fa510a84b42c6b3a9f937729c86d303a7036d86d83721b970",
+    "TestHostBaselineGuards.py": "139e7308f7bee885fb7baa406af081f4e4941665fceb45df587da88820ef5747",
+    "TestHostReadyAdapter.py": "1633fc2fd662f0ff3ce27820d4f0bb7eb426870f977e0a2a527895040e45a748"
+  },
+  "inputsAfter": {
+    "BackendRollout.py": "bcfff01eb52c4c7c44b2733cd4d8168c06ac4d76b47b08c40a2af7406f2748f7",
+    "FollowUpDeclarations.py": "96039a5159483577e384177fae070cca25c577ec433fca20a5c52c9ed920c1c9",
+    "HostReadyAdapter.py": "7c799fa149eb80681a3aeda15739ca25d3601fbd19d58f76cb3d95b02d780625",
+    "TestRolloutGuards.py": "de56747c6cac54d7ce1026d34e2d045a0463633d12e36c13c264397db2b2bc09",
+    "TestDeclarations.py": "6fb4f88add95303fa510a84b42c6b3a9f937729c86d303a7036d86d83721b970",
+    "TestHostBaselineGuards.py": "139e7308f7bee885fb7baa406af081f4e4941665fceb45df587da88820ef5747",
+    "TestHostReadyAdapter.py": "1633fc2fd662f0ff3ce27820d4f0bb7eb426870f977e0a2a527895040e45a748"
+  },
+  "frozenInputsUnchanged": true,
+  "stdout": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\independent-offline-tests.stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v4\\independent-offline-tests.stderr.log",
+    "sha256": "15135cf57427aad671438537cb2c8ffc1958071a76fe69a41143efce043d1821"
+  },
+  "scope": "OFFLINE_MOCKS_ONLY_NO_REAL_POWERSHELL_NO_MAVEN_NO_PRODUCTION_NO_NETWORK",
+  "executedProductionStages": []
+}

@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "reviewer": "root independent review of declarations; root authored rollout gate checks",
+  "at": "2026-11-15T11:01:51.637109+00:00",
+  "helpers": [
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\BackendRollout.py",
+      "sha256": "c94875de54314ac3810dfc3145e6d8c662c9b448e426252cb62101c285211e03"
+    },
+    {
+      "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\FollowUpDeclarations.py",
+      "sha256": "ee4c082f187b9aa2375cf0e3c9ace11f59717e99e9b6aec153a4fa52f7c9d381"
+    }
+  ],
+  "tests": [
+    {
+      "runner": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\TestRolloutGuards.py",
+        "sha256": "55ae183377855fd5e89c334b25b4589518b1218a378d1a6e1d831673d2bffb94"
+      },
+      "tests": 10,
+      "exitCode": 0,
+      "outputSha256": "220a8dfd9792d4b94d3bd6ec4df6d5b32991410e56e3cbe3902b3c029f2ee315",
+      "productionOperations": 0
+    },
+    {
+      "runner": {
+        "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\TestDeclarations.py",
+        "sha256": "e164e8b913e068e9425c8a0b8158fae87b2348e2fc824ee3d3f77c779e263372"
+      },
+      "tests": 6,
+      "exitCode": 0,
+      "outputSha256": "98a4a171bde963f6222a41b39e4428c3b55aafc45030c70afc85c1d53211afff",
+      "productionOperations": 0
+    }
+  ],
+  "testTotal": 16,
+  "checks": [
+    "backend-only source/test/image binding and preserved complete runtime",
+    "Worker pause and restore only after scoped idle and authenticated preimages",
+    "all other sys_config rows, old RANGE and historical UNKNOWN rows preserved",
+    "fixed eight bounded GET entries; exact Cloudflare Access redirect accepted",
+    "host/daily preimage authentication, owner/group/DACL and one create-only CAS",
+    "CAS acknowledgement persisted before broad postchecks and no automatic retry",
+    "daily 48-to-49 append keeps all old fields and verifies native dry-run",
+    "final bounded both-stream Docker log summary and natural resource acceptance pending"
+  ],
+  "blockingFindings": [],
+  "productionWrites": 0,
+  "runtimeChecksExecuted": false
+}

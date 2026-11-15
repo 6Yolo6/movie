@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "startedAtUtc": "2026-11-15T11:35:26.684275+00:00",
+  "finishedAtUtc": "2026-11-15T11:35:27.259391+00:00",
+  "returnCode": 0,
+  "testCount": 28,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "inputsBefore": {
+    "BackendRollout.py": "af8e31955379458b9382c9c4cf47917eddfcbad16695cc37e95071413b4812a1",
+    "FollowUpDeclarations.py": "e1ec332a24c6274f9b77655adc53b26236c26d8fd5d0900320b1f95df7aa53c8",
+    "TestRolloutGuards.py": "bec89aa8ed8edbe778eb314bac2e942b32394430cce01ea6ebca50f15bad5cf6",
+    "TestDeclarations.py": "275ed6b429934eb1a4533d2bada08d1eebcbdf9dc56321ac651791777a5a2b52"
+  },
+  "inputsAfter": {
+    "BackendRollout.py": "af8e31955379458b9382c9c4cf47917eddfcbad16695cc37e95071413b4812a1",
+    "FollowUpDeclarations.py": "e1ec332a24c6274f9b77655adc53b26236c26d8fd5d0900320b1f95df7aa53c8",
+    "TestRolloutGuards.py": "bec89aa8ed8edbe778eb314bac2e942b32394430cce01ea6ebca50f15bad5cf6",
+    "TestDeclarations.py": "275ed6b429934eb1a4533d2bada08d1eebcbdf9dc56321ac651791777a5a2b52"
+  },
+  "frozenInputsUnchanged": true,
+  "stdout": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\independent-offline-tests.stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\independent-offline-tests.stderr.log",
+    "sha256": "2e78be7c28eb361c3813a2d4f65ac6687ccabb306e2a0cb292e79b91a5674e0b"
+  },
+  "scope": "OFFLINE_MOCKS_ONLY_NO_MAVEN_NO_PRODUCTION_NO_NETWORK",
+  "executedStages": []
+}

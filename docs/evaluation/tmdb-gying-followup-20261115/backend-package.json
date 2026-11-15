@@ -1,0 +1,53 @@
+{
+  "stage": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5",
+  "runId": "f831940653a0",
+  "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+  "productionChanged": false,
+  "testsRepeated": false,
+  "memory": 805306368,
+  "startedAt": "2026-11-15T11:20:09.896329+00:00",
+  "exitCode": 0,
+  "jarPath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\backend\\target\\movie-backend-0.0.1-SNAPSHOT.jar",
+  "jarSha256": "5b4492cd4047161c030b6c53254d7a7d8682d8ec220bef465d7b392e434b4c8e",
+  "jarBytes": 80790044,
+  "sourceManifestPath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\sources.json",
+  "sourceManifestSha256": "4ba8a13372b15d513fc76cf7e8cb3c95126823df39505bd5968fd3698d5bfa98",
+  "testResultPath": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\fixtures\\tmdb-gying-followup-ec23c218fba5\\result.json",
+  "testResultSha256": "f9a7760b2e0b36701080ec494a4aead1df10d0b76472e9a6f42f5af6ab82f503",
+  "testTotals": {
+    "tests": 334,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "mysql": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "columnType": "JSON"
+  },
+  "schema": [
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\migration_resource_hub.sql",
+      "sha256": "f85f5026c611f34dff7648a6c9990047f24684a3b31080eb19f8d1d5ba3ed549"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\schema.sql",
+      "sha256": "986ad2bf1209f87aa9a1717f97e1a2197c6fad41589cf025cb484f8ec81fd27d"
+    }
+  ],
+  "containerRemoved": true,
+  "finishedAt": "2026-11-15T11:21:44.464154+00:00",
+  "sourceCommit": "b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6",
+  "passed": true,
+  "testProof": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\backend\\backend-tests.json",
+    "sha256": "105694c3fa42edc509d143b399852697a0c555e64cf0c392df150b2e9581a481"
+  },
+  "classVerification": {
+    "passed": true,
+    "fileCount": 448,
+    "comparison": "Every BOOT-INF/classes file matches tested stage target/classes bytes"
+  }
+}

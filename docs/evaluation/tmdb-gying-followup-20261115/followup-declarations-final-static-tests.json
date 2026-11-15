@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "helper": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\FollowUpDeclarations.py",
+  "helperSha256": "ee4c082f187b9aa2375cf0e3c9ace11f59717e99e9b6aec153a4fa52f7c9d381",
+  "backendRolloutSha256": "c94875de54314ac3810dfc3145e6d8c662c9b448e426252cb62101c285211e03",
+  "lines": 225,
+  "checkCount": 11,
+  "checks": [
+    "nested_original_fields_and_volume_rules_exact_single_append",
+    "duplicate_name_blocked",
+    "duplicate_path_blocked",
+    "invalid_schema_blocked",
+    "default_plan_branch_only_print_json",
+    "durable_host_ack_before_broad_postchecks",
+    "durable_daily_ack_before_postcheck_dry_run",
+    "both_log_streams_summary_only",
+    "locked_full_context_before_host_cas",
+    "exact_final_backend_rollout_sha",
+    "no_provider_calls_or_full_backup_execute_or_destructive_commands"
+  ],
+  "productionIOExecuted": false,
+  "configurationWritesExecuted": 0,
+  "providerRequestsExecuted": 0,
+  "astParsed": true
+}

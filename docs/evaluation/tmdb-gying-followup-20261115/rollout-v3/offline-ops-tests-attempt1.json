@@ -1,0 +1,50 @@
+{
+  "status": "LOCAL_OFFLINE_OPS_PASS",
+  "at": "2026-11-15T12:00:36.232159+00:00",
+  "scope": "LOCAL_OFFLINE_OPS_ONLY",
+  "command": [
+    "E:\\python3.10.6\\python.exe",
+    "-B",
+    "-X",
+    "utf8",
+    "-m",
+    "unittest",
+    "-v",
+    "TestRolloutGuards",
+    "TestDeclarations",
+    "TestHostBaselineGuards",
+    "TestHostReadyAdapter"
+  ],
+  "testCount": 69,
+  "exitCode": 0,
+  "passed": true,
+  "log": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v3\\offline-ops-tests-attempt1.log",
+    "sha256": "02949f2c4385eabe629a955dbd5c9ad37f7d1f7e6c124cc99fd7c6b7a74c02fa"
+  },
+  "testedFilesBefore": {
+    "BackendRollout.py": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1",
+    "FollowUpDeclarations.py": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1",
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610",
+    "TestRolloutGuards.py": "994a787effe04c63f23a73f8392f799e51300bb9609accc68d36210096e79c6e",
+    "TestDeclarations.py": "6fb4f88add95303fa510a84b42c6b3a9f937729c86d303a7036d86d83721b970",
+    "TestHostBaselineGuards.py": "216cb054057136a85b09452e3a05d0cce471164e18e3de0933eab1aabbea465f",
+    "TestHostReadyAdapter.py": "be65601728a636c0c37c71b7a319da26292561ff913a0e46fcf25b76cf548c48"
+  },
+  "testedFilesAfter": {
+    "BackendRollout.py": "8a0c46672e73e51b482113ddc5ee1225a260693c688b5dd92671b38c8a3119b1",
+    "FollowUpDeclarations.py": "1740b1e526568a72d34d996c5d6dbca913bc109c47e4fb2507ded74058234ba1",
+    "HostReadyAdapter.py": "30f4575299742f3e0ef684870c324e0b9017704768ddd7b63454f9d8805e7610",
+    "TestRolloutGuards.py": "994a787effe04c63f23a73f8392f799e51300bb9609accc68d36210096e79c6e",
+    "TestDeclarations.py": "6fb4f88add95303fa510a84b42c6b3a9f937729c86d303a7036d86d83721b970",
+    "TestHostBaselineGuards.py": "216cb054057136a85b09452e3a05d0cce471164e18e3de0933eab1aabbea465f",
+    "TestHostReadyAdapter.py": "be65601728a636c0c37c71b7a319da26292561ff913a0e46fcf25b76cf548c48"
+  },
+  "testedFilesUnchanged": true,
+  "productionOperations": 0,
+  "powershellQueries": 0,
+  "mavenRuns": 0,
+  "deployPrepareRuns": 0,
+  "deployExecuteRuns": 0,
+  "originalV1V2Edited": false
+}

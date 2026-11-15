@@ -2,6 +2,12 @@
 
 更新时间：2026-11-15
 
+11月15日TMDB新元数据自动跟进GYING种子的候选代码 `b8ef54ec953e3245e8fbeb3cb7452d3392e59cf6` 已完成，尚未上线。仅TMDB UPDATES新元数据在保存时同事务记录独立资源意图，按片名、类型、年份、剧集季数及唯一canonical身份严格匹配GYING，再交现有种子下载/网盘归档链；资源失败不重抓元数据。独立资源预算每24小时最多10次尝试，单项最多3次且失败至少24小时后重试，未上映影片延后；Worker和两个UPDATES开关共同控制。334项定向业务测试全过，含18项隔离真实MySQL；423源码、实际JAR与候选镜像绑定通过。已入归档队列不代表上传成功，实际新种子待上线后下一自然轮次验收。[候选与验收边界](evaluation/tmdb-gying-followup-20261115/README.md)。
+
+本轮部署已在门禁处停止，21:00只读核对原13服务代次、原backend镜像与Running保持，Worker及两个UpdatesOnly均true，现役仍为1adbc33。20:33曾暂停Worker后因宿主业务任务在运行而停止，随后严格恢复Worker=true；20:43新run无Worker暂停、TERM或候选激活，具体Gate仍UNKNOWN。20:55管理员会话聚合均已过期，21:00仍返回EXISTING_ACTIVE_ADMIN_DEVICE_REQUIRED，完整稳定API配置未验。20:48宿主commit98.49%/余量501.5MiB，20:59回升至89.86%/3373.7MiB，仅余量改善，不代完整就绪。继续部署前需重新登录后台、取得超过10分钟会话余量并复核内存与原全部空闲门禁；旧失败预约不重跑，保留外部回退材料。[停止与后续条件](evaluation/tmdb-gying-followup-20261115/README.md)。
+
+QQ百度只读调查：17:26最近请求为ACTION_REQUIRED/CHALLENGE_REQUIRED，phase NEW，无已保存转存plan或提交阶段；17:25的BAIDU_NOT_READY具体原因未确认。当前本地CONNECTED/localReady不能证明官方实时登录有效，torrent开启/video关闭；历史无允许文件或失效源不作为本次原因。建议按百度页面提示完成验证后重试，未改百度开关、登录或发送群消息；此百度验证问题与后台管理员会话过期分别处理。[原因证据](evaluation/tmdb-gying-followup-20261115/qq-baidu-reason-observation.json)。
+
 11月15日每日少量更新检查已仅backend/frontend上线固定代码 `1adbc336cdadefa48be40ff37082a6de840fbd41`：17:17:54/17:18:25各启动一次，17:40开启TMDB/GYING两个UPDATES模式并恢复Worker=true，17:47独立只读最终审计PASSED。每平台聚合所选榜单前2页、至少24小时一轮、累计最多10次详情尝试；可信已完成身份和列表语义摘要跳过重复，旧全量RANGE范围/游标与CSCORE暂停图保留，未恢复全量翻页。TMDB选每日电影/剧集趋势及即将上映，GYING选时间顺序电影/剧集/动漫。TMDB旧电影范围到500后回绕只表示请求上限，不是全库已采完；GYING前两页重复也不证明无更新。[本轮上线与回退](evaluation/metadata-update-watch-20261115/README.md)。
 
 首轮TMDB18064/GYING18065均SUCCEEDED/attempt1，各10次详情尝试/10成功/0失败，可信完成基线34/259，待后续小批量61/19。GYING自然归档中夸克3项首次成功，8份上传文件检查点含4个torrent；百度2项成功含2个torrent，另18069在UPLOAD_TORRENT明确API_REJECTED、FAILED1/3，17:47–17:49观测时原策略计划18:12:48重试，未手工重试。TMDB UPDATES仅元数据，GYING UPDATES沿可信mid进入资源/P2P归档；其他来源按用户选择只整理，推荐TVmaze剧集增量与Wikidata中文/跨库ID补充，未接入。首轮任务/上传检查点已验，未逐项官方内容hash/分享目录对账，也未代验次日行为。[来源建议](evaluation/metadata-update-watch-20261115/sources/README.md)。
@@ -85,6 +91,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 资源绑定使用bindingVersion，更新同组/新增绑定但不删除取消勾选的历史；来源身份区分canonical与外部id，保留utf8mb4_bin。自动视频资源先验证自有分享再入库，不确定匹配待审。高频Worker只处理元数据，不消费旧视频/发布队列；旧夸克追更与三个周榜分开。
 
 ## 当前部署与恢复基线
+
+本轮b8ef54e候选未激活，现役backend/frontend仍为以下1adbc33基线，host pin和日常48项覆盖未改为候选。最新预部署检查点 `G:/gying-backups/tmdb-gying-predeploy-20261115-20261115T124231.646434Z` manifest complete、三项authenticatedDecryption=true；helper在后续Gate停止，不能由manifest标记宣称完整finish已PASS。所有旧失败、预约及外部材料保留，下一次需新独立run；回退不导入旧SQL、不重放UNKNOWN或旧采集任务。外部材料 `E:/gying-tools/releases/tmdb-gying-followup-20261115`。[本轮材料与停止边界](evaluation/tmdb-gying-followup-20261115/README.md)。
 
 11月15日固定1adbc33仅backend/frontend各一次激活，实际17:17:54/17:18:25（Asia/Shanghai），现役Compose25/14，nginx仅一次进程内reload，其它11服务代次保持。完整预部署4age在 `G:/gying-backups/metadata-updates-completed-predeploy-20261115-20261115T091532.990934Z`，停机SQL/data/key3age在 `G:/gying-backups/metadata-updates-stopped-backend-20261115-20261115T091737.485175Z`，49项运行配置及全部密文hash/size/完整认证通过，非跨服务原子快照。旧镜像保留；宿主expectedBackendImage单次CAS、原像认证/ACL和任务XML保持；日常47→48仅追加release路径，单次CAS/native dry-run与原规则/权限保持，自然完整备份未验。原47/49不完整备份及失败回执保留，续接仅复制两旧镜像密文并补完整runtime/SQL；已激活后Access302预期断言停止由只读补齐，未再次激活/reload/备份。TERM原始局部证明未持久化，回执仅记录冻结控制流推断而不填实际退出码。回退先暂停UPDATES并审查新元数据/P2P状态，保留当前SQL/data/state/key，不直接恢复SQL或重放历史。外部材料 `E:/gying-tools/releases/metadata-update-watch-20261115`。[当前部署与回退](evaluation/metadata-update-watch-20261115/deployment/README.md)。
 
@@ -173,7 +181,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| 每日更新/新来源 | 11月15日两UPDATES已启用，首轮各10详情成功；次日冷却/实际重复跳过及长期积压待自然发生时验，单纯集数/清晰度变仍手动刷新。TMDB更新仅元数据，GYING可信mid更新才归档；TVmaze/Wikidata来源建议已整理，按用户选择未接入。新来源若需自动GYING匹配/下载须后续单独实现和验证。[本轮](evaluation/metadata-update-watch-20261115/README.md)、[建议](evaluation/metadata-update-watch-20261115/sources/README.md) |
+| 每日更新/新来源 | 11月15日两UPDATES已启用，首轮各10详情成功；次日冷却/实际重复跳过及长期积压待自然发生时验，单纯集数/清晰度变仍手动刷新。现役TMDB更新仅元数据，GYING可信mid更新才归档；b8ef54e自动GYING搜索/种子跟进候选已通过334项测试，未上线，需恢复后台有效会话并重核完整就绪后部署，实际资源留待下一自然轮次验收。TVmaze/Wikidata来源建议已整理，按用户选择未接入。[本轮](evaluation/metadata-update-watch-20261115/README.md)、[建议](evaluation/metadata-update-watch-20261115/sources/README.md) |
 | 11月13日运行态 | 网站/服务入口已恢复；宿主内存提交约85%、前置资源耗尽仍需观察；Quark2262前代RUNNING未重放，远端结果待独立对账；backend原APP_TRUSTED_PROXIES地址已失配，后续精确修正，不扩大子网信任。[证据](evaluation/entrypoint-recovery-20261113/README.md) |
 | 百度/文件选择 | 现役1adbc33继承逐文件/fileId守护。当前父17583 BLOCKED/CHILD_FAILED、enabled=true/10分钟1条，currentChild17761 FAILED3/3耗尽；本轮只核自然调度字段差异，父守恒投影/child全行及六历史行保持，未修复或重试。47正常SKIP、48原HTTP504/transport UNKNOWN及17584/17606/17622 UNKNOWN保留；11月11日17650手动四文件143163B和17655唯一获准自然四文件35236B成功、V5官方同根owner/完整content-fileId-manifest/active ownshare目录只读PASS仍为该轮证据，manual3/4未执行、额度不可重用。11月15日新GYING归档百度18067/18071首次成功，4份含2个torrent；18069在UPLOAD_TORRENT明确API_REJECTED/intent REJECTED，FAILED1/3、保留2份非torrent检查点，17:47–17:49观测时原策略排18:12:48重试，未手动重试。11月14日历史新自然百度7个P2P归档成功/20份文件，不等于存量父阻塞解除，也未独立逐个官方hash/分享对账。外部发布false、临时删除/配额释放/GYING发布未验，provider原子性/永久完整性不作保证 | [当前采集](evaluation/metadata-update-watch-20261115/README.md)、[百度历史](evaluation/duplicate-tmdb-binding-20261111/README.md) |
 | 片库重复 | 11月11日仅backend上线可信TMDB绑定与canonical消费者修复，suite1462项零失败（1Redis跳过），真实merge MySQL30/30。前夜MobLand `tmdb_tv_247718 -> 1YKW` 已一次合并、19关联/21history/8资源保留；本轮canonical一行两字段已由V4于16:11首次UPDATE、16:12独立只读精确增量通过；此前首次prepare因无id历史排序/MySQL1054只读失败，V2 prepare通过但锁读1142停止、UPDATE/COMMIT未尝试，15:31:17原像只读保持，原失败保留。15788/145 scan经独立复核74确认（含MobLand）/71排除；本轮第1/3/4批18/16/13加201/202十/九对共66对精确PASS，380关联/512history/7legacy旧update_at单次merge窄窗，原B1三次失败保留。第2批14:33:25已ACK原20/19preview、idle停止无merge-request，原审核自然过期，V5离线9通过但未执行；Observer离线31/独审及15:02:19实际只读PASS，原20/19全部state/两unused-expired review/字节保持，0新POST/SQL/cloud。V6仅pristine3/4、12mock/全链通过、原请求预算/UNKNOWN禁重发保持；已完成批次6阻塞完整相关投影保持，另B2一条part冲突15:02:19完整state保持，共余7运行态阻塞未合并。V7新generation只读prepare与两子批actual exactPASS，MobLand既有应用身份权限通过、V3前置RuntimeError未写/原像保持，V4两字段已提交且updated_at/全行/历史/百度/config/13代次保持；Entry V2实际仅7/67详情/列表与21显式GET通过后停止，全67只读TMDB两字段正确，39 movie season差异为原部数/NULL与身份0混同，无需数据修复；新EntryV3 13mock+7类45断言及完整冻结链通过、旧保护AST保持，唯一实际入口67详情/67列表和两个电影SSR通过、204GET后TV SSR标题/年份门禁STOP，finally全行/百度/13代次/永久阻塞保持；16:52同正文SHA观察标题/年份span正确、旧h2无分隔拼接数字假阻塞，无需改网页/数据；17:10唯一4GET/4SSR补验PASS，67详情/67列表/6代表SSR闭环，全行/百度/13代次/永久阻塞保持 | [本轮证据](evaluation/duplicate-tmdb-binding-20261111/README.md) |
@@ -203,6 +211,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 - 任务注册与运行、HTTP与业务、程序与人工质量、mock与真实、备份与恢复分别记录，不把一次成功推广为全天保证。
 
 ## 验收
+
+11月15日TMDB→GYING候选验收为代码与构建PASS、部署未完成：334/334定向业务测试（含隔离MySQL18项）、423源码/448类资源/实际JAR与候选镜像绑定通过，package未重跑测试；冻结V4运维离线85项及独审通过。最新21:00只读原13代次/backend镜像/Running、Worker/两UpdatesOnly保持，ADMIN会话门禁未通过、stableConfigurationExact=null；20:43具体Gate未知，只有deployment reservation，无本run Worker pause/TERM/activation。20:59内存余量改善仅为轻量观测。今天17:40已完成TMDB轮次未重跑、旧片未回填，未创建真实资源验收任务；新搜索/种子下载上传、host/daily候选变更、完整自然备份均未代验。QQ百度最近CHALLENGE_REQUIRED有证据，更早BAIDU_NOT_READY原因未知。[测试、停止与只读证据](evaluation/tmdb-gying-followup-20261115/README.md)。
 
 11月15日17:47:55最终只读审计PASSED：固定1adbc33两实际serviceID/image/start、全部Config/Env/HostConfig/有效挂载网络/native hash/JAR和375前端产物通过；Worker/两自动/两UpdatesOnly true，24小时/每平台10次，旧RANGE2847全行及其他11服务代次保持，旧Quark2262/discovery9904、六百度历史和child17761保持，父仅原惰性调度投影变化。host/daily单次CAS原像认证/精确增量/ACL与任务XML、日常47→48 native dry-run通过。后端232/232定向含真实JSON CAS5项、package绑定，前端8项/定向ESLint/TS/串行Webpack build通过；启用前后各4组真实ADMIN页面共196资产GET匹配，非GET拦截/页面写0/新登录device0。真实本机公网首页、片目API和同影片SSR H1通过，源站管理401/公网正确Access302/内部QQ404；就绪11PASS/1既有WARN/0FAIL，至17:49有界Docker日志ERROR/Exception/OOM0/重启0，应用文件日志未验。首轮18064/18065各10尝试成功、完成基线34/259、pending61/19；夸克3项首次成功含4个torrent，百度2成功含2个torrent/1项API明确拒绝待原策略重试，未手动重试或逐项官方hash/分享对账。原备份/Access/UI路径门禁停止保持，续接未重复激活；完整自然日常备份、次日生产增量、安全G01–G11和原UNKNOWN未代验。[正式回执、最终审计与边界](evaluation/metadata-update-watch-20261115/README.md)。
 

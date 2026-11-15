@@ -1,0 +1,32 @@
+{
+  "status": "OBSERVED",
+  "at": "2026-11-15T10:39:20.467523+00:00",
+  "sourceCommit": "37d946e8cbe5ec0988331312d25b01679f9ab3a6",
+  "backendImage": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+  "hubEnabled": true,
+  "workflow": {
+    "provider": "BAIDU",
+    "supported": true,
+    "status": "AVAILABLE",
+    "discoveryEnabled": true,
+    "transferEnabled": true,
+    "videoEnabled": false,
+    "torrentEnabled": true,
+    "shareEnabled": true,
+    "credentialConfigured": true
+  },
+  "session": {
+    "configured": true,
+    "state": "CONNECTED",
+    "lastValidatedAt": 1794156477000,
+    "connectedAt": null,
+    "failureCode": null
+  },
+  "baiduTemporaryLocalReady": true,
+  "officialSessionVerified": false,
+  "configWrites": 0,
+  "providerRequests": 0,
+  "qqMessagesSent": 0,
+  "newLoginDevices": 0,
+  "existingDeviceLastSeenMayChange": true
+}

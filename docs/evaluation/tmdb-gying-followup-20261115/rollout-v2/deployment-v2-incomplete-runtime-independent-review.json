@@ -1,0 +1,45 @@
+{
+  "status": "PASS_FAILED_PHASE_IDENTIFIED",
+  "scope": "READONLY_AUTHENTICATED_INCOMPLETE_ARTIFACT_STRUCTURE_NO_RAW_CAPTURE",
+  "observedAtUtc": "2026-11-15T11:42:10.485224+00:00",
+  "prepared": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\prepared.json",
+    "sha256": "b7d627e72ed87910c2c160c266bba285db926f3572decdbfde1b0bfd55970c3c"
+  },
+  "runtimeCiphertext": {
+    "path": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T113719.598724Z\\runtime-preimage.tar.age",
+    "sha256": "c233e55ef37696a997fa671d03fcd5b2dc0c9e317ada53721ba57f818cf33425"
+  },
+  "checkpointManifest": {
+    "path": "G:\\gying-backups\\tmdb-gying-predeploy-20261115-20261115T113719.598724Z\\manifest.json",
+    "sha256": "78d9c37939c99c682ee4441bf4986d1c6513a7f1fdbeae7d098e89f7b26ae007"
+  },
+  "childFailure": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\failure-2026-11-15T113814.786863_0000.json",
+    "sha256": "5cf33dac328eafdc481873502a5ee38c330c195f094d37e47fe3220cf8117bbd"
+  },
+  "outerFailure": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\rollout-v2\\failure-2026-11-15T113814.818135_0000.json",
+    "sha256": "6a27b098108c8a71513fb788097b50f9ec6c781a4365b0b26a1bf6f521fd4df1"
+  },
+  "fullCiphertextAuthenticationCompleted": true,
+  "regularMemberCount": 78,
+  "expectedFrozenFileCount": 76,
+  "all76FrozenFilesPresentWithExactPreparedHash": true,
+  "backendContainerMemberPresent": true,
+  "effectiveBackendMemberPresent": true,
+  "effectiveBackendRawHashEqualsPreparedCanonical": true,
+  "expectedEffectiveBackendCanonicalSha256": "e86a336b5b392989ecdc31c3021f036553795ca9f25137f48900f29dbb426a5e",
+  "hostSnapshotMemberPresent": false,
+  "recoveryPreparedMemberPresent": false,
+  "rawCapturedMemberCount": 0,
+  "inferredFailedCall": "HostCheckpoint.snapshot() at BackendRollout.py line128",
+  "staticReason": "Prior emitted members prove bound/primitives/freeze/inspect/model/frozenFileReads completed. Snapshot digest mismatch raises Gate; observed child error is native RuntimeError, matching snapshot internal errors. Specific snapshot error condition remains unproven.",
+  "checkpointStatus": "incomplete",
+  "checkpointValidBackup": false,
+  "snapshotSpecificFailureConditionConfirmed": false,
+  "productionMutationPerformed": false,
+  "executeRetried": false,
+  "sourceGetRepeated": false,
+  "rawCommandStderrOrExceptionArgsPrintedOrPersisted": false
+}

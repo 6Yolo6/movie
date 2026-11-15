@@ -1,0 +1,14 @@
+{
+  "status": "STOPPED_NO_RETRY_PRESERVE_CURRENT_STATE",
+  "at": "2026-11-15T12:43:35.457956+00:00",
+  "stage": "execute",
+  "errorType": "Gate",
+  "hostSnapshotFailureCode": null,
+  "gate": null,
+  "reservations": [
+    "deployment-reservation.json"
+  ],
+  "automaticRetry": false,
+  "automaticSqlRestore": false,
+  "oldTasksReplayed": false
+}

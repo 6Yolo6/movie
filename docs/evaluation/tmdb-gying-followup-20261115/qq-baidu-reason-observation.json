@@ -1,0 +1,92 @@
+{
+  "status": "OBSERVED_READ_ONLY",
+  "observedAt": "2026-11-15T10:42:58.140407+00:00",
+  "sourceCommit": "37d946e8cbe5ec0988331312d25b01679f9ab3a6",
+  "backendImageExact": true,
+  "currentConfigurationReference": {
+    "path": "E:\\gying-tools\\releases\\tmdb-gying-followup-20261115\\qq-baidu-current-config.json",
+    "sha256": "fbfa6bf41e68f5fb584fe9692cf627a4cb2c1f1b8fe0e2dbc6d8ed744bbf471b"
+  },
+  "audits": [
+    {
+      "id": 2637,
+      "status": "BAIDU_NOT_READY",
+      "createdAt": "2026-11-15 17:25:10",
+      "containsBaiduUnavailable": true,
+      "safeFailureCode": "BAIDU_NOT_READY"
+    },
+    {
+      "id": 2638,
+      "status": "ACTION_REQUIRED",
+      "createdAt": "2026-11-15 17:26:28",
+      "containsBaiduUnavailable": false,
+      "safeFailureCode": "ACTION_REQUIRED"
+    }
+  ],
+  "latestTemporaryTask": {
+    "id": 5,
+    "status": "ACTION_REQUIRED",
+    "phase": "NEW",
+    "attempts": 1,
+    "createdAt": "2026-11-15 17:26:25.099456",
+    "updatedAt": "2026-11-15 17:26:27.944844",
+    "safeErrorCode": "CHALLENGE_REQUIRED",
+    "planPersisted": false,
+    "sameMovieAsLatestAudit": true,
+    "transferOrShareSubmissionPhaseRecorded": false
+  },
+  "historicalTemporaryTasks": [
+    {
+      "id": 2,
+      "status": "ACTION_REQUIRED",
+      "phase": "NEW",
+      "attempts": 1,
+      "safeErrorCode": "SOURCE_NO_ALLOWED_FILES"
+    },
+    {
+      "id": 3,
+      "status": "ACTION_REQUIRED",
+      "phase": "NEW",
+      "attempts": 1,
+      "safeErrorCode": "CHALLENGE_REQUIRED"
+    },
+    {
+      "id": 4,
+      "status": "ACTION_REQUIRED",
+      "phase": "NEW",
+      "attempts": 1,
+      "safeErrorCode": "SOURCE_INVALID"
+    }
+  ],
+  "conclusions": {
+    "latestFailureIsProviderChallenge": true,
+    "exactProviderEndpointOrErrnoNotPersisted": true,
+    "currentLocalReadyDoesNotExplainEarlierNotReady": true,
+    "earlierNotReadyCauseUnresolved": true,
+    "sourceNoAllowedFilesEvidenceIsHistorical": true,
+    "permanentP2p18069IsSeparateWorkflow": true,
+    "configuredSessionDoesNotProveCurrentOfficialLogin": true
+  },
+  "boundedDockerLogs": {
+    "since": "2026-11-15T09:24:50Z",
+    "until": "2026-11-15T09:26:35Z",
+    "stdoutBytes": 578,
+    "stderrBytes": 0,
+    "baiduNotReadyOccurrences": 1,
+    "actionRequiredOccurrences": 1,
+    "selectedExceptionClassesOccurrences": 0,
+    "sqlStatesObserved": 0,
+    "rawLinesWritten": 0
+  },
+  "investigation": {
+    "readOnlySqlTransactions": true,
+    "failedReadOnlyColumnProbe": true,
+    "providerRequests": 0,
+    "searchReplyRequests": 0,
+    "qqMessagesSent": 0,
+    "transferOrCleanupRequests": 0,
+    "configurationWrites": 0,
+    "codeChanges": 0,
+    "rawProviderBodiesOrCredentialValuesWritten": false
+  }
+}
