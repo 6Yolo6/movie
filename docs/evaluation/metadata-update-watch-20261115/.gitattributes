@@ -1,1 +1,5 @@
 *.json -text
+
+# Keep copied evidence and checksum manifests byte-exact on Windows.
+deployment/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+sources/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

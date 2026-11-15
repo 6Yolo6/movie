@@ -1,0 +1,97 @@
+{
+  "status": "PASS_OFFLINE_ONLY",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\UpdateResume.py",
+    "sha256": "b4bf73d7f9c2ea4f7b82d940b9f79df3ed7df47f4e4fe5f0d63130cb11568794"
+  },
+  "reviewScript": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\ReviewResumeIndependent.py",
+    "sha256": "b7e691ea00e8aee5bbbb340527b2176bf8543efd0cf457a5ed7aa1974d8ce0c4"
+  },
+  "oldActivationTailSha256": "6e067a94d44656fbf6f5048efc317dd14985175ba41be028b773f4b9a63e0471",
+  "activationTailByteIdentical": true,
+  "checks": [
+    {
+      "name": "Frozen activation suffix retained byte for byte",
+      "passed": true
+    },
+    {
+      "name": "All four original helpers retain previously reviewed SHA",
+      "passed": true
+    },
+    {
+      "name": "Ciphertext copied exactly with original bytes retained",
+      "passed": true
+    },
+    {
+      "name": "Existing ciphertext destination rejected before overwrite",
+      "passed": true
+    },
+    {
+      "name": "Wrong source hash rejected",
+      "passed": true
+    },
+    {
+      "name": "Wrong source size rejected",
+      "passed": true
+    },
+    {
+      "name": "Prior mutation reservation prevents continuation",
+      "passed": true
+    },
+    {
+      "name": "Clean sandbox permits absence guard",
+      "passed": true
+    },
+    {
+      "name": "Complete 49-member synthetic runtime mapping accepted",
+      "passed": true
+    },
+    {
+      "name": "Missing recovery member rejected",
+      "passed": true
+    },
+    {
+      "name": "Extra runtime member rejected",
+      "passed": true
+    },
+    {
+      "name": "Changed frozen file content rejected",
+      "passed": true
+    },
+    {
+      "name": "Changed host content hash rejected",
+      "passed": true
+    },
+    {
+      "name": "Changed complete old container Config rejected",
+      "passed": true
+    },
+    {
+      "name": "Changed old container identity rejected",
+      "passed": true
+    },
+    {
+      "name": "Changed recovery plan content rejected",
+      "passed": true
+    },
+    {
+      "name": "No call to original execute in continuation",
+      "passed": true
+    },
+    {
+      "name": "Only expected old function aliases used by copied activation suffix",
+      "passed": true
+    }
+  ],
+  "checkCount": 18,
+  "onlyNewCoreSyntheticTestsExecuted": true,
+  "old33CheckSuiteRepeated": false,
+  "productionModulesImported": false,
+  "productionIo": 0,
+  "productionMutations": 0,
+  "productionDecryption": 0,
+  "plaintextProductionMaterialsReadOrWritten": false,
+  "temporaryFixtureDirectoryRemoved": true,
+  "candidateReadinessIsConditionalOnRootBoundBackupReceiptReview": true
+}

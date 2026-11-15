@@ -1,0 +1,52 @@
+{
+  "stage": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce",
+  "runId": "d9026913cc32",
+  "image": "sha256:880934ae394bf91bc3e57d573e4fc04774f064f3c4df7ccd7cc10b3b126737bf",
+  "productionChanged": false,
+  "testsRepeated": false,
+  "memory": 805306368,
+  "startedAt": "2026-11-15T08:47:30.704253+00:00",
+  "exitCode": 0,
+  "jarPath": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\backend\\target\\movie-backend-0.0.1-SNAPSHOT.jar",
+  "jarSha256": "dfdd6c7900fa594fef83e6f9c43070aff19c9e4584fc1564d7e94b5f302f691f",
+  "jarBytes": 80770747,
+  "sourceManifestPath": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\sources.json",
+  "sourceManifestSha256": "3efc2da7982c85ec4093476f425ebf8c898cbf1f50997c9b49222d0bcc9d752c",
+  "testResultPath": "D:\\gying-movie\\movie\\tmp\\metadata-updates-87d4524eefce\\result.json",
+  "testResultSha256": "dc1985e2d3d6bf1689eb937e44bde08397d594ceb1b7796bb56d0084062e91ac",
+  "testTotals": {
+    "tests": 232,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "mysql": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "columnType": "JSON"
+  },
+  "schema": [
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\migration_resource_hub.sql",
+      "sha256": "f85f5026c611f34dff7648a6c9990047f24684a3b31080eb19f8d1d5ba3ed549"
+    },
+    {
+      "path": "D:\\gying-movie\\movie\\backend\\src\\main\\resources\\db\\schema.sql",
+      "sha256": "986ad2bf1209f87aa9a1717f97e1a2197c6fad41589cf025cb484f8ec81fd27d"
+    }
+  ],
+  "containerRemoved": true,
+  "finishedAt": "2026-11-15T08:49:17.947704+00:00",
+  "classVerification": {
+    "passed": true,
+    "fileCount": 446,
+    "classCount": 412,
+    "targetTreeSha256": "3f000eec64bcaa78eb84ca5ba417f50b4120d4f50a7a959de6fcdb9ec87d0829",
+    "jarTreeSha256": "3f000eec64bcaa78eb84ca5ba417f50b4120d4f50a7a959de6fcdb9ec87d0829",
+    "comparison": "Every BOOT-INF/classes file matches target/classes bytes"
+  },
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "passed": true
+}

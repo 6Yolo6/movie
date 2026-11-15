@@ -1,0 +1,78 @@
+{
+  "scope": "Read-only official-source review by delegated trakt_docs agent; no credentials or business API calls",
+  "reviewCompletedAt": "2026-11-15T09:01:44.393727+00:00",
+  "businessApiValidated": false,
+  "keysRegisteredOrUsed": 0,
+  "productionRequests": 0,
+  "guides": [
+    {
+      "label": "Trakt current application registration",
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/developer/src/lib/guides/create-an-app.md",
+      "method": "GET",
+      "status": 200,
+      "guideUpdatedAt": "2026-10-01",
+      "documentOnly": true
+    },
+    {
+      "label": "Trakt required application headers",
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/developer/src/lib/guides/required-headers.md",
+      "method": "GET",
+      "status": 200,
+      "guideUpdatedAt": null,
+      "documentOnly": true
+    },
+    {
+      "label": "Trakt current GET rate limit",
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/developer/src/lib/guides/rate-limiting.md",
+      "method": "GET",
+      "status": 200,
+      "guideUpdatedAt": "2026-10-13",
+      "documentOnly": true
+    },
+    {
+      "label": "Trakt current API data-use policy",
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/developer/src/lib/guides/api-use-policy.md",
+      "method": "GET",
+      "status": 200,
+      "guideUpdatedAt": "2026-10-20",
+      "documentOnly": true
+    },
+    {
+      "label": "Trakt standard media IDs",
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/developer/src/lib/guides/standard-media-objects.md",
+      "method": "GET",
+      "status": 200,
+      "guideUpdatedAt": null,
+      "documentOnly": true
+    }
+  ],
+  "contracts": [
+    {
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/api/src/contracts/movies/index.ts",
+      "method": "GET",
+      "status": 200,
+      "documentOnly": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trakt/trakt-api/master/projects/api/src/contracts/shows/index.ts",
+      "method": "GET",
+      "status": 200,
+      "documentOnly": true
+    }
+  ],
+  "confirmedFacts": {
+    "standardGetCallsPerFiveMinutes": 500,
+    "developmentInvitedUsersMaximum": 16,
+    "publicServiceNeedsOwnProductionClientId": true,
+    "commercialAndNonCommercialStandardApiAllowed": true,
+    "catalogMirroringAndBulkHarvestingForbidden": true,
+    "translationsQueryParameter": "language=zh",
+    "externalMediaIdsMayBeNullOrMissing": true
+  },
+  "notVerified": [
+    "Own-key business API response",
+    "Actual rate-limit headers",
+    "Chinese title/overview coverage",
+    "Incremental endpoint lookback window"
+  ]
+}

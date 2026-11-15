@@ -1,0 +1,129 @@
+{
+  "status": "PASS_OFFLINE_AUTHOR_CHECKS",
+  "createdAt": "2026-11-15",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\CompletionReadOnly.py",
+    "sha256": "6d92d4414c9fafc42092edab1d1e83e5f301ba43ff51f457aad9bd3e946ebc17"
+  },
+  "script": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\CheckCompletionReadOnly.py",
+    "sha256": "fa0de9db608137c01518d7c1655ecc5ca496fe902e310d974ed6f4f74632baf2"
+  },
+  "checks": [
+    {
+      "name": "Exact ordinary entry status http://127.0.0.1/",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status http://127.0.0.1/api/movies/list?page=1&size=1",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status http://127.0.0.1/api/admin/resource-hub/config",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status http://127.0.0.1/api/qq-bot/health",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status https://gyinghub.dpdns.org/",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status https://gyinghub.dpdns.org/api/movies/list?page=1&size=1",
+      "passed": true
+    },
+    {
+      "name": "Exact ordinary entry status https://gyinghub.dpdns.org/api/qq-bot/health",
+      "passed": true
+    },
+    {
+      "name": "Exact public anonymous admin Access login accepted",
+      "passed": true
+    },
+    {
+      "name": "Exact Access host on HTTPS port443 accepted",
+      "passed": true
+    },
+    {
+      "name": "Wrong tenant host rejected",
+      "passed": true
+    },
+    {
+      "name": "Host suffix lookalike rejected",
+      "passed": true
+    },
+    {
+      "name": "Wrong login site path rejected",
+      "passed": true
+    },
+    {
+      "name": "Plain HTTP target rejected",
+      "passed": true
+    },
+    {
+      "name": "Userinfo target rejected",
+      "passed": true
+    },
+    {
+      "name": "Non443 port target rejected",
+      "passed": true
+    },
+    {
+      "name": "Fragment target rejected",
+      "passed": true
+    },
+    {
+      "name": "Relative login target rejected",
+      "passed": true
+    },
+    {
+      "name": "Missing Location rejected",
+      "passed": true
+    },
+    {
+      "name": "Public admin200 rejected",
+      "passed": true
+    },
+    {
+      "name": "Local admin302 rejected",
+      "passed": true
+    },
+    {
+      "name": "Public homepage302 rejected",
+      "passed": true
+    },
+    {
+      "name": "Unknown entry origin rejected",
+      "passed": true
+    },
+    {
+      "name": "Actual new helper Docker time function accepts nine-digit UTC StartedAt on Python3.10",
+      "passed": true
+    },
+    {
+      "name": "Helper contains no binary control characters",
+      "passed": true
+    },
+    {
+      "name": "No direct deployment backup or configuration mutation call",
+      "passed": true
+    },
+    {
+      "name": "No production module attribute monkey patch",
+      "passed": true
+    },
+    {
+      "name": "Every HTTP Request explicitly GET",
+      "passed": true
+    }
+  ],
+  "checkCount": 27,
+  "onlyNewAccessGuardPureTests": true,
+  "oldSuitesRepeated": false,
+  "productionModulesImported": false,
+  "productionIo": 0,
+  "productionMutations": 0,
+  "rootIndependentReviewRequired": true
+}

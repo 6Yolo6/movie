@@ -1,0 +1,22 @@
+{
+  "status": "AUTHENTICATED_CIPHERTEXT_INCOMPLETE_RUNTIME_ARCHIVE",
+  "observedAt": "2026-11-15T09:06:40+00:00",
+  "ciphertext": {
+    "path": "G:/gying-backups/metadata-updates-predeploy-20261115-20261115T090047.340235Z/runtime-preimage.tar.age",
+    "sha256": "55e1038a2df550330b8f0e1698683e33fa311c0b9e0edf11ef60af79b84e3496",
+    "size": 361752
+  },
+  "fullStreamingAuthenticatedDecryption": true,
+  "regularMembers": 47,
+  "expectedRegularMembers": 49,
+  "frozenFileMembers": 43,
+  "containerAndEffectiveMembers": 4,
+  "missingMembers": [
+    "host/snapshot.json",
+    "recovery/prepared.json"
+  ],
+  "eligibleCompleteRecoveryPoint": false,
+  "plaintextWritten": false,
+  "originalFailureCauseConfirmed": false,
+  "productionMutations": 0
+}

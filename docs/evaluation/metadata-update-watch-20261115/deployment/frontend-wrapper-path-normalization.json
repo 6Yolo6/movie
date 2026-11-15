@@ -1,0 +1,28 @@
+{
+  "original": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\acceptance\\RunFrontendLiveReadOnly.py",
+    "sha256": "ad977dd30a4149a5de690029d80d16b042690e3e414eb26fa91d7fd074f0b083"
+  },
+  "replacement": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\acceptance\\RunFrontendLiveReadOnlyV2.py",
+    "sha256": "9666c57129afec7f07c465c6477d78bacee54598a035244b7b5c6007b4d6f6f9"
+  },
+  "changedLines": 1,
+  "reason": "Windows absolute path separator normalization made lexical reference equality fail before runtime access",
+  "originalAttempt": "AssertionError before ADMIN session creation or browser launch",
+  "replacementChecks": [
+    "exact reference schema",
+    "64-character SHA256",
+    "resolved regular file",
+    "actual content SHA256 equality"
+  ],
+  "originalWrapperPreserved": true,
+  "frontendBrowserScriptUnchanged": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\acceptance\\FrontendLiveReadOnly.cjs",
+    "sha256": "447dbcad859da9ed770e0744158b99a3e9ccde27008b18b7fd89dff650db76b7"
+  },
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "originalAttemptProductionWrites": 0,
+  "originalAttemptNewLoginDevices": 0,
+  "notAnApplicationSourceChange": true
+}

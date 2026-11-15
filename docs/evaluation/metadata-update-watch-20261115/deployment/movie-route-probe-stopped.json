@@ -1,0 +1,10 @@
+{
+  "status": "WRONG_PROBE_ROUTE_CORRECTED",
+  "path": "/movies",
+  "httpStatus": 404,
+  "correctRoutes": [
+    "/",
+    "/movie/{id}"
+  ],
+  "productionWrites": 0
+}

@@ -38,7 +38,8 @@ TMDB 自动范围请求严格验证分页和完整条目；所设 start 超过�
 - 使用独立 `METADATA_SYNC` / `keyword=UPDATES` / `crawl.mode=UPDATES`；旧 RANGE 范围和游标保留且待执行 RANGE 在 SQL LIMIT 前被过滤。关闭自动开关同时暂停范围和更新检查；手动元数据任务保留原行为。
 - 首次仅可信 TMDB canonical 身份或精确 GYING 完成凭证可跳过详情；以后按身份与列表语义摘要去重，排名、热度、评分变化不重复采集。未处理或失败项跨日保留，即使已离开榜单前页也不丢失；单项最多 3 次尝试。详情前保存累计预算，重试不重置同轮额度，取消/并发修改通过大小写敏感 CAS 保留。
 - 列表标题/年份/日期/季未变时，单纯集数、清晰度或资源变化仍由原手动刷新/追更路径处理。更新模式不会断言全部上游片库已采完；TMDB 的 500 页请求上限与 GYING 的前 1–2 页扫描范围不同于全站库存。
-- 11月15日先暂停两个自动开关，拟切换每日更新榜；代码、暂停事实与后续上线验收分别见[本轮记录](evaluation/metadata-update-watch-20261115/README.md)。
+- 11月15日16:16先暂停全量，固定1adbc33两应用上线后17:40已启用两个UPDATES与Worker。TMDB选择每日电影/剧集趋势及即将上映，GYING选择时间顺序电影/剧集/动漫；首轮两平台各10次详情尝试/10成功/0失败，可信完成基线34/259，pending61/19跨日保留。GYING自然归档夸克3项成功含4个torrent；百度2项成功、1项明确API拒绝待原策略重试。任务/上传检查点已验，次日行为及逐项官方hash/分享目录未代验。[本轮上线与证据](evaluation/metadata-update-watch-20261115/README.md)。
+- TMDB UPDATES只更新元数据；GYING UPDATES沿可信mid读取resources、保存P2P并按配置归档，torrent下载在归档阶段。其他来源按用户选择只整理，推荐TVmaze剧集增量与Wikidata中文/跨库ID补全，未接入；未来资源优先GYING可信搜索匹配方案见[来源建议](evaluation/metadata-update-watch-20261115/sources/README.md)。
 
 ### GYING 六目录独立暂停
 

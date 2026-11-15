@@ -1,0 +1,15 @@
+{
+  "status": "STOPPED_PRESERVE_ALL_ORIGINAL_AND_NEW_MATERIAL_NO_RETRY",
+  "at": "2026-11-15T09:18:43.013931+00:00",
+  "stage": "activate",
+  "errorType": "Gate",
+  "gate": "REAL_ENTRY_STATUS_AND_SIZE",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\UpdateResume.py",
+    "sha256": "b4bf73d7f9c2ea4f7b82d940b9f79df3ed7df47f4e4fe5f0d63130cb11568794"
+  },
+  "rawPlaintextWritten": false,
+  "automaticRetry": false,
+  "automaticRestore": false,
+  "oldExecuteRepeated": false
+}

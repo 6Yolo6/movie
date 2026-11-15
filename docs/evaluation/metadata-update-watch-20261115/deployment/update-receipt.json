@@ -1,0 +1,96 @@
+{
+  "status": "UPDATES_ENABLED_VERIFIED",
+  "sourceCommit": "1adbc336cdadefa48be40ff37082a6de840fbd41",
+  "completedAt": "2026-11-15T09:40:11.556633+00:00",
+  "plan": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/update-prepared.json",
+    "sha256": "f1a983bcfdf4f2602fa3f2ee124faf7d5afa0076419a95c774861ee0a41e876f"
+  },
+  "activation": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/activation-receipt.json",
+    "sha256": "a9f0bd012e6843aa36312cec862b5aac51c699b93dcf0a1ed25c85d93a2dbccc"
+  },
+  "uiAcceptance": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/acceptance/frontend-live-pre-config.json",
+    "sha256": "a24a0e05cec182d465d32efeac700321e0860c84224ec06913e0d57e6ad98fe6"
+  },
+  "liveServices": {
+    "backend": {
+      "id": "8e057ae38fdc9af3454c59376af38900c242036696df6dd2ab62730c5620b346",
+      "image": "sha256:3094a644b065d0546ee0d06fea5e8128abb14f79d42c829cb6d007674e893707",
+      "startedAt": "2026-11-15T09:17:54.753167054Z"
+    },
+    "frontend": {
+      "id": "5f8235ed1b423cf54b2d16ad94f329a59300fbdb155ddfbad387e474f73156f3",
+      "image": "sha256:caa3874078be0a41da0ffb23c09d91d9fd8a01e9f041edcee470b7c9a28bb204",
+      "startedAt": "2026-11-15T09:18:25.551656339Z"
+    }
+  },
+  "checkpoints": {
+    "pre": {
+      "directory": "G:\\gying-backups\\metadata-updates-completed-predeploy-20261115-20261115T091532.990934Z",
+      "artifacts": 4,
+      "authenticated": true,
+      "manifestSha256": "1f15aed93bd6f353ad24f840ae662af0f2b80caa3a1b41a090bad7b0ccab8abc"
+    },
+    "stopped": {
+      "directory": "G:\\gying-backups\\metadata-updates-stopped-backend-20261115-20261115T091737.485175Z",
+      "artifacts": 3,
+      "authenticated": true,
+      "manifestSha256": "ad5583457224b03ca51603695618c79f86e0f9237d489abdcd619593ac473c3e"
+    }
+  },
+  "workerPause": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\worker-pause-verified.json",
+    "sha256": "9849f4e80801537d14e5394add38ea6981c9d2c62e0bf606e64bf1c0670d5353"
+  },
+  "workerRestore": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\worker-restore-verified.json",
+    "sha256": "d300b4ed73a8ce4e4be5317277779b8455c1e30434eb17eb964a2e65a1950def"
+  },
+  "target": {
+    "tmdbAutoSyncEnabled": true,
+    "gyingAutoSyncEnabled": true,
+    "tmdbAutoSyncUpdatesOnly": true,
+    "gyingAutoSyncUpdatesOnly": true,
+    "tmdbAutoSyncIntervalHours": 24,
+    "gyingAutoSyncIntervalHours": 24,
+    "tmdbAutoSyncMaxItems": 10,
+    "gyingAutoSyncMaxItems": 10,
+    "tmdbAutoSyncSources": "TRENDING_MOVIE_DAY,TRENDING_TV_DAY,UPCOMING_MOVIE",
+    "gyingAutoSyncSources": "TIME_MOVIE,TIME_TV,TIME_ANIME"
+  },
+  "updatesConfig": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\updates-config-verified.json",
+    "sha256": "3c8c7e0a30cfb696bd62acac489161687e3f747d6da5eb1717e1e6ecba4e00a1"
+  },
+  "sqlPostimage": {
+    "rows": 11,
+    "sha256": "dd14420a7923eb7dd49178dd5d7d56d9a64fa6008d19e6c1c89394edcb276619"
+  },
+  "protected": {
+    "otherConfigurationAndLegacyFullRowsExact": true,
+    "historicalFullRowsExact": true,
+    "parentRawChanged": true,
+    "parentRevision": 1870,
+    "parentBlockedReason": "WORKER_DISABLED",
+    "parentInvariantSha256": "27360a8d04479aaba473f07caaa80dc0e3c1960fce89a78ed6d7f9480190e8db",
+    "otherElevenGenerationsExact": true
+  },
+  "metadataObservation": {
+    "observedAt": "2026-11-15T09:40:11.556633+00:00",
+    "newMetadataAfterPreparedId": [],
+    "allNewMetadataUsesUpdatesMode": true,
+    "rangeResumeObserved": false,
+    "firstNaturalBatchMayStillBePending": true
+  },
+  "firstNaturalBatchAcceptancePending": true,
+  "activationAttempts": {
+    "backend": 1,
+    "frontend": 1
+  },
+  "manualCloudRequests": 0,
+  "directSqlWrites": 0,
+  "automaticRetry": false,
+  "automaticSqlRestore": false
+}

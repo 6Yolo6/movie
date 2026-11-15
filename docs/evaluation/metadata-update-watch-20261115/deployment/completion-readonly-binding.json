@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\CompletionReadOnly.py",
+    "sha256": "6d92d4414c9fafc42092edab1d1e83e5f301ba43ff51f457aad9bd3e946ebc17"
+  },
+  "resumeHelper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\UpdateResume.py",
+    "sha256": "b4bf73d7f9c2ea4f7b82d940b9f79df3ed7df47f4e4fe5f0d63130cb11568794"
+  },
+  "completeBackup": {
+    "path": "E:/gying-tools/releases/metadata-update-watch-20261115/resume-backup-complete.json",
+    "sha256": "d2916af02edd3ba6ab8fc52adac64bfbd0a29356561591dcc7a84979e9034ef4"
+  },
+  "failure": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\resume-failure-2026-11-15T091843.013931_0000.json",
+    "sha256": "d175131e8fa11d90c4a30325e0f0082a7bb8945d6c9a270583035a2813b466dd"
+  },
+  "activationReservation": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\resume-activation-reservation.json",
+    "sha256": "e7fd554608b5d8ddf062fb8b2fd849d285985c53c2b9fa1a68bfb8c99c6e0b4c"
+  },
+  "entryDiagnosis": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\entry-status-diagnosis.json",
+    "sha256": "a719d9d7f3bc0edc63deb0e6ebba4504f943cd51ecb982a93c569b8474539692"
+  },
+  "workerPause": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\worker-pause-verified.json",
+    "sha256": "9849f4e80801537d14e5394add38ea6981c9d2c62e0bf606e64bf1c0670d5353"
+  },
+  "termReservations": {
+    "backend": {
+      "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\backend-term-reservation.json",
+      "sha256": "f45454dc1cc4e94c947396b67359b469a9c58c1a33471894f12ae812b05c8cc3"
+    },
+    "frontend": {
+      "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend-term-reservation.json",
+      "sha256": "3154bc60bf15af944757d639863be7c8a428322e40649bc713a4a30b0ca67640"
+    }
+  },
+  "imageReservations": {
+    "backend": {
+      "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\backend-activation-reservation.json",
+      "sha256": "9740f1dbe37a8d5f1eadc7d13ca52f23484fbaf91a5c9e3c21ace572bb8f37c5"
+    },
+    "frontend": {
+      "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\frontend-activation-reservation.json",
+      "sha256": "c90b55414b15b50da90acef6f10f833b9be7b2a0a6e05ec6fcc145eb9acf7498"
+    }
+  },
+  "nginxReloadReservation": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\nginx-reload-reservation.json",
+    "sha256": "7005afe17c24c1b38aa6cd6867de5c57b64582029060beccb91b5c1957542ec8"
+  },
+  "stoppedCheckpoint": {
+    "directory": "G:\\gying-backups\\metadata-updates-stopped-backend-20261115-20261115T091737.485175Z",
+    "artifacts": 3,
+    "authenticated": true,
+    "manifestSha256": "ad5583457224b03ca51603695618c79f86e0f9237d489abdcd619593ac473c3e"
+  },
+  "stoppedManifest": {
+    "path": "G:\\gying-backups\\metadata-updates-stopped-backend-20261115-20261115T091737.485175Z\\manifest.json",
+    "sha256": "ad5583457224b03ca51603695618c79f86e0f9237d489abdcd619593ac473c3e"
+  },
+  "createdAt": "2026-11-15T09:31:48.222401+00:00",
+  "scope": "Read-only completion of already activated images; no activation, config PUT, nginx reload or backups"
+}

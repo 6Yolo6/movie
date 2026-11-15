@@ -1,0 +1,44 @@
+{
+  "status": "PASS_READ_ONLY_BINDING_AND_CIPHERTEXT_REVIEW",
+  "reviewedAt": "2026-11-15T09:15:27.802019+00:00",
+  "helper": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\UpdateResume.py",
+    "sha256": "b4bf73d7f9c2ea4f7b82d940b9f79df3ed7df47f4e4fe5f0d63130cb11568794"
+  },
+  "binding": {
+    "path": "E:\\gying-tools\\releases\\metadata-update-watch-20261115\\resume-binding.json",
+    "sha256": "4303198bc8912124a164d5ccfcf15d9c44ad0d27d3c43a0c08c8a4565b80c5c9"
+  },
+  "verifiedReferenceKeys": [
+    "helper",
+    "plan",
+    "deploymentReservation",
+    "producerFailure",
+    "executeFailure",
+    "oldCheckpointManifest",
+    "partialRuntime",
+    "partialObservation"
+  ],
+  "originalImages": [
+    {
+      "name": "backend-image.tar.age",
+      "size": 652264104,
+      "sha256": "d28e931c12620602463be3c83c3f8de685ca9594c563b2ddd6963968f1307504",
+      "authenticatedEntryRetained": true
+    },
+    {
+      "name": "frontend-image.tar.age",
+      "size": 307243960,
+      "sha256": "850483d065b761af59a1e6735b43b92efa081dbb095ba6016cf055232c8ebfa5",
+      "authenticatedEntryRetained": true
+    }
+  ],
+  "oldFrozenHelperFilesUnchanged": true,
+  "originalCheckpointManifestUnchanged": true,
+  "partialCiphertextUnchanged": true,
+  "productionHelpersImported": false,
+  "productionMutations": 0,
+  "decryptionPerformed": false,
+  "plaintextWritten": false,
+  "newBackupsExecuted": 0
+}

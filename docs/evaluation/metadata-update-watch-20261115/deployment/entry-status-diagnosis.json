@@ -1,0 +1,79 @@
+{
+  "observedAt": "2026-11-15T09:19:34.065697+00:00",
+  "entries": [
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/",
+      "status": 200,
+      "bytes": 67942,
+      "sha256": "133efe434fdd9bf48d2e1dfa886149ab746b6ae27824830eb29a244c143d7ae2",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1096,
+      "sha256": "5c99db7ad6ed53129364e93b7797b314c099c3e4e8c3c1516e6c2ba72bce7399",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/admin/resource-hub/config",
+      "status": 401,
+      "bytes": 60,
+      "sha256": "1076ad1f40be71a5ff419d7b1313f91792450c3c88da0a7db22dec6eb9acc328",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "http://127.0.0.1",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 146,
+      "sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/",
+      "status": 200,
+      "bytes": 68309,
+      "sha256": "e8c7ad4760f7bfa62764d68af82c8b267fbf423b61f2ba69b035481100a3ccd2",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/movies/list?page=1&size=1",
+      "status": 200,
+      "bytes": 1096,
+      "sha256": "5c99db7ad6ed53129364e93b7797b314c099c3e4e8c3c1516e6c2ba72bce7399",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/admin/resource-hub/config",
+      "status": 302,
+      "bytes": 510,
+      "sha256": "1ce706094619ce8a969a16dfaded2010f7664b52a07521517f23ebd19d416b3a",
+      "redirectToCloudflareAccess": true,
+      "redirectQueryOrBodyWritten": false
+    },
+    {
+      "origin": "https://gyinghub.dpdns.org",
+      "path": "/api/qq-bot/health",
+      "status": 404,
+      "bytes": 513,
+      "sha256": "f2d95ed95fbf26a018fc563471c34988ba5e344cd6ab801beb0618654b2323f4",
+      "redirectToCloudflareAccess": false,
+      "redirectQueryOrBodyWritten": false
+    }
+  ],
+  "productionWrites": 0,
+  "responsesWritten": false
+}
