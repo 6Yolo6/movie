@@ -8,6 +8,19 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 将本仓库作为生产系统运维。把仓库配置视为预期状态，把在线服务视为观测状态，
 用 `docs/current-project-status.md` 维护两者之间经过验证的对应关系。
 
+## 流程选择：小功能默认轻量上线
+
+按用户2026-11-15明确约定及[项目指令](../../../AGENTS.md)，既有环境的小功能开发改进，若无需SQL脚本或手工改库、无表结构/数据/持久状态迁移，默认走轻量流程；应用正常读写数据库不因此升级流程。
+
+1. 完成实现和相关定向测试；已通过的检查只因新改动或失败重跑。
+2. 使用现有生产Compose与运行配置，仅构建/部署受影响服务；保留旧镜像，需要时同步已有host镜像指向。
+3. 简短复核变更功能、真实入口及有界启动日志。只有实际动作需要时才要求管理员会话。
+4. 提交推送，简要记录交付结果；只查阅和更新相关状态章节。
+
+轻量流程跳过全套snapshot/readiness/基线、完整源码产物清单、新加密检查点、SQL备份、恢复演练、全栈验收及大证据包；沿用现有日常备份，不逐次追加发布目录。无需为host镜像指向执行完整XML/ACL审计及加密备份。
+
+本节优先于下方完整流程及引用文档中的全套检查要求。SQL/表结构/数据或不兼容持久状态迁移、基础设施/凭据/安全变更、破坏性或难回退操作才走完整流程；既有无关告警不自动升级小改动。确需升级时说明本次具体风险。
+
 ## 强制规则
 
 - 资源修复必须区分夸克与迅雷 provider：单条失效资源使用 `/api/resources/admin/{id}/repair-invalid`，批量修复使用异步 job 并轮询结果；成功后复核自有分享可访问、`resource_link.link_status=NORMAL` 及可选的 GYING 同步结果。
@@ -15,7 +28,7 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 - OpenClaw 补丁同时涉及源插件、唯一安全运行时副本和 Gateway 配置；升级后必须重新应用补丁，验证 UTF-8 搜索进度文本、管理员白名单和未授权命令拒绝行为。
 
 - 使用 `git rev-parse --show-toplevel` 定位仓库根目录，不假定固定盘符或检出路径。
-- 制定运维方案前，以 UTF-8 完整读取 `docs/current-project-status.md`。
+- 完整流程制定方案前，以 UTF-8 完整读取 `docs/current-project-status.md`；轻量流程只查阅相关部署与功能章节。
 - 运维请求只涉及配置、基础设施、数据维护、操作手册和验证。除非用户另行明确要求，
   不修改业务逻辑或 Resource Hub 代码。
 - 不打印、提交或复制密钥值。只报告配置键名称、是否存在、来源和验证结果。
@@ -33,7 +46,9 @@ description: 运维和维护 GYing Movie 项目及其 docs/current-project-statu
 - 安全变更不得把数据库、Redis、MinIO、Docker socket、管理后台或内部机器人加入公网 Tunnel；部署前必须完成专用 DB/MinIO 身份、Windows 防火墙、Cloudflare Access 和加密备份/恢复门禁。
 - 安全扫描只输出路径、行号、键名、状态和摘要，不打印或复制密码、Cookie、JWT、API key、Authorization、Tunnel credentials 或完整 `docker inspect`。
 
-## 标准流程
+## 完整运维流程
+
+以下步骤仅适用于上述完整流程范围。
 
 1. 确认范围和风险。
    - 确认环境、主机、检出目录、分支或提交、预期结果、维护窗口，以及是否涉及在线数据和外部账号。
