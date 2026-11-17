@@ -1483,7 +1483,7 @@
     }
   },
   "resourceHubDuplicates": {
-    "help": "Scan possible duplicates across the full library. Check each movie, season and version, choose the record to retain, preview references, then merge reviewed pairs.",
+    "help": "Use Deduplicate library to scan and preview a bulk merge, or scan and choose retained records manually.",
     "records": "Movie records",
     "identity": "Category / year / season",
     "resources": "Normal resources (top / bottom)",
@@ -1572,7 +1572,19 @@
       "user_notification": "Movie notifications",
       "movie_metadata": "Movie records",
       "resource_hub_task.payload": "Resource Hub task contents"
-    }
+    },
+    "oneClick": "Deduplicate library",
+    "bulkTitle": "Confirm library deduplication",
+    "bulkSummary": "Scanned {{scanned}} movies: {{count}} pairs available for review, {{skipped}} skipped",
+    "bulkHelp": "Pairs with matching names and shared cast or directors have passed reference checks. Prefer the record with more normal resources, then a GYING record. Check every pair is the same movie, season and version. Expand a pair to inspect its references. Confirmation merges batches while preserving old links and history.",
+    "bulkConfirm": "I checked all pairs above are the same movie and season/version and approve the displayed merge directions",
+    "bulkMerge": "Confirm and deduplicate {{count}} pairs",
+    "bulkSkipped": "Skipped possible duplicates",
+    "bulkReason": "Reason skipped",
+    "bulkNameOnly": "Name-only match; manual review required",
+    "bulkIncomplete": "The full-library scan is incomplete. Retry before bulk deduplication.",
+    "bulkChanged": "The library changed during scanning or preview. Prepare deduplication again.",
+    "bulkProgress": "Deduplicated {{count}} / {{total}} pairs; completed merges are preserved."
   },
   "resourceHubUpdatesOnlySwitch": "{{provider}}: pause full collection, check updates only",
   "resourceHubUpdatesOnlyHelp": "After saving, retain full ranges and cursors and check pages 1–2 of the selected lists only. Disabling automatic collection pauses all automatic checks; manual refresh remains available.",

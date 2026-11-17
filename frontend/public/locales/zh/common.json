@@ -1483,7 +1483,7 @@
     }
   },
   "resourceHubDuplicates": {
-    "help": "扫描全库疑似重复影片。逐组核对影片、季数和版本，选择保留记录后预览关联影响，再勾选已审核的组批量合并。",
+    "help": "点击“一键去重”扫描全库并预览批量合并；也可单独扫描，手动选择保留记录。",
     "records": "两条影片记录",
     "identity": "类别 / 年份 / 季",
     "resources": "正常资源（上 / 下）",
@@ -1572,7 +1572,19 @@
       "user_notification": "影片通知",
       "movie_metadata": "影片记录",
       "resource_hub_task.payload": "资源中心任务内容"
-    }
+    },
+    "oneClick": "一键去重",
+    "bulkTitle": "全库一键去重确认",
+    "bulkSummary": "已扫描 {{scanned}} 条影片：{{count}} 组可审核合并，{{skipped}} 组已跳过",
+    "bulkHelp": "已预选名称及演员或导演一致、且关联检查通过的候选。默认保留正常资源较多的记录，同量时优先 GYING 记录。请核对下方每组确属同一影片、季数和版本；可展开查看资源、收藏等关联。确认后分批合并，保留旧链接和历史。",
+    "bulkConfirm": "我已核对上方全部待合并记录，确认属于同一影片及同一季/版本，按所示方向去重",
+    "bulkMerge": "确认并去重 {{count}} 组",
+    "bulkSkipped": "已跳过的疑似重复影片",
+    "bulkReason": "跳过原因",
+    "bulkNameOnly": "仅名称相同，保留人工审核",
+    "bulkIncomplete": "全库扫描不完整，无法批量去重。请重试扫描。",
+    "bulkChanged": "扫描或预览期间影片库已变化，请重新点击一键去重。",
+    "bulkProgress": "已去重 {{count}} / {{total}} 组；已完成的合并会保留。"
   },
   "resourceHubUpdatesOnlySwitch": "{{provider}}：暂停全量，仅检查更新",
   "resourceHubUpdatesOnlyHelp": "保存后保留全量范围与游标，只检查所选榜单的第1–2页。关闭自动采集开关会暂停所有自动检查，手动刷新不受影响。",
