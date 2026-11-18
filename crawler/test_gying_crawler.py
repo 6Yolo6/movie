@@ -563,6 +563,17 @@ class TorrentMetadataFileTest(unittest.TestCase):
             with self.subTest(size=len(data)):
                 with self.assertRaises(RuntimeError): torrent_info_hash(data)
 
+    def test_single_line_ending_preserves_hash_but_other_suffixes_are_rejected(self):
+        from crawler.gying_crawler import torrent_info_hash
+        data, expected = self.content()
+        for suffix in (b'\n', b'\r\n'):
+            with self.subTest(suffix=suffix):
+                self.assertEqual(expected, torrent_info_hash(data + suffix))
+        for suffix in (b'\r', b' ', b'\t', b'\n\n', b'\r\n\r\n', b'\nextra', b'\x00'):
+            with self.subTest(suffix=suffix):
+                with self.assertRaises(RuntimeError):
+                    torrent_info_hash(data + suffix)
+
     def resources(self, expected):
         from crawler.gying_crawler import BASE_URL
         return [{"type": "MAGNET", "source_ref": "BT1", "url": "magnet:?xt=urn:btih:" + expected},
@@ -580,6 +591,23 @@ class TorrentMetadataFileTest(unittest.TestCase):
         self.assertTrue(get.call_args.kwargs["stream"])
         self.assertEqual(2 * 1024 * 1024, get.call_args.kwargs["max_response_bytes"])
         response.close.assert_called_once()
+
+    def test_download_removes_line_ending_and_hashes_the_uploaded_bytes(self):
+        import base64
+        import hashlib
+        from crawler.gying_crawler import fetch_torrent_file
+        data, expected = self.content()
+        for suffix in (b'\n', b'\r\n'):
+            response = Mock(status_code=200, content=data + suffix)
+            with self.subTest(suffix=suffix), patch(
+                "crawler.gying_crawler.fetch_download_resources", return_value=self.resources(expected)
+            ), patch("crawler.gying_crawler.site_get", return_value=response):
+                result = fetch_torrent_file("mv", "MOVIE1", "BT1")
+            self.assertEqual(expected, result["infoHash"])
+            self.assertEqual(data, base64.b64decode(result["dataBase64"]))
+            self.assertEqual(len(data), result["size"])
+            self.assertEqual(hashlib.sha256(data).hexdigest(), result["sha256"])
+            response.close.assert_called_once()
 
     def test_download_refuses_hash_mismatch_and_redirect_status(self):
         from crawler.gying_crawler import fetch_torrent_file

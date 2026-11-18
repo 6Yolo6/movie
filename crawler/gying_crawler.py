@@ -1201,7 +1201,9 @@ def torrent_info_hash(content):
     try:
         decoded, end = parse(0, 0)
         info = decoded.get(b'info') if isinstance(decoded, dict) else None
-        if end != len(content) or not info_span or not isinstance(info, dict):
+        # GYING may append one text line ending to an otherwise complete torrent.
+        # Accept only that suffix; never allow arbitrary bytes after the dictionary.
+        if content[end:] not in (b'', b'\n', b'\r\n') or not info_span or not isinstance(info, dict):
             raise RuntimeError("Torrent info dictionary missing")
         pieces = info.get(b'pieces')
         if not isinstance(pieces, bytes) or not pieces or len(pieces) % 20:
@@ -1234,6 +1236,8 @@ def fetch_torrent_file(type_code, mid, source_ref):
         response.close()
     actual = torrent_info_hash(content)
     if actual != expected: raise RuntimeError("Torrent does not match the selected magnet")
+    # Preserve the original info bytes but upload a strictly terminated bencode file.
+    content = content.rstrip(b'\r\n')
     return {"sourceRef": source_ref, "infoHash": actual, "size": len(content),
             "sha256": hashlib.sha256(content).hexdigest(), "dataBase64": base64.b64encode(content).decode('ascii')}
 
