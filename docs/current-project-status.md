@@ -2,7 +2,7 @@
 
 更新时间：2026-11-19
 
-11月19日TVmaze剧集增量已仅backend/frontend上线固定镜像44a74bb1976d／bb21744b05ec，21:32:12／21:43:15（Asia/Shanghai）启动，沿用现役Compose27／17层并保留旧镜像。TVmaze已启用24小时10条详情、精确IMDb／TVDB→TMDB关联和补空资料；自然首轮18190成功9部／1候选／0失败，90待后续预算。156项后端定向、11项前端回归、TS／lint／生产构建、两组视口、隔离Linux运行与5本机／5公网入口通过，公开署名及许可已显示；首前端缺Webpack运行模块的500已回退并修正后上线，后台未重复重启。Worker恢复true，原TMDB／GYING配置保持，宿主镜像指向已同步，无SQL或迁移。[接入与实际验收](evaluation/tvmaze-metadata-20261119/README.md)。
+11月19日TVmaze已接入并按用户要求由24小时改为6小时一轮，每轮10次详情；现役backend／frontend固定镜像1b6220ae1e90／a8e00af6b8c2，22:35:20／22:35:41（Asia/Shanghai）启动，沿用Compose28／18层并保留旧镜像。108项后端定向、11项前端回归、TS／lint／Webpack构建、两组视口、隔离Linux运行、5本机／4公网入口与启动日志通过。Worker=true，原TMDB／GYING日常设置保持，宿主镜像指向已同步，无SQL或迁移。首轮18190的9部／1候选／0失败与90待处理保持；下一6小时自然轮次待验。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md)。
 
 11月18日百度种子补全阻塞已修复，仅gying-source于13:05:58（Asia/Shanghai）上线固定镜像 `f24203be8b93`；单个LF/CRLF尾缀兼容，原始BTIH与上传字节SHA严格核验，61项回归通过。17761保留三次失败历史并经备份/行锁/CAS追加一次额度，13:08:18两文件45961B成功、自有分享和资源28729 NORMAL；官方GET独立核验文件内容/ID、目录与账号归属通过。13:13:53恢复enabled=true/10分钟1条，首自然18125于13:14:50四文件255864B成功；父17583累计103处理/84成功/19跳过/2历史失败、PENDING无阻塞，3历史deferred保留。backend/frontend及其他容器保持，旧source镜像与三age认证检查点可回退。[恢复与验收](evaluation/baidu-torrent-recovery-20261118/README.md)。
 
@@ -98,7 +98,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 当前部署与恢复基线
 
-11月19日现役backend `sha256:44a74bb1976de81b3d932ab66ae0edc587a817fd5287c20e75b3b9cda0c20f42`、frontend `sha256:bb21744b05ec2bde1dfc8a360ce9580bfb75c687352d579f7b8ff457c3e42d69`，分别2026-11-19 21:32:12／2026-11-19 21:43:15（Asia/Shanghai）启动，Compose27／17层。按轻量流程仅替换两应用，旧镜像及运行配置保留、宿主expectedBackendImage已同步，Worker与三来源日常更新已启用；详情、署名及首轮真实TVmaze身份验证通过。[本次部署与回退](evaluation/tvmaze-metadata-20261119/README.md)。
+11月19日现役backend sha256:1b6220ae1e9041d1b2dbaa536bb004619acc54eb6a3d3cc5b26e7655b57cbe20、frontend sha256:a8e00af6b8c2e90f45a6211c1a85df8cb9108f6b540ba5d410c070cbc9ef39a6，分别2026-11-19 22:35:20／2026-11-19 22:35:41（Asia/Shanghai）启动，Compose28／18层。按轻量流程仅替换两应用，旧镜像及运行配置保留、宿主expectedBackendImage已同步；Worker已恢复，TVmaze独立6小时10条，TMDB／GYING仍24小时10条。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md)。
 
 11月15日历史b8ef54e已实际激活，backend镜像 `sha256:8931619fd119eb9154ff498adace98d6f688bdff409e1e4db816969cce4fdc95`，容器bd827f2d…，2026-11-15 22:27:42（Asia/Shanghai）；frontend1adbc33/Compose14层保持。fresh V5目录 `E:/gying-tools/releases/tmdb-gying-followup-20261115/rollout-v5-after-key-path-fix-20261115T142029Z`，prepared仅保留路径/SHA引用、不拷正文。预部署 `G:/gying-backups/tmdb-gying-predeploy-20261115-20261115T142612.040527Z` 三age与停机 `G:/gying-backups/tmdb-gying-stopped-backend-20261115-20261115T142733.365466Z` 三age经实际execute完整认证；非跨服务原子快照，未恢复SQL。独立终验另核六密文hash/size并认证host/daily小型原像；host pin与日常49项覆盖均完成单次CAS/后验，任务XML/ACL/owner/group/DACL保持，自然完整备份仍待验。回退先暂停UPDATES并核对新元数据/资源意图和P2P状态，保留当前SQL/data/state/key与上传文件，不重放UNKNOWN或旧任务。所有旧失败、预约及外部材料保留。[上线与回退](evaluation/tmdb-gying-followup-20261115/README.md)。
 
@@ -130,8 +130,8 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 服务/产物 | 当前记录 |
 | --- | --- |
-| Movie backend | 11月19日TVmaze接入固定 `sha256:44a74bb1976de81b3d932ab66ae0edc587a817fd5287c20e75b3b9cda0c20f42`，2026-11-19 21:32:12（Asia/Shanghai）启动，Compose27层；156项后端定向、Java17 compile／package、真实18190首轮9部／1候选／0失败通过，既有TMDB→GYING跟进保持。[交付](evaluation/tvmaze-metadata-20261119/README.md) |
-| Movie frontend | 11月19日固定 `sha256:bb21744b05ec2bde1dfc8a360ce9580bfb75c687352d579f7b8ff457c3e42d69`，2026-11-19 21:43:15（Asia/Shanghai）启动，Compose17层；TVmaze开关、预算与进度、页脚来源署名已上线，11项回归／TS／lint／Webpack构建、两组视口、隔离Linux运行与本机／公网入口通过。[交付](evaluation/tvmaze-metadata-20261119/README.md) |
+| Movie backend | 11月19日TVmaze频率调整固定 sha256:1b6220ae1e9041d1b2dbaa536bb004619acc54eb6a3d3cc5b26e7655b57cbe20，2026-11-19 22:35:20（Asia/Shanghai）启动，Compose28层；108项后端定向、Java17 compile／package与6小时预算回归通过。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md) |
+| Movie frontend | 11月19日固定 sha256:a8e00af6b8c2e90f45a6211c1a85df8cb9108f6b540ba5d410c070cbc9ef39a6，2026-11-19 22:35:41（Asia/Shanghai）启动，Compose18层；TVmaze间隔支持1–720小时、现役6小时10条，11项回归／TS／lint／构建、两组视口及隔离Linux运行通过。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md) |
 | 本机Agent | 11月4日上线JAR `1d1ad1800339f94ffb4b85fa3d93bd6a495e37bd8e1dad5e2dbb59383aaa8a64`，代码`6c277a4161b4840a89f8ecdca020818192f9eb3c`保持；11月8日维护后当前受管记录/ready、固定runtime、创建时间与唯一5000监听、四本机health均通过；普通权限实时argv UNKNOWN。本轮未替换Agent |
 | OpenClaw QQ插件 | 11月2日22:56源/唯一运行时gateway错误回退修复上线，SHA `94922920…`；原固定镜像/config/白名单保持，其他9容器保持，真实群内端到端待验 |
 | 模型/索引 | 影视qwen3指令4B、工作区1.7B；11,272条BGE-M3索引，SHA `f74cb9c6afd7c5b029305a3c0a141a3d1348eb5116285fb7de43bcdbc9b43eb4` |
@@ -191,7 +191,7 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 | 事项 | 保留的待验/工作 |
 | --- | --- |
-| 每日更新/新来源 | TMDB／GYING继续每日轮查所选榜单前2页、每平台10条详情；TMDB新增元数据的GYING搜索／种子跟进已上线，后续自然资源验收沿用原边界。TVmaze于11月19日启用独立updates、24小时10条，首轮9部／1候选／0失败；下一24小时冷却、真实上游版本变动和长期积压待自然验。Wikidata／IMDb／Trakt未接入。[TVmaze](evaluation/tvmaze-metadata-20261119/README.md)、[资源跟进](evaluation/tmdb-gying-followup-20261115/README.md) |
+| 元数据更新/新来源 | TMDB／GYING继续每日轮查所选榜单前2页、每平台10条详情；TMDB新增元数据的GYING搜索／种子跟进已上线，后续自然资源验收沿用原边界。TVmaze于11月19日启用独立updates，后续已调整为6小时10条；首轮9部／1候选／0失败，真实6小时轮次、上游版本变动与长期积压待自然验。Wikidata／IMDb／Trakt未接入。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md)、[资源跟进](evaluation/tmdb-gying-followup-20261115/README.md) |
 | 11月13日运行态 | 网站/服务入口已恢复；宿主内存提交约85%、前置资源耗尽仍需观察；Quark2262前代RUNNING未重放，远端结果待独立对账；backend原APP_TRUSTED_PROXIES地址已失配，后续精确修正，不扩大子网信任。[证据](evaluation/entrypoint-recovery-20261113/README.md) |
 | 百度/文件选择 | 现役后台继承逐文件/fileId守护。当前父17583 BLOCKED/CHILD_FAILED、enabled=true/10分钟1条，currentChild17761 FAILED3/3耗尽；本轮只核自然调度字段差异，父守恒投影/child全行及六历史行保持，未修复或重试。47正常SKIP、48原HTTP504/transport UNKNOWN及17584/17606/17622 UNKNOWN保留；11月11日17650手动四文件143163B和17655唯一获准自然四文件35236B成功、V5官方同根owner/完整content-fileId-manifest/active ownshare目录只读PASS仍为该轮证据，manual3/4未执行、额度不可重用。11月15日新GYING归档百度18067/18071首次成功，4份含2个torrent；18069在UPLOAD_TORRENT明确API_REJECTED/intent REJECTED，FAILED1/3、保留2份非torrent检查点，17:47–17:49观测时原策略排18:12:48重试，未手动重试。11月14日历史新自然百度7个P2P归档成功/20份文件，不等于存量父阻塞解除，也未独立逐个官方hash/分享对账。外部发布false、临时删除/配额释放/GYING发布未验，provider原子性/永久完整性不作保证 | [当前采集](evaluation/metadata-update-watch-20261115/README.md)、[百度历史](evaluation/duplicate-tmdb-binding-20261111/README.md) |
 | 片库重复 | 11月11日仅backend上线可信TMDB绑定与canonical消费者修复，suite1462项零失败（1Redis跳过），真实merge MySQL30/30。前夜MobLand `tmdb_tv_247718 -> 1YKW` 已一次合并、19关联/21history/8资源保留；本轮canonical一行两字段已由V4于16:11首次UPDATE、16:12独立只读精确增量通过；此前首次prepare因无id历史排序/MySQL1054只读失败，V2 prepare通过但锁读1142停止、UPDATE/COMMIT未尝试，15:31:17原像只读保持，原失败保留。15788/145 scan经独立复核74确认（含MobLand）/71排除；本轮第1/3/4批18/16/13加201/202十/九对共66对精确PASS，380关联/512history/7legacy旧update_at单次merge窄窗，原B1三次失败保留。第2批14:33:25已ACK原20/19preview、idle停止无merge-request，原审核自然过期，V5离线9通过但未执行；Observer离线31/独审及15:02:19实际只读PASS，原20/19全部state/两unused-expired review/字节保持，0新POST/SQL/cloud。V6仅pristine3/4、12mock/全链通过、原请求预算/UNKNOWN禁重发保持；已完成批次6阻塞完整相关投影保持，另B2一条part冲突15:02:19完整state保持，共余7运行态阻塞未合并。V7新generation只读prepare与两子批actual exactPASS，MobLand既有应用身份权限通过、V3前置RuntimeError未写/原像保持，V4两字段已提交且updated_at/全行/历史/百度/config/13代次保持；Entry V2实际仅7/67详情/列表与21显式GET通过后停止，全67只读TMDB两字段正确，39 movie season差异为原部数/NULL与身份0混同，无需数据修复；新EntryV3 13mock+7类45断言及完整冻结链通过、旧保护AST保持，唯一实际入口67详情/67列表和两个电影SSR通过、204GET后TV SSR标题/年份门禁STOP，finally全行/百度/13代次/永久阻塞保持；16:52同正文SHA观察标题/年份span正确、旧h2无分隔拼接数字假阻塞，无需改网页/数据；17:10唯一4GET/4SSR补验PASS，67详情/67列表/6代表SSR闭环，全行/百度/13代次/永久阻塞保持 | [本轮证据](evaluation/duplicate-tmdb-binding-20261111/README.md) |
@@ -222,7 +222,9 @@ NapCat已停用，旧secondary/qq-v3频道目标保留为enabled=0。QQBot每日
 
 ## 验收
 
-11月19日TVmaze接入按轻量流程完成：156后端定向零失败、11前端回归、TS／定向lint／生产构建，两组真实构建／模拟API视口和修正镜像的隔离Linux运行通过。21:32:12后台及21:43:15修正前端实际上线，5本机／5公网入口与公开TVmaze／CC BY-SA 4.0署名通过。首自然18190于21:36:31–21:37:14成功，10尝试／9部精确关联／1候选／0失败，9条身份及上游版本／许可独立只读核验通过；21:49仍为同一任务，三平台24小时10条、原两UPDATES与Worker=true保持。首前端500回退及Webpack依赖修正记录保留，旧镜像可回退，无SQL／迁移。[交付与边界](evaluation/tvmaze-metadata-20261119/README.md)。
+11月19日TVmaze首次接入按轻量流程完成：156后端定向零失败、11前端回归、TS／定向lint／生产构建，两组真实构建／模拟API视口和修正镜像的隔离Linux运行通过。21:32:12后台及21:43:15修正前端实际上线，5本机／5公网入口与公开TVmaze／CC BY-SA 4.0署名通过。首自然18190于21:36:31–21:37:14成功，10尝试／9部精确关联／1候选／0失败，9条身份及上游版本／许可独立只读核验通过；21:49仍为同一任务，首次接入时三平台24小时10条、原两UPDATES与Worker=true保持。首前端500回退及Webpack依赖修正记录保留，旧镜像可回退，无SQL／迁移。[交付与边界](evaluation/tvmaze-metadata-20261119/README.md)。
+
+11月19日后续频率调整已在22:35:20／22:35:41分别上线后台／前端，并于22:37:50保存和独立回读TVmaze=6小时／10条、Worker=true。108项后端定向、11项前端回归、TS／lint／构建、两组视口、隔离Linux运行、5本机／4公网入口及有界启动日志通过；其他来源配置哈希保持，旧镜像及检查点保留。下一6小时自然轮次仍待验。[频率调整与验收](evaluation/tvmaze-frequency-20261119/README.md)。
 
 11月15日22:33:00 TMDB→GYING实际backend部署与host/daily收尾通过、22:33:45独立真实只读终验PASS，自然资源验收pending：334/334业务测试（隔离MySQL18项）、423源码/448类资源/实际JAR与image绑定，原V4运维85项与V5最小修复15项mock分别通过，无重测/重建。实际backendbd827f2d…/Compose26、完整配置/挂载/native hash/JAR通过；正常TERM143、候选activation/nginx reload各1、Worker pause/restore各PUT1，6age完整认证，host/daily各CAS1/49项native dry-run与权限/任务XML/ACL保持。真实8入口、其它12代次、旧RANGE及保护历史保持。Docker日志22:27:42–22:33:45仅tail200/2241B三错误markers0，应用文件日志未验；新资源意图/预算0。旧22:11key路径失败与22:15原backend恢复分别保留，20:43旧Gate具体原因仍未知。今天已完成UPDATES未重跑、旧片未回填、未创建真实验收资源任务；ARCHIVE_QUEUED仅入队，下一自然新种子/上传与完整自然备份未代验。QQ百度最近CHALLENGE_REQUIRED有证据，更早BAIDU_NOT_READY原因未知，后台重新登录不解除百度挑战。[最终回执与边界](evaluation/tmdb-gying-followup-20261115/rollout-v5-after-key-path-fix-20261115T142029Z/final-verification.json)。
 

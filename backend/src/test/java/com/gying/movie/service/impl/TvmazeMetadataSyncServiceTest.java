@@ -165,6 +165,20 @@ class TvmazeMetadataSyncServiceTest {
         clock.advance(86401); task(); sync.runTask(latest.getId()); verify(tvmaze,times(20)).fetchShow(anyLong());
         assertEquals(10,mapper.readTree(latest.getPayload()).path("crawl").path("dailyAttempts").asInt());
     }
+    @Test void sixHourScheduleRenewsDetailsWithoutAllowingInheritedTasksToExceedTheBudget() throws Exception {
+        properties.getTvmaze().setAutoSyncIntervalHours(6);
+        Map<Long,Long> feed=new LinkedHashMap<>(); for(long id=1;id<=25;id++) feed.put(id,epoch());
+        when(tvmaze.fetchUpdates(anyString())).thenReturn(feed);
+        assertNotNull(sync.enqueueAutomatic()); sync.runTask(latest.getId());
+        task(); sync.runTask(latest.getId()); verify(tvmaze,times(10)).fetchShow(anyLong());
+        clock.advance(6*3600-1); assertNull(sync.enqueueAutomatic());
+        clock.advance(2); assertNotNull(sync.enqueueAutomatic()); sync.runTask(latest.getId());
+        verify(tvmaze,times(20)).fetchShow(anyLong());
+        JsonNode state=mapper.readTree(latest.getPayload()).path("crawl");
+        assertEquals(10,state.path("roundAttempts").asInt()); assertEquals(10,state.path("dailyAttempts").asInt());
+        assertEquals(5,state.path("pending").size());
+        task(); sync.runTask(latest.getId()); verify(tvmaze,times(20)).fetchShow(anyLong());
+    }
     @Test void rateLimitStopsTheWholeRoundAndHonorsRetryAfterAcrossRestarts() throws Exception {
         when(tvmaze.fetchUpdates(anyString())).thenThrow(new TvmazeClient.RateLimited(clock.instant().plusSeconds(3600)));
         task(); assertEquals("FAILED",sync.runTask(latest.getId()).getStatus());

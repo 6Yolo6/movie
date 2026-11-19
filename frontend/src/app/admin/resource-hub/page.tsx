@@ -1603,7 +1603,7 @@ export default function ResourceHubAdminPage() {
                                                                 </Col>
                                                                 <Col xs={12} md={8}>
                                                                     <Form.Item name="tvmazeAutoSyncIntervalHours" label={t('resourceHubSyncInterval')}>
-                                                                        <InputNumber min={24} max={720} className="w-full" />
+                                                                        <InputNumber min={1} max={720} className="w-full" />
                                                                     </Form.Item>
                                                                 </Col>
                                                                 <Col xs={12} md={8}>

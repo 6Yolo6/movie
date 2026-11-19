@@ -65,7 +65,7 @@ public class TvmazeMetadataSyncService {
         if (tasks.count(checkpoint.query().in("status", "PENDING", "RUNNING")) > 0) return null;
         ResourceHubTask latest = checkpoint.latest();
         LocalDateTime cutoff = LocalDateTime.now(clock.withZone(java.time.ZoneId.systemDefault()))
-                .minusHours(Math.max(config.getAutoSyncIntervalHours(), 24));
+                .minusHours(Math.max(config.getAutoSyncIntervalHours(), 1));
         if (latest != null && latest.getCreatedAt() != null && !latest.getCreatedAt().isBefore(cutoff)) return null;
         return checkpoint.enqueue(latest, config.getAutoSyncMaxItems());
     }
@@ -78,7 +78,7 @@ public class TvmazeMetadataSyncService {
         result.setTaskId(id); result.setSource("TVMAZE_UPDATES"); result.setRequested(state.path("roundBudget").asInt());
         result.setStatus(task.getStatus());
         if (!properties.isEnabled() || !properties.getWorker().isEnabled() || !properties.getTvmaze().isAutoSyncEnabled()) return result;
-        // Older checkpoints must not be replayed after a newer daily task has inherited their budget.
+        // Older checkpoints must not be replayed after a newer task has inherited their budget.
         ResourceHubTask latest = checkpoint.latest();
         if (latest != null && !Objects.equals(id, latest.getId())) return result;
         if (!checkpoint.start(task)) return result;
@@ -98,7 +98,9 @@ public class TvmazeMetadataSyncService {
                 result.setSkipped(checkpoint.merge(state, feed, knownVersions(), now));
                 checkpoint.persist(task, payload);
             }
-            if (state.path("budgetStartedAt").asLong() == 0 || now - state.path("budgetStartedAt").asLong() >= 86400) {
+            // Keep the legacy checkpoint fields while renewing their budget at the configured interval.
+            long budgetIntervalSeconds = Math.max(properties.getTvmaze().getAutoSyncIntervalHours(), 1) * 3600L;
+            if (state.path("budgetStartedAt").asLong() == 0 || now - state.path("budgetStartedAt").asLong() >= budgetIntervalSeconds) {
                 state.put("budgetStartedAt", now); state.put("dailyAttempts", 0);
             }
             int budget = Math.min(state.path("roundBudget").asInt(), Math.min(Math.max(properties.getTvmaze().getAutoSyncMaxItems(), 1), 10));

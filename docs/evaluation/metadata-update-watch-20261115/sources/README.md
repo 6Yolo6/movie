@@ -1,6 +1,6 @@
 # 元数据来源建议与资源链路审查
 
-2026-11-19：已按用户选择接入并启用TVmaze剧集增量，首轮10条详情尝试成功关联9部剧集，1条保留候选、0失败。当前TMDB→GYING自动种子跟进已上线，TVmaze本次只补剧集元数据；Wikidata、IMDb、Trakt仍未接入。[实际接入与交付](../../tvmaze-metadata-20261119/README.md)。
+2026-11-19：已按用户选择接入并启用TVmaze剧集增量，首轮10条详情尝试成功关联9部剧集，1条保留候选、0失败。当前TMDB→GYING自动种子跟进已上线，TVmaze本次只补剧集元数据；Wikidata、IMDb、Trakt仍未接入。[实际接入与交付](../../tvmaze-metadata-20261119/README.md)。 后续已按用户要求调整为每6小时10条，[当前频率与部署](../../tvmaze-frequency-20261119/README.md)。
 
 2026-11-15 的只读研究快照。用户选择先整理来源与建议，TVmaze、Wikidata、IMDb、Trakt 均未接入。候选代码基准为 `1adbc336cdadefa48be40ff37082a6de840fbd41`；这些研究文件不证明该版本已部署或新来源已可运行。
 

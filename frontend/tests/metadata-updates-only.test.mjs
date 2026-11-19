@@ -231,11 +231,11 @@ test('TVmaze legacy defaults keep its independent switch off and use a daily ten
 test('TVmaze saves its own schedule without writing progress or changing existing provider modes', async () => {
     const progress = { taskId: 9, status: 'SUCCEEDED', checkedAt: '2026-11-18T08:00:00Z',
         attempted: 10, processed: 4, pending: 90, deferred: 6, exhausted: 0, coverageGap: false };
-    const f = await fixture({ tvmazeAutoSyncEnabled: true, tvmazeAutoSyncIntervalHours: 72,
+    const f = await fixture({ tvmazeAutoSyncEnabled: true, tvmazeAutoSyncIntervalHours: 6,
         tvmazeAutoSyncMaxItems: 3, tvmazeSyncProgress: progress, tmdbAutoSyncUpdatesOnly: true });
     f.forms[0].setFieldsValue({ tvmazeAutoSyncMaxItems: 5 });
     const body = await f.save();
-    assert.equal(body.tvmazeAutoSyncEnabled, true); assert.equal(body.tvmazeAutoSyncIntervalHours, 72);
+    assert.equal(body.tvmazeAutoSyncEnabled, true); assert.equal(body.tvmazeAutoSyncIntervalHours, 6);
     assert.equal(body.tvmazeAutoSyncMaxItems, 5); assert.equal(body.tmdbAutoSyncUpdatesOnly, true);
     assert.equal(body.gyingAutoSyncUpdatesOnly, false);
     assert.equal(Object.hasOwn(body, 'tvmazeSyncProgress'), false);
@@ -246,7 +246,7 @@ test('TVmaze input limits and Chinese help explain exact identities and bounded 
     const f = await fixture({}, 'zh');
     const item = key => f.all('Form.Item').find(node => node.props.name === key).props.children;
     assert.equal(item('tvmazeAutoSyncMaxItems').props.max, 10);
-    assert.equal(item('tvmazeAutoSyncIntervalHours').props.min, 24);
+    assert.equal(item('tvmazeAutoSyncIntervalHours').props.min, 1);
     const card = f.all('Card').find(node => node.props['data-testid'] === 'tvmaze-settings');
     assert.match(f.text(card), /100条/); assert.match(f.text(card), /7天/);
     assert.match(f.text(card), /IMDb／TVDB 精确关联/);

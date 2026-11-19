@@ -146,7 +146,7 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         var tvmaze = properties.getTvmaze();
         tvmaze.setAutoSyncEnabled(readBoolean(KEY_TVMAZE_ENABLED, tvmaze.isAutoSyncEnabled()));
         tvmaze.setAutoSyncMaxItems(readInt(KEY_TVMAZE_MAX_ITEMS, tvmaze.getAutoSyncMaxItems(), 1, 10));
-        tvmaze.setAutoSyncIntervalHours(readInt(KEY_TVMAZE_INTERVAL, tvmaze.getAutoSyncIntervalHours(), 24, 720));
+        tvmaze.setAutoSyncIntervalHours(readInt(KEY_TVMAZE_INTERVAL, tvmaze.getAutoSyncIntervalHours(), 1, 720));
         worker.setEnabled(readBoolean(KEY_WORKER_ENABLED, worker.isEnabled()));
         worker.setTaskLimit(readInt(KEY_WORKER_TASK_LIMIT, worker.getTaskLimit(), 1, 20));
         worker.setQuarkLimit(readInt(KEY_WORKER_QUARK_LIMIT, worker.getQuarkLimit(), 1, 20));
@@ -206,8 +206,8 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
 
         if (request.getTvmazeAutoSyncMaxItems() != null && (request.getTvmazeAutoSyncMaxItems() < 1 || request.getTvmazeAutoSyncMaxItems() > 10)
-                || request.getTvmazeAutoSyncIntervalHours() != null && (request.getTvmazeAutoSyncIntervalHours() < 24 || request.getTvmazeAutoSyncIntervalHours() > 720)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TVmaze 每轮详情为1–10条，间隔为24–720小时");
+                || request.getTvmazeAutoSyncIntervalHours() != null && (request.getTvmazeAutoSyncIntervalHours() < 1 || request.getTvmazeAutoSyncIntervalHours() > 720)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TVmaze 每轮详情为1–10条，间隔为1–720小时");
         }
         validateDriveWorkflows(request.getDriveWorkflows());
         if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
