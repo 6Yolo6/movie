@@ -454,6 +454,46 @@ class ResourceHubConfigServiceImplTest {
         org.junit.jupiter.api.Assertions.assertFalse(fresh.isGyingAutoSyncEnabled());
     }
 
+    @Test
+    void tvmazeDefaultsPersistAndPartialEditsPreserveOtherProviders() {
+        var values = new java.util.HashMap<String, String>();
+        values.put("resource.hub.tmdb.auto_sync_sources", "POPULAR_TV");
+        values.put("resource.hub.gying.auto_sync_paused.CSCORE_TV", "true");
+        var storage = pauseStorage(values);
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage);
+        var before = service.getConfig();
+        org.junit.jupiter.api.Assertions.assertFalse(before.isTvmazeAutoSyncEnabled());
+        assertEquals(10, before.getTvmazeAutoSyncMaxItems()); assertEquals(24, before.getTvmazeAutoSyncIntervalHours());
+        var request = new ResourceHubConfigRequest();
+        request.setTvmazeAutoSyncEnabled(true); request.setTvmazeAutoSyncMaxItems(3); request.setTvmazeAutoSyncIntervalHours(72);
+        service.updateConfig(request);
+        var fresh = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), storage).getConfig();
+        assertTrue(fresh.isTvmazeAutoSyncEnabled()); assertEquals(3, fresh.getTvmazeAutoSyncMaxItems());
+        assertEquals(72, fresh.getTvmazeAutoSyncIntervalHours());
+        assertEquals("POPULAR_TV", fresh.getTmdbAutoSyncSources());
+        assertTrue(fresh.getGyingAutoSyncPausedSources().get("CSCORE_TV"));
+        var legacy = new ResourceHubConfigRequest(); legacy.setTmdbAutoSyncMaxItems(5);
+        service.updateConfig(legacy);
+        assertEquals("true", values.get("resource.hub.tvmaze.auto_sync_enabled"));
+        assertEquals("3", values.get("resource.hub.tvmaze.auto_sync_max_items"));
+    }
+
+    @Test
+    void invalidTvmazeBudgetAndIntervalAreRejectedBeforeAnyConfigWrite() {
+        var values = new java.util.HashMap<String, String>();
+        var service = new ResourceHubConfigServiceImpl(new ResourceHubProperties(), pauseStorage(values));
+        service.getConfig(); var before = new java.util.HashMap<>(values);
+        for (int count : new int[] {0, 11}) {
+            var request = new ResourceHubConfigRequest(); request.setTvmazeAutoSyncMaxItems(count); request.setEnabled(true);
+            org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.updateConfig(request));
+        }
+        for (int interval : new int[] {23, 721}) {
+            var request = new ResourceHubConfigRequest(); request.setTvmazeAutoSyncIntervalHours(interval); request.setEnabled(true);
+            org.junit.jupiter.api.Assertions.assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.updateConfig(request));
+        }
+        assertEquals(before, values);
+    }
+
     private ISysConfigService pauseStorage(java.util.Map<String, String> values) {
         var storage = mock(ISysConfigService.class);
         org.mockito.Mockito.when(storage.count(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {

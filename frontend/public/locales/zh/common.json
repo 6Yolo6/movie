@@ -1596,5 +1596,12 @@
   "resourceHubFullProgressRetained": "保留的全量进度，更新模式不执行此范围",
   "resourceHubFullProgressPositionRetained": "保留的全量游标：{{position}}",
   "resourceHubFullCollectionPausedForUpdates": "全量采集已暂停（更新模式）",
-  "resourceHubUpdatesOnlyPausedHelp": "自动采集开关已关闭，当前不执行更新检查；更新模式和全量设置均保留。"
+  "resourceHubUpdatesOnlyPausedHelp": "自动采集开关已关闭，当前不执行更新检查；更新模式和全量设置均保留。",
+  "resourceHubTvmazeTitle": "TVmaze 剧集增量",
+  "resourceHubTvmazeAutoSync": "自动检查 TVmaze 剧集更新",
+  "resourceHubTvmazeHelp": "无需 API Key，按变更 ID 检查剧集资料。优先更新已绑定剧集，每24小时最多尝试10条详情；新发现候选最多保留100条、7天过期，通过 IMDb／TVDB 精确关联 TMDB。补空资料，不确定的身份留待复核。",
+  "resourceHubTvmazeProgress": "状态 {{status}} · 最近检查 {{checkedAt}} · 本轮尝试 {{attempted}} / 更新 {{processed}} · 待处理 {{pending}} · 未关联候选 {{deferred}}",
+  "resourceHubTvmazeNoChecks": "尚无检查记录，保存并启用后按设置自动检查。",
+  "resourceHubTvmazeReview": "存在三次失败的条目，或漏跑超过一个月；请查看 TVmaze 任务后复核。",
+  "tvmazeAttribution": "部分剧集资料经整理自"
 }

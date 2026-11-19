@@ -38,6 +38,12 @@ export default function SiteFooter() {
                         {text('messageBoard')}
                     </Link>
                 </div>
+                <p className="mx-auto mb-0 mt-2 max-w-7xl text-center text-xs text-gray-500 dark:text-gray-400">
+                    {text('tvmazeAttribution')}{' '}
+                    <a href="https://www.tvmaze.com" target="_blank" rel="noopener noreferrer" className="hover:underline">TVmaze</a>
+                    {' · '}
+                    <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" className="hover:underline">CC BY-SA 4.0</a>
+                </p>
             </footer>
 
             <Modal

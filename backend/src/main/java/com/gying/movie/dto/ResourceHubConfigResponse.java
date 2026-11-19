@@ -35,6 +35,10 @@ public class ResourceHubConfigResponse {
     private int gyingAutoSyncEndPage;
     private int gyingAutoSyncMaxItems;
     private int gyingAutoSyncIntervalHours;
+    private boolean tvmazeAutoSyncEnabled;
+    private int tvmazeAutoSyncMaxItems;
+    private int tvmazeAutoSyncIntervalHours;
+    private TvmazeSyncProgress tvmazeSyncProgress;
     private boolean workerEnabled;
     private long workerFixedDelayMs;
     private int workerTaskLimit;

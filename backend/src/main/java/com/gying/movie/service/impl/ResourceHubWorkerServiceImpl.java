@@ -53,6 +53,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
     private final IResourceHubTaskService taskService;
     private final ITmdbMetadataSyncService tmdbMetadataSyncService;
     private final IGyingMetadataSyncService gyingMetadataSyncService;
+    @Autowired(required = false)
+    private TvmazeMetadataSyncService tvmazeMetadataSyncService;
     private final IResourceDiscoveryService resourceDiscoveryService;
     private final IQuarkTransferRunnerService quarkTransferRunnerService;
     private final IXunleiTransferRunnerService xunleiTransferRunnerService;
@@ -125,6 +127,12 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         try {
             enqueueTmdbAutoSyncTasks(result);
             enqueueGyingAutoSyncTasks(result);
+            if (tvmazeMetadataSyncService != null) {
+                try {
+                    if (tvmazeMetadataSyncService.enqueueAutomatic() != null)
+                        result.setMetadataSyncTasksCreated(result.getMetadataSyncTasksCreated() + 1);
+                } catch (Exception error) { addError(result, "TVmaze updates: " + error.getClass().getSimpleName()); }
+            }
             runDueTasks(result);
             // Scheduled collection is metadata/P2P only. Never drain legacy cloud queues.
             // Weekly GYING charts use their own bounded, individually scheduled workflow.
@@ -538,6 +546,7 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         filterAutomaticModes(query, "GYING", resourceHubProperties.getGying().isAutoSyncEnabled(),
                 resourceHubProperties.getGying().isAutoSyncUpdatesOnly(), gyingAutoSyncSources(resourceHubProperties.getGying().getAutoSyncSources()).stream()
                         .anyMatch(source -> !resourceHubProperties.getGying().isAutoSyncSourcePaused(source)));
+        filterAutomaticModes(query, "TVMAZE", tvmazeMetadataSyncService != null && resourceHubProperties.getTvmaze().isAutoSyncEnabled(), true, true);
         List<String> paused = MetadataCrawlRange.sources("GYING").stream()
                 .filter(resourceHubProperties.getGying()::isAutoSyncSourcePaused).toList();
         if (!paused.isEmpty()) {
@@ -574,8 +583,9 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
         result.setTasksProcessed(result.getTasksProcessed() + 1);
         try {
             if ("METADATA_SYNC".equalsIgnoreCase(task.getTaskType())) {
-                TmdbSyncResult syncResult = "GYING".equalsIgnoreCase(task.getSource())
-                        ? gyingMetadataSyncService.runTask(task.getId())
+                TmdbSyncResult syncResult = "TVMAZE".equalsIgnoreCase(task.getSource())
+                        ? tvmazeMetadataSyncService.runTask(task.getId())
+                        : "GYING".equalsIgnoreCase(task.getSource()) ? gyingMetadataSyncService.runTask(task.getId())
                         : tmdbMetadataSyncService.runTask(task.getId());
                 taskResult.setStatus(syncResult.getStatus());
                 if ("SUCCEEDED".equalsIgnoreCase(syncResult.getStatus())) {
@@ -614,6 +624,8 @@ public class ResourceHubWorkerServiceImpl implements IResourceHubWorkerService {
             String mode = task.getPayload() == null ? "" : CHECKPOINT_MAPPER.readTree(task.getPayload())
                     .path("crawl").path("mode").asText();
             if (!Set.of("RANGE", "UPDATES").contains(mode)) return false;
+            if ("TVMAZE".equalsIgnoreCase(task.getSource())) return tvmazeMetadataSyncService == null
+                    || !resourceHubProperties.getTvmaze().isAutoSyncEnabled();
             if ("TMDB".equalsIgnoreCase(task.getSource())) {
                 var config = resourceHubProperties.getTmdb();
                 return !config.isAutoSyncEnabled() || "UPDATES".equals(mode) != config.isAutoSyncUpdatesOnly();

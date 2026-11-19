@@ -1596,5 +1596,12 @@
   "resourceHubFullProgressRetained": "Retained full progress; this range is not run in update mode",
   "resourceHubFullProgressPositionRetained": "Retained full cursor: {{position}}",
   "resourceHubFullCollectionPausedForUpdates": "Full collection paused (update mode)",
-  "resourceHubUpdatesOnlyPausedHelp": "Automatic collection is disabled, so update checks are not running. Update mode and full collection settings are retained."
+  "resourceHubUpdatesOnlyPausedHelp": "Automatic collection is disabled, so update checks are not running. Update mode and full collection settings are retained.",
+  "resourceHubTvmazeTitle": "TVmaze show updates",
+  "resourceHubTvmazeAutoSync": "Check TVmaze show updates automatically",
+  "resourceHubTvmazeHelp": "No API key needed. Track changed show IDs, prioritizing bound shows with at most 10 detail attempts per 24 hours. New discoveries share a 100-item pool and expire after 7 days. Link exact IMDb/TVDB identities to TMDB, fill missing fields, and retain uncertain matches for review.",
+  "resourceHubTvmazeProgress": "Status {{status}} · Last check {{checkedAt}} · Attempted {{attempted}} / updated {{processed}} · Pending {{pending}} · Unmatched {{deferred}}",
+  "resourceHubTvmazeNoChecks": "No checks yet. Save and enable to check automatically on this schedule.",
+  "resourceHubTvmazeReview": "Some items failed three times, or checks were missed for over a month. Review the TVmaze tasks.",
+  "tvmazeAttribution": "Some show metadata adapted from"
 }

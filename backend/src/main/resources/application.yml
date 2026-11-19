@@ -87,6 +87,13 @@ resource-hub:
     auto-sync-page: ${RESOURCE_HUB_GYING_AUTO_SYNC_PAGE:1}
     auto-sync-max-items: ${RESOURCE_HUB_GYING_AUTO_SYNC_MAX_ITEMS:10}
     auto-sync-interval-hours: ${RESOURCE_HUB_GYING_AUTO_SYNC_INTERVAL_HOURS:24}
+  tvmaze:
+    base-url: https://api.tvmaze.com
+    auto-sync-enabled: false
+    auto-sync-max-items: 10
+    auto-sync-interval-hours: 24
+    request-interval-ms: 600
+    max-retries: 2
   pansou:
     base-url: ${RESOURCE_HUB_PANSOU_BASE_URL:http://localhost:8888}
     token: ${RESOURCE_HUB_PANSOU_TOKEN:}

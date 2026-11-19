@@ -22,5 +22,8 @@ public interface ITmdbMetadataSyncService {
 
     MovieMetadata syncSelectedCandidate(MovieSearchCandidate candidate);
 
+    /** Exact TV identity only; ambiguous local records require review. */
+    MovieMetadata syncExactTv(long tmdbId, Integer expectedYear);
+
     List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit);
 }

@@ -31,6 +31,9 @@ public class ResourceHubConfigRequest {
     private Integer gyingAutoSyncEndPage;
     private Integer gyingAutoSyncMaxItems;
     private Integer gyingAutoSyncIntervalHours;
+    private Boolean tvmazeAutoSyncEnabled;
+    private Integer tvmazeAutoSyncMaxItems;
+    private Integer tvmazeAutoSyncIntervalHours;
     private Boolean workerEnabled;
     private Integer workerTaskLimit;
     private Integer workerQuarkLimit;

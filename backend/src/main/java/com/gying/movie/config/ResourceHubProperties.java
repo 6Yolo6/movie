@@ -12,6 +12,7 @@ public class ResourceHubProperties {
     private boolean autoApprove = true;
     private Tmdb tmdb = new Tmdb();
     private Gying gying = new Gying();
+    private Tvmaze tvmaze = new Tvmaze();
     private Pansou pansou = new Pansou();
     private Quark quark = new Quark();
     private Xunlei xunlei = new Xunlei();
@@ -158,6 +159,16 @@ public class ResourceHubProperties {
         }
         private int autoSyncMaxItems = 10;
         private int autoSyncIntervalHours = 24;
+    }
+
+    @Data
+    public static class Tvmaze {
+        private String baseUrl = "https://api.tvmaze.com";
+        private boolean autoSyncEnabled = false;
+        private int autoSyncMaxItems = 10;
+        private int autoSyncIntervalHours = 24;
+        private long requestIntervalMs = 600;
+        private int maxRetries = 2;
     }
 
     @Data

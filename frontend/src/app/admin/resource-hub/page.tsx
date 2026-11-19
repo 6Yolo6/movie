@@ -115,6 +115,14 @@ interface ResourceHubConfig {
     gyingAutoSyncEndPage: number;
     gyingAutoSyncMaxItems: number;
     gyingAutoSyncIntervalHours: number;
+    tvmazeAutoSyncEnabled?: boolean;
+    tvmazeAutoSyncMaxItems?: number;
+    tvmazeAutoSyncIntervalHours?: number;
+    tvmazeSyncProgress?: {
+        taskId: number; status: string; checkedAt?: string; window?: string;
+        attempted: number; processed: number; skipped: number; pending: number;
+        deferred: number; exhausted: number; coverageGap: boolean;
+    } | null;
     workerEnabled: boolean;
     workerFixedDelayMs: number;
     workerTaskLimit: number;
@@ -444,6 +452,9 @@ export default function ResourceHubAdminPage() {
             ...fields,
             tmdbAutoSyncUpdatesOnly: config.tmdbAutoSyncUpdatesOnly ?? false,
             gyingAutoSyncUpdatesOnly: config.gyingAutoSyncUpdatesOnly ?? false,
+            tvmazeAutoSyncEnabled: config.tvmazeAutoSyncEnabled ?? false,
+            tvmazeAutoSyncMaxItems: config.tvmazeAutoSyncMaxItems ?? 10,
+            tvmazeAutoSyncIntervalHours: config.tvmazeAutoSyncIntervalHours ?? 24,
             weeklyTransferSchedules: config.weeklyTransferSchedules || ['mv', 'tv', 'ac'].map(typeCode => ({
                 typeCode: typeCode as WeeklyTransferSchedule['typeCode'], enabled: false, intervalDays: 7, maxItems: 5,
             })),
@@ -580,6 +591,7 @@ export default function ResourceHubAdminPage() {
             delete settings.gyingAutoSyncPage;
             delete settings.gyingAutoSyncEndPage;
             delete settings.gyingAutoSyncPausedSources;
+            delete settings.tvmazeSyncProgress;
             const data = await requestJson<ResourceHubConfig>('/api/admin/resource-hub/config', {
                 method: 'PUT',
                 body: JSON.stringify({
@@ -1121,7 +1133,7 @@ export default function ResourceHubAdminPage() {
                     size="small"
                     icon={<PlayCircleOutlined />}
                     loading={runningAction === `task-${record.id}`}
-                    onClick={() => runAction(`task-${record.id}`, `/api/admin/resource-hub/tmdb/metadata-sync/${record.id}/run`)}
+                    onClick={() => runAction(`task-${record.id}`, `/api/admin/resource-hub/${record.source === 'TVMAZE' ? 'tvmaze' : 'tmdb'}/metadata-sync/${record.id}/run`)}
                 >
                     {t('resourceHubRun')}
                 </Button>
@@ -1579,6 +1591,42 @@ export default function ResourceHubAdminPage() {
                                                             pausedSources={overview?.config.gyingAutoSyncPausedSources}
                                                             pausingSource={pausingGyingSource} pauseDisabled={savingConfig}
                                                             onPauseChange={changeGyingSourcePause} />
+                                                    </Col>
+                                                    <Col xs={24}>
+                                                        <Card size="small" title={t('resourceHubTvmazeTitle')} data-testid="tvmaze-settings">
+                                                            <Text type="secondary">{t('resourceHubTvmazeHelp')}</Text>
+                                                            <Row gutter={12} className="mt-3">
+                                                                <Col xs={24} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncEnabled" label={t('resourceHubTvmazeAutoSync')} valuePropName="checked">
+                                                                        <Switch data-testid="tvmaze-auto-sync-switch" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                                <Col xs={12} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncIntervalHours" label={t('resourceHubSyncInterval')}>
+                                                                        <InputNumber min={24} max={720} className="w-full" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                                <Col xs={12} md={8}>
+                                                                    <Form.Item name="tvmazeAutoSyncMaxItems" label={t('resourceHubSyncItems')}>
+                                                                        <InputNumber min={1} max={10} className="w-full" />
+                                                                    </Form.Item>
+                                                                </Col>
+                                                            </Row>
+                                                            <Text type="secondary">
+                                                                {overview?.config.tvmazeSyncProgress
+                                                                    ? t('resourceHubTvmazeProgress', {
+                                                                        status: overview.config.tvmazeSyncProgress.status,
+                                                                        checkedAt: overview.config.tvmazeSyncProgress.checkedAt
+                                                                            ? new Date(overview.config.tvmazeSyncProgress.checkedAt).toLocaleString() : '—',
+                                                                        attempted: overview.config.tvmazeSyncProgress.attempted,
+                                                                        processed: overview.config.tvmazeSyncProgress.processed,
+                                                                        pending: overview.config.tvmazeSyncProgress.pending,
+                                                                        deferred: overview.config.tvmazeSyncProgress.deferred,
+                                                                    }) : t('resourceHubTvmazeNoChecks')}
+                                                            </Text>
+                                                            {(overview?.config.tvmazeSyncProgress?.coverageGap || Boolean(overview?.config.tvmazeSyncProgress?.exhausted)) &&
+                                                                <Alert className="mt-3" type="warning" showIcon title={t('resourceHubTvmazeReview')} />}
+                                                        </Card>
                                                     </Col>
                                                     <Col xs={24}>
                                                         <Alert type="info" showIcon title={t('resourceHubCrawlHelp')} />

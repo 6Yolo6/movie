@@ -125,6 +125,28 @@ public class TmdbClient {
                 .queryParam("append_to_response", "credits,alternative_titles"));
     }
 
+    /** TVmaze supplies IMDb/TVDB identities, never a TMDB ID or a title match. */
+    public List<Long> findTvByExternalId(String externalId, String source) {
+        if (externalId == null || !("imdb_id".equals(source) && externalId.matches("tt[0-9]{5,12}")
+                || "tvdb_id".equals(source) && externalId.matches("[1-9][0-9]{0,11}"))) {
+            throw new IllegalArgumentException("Invalid external TV identity");
+        }
+        JsonNode root = getJson("/find/" + externalId, builder -> builder
+                .queryParam("external_source", source).queryParam("language", LANGUAGE));
+        if (root == null || !root.isObject() || !root.path("tv_results").isArray()) {
+            throw new IllegalStateException("TMDB external TV lookup is invalid");
+        }
+        List<Long> ids = new ArrayList<>();
+        for (JsonNode show : root.path("tv_results")) {
+            if (!show.path("id").isIntegralNumber() || !show.path("id").canConvertToLong()
+                    || show.path("id").asLong() <= 0) {
+                throw new IllegalStateException("TMDB external TV identity is invalid");
+            }
+            ids.add(show.path("id").asLong());
+        }
+        return ids.stream().distinct().toList();
+    }
+
     public JsonNode fetchSeasonDetails(long tmdbId, int season) {
         if (tmdbId <= 0 || season < 1 || season > 99) throw new IllegalArgumentException("Invalid season identity");
         return getJson("/tv/" + tmdbId + "/season/" + season, builder -> builder.queryParam("language", LANGUAGE));

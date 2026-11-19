@@ -351,6 +351,68 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
+    public MovieMetadata syncExactTv(long tmdbId, Integer expectedYear) {
+        ensureEnabled();
+        if (tmdbId <= 0 || expectedYear == null) throw new IllegalArgumentException("Exact TV identity requires a year");
+        JsonNode details = tmdbClient.fetchDetails("tv", tmdbId);
+        if (details == null || !details.path("id").isIntegralNumber()
+                || details.path("id").asLong() != tmdbId
+                || !java.util.Objects.equals(expectedYear, parseYear(details.path("first_air_date").asText(null)))) {
+            throw new IllegalStateException("Exact external TV identity/year requires review");
+        }
+        Map<String, MovieMetadata> retained = new LinkedHashMap<>();
+        for (MovieMetadata row : movieService.list(new QueryWrapper<MovieMetadata>()
+                .eq("tmdb_type", "tv").eq("tmdb_id", tmdbId)
+                .and(w -> w.isNull("season").or().eq("season", 1)))) {
+            MovieMetadata canonical = retainedMovie(row);
+            if (!"tv".equals(canonical.getTmdbType()) || !java.util.Objects.equals(tmdbId, canonical.getTmdbId())
+                    || canonical.getSeason() != null && canonical.getSeason() != 1
+                    || canonical.getYear() != null && !expectedYear.equals(canonical.getYear())) {
+                throw new IllegalStateException("Exact TMDB TV canonical identity requires review");
+            }
+            retained.put(canonical.getId(), canonical);
+        }
+        MovieSourceIdentity identity = sourceIdentityService.getOne(new QueryWrapper<MovieSourceIdentity>()
+                .eq("source", "TMDB").eq("source_type", "tv").eq("external_id", String.valueOf(tmdbId))
+                .eq("season", 1).last("LIMIT 1"), false);
+        if (identity != null) {
+            MovieMetadata canonical = movieService.getById(identity.getMovieId());
+            if (canonical == null || !"ACTIVE".equals(canonical.getStatus()) || canonical.getDeletedAt() != null
+                    || !"tv".equals(canonical.getTmdbType()) || !java.util.Objects.equals(tmdbId, canonical.getTmdbId())
+                    || canonical.getSeason() != null && canonical.getSeason() != 1
+                    || !"CONFIRMED".equals(identity.getMatchStatus())
+                    || canonical.getYear() != null && !expectedYear.equals(canonical.getYear())
+                    || !canonical.getId().equals(identity.getMovieId())) {
+                throw new IllegalStateException("Exact TMDB TV identity requires canonical review");
+            }
+            retained.put(canonical.getId(), canonical);
+        }
+        if (retained.size() > 1) throw new IllegalStateException("Multiple canonical records own the exact TV identity");
+        MovieMetadata existing = retained.isEmpty() ? null : retained.values().iterator().next();
+        if (existing == null) {
+            // A same-title local record without an exact ID is evidence for review, never an automatic binding.
+            List<String> titles = java.util.stream.Stream.of(details.path("name").asText(""),
+                    details.path("original_name").asText("")).filter(v -> !v.isBlank()).distinct().toList();
+            if (titles.isEmpty()) throw new IllegalStateException("Exact TV title is missing");
+            if (movieService.count(new QueryWrapper<MovieMetadata>().in("category", "tv", "ac")
+                    .eq("year", expectedYear).isNull("deleted_at")
+                    .and(w -> w.isNull("season").or().eq("season", 1))
+                    .and(w -> {
+                        for (int i = 0; i < titles.size(); i++) {
+                            if (i > 0) w.or();
+                            String name = titles.get(i);
+                            w.nested(n -> n.eq("title_cn", name).or().eq("title_en", name).or().eq("series_name", name));
+                        }
+                    })) > 0) throw new IllegalStateException("Unbound same-title TV record requires exact identity review");
+        }
+        TmdbListItem item = new TmdbListItem();
+        item.setTmdbId(tmdbId); item.setMediaType("tv");
+        item.setTitle(details.path("name").asText());
+        return upsertMovie(item, details, true, existing).movie();
+    }
+
+    @Override
     public List<MovieSearchCandidate> searchCandidatesByKeyword(String keyword, int limit) {
         ensureEnabled();
         if (!hasText(keyword)) {
@@ -377,7 +439,10 @@ public class TmdbMetadataSyncServiceImpl implements ITmdbMetadataSyncService {
     }
 
     private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details, boolean requirePersistence) {
-        MovieMetadata existing = findExistingMovie(item, details);
+        return upsertMovie(item, details, requirePersistence, findExistingMovie(item, details));
+    }
+
+    private MovieUpsertResult upsertMovie(TmdbListItem item, JsonNode details, boolean requirePersistence, MovieMetadata existing) {
         MovieMetadata target = existing == null ? new MovieMetadata() : existing;
         boolean inserted = existing == null;
         LocalDateTime now = LocalDateTime.now();

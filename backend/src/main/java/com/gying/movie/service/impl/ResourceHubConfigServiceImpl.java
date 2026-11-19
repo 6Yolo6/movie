@@ -63,6 +63,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
     private static final String KEY_GYING_AUTO_SYNC_END_PAGE = "resource.hub.gying.auto_sync_end_page";
     private static final String KEY_GYING_AUTO_SYNC_MAX_ITEMS = "resource.hub.gying.auto_sync_max_items";
     private static final String KEY_GYING_AUTO_SYNC_INTERVAL_HOURS = "resource.hub.gying.auto_sync_interval_hours";
+    private static final String KEY_TVMAZE_ENABLED = "resource.hub.tvmaze.auto_sync_enabled";
+    private static final String KEY_TVMAZE_MAX_ITEMS = "resource.hub.tvmaze.auto_sync_max_items";
+    private static final String KEY_TVMAZE_INTERVAL = "resource.hub.tvmaze.auto_sync_interval_hours";
     private static final String KEY_WORKER_ENABLED = "resource.hub.worker.enabled";
     private static final String KEY_WORKER_TASK_LIMIT = "resource.hub.worker.task_limit";
     private static final String KEY_WORKER_QUARK_LIMIT = "resource.hub.worker.quark_limit";
@@ -140,6 +143,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         gying.setAutoSyncMaxItems(readInt(KEY_GYING_AUTO_SYNC_MAX_ITEMS, gying.getAutoSyncMaxItems(), 1, 20));
         gying.setAutoSyncIntervalHours(readInt(
                 KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, gying.getAutoSyncIntervalHours(), 1, 720));
+        var tvmaze = properties.getTvmaze();
+        tvmaze.setAutoSyncEnabled(readBoolean(KEY_TVMAZE_ENABLED, tvmaze.isAutoSyncEnabled()));
+        tvmaze.setAutoSyncMaxItems(readInt(KEY_TVMAZE_MAX_ITEMS, tvmaze.getAutoSyncMaxItems(), 1, 10));
+        tvmaze.setAutoSyncIntervalHours(readInt(KEY_TVMAZE_INTERVAL, tvmaze.getAutoSyncIntervalHours(), 24, 720));
         worker.setEnabled(readBoolean(KEY_WORKER_ENABLED, worker.isEnabled()));
         worker.setTaskLimit(readInt(KEY_WORKER_TASK_LIMIT, worker.getTaskLimit(), 1, 20));
         worker.setQuarkLimit(readInt(KEY_WORKER_QUARK_LIMIT, worker.getQuarkLimit(), 1, 20));
@@ -198,6 +205,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         ResourceHubProperties.Worker worker = properties.getWorker();
         ResourceHubProperties.Xunlei xunlei = properties.getXunlei();
 
+        if (request.getTvmazeAutoSyncMaxItems() != null && (request.getTvmazeAutoSyncMaxItems() < 1 || request.getTvmazeAutoSyncMaxItems() > 10)
+                || request.getTvmazeAutoSyncIntervalHours() != null && (request.getTvmazeAutoSyncIntervalHours() < 24 || request.getTvmazeAutoSyncIntervalHours() > 720)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "TVmaze 每轮详情为1–10条，间隔为24–720小时");
+        }
         validateDriveWorkflows(request.getDriveWorkflows());
         if (request.getWeeklyTransferSchedules() != null && weeklyTransferSettings != null) {
             weeklyTransferSettings.validate(request.getWeeklyTransferSchedules());
@@ -317,6 +328,19 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
             upsert(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, Integer.toString(value),
                     "GYING 自动同步任务之间的最小间隔（小时）");
         }
+        var tvmaze = properties.getTvmaze();
+        if (request.getTvmazeAutoSyncEnabled() != null) {
+            upsert(KEY_TVMAZE_ENABLED, Boolean.toString(request.getTvmazeAutoSyncEnabled()), "TVmaze 剧集增量同步开关");
+            tvmaze.setAutoSyncEnabled(request.getTvmazeAutoSyncEnabled());
+        }
+        if (request.getTvmazeAutoSyncMaxItems() != null) {
+            upsert(KEY_TVMAZE_MAX_ITEMS, request.getTvmazeAutoSyncMaxItems().toString(), "TVmaze 每轮剧集详情尝试上限");
+            tvmaze.setAutoSyncMaxItems(request.getTvmazeAutoSyncMaxItems());
+        }
+        if (request.getTvmazeAutoSyncIntervalHours() != null) {
+            upsert(KEY_TVMAZE_INTERVAL, request.getTvmazeAutoSyncIntervalHours().toString(), "TVmaze 增量检查最小间隔（小时）");
+            tvmaze.setAutoSyncIntervalHours(request.getTvmazeAutoSyncIntervalHours());
+        }
         if (request.getWorkerEnabled() != null) {
             worker.setEnabled(request.getWorkerEnabled());
             upsert(KEY_WORKER_ENABLED, Boolean.toString(request.getWorkerEnabled()), "是否启用影视资源中心后台 Worker");
@@ -420,6 +444,10 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         response.setGyingAutoSyncEndPage(gying.getAutoSyncEndPage());
         response.setGyingAutoSyncMaxItems(gying.getAutoSyncMaxItems());
         response.setGyingAutoSyncIntervalHours(gying.getAutoSyncIntervalHours());
+        response.setTvmazeAutoSyncEnabled(properties.getTvmaze().isAutoSyncEnabled());
+        response.setTvmazeAutoSyncMaxItems(properties.getTvmaze().getAutoSyncMaxItems());
+        response.setTvmazeAutoSyncIntervalHours(properties.getTvmaze().getAutoSyncIntervalHours());
+        if (taskService != null) response.setTvmazeSyncProgress(new TvmazeUpdatesCheckpoint(taskService, objectMapper).progress());
         response.setWorkerEnabled(worker.isEnabled());
         response.setWorkerFixedDelayMs(worker.getFixedDelayMs());
         response.setWorkerTaskLimit(worker.getTaskLimit());
@@ -670,6 +698,9 @@ public class ResourceHubConfigServiceImpl implements IResourceHubConfigService {
         defaults.put(KEY_GYING_AUTO_SYNC_INTERVAL_HOURS, values(
                 Integer.toString(properties.getGying().getAutoSyncIntervalHours()),
                 "GYING 自动同步任务之间的最小间隔（小时）"));
+        defaults.put(KEY_TVMAZE_ENABLED, values(Boolean.toString(properties.getTvmaze().isAutoSyncEnabled()), "TVmaze 剧集增量同步开关"));
+        defaults.put(KEY_TVMAZE_MAX_ITEMS, values(Integer.toString(properties.getTvmaze().getAutoSyncMaxItems()), "TVmaze 每轮剧集详情尝试上限"));
+        defaults.put(KEY_TVMAZE_INTERVAL, values(Integer.toString(properties.getTvmaze().getAutoSyncIntervalHours()), "TVmaze 增量检查最小间隔（小时）"));
         defaults.put(KEY_WORKER_ENABLED, values(Boolean.toString(properties.getWorker().isEnabled()), "是否启用影视资源中心后台 Worker"));
         defaults.put(KEY_WORKER_TASK_LIMIT, values(Integer.toString(properties.getWorker().getTaskLimit()), "Worker 每轮最多执行的资源发现任务数"));
         defaults.put(KEY_WORKER_QUARK_LIMIT, values(Integer.toString(properties.getWorker().getQuarkLimit()), "Worker 每轮最多提交的夸克转存任务数"));
